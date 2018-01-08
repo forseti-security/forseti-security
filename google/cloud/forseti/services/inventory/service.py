@@ -49,8 +49,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         super(GrpcInventory, self).__init__()
         self.inventory = inventory_api
 
-    def Ping(self, request, _):
-        """Ping implemented to check service availability.
+    def ping(self, request, _):
+        """ping implemented to check service availability.
 
         Args:
             request (object): gRPC request object.
@@ -63,7 +63,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         return inventory_pb2.PingReply(data=request.data)
 
     @autoclose_stream
-    def Create(self, request, _):
+    def create(self, request, _):
         """Creates a new inventory.
 
         Args:
@@ -74,7 +74,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Inventory progress updates.
         """
 
-        for progress in self.inventory.Create(request.background,
+        for progress in self.inventory.create(request.background,
                                               request.model_name):
             yield inventory_pb2.Progress(
                 id=progress.inventory_id,
@@ -86,7 +86,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_error=repr(progress.last_error))
 
     @autoclose_stream
-    def List(self, request, _):
+    def list(self, request, _):
         """Lists existing inventory.
 
         Args:
@@ -97,10 +97,10 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Each Inventory API object.
         """
 
-        for inventory_index in self.inventory.List():
+        for inventory_index in self.inventory.list():
             yield inventory_pb_from_object(inventory_index)
 
-    def Get(self, request, _):
+    def get(self, request, _):
         """Gets existing inventory.
 
         Args:
@@ -111,11 +111,11 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Inventory API object that is requested.
         """
 
-        inventory_index = self.inventory.Get(request.id)
+        inventory_index = self.inventory.get(request.id)
         return inventory_pb2.GetReply(
             inventory=inventory_pb_from_object(inventory_index))
 
-    def Delete(self, request, _):
+    def delete(self, request, _):
         """Deletes existing inventory.
 
         Returns:
@@ -126,7 +126,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Inventory API object that is deleted.
         """
 
-        inventory_index = self.inventory.Delete(request.id)
+        inventory_index = self.inventory.delete(request.id)
         return inventory_pb2.DeleteReply(
             inventory=inventory_pb_from_object(inventory_index))
 

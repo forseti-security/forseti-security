@@ -24,7 +24,7 @@ from google.cloud.forseti.services.utils import autoclose_stream
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,no-member
+# pylint: disable=missing-yield-type-doc
 
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
@@ -45,20 +45,20 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer_api
 
-    def Ping(self, request, _):
+    def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return explain_pb2.PingReply(data=request.data)
 
-    def ExplainDenied(self, request, context):
+    def explain_denied(self, request, context):
         """Provides information on how to grant access."""
 
         model_name = self._get_handle(context)
-        binding_strategies = self.explainer.ExplainDenied(model_name,
-                                                          request.member,
-                                                          request.resources,
-                                                          request.permissions,
-                                                          request.roles)
+        binding_strategies = self.explainer.explain_denied(model_name,
+                                                           request.member,
+                                                           request.resources,
+                                                           request.permissions,
+                                                           request.roles)
         reply = explain_pb2.ExplainDeniedReply()
         strategies = []
         for overgranting, bindings in binding_strategies:
@@ -69,15 +69,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.strategies.extend(strategies)
         return reply
 
-    def ExplainGranted(self, request, context):
+    def explain_granted(self, request, context):
         """Provides information on why a member has access to a resource."""
 
         model_name = self._get_handle(context)
-        result = self.explainer.ExplainGranted(model_name,
-                                               request.member,
-                                               request.resource,
-                                               request.role,
-                                               request.permission)
+        result = self.explainer.explain_granted(model_name,
+                                                request.member,
+                                                request.resource,
+                                                request.role,
+                                                request.permission)
         reply = explain_pb2.ExplainGrantedReply()
         bindings, member_graph, resource_names = result
         memberships = []
@@ -94,7 +94,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     @autoclose_stream
-    def GetAccessByPermissions(self, request, context):
+    def get_access_by_permissions(self, request, context):
         """Returns stream of access based on permission/role.
 
         Args:
@@ -108,7 +108,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         model_name = self._get_handle(context)
 
         for role, resource, members in (
-                self.explainer.GetAccessByPermissions(
+                self.explainer.get_access_by_permissions(
                     model_name,
                     request.role_name,
                     request.permission_name,
@@ -118,14 +118,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                                      role=role,
                                      resource=resource)
 
-    def GetAccessByResources(self, request, context):
+    def get_access_by_resources(self, request, context):
         """Returns members having access to the specified resource."""
 
         model_name = self._get_handle(context)
-        mapping = self.explainer.GetAccessByResources(model_name,
-                                                      request.resource_name,
-                                                      request.permission_names,
-                                                      request.expand_groups)
+        mapping = self.explainer.get_access_by_resources(
+            model_name,
+            request.resource_name,
+            request.permission_names,
+            request.expand_groups)
         accesses = []
         for role, members in mapping.iteritems():
             access = explain_pb2.GetAccessByResourcesReply.Access(
@@ -136,16 +137,16 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.accesses.extend(accesses)
         return reply
 
-    def GetAccessByMembers(self, request, context):
+    def get_access_by_members(self, request, context):
         """Returns resources which can be accessed by the specified members."""
 
         model_name = self._get_handle(context)
         accesses = []
         for role, resources in\
-            self.explainer.GetAccessByMembers(model_name,
-                                              request.member_name,
-                                              request.permission_names,
-                                              request.expand_resources):
+            self.explainer.get_access_by_members(model_name,
+                                                 request.member_name,
+                                                 request.permission_names,
+                                                 request.expand_resources):
 
             access = explain_pb2.GetAccessByMembersReply.Access(
                 role=role, resources=resources, member=request.member_name)
@@ -154,13 +155,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.accesses.extend(accesses)
         return reply
 
-    def GetPermissionsByRoles(self, request, context):
+    def get_permissions_by_roles(self, request, context):
         """Returns permissions for the specified roles."""
 
         model_name = self._get_handle(context)
-        result = self.explainer.GetPermissionsByRoles(model_name,
-                                                      request.role_names,
-                                                      request.role_prefixes)
+        result = self.explainer.get_permissions_by_roles(model_name,
+                                                         request.role_names,
+                                                         request.role_prefixes)
 
         permissions_by_roles_map = defaultdict(list)
         for role, permission in result:
@@ -177,12 +178,12 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     @autoclose_stream
-    def Denormalize(self, _, context):
+    def denormalize(self, _, context):
         """Denormalize the entire model into access triples."""
 
         model_name = self._get_handle(context)
 
-        for permission, resource, member in self.explainer.Denormalize(
+        for permission, resource, member in self.explainer.denormalize(
                 model_name):
             yield explain_pb2.AuthorizationTuple(member=member,
                                                  permission=permission,

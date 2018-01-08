@@ -21,7 +21,7 @@ from google.cloud.forseti.services.model import modeller
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,no-member
+# pylint: disable=missing-param-doc
 
 
 class GrpcModeller(model_pb2_grpc.ModellerServicer):
@@ -42,18 +42,18 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         super(GrpcModeller, self).__init__()
         self.modeller = modeller_api
 
-    def Ping(self, request, _):
+    def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return model_pb2.PingReply(data=request.data)
 
-    def CreateModel(self, request, context):
+    def create_model(self, request, context):
         """Creates a new model from an import source."""
 
-        model = self.modeller.CreateModel(request.type,
-                                          request.name,
-                                          request.id,
-                                          request.background)
+        model = self.modeller.create_model(request.type,
+                                           request.name,
+                                           request.id,
+                                           request.background)
         reply = model_pb2.CreateModelReply(model=model_pb2.Model(
             name=model.name,
             handle=model.handle,
@@ -61,17 +61,17 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             message=model.message))
         return reply
 
-    def DeleteModel(self, request, _):
+    def delete_model(self, request, _):
         """Deletes a model and all associated data."""
 
         model_name = request.handle
-        self.modeller.DeleteModel(model_name)
+        self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
-    def ListModel(self, request, _):
+    def list_model(self, request, _):
         """List all models."""
 
-        models = self.modeller.ListModel()
+        models = self.modeller.list_model()
         models_pb = []
         for model in models:
             models_pb.append(model_pb2.Model(name=model.name,
