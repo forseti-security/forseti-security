@@ -17,7 +17,6 @@
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,line-too-long,broad-except
-# pylint: disable=invalid-name
 
 from Queue import Queue
 

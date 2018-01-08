@@ -17,9 +17,7 @@
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
-
-
-# pylint: disable=invalid-name,no-self-use
+# pylint: disable=no-self-use
 class Playgrounder(object):
     """Playground API implementation."""
 
@@ -61,7 +59,7 @@ class Playgrounder(object):
                 session, member_type_name, parent_type_names, denorm=True)
 
     def delete_group_member(self, model_name, member_name, parent_name,
-                       only_delete_relationship):
+                            only_delete_relationship):
         """Deletes a member from the model."""
 
         model_manager = self.config.model_manager
@@ -91,10 +89,8 @@ class Playgrounder(object):
             data_access.del_resource_by_name(session, resource_type_name)
             session.commit()
 
-    def add_resource(self, model_name,
-                    resource_type_name,
-                    parent_type_name,
-                    no_require_parent):
+    def add_resource(self, model_name, resource_type_name, parent_type_name,
+                     no_require_parent):
         """Adds a resource to the model."""
 
         model_manager = self.config.model_manager

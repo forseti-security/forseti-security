@@ -16,7 +16,7 @@
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-return-type-doc,missing-return-doc,broad-except
-# pylint: disable=missing-docstring,unused-argument,invalid-name
+# pylint: disable=missing-docstring,unused-argument
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc,attribute-defined-outside-init
 # pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes
 

@@ -18,7 +18,7 @@
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,invalid-name
+# pylint: disable=missing-yield-type-doc
 
 
 class Explainer(object):
@@ -53,8 +53,8 @@ class Explainer(object):
                                                  permission)
             return result
 
-    def get_access_by_resources(self, model_name, resource_name, permission_names,
-                             expand_groups):
+    def get_access_by_resources(self, model_name, resource_name,
+                                permission_names, expand_groups):
         """Returns members who have access to the given resource."""
 
         model_manager = self.config.model_manager
@@ -67,7 +67,7 @@ class Explainer(object):
             return mapping
 
     def get_access_by_permissions(self, model_name, role_name, permission_name,
-                               expand_groups, expand_resources):
+                                  expand_groups, expand_resources):
         """Returns access tuples satisfying the permission or role.
 
         Args:
@@ -93,7 +93,7 @@ class Explainer(object):
                 yield role, resource, members
 
     def get_access_by_members(self, model_name, member_name, permission_names,
-                           expand_resources):
+                              expand_resources):
         """Returns access to resources for the provided member."""
 
         model_manager = self.config.model_manager

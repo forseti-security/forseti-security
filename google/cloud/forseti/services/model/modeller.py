@@ -20,7 +20,6 @@ from google.cloud.forseti.services.model.importer import importer
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
-# pylint: disable=invalid-name
 
 
 class Modeller(object):
