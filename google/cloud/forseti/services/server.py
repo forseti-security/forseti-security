@@ -35,6 +35,7 @@ from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
 
+from google.cloud.forseti.common.util import log_util
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
@@ -285,7 +286,8 @@ class ServiceConfig(AbstractServiceConfig):
 def serve(endpoint, services,
           explain_connect_string,
           gsuite_sa_path, gsuite_admin_email,
-          root_resource_id, max_workers=32, wait_shutdown_secs=3):
+          root_resource_id, log_level,
+          max_workers=32, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
 
     Raises:
@@ -298,6 +300,9 @@ def serve(endpoint, services,
 
     if not factories:
         raise Exception("No services to start")
+
+    # Configuring log level for the application
+    log_util.set_logger_level_from_config(log_level)
 
     # Setting up configurations
     inventory_config = InventoryConfig(root_resource_id,
@@ -348,11 +353,18 @@ def main():
         nargs='*',
         default=[],
         help='Forseti services')
+    parser.add_argument(
+        '--log_level',
+        default='info',
+        choices=['debug', 'info', 'warning', 'error'],
+        help="Sets the threshold for Forseti's logger."
+             " Logging messages which are less severe"
+             " than the level you set will be ignored.")
     args = vars(parser.parse_args())
 
     serve(args['endpoint'], args['services'], args['forseti_db'],
           args['gsuite_private_keyfile'], args['gsuite_admin_email'],
-          args['root_resource_id'])
+          args['root_resource_id'], args['log_level'])
 
 
 if __name__ == "__main__":
