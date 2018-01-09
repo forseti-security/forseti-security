@@ -87,6 +87,8 @@ def find_pipelines(pipeline_name):
     except ImportError, e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 
+    return None
+
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
 

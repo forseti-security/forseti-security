@@ -513,7 +513,7 @@ class AuditorClient(ForsetiClient):
 
         try:
             audit_id = int(audit_id_arg)
-        except (TypeError, ValueError) as err:
+        except (TypeError, ValueError):
             LOGGER.warn('Invalid value for audit_id %s, '
                         'should be an int', audit_id_arg)
             audit_id = None
@@ -535,7 +535,7 @@ class AuditorClient(ForsetiClient):
 
         try:
             audit_id = int(audit_id_arg)
-        except (TypeError, ValueError) as err:
+        except (TypeError, ValueError):
             LOGGER.warn('Invalid value for audit_id %s, '
                         'should be an int', audit_id_arg)
             audit_id = None

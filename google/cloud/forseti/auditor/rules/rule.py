@@ -167,6 +167,7 @@ class Rule(object):
                 current_state=None,
                 expected_state=None,
                 status=storage.RuleResultStatus.ACTIVE.value)
+        return None
 
     @property
     def type(self):

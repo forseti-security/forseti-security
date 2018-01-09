@@ -42,13 +42,18 @@ def audit_pb_from_object(audit):
         object: The Audit proto.
     """
 
-    end_time = timestamp.Timestamp().FromDatetime(
-        audit.end_time) if audit.end_time else None
+    start_time = timestamp.Timestamp()
+    start_time.FromDatetime(audit.start_time)
+
+    end_time = timestamp.Timestamp()
+    if audit.end_time:
+        end_time.FromDatetime(audit.end_time)
+    else:
+        end_time = None
 
     return auditor_pb2.Audit(
         id=audit.id,
-        start_time=timestamp.Timestamp().FromDatetime(
-            audit.start_time),
+        start_time=start_time,
         end_time=end_time,
         status=audit.status.value,
         model=audit.model,
@@ -56,7 +61,7 @@ def audit_pb_from_object(audit):
 
 def ruleresult_pb_from_object(rule_result):
     """RuleResult to proto.
-    
+
     Args:
         rule_result (object): The RuleResult object (database object).
 
@@ -64,8 +69,14 @@ def ruleresult_pb_from_object(rule_result):
         object: The RuleResult proto.
     """
 
-    modified_time = timestamp.Timestamp().FromDatetime(
-        rule_result.modified_time) if rule_result.modified_time else None
+    create_time = timestamp.Timestamp()
+    create_time.FromDatetime(rule_result.create_time)
+
+    modified_time = timestamp.Timestamp()
+    if rule_result.modified_time:
+        modified_time.FromDatetime(rule_result.modified_time)
+    else:
+        modified_time = None
 
     return auditor_pb2.RuleResult(
         rule_id=rule_result.rule_id,
@@ -79,8 +90,7 @@ def ruleresult_pb_from_object(rule_result):
         resource_owners=rule_result.resource_owners,
         status=rule_result.status.value,
         recommended_actions=rule_result.recommended_actions,
-        create_time=timestamp.Timestamp().FromDatetime(
-            rule_result.create_time),
+        create_time=create_time,
         modified_time=modified_time)
 
 
