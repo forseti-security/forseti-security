@@ -142,6 +142,15 @@ scanner:
 
 ##############################################################################
 
+auditor:
+
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
+    rules_path: /PATH/TO/rules.yaml
+
+##############################################################################
+
 notifier:
 
     # For every resource type you can set up a notification pipeline
