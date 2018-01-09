@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for Bucket acls"""
+"""Rules engine for Bucket acls."""
 from collections import namedtuple
 import itertools
+import json
 import re
 
-# pylint: disable=line-too-long
-from google.cloud.forseti.common.gcp_type import bucket_access_controls as bkt_acls
-# pylint: enable=line-too-long
+from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
+    BucketAccessControls)
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.common.util.regex_util import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
@@ -30,7 +30,7 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class BucketsRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for bucket acls"""
+    """Rules engine for bucket acls."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -138,17 +138,20 @@ class BucketsRuleBook(bre.BaseRuleBook):
             domain = rule_def.get('domain')
             role = rule_def.get('role')
 
-            if (bucket is None) or (entity is None) or (email is None) or\
-               (domain is None) or (role is None):
+            if ((bucket is None) or (entity is None) or (email is None) or
+                    (domain is None) or (role is None)):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Faulty rule {}'.format(rule_def.get('name')))
 
-            rule_def_resource = bkt_acls.BucketAccessControls(
-                escape_and_globify(bucket),
-                escape_and_globify(entity),
-                escape_and_globify(email),
-                escape_and_globify(domain),
-                escape_and_globify(role.upper()))
+            rule_def_resource = BucketAccessControls(
+                project_id='',
+                bucket=escape_and_globify(bucket),
+                entity=escape_and_globify(entity),
+                email=escape_and_globify(email),
+                domain=escape_and_globify(domain),
+                role=escape_and_globify(role.upper()),
+                raw_json=json.dumps(rule_def)
+            )
 
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,
@@ -231,7 +234,7 @@ class Rule(object):
         if should_raise_violation:
             yield self.RuleViolation(
                 resource_type='bucket',
-                resource_id=bucket_acl.project_number,
+                resource_id=bucket_acl.project_id,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='BUCKET_VIOLATION',

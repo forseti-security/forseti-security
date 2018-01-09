@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Rules engine for IAP policies on backend services"""
+"""Rules engine for IAP policies on backend services."""
 from collections import namedtuple
 import re
 import threading
 
-from google.cloud.forseti.common.data_access import org_resource_rel_dao
-from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
@@ -98,6 +95,7 @@ class IapRuleBook(bre.BaseRuleBook):
             snapshot_timestamp (int): Snapshot timestamp.
         """
         super(IapRuleBook, self).__init__()
+        del global_configs
         self._rules_sema = threading.BoundedSemaphore(value=1)
         self.resource_rules_map = {}
         if not rule_defs:
@@ -106,9 +104,6 @@ class IapRuleBook(bre.BaseRuleBook):
             self.rule_defs = rule_defs
             self.add_rules(rule_defs)
         self.snapshot_timestamp = snapshot_timestamp
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
-            global_configs)
-        self.project_dao = project_dao.ProjectDao(global_configs)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -223,14 +218,10 @@ class IapRuleBook(bre.BaseRuleBook):
         LOGGER.debug('Looking for IAP violations: %r', iap_resource)
         violations = []
         resource = iap_resource.backend_service
-        resource_ancestors = [resource]
 
-        project = self.project_dao.get_project(resource.project_id,
-                                               self.snapshot_timestamp)
-        resource_ancestors.append(project)
-        resource_ancestors.extend(
-            self.org_res_rel_dao.find_ancestors(
-                project, self.snapshot_timestamp))
+        resource_ancestors = resource_util.get_ancestors_from_full_name(
+            iap_resource.project_full_name)
+
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
         for curr_resource in resource_ancestors:

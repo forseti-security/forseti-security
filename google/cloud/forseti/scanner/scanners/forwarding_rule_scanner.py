@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """Scanner for the Forwarding Rules rules engine."""
+from google.cloud.forseti.common.gcp_type.forwarding_rule import ForwardingRule
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import forwarding_rules_dao
 from google.cloud.forseti.scanner.audit import forwarding_rule_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
@@ -50,11 +50,6 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                 rules_file_path=self.rules,
                 snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
-
-    def run(self):
-        forwarding_rules = self._retrieve()
-        all_violations = self._find_violations(forwarding_rules)
-        self._output_results(all_violations)
 
     @staticmethod
     def _flatten_violations(violations):
@@ -100,9 +95,17 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         Returns:
             list: forwarding rule list.
         """
-        forwarding_rules = forwarding_rules_dao \
-            .ForwardingRulesDao(self.global_configs) \
-            .get_forwarding_rules(self.snapshot_timestamp)
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            forwarding_rules = []
+            for forwarding_rule in data_access.scanner_iter(
+                    session, 'forwardingrule'):
+                project_id = forwarding_rule.parent.name
+                forwarding_rule_data = forwarding_rule.data
+                forwarding_rules.append(
+                    ForwardingRule.from_json(project_id, forwarding_rule_data))
+
         return forwarding_rules
 
     def _find_violations(self, forwarding_rules):
@@ -124,3 +127,8 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             if violations is not None:
                 all_violations.append(violations)
         return all_violations
+
+    def run(self):
+        forwarding_rules = self._retrieve()
+        all_violations = self._find_violations(forwarding_rules)
+        self._output_results(all_violations)
