@@ -91,6 +91,8 @@ Following are example commands to install `mysql_config`:
   ```bash
   # Ubuntu
   # Note: If libmysqlclient-dev doesn't install `mysql_config`, then try also installing `mysql_server`.
+  # If you encounter the following error, use command `sudo apt-get install default-libmysqlclient-dev` instead.
+  # E: Package 'libmysqlclient-dev' has no installation candidate
   $ sudo apt-get install libmysqlclient-dev
 
   # OSX, using homebrew
@@ -103,7 +105,7 @@ The crypto libraries require `ssl-dev` and `libffi-dev`.
 
   ```bash
   # Ubuntu
-  $ sudo apt-get install ssl-dev libffi-dev
+  $ sudo apt-get install libssl-dev libffi-dev
   ```
 
 ### Creating a virtualenv
