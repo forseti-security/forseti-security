@@ -101,6 +101,39 @@ class Auditor(object):
             for item in auditor_data_access.list_audits():
                 yield item
 
+    def Delete(self, audit_id):
+        """Delete an Audit.
+
+        Args:
+            audit_id (int): The Audit id to get results for. If None, then
+                retrieve all Audit results.
+
+        Returns:
+            object: The Audit information that was deleted.
+        """
+
+        LOGGER.info('Delete audit, where audit_id=%s', audit_id)
+        with self.config.scoped_session() as session:
+            auditor_data_access = storage.DataAccess(session)
+            return auditor_data_access.delete_audit(audit_id)
+
+    def GetResults(self, audit_id=None):
+        """Get Audit results.
+
+        Args:
+            audit_id (int): The Audit id to get results for. If None, then
+                retrieve all Audit results.
+
+        Yields:
+            object: The Audit results.
+        """
+
+        LOGGER.info('List audit results, where audit_id=%s', audit_id)
+
+        with self.config.scoped_session() as session:
+            auditor_data_access = storage.DataAccess(session)
+            for result in auditor_data_access.get_audit_results(audit_id):
+                yield result
 
 def run_audit(progress_queue,
               session,

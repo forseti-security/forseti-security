@@ -14,10 +14,11 @@
 
 """Auditor gRPC service."""
 
+import json
+
 import google.protobuf.timestamp_pb2 as timestamp
 
 from google.cloud.forseti.services.auditor import auditor
-from google.cloud.forseti.services.actions import action_engine_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory_pb2
@@ -32,7 +33,14 @@ LOGGER = log_util.get_logger(__name__)
 
 
 def audit_pb_from_object(audit):
-    """Audit data to proto."""
+    """Audit data to proto.
+
+    Args:
+        audit (object): The audit object (database object).
+
+    Returns:
+        object: The Audit proto.
+    """
 
     end_time = timestamp.Timestamp().FromDatetime(
         audit.end_time) if audit.end_time else None
@@ -47,24 +55,33 @@ def audit_pb_from_object(audit):
         messages=audit.messages)
 
 def ruleresult_pb_from_object(rule_result):
-    """RuleResult to proto."""
+    """RuleResult to proto.
+    
+    Args:
+        rule_result (object): The RuleResult object (database object).
 
-    return action_engine_pb2.RuleResult(
+    Returns:
+        object: The RuleResult proto.
+    """
+
+    modified_time = timestamp.Timestamp().FromDatetime(
+        rule_result.modified_time) if rule_result.modified_time else None
+
+    return auditor_pb2.RuleResult(
         rule_id=rule_result.rule_id,
         audit_id=rule_result.audit_id,
         resource_type_name=rule_result.resource_type_name,
-        current_state=rule_result.current_state,
-        expected_state=rule_result.expected_state,
+        current_state=json.dumps(rule_result.current_state),
+        expected_state=json.dumps(rule_result.expected_state),
         info=rule_result.info,
         result_hash=rule_result.result_hash,
         model_handle=rule_result.model_handle,
         resource_owners=rule_result.resource_owners,
-        status=rule_result.status,
-        recommended_actions=rule_result.actions,
-        create_time=timestamp.Timestamp().FromDateTime(
+        status=rule_result.status.value,
+        recommended_actions=rule_result.recommended_actions,
+        create_time=timestamp.Timestamp().FromDatetime(
             rule_result.create_time),
-        modified_time=timestamp.Timestamp().FromDateTime(
-            rule_result.modified_time))
+        modified_time=modified_time)
 
 
 class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):

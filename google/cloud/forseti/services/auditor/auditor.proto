@@ -95,7 +95,7 @@ message Progress {
 
 message RuleResult {
   // The id of the rule, must be unique
-  string rule_id = 1;
+  int32 rule_id = 1;
   // The resource that this rule affects.
   string resource_type_name = 2;
   // The current state of the resource in json string format.

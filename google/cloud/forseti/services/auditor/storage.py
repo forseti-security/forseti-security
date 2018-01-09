@@ -273,6 +273,7 @@ class DataAccess(object):
 
         rule_hash_ids = {}
 
+        # TODO: always create the AuditRule rows
         for rule in rules:
             try:
                 rule_hash = rule.calculate_hash()
@@ -351,6 +352,25 @@ class DataAccess(object):
         if db_result:
             self.session.expunge(db_result)
         return db_result
+
+    def get_audit_results(self, audit_id=None):
+        """List all Audit results entries.
+
+        Args:
+            audit_id (int): The audit id to retrieve results for. If None,
+                retrieve all results.
+
+        Yields:
+            RuleResult: Generates each row
+        """
+
+        qry = self.session.query(RuleResult)
+        if audit_id:
+            qry = qry.filter(RuleResult.audit_id == audit_id)
+
+        for row in qry.yield_per(PER_YIELD):
+            self.session.expunge(row)
+            yield row
 
 
 def initialize(engine):

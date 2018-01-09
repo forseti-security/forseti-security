@@ -510,6 +510,7 @@ def define_auditor_parser(parent):
 
     delete_audit_parser.add_argument(
         '--audit-id',
+        required=True,
         help='The id of the audit to delete')
 
 
@@ -971,8 +972,8 @@ def run_auditor(client, config, output, _):
 
     def do_get_results():
         """Get audit results."""
-        result = client.get_results(config.audit_id)
-        output.write(result)
+        for result in client.get_results(config.audit_id):
+            output.write(result)
 
     def do_delete():
         """Get audit results."""
