@@ -1,12 +1,14 @@
 # Basic directives.
 custom_search_engine_id: 000816147753680702341:l05b0y1-8k0
 description: "Tools to secure Google Cloud Platform"
-exclude: [vendor, images/readme/]
+exclude: ["vendor", "images/readme/", "client-secrets.json.enc"]
 gems:
   - jekyll-sitemap
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
+destination: _www/www/
+
 # Needed for local builds and using {{ site.github }}.
 repository: GoogleCloudPlatform/forseti-security
 title: "Forseti Security"
