@@ -21,12 +21,14 @@ import grpc
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playgrounder
+from google.cloud.forseti.common.util import log_util
 
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,no-member
 
+LOGGER = log_util.get_logger(__name__)
 
 # pylint: disable=no-self-use
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
@@ -36,7 +38,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def _get_handle(self, context):
         """Extract the model handle from the gRPC context."""
-
+        if context is None:
+            LOGGER.error("context is None")
         metadata = context.invocation_metadata()
         metadata_dict = {}
         for key, value in metadata:
@@ -45,16 +48,22 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def __init__(self, playgrounder_api):
         super(GrpcPlaygrounder, self).__init__()
+        if playgrounder_api is None:
+            LOGGER.warn("playgrounder_api is None")
         self.playgrounder = playgrounder_api
 
     def Ping(self, request, _):
         """Ping implemented to check service availability."""
-
+        if request is None:
+            LOGGER.warn("request is None")
+        LOGGER.debug("request.data = %s", request.data)
         return playground_pb2.PingReply(data=request.data)
 
     def SetIamPolicy(self, request, context):
         """Sets the policy for a resource."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s",
+                        request, context)
         handle = self._get_handle(context)
         policy = {'etag': request.policy.etag, 'bindings': {}}
         for binding in request.policy.bindings:
@@ -68,7 +77,9 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def GetIamPolicy(self, request, context):
         """Gets the policy for a resource."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s",
+                        request, context)
         handle = self._get_handle(context)
         policy = self.playgrounder.GetIamPolicy(handle,
                                                 request.resource)
@@ -90,7 +101,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def CheckIamPolicy(self, request, context):
         """Checks access according to policy to a specified resource."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         authorized = self.playgrounder.CheckIamPolicy(handle,
                                                       request.resource,
@@ -102,7 +114,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def AddGroupMember(self, request, context):
         """Adds a member to the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         self.playgrounder.AddGroupMember(handle,
                                          request.member_type_name,
@@ -111,7 +124,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def DelGroupMember(self, request, context):
         """Deletes a member from the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         self.playgrounder.DelGroupMember(handle,
                                          request.member_name,
@@ -121,7 +135,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ListGroupMembers(self, request, context):
         """Lists members in the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         member_names = self.playgrounder.ListGroupMembers(handle,
                                                           request.prefix)
@@ -131,7 +146,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def DelResource(self, request, context):
         """Deletes a resource from the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         self.playgrounder.DelResource(handle,
                                       request.resource_type_name)
@@ -139,7 +155,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def AddResource(self, request, context):
         """Adds a resource to the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         self.playgrounder.AddResource(handle,
                                       request.resource_type_name,
@@ -149,7 +166,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ListResources(self, request, context):
         """Lists resources in the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         resources = self.playgrounder.ListResources(handle,
                                                     request.prefix)
@@ -159,7 +177,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def DelRole(self, request, context):
         """Deletes a role within the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         self.playgrounder.DelRole(handle,
                                   request.role_name)
@@ -167,7 +186,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def AddRole(self, request, context):
         """Adds a role to the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         self.playgrounder.AddRole(handle,
                                   request.role_name,
@@ -176,7 +196,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ListRoles(self, request, context):
         """List roles from the model."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         handle = self._get_handle(context)
         role_names = self.playgrounder.ListRoles(handle,
                                                  request.prefix)
@@ -189,6 +210,8 @@ class GrpcPlaygrounderFactory(object):
     """Factory class for Playground service gRPC interface"""
 
     def __init__(self, config):
+        if config is None:
+            LOGGER.warn("config is None")
         self.config = config
 
     def create_and_register_service(self, server):
@@ -198,6 +221,7 @@ class GrpcPlaygrounderFactory(object):
             playgrounder_api=playgrounder.Playgrounder(
                 self.config))
         playground_pb2_grpc.add_PlaygroundServicer_to_server(service, server)
+        LOGGER.info("service %s created and registered", service)
         return service
 
 

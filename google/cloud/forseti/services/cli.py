@@ -14,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,too-many-lines
 
 from argparse import ArgumentParser
 import json
@@ -23,7 +23,9 @@ import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
+from google.cloud.forseti.common.util import log_util
 
+LOGGER = log_util.get_logger(__name__)
 
 def define_playground_parser(parent):
     """Define the playground service parser.
@@ -31,6 +33,10 @@ def define_playground_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
+    if parent is None:
+        LOGGER.warn("parent is None")
+
     service_parser = parent.add_parser("playground", help="playground service")
     action_subparser = service_parser.add_subparsers(
         title="action",
@@ -163,6 +169,10 @@ def define_inventory_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
+    if parent is None:
+        LOGGER.warn("parent is None")
+
     service_parser = parent.add_parser('inventory', help='inventory service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -209,6 +219,9 @@ def define_config_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
+    if parent is None:
+        LOGGER.warn("parent is None")
 
     service_parser = parent.add_parser(
         'config',
@@ -266,6 +279,10 @@ def define_model_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
+    if parent is None:
+        LOGGER.warn("parent is None")
+
     service_parser = parent.add_parser('model', help='model service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -322,6 +339,9 @@ def define_scanner_parser(parent):
         parent (argparser): Parent parser to hook into.
     """
 
+    if parent is None:
+        LOGGER.warn("parent is None")
+
     service_parser = parent.add_parser('scanner', help='scanner service')
 
     action_subparser = service_parser.add_subparsers(
@@ -343,6 +363,10 @@ def define_explainer_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
+    if parent is None:
+        LOGGER.warn("parent is None")
+
     service_parser = parent.add_parser('explainer', help='explain service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -476,7 +500,17 @@ def read_env(var_key, default):
     Returns:
         string: return environment value or default
     """
-    return os.environ[var_key] if var_key in os.environ else default
+
+    if var_key is None or default is None:
+        LOGGER.warn("var_key = %s, default = %s",
+                    var_key, default)
+
+    var_value = os.environ[var_key] if var_key in os.environ else default
+
+    LOGGER.info("reading environment variable %s = %s",
+                var_key, var_value)
+
+    return var_value
 
 
 def define_parent_parser(parser_cls, config_env):
@@ -488,6 +522,13 @@ def define_parent_parser(parser_cls, config_env):
     Returns:
         argparser: The parent parser which has been defined.
     """
+
+    if parser_cls is None or config_env is None:
+        LOGGER.warn("parser_cls = %s, config_env = %s",
+                    parser_cls, config_env)
+
+    LOGGER.debug("parser_cls = %s, config_env = %s",
+                 parser_cls, config_env)
 
     parent_parser = parser_cls()
     parent_parser.add_argument(
@@ -514,6 +555,11 @@ def create_parser(parser_cls, config_env):
     Returns:
         argparser: The argument parser hierarchy which is created.
     """
+
+    if parser_cls is None or config_env is None:
+        LOGGER.warn("parser_cls = %s, config_env = %s",
+                    parser_cls, config_env)
+
     main_parser = define_parent_parser(parser_cls, config_env)
     service_subparsers = main_parser.add_subparsers(
         title="service",
@@ -570,6 +616,10 @@ def run_config(_, config, output, config_env):
             output (Output): output writer to use.
             config_env (object): Configuration environment.
     """
+
+    if config is None or output is None or config_env is None:
+        LOGGER.warn("config = %s, output = %s, config_env = %s",
+                    config, output, config_env)
 
     def do_show_config():
         """Show the current config."""
@@ -629,6 +679,10 @@ def run_scanner(client, config, output, _):
             _ (object): Configuration environment.
     """
 
+    if client is None or config is None or output is None:
+        LOGGER.warn("client = %s, config = %s, output = %s",
+                    client, config, output)
+
     client = client.scanner
 
     def do_run():
@@ -650,6 +704,10 @@ def run_model(client, config, output, config_env):
             output (Output): output writer to use.
             config_env (object): Configuration environment.
     """
+
+    if client is None or config is None or output is None or config_env is None:
+        LOGGER.warn("client = %s, config = %s, output = %s, "
+                    "config_env = %s", client, config, output, config_env)
 
     client = client.model
 
@@ -696,6 +754,10 @@ def run_inventory(client, config, output, _):
             _ (object): Unused.
     """
 
+    if client is None or config is None or output is None:
+        LOGGER.warn("client = %s, config = %s, output = %s",
+                    client, config, output)
+
     client = client.inventory
 
     def do_create_inventory():
@@ -736,6 +798,10 @@ def run_explainer(client, config, output, _):
             output (Output): output writer to use.
             _ (object): Unused.
     """
+
+    if client is None or config is None or output is None:
+        LOGGER.warn("client = %s, config = %s, output = %s",
+                    client, config, output)
 
     client = client.explain
 
@@ -810,6 +876,10 @@ def run_playground(client, config, output, _):
             output (Output): output writer to use.
             _ (object): Unused.
     """
+
+    if client is None or config is None or output is None:
+        LOGGER.warn("client = %s, config = %s, output = %s",
+                    client, config, output)
 
     client = client.playground
 
@@ -940,6 +1010,8 @@ class DefaultConfigParser(object):
             with file(get_config_path()) as infile:
                 return DefaultConfig(json.load(infile))
         except IOError:
+            LOGGER.warn("IOError - trying to open configuration"
+                        " file located at %s", get_config_path())
             return DefaultConfig()
 
 
@@ -980,7 +1052,9 @@ class DefaultConfig(dict):
         """
 
         if key not in self.DEFAULT:
-            raise KeyError('Configuration key unknown: {}'.format(key))
+            error_message = 'Configuration key unknown: {}'.format(key)
+            LOGGER.error(error_message)
+            raise KeyError(error_message)
         return dict.__getitem__(self, key)
 
     def __setitem__(self, key, value):
@@ -998,7 +1072,9 @@ class DefaultConfig(dict):
         """
 
         if key not in self.DEFAULT:
-            raise KeyError('Configuration key unknown: {}'.format(key))
+            error_message = 'Configuration key unknown: {}'.format(key)
+            LOGGER.error(error_message)
+            raise KeyError(error_message)
         return dict.__setitem__(self, key, value)
 
     def __delitem__(self, key):
@@ -1012,7 +1088,9 @@ class DefaultConfig(dict):
         """
 
         if key not in self.DEFAULT:
-            raise KeyError('Configuration key unknown: {}'.format(key))
+            error_message = 'Configuration key unknown: {}'.format(key)
+            LOGGER.error(error_message)
+            raise KeyError(error_message)
         self[key] = self.DEFAULT[key]
 
 

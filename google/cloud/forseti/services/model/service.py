@@ -17,12 +17,13 @@
 from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.model import modeller
-
+from google.cloud.forseti.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,no-member
 
+LOGGER = log_util.get_logger(__name__)
 
 class GrpcModeller(model_pb2_grpc.ModellerServicer):
     """Modeller gRPC implementation."""
@@ -95,4 +96,5 @@ class GrpcModellerFactory(object):
 
         service = GrpcModeller(modeller_api=modeller.Modeller(self.config))
         model_pb2_grpc.add_ModellerServicer_to_server(service, server)
+        LOGGER.info("service %s created and registered", service)
         return service

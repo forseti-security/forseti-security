@@ -20,12 +20,14 @@ from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
+from google.cloud.forseti.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,no-member
 
+LOGGER = log_util.get_logger(__name__)
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     """IAM Explain gRPC implementation."""
@@ -34,7 +36,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def _get_handle(self, context):
         """Return the handle associated with the gRPC call."""
-
+        if context is None:
+            LOGGER.error("context is None")
         metadata = context.invocation_metadata()
         metadata_dict = {}
         for key, value in metadata:
@@ -43,6 +46,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def __init__(self, explainer_api):
         super(GrpcExplainer, self).__init__()
+        if explainer_api is None:
+            LOGGER.warn("explainer_api is None")
         self.explainer = explainer_api
 
     def Ping(self, request, _):
@@ -52,7 +57,9 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def ExplainDenied(self, request, context):
         """Provides information on how to grant access."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s",
+                        request, context)
         model_name = self._get_handle(context)
         binding_strategies = self.explainer.ExplainDenied(model_name,
                                                           request.member,
@@ -71,7 +78,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def ExplainGranted(self, request, context):
         """Provides information on why a member has access to a resource."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         model_name = self._get_handle(context)
         result = self.explainer.ExplainGranted(model_name,
                                                request.member,
@@ -104,7 +112,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Yields:
             Generator for access tuples.
         """
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         model_name = self._get_handle(context)
 
         for role, resource, members in (
@@ -120,7 +129,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def GetAccessByResources(self, request, context):
         """Returns members having access to the specified resource."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         model_name = self._get_handle(context)
         mapping = self.explainer.GetAccessByResources(model_name,
                                                       request.resource_name,
@@ -138,7 +148,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def GetAccessByMembers(self, request, context):
         """Returns resources which can be accessed by the specified members."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         model_name = self._get_handle(context)
         accesses = []
         for role, resources in\
@@ -156,7 +167,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
     def GetPermissionsByRoles(self, request, context):
         """Returns permissions for the specified roles."""
-
+        if request is None or context is None:
+            LOGGER.warn("request = %s, context = %s", request, context)
         model_name = self._get_handle(context)
         result = self.explainer.GetPermissionsByRoles(model_name,
                                                       request.role_names,
@@ -179,7 +191,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     @autoclose_stream
     def Denormalize(self, _, context):
         """Denormalize the entire model into access triples."""
-
+        if context is None:
+            LOGGER.warn("context is None")
         model_name = self._get_handle(context)
 
         for permission, resource, member in self.explainer.Denormalize(
@@ -193,11 +206,13 @@ class GrpcExplainerFactory(object):
     """Factory class for Explain service gRPC interface"""
 
     def __init__(self, config):
+        if config is None:
+            LOGGER.warn("config is None")
         self.config = config
 
     def create_and_register_service(self, server):
         """Create and register the IAM Explain service."""
-
         service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
+        LOGGER.info("service %s created and registered", service)
         return service

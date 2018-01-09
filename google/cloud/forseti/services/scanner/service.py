@@ -19,7 +19,6 @@ from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 from google.cloud.forseti.common.util import log_util
 
-
 LOGGER = log_util.get_logger(__name__)
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -75,4 +74,5 @@ class GrpcScannerFactory(object):
         service = GrpcScanner(scanner_api=scanner,
                               service_config=self.config)
         scanner_pb2_grpc.add_ScannerServicer_to_server(service, server)
+        LOGGER.info("service %s created and registered", service)
         return service

@@ -14,22 +14,30 @@
 
 """ Explain API. """
 
+from google.cloud.forseti.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,invalid-name
 
+LOGGER = log_util.get_logger(__name__)
 
 class Explainer(object):
     """Implements the IAM Explain API."""
 
     def __init__(self, config):
+        if config is None:
+            LOGGER.warn("config is None")
         self.config = config
 
     def ExplainDenied(self, model_name, member, resources, permissions, roles):
         """Provides information on granting a member access to a resource."""
 
+        LOGGER.debug("Explaining how to grant access to a member, "
+                     "model_name = %s, member = %s, resources = %s,"
+                     " permissions = %s, roles = %s",
+                     model_name, member, resources, permissions, roles)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -43,6 +51,10 @@ class Explainer(object):
     def ExplainGranted(self, model_name, member, resource, role, permission):
         """Provides information on why a member has access to a resource."""
 
+        LOGGER.debug("Explaining why the member has access to a resource, "
+                     "model_name = %s, member = %s, resource = %s,"
+                     " permission = %s, role = %s",
+                     model_name, member, resource, permission, role)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -57,6 +69,11 @@ class Explainer(object):
                              expand_groups):
         """Returns members who have access to the given resource."""
 
+        LOGGER.debug("Retrieving members that have access to the resource, "
+                     "model_name = %s, resource_name = %s,"
+                     " permission_names = %s, expand_groups = %s",
+                     model_name, resource_name,
+                     permission_names, expand_groups)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -81,6 +98,11 @@ class Explainer(object):
             Generator for access tuples.
         """
 
+        LOGGER.debug("Retrieving access tuples that satisfy the role or"
+                     " permission: model_name = %s, role_name = %s, "
+                     "permission_name = %s, expand_groups = %s, "
+                     "expand_resources = %s", model_name, role_name,
+                     permission_name, expand_groups, expand_resources)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -96,6 +118,11 @@ class Explainer(object):
                            expand_resources):
         """Returns access to resources for the provided member."""
 
+        LOGGER.debug("Retrieving access to resources for a given member, "
+                     "model_name = %s, member_name = %s, "
+                     "permission_names = %s, expand_resources = %s",
+                     model_name, member_name,
+                     permission_names, expand_resources)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -106,6 +133,10 @@ class Explainer(object):
     def GetPermissionsByRoles(self, model_name, role_names, role_prefixes):
         """Returns the permissions associated with the specified roles."""
 
+        LOGGER.debug("Retrieving the permissions associated with the "
+                     "specified roles, model_name = %s, role_names = %s, "
+                     "role_prefixes = %s",
+                     model_name, role_names, role_prefixes)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -116,6 +147,7 @@ class Explainer(object):
     def Denormalize(self, model_name):
         """Denormalizes a model."""
 
+        LOGGER.debug("De-normalizing a model, model_name = %s", model_name)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
