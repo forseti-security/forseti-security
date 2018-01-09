@@ -101,7 +101,7 @@ Following are example commands to install `mysql_config`:
   
 ### Installing ssl dev
 
-The crypto libraries require `ssl-dev` and `libffi-dev`.
+The crypto libraries require `libssl-dev` and `libffi-dev`.
 
   ```bash
   # Ubuntu
