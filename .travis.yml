@@ -18,7 +18,6 @@ rvm:
   - 2.3.3
 dist: trusty
 sudo: false
-cache: bundler
 before_install:
   - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
     -in client-secrets.json.enc -out client-secrets.json -d
