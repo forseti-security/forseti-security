@@ -23,11 +23,11 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
     -in client-secrets.json.enc -out client-secrets.json -d
 install:
-  - "gem install github-pages html-proofer'
+  - gem install github-pages html-proofer
 branches:
   only:
-  - "gh-pages"
-  - "/gh-pages-(.*)/"
+  - gh-pages
+  - /gh-pages-(.*)/
 env:
   global:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
