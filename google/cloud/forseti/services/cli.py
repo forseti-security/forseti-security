@@ -29,7 +29,7 @@ def define_playground_parser(parent):
     """Define the playground service parser.
 
     Args:
-        parent (argparser): Parent parser to hook into.
+        parent (argparser): Parent parser.
     """
     service_parser = parent.add_parser("playground", help="playground service")
     action_subparser = service_parser.add_subparsers(
