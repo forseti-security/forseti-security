@@ -73,7 +73,7 @@ account enabled for G Suite domain-wide delegation. The only permission this
 service account needs is read-access on the Groups and Group Members services.
 
  * `https://www.googleapis.com/auth/admin.directory.group.readonly`
-
+ 
 ### Service account for Forseti IAM Explain
 Forseti Explain should have its own service account and it only requires access
 to read from the inventory stored in Cloud SQL.
@@ -81,4 +81,4 @@ to read from the inventory stored in Cloud SQL.
 **Granted on the project where Forseti Explain is deployed**
 
  * `roles/cloudsql.client`
-
+ 
