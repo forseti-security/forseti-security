@@ -28,8 +28,8 @@ env:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
 sudo: false
 script:
-  - jekyll build
-  - htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_www/www
+  - bundle exec jekyll build
+  - bundle exec htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_www/www
 before_deploy:
   - cd _www/
 deploy:
