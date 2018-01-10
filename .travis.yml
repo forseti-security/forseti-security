@@ -32,10 +32,8 @@ env:
   global:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
 script:
-  - bundle exec jekyll build
-  - bundle exec htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_www/www
-  - cat Gemfile
-  - cat Gemfile.lock
+  - jekyll build
+  - htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_www/www
 before_deploy:
   - cd _www/
 deploy:
