@@ -47,7 +47,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         return model_pb2.PingReply(data=request.data)
 
-    def create_model(self, request, context):
+    def create_model(self, request):
         """Creates a new model from an import source."""
 
         model = self.modeller.create_model(request.type,
@@ -68,7 +68,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
-    def list_model(self, request, _):
+    def list_model(self, _):
         """List all models."""
 
         models = self.modeller.list_model()
