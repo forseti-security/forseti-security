@@ -23,8 +23,8 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
     -in client-secrets.json.enc -out client-secrets.json -d
 install:
-  - "bundler install"
-  - "bundler update github-pages"
+  - "bundle install"
+  - "bundle update github-pages"
 branches:
   only:
   - "gh-pages"
