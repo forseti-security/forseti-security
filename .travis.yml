@@ -14,12 +14,15 @@
 
 
 language: ruby
+dist: trusty
+sudo: false
 cache: bundler
 before_install:
   - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
     -in client-secrets.json.enc -out client-secrets.json -d
   - gem update --system
   - gem --version
+  - bundle install
 branches:
   only:
   - "gh-pages"
@@ -27,13 +30,7 @@ branches:
 env:
   global:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
-sudo: false
 script:
-  - bundle exec jekyll --version
-  - bundle
-  - jekyll --version
-  - bundle update
-  - bundle exec jekyll --version
   - bundle exec jekyll build
   - bundle exec htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_www/www
 before_deploy:
