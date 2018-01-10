@@ -123,7 +123,7 @@ class Model(MODEL_BASE):
     def set_inprogress(self):
         """Set state to 'in progress'."""
 
-        self.state = "INPROGRESS"
+        self.state = 'INPROGRESS'
 
     def set_done(self, message=''):
         """Indicate a finished import.
@@ -132,20 +132,20 @@ class Model(MODEL_BASE):
         """
         warnings = self.get_warnings()
         if warnings:
-            LOGGER.warn("warnings = %s", warnings)
+            LOGGER.warn('warnings = %s', warnings)
             self.warnings = warnings
-            self.state = "PARTIAL_SUCCESS"
+            self.state = 'PARTIAL_SUCCESS'
         else:
-            self.state = "SUCCESS"
+            self.state = 'SUCCESS'
         self.message = message
 
     def set_error(self, message):
         """Indicate a broken import."""
 
-        self.state = "BROKEN"
+        self.state = 'BROKEN'
         self.warnings = self.get_warnings()
         self.message = message
-        LOGGER.error("warning = %s, message = %s",
+        LOGGER.error('warning = %s, message = %s',
                      self.warnings, self.message)
 
     def __repr__(self):
@@ -223,8 +223,8 @@ def define_model(model_name, dbengine, model_seed):
         parent_type_name = Column(
             String(128),
             ForeignKey('{}.type_name'.format(resources_tablename)))
-        parent = relationship("Resource", remote_side=[type_name])
-        bindings = relationship('Binding', back_populates="resource")
+        parent = relationship('Resource', remote_side=[type_name])
+        bindings = relationship('Binding', back_populates='resource')
 
         def increment_update_counter(self):
             """Increments counter for this object's db updates."""

@@ -27,8 +27,6 @@ class Playgrounder(object):
     """Playground API implementation."""
 
     def __init__(self, config):
-        if config is None:
-            LOGGER.warn("config is None")
         self.config = config
 
     def SetIamPolicy(self, model_name, resource, policy):

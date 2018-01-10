@@ -27,8 +27,6 @@ class Explainer(object):
     """Implements the IAM Explain API."""
 
     def __init__(self, config):
-        if config is None:
-            LOGGER.warn("config is None")
         self.config = config
 
     def ExplainDenied(self, model_name, member, resources, permissions, roles):
