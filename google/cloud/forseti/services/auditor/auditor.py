@@ -48,6 +48,9 @@ class Auditor(object):
 
         Yields:
             object: Progress objects.
+
+        Raises:
+            IOError: If there's an error reading the config file.
         """
 
         try:
