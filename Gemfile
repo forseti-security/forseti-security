@@ -6,4 +6,4 @@ gem 'github-pages', group: :jekyll_plugins
 #gem 'therubyracer'
 
 # Needed for Travis CI.
-#gem 'html-proofer'
+gem 'html-proofer'
