@@ -54,7 +54,6 @@ class RulesTest(ForsetiTestCase):
         mock_cond_parser.eval_filter.return_value = True
         actual_result = test_rule.audit(fake_project)
         expected_result = action_engine_pb2.RuleResult(
-            rule_id=test_rule.rule_name,
             resource_type_name=fake_project.type_name,
             status=storage.RuleResultStatus.ACTIVE.value)
         mock_cond_parser.eval_filter.assert_called_with(test_rule.condition)

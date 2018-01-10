@@ -72,7 +72,6 @@ class RulesEngineTest(ForsetiTestCase):
             type='project',
             type_name='project/%s' % proj_data['projectId'])
         fake_result = action_engine_pb2.RuleResult(
-            rule_id=rules_eng.rules[0].rule_name,
             resource_type_name=fake_project.type_name,
             status=storage.RuleResultStatus.ACTIVE.value)
         expected_results = [(rules_eng.rules[0], fake_result),
