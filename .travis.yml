@@ -23,6 +23,8 @@ before_install:
   - gem update --system
   - gem --version
   - bundle install
+  - rm Gemfile.lock
+  - bundle update
 branches:
   only:
   - "gh-pages"
