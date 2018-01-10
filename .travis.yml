@@ -24,7 +24,6 @@ before_install:
     -in client-secrets.json.enc -out client-secrets.json -d
 install:
   - "bundle install"
-  - "bundle outdated"
   - "bundle update"
 branches:
   only:
