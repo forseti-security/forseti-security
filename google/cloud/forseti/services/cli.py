@@ -524,8 +524,8 @@ def define_parent_parser(parser_cls, config_env):
     """
 
     if parser_cls is None or config_env is None:
-        LOGGER.warn("parser_cls = %s, config_env = %s",
-                    parser_cls, config_env)
+        LOGGER.warn("config_env = %s, parser_cls = %s",
+                    config_env, parser_cls)
 
     LOGGER.debug("parser_cls = %s, config_env = %s",
                  parser_cls, config_env)
