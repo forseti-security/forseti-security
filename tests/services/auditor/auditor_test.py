@@ -1,4 +1,3 @@
-#
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,4 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for Forseti services."""
+"""Test Forseti Auditor."""
+
+import unittest
+
+from tests.services.api_test.inventory_test import TestServiceConfig
+from tests.services.inventory.crawling_test import NullProgresser
+from tests.unittest_utils import ForsetiTestCase
+
+from google.cloud.forseti.services.auditor import auditor as auditor_api
+
+class AuditorTest(ForsetiTestCase):
+    """Test Auditor."""
+
+    def setUp(self):
+        """setUp."""
+        self.config = TestServiceConfig()
+        self.auditor = auditor_api.Auditor(self.config)
+        self.progresser = NullProgresser()
+
+    def test_run_audit(self):
+        """Test run_audit()."""
+

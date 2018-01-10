@@ -55,6 +55,7 @@ class Auditor(object):
         except IOError:
             LOGGER.error('Unable to open Forseti Security config file. '
                          'Please check your path and filename and try again.')
+            raise
 
         rules_path = config_file.get('auditor').get('rules_path')
 
