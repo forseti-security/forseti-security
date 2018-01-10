@@ -23,17 +23,15 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
 from sqlalchemy import ForeignKey
-from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import Integer
 from sqlalchemy import JSON
-from sqlalchemy import Table
 from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,invalid-name
+# pylint: disable=missing-param-doc
 
 
 BASE = declarative_base()
@@ -50,10 +48,15 @@ class AuditStatus(enum.Enum):
     SUCCESS = 3
 
 
-AuditRuleAssoc = Table(
-    'audit_rule', BASE.metadata,
-    Column('audit.id', Integer, ForeignKey('audit.id')),
-    Column('rule_id', Integer, ForeignKey('rule.id')))
+class AuditRuleAssoc(BASE):
+    """Maps a rule to an audit."""
+
+    __tablename__ = 'audit_rule'
+
+    audit_id = Column(Integer, ForeignKey('audit.id', ondelete='cascade'),
+                      primary_key=True)
+    rule_id = Column(Integer, ForeignKey('rule.id', ondelete='cascade'),
+                     primary_key=True)
 
 
 class Audit(BASE):
@@ -69,7 +72,8 @@ class Audit(BASE):
     messages = Column(Text())
     schema_version = Column(Integer())
 
-    rules = relationship('Rule', secondary=AuditRuleAssoc)
+    rules = relationship('Rule', cascade='all,delete', secondary='audit_rule')
+    results = relationship('RuleResult', cascade='all,delete')
 
     def __repr__(self):
         """Object string representation.
@@ -100,14 +104,18 @@ class Audit(BASE):
             schema_version=CURRENT_SCHEMA,
             model=model_handle)
 
-    def complete(self, status=AuditStatus.SUCCESS):
+    def complete(self, session, status=AuditStatus.SUCCESS):
         """Mark the audit as completed with a final status.
 
         Args:
+            session (object): session object to work on.
             status (str): Final status.
         """
 
+        self.end_time = datetime.utcnow()
         self.status = status
+        session.add(self)
+        session.commit()
 
     def add_warning(self, session, messages):
         """Add a warning to the audit.
@@ -165,12 +173,14 @@ class RuleResult(BASE):
     """Represent a RuleResult."""
 
     __tablename__ = 'rule_result'
-    __table_args__ = (ForeignKeyConstraint(['audit_id'], ['audit.id']),
-                      ForeignKeyConstraint(['rule_id'], ['rule.id']))
 
     id = Column(Integer(), primary_key=True, autoincrement=True)
-    audit_id = Column(Integer(), nullable=False)
-    rule_id = Column(Integer(), nullable=False)
+    audit_id = Column(Integer(),
+                      ForeignKey('audit.id', ondelete='cascade'),
+                      nullable=False)
+    rule_id = Column(Integer(),
+                     ForeignKey('rule.id', ondelete='cascade'),
+                     nullable=False)
     resource_type_name = Column(Text(), nullable=False)
     result_hash = Column(Text(), nullable=False)
     current_state = Column(JSON())
@@ -285,6 +295,12 @@ class DataAccess(object):
                         properties=rule.json)
                     audit.rules.append(db_rule)
                     self.session.add(db_rule)
+                    self.session.commit()
+                else:
+                    audit_rule = AuditRuleAssoc(
+                        audit_id=audit.id,
+                        rule_id=db_rule.id)
+                    self.session.add(audit_rule)
                     self.session.commit()
 
                 rule_hash_ids[rule_hash] = db_rule.id

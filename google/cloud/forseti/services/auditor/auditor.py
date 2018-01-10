@@ -206,8 +206,8 @@ def run_audit(progress_queue,
                             rule_id=rule_hash_ids.get(
                                 audit_rule.calculate_hash()),
                             resource_type_name=inv_resource.type_name,
-                            current_state={},
-                            expected_state={},
+                            current_state=None,
+                            expected_state=None,
                             model_handle=model_handle)
                         progresser.on_new_object(str(stored_result.id))
                     except Exception as err:
@@ -215,7 +215,7 @@ def run_audit(progress_queue,
                         progresser.on_error(err)
                         new_audit.add_warning(session, err.message)
 
-        new_audit.complete()
+        new_audit.complete(session)
     except Exception as err:
         LOGGER.error(err)
         progresser.on_error(err)

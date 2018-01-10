@@ -21,7 +21,6 @@ import google.protobuf.timestamp_pb2 as timestamp
 from google.cloud.forseti.services.auditor import auditor
 from google.cloud.forseti.services.auditor import auditor_pb2
 from google.cloud.forseti.services.auditor import auditor_pb2_grpc
-from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.common.util import log_util
 
@@ -29,7 +28,7 @@ from google.cloud.forseti.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
+# pylint: disable=missing-param-doc,no-member
 
 
 def audit_pb_from_object(audit):
@@ -136,7 +135,7 @@ class GrpcAuditor(auditor_pb2_grpc.AuditorServicer):
         LOGGER.info('Run auditor service with model: %s', model_name)
         config_path = request.config_path
         for progress in self.auditor.Run(config_path, model_name):
-            yield inventory_pb2.Progress(
+            yield auditor_pb2.Progress(
                 id=progress.entity_id,
                 final_message=progress.final_message,
                 step=progress.step,

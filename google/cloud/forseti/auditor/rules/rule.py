@@ -160,12 +160,8 @@ class Rule(object):
         cond_parser = condition_parser.ConditionParser(config_var_params)
         result = cond_parser.eval_filter(self.condition)
         if result:
-            # TODO: should we be using a proto here?
             return action_engine_pb2.RuleResult(
-                rule_id=self.rule_name,
                 resource_type_name=resource.type_name,
-                current_state=None,
-                expected_state=None,
                 status=storage.RuleResultStatus.ACTIVE.value)
         return None
 

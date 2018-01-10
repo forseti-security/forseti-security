@@ -511,12 +511,13 @@ class AuditorClient(ForsetiClient):
             object: The GetResults reply.
         """
 
-        try:
-            audit_id = int(audit_id_arg)
-        except (TypeError, ValueError):
-            LOGGER.warn('Invalid value for audit_id %s, '
-                        'should be an int', audit_id_arg)
-            audit_id = None
+        audit_id = None
+        if audit_id_arg:
+            try:
+                audit_id = int(audit_id_arg)
+            except (TypeError, ValueError):
+                LOGGER.warn('Invalid value for audit_id %s, '
+                            'should be an int', audit_id_arg)
 
         request = auditor_pb2.GetResultsRequest(
             id=audit_id)
@@ -536,9 +537,9 @@ class AuditorClient(ForsetiClient):
         try:
             audit_id = int(audit_id_arg)
         except (TypeError, ValueError):
-            LOGGER.warn('Invalid value for audit_id %s, '
-                        'should be an int', audit_id_arg)
-            audit_id = None
+            LOGGER.error('Invalid value for audit_id %s, '
+                         'should be an int', audit_id_arg)
+            raise
 
         request = auditor_pb2.DeleteRequest(
             id=audit_id)
