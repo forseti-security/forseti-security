@@ -77,7 +77,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         for progress in self.inventory.Create(request.background,
                                               request.model_name):
             yield inventory_pb2.Progress(
-                id=progress.inventory_id,
+                id=progress.entity_id,
                 final_message=progress.final_message,
                 step=progress.step,
                 warnings=progress.warnings,

@@ -25,7 +25,7 @@ class ScopedSession(object):
 
         Args:
             session (object): Database session to use scope.
-            auto_commit (bool): Set to true, of commit should automatically
+            auto_commit (bool): Set to true, if commit should automatically
                                 happen upon close.
         """
 

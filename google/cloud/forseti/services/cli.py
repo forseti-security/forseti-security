@@ -14,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,too-many-lines
 
 from argparse import ArgumentParser
 import json
@@ -466,6 +466,54 @@ def define_explainer_parser(parent):
         help='Expand groups to their members')
 
 
+def define_auditor_parser(parent):
+    """Define the auditor service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser('auditor', help='auditor service')
+
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    _ = action_subparser.add_parser(
+        'list',
+        help='List the existing audits')
+
+    run_auditor_parser = action_subparser.add_parser(
+        'run',
+        help='Run the auditor')
+
+    run_auditor_parser.add_argument(
+        '--config',
+        required=True,
+        help='Auditor config file')
+
+    run_auditor_parser.add_argument(
+        '--model',
+        help='Which model handle to run audit on')
+
+    getresults_audit_parser = action_subparser.add_parser(
+        'get-results',
+        help='Get audit results')
+
+    getresults_audit_parser.add_argument(
+        '--audit-id',
+        help='The audit id to get results')
+
+    delete_audit_parser = action_subparser.add_parser(
+        'delete',
+        help='Delete an audit')
+
+    delete_audit_parser.add_argument(
+        '--audit-id',
+        required=True,
+        help='The id of the audit to delete')
+
+
 def read_env(var_key, default):
     """Read an environment variable with a default value.
 
@@ -524,6 +572,7 @@ def create_parser(parser_cls, config_env):
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
     define_scanner_parser(service_subparsers)
+    define_auditor_parser(service_subparsers)
     return main_parser
 
 
@@ -898,6 +947,48 @@ def run_playground(client, config, output, _):
 
     actions[config.action]()
 
+def run_auditor(client, config, output, _):
+    """Run auditor commands.
+
+    Args:
+        client (iam_client.ClientComposition): client to use for requests.
+        config (object): argparser namespace to use.
+        output (Output): output writer to use.
+        _ (object): Configuration environment.
+    """
+
+    client = client.auditor
+
+    def do_list_audits():
+        """List audits."""
+        for audit in client.list():
+            output.write(audit)
+
+    def do_run():
+        """Run auditor."""
+        for progress in client.run(config_path=config.config,
+                                   model_handle=config.model):
+            output.write(progress)
+
+    def do_get_results():
+        """Get audit results."""
+        for result in client.get_results(config.audit_id):
+            output.write(result)
+
+    def do_delete():
+        """Get audit results."""
+        result = client.delete(config.audit_id)
+        output.write(result)
+
+    actions = {
+        'list': do_list_audits,
+        'run': do_run,
+        'get-results': do_get_results,
+        'delete': do_delete
+    }
+
+    actions[config.action]()
+
 
 OUTPUTS = {
     'text': TextOutput,
@@ -911,6 +1002,7 @@ SERVICES = {
     'config': run_config,
     'model': run_model,
     'scanner': run_scanner,
+    'auditor': run_auditor,
     }
 
 

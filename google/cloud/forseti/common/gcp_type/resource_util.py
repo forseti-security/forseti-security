@@ -45,6 +45,7 @@ _RESOURCE_TYPE_MAP = {
     },
 }
 
+
 def create_resource(resource_id, resource_type, **kwargs):
     """Factory to create a certain kind of Resource.
 

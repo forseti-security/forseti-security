@@ -61,7 +61,7 @@ class ImporterTest(ForsetiTestCase):
         db_connect = 'sqlite:///{}'.format(
             get_db_file_copy('forseti-test.db'))
 
-        print db_connect
+        #print db_connect
 
         self.service_config = ServiceConfig(db_connect)
 
@@ -84,7 +84,7 @@ class ImporterTest(ForsetiTestCase):
             import_runner.run()
 
         model = self.model_manager.model(self.model_name)
-        print model
+        #print model
         self.assertIn(model.state,
                       [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
                       'Model state should be success or partial success: %s' %

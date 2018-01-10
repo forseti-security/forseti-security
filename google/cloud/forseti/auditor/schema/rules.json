@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/rule" }
+    }
+  },
+
+  "definitions": {
+    "rule": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "configuration": { "$ref": "#/definitions/configuration" }
+      },
+      "required": ["name", "type", "description"]
+    },
+    "configuration": {
+      "type": "object",
+      "properties": {
+        "variables": { "$ref": "#/definitions/variables" },
+        "resources": { "$ref": "#/definitions/resources" },
+        "condition": { "type": "string" }
+      },
+      "required": ["variables", "resources", "condition"]
+    },
+    "variables": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "resources": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/resource" }
+    },
+    "resource": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "variables": { "$ref": "#/definitions/resourceVars" }
+      },
+      "required": ["type"]
+    },
+    "resourceVars": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

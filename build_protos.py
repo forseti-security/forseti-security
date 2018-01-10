@@ -60,7 +60,8 @@ def make_proto():
     """Make sure our protos have been compiled to python libraries."""
     # Start running from one directory above the directory which is found by
     # this scripts's location as __file__.
-    cwd = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    cwd = root_dir
 
     # Find all the .proto files.
     protos_to_compile = []
@@ -94,6 +95,7 @@ def make_proto():
                     "-m",
                     "grpc_tools.protoc",
                     "-I.",
+                    "-I%s" % root_dir,
                     "--python_out=.",
                     "--grpc_python_out=.",
                     protofile,

@@ -90,7 +90,7 @@ class Crawler(crawler.Crawler):
             progresser.on_error(e)
             raise
         else:
-            progresser.on_new_object(resource)
+            progresser.on_new_object(resource.key())
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.

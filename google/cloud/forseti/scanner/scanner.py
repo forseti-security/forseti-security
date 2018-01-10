@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """GCP Resource scanner.
 
 Usage:
 
   Run scanner:
-  $ forseti_scanner --forseti_config
+  $ forseti_scanner --forseti_config <config_path>
 """
 
 import gflags as flags

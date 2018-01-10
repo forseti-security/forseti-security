@@ -20,6 +20,7 @@
 # though, because some are used for schema definitions.
 /*.json
 scripts/gcp_setup/*.json
+.env
 
 # Scripts we don't want to commit
 scripts/dev*.sh

@@ -1,0 +1,140 @@
+// Copyright 2017 The Forseti Security Authors. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package google.cloud.forseti.services.auditor;
+
+service Auditor {
+  rpc Ping(PingRequest) returns (PingReply) {}
+
+  rpc List(ListRequest) returns (stream Audit) {}
+
+  rpc Run(RunRequest) returns (stream Progress) {}
+
+  rpc GetResults(GetResultsRequest) returns (stream RuleResult) {}
+
+  rpc Delete(DeleteRequest) returns (DeleteReply) {}
+}
+
+message PingRequest {
+  string data = 1;
+}
+
+message PingReply {
+  string data = 1;
+}
+
+message ListRequest {
+}
+
+message Audit {
+  // The audit id.
+  int32 id = 1;
+  // The start time of the audit.
+  google.protobuf.Timestamp start_time = 2;
+  // The end time of the audit.
+  google.protobuf.Timestamp end_time = 3;
+  // The status of the audit.
+  enum Status {
+    UNSPECIFIED = 0;
+    RUNNING = 1;
+    ERROR = 2;
+    SUCCESS = 3;
+  }
+  Status status = 4;
+  // The model data (json) associated with the model
+  // that the audit ran on.
+  string model = 5;
+  // Stores messages from the audit.
+  string messages = 6;
+  // The schema version.
+  int32 schema_version = 7;
+}
+
+message RunRequest {
+	string config_path = 1;
+  string model_handle = 2;
+}
+
+message GetResultsRequest {
+  int32 id = 1;
+}
+
+message DeleteRequest {
+  int32 id = 1;
+}
+
+message DeleteReply {
+  Audit audit = 1;
+}
+
+// temporarily copied here, had trouble with proto imports.
+message Progress {
+	int32 id = 1;
+	bool final_message = 2;
+	string step = 3;
+	int32 warnings = 4;
+	int32 errors = 5;
+	string last_warning = 6;
+	string last_error = 7;
+}
+
+message RuleResult {
+  // The id of the rule, must be unique
+  int32 rule_id = 1;
+  // The resource that this rule affects.
+  string resource_type_name = 2;
+  // The current state of the resource in json string format.
+  string current_state = 3;
+  // The expected state of the resource in json string format.
+  string expected_state = 4;
+  // The timestamp for when the resource was updated that triggered this
+  // check.
+  google.protobuf.Timestamp timestamp = 5;
+  // A human readable string output of what this result says.
+  string info = 6;
+  // The audit associated with this RuleResult.
+  int32 audit_id = 7;
+  // The hash of the result data.
+  string result_hash = 8;
+  // The model handle.
+  string model_handle = 9;
+  // The owners of the resource.
+  repeated ResourceOwner resource_owners = 10;
+  // The status of the RuleResult.
+  enum Status {
+    UNSPECIFIED = 0;
+    ACTIVE = 1;
+    RESOLVED = 2;
+    IGNORED = 3;
+  }
+  Status status = 11;
+  // The recommended actions to take on this RuleResult.
+  string recommended_actions = 12;
+  // The timestamp for when the RuleResult was created.
+  google.protobuf.Timestamp create_time = 13;
+  // The timestamp for when the RuleResult was modified.
+  google.protobuf.Timestamp modified_time = 14;
+}
+
+message ResourceOwner {
+  // The type of resource owner (e.g. user, group, serviceAccount)
+  string type = 1;
+  // Usually an email address or domain
+  string name = 2;
+}
+

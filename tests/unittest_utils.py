@@ -18,11 +18,14 @@ import collections
 import contextlib
 import json
 import logging
-import mock
 import os
 import tempfile
 import unittest
 import socket
+
+
+logging.disable(logging.CRITICAL)
+
 
 def get_available_port():
     """Get a port that is available to use"""
@@ -42,7 +45,6 @@ def create_temp_file(data):
         yield temp.name
     finally:
         os.unlink(temp.name)
-
 
 
 class ForsetiTestCase(unittest.TestCase):

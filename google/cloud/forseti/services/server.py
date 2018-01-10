@@ -25,9 +25,11 @@ import time
 from concurrent import futures
 import grpc
 
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.dao import ModelManager, create_engine
+from google.cloud.forseti.services.auditor.service import GrpcAuditorFactory
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
@@ -36,12 +38,16 @@ from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.inventory.storage import Storage
 
 
+LOGGER = log_util.get_logger(__name__)
+
+
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
     'playground': GrpcPlaygrounderFactory,
     'inventory': GrpcInventoryFactory,
     'scanner': GrpcScannerFactory,
     'model': GrpcModellerFactory,
+    'auditor': GrpcAuditorFactory,
 }
 
 
@@ -173,10 +179,10 @@ class InventoryConfig(AbstractInventoryConfig):
         return self.root_resource_id
 
     def get_gsuite_sa_path(self):
-        """Return the gsuite service account path.
+        """Return the gsuite service account private key path.
 
         Returns:
-            str: Gsuite service account path.
+            str: Gsuite service account private key path.
         """
 
         return self.gsuite_sa_path
@@ -214,12 +220,12 @@ class ServiceConfig(AbstractServiceConfig):
 
     def __init__(self,
                  inventory_config,
-                 explain_connect_string,
+                 db_connect_string,
                  endpoint):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
-        self.engine = create_engine(explain_connect_string, pool_recycle=3600)
+        self.engine = create_engine(db_connect_string, pool_recycle=3600)
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
@@ -283,7 +289,7 @@ class ServiceConfig(AbstractServiceConfig):
 
 
 def serve(endpoint, services,
-          explain_connect_string,
+          db_connect_string,
           gsuite_sa_path, gsuite_admin_email,
           root_resource_id, max_workers=32, wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -292,6 +298,7 @@ def serve(endpoint, services,
         Exception: No services to start
     """
 
+    LOGGER.info('Starting Forseti server...')
     factories = []
     for service in services:
         factories.append(STATIC_SERVICE_MAPPING[service])
@@ -304,7 +311,7 @@ def serve(endpoint, services,
                                        gsuite_sa_path,
                                        gsuite_admin_email)
     config = ServiceConfig(inventory_config,
-                           explain_connect_string,
+                           db_connect_string,
                            endpoint)
     inventory_config.set_service_config(config)
 
@@ -314,6 +321,9 @@ def serve(endpoint, services,
 
     server.add_insecure_port(endpoint)
     server.start()
+
+    LOGGER.info('Forseti server started successfully.')
+
     while True:
         try:
             time.sleep(1)

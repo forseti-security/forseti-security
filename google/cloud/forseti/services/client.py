@@ -18,19 +18,23 @@ import binascii
 import os
 import grpc
 
-from google.cloud.forseti.services.model import model_pb2
-from google.cloud.forseti.services.model import model_pb2_grpc
+from google.cloud.forseti.common.util import log_util
+
+from google.cloud.forseti.services.auditor import auditor_pb2
+from google.cloud.forseti.services.auditor import auditor_pb2_grpc
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
-from google.cloud.forseti.services.playground import playground_pb2_grpc
-from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
+from google.cloud.forseti.services.model import model_pb2
+from google.cloud.forseti.services.model import model_pb2_grpc
+from google.cloud.forseti.services.playground import playground_pb2_grpc
+from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-
 from google.cloud.forseti.services.utils import oneof
 
+LOGGER = log_util.get_logger(__name__)
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -77,7 +81,7 @@ class ScannerClient(ForsetiClient):
         self.stub = scanner_pb2_grpc.ScannerStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Inventory' service is available by performing a ping.
+        """Checks if the 'Scanner' service is available by performing a ping.
         """
 
         data = binascii.hexlify(os.urandom(16))
@@ -465,6 +469,84 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
 
+class AuditorClient(ForsetiClient):
+    """Auditor service allows the client to audit a model."""
+
+    def __init__(self, config):
+        super(AuditorClient, self).__init__(config)
+        self.stub = auditor_pb2_grpc.AuditorStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Auditor' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(auditor_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    @require_model
+    def run(self, config_path=None, model_handle=None):
+        """Runs the auditor"""
+
+        request = auditor_pb2.RunRequest(
+            config_path=config_path,
+            model_handle=model_handle)
+        return self.stub.Run(request,
+                             metadata=self.metadata())
+
+    def list(self):
+        """List the audits."""
+
+        request = auditor_pb2.ListRequest()
+        return self.stub.List(request,
+                              metadata=self.metadata())
+
+    def get_results(self, audit_id_arg):
+        """Get the audit results.
+
+        Args:
+            audit_id_arg (str): The cli audit id parameter.
+
+        Returns:
+            object: The GetResults reply.
+        """
+
+        audit_id = None
+        if audit_id_arg:
+            try:
+                audit_id = int(audit_id_arg)
+            except (TypeError, ValueError):
+                LOGGER.warn('Invalid value for audit_id %s, '
+                            'should be an int', audit_id_arg)
+
+        request = auditor_pb2.GetResultsRequest(
+            id=audit_id)
+        return self.stub.GetResults(request,
+                                    metadata=self.metadata())
+
+    def delete(self, audit_id_arg):
+        """Delete the audit.
+
+        Args:
+            audit_id_arg (str): The cli audit id parameter.
+
+        Returns:
+            object: The Delete reply.
+        """
+
+        try:
+            audit_id = int(audit_id_arg)
+        except (TypeError, ValueError):
+            LOGGER.error('Invalid value for audit_id %s, '
+                         'should be an int', audit_id_arg)
+            raise
+
+        request = auditor_pb2.DeleteRequest(
+            id=audit_id)
+        return self.stub.Delete(request,
+                                metadata=self.metadata())
+
+
 class ClientComposition(object):
     """Client composition class.
 
@@ -483,12 +565,14 @@ class ClientComposition(object):
         self.inventory = InventoryClient(self.config)
         self.scanner = ScannerClient(self.config)
         self.model = ModelClient(self.config)
+        self.auditor = AuditorClient(self.config)
 
         self.clients = [self.explain,
                         self.playground,
                         self.inventory,
                         self.scanner,
-                        self.model]
+                        self.model,
+                        self.auditor]
 
         if ping:
             if not all([c.is_available() for c in self.clients]):
