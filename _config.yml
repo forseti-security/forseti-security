@@ -15,7 +15,14 @@
 # Basic directives.
 custom_search_engine_id: 000816147753680702341:l05b0y1-8k0
 description: "Tools to secure Google Cloud Platform"
-exclude: ["vendor", "images/readme/", "client-secrets.json.enc"]
+exclude: ["Gemfile",
+          "Gemfile.lock",
+          "README.md",
+          "vendor",
+          "images/readme/",
+          "client-secrets.json.enc",
+          "_config.yml",
+          ".travis.yml"]
 gems:
   - jekyll-sitemap
 google_analytics: UA-98416450-1
