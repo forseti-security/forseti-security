@@ -23,7 +23,7 @@ exclude: ["Gemfile",
           "client-secrets.json.enc",
           "_config.yml",
           ".travis.yml"]
-gems:
+plugins:
   - jekyll-sitemap
 google_analytics: UA-98416450-1
 highlighter: rouge
