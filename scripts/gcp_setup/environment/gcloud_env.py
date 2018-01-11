@@ -533,6 +533,7 @@ class ForsetiGcpSetup(object):
                         role_members.extend(binding['members'])
 
                 for member in role_members:
+
                     
                     if member.lower().find(self.authed_user.lower()) > -1:
                         has_roles = True
