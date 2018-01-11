@@ -37,3 +37,4 @@ deploy:
   provider: gae
   keyfile: client-secrets.json
   project: forseti-security-website-prod
+  on: gh-pages
