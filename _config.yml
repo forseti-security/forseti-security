@@ -1,12 +1,35 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Basic directives.
 custom_search_engine_id: 000816147753680702341:l05b0y1-8k0
 description: "Tools to secure Google Cloud Platform"
-exclude: [vendor, images/readme/]
+exclude: ["Gemfile",
+          "Gemfile.lock",
+          "README.md",
+          "vendor",
+          "images/readme/",
+          "client-secrets.json.enc",
+          "_config.yml",
+          ".travis.yml"]
 gems:
   - jekyll-sitemap
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
+destination: _www/www/
+
 # Needed for local builds and using {{ site.github }}.
 repository: GoogleCloudPlatform/forseti-security
 title: "Forseti Security"

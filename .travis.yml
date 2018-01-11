@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 language: ruby
+cache: bundler
 rvm:
-- 2.3.3
+  - 2.3.3
+before_install:
+  - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
+    -in client-secrets.json.enc -out client-secrets.json -d
 branches:
   only:
   - gh-pages
@@ -22,5 +27,13 @@ branches:
 env:
   global:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
-sudo: false
-script: jekyll build && htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_site
+script:
+  - bundle exec jekyll build
+  - bundle exec htmlproofer --assume-extension --check-img-http --check-opengraph --check-html --check-favicon --report-missing-names --report-script-embeds ./_www/www
+before_deploy:
+  - mv _www/www/app.yaml _www/
+  - cd _www/
+deploy:
+  provider: gae
+  keyfile: client-secrets.json
+  project: forseti-security-website-prod
