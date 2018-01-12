@@ -75,7 +75,7 @@ class ContainerRepositoryClient(_base_repository.BaseRepositoryClient):
 
 class _ContainerProjectsZonesRepository(
         _base_repository.GCPRepository):
-    """Implementation of Contain Projects.Zones repository."""
+    """Implementation of Container Projects.Zones repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -119,7 +119,7 @@ class _ContainerProjectsZonesRepository(
 class _ContainerProjectsZonesClustersRepository(
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Contain Projects.Zones.Clusters repository."""
+    """Implementation of Container Projects.Zones.Clusters repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -178,7 +178,7 @@ class ContainerClient(object):
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
+                GCP API fails
         """
 
         try:
@@ -209,7 +209,7 @@ class ContainerClient(object):
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
+                GCP API fails
         """
 
         try:
