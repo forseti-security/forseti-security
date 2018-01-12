@@ -30,6 +30,7 @@ google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
 destination: _www/www/
+github: [metadata]
 
 # Needed for local builds and using {{ site.github }}.
 repository: GoogleCloudPlatform/forseti-security
