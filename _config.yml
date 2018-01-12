@@ -25,6 +25,7 @@ exclude: ["Gemfile",
           ".travis.yml"]
 plugins:
   - jekyll-sitemap
+  - jekyll-github-metadata
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
