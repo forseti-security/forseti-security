@@ -15,8 +15,9 @@
     </ol>
   </div>
   <div class="col-md-3 edit-on-github visible-md-block visible-lg-block text-right">
-    <a class="icon github" href="{% raw %}{% github_edit_link %}{% endraw %}">
-      Improve this page
+    {% assign filename = page.path | split:"/" | last | downcase %}
+    <a class="icon github" href="{{ site.github.repository_url }}/edit/gh-pages/{{ page.path }}">
+      Edit this page
     </a>
   </div>
 </div>
