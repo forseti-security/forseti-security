@@ -2,6 +2,8 @@ language: ruby
 cache: bundler
 rvm:
 - 2.3.3
+JEKYLL_GITHUB_TOKEN:
+  secure: RZx7iKAJtcqmgJdFgiv+1Y//THPEF15Kk5mInycBD6K4w/7/r5YKv5ZhgPhnMFbZAsQryaF5F+kGFeR3e1iMJiLVR1jW28UOktnNrgxV8bYnG/TZ6eJlSZBjF+sPFy5YkhhF5JJuM5vctL7dYYK64dAtFBeO5c7JFOWwpbp2OnUQSoE3WsB5zVn4EoTgZZPjlqQ5v7sVwXP4XAsfqGTVHcAZK/SOLckSbY6a4ZTXGjXsWcnw5ZpJs7PNqxoAkv/RRUI7ufPKNwfWAKuFEJat51dqaBYr0KoZyafcF/n8DwQc+DskAAMxg3sVwOZivNWjiNas+Nd8aS8L39jiQtb5jeddP7Tlq4xQSCc3LY4bUQft7jduvt1zqiAfYr6fZjE3lUJKY8k2aVDUJK+/sr5FmqwKlczQs3NxY+ecAeDqwO1kIskEwUB9pSqchgpIBPxGRrXblB8RkTeSBnTIbvdzrJOs4XFv/XWc3u96qRP8GZZ/xwVxV8uLBoAeaomyVe9wVC0g2twgq0JU3mp73YoULBxTmc2/X+fYFI4NTMKUs8EULuXr3D23ngVYIR3VNflAt/hQWigal5AqSx0N3RUXJm88NtAo6YJ8Gi5sl2SZbbYAvhHbxBX8S4mFvfvHMS3YIlCvzHTrurO5t4hmXAadoKg9MZUjs8/Lo1ori+FRdPo=
 before_install:
 - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
   -in client-secrets.json.enc -out client-secrets.json -d
