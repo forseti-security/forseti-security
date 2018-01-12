@@ -25,7 +25,6 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-# pylint: disable=bad-indentation,bad-continuation
 class ContainerRepositoryClient(_base_repository.BaseRepositoryClient):
     """Cloud Kubernetes Engine API Respository."""
 
