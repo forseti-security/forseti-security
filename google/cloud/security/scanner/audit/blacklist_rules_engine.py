@@ -122,7 +122,7 @@ class BlacklistRuleBook(bre.BaseRuleBook):
                 Assigned automatically when the rule book is built.
         """
 
-        ip_file_url = rule_def.get('threats_url')
+        ip_file_url = rule_def.get('url')
 
         ips, nets = self.get_and_parse_threat_url(ip_file_url)
 
@@ -168,10 +168,9 @@ class BlacklistRuleBook(bre.BaseRuleBook):
 
         """
         data = urllib2.urlopen(url).read()
-        ips = re.findall(r'[0-9]+(?:\.[0-9]+){3}', data)
-        nets = re.findall(
-            r'(?<!\d\.)(?<!\d)(?:\d{1,3}\.){3}\d{1,3}/\d{1,2}(?!\d|(?:\.\d))',
-            data)
+        ips = re.findall(r'^[0-9]+(?:\.[0-9]+){3}', data, re.M)
+        nets = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}', data, re.M)
+
         return ips, nets
 
 class Rule(object):
@@ -216,11 +215,12 @@ class Rule(object):
         Returns:
             bool: True if ipaddr is blacklisted
         """
-        if ipaddr in self.rules['ips_list']:
-            return True
-        for ip_network in self.rules['nets_list']:
-            if self.address_in_network(ipaddr, ip_network):
+        if ipaddr:
+            if ipaddr in self.rules['ips_list']:
                 return True
+            for ip_network in self.rules['nets_list']:
+                if self.address_in_network(ipaddr, ip_network):
+                    return True
         return False
 
     def find_violations(self, instance_network_interface):
@@ -234,13 +234,14 @@ class Rule(object):
         """
 
         network_and_project = re.search(
-            r'compute/v1/projects/([^/]*).*networks/([^/]*)',
+            r'compute/[a-zA-Z0-9]+/projects/([^/]*).*networks/([^/]*)',
             instance_network_interface.network)
         project = network_and_project.group(1)
         network = network_and_project.group(2)
 
         for access_config in instance_network_interface.access_configs:
-            ipaddr = access_config['natIP']
+            ipaddr = access_config.get('natIP')
+
             if self.check_if_blacklisted(ipaddr):
                 yield self.RuleViolation(
                     resource_type='instance',
