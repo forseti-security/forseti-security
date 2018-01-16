@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the load_appengine_pipeline."""
+"""Tests the load_gke_pipeline."""
 
 import mock
 import MySQLdb
@@ -21,12 +21,8 @@ import unittest
 # pylint: disable=line-too-long
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.common.data_access import gke_dao
-from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_api import container
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.inventory import errors as inventory_errors
-from google.cloud.security.inventory.pipelines import base_pipeline
 from google.cloud.security.inventory.pipelines import load_gke_pipeline
 from tests.inventory.pipelines.test_data import fake_gke_services
 from tests.inventory.pipelines.test_data import fake_configs
@@ -34,8 +30,8 @@ from tests.inventory.pipelines.test_data import fake_projects
 # pylint: enable=line-too-long
 
 
-class LoadAppenginePipelineTest(ForsetiTestCase):
-    """Tests for the load_appengine_pipeline."""
+class LoadGkePipelineTest(ForsetiTestCase):
+    """Tests for the load_gke_pipeline."""
 
     def setUp(self):
         """Set up."""
