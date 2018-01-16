@@ -1,5 +1,5 @@
 ---
-title: Export Summary Notifications 
+title: Export Summary Notifications
 order: 206
 ---
 # {{ page.title }}
@@ -12,7 +12,7 @@ To complete this guide, you'll need the following:
 - A Google Cloud Platform (GCP)
   [Organization resource](https://cloud.google.com/resource-manager/docs/creating-managing-organization).
 - A Forseti Security installation with
-  [email notifications](http://forsetisecurity.org/docs/howto/configure/email-notification) enabled.
+  [email notifications]({% link _docs/howto/configure/email-notification.md %}) enabled.
 - A GCP project with the
   [BigQuery API enabled](https://console.cloud.google.com/flows/enableapi?apiid=bigquery) and
   [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project#enable_billing_for_a_project).
@@ -33,19 +33,19 @@ You can use a simple label name like "Forseti."
     gcp_projectname = "" ;
     gcp_bigquery_datasetid = "";
     gcp_bigquery_tableid =  "";
-    
+
     function GmailRead_forseti() {
       var label_pending = GmailApp.getUserLabelByName(gmail_label);
       var threads = label_pending.getThreads(0,3);
-      
+
       for (var t in threads) {
        var thread = threads[t];
        var subject = thread.getMessages()[0].getSubject();
        var message = thread.getMessages()[0].getPlainBody();
-       var dateofmessage = thread.getMessages()[0].getDate(); 
+       var dateofmessage = thread.getMessages()[0].getDate();
        var formattedDate = Utilities.formatDate(dateofmessage, "GMT", "yyyy-MM-dd'T'HH:mm:ss'Z'");
        var n = subject.indexOf(message_subject);
-    
+
        if (n>=0) {
          var result = message.substring(message.indexOf("organizations")).replace(/ /g, ",").split(",\n").join("\n").slice(0, -1);
          var result = result.replace("Unknown", 0)
@@ -84,7 +84,7 @@ You can use a simple label name like "Forseti."
     ...
     ```
 1. Enable the BigQuery API for the AppScript project under
-   **Resources > Advanced Google Services**.    
+   **Resources > Advanced Google Services**.
 
 ### Creating a BigQuery dataset and table
 1. Go to [BigQuery](https://bigquery.cloud.google.com/welcome/) and select
