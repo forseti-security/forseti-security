@@ -1,7 +1,7 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with azthe License.
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    http://www.apache.org/licenses/LICENSE-2.0
@@ -90,9 +90,6 @@ class BlacklistScanner(base_scanner.BaseScanner):
 
            Returns:
                list: A list of networks from a particular project
-
-           Raises:
-               MySQLError if a MySQL error occurs.
         """
 
         instances = instance_dao.InstanceDao(self.global_configs).get_instances(
@@ -112,6 +109,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
         Returns:
             list: a list of network interface objects
         """
+        print "2"*50, "FIX"
         return instance_object.create_network_interfaces()
 
     def _get_project_policies(self):
@@ -120,6 +118,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
         Returns:
             dict: project policies
         """
+        print "3"*50, "FIX"
         project_policies = {}
         project_policies = (
             project_dao
@@ -141,6 +140,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
         Returns:
             dict: Resource count map
         """
+        print "4"*50, "FIX"
         resource_counts = {
             ResourceType.PROJECT: len(project_policies),
             ResourceType.INSTANCE: len(instance_network_interfaces),
@@ -156,11 +156,11 @@ class BlacklistScanner(base_scanner.BaseScanner):
         """
         return self.get_instance_networks_interfaces()
 
-    def _find_violations(self, instance_networks_data):
+    def _find_violations(self, instances_networks_data):
         """Find violations in the policies.
 
             Args:
-                instance_networks_data (list): instance networks data
+                instances_networks_data (list): instance networks data
                     to find violations in
 
             Returns:
@@ -168,7 +168,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
         """
         all_violations = []
         LOGGER.info('Finding blacklisted ip addresses...')
-        for instance_network_interface in instance_networks_data:
+        for instance_network_interface in instances_networks_data:
             LOGGER.debug('%s', instance_network_interface)
             violations = self.rules_engine.find_policy_violations(
                 instance_network_interface)
@@ -177,8 +177,8 @@ class BlacklistScanner(base_scanner.BaseScanner):
         return all_violations
 
     def run(self):
-        """Runs the data collection."""
-        instance_network_interface_data = self._retrieve()
+        """Runs scanning."""
+        instances_network_interface_data = self._retrieve()
         all_violations = (
-            self._find_violations(instance_network_interface_data))
+            self._find_violations(instances_network_interface_data))
         self._output_results(all_violations)

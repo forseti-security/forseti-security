@@ -1,4 +1,4 @@
-# Copyright 2017 Google Inc.
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -124,14 +124,14 @@ class BlacklistRuleBook(bre.BaseRuleBook):
 
         ip_file_url = rule_def.get('url')
 
-        ips, nets = self.get_and_parse_threat_url(ip_file_url)
+        ips, nets = self.get_and_parse_rule_url(ip_file_url)
 
         rule_def_resource = {
             "ips_list": ips,
             "nets_list": nets
         }
 
-        rule = Rule(rule_name=rule_def.get('name'),
+        rule = Rule(rule_blacklist=rule_def.get('blacklist'),
                     rule_index=rule_index,
                     rules=rule_def_resource)
 
@@ -155,7 +155,7 @@ class BlacklistRuleBook(bre.BaseRuleBook):
         return resource_rules
 
     @staticmethod
-    def get_and_parse_threat_url(url):
+    def get_and_parse_rule_url(url):
         """Download blacklist from provided url and parse it
         to ips and net blocks
 
@@ -168,24 +168,24 @@ class BlacklistRuleBook(bre.BaseRuleBook):
 
         """
         data = urllib2.urlopen(url).read()
-        ips = re.findall(r'^[0-9]+(?:\.[0-9]+){3}', data, re.M)
-        nets = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}', data, re.M)
+        ips = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
+        nets = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$', data, re.M)
 
         return ips, nets
 
 class Rule(object):
     """The rules class for instance_network_interface."""
 
-    def __init__(self, rule_name, rule_index, rules):
+    def __init__(self, rule_blacklist, rule_index, rules):
         """Initialize.
 
         Args:
-            rule_name (str): Name of the loaded rule
+            rule_blacklist (str): Name of the loaded blacklist
             rule_index (int): The index of the rule from the  definitions
             rules (dict): The resources associated with the rules like
                 the whitelist
         """
-        self.rule_name = rule_name
+        self.rule_blacklist = rule_blacklist
         self.rule_index = rule_index
         self.rules = rules
 
@@ -245,7 +245,8 @@ class Rule(object):
             if self.check_if_blacklisted(ipaddr):
                 yield self.RuleViolation(
                     resource_type='instance',
-                    rule_name=self.rule_name,
+                    rule_blacklist=self.rule_blacklist,
+                    rule_name=self.rule_blacklist,
                     rule_index=self.rule_index,
                     violation_type='BLACKLIST_VIOLATION',
                     project=project,
@@ -254,6 +255,7 @@ class Rule(object):
 
     # Rule violation.
     # resource_type: string
+    # rule_blacklist: string
     # rule_name: string
     # rule_index: int
     # violation_type: BLACKLIST_VIOLATION
@@ -261,6 +263,6 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'rule_name',
+                               ['resource_type', 'rule_blacklist', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
                                 'network', 'ip'])

@@ -1,4 +1,4 @@
 rules:
-    - blacklist: ET
+    - blacklist: ET blacklist
       url: http://localhost:8000/ips.txt
       #url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
