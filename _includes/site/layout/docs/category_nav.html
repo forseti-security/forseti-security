@@ -2,7 +2,7 @@
   {% include site/get_docs_for_category.liquid category=page.category %}
 
   {% assign ordered_docs = category_docs | sort:"order" %}
-  {% assign category_root_url = ordered_docs[0].url | remove:"index.html" %}
+  {% assign category_root_url = ordered_docs[0].url %}
 
   <h4><a href="{{ category_root_url }}">{{ page.category }}</a></h4>
 
@@ -48,7 +48,7 @@
 
       {% if forloop.index != 1 %}
         <li {% if page.url == doc.url %}class="active"{% endif %}>
-          <a href="{{ doc.url | remove:"index.html" | remove:".html" }}">{{ doc.title }}</a>
+          <a href="{{ doc.url }}">{{ doc.title }}</a>
         </li>
       {% endif %}
     {% endfor %}
