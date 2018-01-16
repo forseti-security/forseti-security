@@ -16,8 +16,6 @@
 
 from google.cloud.security.common.util import log_util
 from google.cloud.security.common.data_access import instance_dao
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_type.resource import ResourceType
 from google.cloud.security.scanner.scanners import base_scanner
 from google.cloud.security.scanner.audit import blacklist_rules_engine
 
