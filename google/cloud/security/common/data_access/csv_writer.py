@@ -267,6 +267,36 @@ FORWARDING_RULES_FIELDNAMES = [
     'raw_forwarding_rule',
 ]
 
+GKE_FIELDNAMES = [
+    'project_id',
+    'addons_config',
+    'cluster_ipv4_cidr',
+    'create_time',
+    'current_master_version',
+    'current_node_count',
+    'current_node_version',
+    'endpoint',
+    'initial_cluster_version',
+    'instance_group_urls',
+    'legacy_abac',
+    'locations',
+    'logging_service',
+    'master_auth',
+    'monitoring_service',
+    'name',
+    'network',
+    'node_config',
+    'node_ipv4_cidr_size',
+    'node_pools',
+    'self_link',
+    'services_ipv4_cidr',
+    'status',
+    'subnetwork',
+    'zone',
+    'server_config',
+    'raw_cluster'
+]
+
 GROUP_MEMBERS_FIELDNAMES = [
     'group_id',
     'member_kind',
@@ -446,6 +476,8 @@ CSV_FIELDNAME_MAP = {
     'raw_folder_iam_policies': RAW_FOLDER_IAM_POLICIES_FIELDNAMES,
 
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
+
+    'gke': GKE_FIELDNAMES,
 
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,
