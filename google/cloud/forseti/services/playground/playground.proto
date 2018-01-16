@@ -17,22 +17,22 @@ syntax = "proto3";
 package playground;
 
 service Playground {
-  rpc Ping(PingRequest) returns (PingReply) {}
-  rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
-  rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
-  rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
+  rpc ping(PingRequest) returns (PingReply) {}
+  rpc set_iam_policy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
+  rpc get_iam_policy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
+  rpc check_iam_policy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
 
-  rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberReply) {}
-  rpc DeleteGroupMember(DeleteGroupMemberRequest) returns (DeleteGroupMemberReply) {}
-  rpc ListGroupMembers(ListGroupMembersRequest) returns (ListGroupMembersReply) {}
+  rpc add_group_member(AddGroupMemberRequest) returns (AddGroupMemberReply) {}
+  rpc delete_group_member(DeleteGroupMemberRequest) returns (DeleteGroupMemberReply) {}
+  rpc list_group_members(ListGroupMembersRequest) returns (ListGroupMembersReply) {}
 
-  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {}
-  rpc DelResource(DeleteResourceRequest) returns (DeleteResourceReply) {}
-  rpc ListResources(ListResourcesRequest) returns (ListResourcesReply) {}
+  rpc add_resource(AddResourceRequest) returns (AddResourceReply) {}
+  rpc delete_resource(DeleteResourceRequest) returns (DeleteResourceReply) {}
+  rpc list_resources(ListResourcesRequest) returns (ListResourcesReply) {}
 
-  rpc AddRole(AddRoleRequest) returns (AddRoleReply) {}
-  rpc DelRole(DeleteRoleRequest) returns (DeleteRoleReply) {}
-  rpc ListRoles(ListRolesRequest) returns (ListRolesReply) {}
+  rpc add_role(AddRoleRequest) returns (AddRoleReply) {}
+  rpc delete_role(DeleteRoleRequest) returns (DeleteRoleReply) {}
+  rpc list_roles(ListRolesRequest) returns (ListRolesReply) {}
 }
 
 message AddRoleRequest {
@@ -117,39 +117,39 @@ message PingReply {
 }
 
 message Binding {
-	string role = 1;
-	repeated string members = 2;
+  string role = 1;
+  repeated string members = 2;
 }
 
 message Policy {
-	repeated Binding bindings = 1;
-	string etag = 2;
+  repeated Binding bindings = 1;
+  string etag = 2;
 }
 
 message CheckIamPolicyRequest {
-	string resource = 1;
-	string permission = 2;
-	string identity = 3;
+  string resource = 1;
+  string permission = 2;
+  string identity = 3;
 }
 
 message CheckIamPolicyReply {
-	bool result = 1;
+  bool result = 1;
 }
 
 message SetIamPolicyRequest {
-	string resource = 1;
-	Policy policy = 2;
+  string resource = 1;
+  Policy policy = 2;
 }
 
 message SetIamPolicyReply {
-	bool accepted = 1;
+  bool accepted = 1;
 }
 
 message GetIamPolicyRequest {
-	string resource = 1;
+  string resource = 1;
 }
 
 message GetIamPolicyReply {
-	string resource = 1;
-	Policy policy = 2;
+  string resource = 1;
+  Policy policy = 2;
 }

@@ -17,13 +17,13 @@ syntax = "proto3";
 import "google/protobuf/timestamp.proto";
 
 service ActionEngine {
-  rpc Ping(PingRequest) returns (PingReply) {
+  rpc ping(PingRequest) returns (PingReply) {
   }
 
-  rpc List(ListRequest) returns (ListResponse) {
+  rpc list(ListRequest) returns (ListResponse) {
   }
 
-  rpc ProcessResults(ProcessResultsRequest)
+  rpc process_results(ProcessResultsRequest)
       returns (stream ProcessResultsResponse) {
   }
 }

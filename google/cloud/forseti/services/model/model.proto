@@ -17,51 +17,51 @@ syntax = "proto3";
 package model;
 
 service Modeller {
-  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc ping(PingRequest) returns (PingReply) {}
 
-  rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
+  rpc create_model(CreateModelRequest) returns (CreateModelReply) {}
 
-  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
+  rpc delete_model(DeleteModelRequest) returns (DeleteModelReply) {}
 
-  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
+  rpc list_model(ListModelRequest) returns (ListModelReply) {}
 
 }
 
 message CreateModelRequest {
-	string type = 1;
-	string name = 2;
-	int32 id = 3;
-	bool background = 4;
+  string type = 1;
+  string name = 2;
+  int32 id = 3;
+  bool background = 4;
 }
 
 message CreateModelReply {
-	Model model = 1;
+  Model model = 1;
 }
 
 message DeleteModelRequest {
-	string handle = 1;
+  string handle = 1;
 }
 
 message DeleteModelReply {
-	enum Status {
-		SUCCESS = 0;
-	}
-	Status status = 1;
+  enum Status {
+    SUCCESS = 0;
+  }
+  Status status = 1;
 }
 
 message ListModelRequest {
 }
 
 message ListModelReply {
-	repeated Model models = 1;
+  repeated Model models = 1;
 }
 
 message Model {
-	string handle = 1;
-	string name = 2;
-	string status = 3;
-	string message = 4;
-	string warnings = 5;
+  string handle = 1;
+  string name = 2;
+  string status = 3;
+  string message = 4;
+  string warnings = 5;
 }
 
 message PingRequest {

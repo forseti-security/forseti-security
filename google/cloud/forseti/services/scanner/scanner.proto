@@ -17,18 +17,18 @@ syntax = "proto3";
 package scanner;
 
 service Scanner {
-  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc ping(PingRequest) returns (PingReply) {}
 
-  rpc Run(RunRequest) returns (RunReply) {}
+  rpc run(RunRequest) returns (RunReply) {}
 
 }
 
 message RunRequest {
-	string config_dir = 1;
+  string config_dir = 1;
 }
 
 message RunReply {
-	int32 status = 1;
+  int32 status = 1;
 }
 
 message PingRequest {

@@ -19,15 +19,15 @@ import "google/protobuf/timestamp.proto";
 package inventory;
 
 service Inventory {
-  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc ping(PingRequest) returns (PingReply) {}
 
-  rpc Create(CreateRequest) returns (stream Progress) {}
+  rpc create(CreateRequest) returns (stream Progress) {}
 
-  rpc List(ListRequest) returns (stream InventoryIndex) {}
+  rpc list(ListRequest) returns (stream InventoryIndex) {}
 
-  rpc Get(GetRequest) returns (GetReply) {}
+  rpc get(GetRequest) returns (GetReply) {}
 
-  rpc Delete(DeleteRequest) returns (DeleteReply) {}
+  rpc delete(DeleteRequest) returns (DeleteReply) {}
 
 }
 
@@ -40,46 +40,46 @@ message PingReply {
 }
 
 message Progress {
-	int32 id = 1;
-	bool final_message = 2;
-	string step = 3;
-	int32 warnings = 4;
-	int32 errors = 5;
-	string last_warning = 6;
-	string last_error = 7;
+  int32 id = 1;
+  bool final_message = 2;
+  string step = 3;
+  int32 warnings = 4;
+  int32 errors = 5;
+  string last_warning = 6;
+  string last_error = 7;
 }
 
 message CreateRequest {
-	bool background = 1;
-	string model_name = 2;
+  bool background = 1;
+  string model_name = 2;
 }
 
 message ListRequest {
 }
 
 message InventoryIndex {
-	int32 id = 1;
-	google.protobuf.Timestamp start_time = 2;
-	google.protobuf.Timestamp complete_time = 3;
-	int32 schema_version = 4;
-	int32 count_objects = 5;
-	string status = 6;
-	string warnings = 7;
-	string errors = 8;
+  int32 id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp complete_time = 3;
+  int32 schema_version = 4;
+  int32 count_objects = 5;
+  string status = 6;
+  string warnings = 7;
+  string errors = 8;
 }
 
 message GetRequest {
-	int32 id = 1;
+  int32 id = 1;
 }
 
 message GetReply {
-	InventoryIndex inventory = 1;
+  InventoryIndex inventory = 1;
 }
 
 message DeleteRequest {
-	int32 id = 1;
+  int32 id = 1;
 }
 
 message DeleteReply {
-	InventoryIndex inventory = 1;
+  InventoryIndex inventory = 1;
 }
