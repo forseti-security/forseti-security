@@ -33,6 +33,5 @@ handlers:
   upload: www/(.*)
   secure: always
 
-- error_handlers:
- - file: default_error.html
-
+error_handlers:
+- file: error.html
