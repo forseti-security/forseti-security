@@ -99,55 +99,6 @@ class BlacklistScanner(base_scanner.BaseScanner):
             network_interfaces += instance.create_network_interfaces()
         return network_interfaces
 
-    @staticmethod
-    def parse_instance_network_instance(instance_object):
-        """Create a list of network interface obj.
-
-        Args:
-            instance_object (instance_object): an instance object
-
-        Returns:
-            list: a list of network interface objects
-        """
-        print "2"*50, "FIX"
-        return instance_object.create_network_interfaces()
-
-    def _get_project_policies(self):
-        """Get projects from data source.
-
-        Returns:
-            dict: project policies
-        """
-        print "3"*50, "FIX"
-        project_policies = {}
-        project_policies = (
-            project_dao
-            .ProjectDao()
-            .get_project_policies('projects',
-                                  self.
-                                  snapshot_timestamp))
-        return project_policies
-
-    @staticmethod
-    def _get_resource_count(project_policies, instance_network_interfaces):
-        """Get resource count for org and project policies.
-
-        Args:
-            project_policies (dict): containing the projects
-                (gcp_type.project.Project) and their iam policies (dict).
-            instance_network_interfaces (list): of network_interface objects.
-
-        Returns:
-            dict: Resource count map
-        """
-        print "4"*50, "FIX"
-        resource_counts = {
-            ResourceType.PROJECT: len(project_policies),
-            ResourceType.INSTANCE: len(instance_network_interfaces),
-        }
-
-        return resource_counts
-
     def _retrieve(self):
         """Run the data collection.
 
