@@ -34,4 +34,4 @@ handlers:
   secure: always
 
 error_handlers:
-- file: error.html
+- file: www/error.html
