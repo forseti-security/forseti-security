@@ -20,6 +20,7 @@ determine whether there are violations.
 """
 
 import itertools
+import json
 import threading
 
 from google.cloud.forseti.common.data_access import org_resource_rel_dao
@@ -145,8 +146,8 @@ class IamRulesEngine(bre.BaseRulesEngine):
 
         policy_bindings = [
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings', [])]
-        violations = self.rule_book.find_violations(resource, policy_bindings)
+            for b in json.loads(policy.data).get('bindings', [])]
+        violations = self.rule_book.find_violations(resource, policy, policy_bindings)
 
         return set(violations)
 
@@ -380,7 +381,7 @@ class IamRuleBook(bre.BaseRuleBook):
 
         return resource_rules
 
-    def find_violations(self, resource, policy_bindings):
+    def find_violations(self, resource, policy, policy_bindings):
         """Find policy binding violations in the rule book.
 
         Args:
@@ -395,10 +396,10 @@ class IamRuleBook(bre.BaseRuleBook):
             iterable: A generator of the rule violations.
         """
         violations = itertools.chain()
-        resource_ancestors = [resource]
-        resource_ancestors.extend(
-            self.org_res_rel_dao.find_ancestors(
-                resource, self.snapshot_timestamp))
+
+        resource_ancestors = (
+            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+                resource, policy.full_name))
 
         for curr_resource in resource_ancestors:
             wildcard_resource = resource_util.create_resource(
@@ -430,6 +431,8 @@ class IamRuleBook(bre.BaseRuleBook):
             # value for "inherit_from_parents".
             if not inherit_from_parents and inherit_from_parents is not None:
                 break
+        
+        violations = list(violations)
 
         return violations
 

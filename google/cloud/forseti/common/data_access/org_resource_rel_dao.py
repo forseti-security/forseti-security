@@ -140,7 +140,8 @@ def find_ancestors_by_hierarchial_name(starting_resource,
         if (resource_type == starting_resource.type and
                 resource_id == starting_resource.id):
             continue
-        ancestor_resources.append(
-            resource_util.create_resource(resource_id, resource_type))
+        new_resource = resource_util.create_resource(resource_id, resource_type)
+        if new_resource:
+            ancestor_resources.append(new_resource)
 
     return ancestor_resources
