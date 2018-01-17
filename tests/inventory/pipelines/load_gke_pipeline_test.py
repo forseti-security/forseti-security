@@ -20,7 +20,6 @@ import unittest
 
 # pylint: disable=line-too-long
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import gke_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.gcp_api import container
 from google.cloud.security.inventory.pipelines import load_gke_pipeline
@@ -38,7 +37,7 @@ class LoadGkePipelineTest(ForsetiTestCase):
         self.cycle_timestamp = '20001225T120000Z'
         self.configs = fake_configs.FAKE_CONFIGS
         self.mock_gke = mock.create_autospec(container.ContainerClient)
-        self.mock_dao = mock.create_autospec(gke_dao.GkeDao)
+        self.mock_dao = mock.MagicMock()
         self.pipeline = (
             load_gke_pipeline.LoadGkePipeline(
                 self.cycle_timestamp,
