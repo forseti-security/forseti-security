@@ -1635,6 +1635,23 @@ class ModelManager(object):
         else:
             return instantiate_model(session, model_name, expunge)
 
+    def add_description(self, model_name, new_description, session=None):
+        """Add description to a model.
+
+        Args:
+            model_name (str): Model name
+            new_description(str): The description in json format.
+            session (object): Database session.
+        """
+
+        if not session:
+            with self.modelmaker() as scoped_session:
+                model = scoped_session.query(Model).filter(
+                    Model.handle == model_name).one()
+        else:
+            model = session.query(Model).filter(
+                Model.handle == model_name).one()
+        model.add_description(new_description)
 
 def create_engine(*args,
                   **kwargs):
