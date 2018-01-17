@@ -329,7 +329,6 @@ CREATE_GKE_TABLE = """
         `legacy_abac` json DEFAULT NULL,
         `locations` varchar(255) DEFAULT NULL,
         `logging_service` varchar(255) DEFAULT NULL,
-        `master_auth` json DEFAULT NULL,
         `monitoring_service` varchar(255) DEFAULT NULL,
         `name` varchar(255) DEFAULT NULL,
         `network` varchar(255) DEFAULT NULL,

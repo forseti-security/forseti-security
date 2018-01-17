@@ -70,6 +70,8 @@ inventory:
           enabled: true
         - resource: forwarding_rules
           enabled: true
+        - resource: gke
+          enabled: true
         - resource: group_members
           enabled: true
         - resource: groups

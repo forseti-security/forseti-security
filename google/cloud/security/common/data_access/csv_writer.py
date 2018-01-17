@@ -281,7 +281,6 @@ GKE_FIELDNAMES = [
     'legacy_abac',
     'locations',
     'logging_service',
-    'master_auth',
     'monitoring_service',
     'name',
     'network',

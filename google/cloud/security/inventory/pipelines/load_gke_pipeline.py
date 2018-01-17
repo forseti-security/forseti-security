@@ -27,7 +27,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
 
     RESOURCE_NAME = 'gke'
 
-    # pylint: disable=too-many-locals, too-many-nested-blocks
+
     def _retrieve(self):
         """Retrieve GKE data from GCP.
 
@@ -53,8 +53,12 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
             clusters = self.safe_api_call('get_clusters', project.id)
 
             if clusters:
-            
                 for cluster in clusters:
+                    # TODO: Cache the server_config response and only make the
+                    # API call for zones that we don't have data on
+                    # Check if this practically would make a difference, i.e.
+                    # would users really have multiple clusters in the same zone
+                    # for redundancy.
                     self_link_parts = cluster.get('selfLink').split('/')
                     zone = self_link_parts[self_link_parts.index('zones')+1]
                     server_config = self.safe_api_call(
@@ -73,7 +77,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
         Args:
             resource_from_api (dict): GKE services from GCP API, keyed by
                 project id, with list of clusters as values.
-            
+
             {project1: [clusters],
              project2: [clusters],
              project3: [clusters]}
@@ -85,28 +89,30 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
         """
         for project_id, clusters in resource_from_api.iteritems():
             for cluster in clusters:
+                cluster['masterAuth'] = '<not saved in forseti inventory>'
                 yield {'project_id': project_id,
                        'addons_config': parser.json_stringify(
-                            cluster.get('addonsConfig')),
+                           cluster.get('addonsConfig')),
                        'cluster_ipv4_cidr': cluster.get('clusterIpv4Cidr'),
                        'create_time': cluster.get('createTime'),
-                       'current_master_version': cluster.get('currentMasterVersion'),
+                       'current_master_version':
+                           cluster.get('currentMasterVersion'),
                        'current_node_count': cluster.get('currentNodeCount'),
-                       'current_node_version': cluster.get('currentNodeVersion'),
+                       'current_node_version':
+                           cluster.get('currentNodeVersion'),
                        'endpoint': cluster.get('endpoint'),
-                       'initial_cluster_version': cluster.get('initialClusterVersion'),
+                       'initial_cluster_version':
+                           cluster.get('initialClusterVersion'),
                        'instance_group_urls': cluster.get('instanceGroupUrls'),
                        'legacy_abac': parser.json_stringify(
-                            cluster.get('legacyAbac')),
+                           cluster.get('legacyAbac')),
                        'locations': cluster.get('locations'),
                        'logging_service': cluster.get('loggingService'),
-                       'master_auth': parser.json_stringify(
-                            cluster.get('masterAuth')),
                        'monitoring_service': cluster.get('monitoringService'),
                        'name': cluster.get('name'),
                        'network': cluster.get('network'),
                        'node_config': parser.json_stringify(
-                            cluster.get('nodeConfig')),
+                           cluster.get('nodeConfig')),
                        'node_ipv4_cidr_size': cluster.get('nodeIpv4CidrSize'),
                        'node_pools': cluster.get('nodePools'),
                        'self_link': cluster.get('selfLink'),
@@ -115,7 +121,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
                        'subnetwork': cluster.get('subnetwork'),
                        'zone': cluster.get('zone'),
                        'server_config': parser.json_stringify(
-                            cluster.get('serverConfig')),
+                           cluster.get('serverConfig')),
                        'raw_cluster': parser.json_stringify(cluster)}
 
     def run(self):
