@@ -334,7 +334,7 @@ CREATE_GKE_TABLE = """
         `network` varchar(255) DEFAULT NULL,
         `node_config` json DEFAULT NULL,
         `node_ipv4_cidr_size` int DEFAULT NULL,
-        `node_pools` varchar(4096) DEFAULT NULL,
+        `node_pools` json DEFAULT NULL,
         `self_link` varchar(255) DEFAULT NULL,
         `services_ipv4_cidr` varchar(255) DEFAULT NULL,
         `status` varchar(255) DEFAULT NULL,
