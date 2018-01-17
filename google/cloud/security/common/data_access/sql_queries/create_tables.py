@@ -319,7 +319,7 @@ CREATE_GKE_TABLE = """
         `project_id` varchar(255) DEFAULT NULL,
         `addons_config` json DEFAULT NULL,
         `cluster_ipv4_cidr` varchar(255) DEFAULT NULL,
-        `create_time` datetime DEFAULT NULL,
+        `create_time` varchar(255) DEFAULT NULL,  # Handle RFC3339 (timezone)
         `current_master_version` varchar(255) DEFAULT NULL,
         `current_node_count` int DEFAULT NULL,
         `current_node_version` varchar(255) DEFAULT NULL,

@@ -115,7 +115,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
                            cluster.get('nodeConfig')),
                        'node_ipv4_cidr_size': cluster.get('nodeIpv4CidrSize'),
                        'node_pools': parser.json_stringify(
-                            cluster.get('nodePools')),
+                           cluster.get('nodePools')),
                        'self_link': cluster.get('selfLink'),
                        'services_ipv4_cidr': cluster.get('servicesIpv4Cidr'),
                        'status': cluster.get('status'),
