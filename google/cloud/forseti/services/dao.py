@@ -22,6 +22,7 @@ import binascii
 import collections
 import struct
 import hmac
+import json
 from threading import Lock
 
 from sqlalchemy import Column
@@ -82,6 +83,7 @@ class Model(MODEL_BASE):
     name = Column(String(32), primary_key=True)
     handle = Column(String(32))
     state = Column(String(32))
+    description = Column(Text())
     watchdog_timer = Column(DateTime)
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
@@ -123,10 +125,26 @@ class Model(MODEL_BASE):
 
         self.state = "INPROGRESS"
 
+    def add_description(self, description):
+        """Add new description to the model
+
+        Args:
+            description (str): the description to be added in json format
+        """
+
+        new_desc = json.loads(description)
+        model_desc = json.loads(self.description)
+
+        for new_item in new_desc:
+            model_desc[new_item] = new_desc[new_item]
+
+        self.description = json.dumps(model_desc)
+
     def set_done(self, message=''):
         """Indicate a finished import.
-            Args:
-                message (str): Success message or ''
+
+        Args:
+            message (str): Success message or ''
         """
 
         if self.get_warnings():
@@ -1536,7 +1554,9 @@ class ModelManager(object):
                 state="CREATED",
                 created_at=datetime.datetime.utcnow(),
                 watchdog_timer=datetime.datetime.utcnow(),
-                etag_seed=generate_model_seed())
+                etag_seed=generate_model_seed(),
+                description="{}"
+                )
             session.add(model)
             self.sessionmakers[model.handle] = define_model(
                 model.handle, self.engine, model.etag_seed)

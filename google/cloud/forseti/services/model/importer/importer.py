@@ -19,6 +19,7 @@
 
 from StringIO import StringIO
 import traceback
+import json
 
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
@@ -67,6 +68,10 @@ class EmptyImporter(object):
         """Runs the import."""
 
         self.session.add(self.model)
+        self.model.add_description(json.dumps({
+            "source":"empty",
+            "prestine":True
+        }))
         self.model.set_done()
         self.session.commit()
 
@@ -161,6 +166,12 @@ class InventoryImporter(object):
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_id, True) as inventory:
+
+                self.model.add_description(json.dumps({
+                        "source":"inventory",
+                        "source_info":str(inventory.index),
+                        "prestine":True
+                    }))
 
                 for resource in inventory.iter(['organization']):
                     self.found_root = True

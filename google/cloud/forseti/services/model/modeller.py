@@ -30,7 +30,17 @@ class Modeller(object):
         self.config = config
 
     def CreateModel(self, source, name, inventory_id, background):
-        """Creates a model from the import source."""
+        """Creates a model from the import source.
+
+        Args:
+            source (str): The source of the model, \"inventory\" or \"empty\"
+            name (str): Model name to instantiate.
+            inventory_id (int): Inventory id to import from
+            background (bool): Whether to run the model creation in background
+
+        Returns:
+            object: the created data model
+        """
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
