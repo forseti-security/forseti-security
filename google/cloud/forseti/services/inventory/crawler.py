@@ -77,7 +77,6 @@ class Crawler(crawler.Crawler):
 
         progresser = self.config.progresser
         try:
-
             resource.getIamPolicy(self.get_client())
             resource.getGCSPolicy(self.get_client())
             resource.getDatasetPolicy(self.get_client())
