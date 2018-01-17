@@ -40,6 +40,7 @@ from google.cloud.security.common.data_access import errors as data_access_error
 from google.cloud.security.common.data_access import firewall_rule_dao
 from google.cloud.security.common.data_access import folder_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao
+from google.cloud.security.common.data_access import gke_dao
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import instance_group_dao
 from google.cloud.security.common.data_access import instance_group_manager_dao
@@ -233,6 +234,7 @@ def _create_dao_map(global_configs):
             'folder_dao': folder_dao.FolderDao(global_configs),
             'forwarding_rules_dao':
                 forwarding_rules_dao.ForwardingRulesDao(global_configs),
+            'gke_dao': gke_dao.GkeDao(global_configs),
             'instance_dao': instance_dao.InstanceDao(global_configs),
             'instance_group_dao':
                 instance_group_dao.InstanceGroupDao(global_configs),

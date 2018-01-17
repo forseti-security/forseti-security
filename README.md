@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security) [![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
+**master** | **dev** | **website** | **coverage**
+------------ | ------------ | ------------ | ------------
+[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=gh-pages)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
 
 # Forseti Security
 A community-driven collection of open source tools to improve the security
