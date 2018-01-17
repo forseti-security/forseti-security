@@ -65,6 +65,11 @@ REQUIREMENTS_MAP = {
          'depends_on': 'projects',
          'api_name': 'compute_api',
          'dao_name': 'forwarding_rules_dao'},
+    'gke':
+        {'module_name': 'load_gke_pipeline',
+         'depends_on': 'projects',
+         'api_name': 'gke_api',
+         'dao_name': 'gke_dao'},
     'group_members':
         {'module_name': 'load_group_members_pipeline',
          'depends_on': 'groups',
