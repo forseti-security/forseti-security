@@ -146,10 +146,7 @@ class GkeVersionRuleBook(bre.BaseRuleBook):
                     'allowed_nodepool_versions', [])
                 allowed_versions = []
                 for allowed_version in allowed_nodepool_versions:
-                    version_rule = VersionRule(**allowed_version)
-                    LOGGER.debug('Adding allowed version rule %s' %
-                                 version_rule)
-                    allowed_versions.append(version_rule)
+                    allowed_versions.append(VersionRule(**allowed_version))
 
                 # For each resource id associated with the rule, create a
                 # mapping of resource => rules.
