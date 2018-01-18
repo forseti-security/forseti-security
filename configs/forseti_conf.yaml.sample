@@ -118,6 +118,8 @@ scanner:
     scanners:
         - name: bigquery
           enabled: true
+        - name: blacklist
+          enabled: true
         - name: bucket_acl
           enabled: true
         - name: cloudsql_acl

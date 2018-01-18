@@ -566,6 +566,7 @@ CREATE_VIOLATIONS_TABLE = """
         `violation_type` enum('UNSPECIFIED',
                               'ADDED','REMOVED',
                               'BIGQUERY_VIOLATION',
+                              'BLACKLIST_VIOLATION',
                               'BUCKET_VIOLATION',
                               'CLOUD_SQL_VIOLATION',
                               'FIREWALL_BLACKLIST_VIOLATION',
