@@ -151,8 +151,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            policies (list): The list of (resource, policy) tuples to
-                find violations in.
+            policies (list): The list of (gcp_type, forseti_data_model_resource)
+                tuples to find violations in.
 
         Returns:
             list: A list of all violations
@@ -170,7 +170,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            list: List of IAM policy data.
+            list: List of (gcp_type, forseti_data_model_resource) tuples.
             dict: A dict of resource counts.
         """
         model_manager = self.service_config.model_manager

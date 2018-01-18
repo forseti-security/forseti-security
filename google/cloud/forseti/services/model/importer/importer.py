@@ -608,6 +608,7 @@ class InventoryImporter(object):
         Args:
             iam_policy (object): IAM policy to store.
         """
+        # TODO: Figure out why bucket IAM policy can not be imported.
         unsupported_iam_policy_type = ['bucket']
         iam_policy_type_name = to_type_name(iam_policy.get_type_class(),
                                             iam_policy.get_key())
