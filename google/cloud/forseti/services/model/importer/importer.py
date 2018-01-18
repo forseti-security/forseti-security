@@ -603,7 +603,7 @@ class InventoryImporter(object):
                 parent=parent))
 
     def _convert_iam_policy(self, iam_policy):
-        """Convert a iam policy to a database object.
+        """Convert an IAM policy to a database object.
 
         Args:
             iam_policy (object): IAM policy to store.
