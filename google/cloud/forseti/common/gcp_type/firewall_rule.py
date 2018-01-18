@@ -71,7 +71,7 @@ class FirewallRule(object):
         self.kind = kwargs.get('firewall_rule_kind')
         self.network = kwargs.get('firewall_rule_network')
         self._priority = kwargs.get('firewall_rule_priority')
-        self.direction = kwargs.get('firewall_rule_direction')
+        self.direction = kwargs.get('firewall_rule_direction', 'INGRESS')
         if self.direction:
             self.direction = self.direction.upper()
         self._source_ranges = frozenset(parser.json_unstringify(

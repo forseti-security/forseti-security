@@ -14,18 +14,16 @@
 
 """Tests the CloudSqlRulesEngine."""
 
-import copy
-import itertools
-import mock
+import json
 import unittest
+import mock
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.gcp_type import cloudsql_access_controls
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
-from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import cloudsql_rules_engine as cre
-from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
 
 
@@ -45,7 +43,7 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
             'cloudsql_test_rules_1.yaml')
         rules_engine = cre.CloudSqlRulesEngine(rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
-        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
 
     @mock.patch.object(file_loader,
                        '_read_file_from_gcs', autospec=True)
@@ -76,7 +74,7 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
         mock_load_rules_from_gcs.return_value = file_content
 
         rules_engine.build_rule_book()
-        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
+        self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_resource_type_fails(self):
         """Test that a rule without a resource cannot be created."""
@@ -85,6 +83,123 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
         rules_engine = cre.CloudSqlRulesEngine(rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
+
+    def test_find_violation_for_publicly_exposed_acls(self):
+        """Verify rules find violations."""
+        rules_local_path = get_datafile_path(__file__,
+                                             'cloudsql_test_rules_1.yaml')
+        rules_engine = cre.CloudSqlRulesEngine(rules_file_path=rules_local_path)
+        rules_engine.build_rule_book()
+        rules_map = rules_engine.rule_book.resource_rules_map
+        all_internet_no_ssl = rules_map[0]
+        all_internet_ssl = rules_map[1]
+
+        instance_dict = json.loads(SQL_INSTANCE_JSON)
+
+        # No authorized networks
+        acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
+            'test-project', SQL_INSTANCE_JSON)
+        violation = all_internet_no_ssl.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
+        violation = all_internet_ssl.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
+
+        # Exposed to everyone in the world, no ssl
+        network = json.loads(AUTHORIZED_NETWORK_TEMPLATE.format(
+            value='0.0.0.0/0'))
+
+        ip_configuration = instance_dict['settings']['ipConfiguration']
+        ip_configuration['authorizedNetworks'].append(network)
+
+        acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
+            'test-project', json.dumps(instance_dict))
+        violation = all_internet_no_ssl.find_policy_violations(acl)
+        self.assertEquals(1, len(list(violation)))
+        violation = all_internet_ssl.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
+
+        # Exposed to everyone in the world, ssl required.
+        ip_configuration['requireSsl'] = True
+        acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
+            'test-project', json.dumps(instance_dict))
+        violation = all_internet_no_ssl.find_policy_violations(acl)
+        self.assertEquals(0, len(list(violation)))
+        violation = all_internet_ssl.find_policy_violations(acl)
+        self.assertEquals(1, len(list(violation)))
+
+
+SQL_INSTANCE_JSON = """
+{
+ "kind": "sql#instance",
+ "name": "test-instance",
+ "connectionName": "test-project:us-west1:test-instance",
+ "project": "test-project",
+ "state": "RUNNABLE",
+ "backendType": "SECOND_GEN",
+ "databaseVersion": "MYSQL_5_7",
+ "region": "us-west1",
+ "settings": {
+  "kind": "sql#settings",
+  "settingsVersion": "13",
+  "authorizedGaeApplications": [
+  ],
+  "tier": "db-n1-standard-1",
+  "backupConfiguration": {
+   "kind": "sql#backupConfiguration",
+   "startTime": "09:00",
+   "enabled": true,
+   "binaryLogEnabled": true
+  },
+  "pricingPlan": "PER_USE",
+  "replicationType": "SYNCHRONOUS",
+  "activationPolicy": "ALWAYS",
+  "ipConfiguration": {
+   "ipv4Enabled": true,
+   "authorizedNetworks": [
+   ]
+  },
+  "locationPreference": {
+   "kind": "sql#locationPreference",
+   "zone": "us-west1-a"
+  },
+  "dataDiskSizeGb": "10",
+  "dataDiskType": "PD_SSD",
+  "maintenanceWindow": {
+   "kind": "sql#maintenanceWindow",
+   "hour": 0,
+   "day": 0
+  },
+  "storageAutoResize": true,
+  "storageAutoResizeLimit": "0"
+ },
+ "serverCaCert": {
+  "kind": "sql#sslCert",
+  "instance": "test-instance",
+  "sha1Fingerprint": "1234567890",
+  "commonName": "C=US,O=Test",
+  "certSerialNumber": "0",
+  "cert": "-----BEGIN CERTIFICATE----------END CERTIFICATE-----",
+  "createTime": "2017-11-22T17:59:22.085Z",
+  "expirationTime": "2019-11-22T18:00:22.085Z"
+ },
+ "ipAddresses": [
+  {
+   "ipAddress": "10.0.0.1",
+   "type": "PRIMARY"
+  }
+ ],
+ "instanceType": "CLOUD_SQL_INSTANCE",
+ "gceZone": "us-west1-a"
+}
+"""
+
+AUTHORIZED_NETWORK_TEMPLATE = """
+{{
+ "kind": "sql#aclEntry",
+ "name": "",
+ "value": "{value}"
+}}
+"""
 
 
 if __name__ == '__main__':

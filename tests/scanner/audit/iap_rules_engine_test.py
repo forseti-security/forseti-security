@@ -21,9 +21,6 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.data_access import _db_connector
-from google.cloud.forseti.common.data_access import org_resource_rel_dao as org_rel_dao
-from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
@@ -49,23 +46,6 @@ class IapRulesEngineTest(ForsetiTestCase):
             parent=self.org789)
         self.project2 = Project('my-project-2', 12346,
             display_name='My project 2')
-
-        # patch the daos
-        self.org_patcher = mock.patch(
-            'google.cloud.forseti.common.data_access.'
-            'org_resource_rel_dao.OrgResourceRelDao')
-        self.mock_org_rel_dao = self.org_patcher.start()
-        self.mock_org_rel_dao.return_value = None
-
-        self.project_patcher = mock.patch(
-            'google.cloud.forseti.common.data_access.'
-            'project_dao.ProjectDao')
-        self.mock_project_dao = self.project_patcher.start()
-        self.mock_project_dao.return_value = None
-
-    def tearDown(self):
-        self.org_patcher.stop()
-        self.project_patcher.stop()
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -151,6 +131,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             project_id=self.project1.id,
             name='bs1')
         iap_resource = iap_scanner.IapResource(
+            project_full_name='',
             backend_service=service,
             alternate_services=set(),
             direct_access_sources=set(),
@@ -168,6 +149,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             project_id=self.project1.id,
             name='bs1')
         iap_resource = iap_scanner.IapResource(
+            project_full_name='',
             backend_service=service,
             alternate_services=set(),
             direct_access_sources=set(),
@@ -200,6 +182,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             project_id=self.project1.id,
             name='bs2')
         iap_resource = iap_scanner.IapResource(
+            project_full_name='',
             backend_service=service,
             alternate_services=set([alternate_service]),
             direct_access_sources=set(),
@@ -230,6 +213,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             project_id=self.project1.id,
             name='bs1')
         iap_resource = iap_scanner.IapResource(
+            project_full_name='',
             backend_service=service,
             alternate_services=set(),
             direct_access_sources=set([direct_source]),
@@ -263,6 +247,7 @@ class IapRulesEngineTest(ForsetiTestCase):
             project_id=self.project1.id,
             name='bs2')
         iap_resource = iap_scanner.IapResource(
+            project_full_name='',
             backend_service=service,
             alternate_services=set([alternate_service]),
             direct_access_sources=set(['some-tag']),

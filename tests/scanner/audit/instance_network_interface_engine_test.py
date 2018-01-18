@@ -44,15 +44,6 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         self.rule_index = 0
         self.ini = ini
         self.ini.LOGGER = mock.MagicMock()
-        # patch the organization resource relation dao
-        self.patcher = mock.patch(
-            'google.cloud.forseti.common.' +
-            'data_access.instance_dao.InstanceDao')
-        self.mock_instance_dao = self.patcher.start()
-        self.mock_instance_dao.return_value = None
-
-    def tearDown(self):
-        self.patcher.stop()
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly
