@@ -122,13 +122,11 @@ class BlacklistRuleBook(bre.BaseRuleBook):
                 Assigned automatically when the rule book is built.
         """
 
-        ip_file_url = rule_def.get('url')
-
-        ips, nets = self.get_and_parse_rule_url(ip_file_url)
+        ips, nets = self.get_and_parse_blacklist(rule_def.get('url'))
 
         rule_def_resource = {
-            "ips_list": ips,
-            "nets_list": nets
+            'ips_list': ips,
+            'nets_list': nets
         }
 
         rule = Rule(rule_blacklist=rule_def.get('blacklist'),
@@ -155,9 +153,8 @@ class BlacklistRuleBook(bre.BaseRuleBook):
         return resource_rules
 
     @staticmethod
-    def get_and_parse_rule_url(url):
-        """Download blacklist from provided url and parse it
-        to ips and net blocks
+    def get_and_parse_blacklist(url):
+        """Download blacklist and parse it into IPs and netblocks.
 
         Args:
             url (str): url to download blacklist from
@@ -168,10 +165,11 @@ class BlacklistRuleBook(bre.BaseRuleBook):
 
         """
         data = urllib2.urlopen(url).read()
-        ips = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
-        nets = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$', data, re.M)
+        ip_addresses = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
+        netblocks = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$',
+                               data, re.M)
 
-        return ips, nets
+        return ip_addresses, netblocks
 
 class Rule(object):
     """The rules class for instance_network_interface."""
@@ -206,7 +204,7 @@ class Rule(object):
         mask = (0xffffffff << (32 - int(bits))) & 0xffffffff
         return (ipaddrb & mask) == (netaddr & mask)
 
-    def check_if_blacklisted(self, ipaddr):
+    def is_blacklisted(self, ipaddr):
         """ Checks if ip address is in a blacklist
 
         Args:
@@ -242,7 +240,7 @@ class Rule(object):
         for access_config in instance_network_interface.access_configs:
             ipaddr = access_config.get('natIP')
 
-            if self.check_if_blacklisted(ipaddr):
+            if self.is_blacklisted(ipaddr):
                 yield self.RuleViolation(
                     resource_type='instance',
                     rule_blacklist=self.rule_blacklist,

@@ -40,7 +40,7 @@ class BlacklistScannerTest(ForsetiTestCase):
         a.read.side_effect = [fbsd.FAKE_BLACKLIST_SOURCE_1]
         mock_urlopen.return_value = a
 
-        output = bre.BlacklistRuleBook.get_and_parse_rule_url('')
+        output = bre.BlacklistRuleBook.get_and_parse_blacklist('')
         self.assertEqual(2, len(output))
         self.assertEqual(sorted(fbsd.EXPECTED_BLACKLIST_1), sorted(output))
         return output
