@@ -15,19 +15,13 @@
 """Scanner for the IAM rules engine."""
 
 from datetime import datetime
-import itertools
 import os
 import sys
 
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.data_access import errors as db_errors
-from google.cloud.forseti.common.data_access import folder_dao
-from google.cloud.forseti.common.data_access import organization_dao
-from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
-from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier
@@ -182,32 +176,25 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
+
             policy_data = []
-
-
             supported_iam_types = ['organization', 'folder', 'project']
-
             org_iam_policy_counter = 0
             folder_iam_policy_counter = 0
             project_iam_policy_counter = 0
+
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 if policy.parent.type not in supported_iam_types:
                     continue
 
                 if policy.parent.type == 'project':
                     project_iam_policy_counter += 1
-                    project = Project(
-                        policy.parent.name,
-                        parent=resource_util.create_resource(
-                            policy.parent.parent.name, policy.parent.parent.type))
-                    policy_data.append((project, policy))
+                    policy_data.append(
+                        (Project(policy.parent.name), policy))
                 elif policy.parent.type == 'folder':
                     folder_iam_policy_counter += 1
-                    folder = Folder(
-                        policy.parent.name,
-                        parent=resource_util.create_resource(
-                            policy.parent.parent.name, policy.parent.parent.type))
-                    policy_data.append((folder, policy))
+                    policy_data.append(
+                        (Folder(policy.parent.name), policy))
                 elif policy.parent.type == 'organization':
                     org_iam_policy_counter += 1
                     policy_data.append(
@@ -222,7 +209,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             ResourceType.FOLDER: folder_iam_policy_counter,
             ResourceType.PROJECT: project_iam_policy_counter,
         }
-
 
         return policy_data, resource_counts
 

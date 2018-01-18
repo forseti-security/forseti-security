@@ -131,8 +131,8 @@ class IamRulesEngine(bre.BaseRulesEngine):
         """Determine whether policy violates rules.
 
         Args:
-            resource (Resource): The resource that the policy belongs to.
-            policy (dict): The policy to compare against the rules.
+            resource (gcp_type): The resource that the policy belongs to.
+            policy (resource): The policy to compare against the rules.
                 See https://cloud.google.com/iam/reference/rest/v1/Policy.
             force_rebuild (bool): If True, rebuilds the rule book.
                 This will reload the rules definition file and add the
@@ -147,7 +147,8 @@ class IamRulesEngine(bre.BaseRulesEngine):
         policy_bindings = [
             iam_policy.IamPolicyBinding.create_from(b)
             for b in json.loads(policy.data).get('bindings', [])]
-        violations = self.rule_book.find_violations(resource, policy, policy_bindings)
+        violations = self.rule_book.find_violations(
+            resource, policy, policy_bindings)
 
         return set(violations)
 
@@ -385,11 +386,13 @@ class IamRuleBook(bre.BaseRuleBook):
         """Find policy binding violations in the rule book.
 
         Args:
-            resource (Resource): The GCP resource associated with the
+            resource (gcp_type): The GCP resource associated with the
                 policy binding.
                 This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
+            policy (resource): The policy to compare against the rules.
+                See https://cloud.google.com/iam/reference/rest/v1/Policy.
             policy_bindings (list): A list of IamPolicyBindings.
 
         Returns:
@@ -431,8 +434,6 @@ class IamRuleBook(bre.BaseRuleBook):
             # value for "inherit_from_parents".
             if not inherit_from_parents and inherit_from_parents is not None:
                 break
-        
-        violations = list(violations)
 
         return violations
 
