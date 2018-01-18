@@ -42,6 +42,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
          'rules_filename': 'group_rules.yaml'},
+    'gke_version_scanner':
+        {'module_name': 'gke_version_scanner',
+         'class_name': 'GkeVersionScanner',
+         'rules_filename': 'gke_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',

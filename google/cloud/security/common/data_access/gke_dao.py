@@ -15,6 +15,9 @@
 """Provides the data access object (DAO) for GKE."""
 
 from google.cloud.security.common.data_access import dao
+from google.cloud.security.common.data_access.sql_queries import select_data
+from google.cloud.security.common.gcp_type import gke_cluster
+from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
 
@@ -22,6 +25,22 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class GkeDao(dao.Dao):
-    """"Data access object (DAO) for AppEngine."""
+    """"Data access object (DAO) for Kubernetes Engine."""
 
-    pass
+    def get_clusters(self, timestamp):
+        """Get GKE clusters from a particular snapshot.
+
+        Args:
+            timestamp (str): The snapshot timestamp.
+
+        Returns:
+            list: A list of GkeCluster objects.
+
+        Raises:
+            MySQLError if a MySQL error occurs.
+        """
+        query = select_data.GKE_CLUSTERS_JSON.format(timestamp)
+        rows = self.execute_sql_with_fetch(
+            resource.ResourceType.GKE, query, ())
+        return [gke_cluster.GkeCluster.from_json(**row)
+                for row in rows]
