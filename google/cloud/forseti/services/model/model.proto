@@ -23,7 +23,7 @@ service Modeller {
 
   rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
 
-  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
+  rpc ListModel(ListModelRequest) returns (stream Model) {}
 
 }
 

@@ -655,8 +655,8 @@ def run_model(client, config, output, config_env):
 
     def do_list_models():
         """List models."""
-        result = client.list_models()
-        output.write(result)
+        for model in client.list_models():
+            output.write(model)
 
     def do_delete_model():
         """Delete a model."""

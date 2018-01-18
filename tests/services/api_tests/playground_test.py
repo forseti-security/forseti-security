@@ -66,16 +66,14 @@ class ApiTest(ForsetiTestCase):
 
     def has_n_models(self, client, number):
         """Returns true iff the server has n models."""
-        return len(client.list_models().models) == number
+        return len([m for m in client.list_models()]) == number
 
-    @unittest.skip('TODO: Fix')
     def test_create_empty_model_and_delete(self):
         """Test: Create empty model, then delete again."""
         def test(client):
             """API test callback."""
-            self.assertEquals(
-                len(client.list_models().models),
-                0,
+            self.assertTrue(
+                self.has_no_models(client),
                 'Expect no previous models')
             model1 = client.new_model('EMPTY', name='model1').model.handle
             model2 = client.new_model('EMPTY', name='model2').model.handle
@@ -94,7 +92,7 @@ class ApiTest(ForsetiTestCase):
         def test(client):
             """API test callback."""
             self.assertEqual(
-                [m.handle for m in client.list_models().models],
+                [m.handle for m in client.list_models()],
                 [],
                 'Expect no previous models')
             client.new_model('EMPTY', 'test_model')

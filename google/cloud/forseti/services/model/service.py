@@ -72,16 +72,12 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """List all models."""
 
         models = self.modeller.ListModel()
-        models_pb = []
         for model in models:
-            models_pb.append(model_pb2.Model(name=model.name,
-                                             handle=model.handle,
-                                             status=model.state,
-                                             message=model.message,
-                                             warnings=model.warnings))
-        reply = model_pb2.ListModelReply()
-        reply.models.extend(models_pb)
-        return reply
+            yield model_pb2.Model(name=model.name,
+                                  handle=model.handle,
+                                  status=model.state,
+                                  message=model.message,
+                                  warnings=model.warnings)
 
 
 class GrpcModellerFactory(object):
