@@ -71,4 +71,3 @@ message PingRequest {
 message PingReply {
   string data = 1;
 }
-

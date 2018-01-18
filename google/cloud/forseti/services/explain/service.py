@@ -21,6 +21,9 @@ from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
 
+# Required when using protocol buffers.
+# pylint: disable=no-member
+
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc

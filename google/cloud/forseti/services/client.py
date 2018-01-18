@@ -259,7 +259,8 @@ class ExplainClient(ForsetiClient):
             member_name=member_name,
             permission_names=permission_names,
             expand_resources=expand_resources)
-        return self.stub.get_access_by_members(request, metadata=self.metadata())
+        return self.stub.get_access_by_members(
+            request, metadata=self.metadata())
 
     @require_model
     def query_access_by_permissions(self,

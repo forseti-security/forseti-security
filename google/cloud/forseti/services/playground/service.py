@@ -22,6 +22,8 @@ from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playgrounder
 
+# Required when using protocol buffers.
+# pylint: disable=no-member
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -117,7 +119,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                               request.member_name,
                                               request.parent_name,
                                               request.only_delete_relationship)
-        return playground_pb2.DelGroupMemberReply()
+        return playground_pb2.DeleteGroupMemberReply()
 
     def list_group_members(self, request, context):
         """Lists members in the model."""
@@ -135,7 +137,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         handle = self._get_handle(context)
         self.playgrounder.delete_resource(handle,
                                           request.resource_type_name)
-        return playground_pb2.DelResourceReply()
+        return playground_pb2.DeleteResourceReply()
 
     def add_resource(self, request, context):
         """Adds a resource to the model."""
@@ -163,7 +165,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         handle = self._get_handle(context)
         self.playgrounder.delete_role(handle,
                                       request.role_name)
-        return playground_pb2.DelRoleReply()
+        return playground_pb2.DeleteRoleReply()
 
     def add_role(self, request, context):
         """Adds a role to the model."""

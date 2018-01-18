@@ -15,11 +15,14 @@
 """Base GCP client which uses the discovery API."""
 import logging
 import threading
-import googleapiclient
-from googleapiclient import discovery
 import httplib2
+
 from oauth2client import client
 from ratelimiter import RateLimiter
+
+import googleapiclient
+from googleapiclient import discovery
+
 from retrying import retry
 
 from google.cloud import forseti as forseti_security
