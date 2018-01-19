@@ -15,13 +15,14 @@
 """ Modeller API. """
 
 from google.cloud.forseti.services.model.importer import importer
-
+from google.cloud.forseti.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 # pylint: disable=invalid-name
 
+LOGGER = log_util.get_logger(__name__)
 
 class Modeller(object):
     """Implements the Modeller API."""
@@ -41,6 +42,9 @@ class Modeller(object):
         Returns:
             object: the created data model
         """
+
+        LOGGER.info("Creating model: %s, inventory_id = %s",
+                    name, inventory_id)
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
@@ -79,5 +83,6 @@ class Modeller(object):
     def DeleteModel(self, model_name):
         """Deletes a model."""
 
+        LOGGER.info("Deleting model: %s", model_name)
         model_manager = self.config.model_manager
         model_manager.delete(model_name)
