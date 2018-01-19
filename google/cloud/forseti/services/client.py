@@ -247,7 +247,7 @@ class ExplainClient(ForsetiClient):
             resource_name=resource_name,
             permission_names=permission_names,
             expand_groups=expand_groups)
-        return self.stub.GetAccessByResources(
+        return self.stub.GetAccessByResource(
             request, metadata=self.metadata())
 
     @require_model
@@ -259,7 +259,8 @@ class ExplainClient(ForsetiClient):
             member_name=member_name,
             permission_names=permission_names,
             expand_resources=expand_resources)
-        return self.stub.GetAccessByMembers(request, metadata=self.metadata())
+        return self.stub.GetAccessByMembers(
+            request, metadata=self.metadata())
 
     @require_model
     def query_access_by_permissions(self,
@@ -273,7 +274,7 @@ class ExplainClient(ForsetiClient):
             role_name (str): Role name to query for.
             permission_name (str): Permission name to query for.
             expand_groups (bool): Whether or not to expand groups.
-            epxand_resources (bool) Whether or not to expand resources.
+            expand_resources (bool): Whether or not to expand resources.
 
         Returns:
             object: Generator yielding access tuples.
@@ -284,7 +285,7 @@ class ExplainClient(ForsetiClient):
             permission_name=permission_name,
             expand_groups=expand_groups,
             expand_resources=expand_resources)
-        return self.stub.GetAccessByPermissions(
+        return self.stub.GetAccessByPermission(
             request,
             metadata=self.metadata())
 
@@ -296,7 +297,7 @@ class ExplainClient(ForsetiClient):
         role_prefixes = [] if role_prefixes is None else role_prefixes
         request = explain_pb2.GetPermissionsByRolesRequest(
             role_names=role_names, role_prefixes=role_prefixes)
-        return self.stub.GetPermissionsByRoles(
+        return self.stub.GetPermissionByRoles(
             request, metadata=self.metadata())
 
     @require_model
@@ -347,8 +348,8 @@ class PlaygroundClient(ForsetiClient):
     def del_role(self, role_name):
         """Delete a role from the model."""
 
-        return self.stub.DelRole(
-            playground_pb2.DelRoleRequest(
+        return self.stub.DeleteRole(
+            playground_pb2.DeleteRoleRequest(
                 role_name=role_name),
             metadata=self.metadata())
 
@@ -376,11 +377,11 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def del_resource(self, resource_type_name):
+    def delete_resource(self, resource_type_name):
         """Delete a resource from the hierarchy and the subtree."""
 
-        return self.stub.DelResource(
-            playground_pb2.DelResourceRequest(
+        return self.stub.DeleteResource(
+            playground_pb2.DeleteResourceRequest(
                 resource_type_name=resource_type_name),
             metadata=self.metadata())
 
@@ -406,12 +407,12 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def del_member(self, member_name, parent_name=None,
-                   only_delete_relationship=False):
+    def delete_member(self, member_name, parent_name=None,
+                      only_delete_relationship=False):
         """Delete a member from the member relationship."""
 
-        return self.stub.DelGroupMember(
-            playground_pb2.DelGroupMemberRequest(
+        return self.stub.DeleteGroupMember(
+            playground_pb2.DeleteGroupMemberRequest(
                 member_name=member_name,
                 parent_name=parent_name,
                 only_delete_relationship=only_delete_relationship),

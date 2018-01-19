@@ -77,13 +77,12 @@ class Crawler(crawler.Crawler):
 
         progresser = self.config.progresser
         try:
-
-            resource.getIamPolicy(self.get_client())
-            resource.getGCSPolicy(self.get_client())
-            resource.getDatasetPolicy(self.get_client())
-            resource.getCloudSQLPolicy(self.get_client())
-            resource.getBillingInfo(self.get_client())
-            resource.getEnabledAPIs(self.get_client())
+            resource.get_iam_policy(self.get_client())
+            resource.get_gcs_policy(self.get_client())
+            resource.get_dataset_policy(self.get_client())
+            resource.get_cloudsql_policy(self.get_client())
+            resource.get_billing_info(self.get_client())
+            resource.get_enabled_apis(self.get_client())
 
             self.write(resource)
         except Exception as e:

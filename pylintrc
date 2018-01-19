@@ -39,7 +39,10 @@ persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle,pylint.extensions.emptystring,pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type,pylint.extensions.docparams
+load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,
+ pylint.extensions.bad_builtin,pylint.extensions.docstyle,pylint.extensions.emptystring,
+ pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type,
+ pylint.extensions.docparams
 
 # Plug-in options
 #
@@ -65,7 +68,8 @@ enable=all
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
-disable=no-name-in-module,relative-import,suppressed-message,locally-disabled,locally-enabled,too-few-public-methods
+disable=no-name-in-module,relative-import,suppressed-message,locally-disabled,locally-enabled,
+ too-few-public-methods
 
 [REPORTS]
 
@@ -108,7 +112,9 @@ ignore-mixin-members=yes
 
 # List of classes names for which member attributes should not be checked
 # (useful for classes with attributes dynamically set).
-ignored-classes=SQLObject,Resource,ProjectResult,EnforcerLog
+ignored-classes=SQLObject,Resource,ProjectResult,EnforcerLog,BindingStrategy,ExplainDeniedReply,
+ ExplainGrantedReply,GetAccessByResourcesReply,GetAccessByMembersReply,GetPermissionsByRolesReply,
+ ListRolesReply,ListResourcesReply,ListGroupMembersReply,GetIamPolicyReply,Binding,ListModelReply
 
 # When zope mode is activated, add a predefined set of Zope acquired attributes
 # to generated-members.
@@ -289,7 +295,9 @@ max-public-methods=20
 
 # List of interface methods to ignore, separated by a comma. This is used for
 # instance to not check methods defines in Zope's Interface base class.
-ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
+ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,
+ queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,
+ isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
 
 # List of method names used to declare (i.e. assign) instance attributes.
 defining-attr-methods=__init__,__new__,setUp

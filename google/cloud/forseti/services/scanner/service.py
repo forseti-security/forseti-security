@@ -45,12 +45,12 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         self.scanner = scanner_api
         self.service_config = service_config
 
-    def Ping(self, request, _):
+    def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return scanner_pb2.PingReply(data=request.data)
 
-    def Run(self, request, context):
+    def run(self, request, context):
         """Run scanner."""
 
         model_name = self._get_handle(context)

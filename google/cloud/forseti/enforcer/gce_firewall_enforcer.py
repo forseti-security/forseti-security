@@ -24,8 +24,8 @@ import socket
 import ssl
 import time
 
-from googleapiclient import errors
 import httplib2
+from googleapiclient import errors
 from retrying import retry
 from google.apputils import datelib
 from google.cloud.forseti.common.util import log_util

@@ -19,17 +19,18 @@ from google.cloud.forseti.common.util import log_util
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
+# pylint: disable=no-self-use
 
 LOGGER = log_util.get_logger(__name__)
 
-# pylint: disable=invalid-name,no-self-use
+
 class Playgrounder(object):
     """Playground API implementation."""
 
     def __init__(self, config):
         self.config = config
 
-    def SetIamPolicy(self, model_name, resource, policy):
+    def set_iam_policy(self, model_name, resource, policy):
         """Sets the IAM policy for the resource."""
 
         LOGGER.info("Setting IAM policy, resource = %s, policy = %s,"
@@ -39,7 +40,7 @@ class Playgrounder(object):
         with scoped_session as session:
             data_access.set_iam_policy(session, resource, policy)
 
-    def GetIamPolicy(self, model_name, resource):
+    def get_iam_policy(self, model_name, resource):
         """Gets the IAM policy for the resource."""
 
         LOGGER.debug("Retrieving IAM policy, model_name = %s, resource = %s",
@@ -49,7 +50,7 @@ class Playgrounder(object):
         with scoped_session as session:
             return data_access.get_iam_policy(session, resource)
 
-    def CheckIamPolicy(self, model_name, resource, permission, identity):
+    def check_iam_policy(self, model_name, resource, permission, identity):
         """Checks access according to IAM policy for the resource."""
 
         LOGGER.debug("Checking IAM policy, model_name = %s, resource = %s,"
@@ -61,7 +62,7 @@ class Playgrounder(object):
             return data_access.check_iam_policy(
                 session, resource, permission, identity)
 
-    def AddGroupMember(self, model_name, member_type_name, parent_type_names):
+    def add_group_member(self, model_name, member_type_name, parent_type_names):
         """Adds a member to the model."""
 
         LOGGER.info("Adding group member to model, model_name = %s,"
@@ -73,8 +74,8 @@ class Playgrounder(object):
             return data_access.add_group_member(
                 session, member_type_name, parent_type_names, denorm=True)
 
-    def DelGroupMember(self, model_name, member_name, parent_name,
-                       only_delete_relationship):
+    def delete_group_member(self, model_name, member_name, parent_name,
+                            only_delete_relationship):
         """Deletes a member from the model."""
 
         LOGGER.info("Deleting group member from model, member_name = %s,"
@@ -90,7 +91,7 @@ class Playgrounder(object):
                 only_delete_relationship,
                 denorm=True)
 
-    def ListGroupMembers(self, model_name, member_name_prefix):
+    def list_group_members(self, model_name, member_name_prefix):
         """Lists a member from the model."""
 
         LOGGER.debug("Listing Group members, model_name = %s, "
@@ -100,8 +101,8 @@ class Playgrounder(object):
         with scoped_session as session:
             return data_access.list_group_members(session, member_name_prefix)
 
-    def DelResource(self, model_name, resource_type_name):
-        """Deletes a resource from the model."""
+    def delete_resource(self, model_name, resource_type_name):
+        """Deletes a member from the model."""
 
         LOGGER.info("Deleting resource from model, resource_type_name = %s, "
                     "model_name = %s", resource_type_name, model_name)
@@ -113,10 +114,8 @@ class Playgrounder(object):
             data_access.del_resource_by_name(session, resource_type_name)
             session.commit()
 
-    def AddResource(self, model_name,
-                    resource_type_name,
-                    parent_type_name,
-                    no_require_parent):
+    def add_resource(self, model_name, resource_type_name, parent_type_name,
+                     no_require_parent):
         """Adds a resource to the model."""
 
         LOGGER.info("Adding resource to model, resource_type_name = %s, "
@@ -133,7 +132,7 @@ class Playgrounder(object):
                 no_require_parent)
             session.commit()
 
-    def ListResources(self, model_name, full_resource_name_prefix):
+    def list_resources(self, model_name, full_resource_name_prefix):
         """Lists resources by resource name prefix."""
 
         LOGGER.debug("Listing resources, model_name = %s,"
@@ -145,7 +144,7 @@ class Playgrounder(object):
             return data_access.list_resources_by_prefix(
                 session, full_resource_name_prefix)
 
-    def DelRole(self, model_name, role_name):
+    def delete_role(self, model_name, role_name):
         """Deletes role from the model."""
 
         LOGGER.info("Deleting role from model, model_name = %s,"
@@ -156,7 +155,7 @@ class Playgrounder(object):
             data_access.del_role_by_name(session, role_name)
             session.commit()
 
-    def AddRole(self, model_name, role_name, permission_names):
+    def add_role(self, model_name, role_name, permission_names):
         """Adds a role to the model."""
 
         LOGGER.info("Adding role to model, model_name = %s, "
@@ -168,7 +167,7 @@ class Playgrounder(object):
             data_access.add_role_by_name(session, role_name, permission_names)
             session.commit()
 
-    def ListRoles(self, model_name, role_name_prefix):
+    def list_roles(self, model_name, role_name_prefix):
         """Lists the role in the model matching the prefix."""
 
         LOGGER.info("Listing roles, model_name = %s,"

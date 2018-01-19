@@ -15,6 +15,7 @@
 """Base GCP client which uses the discovery API."""
 import logging
 import threading
+
 import googleapiclient
 from googleapiclient import discovery
 import httplib2
