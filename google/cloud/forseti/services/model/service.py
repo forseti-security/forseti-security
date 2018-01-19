@@ -49,7 +49,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         return model_pb2.PingReply(data=request.data)
     # pylint: enable=no-self-use
 
-    def create_model(self, request):
+    def create_model(self, request, context):
         """Creates a new model from an import source."""
 
         model = self.modeller.create_model(request.type,

@@ -47,7 +47,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         self.playgrounder = playgrounder_api
 
     def ping(self, request, _):
-        """ping implemented to check service availability."""
+        """Ping implemented to check service availability."""
 
         return playground_pb2.PingReply(data=request.data)
 

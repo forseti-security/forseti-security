@@ -88,7 +88,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_error=repr(progress.last_error))
 
     @autoclose_stream
-    def list(self, _):
+    def list(self, request, _):
         """Lists existing inventory.
 
         Args:
