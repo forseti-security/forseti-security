@@ -59,7 +59,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         for binding in request.policy.bindings:
             policy['bindings'][binding.role] = binding.members
 
-        self.playgrounder.set_iam_policy(handle,
+        self.playgrounder.SetIamPolicy(handle,
                                          request.resource,
                                          policy)
 
@@ -68,8 +68,8 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     def get_iam_policy(self, request, context):
         """Gets the policy for a resource."""
         handle = self._get_handle(context)
-        policy = self.playgrounder.get_iam_policy(handle,
-                                                  request.resource)
+        policy = self.playgrounder.GetIamPolicy(handle,
+                                                request.resource)
 
         reply = playground_pb2.GetIamPolicyReply()
 
