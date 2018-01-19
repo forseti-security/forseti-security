@@ -22,6 +22,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'bigquery_scanner',
          'class_name': 'BigqueryScanner',
          'rules_filename': 'bigquery_rules.yaml'},
+    'blacklist':
+        {'module_name': 'blacklist_scanner',
+         'class_name': 'BlacklistScanner',
+         'rules_filename': 'blacklist_rules.yaml'},
     'bucket_acl':
         {'module_name': 'bucket_rules_scanner',
          'class_name': 'BucketsAclScanner',
@@ -42,6 +46,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
          'rules_filename': 'group_rules.yaml'},
+    'gke_version_scanner':
+        {'module_name': 'gke_version_scanner',
+         'class_name': 'GkeVersionScanner',
+         'rules_filename': 'gke_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',

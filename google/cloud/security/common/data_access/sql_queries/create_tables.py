@@ -313,6 +313,39 @@ CREATE_FORWARDING_RULES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
+CREATE_GKE_TABLE = """
+    CREATE TABLE `{0}` (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `project_id` varchar(255) DEFAULT NULL,
+        `addons_config` json DEFAULT NULL,
+        `cluster_ipv4_cidr` varchar(255) DEFAULT NULL,
+        `create_time` varchar(255) DEFAULT NULL,  # Handle RFC3339 (timezone)
+        `current_master_version` varchar(255) DEFAULT NULL,
+        `current_node_count` int DEFAULT NULL,
+        `current_node_version` varchar(255) DEFAULT NULL,
+        `endpoint` varchar(255) DEFAULT NULL,
+        `initial_cluster_version` varchar(255) DEFAULT NULL,
+        `instance_group_urls` varchar(255) DEFAULT NULL,
+        `legacy_abac` json DEFAULT NULL,
+        `locations` varchar(255) DEFAULT NULL,
+        `logging_service` varchar(255) DEFAULT NULL,
+        `monitoring_service` varchar(255) DEFAULT NULL,
+        `name` varchar(255) DEFAULT NULL,
+        `network` varchar(255) DEFAULT NULL,
+        `node_config` json DEFAULT NULL,
+        `node_ipv4_cidr_size` int DEFAULT NULL,
+        `node_pools` json DEFAULT NULL,
+        `self_link` varchar(255) DEFAULT NULL,
+        `services_ipv4_cidr` varchar(255) DEFAULT NULL,
+        `status` varchar(255) DEFAULT NULL,
+        `subnetwork` varchar(255) DEFAULT NULL,
+        `zone` varchar(255) DEFAULT NULL,
+        `server_config` json DEFAULT NULL,
+        `raw_cluster` json DEFAULT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+"""
+
 # TODO: Add a RAW_GROUP_MEMBERS_TABLE.
 CREATE_GROUP_MEMBERS_TABLE = """
     CREATE TABLE `{0}` (
@@ -533,6 +566,7 @@ CREATE_VIOLATIONS_TABLE = """
         `violation_type` enum('UNSPECIFIED',
                               'ADDED','REMOVED',
                               'BIGQUERY_VIOLATION',
+                              'BLACKLIST_VIOLATION',
                               'BUCKET_VIOLATION',
                               'CLOUD_SQL_VIOLATION',
                               'FIREWALL_BLACKLIST_VIOLATION',
@@ -540,6 +574,7 @@ CREATE_VIOLATIONS_TABLE = """
                               'FIREWALL_REQUIRED_VIOLATION',
                               'FIREWALL_WHITELIST_VIOLATION',
                               'FORWARDING_RULE_VIOLATION',
+                              'GKE_VERSION_VIOLATION',
                               'GROUP_VIOLATION',
                               'IAP_VIOLATION',
                               'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,

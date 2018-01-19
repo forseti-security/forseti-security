@@ -55,6 +55,9 @@ class ResourceType(object):
     # AppEngine
     APPENGINE = 'appengine'
 
+    # GKE
+    GKE = 'gke'
+
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,
