@@ -186,11 +186,11 @@ class Inventory(BASE):
         """
 
         parent = resource.parent()
-        iam_policy = resource.getIamPolicy()
-        gcs_policy = resource.getGCSPolicy()
-        dataset_policy = resource.getDatasetPolicy()
-        billing_info = resource.getBillingInfo()
-        enabled_apis = resource.getEnabledAPIs()
+        iam_policy = resource.get_iam_policy()
+        gcs_policy = resource.get_gcs_policy()
+        dataset_policy = resource.get_dataset_policy()
+        billing_info = resource.get_billing_info()
+        enabled_apis = resource.get_enabled_apis()
 
         rows = []
         rows.append(
