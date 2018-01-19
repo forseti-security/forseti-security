@@ -50,9 +50,9 @@ rules:
     # Master versions are always greater or equal to the node pool version.
     check_serverconfig_valid_master_versions: false
 
-# This rule checks for any node pools that are running a version less than
-# the minimum allowed version, regardless of if it is supported or not.
-  - name: Meltdown and Spectre patches applied
+# This rule checks for any node pools that are running a version
+# that is not patched for Meltdown & Spectre.
+  - name: Meltdown and Spectre patches not applied
     resource:
       - type: organization
         resource_ids:
