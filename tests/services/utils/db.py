@@ -47,7 +47,6 @@ def cleanup(test_callback):
 
     def wrapper(client):
         """Decorator implementation."""
-
         for model in client.list_models().models:
             client.delete_model(model.handle)
         test_callback(client)
