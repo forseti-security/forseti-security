@@ -81,7 +81,7 @@ class ScannerClient(ForsetiClient):
         """
 
         data = binascii.hexlify(os.urandom(16))
-        echo = self.stub.ping(scanner_pb2.PingRequest(data=data)).data
+        echo = self.stub.Ping(scanner_pb2.PingRequest(data=data)).data
         return echo == data
 
     @require_model
@@ -90,7 +90,7 @@ class ScannerClient(ForsetiClient):
 
         request = scanner_pb2.RunRequest(
             config_dir=config_dir)
-        return self.stub.run(request,
+        return self.stub.Run(request,
                              metadata=self.metadata())
 
 
@@ -111,13 +111,13 @@ class ModelClient(ForsetiClient):
         """
 
         data = binascii.hexlify(os.urandom(16))
-        echo = self.stub.ping(model_pb2.PingRequest(data=data)).data
+        echo = self.stub.Ping(model_pb2.PingRequest(data=data)).data
         return echo == data
 
     def new_model(self, source, name, inventory_id=-1, background=True):
         """Creates a new model, reply contains the handle."""
 
-        return self.stub.create_model(
+        return self.stub.CreateModel(
             model_pb2.CreateModelRequest(
                 type=source,
                 name=name,
@@ -127,12 +127,12 @@ class ModelClient(ForsetiClient):
     def list_models(self):
         """List existing models in the service."""
 
-        return self.stub.list_model(model_pb2.ListModelRequest())
+        return self.stub.ListModel(model_pb2.ListModelRequest())
 
     def delete_model(self, model_name):
         """Delete a model, deletes all corresponding data."""
 
-        return self.stub.delete_model(
+        return self.stub.DeleteModel(
             model_pb2.DeleteModelRequest(
                 handle=model_name),
             metadata=self.metadata())
@@ -155,7 +155,7 @@ class InventoryClient(ForsetiClient):
         """
 
         data = binascii.hexlify(os.urandom(16))
-        echo = self.stub.ping(inventory_pb2.PingRequest(data=data)).data
+        echo = self.stub.Ping(inventory_pb2.PingRequest(data=data)).data
         return echo == data
 
     def create(self, background=False, import_as=None):
@@ -164,27 +164,27 @@ class InventoryClient(ForsetiClient):
         request = inventory_pb2.CreateRequest(
             background=background,
             model_name=import_as)
-        return self.stub.create(request)
+        return self.stub.Create(request)
 
     def get(self, inventory_id):
         """Returns all information about a particular inventory."""
 
         request = inventory_pb2.GetRequest(
             id=inventory_id)
-        return self.stub.get(request)
+        return self.stub.Get(request)
 
     def delete(self, inventory_id):
         """Delete an inventory."""
 
         request = inventory_pb2.DeleteRequest(
             id=inventory_id)
-        return self.stub.delete(request)
+        return self.stub.Delete(request)
 
     def list(self):
         """Lists all available inventory."""
 
         request = inventory_pb2.ListRequest()
-        return self.stub.list(request)
+        return self.stub.List(request)
 
 
 class ExplainClient(ForsetiClient):
@@ -205,7 +205,7 @@ class ExplainClient(ForsetiClient):
         """
 
         data = binascii.hexlify(os.urandom(16))
-        return self.stub.ping(explain_pb2.PingRequest(data=data)).data == data
+        return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
 
     def explain_denied(self, member_name, resource_names, roles=None,
                        permission_names=None):
@@ -220,7 +220,7 @@ class ExplainClient(ForsetiClient):
             resources=resource_names,
             roles=roles,
             permissions=permission_names)
-        return self.stub.explain_denied(request, metadata=self.metadata())
+        return self.stub.ExplainDenied(request, metadata=self.metadata())
 
     def explain_granted(self, member_name, resource_name, role=None,
                         permission=None):
@@ -236,7 +236,7 @@ class ExplainClient(ForsetiClient):
             request.permission = permission
         request.resource = resource_name
         request.member = member_name
-        return self.stub.explain_granted(request, metadata=self.metadata())
+        return self.stub.ExplainGranted(request, metadata=self.metadata())
 
     @require_model
     def query_access_by_resources(self, resource_name, permission_names,
@@ -247,7 +247,7 @@ class ExplainClient(ForsetiClient):
             resource_name=resource_name,
             permission_names=permission_names,
             expand_groups=expand_groups)
-        return self.stub.get_access_by_resources(
+        return self.stub.GetAccessByResource(
             request, metadata=self.metadata())
 
     @require_model
@@ -259,7 +259,7 @@ class ExplainClient(ForsetiClient):
             member_name=member_name,
             permission_names=permission_names,
             expand_resources=expand_resources)
-        return self.stub.get_access_by_members(
+        return self.stub.GetAccessByMembers(
             request, metadata=self.metadata())
 
     @require_model
@@ -274,7 +274,7 @@ class ExplainClient(ForsetiClient):
             role_name (str): Role name to query for.
             permission_name (str): Permission name to query for.
             expand_groups (bool): Whether or not to expand groups.
-            epxand_resources (bool) Whether or not to expand resources.
+            expand_resources (bool): Whether or not to expand resources.
 
         Returns:
             object: Generator yielding access tuples.
@@ -285,7 +285,7 @@ class ExplainClient(ForsetiClient):
             permission_name=permission_name,
             expand_groups=expand_groups,
             expand_resources=expand_resources)
-        return self.stub.get_access_by_permissions(
+        return self.stub.GetAccessByPermission(
             request,
             metadata=self.metadata())
 
@@ -297,14 +297,14 @@ class ExplainClient(ForsetiClient):
         role_prefixes = [] if role_prefixes is None else role_prefixes
         request = explain_pb2.GetPermissionsByRolesRequest(
             role_names=role_names, role_prefixes=role_prefixes)
-        return self.stub.get_permissions_by_roles(
+        return self.stub.GetPermissionByRoles(
             request, metadata=self.metadata())
 
     @require_model
     def denormalize(self):
         """Denormalize the entire model into access triples."""
 
-        return self.stub.denormalize(
+        return self.stub.Denormalize(
             explain_pb2.DenormalizeRequest(),
             metadata=self.metadata())
 
@@ -330,7 +330,7 @@ class PlaygroundClient(ForsetiClient):
         """Check if the Playground service is available."""
 
         data = binascii.hexlify(os.urandom(16))
-        return self.stub.ping(
+        return self.stub.Ping(
             playground_pb2.PingRequest(
                 data=data)).data == data
 
@@ -338,7 +338,7 @@ class PlaygroundClient(ForsetiClient):
     def add_role(self, role_name, permissions):
         """Add a role associated with a list of permissions to the model."""
 
-        return self.stub.add_role(
+        return self.stub.AddRole(
             playground_pb2.AddRoleRequest(
                 role_name=role_name,
                 permissions=permissions),
@@ -348,7 +348,7 @@ class PlaygroundClient(ForsetiClient):
     def del_role(self, role_name):
         """Delete a role from the model."""
 
-        return self.stub.delete_role(
+        return self.stub.DeleteRole(
             playground_pb2.DeleteRoleRequest(
                 role_name=role_name),
             metadata=self.metadata())
@@ -357,7 +357,7 @@ class PlaygroundClient(ForsetiClient):
     def list_roles(self, role_name_prefix):
         """List roles by prefix, can be empty."""
 
-        return self.stub.list_roles(
+        return self.stub.ListRoles(
             playground_pb2.ListRolesRequest(
                 prefix=role_name_prefix),
             metadata=self.metadata())
@@ -369,7 +369,7 @@ class PlaygroundClient(ForsetiClient):
                      no_parent=False):
         """Add a resource to the hierarchy."""
 
-        return self.stub.add_resource(
+        return self.stub.AddResource(
             playground_pb2.AddResourceRequest(
                 resource_type_name=resource_type_name,
                 parent_type_name=parent_type_name,
@@ -380,7 +380,7 @@ class PlaygroundClient(ForsetiClient):
     def delete_resource(self, resource_type_name):
         """Delete a resource from the hierarchy and the subtree."""
 
-        return self.stub.delete_resource(
+        return self.stub.DeleteResource(
             playground_pb2.DeleteResourceRequest(
                 resource_type_name=resource_type_name),
             metadata=self.metadata())
@@ -389,7 +389,7 @@ class PlaygroundClient(ForsetiClient):
     def list_resources(self, resource_name_prefix):
         """List resources by name prefix."""
 
-        return self.stub.list_resources(
+        return self.stub.ListResources(
             playground_pb2.ListResourcesRequest(
                 prefix=resource_name_prefix),
             metadata=self.metadata())
@@ -400,7 +400,7 @@ class PlaygroundClient(ForsetiClient):
 
         if parent_type_names is None:
             parent_type_names = []
-        return self.stub.add_group_member(
+        return self.stub.AddGroupMember(
             playground_pb2.AddGroupMemberRequest(
                 member_type_name=member_type_name,
                 parent_type_names=parent_type_names),
@@ -411,7 +411,7 @@ class PlaygroundClient(ForsetiClient):
                       only_delete_relationship=False):
         """Delete a member from the member relationship."""
 
-        return self.stub.delete_group_member(
+        return self.stub.DeleteGroupMember(
             playground_pb2.DeleteGroupMemberRequest(
                 member_name=member_name,
                 parent_name=parent_name,
@@ -422,7 +422,7 @@ class PlaygroundClient(ForsetiClient):
     def list_members(self, member_name_prefix):
         """List members by prefix."""
 
-        return self.stub.list_group_members(
+        return self.stub.ListGroupMembers(
             playground_pb2.ListGroupMembersRequest(
                 prefix=member_name_prefix),
             metadata=self.metadata())
@@ -438,7 +438,7 @@ class PlaygroundClient(ForsetiClient):
             members in policy['bindings'].iteritems()]
         policypb = playground_pb2.Policy(
             bindings=bindingspb, etag=policy['etag'])
-        return self.stub.set_iam_policy(
+        return self.stub.SetIamPolicy(
             playground_pb2.SetIamPolicyRequest(
                 resource=full_resource_name,
                 policy=policypb),
@@ -448,7 +448,7 @@ class PlaygroundClient(ForsetiClient):
     def get_iam_policy(self, full_resource_name):
         """Get the IAM policy from the resource."""
 
-        return self.stub.get_iam_policy(
+        return self.stub.GetIamPolicy(
             playground_pb2.GetIamPolicyRequest(
                 resource=full_resource_name),
             metadata=self.metadata())
@@ -458,7 +458,7 @@ class PlaygroundClient(ForsetiClient):
                          member_name):
         """Check access via IAM policy."""
 
-        return self.stub.check_iam_policy(
+        return self.stub.CheckIamPolicy(
             playground_pb2.CheckIamPolicyRequest(
                 resource=full_resource_name,
                 permission=permission_name,

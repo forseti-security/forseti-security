@@ -17,13 +17,13 @@ syntax = "proto3";
 package model;
 
 service Modeller {
-  rpc ping(PingRequest) returns (PingReply) {}
+  rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc create_model(CreateModelRequest) returns (CreateModelReply) {}
+  rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
 
-  rpc delete_model(DeleteModelRequest) returns (DeleteModelReply) {}
+  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
 
-  rpc list_model(ListModelRequest) returns (ListModelReply) {}
+  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
 
 }
 

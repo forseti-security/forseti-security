@@ -19,15 +19,15 @@ import "google/protobuf/timestamp.proto";
 package inventory;
 
 service Inventory {
-  rpc ping(PingRequest) returns (PingReply) {}
+  rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc create(CreateRequest) returns (stream Progress) {}
+  rpc Create(CreateRequest) returns (stream Progress) {}
 
-  rpc list(ListRequest) returns (stream InventoryIndex) {}
+  rpc List(ListRequest) returns (stream InventoryIndex) {}
 
-  rpc get(GetRequest) returns (GetReply) {}
+  rpc Get(GetRequest) returns (GetReply) {}
 
-  rpc delete(DeleteRequest) returns (DeleteReply) {}
+  rpc Delete(DeleteRequest) returns (DeleteReply) {}
 
 }
 

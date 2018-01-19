@@ -17,27 +17,27 @@ syntax = "proto3";
 package explain;
 
 service Explain {
-  rpc ping(PingRequest) returns (PingReply) {}
+  rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc get_access_by_permissions(GetAccessByPermissionsRequest) returns (stream Access) {}
+  rpc GetAccessByPermission(GetAccessByPermissionsRequest) returns (stream Access) {}
 
-  rpc get_access_by_resources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
+  rpc GetAccessByResource(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
 
-  rpc get_access_by_members(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
+  rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
 
-  rpc get_permissions_by_roles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
+  rpc GetPermissionByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
 
-  rpc create_model(CreateModelRequest) returns (CreateModelReply) {}
+  rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
 
-  rpc delete_model(DeleteModelRequest) returns (DeleteModelReply) {}
+  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
 
-  rpc list_model(ListModelRequest) returns (ListModelReply) {}
+  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
 
-  rpc denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
+  rpc Denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
 
-  rpc explain_granted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
+  rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
 
-  rpc explain_denied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
+  rpc ExplainDenied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
 
 }
 

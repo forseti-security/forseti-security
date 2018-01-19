@@ -17,22 +17,22 @@ syntax = "proto3";
 package playground;
 
 service Playground {
-  rpc ping(PingRequest) returns (PingReply) {}
-  rpc set_iam_policy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
-  rpc get_iam_policy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
-  rpc check_iam_policy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
+  rpc Ping(PingRequest) returns (PingReply) {}
+  rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
+  rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
+  rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
 
-  rpc add_group_member(AddGroupMemberRequest) returns (AddGroupMemberReply) {}
-  rpc delete_group_member(DeleteGroupMemberRequest) returns (DeleteGroupMemberReply) {}
-  rpc list_group_members(ListGroupMembersRequest) returns (ListGroupMembersReply) {}
+  rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberReply) {}
+  rpc DeleteGroupMember(DeleteGroupMemberRequest) returns (DeleteGroupMemberReply) {}
+  rpc ListGroupMembers(ListGroupMembersRequest) returns (ListGroupMembersReply) {}
 
-  rpc add_resource(AddResourceRequest) returns (AddResourceReply) {}
-  rpc delete_resource(DeleteResourceRequest) returns (DeleteResourceReply) {}
-  rpc list_resources(ListResourcesRequest) returns (ListResourcesReply) {}
+  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {}
+  rpc DeleteResource(DeleteResourceRequest) returns (DeleteResourceReply) {}
+  rpc ListResources(ListResourcesRequest) returns (ListResourcesReply) {}
 
-  rpc add_role(AddRoleRequest) returns (AddRoleReply) {}
-  rpc delete_role(DeleteRoleRequest) returns (DeleteRoleReply) {}
-  rpc list_roles(ListRolesRequest) returns (ListRolesReply) {}
+  rpc AddRole(AddRoleRequest) returns (AddRoleReply) {}
+  rpc DeleteRole(DeleteRoleRequest) returns (DeleteRoleReply) {}
+  rpc ListRoles(ListRolesRequest) returns (ListRolesReply) {}
 }
 
 message AddRoleRequest {

@@ -17,9 +17,9 @@ syntax = "proto3";
 package scanner;
 
 service Scanner {
-  rpc ping(PingRequest) returns (PingReply) {}
+  rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc run(RunRequest) returns (RunReply) {}
+  rpc Run(RunRequest) returns (RunReply) {}
 
 }
 
