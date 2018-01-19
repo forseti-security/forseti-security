@@ -70,6 +70,12 @@ class Modeller(object):
         model_manager = self.config.model_manager
         return model_manager.models()
 
+    def GetModel(self, model):
+        """Get details of a model by name or handle."""
+
+        model_manager = self.config.model_manager
+        return model_manager.get_model(model)
+
     def DeleteModel(self, model_name):
         """Deletes a model."""
 

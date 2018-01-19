@@ -1635,6 +1635,32 @@ class ModelManager(object):
         else:
             return instantiate_model(session, model_name, expunge)
 
+    def get_model(self, model, expunge=True, session=None):
+        """Get model from database by name or handle."""
+
+        def query_model(session, model, expunge):
+            """Get a model object by querying the database.
+
+            Args:
+                session (object): Database session.
+                model (str): Model name or handle.
+                expunge (bool): Whether or not to detach the object from
+                                the session for use in another session.
+            """
+
+            item = session.query(Model).filter(or_(
+                Model.handle == model,
+                Model.name == model)).first()
+            if expunge and item:
+                session.expunge(item)
+            return item
+
+        if not session:
+            with self.modelmaker() as scoped_session:
+                return query_model(scoped_session, model, expunge)
+        else:
+            return query_model(session, model, expunge)
+
     def add_description(self, model_name, new_description, session=None):
         """Add description to a model.
 

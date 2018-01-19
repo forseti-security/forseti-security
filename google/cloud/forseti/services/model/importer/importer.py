@@ -15,7 +15,7 @@
 """ Importer implementations. """
 
 # pylint: disable=unused-argument,too-many-instance-attributes
-# pylint: disable=no-self-use,not-callable
+# pylint: disable=no-self-use,not-callable,too-many-lines
 
 from StringIO import StringIO
 import traceback
@@ -71,7 +71,7 @@ class EmptyImporter(object):
         self.model.add_description(json.dumps({
             "source":"empty",
             "prestine":True
-        }))
+            }))
         self.model.set_done()
         self.session.commit()
 
@@ -168,9 +168,9 @@ class InventoryImporter(object):
             with Inventory(self.session, self.inventory_id, True) as inventory:
 
                 self.model.add_description(json.dumps({
-                        "source":"inventory",
-                        "source_info":str(inventory.index),
-                        "prestine":True
+                    "source":"inventory",
+                    "source_info":str(inventory.index),
+                    "prestine":True
                     }))
 
                 for resource in inventory.iter(['organization']):

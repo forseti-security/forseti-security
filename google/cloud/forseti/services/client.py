@@ -129,6 +129,14 @@ class ModelClient(ForsetiClient):
 
         return self.stub.ListModel(model_pb2.ListModelRequest())
 
+    def get_model(self, model):
+        """Get the details of a model by name or handle."""
+
+        return self.stub.GetModel(
+            model_pb2.GetModelRequest(
+                identifier=model),
+            metadata=self.metadata())
+
     def delete_model(self, model_name):
         """Delete a model, deletes all corresponding data."""
 
@@ -503,6 +511,11 @@ class ClientComposition(object):
         """List existing models."""
 
         return self.model.list_models()
+
+    def get_model(self, model):
+        """Get the details of a model by name or handle"""
+
+        return self.model.get_model(model)
 
     def switch_model(self, model_name):
         """Switch the client into using a model."""

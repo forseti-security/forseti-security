@@ -23,7 +23,9 @@ service Modeller {
 
   rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
 
-  rpc ListModel(ListModelRequest) returns (stream Model) {}
+  rpc ListModel(ListModelRequest) returns (stream ModelSimplified) {}
+
+  rpc GetModel(GetModelRequest) returns (ModelDetails) {}
 
 }
 
@@ -35,7 +37,7 @@ message CreateModelRequest {
 }
 
 message CreateModelReply {
-	Model model = 1;
+	ModelSimplified model = 1;
 }
 
 message DeleteModelRequest {
@@ -52,16 +54,26 @@ message DeleteModelReply {
 message ListModelRequest {
 }
 
-message ListModelReply {
-	repeated Model models = 1;
-}
 
-message Model {
+message ModelSimplified {
 	string handle = 1;
 	string name = 2;
 	string status = 3;
-	string message = 4;
-	string warnings = 5;
+	string description = 4;
+	string message = 5;
+}
+
+message GetModelRequest {
+	string identifier = 1;
+}
+
+message ModelDetails {
+	string handle = 1;
+	string name = 2;
+	string status = 3;
+	string description = 4;
+	string message = 5;
+	string warnings = 6;
 }
 
 message PingRequest {

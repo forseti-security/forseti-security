@@ -79,8 +79,16 @@ class ApiTest(ForsetiTestCase):
             model2 = client.new_model('EMPTY', name='model2').model.handle
 
             self.assertTrue(self.has_n_models(client, 2))
+            self.assertEquals(
+                client.get_model(model1).handle,
+                model1,
+                'Expect getting model1')
             client.delete_model(model1)
             self.assertTrue(self.has_n_models(client, 1))
+            self.assertEquals(
+                client.get_model(model2).handle,
+                model2,
+                'Expect getting model2')
             client.delete_model(model2)
             self.assertTrue(self.has_no_models(client))
 

@@ -24,7 +24,7 @@ from google.cloud.forseti.services.utils import autoclose_stream
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,no-member
+# pylint: disable=missing-yield-type-doc
 
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
