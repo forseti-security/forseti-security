@@ -114,7 +114,7 @@ ignore-mixin-members=yes
 # (useful for classes with attributes dynamically set).
 ignored-classes=SQLObject,Resource,ProjectResult,EnforcerLog,BindingStrategy,ExplainDeniedReply,
  ExplainGrantedReply,GetAccessByResourcesReply,GetAccessByMembersReply,GetPermissionsByRolesReply,
- ListRolesReply,ListResourcesReply,ListGroupMembersReply,GetIamPolicyReply,Binding
+ ListRolesReply,ListResourcesReply,ListGroupMembersReply,GetIamPolicyReply,Binding,ListModelReply
 
 # When zope mode is activated, add a predefined set of Zope acquired attributes
 # to generated-members.
