@@ -574,6 +574,7 @@ CREATE_VIOLATIONS_TABLE = """
                               'FIREWALL_REQUIRED_VIOLATION',
                               'FIREWALL_WHITELIST_VIOLATION',
                               'FORWARDING_RULE_VIOLATION',
+                              'GKE_VERSION_VIOLATION',
                               'GROUP_VIOLATION',
                               'IAP_VIOLATION',
                               'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,
