@@ -31,7 +31,17 @@ class Modeller(object):
         self.config = config
 
     def CreateModel(self, source, name, inventory_id, background):
-        """Creates a model from the import source."""
+        """Creates a model from the import source.
+
+        Args:
+            source (str): The source of the model, \"inventory\" or \"empty\"
+            name (str): Model name to instantiate.
+            inventory_id (int): Inventory id to import from
+            background (bool): Whether to run the model creation in background
+
+        Returns:
+            object: the created data model
+        """
 
         LOGGER.info("Creating model: %s, inventory_id = %s",
                     name, inventory_id)
@@ -63,6 +73,12 @@ class Modeller(object):
 
         model_manager = self.config.model_manager
         return model_manager.models()
+
+    def GetModel(self, model):
+        """Get details of a model by name or handle."""
+
+        model_manager = self.config.model_manager
+        return model_manager.get_model(model)
 
     def DeleteModel(self, model_name):
         """Deletes a model."""

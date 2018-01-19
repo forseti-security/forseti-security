@@ -66,23 +66,29 @@ class ApiTest(ForsetiTestCase):
 
     def has_n_models(self, client, number):
         """Returns true iff the server has n models."""
-        return len(client.list_models().models) == number
+        return len([m for m in client.list_models()]) == number
 
-    @unittest.skip('TODO: Fix')
     def test_create_empty_model_and_delete(self):
         """Test: Create empty model, then delete again."""
         def test(client):
             """API test callback."""
-            self.assertEquals(
-                len(client.list_models().models),
-                0,
+            self.assertTrue(
+                self.has_no_models(client),
                 'Expect no previous models')
             model1 = client.new_model('EMPTY', name='model1').model.handle
             model2 = client.new_model('EMPTY', name='model2').model.handle
 
             self.assertTrue(self.has_n_models(client, 2))
+            self.assertEquals(
+                client.get_model(model1).handle,
+                model1,
+                'Expect getting model1')
             client.delete_model(model1)
             self.assertTrue(self.has_n_models(client, 1))
+            self.assertEquals(
+                client.get_model(model2).handle,
+                model2,
+                'Expect getting model2')
             client.delete_model(model2)
             self.assertTrue(self.has_no_models(client))
 
@@ -94,7 +100,7 @@ class ApiTest(ForsetiTestCase):
         def test(client):
             """API test callback."""
             self.assertEqual(
-                [m.handle for m in client.list_models().models],
+                [m.handle for m in client.list_models()],
                 [],
                 'Expect no previous models')
             client.new_model('EMPTY', 'test_model')

@@ -22,6 +22,7 @@ import binascii
 import collections
 import struct
 import hmac
+import json
 from threading import Lock
 
 from sqlalchemy import Column
@@ -84,6 +85,7 @@ class Model(MODEL_BASE):
     name = Column(String(32), primary_key=True)
     handle = Column(String(32))
     state = Column(String(32))
+    description = Column(Text())
     watchdog_timer = Column(DateTime)
     created_at = Column(DateTime)
     etag_seed = Column(String(32), nullable=False)
@@ -125,10 +127,26 @@ class Model(MODEL_BASE):
 
         self.state = 'INPROGRESS'
 
+    def add_description(self, description):
+        """Add new description to the model
+
+        Args:
+            description (str): the description to be added in json format
+        """
+
+        new_desc = json.loads(description)
+        model_desc = json.loads(self.description)
+
+        for new_item in new_desc:
+            model_desc[new_item] = new_desc[new_item]
+
+        self.description = json.dumps(model_desc)
+
     def set_done(self, message=''):
         """Indicate a finished import.
-            Args:
-                message (str): Success message or ''
+
+        Args:
+            message (str): Success message or ''
         """
         warnings = self.get_warnings()
         if warnings:
@@ -1600,7 +1618,9 @@ class ModelManager(object):
                 state="CREATED",
                 created_at=datetime.datetime.utcnow(),
                 watchdog_timer=datetime.datetime.utcnow(),
-                etag_seed=generate_model_seed())
+                etag_seed=generate_model_seed(),
+                description="{}"
+                )
             session.add(model)
             self.sessionmakers[model.handle] = define_model(
                 model.handle, self.engine, model.etag_seed)
@@ -1683,6 +1703,49 @@ class ModelManager(object):
         else:
             return instantiate_model(session, model_name, expunge)
 
+    def get_model(self, model, expunge=True, session=None):
+        """Get model from database by name or handle."""
+
+        def query_model(session, model, expunge):
+            """Get a model object by querying the database.
+
+            Args:
+                session (object): Database session.
+                model (str): Model name or handle.
+                expunge (bool): Whether or not to detach the object from
+                                the session for use in another session.
+            """
+
+            item = session.query(Model).filter(or_(
+                Model.handle == model,
+                Model.name == model)).first()
+            if expunge and item:
+                session.expunge(item)
+            return item
+
+        if not session:
+            with self.modelmaker() as scoped_session:
+                return query_model(scoped_session, model, expunge)
+        else:
+            return query_model(session, model, expunge)
+
+    def add_description(self, model_name, new_description, session=None):
+        """Add description to a model.
+
+        Args:
+            model_name (str): Model name
+            new_description(str): The description in json format.
+            session (object): Database session.
+        """
+
+        if not session:
+            with self.modelmaker() as scoped_session:
+                model = scoped_session.query(Model).filter(
+                    Model.handle == model_name).one()
+        else:
+            model = session.query(Model).filter(
+                Model.handle == model_name).one()
+        model.add_description(new_description)
 
 def create_engine(*args, **kwargs):
     """Create engine wrapper to patch database options.

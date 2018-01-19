@@ -14,6 +14,8 @@
 
 """ Playground API. """
 
+import json
+
 from google.cloud.forseti.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
@@ -37,6 +39,9 @@ class Playgrounder(object):
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
+            model_manager.add_description(model_name, json.dumps({
+                "pristine":False
+                }), session)
             data_access.set_iam_policy(session, resource, policy)
 
     def GetIamPolicy(self, model_name, resource):
@@ -70,6 +75,9 @@ class Playgrounder(object):
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
+            model_manager.add_description(model_name, json.dumps({
+                "pristine":False
+                }), session)
             return data_access.add_group_member(
                 session, member_type_name, parent_type_names, denorm=True)
 
@@ -83,6 +91,9 @@ class Playgrounder(object):
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
+            model_manager.add_description(model_name, json.dumps({
+                "pristine":False
+                }), session)
             return data_access.del_group_member(
                 session,
                 member_name,
@@ -110,6 +121,9 @@ class Playgrounder(object):
         LOGGER.debug("model_manager = %s, scoped_session = %s",
                      model_manager, scoped_session)
         with scoped_session as session:
+            model_manager.add_description(model_name, json.dumps({
+                "pristine":False
+                }), session)
             data_access.del_resource_by_name(session, resource_type_name)
             session.commit()
 
@@ -153,6 +167,9 @@ class Playgrounder(object):
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
+            model_manager.add_description(model_name, json.dumps({
+                "pristine":False
+                }), session)
             data_access.del_role_by_name(session, role_name)
             session.commit()
 
@@ -165,6 +182,9 @@ class Playgrounder(object):
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
+            model_manager.add_description(model_name, json.dumps({
+                "pristine":False
+                }), session)
             data_access.add_role_by_name(session, role_name, permission_names)
             session.commit()
 

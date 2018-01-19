@@ -14,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,too-many-lines
 
 from argparse import ArgumentParser
 import json
@@ -287,6 +287,13 @@ def define_model_parser(parent):
     _ = action_subparser.add_parser(
         'list',
         help='List all available models')
+
+    get_model_parser = action_subparser.add_parser(
+        'get',
+        help='Get the details of a model by name or handle')
+    get_model_parser.add_argument(
+        'model',
+        help='Model to get')
 
     delete_model_parser = action_subparser.add_parser(
         'delete',
@@ -671,7 +678,12 @@ def run_model(client, config, output, config_env):
 
     def do_list_models():
         """List models."""
-        result = client.list_models()
+        for model in client.list_models():
+            output.write(model)
+
+    def do_get_model():
+        """Get details of a model."""
+        result = client.get_model(config.model)
         output.write(result)
 
     def do_delete_model():
@@ -689,14 +701,15 @@ def run_model(client, config, output, config_env):
 
     def do_use_model():
         """Use a model."""
-        for model in client.list_models().models:
-            if config.model == model.name or config.model == model.handle:
-                config_env['model'] = model.handle
-            DefaultConfigParser.persist(config_env)
+        model = client.get_model(config.model)
+        if model:
+            config_env['model'] = model.handle
+        DefaultConfigParser.persist(config_env)
 
     actions = {
         'create': do_create_model,
         'list': do_list_models,
+        'get': do_get_model,
         'delete': do_delete_model,
         'use': do_use_model}
 
