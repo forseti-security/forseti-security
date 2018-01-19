@@ -608,7 +608,10 @@ class InventoryImporter(object):
         Args:
             iam_policy (object): IAM policy to store.
         """
-        # TODO: Figure out why bucket IAM policy can not be imported.
+        # TODO: Bucket IAM policy can not be imported because
+        # in _convert_bucket, the resource isn't added to the resource cache,
+        # If we update _convert_bucket to look more like _convert_dataset,
+        # then it will work, and won't need this skip here.
         unsupported_iam_policy_type = ['bucket']
         iam_policy_type_name = to_type_name(iam_policy.get_type_class(),
                                             iam_policy.get_key())

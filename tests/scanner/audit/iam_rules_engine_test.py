@@ -438,10 +438,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy violations found.
         """
-        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
-            side_effect=[self.org789])
-
-        # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(

@@ -134,7 +134,7 @@ scanner:
         - name: group
           enabled: true
         - name: iam_policy
-          enabled: false
+          enabled: true
         - name: iap
           enabled: true
         - name: instance_network_interface
