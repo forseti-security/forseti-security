@@ -119,10 +119,11 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     def GetAccessByResources(self, request, context):
         """Returns members having access to the specified resource."""
         model_name = self._get_handle(context)
-        mapping = self.explainer.get_access_by_resources(model_name,
-                                                         request.resource_name,
-                                                         request.permission_names,
-                                                         request.expand_groups)
+        mapping = self.explainer.get_access_by_resources(
+            model_name,
+            request.resource_name,
+            request.permission_names,
+            request.expand_groups)
         accesses = []
         for role, members in mapping.iteritems():
             access = explain_pb2.GetAccessByResourcesReply.Access(

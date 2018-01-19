@@ -24,7 +24,7 @@ from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
-# pylint: disable=invalid-name,no-self-use
+# pylint: disable=no-self-use
 class Playgrounder(object):
     """Playground API implementation."""
 

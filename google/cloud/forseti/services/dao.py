@@ -1032,8 +1032,9 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
 
         @classmethod
-        def delete_group_member(cls, session, member_type_name, parent_type_name,
-                                only_delete_relationship, denorm=False):
+        def delete_group_member(cls, session, member_type_name,
+                                parent_type_name, only_delete_relationship,
+                                denorm=False):
             """Delete member."""
 
             LOGGER.info("Deleting a member, member_type_name = %s, "

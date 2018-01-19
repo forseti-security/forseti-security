@@ -19,7 +19,7 @@ from google.cloud.forseti.common.util import log_util
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,invalid-name
+# pylint: disable=missing-yield-type-doc
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -63,8 +63,8 @@ class Explainer(object):
                                                  permission)
             return result
 
-    def get_access_by_resources(self, model_name, resource_name, permission_names,
-                                expand_groups):
+    def get_access_by_resources(self, model_name, resource_name,
+                                permission_names, expand_groups):
         """Returns members who have access to the given resource."""
 
         LOGGER.debug("Retrieving members that have access to the resource, "
