@@ -20,6 +20,7 @@ determine whether there are violations.
 """
 
 import itertools
+import json
 import threading
 
 from google.cloud.forseti.common.data_access import org_resource_rel_dao
@@ -130,8 +131,9 @@ class IamRulesEngine(bre.BaseRulesEngine):
         """Determine whether policy violates rules.
 
         Args:
-            resource (Resource): The resource that the policy belongs to.
-            policy (dict): The policy to compare against the rules.
+            resource (gcp_type): The resource that the policy belongs to.
+            policy (forseti_data_model_resource): The policy to compare
+                against the rules.
                 See https://cloud.google.com/iam/reference/rest/v1/Policy.
             force_rebuild (bool): If True, rebuilds the rule book.
                 This will reload the rules definition file and add the
@@ -145,8 +147,9 @@ class IamRulesEngine(bre.BaseRulesEngine):
 
         policy_bindings = [
             iam_policy.IamPolicyBinding.create_from(b)
-            for b in policy.get('bindings', [])]
-        violations = self.rule_book.find_violations(resource, policy_bindings)
+            for b in json.loads(policy.data).get('bindings', [])]
+        violations = self.rule_book.find_violations(
+            resource, policy, policy_bindings)
 
         return set(violations)
 
@@ -380,25 +383,28 @@ class IamRuleBook(bre.BaseRuleBook):
 
         return resource_rules
 
-    def find_violations(self, resource, policy_bindings):
+    def find_violations(self, resource, policy, policy_bindings):
         """Find policy binding violations in the rule book.
 
         Args:
-            resource (Resource): The GCP resource associated with the
+            resource (gcp_type): The GCP resource associated with the
                 policy binding.
                 This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
+            policy (forseti_data_model_resource): The policy to compare
+                against the rules.
+                See https://cloud.google.com/iam/reference/rest/v1/Policy.
             policy_bindings (list): A list of IamPolicyBindings.
 
         Returns:
             iterable: A generator of the rule violations.
         """
         violations = itertools.chain()
-        resource_ancestors = [resource]
-        resource_ancestors.extend(
-            self.org_res_rel_dao.find_ancestors(
-                resource, self.snapshot_timestamp))
+
+        resource_ancestors = (
+            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+                resource, policy.full_name))
 
         for curr_resource in resource_ancestors:
             wildcard_resource = resource_util.create_resource(
