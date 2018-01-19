@@ -23,12 +23,12 @@ import itertools
 import json
 import threading
 
-from google.cloud.forseti.common.data_access import org_resource_rel_dao
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import relationship_util
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from google.cloud.forseti.scanner.audit import errors as audit_errors
@@ -217,8 +217,6 @@ class IamRuleBook(bre.BaseRuleBook):
             self.add_rules(rule_defs)
         if snapshot_timestamp:
             self.snapshot_timestamp = snapshot_timestamp
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
-            global_configs)
 
     def __eq__(self, other):
         """Equals.
@@ -403,7 +401,7 @@ class IamRuleBook(bre.BaseRuleBook):
         violations = itertools.chain()
 
         resource_ancestors = (
-            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
+            relationship_util.find_ancestors_by_hierarchial_name(
                 resource, policy.full_name))
 
         for curr_resource in resource_ancestors:
