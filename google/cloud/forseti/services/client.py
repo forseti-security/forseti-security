@@ -278,7 +278,6 @@ class ExplainClient(ForsetiClient):
 
         Returns:
             object: Generator yielding access tuples.
-            :param expand_resources:
         """
 
         request = explain_pb2.GetAccessByPermissionsRequest(

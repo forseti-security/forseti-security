@@ -90,7 +90,8 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """Lists existing inventory.
 
         Args:
-            _ (object): Unused.
+           request (object): gRPC request object.
+           _ (context): Unused.
 
         Yields:
             object: Each Inventory API object.
