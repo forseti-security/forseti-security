@@ -117,39 +117,39 @@ message PingReply {
 }
 
 message Binding {
-	string role = 1;
-	repeated string members = 2;
+  string role = 1;
+  repeated string members = 2;
 }
 
 message Policy {
-	repeated Binding bindings = 1;
-	string etag = 2;
+  repeated Binding bindings = 1;
+  string etag = 2;
 }
 
 message CheckIamPolicyRequest {
-	string resource = 1;
-	string permission = 2;
-	string identity = 3;
+  string resource = 1;
+  string permission = 2;
+  string identity = 3;
 }
 
 message CheckIamPolicyReply {
-	bool result = 1;
+  bool result = 1;
 }
 
 message SetIamPolicyRequest {
-	string resource = 1;
-	Policy policy = 2;
+  string resource = 1;
+  Policy policy = 2;
 }
 
 message SetIamPolicyReply {
-	bool accepted = 1;
+  bool accepted = 1;
 }
 
 message GetIamPolicyRequest {
-	string resource = 1;
+  string resource = 1;
 }
 
 message GetIamPolicyReply {
-	string resource = 1;
-	Policy policy = 2;
+  string resource = 1;
+  Policy policy = 2;
 }
