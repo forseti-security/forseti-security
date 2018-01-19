@@ -17,7 +17,6 @@
 # TODO: Remove this when time allows
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,line-too-long,broad-except
-# pylint: disable=invalid-name
 
 from Queue import Queue
 
@@ -173,7 +172,7 @@ class Inventory(object):
         self.config = config
         init_storage(self.config.get_engine())
 
-    def Create(self, background, model_name):
+    def create(self, background, model_name):
         """Create a new inventory,
 
         Args:
@@ -225,7 +224,7 @@ class Inventory(object):
             if result:
                 yield result.get()
 
-    def List(self):
+    def list(self):
         """List stored inventory.
 
         Yields:
@@ -236,7 +235,7 @@ class Inventory(object):
             for item in DataAccess.list(session):
                 yield item
 
-    def Get(self, inventory_id):
+    def get(self, inventory_id):
         """Get inventory metadata by id.
 
         Args:
@@ -250,7 +249,7 @@ class Inventory(object):
             result = DataAccess.get(session, inventory_id)
             return result
 
-    def Delete(self, inventory_id):
+    def delete(self, inventory_id):
         """Delete an inventory by id.
 
         Args:
