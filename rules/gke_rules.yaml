@@ -51,8 +51,8 @@ rules:
     check_serverconfig_valid_master_versions: false
 
 # This rule checks for any node pools that are running a version
-# that is not patched for Meltdown & Spectre.
-  - name: Meltdown and Spectre patches not applied
+# that is not patched for current known and patched critical CVEs.
+  - name: Nodepool version not patched for critical security vulnerabilities
     resource:
       - type: organization
         resource_ids:
