@@ -70,7 +70,7 @@ class EmptyImporter(object):
         self.session.add(self.model)
         self.model.add_description(json.dumps({
             "source":"empty",
-            "prestine":True
+            "pristine":True
             }))
         self.model.set_done()
         self.session.commit()
@@ -170,7 +170,7 @@ class InventoryImporter(object):
                 self.model.add_description(json.dumps({
                     "source":"inventory",
                     "source_info":str(inventory.index),
-                    "prestine":True
+                    "pristine":True
                     }))
 
                 for resource in inventory.iter(['organization']):

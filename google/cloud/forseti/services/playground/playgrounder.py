@@ -40,7 +40,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "prestine":False
+                "pristine":False
                 }), session)
             data_access.set_iam_policy(session, resource, policy)
 
@@ -76,7 +76,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "prestine":False
+                "pristine":False
                 }), session)
             return data_access.add_group_member(
                 session, member_type_name, parent_type_names, denorm=True)
@@ -92,7 +92,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "prestine":False
+                "pristine":False
                 }), session)
             return data_access.del_group_member(
                 session,
@@ -122,7 +122,7 @@ class Playgrounder(object):
                      model_manager, scoped_session)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "prestine":False
+                "pristine":False
                 }), session)
             data_access.del_resource_by_name(session, resource_type_name)
             session.commit()
@@ -168,7 +168,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "prestine":False
+                "pristine":False
                 }), session)
             data_access.del_role_by_name(session, role_name)
             session.commit()
@@ -183,7 +183,7 @@ class Playgrounder(object):
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "prestine":False
+                "pristine":False
                 }), session)
             data_access.add_role_by_name(session, role_name, permission_names)
             session.commit()
