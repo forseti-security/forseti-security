@@ -40,18 +40,23 @@ rules:
     description: Instances with internal tag must have a specific policy
     mode: matches
     match_policies:
-      - direction: ingress
-        targetTags: 'internal'
+      - name: 'policy1'
+        direction: ingress
+        targetTags: 
+          - 'internal'
         allowed:
-          - IPProtocol: 'TCP'
+          - IPProtocol: 'tcp'
             ports:
               - '22'
         sourceRanges:
           - '10.0.0.0/8'
-      - direction: ingress
-        targetTags: 'internal'
+        network: 'n1'
+      - name: 'policy2'
+        direction: ingress
+        targetTags: 
+          - 'internal'
         allowed:
-          - IPProtocol: 'TCP'
+          - IPProtocol: 'tcp'
             ports:
               - '80'
               - '443'
@@ -60,6 +65,7 @@ rules:
         targetTags:
           - 'http-server'
           - 'https-server'
+        network: 'n2'
     verify_policies:
 
 rule_groups:
@@ -96,3 +102,9 @@ org_policy:
     - type: project
       resource_ids:
         - 'honeypot_exception'
+    - type: project
+      resource_ids:
+        - 'test_project_2'
+      rules:
+        rule_ids:
+          - 'golden_policy'

@@ -284,8 +284,7 @@ class RuleBook(bre.BaseRuleBook):
                 self.org_policy_rules_map[gcp_resource] = sorted(expanded_rules)
 
 
-
-    def find_violations(self, resource, policy):
+    def find_violations(self, resource, policies):
         """Find policy binding violations in the rule book.
 
         Args:
@@ -294,7 +293,7 @@ class RuleBook(bre.BaseRuleBook):
                 This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
-            policy (FirewallRule): FirewallRule object
+            policies(list): A list of FirewallRule policies.
 
         Returns:
             iterable: A generator of the rule violations.
@@ -313,7 +312,7 @@ class RuleBook(bre.BaseRuleBook):
                     rule = self.rules_map[rule_id]
                     violations = itertools.chain(
                         violations,
-                        rule.find_policy_violations([policy]))
+                        rule.find_policy_violations(policies))
                 break  # Only the first rules found in the ancestry are applied
         return violations
 

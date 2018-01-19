@@ -13,6 +13,7 @@
 # limitations under the License.
 """Scanner for the firewall rule engine."""
 
+from collections import defaultdict
 from datetime import datetime
 import itertools
 import json
@@ -163,13 +164,16 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         policies = itertools.chain(policies)
         all_violations = []
         LOGGER.info('Finding firewall policy violations...')
+        project_policies = defaultdict(list)
         for policy in policies:
-            resource_id = policy.project_id
+            project = policy.project_id
+            project_policies[project].append(policy)
+        for resource_id, p_policies in project_policies.items():
             resource = resource_util.create_resource(
                 resource_id=resource_id, resource_type='project')
-            LOGGER.debug('%s => %s', resource, policy)
+            LOGGER.debug('%s => %s', resource, p_policies)
             violations = self.rules_engine.find_policy_violations(
-                resource, policy)
+                resource, p_policies)
             all_violations.extend(violations)
         return all_violations
 
