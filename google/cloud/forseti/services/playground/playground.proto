@@ -27,7 +27,7 @@ service Playground {
   rpc ListGroupMembers (ListGroupMembersRequest) returns (ListGroupMembersReply) {}
 
   rpc AddResource (AddResourceRequest) returns (AddResourceReply) {}
-  rpc DelResource (DelResourceRequest) returns (DelResourceReply) {}
+  rpc DeleteResource (DeleteResourceRequest) returns (DeleteResourceReply) {}
   rpc ListResources (ListResourcesRequest) returns (ListResourcesReply) {}
 
   rpc AddRole (AddRoleRequest) returns (AddRoleReply) {}
@@ -100,11 +100,11 @@ message AddResourceRequest {
 message AddResourceReply {
 }
 
-message DelResourceRequest {
+message DeleteResourceRequest {
   string resource_type_name = 1;
 }
 
-message DelResourceReply {
+message DeleteResourceReply {
 
 }
 

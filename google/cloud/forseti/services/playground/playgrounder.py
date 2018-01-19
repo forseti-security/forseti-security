@@ -81,8 +81,8 @@ class Playgrounder(object):
             return data_access.add_group_member(
                 session, member_type_name, parent_type_names, denorm=True)
 
-    def DelGroupMember(self, model_name, member_name, parent_name,
-                       only_delete_relationship):
+    def DeleteGroupMember(self, model_name, member_name, parent_name,
+                          only_delete_relationship):
         """Deletes a member from the model."""
 
         LOGGER.info("Deleting group member from model, member_name = %s,"
@@ -94,7 +94,7 @@ class Playgrounder(object):
             model_manager.add_description(model_name, json.dumps({
                 "pristine":False
                 }), session)
-            return data_access.del_group_member(
+            return data_access.delete_group_member(
                 session,
                 member_name,
                 parent_name,
@@ -111,7 +111,7 @@ class Playgrounder(object):
         with scoped_session as session:
             return data_access.list_group_members(session, member_name_prefix)
 
-    def DelResource(self, model_name, resource_type_name):
+    def DeleteResource(self, model_name, resource_type_name):
         """Deletes a resource from the model."""
 
         LOGGER.info("Deleting resource from model, resource_type_name = %s, "
@@ -124,7 +124,7 @@ class Playgrounder(object):
             model_manager.add_description(model_name, json.dumps({
                 "pristine":False
                 }), session)
-            data_access.del_resource_by_name(session, resource_type_name)
+            data_access.delete_resource_by_name(session, resource_type_name)
             session.commit()
 
     def AddResource(self, model_name,
@@ -159,7 +159,7 @@ class Playgrounder(object):
             return data_access.list_resources_by_prefix(
                 session, full_resource_name_prefix)
 
-    def DelRole(self, model_name, role_name):
+    def DeleteRole(self, model_name, role_name):
         """Deletes role from the model."""
 
         LOGGER.info("Deleting role from model, model_name = %s,"
@@ -170,7 +170,7 @@ class Playgrounder(object):
             model_manager.add_description(model_name, json.dumps({
                 "pristine":False
                 }), session)
-            data_access.del_role_by_name(session, role_name)
+            data_access.delete_role_by_name(session, role_name)
             session.commit()
 
     def AddRole(self, model_name, role_name, permission_names):

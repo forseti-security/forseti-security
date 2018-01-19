@@ -50,10 +50,10 @@ def define_playground_parser(parent):
         nargs='+',
         help='Permissions contained in the role')
 
-    del_role_parser = action_subparser.add_parser(
+    delete_role_parser = action_subparser.add_parser(
         'delete_role',
         help='Delete a role')
-    del_role_parser.add_argument(
+    delete_role_parser.add_argument(
         'role',
         help='Role name to delete')
 
@@ -82,10 +82,10 @@ def define_playground_parser(parent):
         type=bool,
         help='Set this flag if the resource is a root')
 
-    del_resource_parser = action_subparser.add_parser(
+    delete_resource_parser = action_subparser.add_parser(
         'delete_resource',
         help='Delete a resource')
-    del_resource_parser.add_argument(
+    delete_resource_parser.add_argument(
         'resource_type_name',
         help='Resource type/name to delete')
 
@@ -109,13 +109,13 @@ def define_playground_parser(parent):
         default=None,
         help='Parent type/names')
 
-    del_member_parser = action_subparser.add_parser(
+    delete_member_parser = action_subparser.add_parser(
         'delete_member',
         help='Delete a member or relationship')
-    del_member_parser.add_argument(
+    delete_member_parser.add_argument(
         'parent',
         help='Parent type/name in case of deleting a relationship')
-    del_member_parser.add_argument(
+    delete_member_parser.add_argument(
         '--delete_relation_only',
         type=bool,
         default=False,
