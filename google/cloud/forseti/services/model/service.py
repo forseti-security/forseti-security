@@ -70,7 +70,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
-    def list_model(self, _):
+    def list_model(self, request, _):
         """List all models."""
 
         models = self.modeller.list_model()
