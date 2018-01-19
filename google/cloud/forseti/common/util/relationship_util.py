@@ -17,9 +17,7 @@
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.services import utils
 
-
-def find_ancestors_by_hierarchial_name(starting_resource,
-                                       full_name):
+def find_ancestors(starting_resource, full_name):
     """Find the ancestors for a given resource.
 
     Take advantage of the full name from the data model which has
