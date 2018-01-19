@@ -21,9 +21,6 @@ from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
 
-# Required when using protocol buffers.
-# pylint: disable=no-member
-
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
@@ -48,10 +45,12 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer_api
 
+    # pylint: disable=no-self-use
     def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return explain_pb2.PingReply(data=request.data)
+    # pylint: enable=no-self-use
 
     def explain_denied(self, request, context):
         """Provides information on how to grant access."""

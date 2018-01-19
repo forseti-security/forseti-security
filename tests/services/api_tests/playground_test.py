@@ -136,15 +136,15 @@ class ApiTest(ForsetiTestCase):
             self.assertEqual(
                 len(client.playground.list_members('group').member_names),
                 1)
-            client.playground.del_member('user/user1')
+            client.playground.delete_member('user/user1')
             self.assertEqual(
                 len(client.playground.list_members('user').member_names),
                 1)
             self.assertEqual(
                 len(client.playground.list_members('group').member_names),
                 1)
-            client.playground.del_member('group/group1')
-            client.playground.del_member('user/user2')
+            client.playground.delete_member('group/group1')
+            client.playground.delete_member('user/user2')
             self.assertEqual(
                 len(client.playground.list_members('').member_names),
                 0,

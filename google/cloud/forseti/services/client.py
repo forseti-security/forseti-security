@@ -378,7 +378,7 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def del_resource(self, resource_type_name):
+    def delete_resource(self, resource_type_name):
         """Delete a resource from the hierarchy and the subtree."""
 
         return self.stub.delete_resource(
@@ -408,8 +408,8 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def del_member(self, member_name, parent_name=None,
-                   only_delete_relationship=False):
+    def delete_member(self, member_name, parent_name=None,
+                      only_delete_relationship=False):
         """Delete a member from the member relationship."""
 
         return self.stub.delete_group_member(

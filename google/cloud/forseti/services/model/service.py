@@ -42,10 +42,12 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         super(GrpcModeller, self).__init__()
         self.modeller = modeller_api
 
+    # pylint: disable=no-self-use
     def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return model_pb2.PingReply(data=request.data)
+    # pylint: enable=no-self-use
 
     def create_model(self, request):
         """Creates a new model from an import source."""
