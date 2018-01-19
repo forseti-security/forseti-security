@@ -45,12 +45,10 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer_api
 
-    # pylint: disable=no-self-use
     def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return explain_pb2.PingReply(data=request.data)
-    # pylint: enable=no-self-use
 
     def explain_denied(self, request, context):
         """Provides information on how to grant access."""

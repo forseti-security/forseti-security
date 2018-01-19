@@ -49,7 +49,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         super(GrpcInventory, self).__init__()
         self.inventory = inventory_api
 
-    # pylint: disable=no-self-use
     def ping(self, request, _):
         """Ping implemented to check service availability.
 
@@ -62,7 +61,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
 
         return inventory_pb2.PingReply(data=request.data)
-    # pylint: enable=no-self-use
 
     @autoclose_stream
     def create(self, request, _):

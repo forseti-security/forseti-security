@@ -46,12 +46,10 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         self.scanner = scanner_api
         self.service_config = service_config
 
-    # pylint: disable=no-self-use
     def ping(self, request, _):
         """Provides the capability to check for service availability."""
 
         return scanner_pb2.PingReply(data=request.data)
-    # pylint: enable=no-self-use
 
     def run(self, request, context):
         """Run scanner."""
