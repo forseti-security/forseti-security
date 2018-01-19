@@ -114,7 +114,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                               request.parent_name,
                                               request.only_delete_relationship)
         return playground_pb2.DeleteGroupMemberReply()
- 
+
     def ListGroupMembers(self, request, context):
         """Lists members in the model."""
         handle = self._get_handle(context)

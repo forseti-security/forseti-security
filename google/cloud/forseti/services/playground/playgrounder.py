@@ -158,7 +158,7 @@ class Playgrounder(object):
         with scoped_session as session:
             return data_access.list_resources_by_prefix(
                 session, full_resource_name_prefix)
-          
+
     def delete_role(self, model_name, role_name):
         """Deletes role from the model."""
 
