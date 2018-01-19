@@ -562,8 +562,9 @@ class FirewallRules(object):
           InvalidFirewallRuleError: One or more rules failed validation.
         """
         if not isinstance(rule, dict):
-            raise InvalidFirewallRuleError(
-                'Invalid rule type. Found %s expected %s', type(rule), dict)
+            message = 'Invalid rule type. Found {} expected {}'.format(
+                type(rule), dict)
+            raise InvalidFirewallRuleError(message)
 
         new_rule = self._order_lists_in_rule(rule)
 

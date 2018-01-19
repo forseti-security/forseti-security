@@ -76,6 +76,9 @@ CREATE_TABLE_MAP = {
     # firewall_rules
     'firewall_rules': create_tables.CREATE_FIREWALL_RULES_TABLE,
 
+    # gke
+    'gke': create_tables.CREATE_GKE_TABLE,
+
     # groups
     'groups': create_tables.CREATE_GROUPS_TABLE,
     'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
