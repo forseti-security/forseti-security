@@ -19,13 +19,13 @@ package explain;
 service Explain {
   rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc GetAccessByPermission(GetAccessByPermissionsRequest) returns (stream Access) {}
+  rpc GetAccessByPermissions(GetAccessByPermissionsRequest) returns (stream Access) {}
 
-  rpc GetAccessByResource(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
+  rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
 
   rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
 
-  rpc GetPermissionByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
+  rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
 
   rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
 
@@ -200,3 +200,4 @@ message PingRequest {
 message PingReply {
   string data = 1;
 }
+
