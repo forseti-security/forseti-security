@@ -21,11 +21,13 @@ import grpc
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playgrounder
+from google.cloud.forseti.common.util import log_util
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
+LOGGER = log_util.get_logger(__name__)
 
 # pylint: disable=no-self-use
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
@@ -35,7 +37,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def _get_handle(self, context):
         """Extract the model handle from the gRPC context."""
-
         metadata = context.invocation_metadata()
         metadata_dict = {}
         for key, value in metadata:
@@ -48,12 +49,11 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def ping(self, request, _):
         """Ping implemented to check service availability."""
-
+        LOGGER.debug("request.data = %s", request.data)
         return playground_pb2.PingReply(data=request.data)
 
     def set_iam_policy(self, request, context):
         """Sets the policy for a resource."""
-
         handle = self._get_handle(context)
         policy = {'etag': request.policy.etag, 'bindings': {}}
         for binding in request.policy.bindings:
@@ -67,7 +67,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def get_iam_policy(self, request, context):
         """Gets the policy for a resource."""
-
         handle = self._get_handle(context)
         policy = self.playgrounder.get_iam_policy(handle,
                                                   request.resource)
@@ -89,7 +88,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def check_iam_policy(self, request, context):
         """Checks access according to policy to a specified resource."""
-
         handle = self._get_handle(context)
         authorized = self.playgrounder.check_iam_policy(handle,
                                                         request.resource,
@@ -101,7 +99,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def add_group_member(self, request, context):
         """Adds a member to the model."""
-
         handle = self._get_handle(context)
         self.playgrounder.add_group_member(handle,
                                            request.member_type_name,
@@ -110,7 +107,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def delete_group_member(self, request, context):
         """Deletes a member from the model."""
-
         handle = self._get_handle(context)
         self.playgrounder.delete_group_member(handle,
                                               request.member_name,
@@ -120,7 +116,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def list_group_members(self, request, context):
         """Lists members in the model."""
-
         handle = self._get_handle(context)
         member_names = self.playgrounder.list_group_members(handle,
                                                             request.prefix)
@@ -130,7 +125,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def delete_resource(self, request, context):
         """Deletes a resource from the model."""
-
         handle = self._get_handle(context)
         self.playgrounder.delete_resource(handle,
                                           request.resource_type_name)
@@ -138,7 +132,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def add_resource(self, request, context):
         """Adds a resource to the model."""
-
         handle = self._get_handle(context)
         self.playgrounder.add_resource(handle,
                                        request.resource_type_name,
@@ -148,7 +141,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def list_resources(self, request, context):
         """Lists resources in the model."""
-
         handle = self._get_handle(context)
         resources = self.playgrounder.list_resources(handle,
                                                      request.prefix)
@@ -158,7 +150,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def delete_role(self, request, context):
         """Deletes a role within the model."""
-
         handle = self._get_handle(context)
         self.playgrounder.delete_role(handle,
                                       request.role_name)
@@ -166,7 +157,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def add_role(self, request, context):
         """Adds a role to the model."""
-
         handle = self._get_handle(context)
         self.playgrounder.add_role(handle,
                                    request.role_name,
@@ -175,7 +165,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def list_roles(self, request, context):
         """List roles from the model."""
-
         handle = self._get_handle(context)
         role_names = self.playgrounder.list_roles(handle,
                                                   request.prefix)
@@ -197,6 +186,7 @@ class GrpcPlaygrounderFactory(object):
             playgrounder_api=playgrounder.Playgrounder(
                 self.config))
         playground_pb2_grpc.add_PlaygroundServicer_to_server(service, server)
+        LOGGER.info("service %s created and registered", service)
         return service
 
 
