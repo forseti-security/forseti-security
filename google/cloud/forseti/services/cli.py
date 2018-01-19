@@ -23,7 +23,9 @@ import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
+from google.cloud.forseti.common.util import log_util
 
+LOGGER = log_util.get_logger(__name__)
 
 def define_playground_parser(parent):
     """Define the playground service parser.
@@ -31,10 +33,11 @@ def define_playground_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
-    service_parser = parent.add_parser("playground", help="playground service")
+
+    service_parser = parent.add_parser('playground', help='playground service')
     action_subparser = service_parser.add_subparsers(
-        title="action",
-        dest="action")
+        title='action',
+        dest='action')
 
     add_role_parser = action_subparser.add_parser(
         'define_role',
@@ -163,6 +166,7 @@ def define_inventory_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
     service_parser = parent.add_parser('inventory', help='inventory service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -266,6 +270,7 @@ def define_model_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
     service_parser = parent.add_parser('model', help='model service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -343,6 +348,7 @@ def define_explainer_parser(parent):
     Args:
         parent (argparser): Parent parser to hook into.
     """
+
     service_parser = parent.add_parser('explainer', help='explain service')
     action_subparser = service_parser.add_subparsers(
         title='action',
@@ -354,8 +360,8 @@ def define_explainer_parser(parent):
 
     explain_granted_parser = action_subparser.add_parser(
         'why_granted',
-        help="""Explain why a role or permission
-                is granted for a member on a resource""")
+        help='Explain why a role or permission is'
+             ' granted for a member on a resource')
     explain_granted_parser.add_argument(
         'member',
         help='Member to query')
@@ -373,8 +379,8 @@ def define_explainer_parser(parent):
 
     explain_denied_parser = action_subparser.add_parser(
         'why_denied',
-        help="""Explain why a set of roles or permissions
-                is denied for a member on a resource""")
+        help='Explain why a set of roles or permissions '
+             'is denied for a member on a resource')
     explain_denied_parser.add_argument(
         'member',
         help='Member to query')
@@ -476,7 +482,13 @@ def read_env(var_key, default):
     Returns:
         string: return environment value or default
     """
-    return os.environ[var_key] if var_key in os.environ else default
+
+    var_value = os.environ[var_key] if var_key in os.environ else default
+
+    LOGGER.info('reading environment variable %s = %s',
+                var_key, var_value)
+
+    return var_value
 
 
 def define_parent_parser(parser_cls, config_env):
@@ -488,6 +500,9 @@ def define_parent_parser(parser_cls, config_env):
     Returns:
         argparser: The parent parser which has been defined.
     """
+
+    LOGGER.debug('parser_cls = %s, config_env = %s',
+                 parser_cls, config_env)
 
     parent_parser = parser_cls()
     parent_parser.add_argument(
@@ -514,10 +529,11 @@ def create_parser(parser_cls, config_env):
     Returns:
         argparser: The argument parser hierarchy which is created.
     """
+
     main_parser = define_parent_parser(parser_cls, config_env)
     service_subparsers = main_parser.add_subparsers(
-        title="service",
-        dest="service")
+        title='service',
+        dest='service')
     define_explainer_parser(service_subparsers)
     define_playground_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
@@ -940,6 +956,8 @@ class DefaultConfigParser(object):
             with file(get_config_path()) as infile:
                 return DefaultConfig(json.load(infile))
         except IOError:
+            LOGGER.warn('IOError - trying to open configuration'
+                        ' file located at %s', get_config_path())
             return DefaultConfig()
 
 
@@ -980,7 +998,9 @@ class DefaultConfig(dict):
         """
 
         if key not in self.DEFAULT:
-            raise KeyError('Configuration key unknown: {}'.format(key))
+            error_message = 'Configuration key unknown: {}'.format(key)
+            LOGGER.error(error_message)
+            raise KeyError(error_message)
         return dict.__getitem__(self, key)
 
     def __setitem__(self, key, value):
@@ -998,7 +1018,9 @@ class DefaultConfig(dict):
         """
 
         if key not in self.DEFAULT:
-            raise KeyError('Configuration key unknown: {}'.format(key))
+            error_message = 'Configuration key unknown: {}'.format(key)
+            LOGGER.error(error_message)
+            raise KeyError(error_message)
         return dict.__setitem__(self, key, value)
 
     def __delitem__(self, key):
@@ -1012,7 +1034,9 @@ class DefaultConfig(dict):
         """
 
         if key not in self.DEFAULT:
-            raise KeyError('Configuration key unknown: {}'.format(key))
+            error_message = 'Configuration key unknown: {}'.format(key)
+            LOGGER.error(error_message)
+            raise KeyError(error_message)
         self[key] = self.DEFAULT[key]
 
 
