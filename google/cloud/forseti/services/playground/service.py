@@ -106,14 +106,14 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                            request.parent_type_names)
         return playground_pb2.AddGroupMemberReply()
 
-    def DelGroupMember(self, request, context):
+    def DeleteGroupMember(self, request, context):
         """Deletes a member from the model."""
         handle = self._get_handle(context)
         self.playgrounder.delete_group_member(handle,
                                               request.member_name,
                                               request.parent_name,
                                               request.only_delete_relationship)
-        return playground_pb2.DelGroupMemberReply()
+        return playground_pb2.DeleteGroupMemberReply()
 
     def ListGroupMembers(self, request, context):
         """Lists members in the model."""
@@ -124,12 +124,12 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         reply.member_names.extend(member_names)
         return reply
 
-    def DelResource(self, request, context):
+    def DeleteResource(self, request, context):
         """Deletes a resource from the model."""
         handle = self._get_handle(context)
         self.playgrounder.delete_resource(handle,
                                           request.resource_type_name)
-        return playground_pb2.DelResourceReply()
+        return playground_pb2.DeleteResourceReply()
 
     def AddResource(self, request, context):
         """Adds a resource to the model."""
@@ -149,12 +149,12 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         reply.full_resource_names.extend([r.type_name for r in resources])
         return reply
 
-    def DelRole(self, request, context):
+    def DeleteRole(self, request, context):
         """Deletes a role within the model."""
         handle = self._get_handle(context)
         self.playgrounder.delete_role(handle,
                                       request.role_name)
-        return playground_pb2.DelRoleReply()
+        return playground_pb2.DeleteRoleReply()
 
     def AddRole(self, request, context):
         """Adds a role to the model."""

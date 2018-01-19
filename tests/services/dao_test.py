@@ -89,8 +89,8 @@ class DaoTest(ForsetiTestCase):
     res = [r.name for r in res]
     self.assertEqual(set([u'test_role']), set(res))
 
-  def test_del_role_by_name(self):
-    """Test del_role_by_name."""
+  def test_delete_role_by_name(self):
+    """Test delete_role_by_name."""
     session_maker, data_access = session_creator('test')
     session = session_maker()
     client = ModelCreatorClient(session, data_access)
@@ -149,8 +149,8 @@ class DaoTest(ForsetiTestCase):
       for group in groups:
         self.assertTrue(group in res)
 
-  def test_del_group_member(self):
-    """Test del_group_member."""
+  def test_delete_group_member(self):
+    """Test delete_group_member."""
     session_maker, data_access = session_creator('test')
     session = session_maker()
     client = ModelCreatorClient(session, data_access)
@@ -258,8 +258,8 @@ class DaoTest(ForsetiTestCase):
     resource_type_names = [r.type_name for r in resources]
     self.assertEqual(set(), set(resource_type_names))
 
-  def test_del_resource_by_name(self):
-    """Test del_resource_by_name."""
+  def test_delete_resource_by_name(self):
+    """Test delete_resource_by_name."""
     session_maker, data_access = session_creator('test')
     session = session_maker()
     client = ModelCreatorClient(session, data_access)
