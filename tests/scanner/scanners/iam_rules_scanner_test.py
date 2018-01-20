@@ -53,59 +53,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.assertEquals(expected, actual)
 
     @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.organization_dao',
-        autospec=True)
-    def test_get_org_policies_works(self, mock_dao):
-        """Test that get_org_policies() works."""
-        fake_policies = [{
-            organization.Organization('11111'): {
-                'role': 'roles/a',
-                'members': ['user:a@b.c', 'group:g@h.i']
-            }
-        }]
-
-        mock_dao.OrganizationDao({}).get_org_iam_policies.return_value = (
-            fake_policies)
-        policies = self.scanner._get_org_iam_policies()
-        self.assertEqual(fake_policies, policies)
-
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.folder_dao',
-        autospec=True)
-    def test_get_folder_policies_works(self, mock_dao):
-        """Test that get_folder_iam_policies() works."""
-
-        fake_folder_policies = [{
-            folder.Folder('11111'): {
-                'role': 'roles/a',
-                'members': ['user:a@b.c', 'group:g@h.i']
-            }
-        }]
-
-        mock_dao.FolderDao({}).get_folder_iam_policies.return_value = (
-            fake_folder_policies)
-        policies = self.scanner._get_folder_iam_policies()
-        self.assertEqual(fake_folder_policies, policies)
-
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.project_dao',
-        autospec=True)
-    def test_get_project_policies(self, mock_dao):
-        """Test that get_org_policies() works."""
-
-        fake_policies = [{
-            project.Project(project_number='11111', project_id='abc111'): {
-                'role': 'roles/a',
-                'members': ['user:a@b.c', 'group:g@h.i']
-            }
-        }]
-
-        mock_dao.ProjectDao({}).get_project_policies.return_value = (
-            fake_policies)
-        policies = self.scanner._get_project_iam_policies()
-        self.assertEqual(fake_policies, policies)
-
-    @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
