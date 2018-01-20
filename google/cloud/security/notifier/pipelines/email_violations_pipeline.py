@@ -15,6 +15,7 @@
 """Email pipeline to perform notifications"""
 
 from datetime import datetime
+import os
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
@@ -31,6 +32,15 @@ LOGGER = log_util.get_logger(__name__)
 TEMP_DIR = '/tmp'
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+
+
+def tmp_dir():
+    """Helper function, observes the `TMPDIR` environment variable.
+
+    Returns:
+        str: the value of `$TMPDIR` if set, `/tmp` otherwise."""
+    result = os.environ.get('TMPDIR')
+    return result if result else TEMP_DIR
 
 
 class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
@@ -78,7 +88,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """
         # Make attachment
         output_file_name = self._get_output_filename()
-        output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
+        output_file_path = '{}/{}'.format(tmp_dir(), output_file_name)
         with open(output_file_path, 'w+') as f:
             f.write(parser.json_stringify(self.violations))
         return output_file_name
@@ -91,7 +101,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """
         output_file_name = self._write_temp_attachment()
         attachment = self.mail_util.create_attachment(
-            file_location='{}/{}'.format(TEMP_DIR, output_file_name),
+            file_location='{}/{}'.format(tmp_dir(), output_file_name),
             content_type='text/json',
             filename=output_file_name,
             disposition='attachment',
