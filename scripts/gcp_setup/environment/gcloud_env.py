@@ -327,6 +327,9 @@ class ForsetiGcpSetup(object):
         self.advanced_mode = bool(kwargs.get('advanced'))
         self.dry_run = bool(kwargs.get('dry_run'))
 
+        self.is_install_server = bool(kwargs.get('server'))
+        self.is_install_cli = bool(kwargs.get('cli'))
+
         self.is_devshell = False
         self.authed_user = None
         self.project_id = None
@@ -380,15 +383,26 @@ class ForsetiGcpSetup(object):
         self.check_project_id()
         self.lookup_organization()
         self.check_billing_enabled()
-        self.should_setup_explain()
-        self.determine_access_target()
-        self.should_enable_write_access()
-        self.format_service_acct_ids()
-        self.inform_access_on_target()
+        self.format_gcp_service_acct_id()
 
-        enable_apis(self.dry_run)
+        if self.is_install_server:
+            # Server installation requirements
+            self.should_setup_explain()
+            self.determine_access_target()
+            self.should_enable_write_access()
+            self.format_gsuite_service_acct_id()
+            self.inform_access_on_target()
+
+            enable_apis(self.dry_run)
+            self.create_reuse_service_acct('gsuite_service_account')
+        else:
+            # CLI installation requirements
+            pass
+
+
+
+
         self.create_reuse_service_acct('gcp_service_account')
-        self.create_reuse_service_acct('gsuite_service_account')
 
         # Generate names and config.
         print_banner('Generate configs')
@@ -413,6 +427,8 @@ class ForsetiGcpSetup(object):
         """Check script run properties."""
         print('Dry run? %s' % self.dry_run)
         print('Advanced mode? %s' % self.advanced_mode)
+        print('Installing %s' % 'Forseti server' if self.is_install_server
+              else 'Forseti command line interface')
 
     def infer_version(self):
         """Infer the Forseti version, or ask user to input one not listed."""
@@ -517,7 +533,7 @@ class ForsetiGcpSetup(object):
         try:
             billing_info = json.loads(out)
             if billing_info.get('billingEnabled'):
-                print('Billing IS enabled.')
+                print('Billing is enabled.')
             else:
                 self._billing_not_enabled()
         except ValueError:
@@ -555,7 +571,6 @@ class ForsetiGcpSetup(object):
         Either org, folder, or project level.
         """
         print_banner('Forseti access target')
-        choice_index = -1
 
         if not self.advanced_mode:
             self.access_target = RESOURCE_TYPES[0]
@@ -615,17 +630,25 @@ class ForsetiGcpSetup(object):
                 return
 
             print('\nHere are the organizations you have access to:')
+
+            valid_org_ids = set()
+
             for org in orgs:
+                org_id = id_from_name(org['name'])
+                valid_org_ids.add(org_id)
                 print('ID=%s (description="%s")' %
-                      (id_from_name(org['name']), org['displayName']))
+                      (org_id, org['displayName']))
 
             choice = raw_input('Enter the organization id where '
                                'you want Forseti to crawl for data: ').strip()
             try:
-                # make sure that the choice is an int before converting to str
+                # make sure that the choice is a valid organization id
+                if choice not in valid_org_ids:
+                    print('Invalid organization id %s, try again' % choice)
+                    return
                 self.target_id = str(int(choice))
             except ValueError:
-                print('Invalid choice %s, try again' % choice)
+                print('Unable to parse organization id %s' % choice)
 
     def choose_folder(self):
         """Allow user to input folder id."""
@@ -732,16 +755,21 @@ class ForsetiGcpSetup(object):
             print('Forseti will have write access on %s.' %
                   self.resource_root_id)
 
-    def format_service_acct_ids(self):
+    def format_gcp_service_acct_id(self):
         """Format the service account ids."""
         modifier = 'reader'
         if self.enable_write_access:
             modifier = 'readwrite'
 
+        gcp_prefix = 'gcp-{}'.\
+            format('server' if self.is_install_server else 'cli')
+
         self.gcp_service_account = full_service_acct_email(
-            SERVICE_ACCT_FMT.format('gcp', modifier, self.timestamp),
+            SERVICE_ACCT_FMT.format(gcp_prefix, modifier, self.timestamp),
             self.project_id)
 
+    def format_gsuite_service_acct_id(self):
+        """Format the gsuite service account id"""
         self.gsuite_service_account = full_service_acct_email(
             SERVICE_ACCT_FMT.format('gsuite', 'reader', self.timestamp),
             self.project_id)
@@ -817,7 +845,6 @@ class ForsetiGcpSetup(object):
                           'because this is an unexpected error.')
                     sys.exit(1)
         else:
-            svc_accts = []
             return_code, out, err = utils.run_command(
                 ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
             if return_code:

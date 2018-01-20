@@ -47,6 +47,14 @@ def run():
     group.add_argument('--cloudsql-region',
                        help='The Cloud SQL region')
 
+    mutex_group = parser.add_mutually_exclusive_group(required=True)
+    mutex_group.add_argument('--server',
+                             action='store_true',
+                             help='Install Forseti server instance')
+    mutex_group.add_argument('--cli',
+                             action='store_true',
+                             help='Install Forseti command line interface instance')
+
     email_params = parser.add_argument_group(title='email')
     email_params.add_argument('--sendgrid-api-key',
                               help='Sendgrid API key')
