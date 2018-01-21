@@ -14,6 +14,7 @@
 
 """Email pipeline to perform notifications"""
 
+import tempfile
 from datetime import datetime
 import os
 
@@ -29,18 +30,8 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 
 LOGGER = log_util.get_logger(__name__)
 
-TEMP_DIR = '/tmp'
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
-
-
-def tmp_dir():
-    """Helper function, observes the `TMPDIR` environment variable.
-
-    Returns:
-        str: the value of `$TMPDIR` if set, `/tmp` otherwise."""
-    result = os.environ.get('TMPDIR')
-    return result if result else TEMP_DIR
 
 
 class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
@@ -66,6 +57,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                                                       notifier_config,
                                                       pipeline_config)
         self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
+        self.tmp_file = tempfile.NamedTemporaryFile(delete=False)
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -80,34 +72,23 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                                                      output_timestamp)
         return output_filename
 
-    def _write_temp_attachment(self):
-        """Write the attachment to a temp file.
-
-        Returns:
-            str: The output filename for the violations json just written.
-        """
-        # Make attachment
-        output_file_name = self._get_output_filename()
-        output_file_path = '{}/{}'.format(tmp_dir(), output_file_name)
-        with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(self.violations))
-        return output_file_name
-
     def _make_attachment(self):
         """Create the attachment object.
 
         Returns:
             attachment: SendGrid attachment object.
         """
-        output_file_name = self._write_temp_attachment()
+        self.tmp_file.write(parser.json_stringify(self.violations))
+        self.tmp_file.close()
         attachment = self.mail_util.create_attachment(
-            file_location='{}/{}'.format(tmp_dir(), output_file_name),
+            file_location=self.tmp_file.name,
             content_type='text/json',
-            filename=output_file_name,
+            filename=self._get_output_filename(),
             disposition='attachment',
             content_id='Violations'
         )
 
+        os.unlink(self.tmp_file.name)
         return attachment
 
     def _make_content(self):

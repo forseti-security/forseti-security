@@ -14,6 +14,7 @@
 
 """Tests the Email Violations upload pipeline."""
 
+import base64
 from datetime import datetime
 import glob
 import mock
@@ -49,7 +50,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
         self.gvp = email_violations_pipeline.EmailViolationsPipeline(
             'abcd',
             datetime.strftime(datetime.utcnow(), '%Y%m%dT%H%M%SZ'),
-            [],
+            ['violation: abc', 'violation: def'],
             fake_global_conf,
             {},
             fake_pipeline_conf)
@@ -74,6 +75,12 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
         tmp_files_after = glob.glob(tmp_dir)
         self.assertEquals(tmp_files_before, tmp_files_after)
 
+    def test_make_attachment_can_read_tempfile(self):
+        """Test that _make_attachment() can read the temp file."""
+        violations = '["violation: abc", "violation: def"]'
+        attachment = self.gvp._make_attachment()
+        decoded_content = base64.b64decode(attachment.content)
+        self.assertEquals(decoded_content, violations)
 
 
 if __name__ == '__main__':
