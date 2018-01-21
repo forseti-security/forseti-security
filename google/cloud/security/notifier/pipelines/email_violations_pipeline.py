@@ -14,9 +14,9 @@
 
 """Email pipeline to perform notifications"""
 
-import tempfile
 from datetime import datetime
 import os
+import tempfile
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
