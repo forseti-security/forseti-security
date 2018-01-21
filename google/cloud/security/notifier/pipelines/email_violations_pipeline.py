@@ -57,7 +57,6 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                                                       notifier_config,
                                                       pipeline_config)
         self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
-        self.tmp_file = tempfile.NamedTemporaryFile(delete=False)
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -78,17 +77,18 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         Returns:
             attachment: SendGrid attachment object.
         """
-        self.tmp_file.write(parser.json_stringify(self.violations))
-        self.tmp_file.close()
+        tmp_file = tempfile.NamedTemporaryFile(delete=False)
+        tmp_file.write(parser.json_stringify(self.violations))
+        tmp_file.close()
         attachment = self.mail_util.create_attachment(
-            file_location=self.tmp_file.name,
+            file_location=tmp_file.name,
             content_type='text/json',
             filename=self._get_output_filename(),
             disposition='attachment',
             content_id='Violations'
         )
 
-        os.unlink(self.tmp_file.name)
+        os.unlink(tmp_file.name)
         return attachment
 
     def _make_content(self):

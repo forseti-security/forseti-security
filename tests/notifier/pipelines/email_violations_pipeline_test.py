@@ -65,13 +65,13 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
             'sendgrid_api_key': 'foo_email_key',
         }
 
-        self.gvp_args = [
+        self.gvp = email_violations_pipeline.EmailViolationsPipeline(
             'abcd',
             datetime.strftime(datetime.utcnow(), '%Y%m%dT%H%M%SZ'),
             ['violation: abc', 'violation: def'],
             fake_global_conf,
             {},
-            fake_pipeline_conf]
+            fake_pipeline_conf)
 
     @mock.patch(
         'google.cloud.security.common.util.email_util.EmailUtil',
@@ -80,17 +80,15 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
         """Test that we leave no temp files behind."""
         tmp_dir = '{}/*'.format(os.environ['TMPDIR'])
         tmp_files_before = glob.glob(tmp_dir)
-        gvp = email_violations_pipeline.EmailViolationsPipeline(*self.gvp_args)
-        gvp.mail_util = mock_emailutil
-        gvp.run()
+        self.gvp.mail_util = mock_emailutil
+        self.gvp.run()
         tmp_files_after = glob.glob(tmp_dir)
         self.assertEquals(tmp_files_before, tmp_files_after)
 
     def test_make_attachment_can_read_tempfile(self):
         """Test that _make_attachment() can read the temp file."""
         violations = '["violation: abc", "violation: def"]'
-        gvp = email_violations_pipeline.EmailViolationsPipeline(*self.gvp_args)
-        attachment = gvp._make_attachment()
+        attachment = self.gvp._make_attachment()
         decoded_content = base64.b64decode(attachment.content)
         self.assertEquals(decoded_content, violations)
 
