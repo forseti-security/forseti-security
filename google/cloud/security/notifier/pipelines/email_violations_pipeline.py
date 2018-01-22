@@ -15,7 +15,6 @@
 """Email pipeline to perform notifications"""
 
 from datetime import datetime
-import os
 import tempfile
 
 # TODO: Investigate improving so we can avoid the pylint disable.
