@@ -18,11 +18,11 @@ import itertools
 import threading
 from collections import namedtuple
 
-from google.cloud.forseti.common.data_access import org_resource_rel_dao
 from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import relationship_util
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 
@@ -302,8 +302,7 @@ class RuleBook(bre.BaseRuleBook):
         violations = itertools.chain()
 
         resource_ancestors = (
-            org_resource_rel_dao.find_ancestors_by_hierarchial_name(
-                resource, policy.full_name))
+            relationship_util.find_ancestors(resource, policy.full_name))
 
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:

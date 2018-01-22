@@ -1000,10 +1000,6 @@ class RuleTest(ForsetiTestCase):
 
 class RuleBookTest(ForsetiTestCase):
 
-    def setUp(self):
-        self.mock_org_rel_dao = mock.patch(
-            'google.cloud.forseti.common.data_access.org_resource_rel_dao.OrgResourceRelDao').start()
-
     @parameterized.parameterized.expand([
         (
             [
