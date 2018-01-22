@@ -7,8 +7,8 @@ before_install:
   -in client-secrets.json.enc -out client-secrets.json -d
 branches:
   only:
-  - gh-pages
-  - "/gh-pages-(.*)/"
+  - forsetisecurity.org
+  - "/forsetisecurity\.org-(.*)/"
 env:
   global:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
@@ -23,6 +23,6 @@ deploy:
   provider: gae
   keyfile: "$TRAVIS_BUILD_DIR/client-secrets.json"
   project: forseti-security-website-prod
-  on: gh-pages
+  on: forsetisecurity.org
   skip_cleanup: true
   no_promote: true

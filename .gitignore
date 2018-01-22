@@ -36,8 +36,9 @@ out/
 .coverage
 htmlcov/
 
-# jekyll (gh-pages)
+# jekyll (forsetisecurity.org)
 _site/
+_www/
 .jekyll-metadata/
 _config.yml~
 Gemfile.lock

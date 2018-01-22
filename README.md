@@ -1,6 +1,6 @@
 # Forseti Security
 
-This branch (gh-pages) hosts the content used to build the
+This branch (forsetisecurity.org) hosts the content used to build the
 [forsetisecurity.org](http://forsetisecurity.org) website.
 
 ## License
@@ -10,7 +10,7 @@ See [LICENSE](https://github.com/GoogleCloudPlatform/forseti-security/blob/maste
 ### Third-party licenses
 
 Third-party code and their respective licenses are in
-[third_party/](https://github.com/GoogleCloudPlatform/forseti-security/tree/gh-pages/third_party).
+[third_party/](https://github.com/GoogleCloudPlatform/forseti-security/tree/forsetisecurity.org/third_party).
 
 ## Contributing
 
@@ -129,7 +129,7 @@ FAQs are sorted ascendingly within a category and rendered top-to-bottom.
 The Material Design theme for Bootstrap is adapted from
 [FezVrasta/bootstrap-material-design](https://github.com/FezVrasta/bootstrap-material-design)
 (see its
-[LICENSE in third_party/](https://github.com/GoogleCloudPlatform/forseti-security/blob/gh-pages/third_party/bootstrap-material-design/LICENSE.md)).
+[LICENSE in third_party/](https://github.com/GoogleCloudPlatform/forseti-security/blob/forsetisecurity.org/third_party/bootstrap-material-design/LICENSE.md)).
 
 First, clone the repository. Next, follow the installation instructions in the
 [README](https://github.com/FezVrasta/bootstrap-material-design/blob/master/README.md).
