@@ -196,7 +196,9 @@ class IamRuleBook(bre.BaseRuleBook):
     """
 
     def __init__(self,
-                 global_configs,
+                 # TODO: To remove the unused global-configs here, it will be
+                 # necessary to also update the base rules engine.
+                 global_configs,  #pylint: disable= unused-argument
                  rule_defs=None,
                  snapshot_timestamp=None):
         """Initialize.
