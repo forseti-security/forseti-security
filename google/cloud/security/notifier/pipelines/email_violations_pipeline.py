@@ -75,20 +75,22 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """Create the attachment object.
 
         Returns:
-            attachment: SendGrid attachment object.
+            attachment: SendGrid attachment object or `None` in case of
+            failure.
         """
-        tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        tmp_file.write(parser.json_stringify(self.violations))
-        tmp_file.close()
-        attachment = self.mail_util.create_attachment(
-            file_location=tmp_file.name,
-            content_type='text/json',
-            filename=self._get_output_filename(),
-            disposition='attachment',
-            content_id='Violations'
-        )
+        attachment = None
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(parser.json_stringify(self.violations))
+            tmp_file.close()
+            attachment = self.mail_util.create_attachment(
+                file_location=tmp_file.name,
+                content_type='text/json',
+                filename=self._get_output_filename(),
+                disposition='attachment',
+                content_id='Violations'
+            )
 
-        os.unlink(tmp_file.name)
+            os.unlink(tmp_file.name)
         return attachment
 
     def _make_content(self):
