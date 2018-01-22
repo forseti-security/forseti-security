@@ -40,9 +40,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mre = mock.patch(
             'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.'
             'firewall_rules_engine').start()
-        self.mock_org_rel_dao = mock.patch(
-                        'google.cloud.forseti.common.data_access.'
-                        'org_resource_rel_dao.OrgResourceRelDao').start()
         self.fake_utcnow = datetime(
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
             microsecond=0)

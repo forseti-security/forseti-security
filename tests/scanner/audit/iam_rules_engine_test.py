@@ -16,13 +16,12 @@
 
 import copy
 import itertools
+import json
 import mock
 import yaml
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.data_access import _db_connector
-from google.cloud.forseti.common.data_access import org_resource_rel_dao as org_rel_dao
 from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyMember
@@ -57,13 +56,25 @@ class IamRulesEngineTest(ForsetiTestCase):
             display_name='My project 3',
             parent=self.folder1)
 
-        # patch the organization resource relation dao
-        self.patcher = mock.patch('google.cloud.forseti.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
-        self.mock_org_rel_dao = self.patcher.start()
-        self.mock_org_rel_dao.return_value = None
+        self.mock_org_policy_resource = mock.MagicMock()
+        self.mock_org_policy_resource.full_name = (
+            'organization/778899/')
 
-    def tearDown(self):
-        self.patcher.stop()
+        self.mock_folder1_policy_resource = mock.MagicMock()
+        self.mock_folder1_policy_resource.full_name = (
+            'organization/778899/folder/333/')
+
+        self.mock_project1_policy_resource = mock.MagicMock()
+        self.mock_project1_policy_resource.full_name = (
+            'organization/778899/project/project1/my-project-1')
+
+        self.mock_project2_policy_resource = mock.MagicMock()
+        self.mock_project2_policy_resource.full_name = (
+            'project2/my-project-2')
+
+        self.mock_project3_policy_resource = mock.MagicMock()
+        self.mock_project3_policy_resource.full_name = (
+            'organization/778899/folder/333/project/my-project-3')
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -331,11 +342,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES1, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         policy = {
             'bindings': [{
@@ -343,8 +349,12 @@ class IamRulesEngineTest(ForsetiTestCase):
                 'members': ['user:abc@company.com', 'user:def@goggle.com']
             }]}
 
-        actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+        self.mock_project1_policy_resource.data = json.dumps(policy)
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
+        ))
 
         # expected
         rule_bindings = [{
@@ -389,11 +399,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES1, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         policy = {
             'bindings': [{
@@ -402,8 +407,12 @@ class IamRulesEngineTest(ForsetiTestCase):
             }]
         }
 
-        actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+        self.mock_project1_policy_resource.data = json.dumps(policy)
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
+        ))
 
         # expected
         expected_violations = set()
@@ -421,19 +430,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy violations found.
         """
-        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
-            side_effect=[self.org789])
-
-        # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, snapshot_timestamp=self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         policy = {
             'bindings': [{
@@ -442,8 +442,12 @@ class IamRulesEngineTest(ForsetiTestCase):
             }]
         }
 
-        actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+        self.mock_project1_policy_resource.data = json.dumps(policy)
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
+        ))
 
         # expected
         expected_violations = set()
@@ -465,14 +469,13 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES1, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
-        actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, {}))
+        self.mock_project1_policy_resource.data = json.dumps({})
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
+        ))
 
         # expected
         expected_violations = set()
@@ -496,11 +499,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         # TODO: mock the rules local path to return RULES2
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES2, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789], []])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         policy = {
             'bindings': [
@@ -515,9 +513,15 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(policy)
+        self.mock_project2_policy_resource.data = json.dumps(policy)
+
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(self.project1, policy),
-            rules_engine.find_policy_violations(self.project2, policy)))
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource),
+            rules_engine.find_policy_violations(
+                self.project2, self.mock_project2_policy_resource)
+        ))
 
         # expected
         expected_outstanding1 = {
@@ -584,11 +588,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES1, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         policy = {
             'bindings': [
@@ -601,8 +600,12 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
-        actual_violations = set(rules_engine.find_policy_violations(
-            self.org789, policy))
+        self.mock_org_policy_resource.data = json.dumps(policy)
+
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(
+                self.org789, self.mock_org_policy_resource),
+        ))
 
         self.assertItemsEqual(set(), actual_violations)
 
@@ -625,11 +628,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES3, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[], [self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         org_policy = {
             'bindings': [
@@ -655,10 +653,15 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_org_policy_resource.data = json.dumps(org_policy)
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(self.org789, org_policy),
-            rules_engine.find_policy_violations(self.project1, project_policy),
-            ))
+            rules_engine.find_policy_violations(
+                self.org789, self.mock_org_policy_resource),
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
+        ))
 
         # expected
         expected_outstanding_org = {
@@ -721,11 +724,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES4, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[], [self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         org_policy = {
             'bindings': [
@@ -751,9 +749,15 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_org_policy_resource.data = json.dumps(org_policy)
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(self.org789, org_policy),
-            rules_engine.find_policy_violations(self.project1, project_policy)))
+            rules_engine.find_policy_violations(
+                self.org789, self.mock_org_policy_resource),
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
+        ))
 
         # expected
         expected_outstanding_org = {
@@ -806,11 +810,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES5, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -823,8 +822,11 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         )
 
         # expected
@@ -856,11 +858,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES6, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -873,8 +870,11 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         )
 
         # expected
@@ -917,11 +917,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules5['rules'][1]['inherit_from_parents'] = True
         rules_engine.rule_book = ire.IamRuleBook(
             {}, rules5, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -934,8 +929,11 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         )
 
         # expected
@@ -980,11 +978,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules5['rules'][0]['resource'][0]['applies_to'] = 'self'
         rules_engine.rule_book = ire.IamRuleBook(
             {}, rules5, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [{
@@ -995,8 +988,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 }]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         )
 
         # expected
@@ -1024,11 +1020,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules6['rules'][0]['resource'][0]['applies_to'] = 'self'
         rules_engine.rule_book = ire.IamRuleBook(
             {}, rules6, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[], [self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         org_policy = {
             'bindings': [
@@ -1052,9 +1043,14 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_org_policy_resource.data = json.dumps(org_policy)
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(self.org789, org_policy),
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.org789, self.mock_org_policy_resource),
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         ))
 
         # expected
@@ -1095,11 +1091,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES6, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -1112,8 +1103,11 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         )
 
         # expected
@@ -1151,11 +1145,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES8, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -1169,9 +1158,11 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
-        )
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource))
 
         # expected
         expected_outstanding_proj = {
@@ -1211,13 +1202,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES9, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        # have to return 2 [self.org789] because the find_ancestors() call is
-        # called twice, once for each find_violations().
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789], [self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project_policy = {
             'bindings': [
@@ -1238,8 +1222,11 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(
-            rules_engine.find_policy_violations(self.project1, project_policy)
+            rules_engine.find_policy_violations(
+                self.project1, self.mock_project1_policy_resource)
         )
 
         # expected
@@ -1283,11 +1270,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.FOLDER_RULES1, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789], [self.folder1, self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         # one violation for folder because of organization 778899
         # one violation for project because of project3's parent
@@ -1313,11 +1295,14 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_folder1_policy_resource.data = json.dumps(folder_policy)
+        self.mock_project1_policy_resource.data = json.dumps(project_policy)
+
         actual_violations = set(itertools.chain(
                 rules_engine.find_policy_violations(
-                    self.folder1, folder_policy),
+                    self.folder1, self.mock_folder1_policy_resource),
                 rules_engine.find_policy_violations(
-                    self.project3, project_policy)
+                    self.project3, self.mock_project1_policy_resource)
             )
         )
 
@@ -1346,10 +1331,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES10, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock()
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
 
         project1_policy = {
             'bindings': [
@@ -1378,11 +1359,14 @@ class IamRulesEngineTest(ForsetiTestCase):
             ]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(project1_policy)
+        self.mock_project2_policy_resource.data = json.dumps(project2_policy)
+
         actual_violations = set(itertools.chain(
                 rules_engine.find_policy_violations(
-                    self.project1, project1_policy),
+                    self.project1, self.mock_project1_policy_resource),
                 rules_engine.find_policy_violations(
-                    self.project2, project2_policy)
+                    self.project2, self.mock_project2_policy_resource)
             )
         )
 
@@ -1404,7 +1388,6 @@ class IamRulesEngineTest(ForsetiTestCase):
                 members=tuple(expected_outstanding['roles/owner'])),
         ])
         self.assertItemsEqual(expected_violations, actual_violations)
-
 
 if __name__ == '__main__':
     unittest.main()

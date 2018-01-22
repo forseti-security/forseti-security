@@ -15,15 +15,13 @@
 """Scanner for the IAM rules engine."""
 
 from datetime import datetime
-import itertools
 import os
 import sys
 
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.data_access import errors as db_errors
-from google.cloud.forseti.common.data_access import folder_dao
-from google.cloud.forseti.common.data_access import organization_dao
-from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_type.folder import Folder
+from google.cloud.forseti.common.gcp_type.organization import Organization
+from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier import notifier
@@ -153,13 +151,12 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            policies (list): The list of (resource, policy) tuples to
-                find violations in.
+            policies (list): The list of (gcp_type, forseti_data_model_resource)
+                tuples to find violations in.
 
         Returns:
             list: A list of all violations
         """
-        policies = itertools.chain(*policies)
         all_violations = []
         LOGGER.info('Finding IAM policy violations...')
         for (resource, policy) in policies:
@@ -169,89 +166,49 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             all_violations.extend(violations)
         return all_violations
 
-    @staticmethod
-    def _get_resource_count(**kwargs):
-        """Get resource count for IAM policies.
-
-        Args:
-            kwargs: The policies to get resource counts for.
-
-        Returns:
-            dict: Resource count map.
-        """
-        resource_counts = {
-            ResourceType.ORGANIZATION: len(kwargs.get('org_iam_policies', [])),
-            ResourceType.FOLDER: len(kwargs.get('folder_iam_policies', [])),
-            ResourceType.PROJECT: len(kwargs.get('project_iam_policies', [])),
-        }
-
-        return resource_counts
-
-    def _get_org_iam_policies(self):
-        """Get orgs from data source.
-
-        Returns:
-            dict: Org policies from inventory.
-        """
-        org_policies = {}
-        try:
-            org_dao = organization_dao.OrganizationDao(self.global_configs)
-            org_policies = org_dao.get_org_iam_policies(
-                'organizations', self.snapshot_timestamp)
-        except db_errors.MySQLError as e:
-            LOGGER.error('Error getting Organization IAM policies: %s', e)
-        return org_policies
-
-    def _get_folder_iam_policies(self):
-        """Get folder IAM policies from data source.
-
-        Returns:
-            dict: The folder policies.
-        """
-        folder_policies = {}
-        try:
-            fdao = folder_dao.FolderDao(self.global_configs)
-            folder_policies = fdao.get_folder_iam_policies(
-                'folders', self.snapshot_timestamp)
-        except db_errors.MySQLError as e:
-            LOGGER.error('Error getting Folder IAM policies: %s', e)
-        return folder_policies
-
-    def _get_project_iam_policies(self):
-        """Get projects from data source.
-
-        Returns:
-            dict: Project policies from inventory.
-        """
-        project_policies = {}
-        project_policies = (project_dao
-                            .ProjectDao(self.global_configs)
-                            .get_project_policies('projects',
-                                                  self.snapshot_timestamp))
-        return project_policies
-
     def _retrieve(self):
         """Retrieves the data for scanner.
 
         Returns:
-            list: List of IAM policy data.
+            list: List of (gcp_type, forseti_data_model_resource) tuples.
             dict: A dict of resource counts.
         """
-        policy_data = []
-        org_policies = self._get_org_iam_policies()
-        folder_policies = self._get_folder_iam_policies()
-        project_policies = self._get_project_iam_policies()
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
 
-        if not any([org_policies, folder_policies, project_policies]):
+            policy_data = []
+            supported_iam_types = ['organization', 'folder', 'project']
+            org_iam_policy_counter = 0
+            folder_iam_policy_counter = 0
+            project_iam_policy_counter = 0
+
+            for policy in data_access.scanner_iter(session, 'iam_policy'):
+                if policy.parent.type not in supported_iam_types:
+                    continue
+
+                if policy.parent.type == 'project':
+                    project_iam_policy_counter += 1
+                    policy_data.append(
+                        (Project(policy.parent.name), policy))
+                elif policy.parent.type == 'folder':
+                    folder_iam_policy_counter += 1
+                    policy_data.append(
+                        (Folder(policy.parent.name), policy))
+                elif policy.parent.type == 'organization':
+                    org_iam_policy_counter += 1
+                    policy_data.append(
+                        (Organization(policy.parent.name), policy))
+
+        if not policy_data:
             LOGGER.warn('No policies found. Exiting.')
             sys.exit(1)
-        resource_counts = self._get_resource_count(
-            org_iam_policies=org_policies,
-            folder_iam_policies=folder_policies,
-            project_iam_policies=project_policies)
-        policy_data.append(org_policies.iteritems())
-        policy_data.append(folder_policies.iteritems())
-        policy_data.append(project_policies.iteritems())
+
+        resource_counts = {
+            ResourceType.ORGANIZATION: org_iam_policy_counter,
+            ResourceType.FOLDER: folder_iam_policy_counter,
+            ResourceType.PROJECT: project_iam_policy_counter,
+        }
 
         return policy_data, resource_counts
 

@@ -208,6 +208,7 @@ class InventoryImporter(object):
                 for policy in inventory.iter(gcp_type_list,
                                              fetch_iam_policy=True):
                     self._store_iam_policy(policy)
+                    self._convert_iam_policy(policy)
                 self._store_iam_policy_post()
 
         except Exception:  # pylint: disable=broad-except
@@ -505,27 +506,6 @@ class InventoryImporter(object):
             return res_type
         return None
 
-    def _convert_bucket(self, bucket):
-        """Convert a bucket to a database object.
-
-        Args:
-            bucket (object): Bucket to store.
-        """
-
-        data = bucket.get_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            bucket)
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=bucket.get_key(),
-                type=bucket.get_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=bucket.get_data_raw(),
-                parent=parent))
-
     def _convert_object(self, gcsobject):
         """Not Implemented
 
@@ -552,6 +532,27 @@ class InventoryImporter(object):
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(gae_resource, resource)
+
+    def _convert_bucket(self, bucket):
+        """Convert a bucket to a database object.
+
+        Args:
+            bucket (object): Bucket to store.
+        """
+        data = bucket.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            bucket)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=bucket.get_key(),
+            type=bucket.get_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=bucket.get_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(bucket, resource)
 
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.
@@ -609,6 +610,28 @@ class InventoryImporter(object):
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
                 data=computeproject.get_data_raw(),
+                parent=parent))
+
+    def _convert_iam_policy(self, iam_policy):
+        """Convert an IAM policy to a database object.
+
+        Args:
+            iam_policy (object): IAM policy to store.
+        """
+        iam_policy_type_name = to_type_name(
+            iam_policy.get_type_class(),
+            iam_policy.get_key())
+        parent, full_res_name = self._get_parent(iam_policy)
+        iam_policy_full_res_name = to_full_resource_name(
+            full_res_name,
+            iam_policy_type_name)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=iam_policy_full_res_name,
+                type_name=iam_policy_type_name,
+                name=iam_policy.get_key(),
+                type=iam_policy.get_type_class(),
+                data=iam_policy.get_data_raw(),
                 parent=parent))
 
     def _convert_image(self, image):
