@@ -301,7 +301,7 @@ class RuleBook(bre.BaseRuleBook):
         violations = itertools.chain()
 
         resource_ancestors = (
-            relationship_util.find_ancestors(resource, policy.full_name))
+            relationship_util.find_ancestors(resource, policies[0].full_name))
 
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:
