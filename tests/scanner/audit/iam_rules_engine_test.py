@@ -76,14 +76,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project3_policy_resource.full_name = (
             'organization/778899/folder/333/project/my-project-3')
 
-        # patch the organization resource relation dao
-        self.patcher = mock.patch('google.cloud.forseti.common.data_access.org_resource_rel_dao.OrgResourceRelDao')
-        self.mock_org_rel_dao = self.patcher.start()
-        self.mock_org_rel_dao.return_value = None
-
-    def tearDown(self):
-        self.patcher.stop()
-
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
