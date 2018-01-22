@@ -79,9 +79,9 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             failure.
         """
         attachment = None
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        with tempfile.NamedTemporaryFile() as tmp_file:
             tmp_file.write(parser.json_stringify(self.violations))
-            tmp_file.close()
+            tmp_file.flush()
             attachment = self.mail_util.create_attachment(
                 file_location=tmp_file.name,
                 content_type='text/json',
@@ -89,8 +89,6 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                 disposition='attachment',
                 content_id='Violations'
             )
-
-            os.unlink(tmp_file.name)
         return attachment
 
     def _make_content(self):
