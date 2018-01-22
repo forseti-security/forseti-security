@@ -700,10 +700,17 @@ def run_model(client, config, output, config_env):
         output.write(result)
 
     def do_use_model():
-        """Use a model."""
+        """Use a model.
+
+        Raises:
+            Warning: When the specified model is not usable or not existed
+        """
         model = client.get_model(config.model)
-        if model:
+        if model and model.status in ["SUCCESS", "PARTIAL_SUCCESS"]:
             config_env['model'] = model.handle
+        else:
+            raise Warning('use_model failed, the specified model is '
+                          'either not existed or not usable.')
         DefaultConfigParser.persist(config_env)
 
     actions = {
