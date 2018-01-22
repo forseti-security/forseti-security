@@ -74,7 +74,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Inventory progress updates.
         """
 
-        for progress in self.inventory.Create(request.background,
+        for progress in self.inventory.create(request.background,
                                               request.model_name):
             yield inventory_pb2.Progress(
                 id=progress.inventory_id,
@@ -97,7 +97,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Each Inventory API object.
         """
 
-        for inventory_index in self.inventory.List():
+        for inventory_index in self.inventory.list():
             yield inventory_pb_from_object(inventory_index)
 
     def Get(self, request, _):
@@ -111,7 +111,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Inventory API object that is requested.
         """
 
-        inventory_index = self.inventory.Get(request.id)
+        inventory_index = self.inventory.get(request.id)
         return inventory_pb2.GetReply(
             inventory=inventory_pb_from_object(inventory_index))
 
@@ -126,7 +126,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
             object: Inventory API object that is deleted.
         """
 
-        inventory_index = self.inventory.Delete(request.id)
+        inventory_index = self.inventory.delete(request.id)
         return inventory_pb2.DeleteReply(
             inventory=inventory_pb_from_object(inventory_index))
 

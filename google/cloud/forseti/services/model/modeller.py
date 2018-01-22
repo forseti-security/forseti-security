@@ -20,7 +20,6 @@ from google.cloud.forseti.common.util import log_util
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
-# pylint: disable=invalid-name
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -30,7 +29,7 @@ class Modeller(object):
     def __init__(self, config):
         self.config = config
 
-    def CreateModel(self, source, name, inventory_id, background):
+    def create_model(self, source, name, inventory_id, background):
         """Creates a model from the import source.
 
         Args:
@@ -50,7 +49,7 @@ class Modeller(object):
         model_handle = model_manager.create(name=name)
         scoped_session, data_access = model_manager.get(model_handle)
 
-        def doImport():
+        def do_import():
             """Import runnable."""
             with scoped_session as session:
                 importer_cls = importer.by_source(source)
@@ -63,24 +62,24 @@ class Modeller(object):
                 import_runner.run()
 
         if background:
-            self.config.run_in_background(doImport)
+            self.config.run_in_background(do_import)
         else:
-            doImport()
+            do_import()
         return model_manager.model(model_handle, expunge=True)
 
-    def ListModel(self):
+    def list_model(self):
         """Lists all models."""
 
         model_manager = self.config.model_manager
         return model_manager.models()
 
-    def GetModel(self, model):
+    def get_model(self, model):
         """Get details of a model by name or handle."""
 
         model_manager = self.config.model_manager
         return model_manager.get_model(model)
 
-    def DeleteModel(self, model_name):
+    def delete_model(self, model_name):
         """Deletes a model."""
 
         LOGGER.info("Deleting model: %s", model_name)
