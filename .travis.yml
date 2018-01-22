@@ -8,7 +8,7 @@ before_install:
 branches:
   only:
   - "forsetisecurity.org"
-  - "/forsetisecurity.org-(.*)/"
+  - "/forsetisecurity.org(.*)/"
 env:
   global:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
