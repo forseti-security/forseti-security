@@ -42,95 +42,95 @@ service Explain {
 }
 
 message ExplainGrantedRequest {
-	string member = 1;
-	string resource = 2;
-	oneof access {
-		string permission = 3;
-		string role = 4;
-	}
+  string member = 1;
+  string resource = 2;
+  oneof access {
+    string permission = 3;
+    string role = 4;
+  }
 }
 
 message Binding {
-	string member = 1;
-	string resource = 2;
-	string role = 3;
+  string member = 1;
+  string resource = 2;
+  string role = 3;
 }
 
 message Membership {
-	string member = 1;
-	repeated string parents = 2;
+  string member = 1;
+  repeated string parents = 2;
 }
 
 message ExplainGrantedReply {
-	repeated Binding bindings = 1;
-	repeated Membership memberships = 2;
-	repeated string resource_ancestors = 3;
+  repeated Binding bindings = 1;
+  repeated Membership memberships = 2;
+  repeated string resource_ancestors = 3;
 }
 
 message BindingStrategy {
-	repeated Binding bindings = 1;
-	int32 overgranting = 2;
+  repeated Binding bindings = 1;
+  int32 overgranting = 2;
 }
 
 message ExplainDeniedReply {
-	repeated BindingStrategy strategies = 1;
+  repeated BindingStrategy strategies = 1;
 }
 
 message ExplainDeniedRequest {
-	string member = 1;
-	repeated string permissions = 2;
-	repeated string roles = 3;
-	repeated string resources = 4;
+  string member = 1;
+  repeated string permissions = 2;
+  repeated string roles = 3;
+  repeated string resources = 4;
 }
 
 message DenormalizeRequest {
 }
 
 message DenormalizeReply {
-	repeated AuthorizationTuple authorizations = 1;
+  repeated AuthorizationTuple authorizations = 1;
 }
 
 message AuthorizationTuple {
-	string member = 1;
-	string resource = 2;
-	string permission = 3;
+  string member = 1;
+  string resource = 2;
+  string permission = 3;
 }
 
 message CreateModelRequest {
-	string type = 1;
-	string name = 2;
-	int32 id = 3;
-	bool background = 4;
+  string type = 1;
+  string name = 2;
+  int32 id = 3;
+  bool background = 4;
 }
 
 message CreateModelReply {
-	Model model = 1;
+  Model model = 1;
 }
 
 message DeleteModelRequest {
-	string handle = 1;
+  string handle = 1;
 }
 
 message DeleteModelReply {
-	enum Status {
-		SUCCESS = 0;
-	}
-	Status status = 1;
+  enum Status {
+    SUCCESS = 0;
+  }
+  Status status = 1;
 }
 
 message ListModelRequest {
 }
 
 message ListModelReply {
-	repeated Model models = 1;
+  repeated Model models = 1;
 }
 
 message Model {
-	string handle = 1;
-	string name = 2;
-	string status = 3;
-	string message = 4;
-	string warnings = 5;
+  string handle = 1;
+  string name = 2;
+  string status = 3;
+  string message = 4;
+  string warnings = 5;
 }
 
 message GetPermissionsByRolesRequest {
