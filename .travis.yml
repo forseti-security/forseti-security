@@ -7,7 +7,7 @@ before_install:
   -in client-secrets.json.enc -out client-secrets.json -d
 branches:
   only:
-  - forsetisecurity.org
+  - "forsetisecurity.org"
   - "/forsetisecurity\.org-(.*)/"
 env:
   global:
