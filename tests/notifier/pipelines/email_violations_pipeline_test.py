@@ -90,7 +90,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
         violations = '["violation: abc", "violation: def"]'
         attachment = self.gvp._make_attachment()
         decoded_content = base64.b64decode(attachment.content)
-        self.assertEquals(decoded_content, violations)
+        self.assertEquals(violations, decoded_content)
 
 
 if __name__ == '__main__':
