@@ -40,7 +40,9 @@ def define_violation(model_name, dbengine):
     """
 
     base = declarative_base()
-    violations_tablename = '{}_violations'.format(model_name)
+    # pylint: disable=too-many-format-args
+    violations_tablename = 'violations'.format(model_name)
+    # pylint: enable=too-many-format-args
 
     class Violation(base):
         """Row entry for a violation."""
@@ -48,6 +50,7 @@ def define_violation(model_name, dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
+        model_handle = Column(String(256))
         resource_type = Column(String(256), nullable=False)
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
@@ -91,15 +94,18 @@ def define_violation(model_name, dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations):
+        def create(self, violations, model_handle):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
+                model_handle (str): Name of the model that the violations
+                    originate from.
             """
             with self.violationmaker() as session:
                 for violation in violations:
                     violation = self.TBL_VIOLATIONS(
+                        model_handle=model_handle,
                         resource_type=violation.get('resource_type'),
                         rule_name=violation.get('rule_name'),
                         rule_index=violation.get('rule_index'),
