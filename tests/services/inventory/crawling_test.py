@@ -66,19 +66,19 @@ class CrawlerTest(ForsetiTestCase):
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})
             item_counts['resource'] += 1
-            if item.getIamPolicy():
+            if item.get_iam_policy():
                 item_counts.setdefault('iam_policy', 0)
                 item_counts['iam_policy'] += 1
-            if item.getGCSPolicy():
+            if item.get_gcs_policy():
                 item_counts.setdefault('gcs_policy', 0)
                 item_counts['gcs_policy'] += 1
-            if item.getDatasetPolicy():
+            if item.get_dataset_policy():
                 item_counts.setdefault('dataset_policy', 0)
                 item_counts['dataset_policy'] += 1
-            if item.getBillingInfo():
+            if item.get_billing_info():
                 item_counts.setdefault('billing_info', 0)
                 item_counts['billing_info'] += 1
-            if item.getEnabledAPIs():
+            if item.get_enabled_apis():
                 item_counts.setdefault('enabled_apis', 0)
                 item_counts['enabled_apis'] += 1
 

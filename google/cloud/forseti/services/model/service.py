@@ -72,10 +72,10 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             object: pb2 object of ModelSimplified
         """
 
-        model = self.modeller.CreateModel(request.type,
-                                          request.name,
-                                          request.id,
-                                          request.background)
+        model = self.modeller.create_model(request.type,
+                                           request.name,
+                                           request.id,
+                                           request.background)
         reply = model_pb2.CreateModelReply(model=model_pb2.ModelSimplified(
             name=model.name,
             handle=model.handle,
@@ -94,7 +94,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
 
         model_name = request.handle
-        self.modeller.DeleteModel(model_name)
+        self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
     def ListModel(self, request, _):
@@ -107,7 +107,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             object: pb2 object of ModelSimplified
         """
 
-        models = self.modeller.ListModel()
+        models = self.modeller.list_model()
         for model in models:
             yield model_pb2.ModelSimplified(name=model.name,
                                             handle=model.handle,
@@ -125,7 +125,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             object: pb2 object of ModelDetails
         """
 
-        model = self.modeller.GetModel(request.identifier)
+        model = self.modeller.get_model(request.identifier)
 
         if model:
             return model_pb2.ModelDetails(name=model.name,
