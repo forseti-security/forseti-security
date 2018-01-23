@@ -163,7 +163,7 @@ def _run_pipelines(pipelines):
         pipelines (list): List of pipelines to be run.
 
     Returns:
-        list: a list of booleans whether each pipeline completed
+        list: a list of booleans indicating whether each pipeline completed
             successfully or not.
     """
     # TODO: Define these status codes programmatically.
@@ -186,6 +186,22 @@ def _run_pipelines(pipelines):
             pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
     return run_statuses
+
+def _postprocess_statuses(pipelines, run_statuses):
+    """Look at related `pipelines` and adjust run statuses as needed.
+    Example: if the `groups` pipeline failed then the `group_members` pipeline
+    should be marked as a failure as well.
+
+    Args:
+        pipelines (list): List of pipelines that were run.
+        run_statuses (list): a list of booleans indicating whether each
+        pipeline completed successfully or not.
+
+    Returns:
+        list: a (possibly adjusted) list of booleans indicating whether each
+        pipeline completed successfully or not.
+    """
+    pass
 
 def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     """Complete the snapshot cycle.

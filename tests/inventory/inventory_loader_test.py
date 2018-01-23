@@ -14,20 +14,16 @@
 
 """Inventory loader script test."""
 
-from datetime import datetime
+from collections import namedtuple
 
 import mock
-import MySQLdb
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import dao
-from google.cloud.security.common.data_access import errors
-from google.cloud.security.common.gcp_type import iam_policy
-from google.cloud.security.common.gcp_type import organization
-from google.cloud.security.common.gcp_type import project
-from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.inventory import inventory_loader
+
+
+_PIPELINE = namedtuple('Pipeline', ['RESOURCE_NAME', 'status'])
 
 
 class InventoryLoaderTest(ForsetiTestCase):
@@ -38,6 +34,34 @@ class InventoryLoaderTest(ForsetiTestCase):
         self.fake_timestamp = '123456'
         self.mock_logger = mock_logger
 
+    def testPostrocessWithFailedGroupsInventory(self):
+        pipelines = [
+                _PIPELINE('groups', 'FAILURE'),
+                _PIPELINE('service_accounts', 'SUCCESS'),
+                _PIPELINE('group_members', 'SUCCESS')]
+        statuses = [False, True, True]
+        expected = [False, True, False]
+        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
+        self.assertEqual(expected, actual)
+        self.assertEqual('FAILURE', pipelines[2].status)
+
+    def testPostrocessWithGroupsInventorySuccess(self):
+        pipelines = [
+                _PIPELINE('groups', 'SUCCESS'),
+                _PIPELINE('service_accounts', 'SUCCESS'),
+                _PIPELINE('group_members', 'SUCCESS')]
+        statuses = [True] * 3
+        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
+        self.assertEqual(statuses, actual)
+
+    def testPostrocessWithFailedGroupMembersInventory(self):
+        pipelines = [
+                _PIPELINE('groups', 'SUCCESS'),
+                _PIPELINE('service_accounts', 'SUCCESS'),
+                _PIPELINE('group_members', 'FAILURE')]
+        statuses = [True, True, False]
+        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
+        self.assertEqual(statuses, actual)
 
 if __name__ == '__main__':
     unittest.main()
