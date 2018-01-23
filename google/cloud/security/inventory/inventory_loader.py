@@ -201,7 +201,21 @@ def _postprocess_statuses(pipelines, run_statuses):
         list: a (possibly adjusted) list of booleans indicating whether each
         pipeline completed successfully or not.
     """
-    pass
+    indices = dict(
+        (v, i) for (i, v) in enumerate(p.RESOURCE_NAME for p in pipelines))
+    grps_idx = indices.get('groups')
+    grp_members_idx = indices.get('group_members')
+    # Do nothing unless the status for both 'group_members' and 'groups' is
+    # present and the latter is `False`.
+    if (grps_idx is None or grp_members_idx is None or run_statuses[grps_idx]):
+        return run_statuses
+
+    if run_statuses[grp_members_idx]:
+        run_statuses[grp_members_idx] = False
+        pipelines[grp_members_idx].status = 'FAILURE'
+
+    return run_statuses
+
 
 def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     """Complete the snapshot cycle.

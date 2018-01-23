@@ -14,8 +14,6 @@
 
 """Inventory loader script test."""
 
-from collections import namedtuple
-
 import mock
 import unittest
 
@@ -23,18 +21,17 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.security.inventory import inventory_loader
 
 
-_PIPELINE = namedtuple('Pipeline', ['RESOURCE_NAME', 'status'])
+class _PIPELINE(object):
+    """Mock `Pipeline` class."""
+    def __init__(this, RESOURCE_NAME, status):
+        this.RESOURCE_NAME = RESOURCE_NAME
+        this.status = status
 
 
 class InventoryLoaderTest(ForsetiTestCase):
+    """Unit tests for the `inventory_loader` module."""
 
-    @mock.patch.object(inventory_loader, 'FLAGS')
-    @mock.patch.object(inventory_loader, 'LOGGER')
-    def setUp(self, mock_logger, mock_flags):
-        self.fake_timestamp = '123456'
-        self.mock_logger = mock_logger
-
-    def testPostrocessWithFailedGroupsInventory(self):
+    def testPostprocessWithFailedGroupsInventory(self):
         pipelines = [
                 _PIPELINE('groups', 'FAILURE'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
@@ -45,7 +42,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         self.assertEqual(expected, actual)
         self.assertEqual('FAILURE', pipelines[2].status)
 
-    def testPostrocessWithGroupsInventorySuccess(self):
+    def testPostprocessWithGroupsInventorySuccess(self):
         pipelines = [
                 _PIPELINE('groups', 'SUCCESS'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
@@ -54,7 +51,25 @@ class InventoryLoaderTest(ForsetiTestCase):
         actual = inventory_loader._postprocess_statuses(pipelines, statuses)
         self.assertEqual(statuses, actual)
 
-    def testPostrocessWithFailedGroupMembersInventory(self):
+    def testPostprocessWithoutGroupsInventory(self):
+        pipelines = [
+                _PIPELINE('instances', 'SUCCESS'),
+                _PIPELINE('service_accounts', 'SUCCESS'),
+                _PIPELINE('group_members', 'FAILURE')]
+        statuses = [True, True, False]
+        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
+        self.assertEqual(statuses, actual)
+
+    def testPostprocessWithoutGroupmembersInventory(self):
+        pipelines = [
+                _PIPELINE('instances', 'SUCCESS'),
+                _PIPELINE('service_accounts', 'SUCCESS'),
+                _PIPELINE('groups', 'FAILURE')]
+        statuses = [True, True, False]
+        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
+        self.assertEqual(statuses, actual)
+
+    def testPostprocessWithFailedGroupMembersInventory(self):
         pipelines = [
                 _PIPELINE('groups', 'SUCCESS'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
