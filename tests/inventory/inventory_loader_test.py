@@ -38,8 +38,9 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('group_members', 'SUCCESS')]
         statuses = [False, True, True]
         expected = [False, True, False]
-        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
-        self.assertEqual(expected, actual)
+        self.assertTrue(
+            inventory_loader._postprocess_statuses(pipelines, statuses))
+        self.assertEqual(expected, statuses)
         self.assertEqual('FAILURE', pipelines[2].status)
 
     def testPostprocessWithGroupsInventorySuccess(self):
@@ -48,8 +49,8 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('group_members', 'SUCCESS')]
         statuses = [True] * 3
-        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
-        self.assertEqual(statuses, actual)
+        self.assertFalse(
+            inventory_loader._postprocess_statuses(pipelines, statuses))
 
     def testPostprocessWithoutGroupsInventory(self):
         pipelines = [
@@ -57,8 +58,8 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('group_members', 'FAILURE')]
         statuses = [True, True, False]
-        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
-        self.assertEqual(statuses, actual)
+        self.assertFalse(
+            inventory_loader._postprocess_statuses(pipelines, statuses))
 
     def testPostprocessWithoutGroupmembersInventory(self):
         pipelines = [
@@ -66,8 +67,8 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('groups', 'FAILURE')]
         statuses = [True, True, False]
-        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
-        self.assertEqual(statuses, actual)
+        self.assertFalse(
+            inventory_loader._postprocess_statuses(pipelines, statuses))
 
     def testPostprocessWithFailedGroupMembersInventory(self):
         pipelines = [
@@ -75,8 +76,8 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('group_members', 'FAILURE')]
         statuses = [True, True, False]
-        actual = inventory_loader._postprocess_statuses(pipelines, statuses)
-        self.assertEqual(statuses, actual)
+        self.assertFalse(
+            inventory_loader._postprocess_statuses(pipelines, statuses))
 
 if __name__ == '__main__':
     unittest.main()
