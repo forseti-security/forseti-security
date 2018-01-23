@@ -30,6 +30,7 @@ class ResourceMock(Resource):
         self._res_type = res_type
         self._parent = parent if parent else self
         self._warning = warning
+        self._timestamp = self._utcnow()
 
     def type(self):
         return self._res_type
@@ -110,6 +111,31 @@ class StorageTest(ForsetiTestCase):
             self.assertEqual(6,
                              len(self.reduced_inventory(storage, [])),
                              'No types should yield empty list')
+
+
+    def test_storage_with_timestamps(self):
+        """Crawl from project, verify every resource has a timestamp."""
+
+        def verify_resource_timestamps_from_storage(storage):
+            for i, item in enumerate(storage.iter(list()), start=1):
+                self.assertTrue('timestamp' in item.get_other())
+            return i
+
+        engine = create_test_engine()
+
+        initialize(engine)
+        sessionmaker = db.create_scoped_sessionmaker(engine)
+
+        res_org = ResourceMock('1', {'id': 'test'}, 'organization')
+        with sessionmaker() as session:
+            with Storage(session) as storage:
+                storage.write(res_org)
+                storage.commit()
+
+                resource_count = (
+                    verify_resource_timestamps_from_storage(storage))
+                self.assertEqual(1, resource_count,
+                                 'Unexpected number of resources in inventory')
 
 
 if __name__ == '__main__':

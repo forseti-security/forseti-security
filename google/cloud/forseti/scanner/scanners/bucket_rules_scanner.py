@@ -70,6 +70,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             violation_data['email'] = violation.email
             violation_data['domain'] = violation.domain
             violation_data['bucket'] = violation.bucket
+            violation_data['project_id'] = violation.project_id
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,

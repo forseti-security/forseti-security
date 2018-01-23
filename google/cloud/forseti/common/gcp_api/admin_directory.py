@@ -183,7 +183,10 @@ class AdminDirectoryClient(object):
         """
         try:
             paged_results = self.repository.members.list(group_key)
-            return api_helpers.flatten_list_results(paged_results, 'members')
+            result = api_helpers.flatten_list_results(paged_results, 'members')
+            LOGGER.debug("Getting all the members for group_key = %s, "
+                         "result = %s", group_key, result)
+            return result
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(group_key, e)
 
@@ -206,12 +209,17 @@ class AdminDirectoryClient(object):
         """
         try:
             paged_results = self.repository.groups.list(customer=customer_id)
-            return api_helpers.flatten_list_results(paged_results, 'groups')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'groups')
+            LOGGER.debug("Getting all the groups for customer_id = %s,"
+                         " flattened_results = %s",
+                         customer_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
 
     def get_users(self, customer_id='my_customer'):
-        """Get all the groups for a given customer_id.
+        """Get all the users for a given customer_id.
 
         A note on customer_id='my_customer'. This is a magic string instead
         of using the real customer id. See:
@@ -230,6 +238,11 @@ class AdminDirectoryClient(object):
         try:
             paged_results = self.repository.users.list(customer=customer_id,
                                                        viewType='admin_view')
-            return api_helpers.flatten_list_results(paged_results, 'users')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'users')
+            LOGGER.debug("Getting all the users for customer_id = %s,"
+                         " flattened_results = %s",
+                         customer_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('users', e)

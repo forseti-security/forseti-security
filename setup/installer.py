@@ -12,4 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Forseti Security Installer Utilities. """
+""" Forseti Installer.
+
+A stub to call gcp/installer.py which installs into GCP.
+"""
+
+from gcp import installer
+
+if __name__ == '__main__':
+    installer.run()

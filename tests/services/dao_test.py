@@ -15,6 +15,7 @@
 """Unit Tests: Database abstraction objects for Forseti Server."""
 
 from collections import defaultdict
+import logging
 import unittest
 from sqlalchemy.orm.exc import NoResultFound
 from tests.unittest_utils import ForsetiTestCase
@@ -257,23 +258,6 @@ class DaoTest(ForsetiTestCase):
                                                      name_prefix='res89')
     resource_type_names = [r.type_name for r in resources]
     self.assertEqual(set(), set(resource_type_names))
-
-  def test_delete_resource_by_name(self):
-    """Test delete_resource_by_name."""
-    session_maker, data_access = session_creator('test')
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.RESOURCE_EXPANSION_1, client)
-
-    self.assertTrue(8 == len(data_access.list_resources_by_prefix(session, '')))
-    data_access.delete_resource_by_name(session, 'r/res8')
-    self.assertTrue(7 == len(data_access.list_resources_by_prefix(session, '')))
-    data_access.delete_resource_by_name(session, 'r/res6')
-    self.assertTrue(5 == len(data_access.list_resources_by_prefix(session, '')))
-    data_access.delete_resource_by_name(session, 'r/res2')
-    self.assertTrue(4 == len(data_access.list_resources_by_prefix(session, '')))
-    data_access.delete_resource_by_name(session, 'r/res1')
-    self.assertTrue(0 == len(data_access.list_resources_by_prefix(session, '')))
 
   def test_add_resource_by_name(self):
     """Test add_resource_by_name."""
@@ -566,7 +550,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
+            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -591,7 +575,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
+            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -614,7 +598,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
+            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 

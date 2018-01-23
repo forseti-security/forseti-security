@@ -24,7 +24,7 @@ if [ -x "$(command -v docker)" ]; then
         # Start the container for testing and codee verification.
         docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash
     else
-        # We're not on docker, run without the CI_ENV environment variable.
+        # We're not on Travis, run without the CI_ENV environment variable.
         docker run -it -d --name build forseti/build /bin/bash
     fi
 fi

@@ -71,7 +71,7 @@ class BaseScanner(object):
 
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
-        violation_access.create(violations)
+        violation_access.create(violations, self.model_name)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))

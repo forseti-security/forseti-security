@@ -15,12 +15,14 @@
 
 """Setup script for Forseti Security tools."""
 
-import subprocess
+import os
 import sys
 
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
+
+from setup.utils import build_protos
 
 import google.cloud.forseti
 
@@ -32,8 +34,7 @@ NAMESPACE_PACKAGES = [
     'google.cloud.forseti'
 ]
 
-INSTALL_REQUIRES = [
-    # Install.
+REQUIRED_PACKAGES = [
     'anytree>=2.1.4',
     'futures>=3.0.5',
     'google-api-python-client>=1.6.1',
@@ -46,14 +47,14 @@ INSTALL_REQUIRES = [
     'requests[security]>=2.18.4',
     'sendgrid>=3.6.3',
     'SQLAlchemy>=1.1.9',
+    'protobuf>=3.2.0',
     'pygraph>=0.2.1',
     'unicodecsv>=0.14.1',
-    # Setup.
     'google-apputils>=0.4.2',
+    'grpcio',
+    'grpcio-tools',
     'python-gflags>=3.1.1',
-    # Test.
     'mock>=2.0.0',
-    'SQLAlchemy>=1.1.9',
     'parameterized>=0.6.1',
     'simple-crypt>=4.1.7',
 ]
@@ -65,16 +66,18 @@ if sys.version_info.major > 2:
     sys.exit('Sorry, Python 3 is not supported.')
 
 
-def build_protos():
-    """Build protos."""
-    subprocess.check_call(['python', 'setup/build/build_protos.py', '--clean'])
+def build_forseti_protos():
+    """Clean and Build protos."""
+    abs_path = os.path.abspath(__file__)
+    build_protos.clean(abs_path)
+    build_protos.make_proto(abs_path)
 
 
 class PostInstallCommand(install):
     """Post installation command."""
 
     def run(self):
-        build_protos()
+        build_forseti_protos()
         install.do_egg_install(self)
 
 
@@ -93,7 +96,9 @@ setup(
     cmdclass={
         'install': PostInstallCommand,
     },
-    install_requires=INSTALL_REQUIRES,
+    install_requires=REQUIRED_PACKAGES,
+    setup_requires=REQUIRED_PACKAGES,
+    tests_require=REQUIRED_PACKAGES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
@@ -106,9 +111,7 @@ setup(
     keywords='gcp google cloud platform security tools',
     entry_points={
         'console_scripts': [
-            'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
-            'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
             'forseti_server = google.cloud.forseti.stubs:RunForsetiServer',
             'forseti = google.cloud.forseti.stubs:RunForsetiCli',
         ]

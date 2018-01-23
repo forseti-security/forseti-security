@@ -19,10 +19,17 @@
 # pylint: disable=missing-docstring,unused-argument
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc
 # pylint: disable=attribute-defined-outside-init
+# pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
+import datetime
 from functools import partial
 import json
+import pytz
+
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
 def from_root_id(client, root_id):
@@ -78,6 +85,12 @@ class Resource(object):
         self._contains = [] if contains is None else contains
         self._warning = []
         self._enabled_service_names = None
+        self._timestamp = self._utcnow()
+
+    @staticmethod
+    def _utcnow():
+        """Wrapper for datetime.datetime.now() injection."""
+        return datetime.datetime.now(pytz.UTC)
 
     def __getitem__(self, key):
         try:
@@ -133,16 +146,20 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            for resource in yielder.iter():
-                res = resource
-                new_stack = stack + [self]
+            try:
+                for resource in yielder.iter():
+                    res = resource
+                    new_stack = stack + [self]
 
-                # Parallelization for resource subtrees.
-                if res.should_dispatch():
-                    callback = partial(res.try_accept, visitor, new_stack)
-                    visitor.dispatch(callback)
-                else:
-                    res.try_accept(visitor, new_stack)
+                    # Parallelization for resource subtrees.
+                    if res.should_dispatch():
+                        callback = partial(res.try_accept, visitor, new_stack)
+                        visitor.dispatch(callback)
+                    else:
+                        res.try_accept(visitor, new_stack)
+            except Exception as e:
+                self.add_warning(e)
+                visitor.on_child_error(e)
 
         if self._warning:
             visitor.update(self)
@@ -174,6 +191,14 @@ class Resource(object):
     @cached('enabled_apis')
     def get_enabled_apis(self, client=None):
         return None
+
+    @cached('service_config')
+    def get_kubernetes_service_config(self, client=None):
+        return None
+
+    def get_timestamp(self):
+        """Returns a string timestamp when the resource object was created."""
+        return self._timestamp.strftime('%Y-%m-%dT%H:%M:%S%z')
 
     def stack(self):
         if self._stack is None:
@@ -296,6 +321,11 @@ class Project(Resource):
         return (self.billing_enabled() and
                 self.is_api_enabled('compute.googleapis.com'))
 
+    def container_api_enabled(self):
+        # Compute API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('container.googleapis.com'))
+
     def storage_api_enabled(self):
         return self.is_api_enabled('storage-component.googleapis.com')
 
@@ -341,6 +371,26 @@ class GcsObject(Resource):
     def key(self):
         return self['id']
 
+class KubernetesCluster(Resource):
+    @cached('service_config')
+    def get_kubernetes_service_config(self, client=None):
+        return client.fetch_container_serviceconfig(self.parent().key(),
+                                                    self.zone())
+
+    def key(self):
+        # Clusters do not have globally unique IDs, use size_t hash of selfLink
+        return '%u' % ctypes.c_size_t(hash(self['selfLink'])).value
+
+    def type(self):
+        return 'kubernetes_cluster'
+
+    def zone(self):
+        try:
+            self_link_parts = self['selfLink'].split('/')
+            return self_link_parts[self_link_parts.index('zones')+1]
+        except KeyError:
+            LOGGER.warn('selfLink not found: %s', self._data)
+            return ''
 
 class DataSet(Resource):
     @cached('dataset_policy')
@@ -662,6 +712,13 @@ class AppEngineInstanceIterator(ResourceIterator):
                 versionid=self.resource['id']):
             yield FACTORIES['appengine_instance'].create_new(data)
 
+class KubernetesClusterIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.container_api_enabled():
+            for data in gcp.iter_container_clusters(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 class ComputeIterator(ResourceIterator):
     def iter(self):
@@ -869,6 +926,7 @@ FACTORIES = {
             CloudSqlIterator,
             ServiceAccountIterator,
             AppEngineAppIterator,
+            KubernetesClusterIterator,
             ComputeIterator,
             ImageIterator,
             InstanceIterator,
@@ -926,6 +984,12 @@ FACTORIES = {
     'dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DataSet,
+        'contains': [
+            ]}),
+
+    'kubernetes_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesCluster,
         'contains': [
             ]}),
 
