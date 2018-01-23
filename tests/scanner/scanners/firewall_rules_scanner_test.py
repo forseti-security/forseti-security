@@ -520,16 +520,18 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             {}, {}, mock_service_config, '', '', rules_local_path)
         results = scanner._retrieve()
 	self.assertEqual({'firewall_rule': 2}, results[1])
-	_, expected_firewall1 = resource_and_policies[0]
 
-        retrieved_firewall1 = results[0][0]		
-        self.assertEquals(expected_firewall1.get('full_name'),		
-                          retrieved_firewall1.full_name)		
-		
+	_, expected_firewall1 = resource_and_policies[0]
         _, expected_firewall2 = resource_and_policies[1]		
-        retrieved_firewall2 = results[0][1]		
-        self.assertEquals(expected_firewall2.get('full_name'),		
-                          retrieved_firewall2.full_name)
+        expected_names = [
+            expected_firewall1.get('full_name'),
+            expected_firewall2.get('full_name')
+        ]
+        retrieved_names = []
+        for _, fws in results[0].items():
+          for fw in fws:
+            retrieved_names.append(fw.full_name)
+        self.assertItemsEqual(expected_names, retrieved_names)
 
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
