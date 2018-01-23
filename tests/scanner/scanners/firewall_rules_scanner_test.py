@@ -374,7 +374,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             lambda x,y: self.ancestry[x])
         scanner.rules_engine.rule_book.org_res_rel_dao = mock_org_rel_dao
         violations = scanner.rules_engine.find_policy_violations(
-            resource, policy)
+            resource, [policy])
         expected_violations = [
             fre.RuleViolation(**v) for v in expected_violations_dicts]
         self.assert_rule_violation_lists_equal(expected_violations, violations)
@@ -420,9 +420,9 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         for project, policy_dict in resource_and_policies:
             resource = self.project_resource_map[project]
             policy = fre.firewall_rule.FirewallRule.from_dict(
-                policy_dict, validate=True)
-            expected[resource] = policy
-            fake_firewall_rules.append((resource, policy))
+                policy_dict, project_id=project, validate=True)
+            expected[project] = policy
+            fake_firewall_rules.append(policy)
         mock_get_firewall_rules = mock.patch.object(
             firewall_rules_scanner.firewall_rule_dao, 'FirewallRuleDao').start()
         mock_get_firewall_rules().get_firewall_rules.return_value = (
@@ -434,7 +434,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         results = scanner._retrieve()
         self.assertEqual({'firewall_rule': 3}, results[1])
         self.assertItemsEqual(
-            expected.items(), results[0])
+            expected, results[0])
 
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
