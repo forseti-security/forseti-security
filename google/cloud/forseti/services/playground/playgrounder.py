@@ -111,42 +111,6 @@ class Playgrounder(object):
         with scoped_session as session:
             return data_access.list_group_members(session, member_name_prefix)
 
-    def delete_resource(self, model_name, resource_type_name):
-        """Deletes a resource from the model."""
-
-        LOGGER.info("Deleting resource from model, resource_type_name = %s, "
-                    "model_name = %s", resource_type_name, model_name)
-        model_manager = self.config.model_manager
-        scoped_session, data_access = model_manager.get(model_name)
-        LOGGER.debug("model_manager = %s, scoped_session = %s",
-                     model_manager, scoped_session)
-        with scoped_session as session:
-            model_manager.add_description(model_name, json.dumps({
-                "pristine":False
-                }), session)
-            data_access.delete_resource_by_name(session, resource_type_name)
-            session.commit()
-
-    def add_resource(self, model_name,
-                     resource_type_name,
-                     parent_type_name,
-                     no_require_parent):
-        """Adds a resource to the model."""
-
-        LOGGER.info("Adding resource to model, resource_type_name = %s, "
-                    "model_name = %s, parent_type_name = %s, "
-                    "no_require_parent = %s", resource_type_name,
-                    model_name, parent_type_name, no_require_parent)
-        model_manager = self.config.model_manager
-        scoped_session, data_access = model_manager.get(model_name)
-        with scoped_session as session:
-            data_access.add_resource_by_name(
-                session,
-                resource_type_name,
-                parent_type_name,
-                no_require_parent)
-            session.commit()
-
     def list_resources(self, model_name, full_resource_name_prefix):
         """Lists resources by resource name prefix."""
 

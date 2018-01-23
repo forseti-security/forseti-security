@@ -370,29 +370,6 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def add_resource(self,
-                     resource_type_name,
-                     parent_type_name,
-                     no_parent=False):
-        """Add a resource to the hierarchy."""
-
-        return self.stub.AddResource(
-            playground_pb2.AddResourceRequest(
-                resource_type_name=resource_type_name,
-                parent_type_name=parent_type_name,
-                no_require_parent=no_parent),
-            metadata=self.metadata())
-
-    @require_model
-    def delete_resource(self, resource_type_name):
-        """Delete a resource from the hierarchy and the subtree."""
-
-        return self.stub.DeleteResource(
-            playground_pb2.DeleteResourceRequest(
-                resource_type_name=resource_type_name),
-            metadata=self.metadata())
-
-    @require_model
     def list_resources(self, resource_name_prefix):
         """List resources by name prefix."""
 

@@ -1124,31 +1124,6 @@ def define_model(model_name, dbengine, model_seed):
                                              name_prefix))
 
         @classmethod
-        def delete_resource_by_name(cls, session, resource_type_name):
-            """Deletes a resource specified via full name."""
-
-            LOGGER.info("Deleting resource via full name, "
-                        "resource_type_name = %s, session = %s",
-                        resource_type_name, session)
-            resource = (
-                session.query(Resource)
-                .filter(Resource.type_name == resource_type_name).one())
-
-            # Find all children
-            res_qry = (session.query(Resource)
-                       .filter(Resource.full_name.startswith(
-                           resource.full_name)))
-
-            res_type_names = [r.type_name for r in res_qry.yield_per(1024)]
-            binding_qry = (
-                session.query(Binding)
-                .filter(Binding.resource_type_name.in_(res_type_names)))
-            binding_qry.delete(synchronize_session='fetch')
-
-            res_qry.delete(synchronize_session='fetch')
-            session.commit()
-
-        @classmethod
         def add_resource_by_name(cls,
                                  session,
                                  resource_type_name,

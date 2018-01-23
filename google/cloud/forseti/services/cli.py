@@ -65,30 +65,6 @@ def define_playground_parser(parent):
         default='',
         help='Role prefix to filter for')
 
-    add_resource_parser = action_subparser.add_parser(
-        'define_resource',
-        help='Defines a new resource')
-    add_resource_parser.add_argument(
-        'resource_type_name',
-        help='Resource type/name to define')
-    add_resource_parser.add_argument(
-        'parent_type_name',
-        default=None,
-        nargs='?',
-        help='Parent type/name')
-    add_resource_parser.add_argument(
-        '--no-parent',
-        default=False,
-        type=bool,
-        help='Set this flag if the resource is a root')
-
-    delete_resource_parser = action_subparser.add_parser(
-        'delete_resource',
-        help='Delete a resource')
-    delete_resource_parser.add_argument(
-        'resource_type_name',
-        help='Resource type/name to delete')
-
     list_resource_parser = action_subparser.add_parser(
         'list_resources',
         help='List resources by prefix')
@@ -865,18 +841,6 @@ def run_playground(client, config, output, _):
         result = client.list_roles(config.prefix)
         output.write(result)
 
-    def do_define_resource():
-        """Define a new resource"""
-        result = client.add_resource(config.resource_type_name,
-                                     config.parent_type_name,
-                                     config.no_parent)
-        output.write(result)
-
-    def do_delete_resource():
-        """Delete a resource"""
-        result = client.del_resource(config.resource_type_name)
-        output.write(result)
-
     def do_list_resources():
         """List resources by prefix"""
         result = client.list_resources(config.prefix)
@@ -922,8 +886,6 @@ def run_playground(client, config, output, _):
         'define_role': do_define_role,
         'delete_role': do_delete_role,
         'list_roles': do_list_roles,
-        'define_resource': do_define_resource,
-        'delete_resource': do_delete_resource,
         'list_resources': do_list_resources,
         'define_member': do_define_member,
         'delete_member': do_delete_member,

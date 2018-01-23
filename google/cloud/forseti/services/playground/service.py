@@ -124,22 +124,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         reply.member_names.extend(member_names)
         return reply
 
-    def DeleteResource(self, request, context):
-        """Deletes a resource from the model."""
-        handle = self._get_handle(context)
-        self.playgrounder.delete_resource(handle,
-                                          request.resource_type_name)
-        return playground_pb2.DeleteResourceReply()
-
-    def AddResource(self, request, context):
-        """Adds a resource to the model."""
-        handle = self._get_handle(context)
-        self.playgrounder.add_resource(handle,
-                                       request.resource_type_name,
-                                       request.parent_type_name,
-                                       request.no_require_parent)
-        return playground_pb2.AddResourceReply()
-
     def ListResources(self, request, context):
         """Lists resources in the model."""
         handle = self._get_handle(context)
