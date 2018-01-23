@@ -1,6 +1,6 @@
-**branch: master** | **branch: dev** | **forsetisecurity.org**
+**branch: master** | **branch: dev** | **branch: forsetisecurity.org**
 :------------ | :------------ | :------------
-[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=gh-pages)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|
+[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|
 [![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)|[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/dev/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
 
 
@@ -22,8 +22,8 @@ development efforts, please review our
 ### forsetisecurity.org
 
 If you would like to contribute to forsetisecurity.org, the website and its
-content are contained in the `gh-pages` branch. Visit its
-[README](https://github.com/GoogleCloudPlatform/forseti-security/tree/gh-pages)
+content are contained in the `forseisecurity.org` branch. Visit its
+[README](https://github.com/GoogleCloudPlatform/forseti-security/tree/forsetisecurity.org)
 for instructions on how to make changes.
 
 ## Community
