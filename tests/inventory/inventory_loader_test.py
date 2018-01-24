@@ -23,9 +23,9 @@ from google.cloud.security.inventory import inventory_loader
 
 class _PIPELINE(object):
     """Mock `Pipeline` class."""
-    def __init__(this, RESOURCE_NAME, status):
-        this.RESOURCE_NAME = RESOURCE_NAME
-        this.status = status
+    def __init__(self, RESOURCE_NAME, status):
+        self.RESOURCE_NAME = RESOURCE_NAME
+        self.status = status
 
 
 class InventoryLoaderTest(ForsetiTestCase):
