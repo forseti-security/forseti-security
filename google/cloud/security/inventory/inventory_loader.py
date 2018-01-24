@@ -200,7 +200,7 @@ def _adjust_group_members_status(pipelines, run_statuses):
     Args:
         pipelines (list): List of pipelines that were run.
         run_statuses (list): a list of booleans indicating whether each
-        pipeline completed successfully or not.
+            pipeline completed successfully or not.
     """
     indices = dict(
         (v, i) for (i, v) in enumerate(p.RESOURCE_NAME for p in pipelines))
