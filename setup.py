@@ -15,7 +15,6 @@
 
 """Setup script for Forseti Security tools."""
 
-import subprocess
 import sys
 import os
 
