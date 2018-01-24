@@ -193,6 +193,9 @@ def _postprocess_statuses(pipelines, run_statuses):
     Example: if the `groups` pipeline failed then the `group_members` pipeline
     should be marked as a failure as well.
 
+    Please note: this function will modify the data passed to it via the
+    arguments below if/as needed.
+
     Args:
         pipelines (list): List of pipelines that were run.
         run_statuses (list): a list of booleans indicating whether each
