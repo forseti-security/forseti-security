@@ -44,7 +44,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         """True if the data passed equals the most recent snapshots."""
         return (self.a_copy == a) and (self.b_copy == b)
 
-    def testPostprocessWithFailedGroupsInventory(self):
+    def test_adjust_group_members_status_with_failed_groups_inventory(self):
         pipelines = [
                 _PIPELINE('groups', 'FAILURE'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
@@ -57,7 +57,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         self.assertEqual('FAILURE', pipelines[2].status)
         self.assertFalse(self._equals_the_originals(pipelines, statuses))
 
-    def testPostprocessWithGroupsInventorySuccess(self):
+    def test_adjust_group_members_status_with_groups_inventory_success(self):
         pipelines = [
                 _PIPELINE('groups', 'SUCCESS'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
@@ -67,7 +67,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         inventory_loader._adjust_group_members_status(pipelines, statuses)
         self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
-    def testPostprocessWithoutGroupsInventory(self):
+    def test_adjust_group_members_status_without_groups_inventory(self):
         pipelines = [
                 _PIPELINE('instances', 'SUCCESS'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
@@ -77,7 +77,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         inventory_loader._adjust_group_members_status(pipelines, statuses)
         self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
-    def testPostprocessWithBothGroupsAndMembersFailed(self):
+    def test_adjust_group_members_status_with_both_groups_and_members_failed(self):
         pipelines = [
                 _PIPELINE('groups', 'FAILURE'),
                 _PIPELINE('service_accounts', 'FAILURE'),
@@ -87,7 +87,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         inventory_loader._adjust_group_members_status(pipelines, statuses)
         self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
-    def testPostprocessWithoutGroupmembersInventory(self):
+    def test_adjust_group_members_status_without_group_members_inventory(self):
         pipelines = [
                 _PIPELINE('instances', 'SUCCESS'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
@@ -97,7 +97,7 @@ class InventoryLoaderTest(ForsetiTestCase):
         inventory_loader._adjust_group_members_status(pipelines, statuses)
         self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
-    def testPostprocessWithFailedGroupMembersInventory(self):
+    def test_adjust_group_members_status_with_failed_group_members_inventory(self):
         pipelines = [
                 _PIPELINE('groups', 'SUCCESS'),
                 _PIPELINE('service_accounts', 'SUCCESS'),
