@@ -321,6 +321,20 @@ def define_explainer_parser(parent):
         default='',
         help='Role prefix to filter for')
 
+    perms_by_roles_parser = action_subparser.add_parser(
+        'list_permissions',
+        help='List permissions by role(s)')
+    perms_by_roles_parser.add_argument(
+        '--roles',
+        nargs='*',
+        default=[],
+        help='Role names')
+    perms_by_roles_parser.add_argument(
+        '--role_prefixes',
+        nargs='*',
+        default=[],
+        help='Role prefixes')
+
     get_policy = action_subparser.add_parser(
         'get_policy',
         help='Get a resource\'s direct policy')
@@ -381,20 +395,6 @@ def define_explainer_parser(parent):
         nargs='*',
         default=[],
         help='Query for permissions')
-
-    perms_by_roles_parser = action_subparser.add_parser(
-        'list_permissions',
-        help='List permissions by role(s)')
-    perms_by_roles_parser.add_argument(
-        '--roles',
-        nargs='*',
-        default=[],
-        help='Role names')
-    perms_by_roles_parser.add_argument(
-        '--role_prefixes',
-        nargs='*',
-        default=[],
-        help='Role prefixes')
 
     query_access_by_member = action_subparser.add_parser(
         'access_by_member',
@@ -771,6 +771,12 @@ def run_explainer(client, config, output, _):
         result = client.list_roles(config.prefix)
         output.write(result)
 
+    def do_list_permissions():
+        """List permissions by roles or role prefixes."""
+        result = client.query_permissions_by_roles(config.roles,
+                                                   config.role_prefixes)
+        output.write(result)
+
     def do_get_policy():
         """Get access"""
         result = client.get_iam_policy(config.resource)
@@ -797,12 +803,6 @@ def run_explainer(client, config, output, _):
                                        config.resources,
                                        config.roles,
                                        config.permissions)
-        output.write(result)
-
-    def do_list_permissions():
-        """List permissions by roles or role prefixes."""
-        result = client.query_permissions_by_roles(config.roles,
-                                                   config.role_prefixes)
         output.write(result)
 
     def do_query_access_by_member():
