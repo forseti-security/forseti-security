@@ -26,13 +26,12 @@ from google.cloud.forseti.services import db
 
 # pylint: disable=no-member
 
-def define_violation(model_name, dbengine):
+def define_violation(dbengine):
     """Defines table class for violations.
 
     A violation table will be created on a per-model basis.
 
     Args:
-        model_name (str): name of the current model
         dbengine (engine): sqlalchemy database engine
 
     Returns:

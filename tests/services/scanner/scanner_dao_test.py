@@ -65,8 +65,7 @@ class ScannerDaoTest(ForsetiTestCase):
         """Test violations can be saved."""
 
         engine = create_test_engine()
-        violation_access_cls = scanner_dao.define_violation(
-            'fake_model_88888', engine)
+        violation_access_cls = scanner_dao.define_violation(engine)
         violation_access = violation_access_cls(engine)
 
         violation_access.create(FAKE_VIOLATIONS, FAKE_MODEL_HANDLE)
