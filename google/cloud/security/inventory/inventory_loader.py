@@ -163,7 +163,7 @@ def _run_pipelines(pipelines):
         pipelines (list): List of pipelines to be run.
 
     Returns:
-        list: a list of booleans whether each pipeline completed
+        list: a list of booleans indicating whether each pipeline completed
             successfully or not.
     """
     # TODO: Define these status codes programmatically.
@@ -185,7 +185,36 @@ def _run_pipelines(pipelines):
                          exc_info=True)
             pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
+    _adjust_group_members_status(pipelines, run_statuses)
     return run_statuses
+
+def _adjust_group_members_status(pipelines, run_statuses):
+    """Adjust the `run_status` for the `group_members` pipeline if needed.
+
+    If the `groups` pipeline failed then the `group_members` pipeline
+    should be marked as a failure as well.
+
+    Please note: this function will modify the data passed to it directly
+    if/as needed.
+
+    Args:
+        pipelines (list): List of pipelines that were run.
+        run_statuses (list): a list of booleans indicating whether each
+            pipeline completed successfully or not.
+    """
+    indices = dict(
+        (v, i) for (i, v) in enumerate(p.RESOURCE_NAME for p in pipelines))
+    grps_idx = indices.get('groups')
+    grp_members_idx = indices.get('group_members')
+    # Do nothing unless the status for both 'group_members' and 'groups' is
+    # present and the latter is `False`.
+    if (grps_idx is None or grp_members_idx is None or run_statuses[grps_idx]):
+        return
+
+    if run_statuses[grp_members_idx]:
+        run_statuses[grp_members_idx] = False
+        pipelines[grp_members_idx].status = 'FAILURE'
+
 
 def _complete_snapshot_cycle(inventory_dao, cycle_timestamp, status):
     """Complete the snapshot cycle.
