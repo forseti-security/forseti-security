@@ -68,7 +68,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
             violation_data['access_group_by_email'] = violation.group_email
             violation_data['role'] = violation.role
             yield {
-                'resource_id': violation.resource_id,
+                'resource_id': violation.dataset_id,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
