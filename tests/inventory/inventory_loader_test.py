@@ -14,6 +14,7 @@
 
 """Inventory loader script test."""
 
+import copy
 import mock
 import unittest
 
@@ -31,6 +32,18 @@ class _PIPELINE(object):
 class InventoryLoaderTest(ForsetiTestCase):
     """Unit tests for the `inventory_loader` module."""
 
+    a_copy = None
+    b_copy = None
+
+    def _take_snapshot(self, a, b):
+        """Take a shallow copy of the data passed for a later comparison."""
+        self.a_copy = copy.copy(a)
+        self.b_copy = copy.copy(b)
+
+    def _equals_the_originals(self, a, b):
+        """True if the data passed equals the most recent snapshots."""
+        return (self.a_copy == a) and (self.b_copy == b)
+
     def testPostprocessWithFailedGroupsInventory(self):
         pipelines = [
                 _PIPELINE('groups', 'FAILURE'),
@@ -38,10 +51,12 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('group_members', 'SUCCESS')]
         statuses = [False, True, True]
         expected = [False, True, False]
+        self._take_snapshot(pipelines, statuses)
         self.assertTrue(
             inventory_loader._postprocess_statuses(pipelines, statuses))
         self.assertEqual(expected, statuses)
         self.assertEqual('FAILURE', pipelines[2].status)
+        self.assertFalse(self._equals_the_originals(pipelines, statuses))
 
     def testPostprocessWithGroupsInventorySuccess(self):
         pipelines = [
@@ -49,8 +64,10 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('group_members', 'SUCCESS')]
         statuses = [True] * 3
+        self._take_snapshot(pipelines, statuses)
         self.assertFalse(
             inventory_loader._postprocess_statuses(pipelines, statuses))
+        self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
     def testPostprocessWithoutGroupsInventory(self):
         pipelines = [
@@ -58,8 +75,10 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('group_members', 'FAILURE')]
         statuses = [True, True, False]
+        self._take_snapshot(pipelines, statuses)
         self.assertFalse(
             inventory_loader._postprocess_statuses(pipelines, statuses))
+        self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
     def testPostprocessWithBothGroupsAndMembersFailed(self):
         pipelines = [
@@ -67,8 +86,10 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'FAILURE'),
                 _PIPELINE('group_members', 'FAILURE')]
         statuses = [False] * 3
+        self._take_snapshot(pipelines, statuses)
         self.assertFalse(
             inventory_loader._postprocess_statuses(pipelines, statuses))
+        self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
     def testPostprocessWithoutGroupmembersInventory(self):
         pipelines = [
@@ -76,8 +97,10 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('groups', 'FAILURE')]
         statuses = [True, True, False]
+        self._take_snapshot(pipelines, statuses)
         self.assertFalse(
             inventory_loader._postprocess_statuses(pipelines, statuses))
+        self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
     def testPostprocessWithFailedGroupMembersInventory(self):
         pipelines = [
@@ -85,8 +108,10 @@ class InventoryLoaderTest(ForsetiTestCase):
                 _PIPELINE('service_accounts', 'SUCCESS'),
                 _PIPELINE('group_members', 'FAILURE')]
         statuses = [True, True, False]
+        self._take_snapshot(pipelines, statuses)
         self.assertFalse(
             inventory_loader._postprocess_statuses(pipelines, statuses))
+        self.assertTrue(self._equals_the_originals(pipelines, statuses))
 
 if __name__ == '__main__':
     unittest.main()
