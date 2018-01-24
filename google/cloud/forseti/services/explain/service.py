@@ -51,6 +51,65 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         return explain_pb2.PingReply(data=request.data)
 
+    def ListResources(self, request, context):
+        """Lists resources in the model."""
+        handle = self._get_handle(context)
+        resources = self.explainer.list_resources(handle,
+                                                  request.prefix)
+        reply = explain_pb2.ListResourcesReply()
+        reply.full_resource_names.extend([r.type_name for r in resources])
+        return reply
+
+    def ListGroupMembers(self, request, context):
+        """Lists members in the model."""
+        handle = self._get_handle(context)
+        member_names = self.explainer.list_group_members(handle,
+                                                            request.prefix)
+        reply = explain_pb2.ListGroupMembersReply()
+        reply.member_names.extend(member_names)
+        return reply
+
+    def ListRoles(self, request, context):
+        """List roles from the model."""
+        handle = self._get_handle(context)
+        role_names = self.explainer.list_roles(handle,
+                                                  request.prefix)
+        reply = explain_pb2.ListRolesReply()
+        reply.role_names.extend(role_names)
+        return reply
+
+    def GetIamPolicy(self, request, context):
+        """Gets the policy for a resource."""
+        handle = self._get_handle(context)
+        policy = self.explainer.get_iam_policy(handle,
+                                                  request.resource)
+
+        reply = explain_pb2.GetIamPolicyReply()
+
+        etag = policy['etag']
+        bindings = []
+        for key, value in policy['bindings'].iteritems():
+            binding = explain_pb2.BindingOnResource()
+            binding.role = key
+            binding.members.extend(value)
+            bindings.append(binding)
+
+        reply.resource = request.resource
+        reply.policy.bindings.extend(bindings)
+        reply.policy.etag = etag
+        return reply
+
+    def CheckIamPolicy(self, request, context):
+        """Checks access according to policy to a specified resource."""
+        handle = self._get_handle(context)
+        authorized = self.explainer.check_iam_policy(handle,
+                                                        request.resource,
+                                                        request.permission,
+                                                        request.identity)
+        reply = explain_pb2.CheckIamPolicyReply()
+        reply.result = authorized
+        return reply
+
     def ExplainDenied(self, request, context):
         """Provides information on how to grant access."""
         model_name = self._get_handle(context)

@@ -215,6 +215,55 @@ class ExplainClient(ForsetiClient):
         data = binascii.hexlify(os.urandom(16))
         return self.stub.Ping(explain_pb2.PingRequest(data=data)).data == data
 
+    @require_model
+    def list_resources(self, resource_name_prefix):
+        """List resources by name prefix."""
+
+        return self.stub.ListResources(
+            explain_pb2.ListResourcesRequest(
+                prefix=resource_name_prefix),
+            metadata=self.metadata())
+
+    @require_model
+    def list_members(self, member_name_prefix):
+        """List members by prefix."""
+
+        return self.stub.ListGroupMembers(
+            explain_pb2.ListGroupMembersRequest(
+                prefix=member_name_prefix),
+            metadata=self.metadata())
+
+    @require_model
+    def list_roles(self, role_name_prefix):
+        """List roles by prefix, can be empty."""
+
+        return self.stub.ListRoles(
+            explain_pb2.ListRolesRequest(
+                prefix=role_name_prefix),
+            metadata=self.metadata())
+
+    @require_model
+    def get_iam_policy(self, full_resource_name):
+        """Get the IAM policy from the resource."""
+
+        return self.stub.GetIamPolicy(
+            explain_pb2.GetIamPolicyRequest(
+                resource=full_resource_name),
+            metadata=self.metadata())
+
+    @require_model
+    def check_iam_policy(self, full_resource_name, permission_name,
+                         member_name):
+        """Check access via IAM policy."""
+
+        return self.stub.CheckIamPolicy(
+            explain_pb2.CheckIamPolicyRequest(
+                resource=full_resource_name,
+                permission=permission_name,
+                identity=member_name),
+            metadata=self.metadata())
+
+    @require_model
     def explain_denied(self, member_name, resource_names, roles=None,
                        permission_names=None):
         """List possibilities to grant access which is currently denied."""
@@ -230,6 +279,7 @@ class ExplainClient(ForsetiClient):
             permissions=permission_names)
         return self.stub.ExplainDenied(request, metadata=self.metadata())
 
+    @require_model
     def explain_granted(self, member_name, resource_name, role=None,
                         permission=None):
         """Provide data on all possibilities on
@@ -361,24 +411,6 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def list_roles(self, role_name_prefix):
-        """List roles by prefix, can be empty."""
-
-        return self.stub.ListRoles(
-            playground_pb2.ListRolesRequest(
-                prefix=role_name_prefix),
-            metadata=self.metadata())
-
-    @require_model
-    def list_resources(self, resource_name_prefix):
-        """List resources by name prefix."""
-
-        return self.stub.ListResources(
-            playground_pb2.ListResourcesRequest(
-                prefix=resource_name_prefix),
-            metadata=self.metadata())
-
-    @require_model
     def add_member(self, member_type_name, parent_type_names=None):
         """Add a member to the member relationship."""
 
@@ -403,15 +435,6 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def list_members(self, member_name_prefix):
-        """List members by prefix."""
-
-        return self.stub.ListGroupMembers(
-            playground_pb2.ListGroupMembersRequest(
-                prefix=member_name_prefix),
-            metadata=self.metadata())
-
-    @require_model
     def set_iam_policy(self, full_resource_name, policy):
         """Set the IAM policy on the resource."""
 
@@ -426,27 +449,6 @@ class PlaygroundClient(ForsetiClient):
             playground_pb2.SetIamPolicyRequest(
                 resource=full_resource_name,
                 policy=policypb),
-            metadata=self.metadata())
-
-    @require_model
-    def get_iam_policy(self, full_resource_name):
-        """Get the IAM policy from the resource."""
-
-        return self.stub.GetIamPolicy(
-            playground_pb2.GetIamPolicyRequest(
-                resource=full_resource_name),
-            metadata=self.metadata())
-
-    @require_model
-    def check_iam_policy(self, full_resource_name, permission_name,
-                         member_name):
-        """Check access via IAM policy."""
-
-        return self.stub.CheckIamPolicy(
-            playground_pb2.CheckIamPolicyRequest(
-                resource=full_resource_name,
-                permission=permission_name,
-                identity=member_name),
             metadata=self.metadata())
 
 

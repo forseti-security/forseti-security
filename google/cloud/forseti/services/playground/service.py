@@ -66,38 +66,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
         return playground_pb2.SetIamPolicyReply()
 
-    def GetIamPolicy(self, request, context):
-        """Gets the policy for a resource."""
-        handle = self._get_handle(context)
-        policy = self.playgrounder.get_iam_policy(handle,
-                                                  request.resource)
-
-        reply = playground_pb2.GetIamPolicyReply()
-
-        etag = policy['etag']
-        bindings = []
-        for key, value in policy['bindings'].iteritems():
-            binding = playground_pb2.Binding()
-            binding.role = key
-            binding.members.extend(value)
-            bindings.append(binding)
-
-        reply.resource = request.resource
-        reply.policy.bindings.extend(bindings)
-        reply.policy.etag = etag
-        return reply
-
-    def CheckIamPolicy(self, request, context):
-        """Checks access according to policy to a specified resource."""
-        handle = self._get_handle(context)
-        authorized = self.playgrounder.check_iam_policy(handle,
-                                                        request.resource,
-                                                        request.permission,
-                                                        request.identity)
-        reply = playground_pb2.CheckIamPolicyReply()
-        reply.result = authorized
-        return reply
-
     def AddGroupMember(self, request, context):
         """Adds a member to the model."""
         handle = self._get_handle(context)
@@ -115,24 +83,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                               request.only_delete_relationship)
         return playground_pb2.DeleteGroupMemberReply()
 
-    def ListGroupMembers(self, request, context):
-        """Lists members in the model."""
-        handle = self._get_handle(context)
-        member_names = self.playgrounder.list_group_members(handle,
-                                                            request.prefix)
-        reply = playground_pb2.ListGroupMembersReply()
-        reply.member_names.extend(member_names)
-        return reply
-
-    def ListResources(self, request, context):
-        """Lists resources in the model."""
-        handle = self._get_handle(context)
-        resources = self.playgrounder.list_resources(handle,
-                                                     request.prefix)
-        reply = playground_pb2.ListResourcesReply()
-        reply.full_resource_names.extend([r.type_name for r in resources])
-        return reply
-
     def DeleteRole(self, request, context):
         """Deletes a role within the model."""
         handle = self._get_handle(context)
@@ -147,15 +97,6 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
                                    request.role_name,
                                    request.permissions)
         return playground_pb2.AddRoleReply()
-
-    def ListRoles(self, request, context):
-        """List roles from the model."""
-        handle = self._get_handle(context)
-        role_names = self.playgrounder.list_roles(handle,
-                                                  request.prefix)
-        reply = playground_pb2.ListRolesReply()
-        reply.role_names.extend(role_names)
-        return reply
 
 
 class GrpcPlaygrounderFactory(object):
