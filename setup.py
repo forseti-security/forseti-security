@@ -23,7 +23,7 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-import setup.build.build_protos as forseti_setup
+from setup.build import build_protos as bp
 
 import google.cloud.forseti
 
@@ -71,8 +71,8 @@ if sys.version_info.major > 2:
 def build_protos():
     """Clean and Build protos."""
     abs_path = os.path.abspath(__file__)
-    forseti_setup.clean(abs_path)
-    forseti_setup.make_proto(abs_path)
+    bp.clean(abs_path)
+    bp.make_proto(abs_path)
 
 
 class PostInstallCommand(install):
