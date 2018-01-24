@@ -66,7 +66,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
                                                   violation.authorized_networks
             violation_data['ssl_enabled'] = violation.ssl_enabled
             yield {
-                'resource_id': violation.resource_id,
+                'resource_id': violation.instance_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
