@@ -13,8 +13,8 @@
 # limitations under the License.
 """Scanner for the firewall rule engine."""
 
+from collections import defaultdict
 from datetime import datetime
-import itertools
 import json
 import os
 
@@ -160,16 +160,14 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of all violations
         """
-        policies = itertools.chain(policies)
         all_violations = []
         LOGGER.info('Finding firewall policy violations...')
-        for policy in policies:
-            resource_id = policy.project_id
+        for resource_id, p_policies in policies.items():
             resource = resource_util.create_resource(
                 resource_id=resource_id, resource_type='project')
-            LOGGER.debug('%s => %s', resource, policy)
+            LOGGER.debug('%s => %s', resource, p_policies)
             violations = self.rules_engine.find_policy_violations(
-                resource, policy)
+                resource, p_policies)
             all_violations.extend(violations)
         return all_violations
 
@@ -177,35 +175,40 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            list: List of firewall policy data.
-            int: The resource count.
+            dict: Dict of project to firewall policy data.
+            dict: Dict of resource to resource count.
         """
 
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
+        project_policies = defaultdict(list)
+        count = -1
         with scoped_session as session:
-            firewall_policies = []
 
-            for i in data_access.scanner_iter(session, "firewall"):
+            for cnt, i in enumerate(data_access.scanner_iter(
+                    session, "firewall")):
+                count = cnt
                 firewall_data_for_scanner = json.loads(i.data)
                 firewall_data_for_scanner['project_id'] = i.parent.name
                 firewall_data_for_scanner['full_name'] = i.full_name
 
-                firewall_policies.append(
+                project_policies[i.parent.name].append(
                     firewall_rule.FirewallRule.from_dict(
                         firewall_dict=firewall_data_for_scanner,
                         project_id=i.parent.name,
                         validate=True))
 
-        if not firewall_policies:
+        if count < 0:
             LOGGER.warn('No firewall policies found. Exiting.')
-            return None, 0
+            return project_policies, {
+                resource_type.ResourceType.FIREWALL_RULE: 0
+            }
 
         resource_counts = {
-            resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
+            resource_type.ResourceType.FIREWALL_RULE: count+1,
         }
 
-        return firewall_policies, resource_counts
+        return project_policies, resource_counts
 
     def run(self):
         """Runs the data collection."""
