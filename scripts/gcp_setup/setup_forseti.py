@@ -53,7 +53,8 @@ def run():
                              help='Install Forseti server instance')
     mutex_group.add_argument('--cli',
                              action='store_true',
-                             help='Install Forseti command line interface instance')
+                             help='Install Forseti command line '
+                                  'interface instance')
 
     email_params = parser.add_argument_group(title='email')
     email_params.add_argument('--sendgrid-api-key',
