@@ -111,8 +111,7 @@ def run(forseti_config, model_name=None, service_config=None):
     #    LOGGER.warn('No snapshot timestamp found. Exiting.')
     #    sys.exit()
 
-    violation_access = scanner_dao.define_violation(
-        model_name, service_config.engine)
+    violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
 
     runnable_scanners = scanner_builder.ScannerBuilder(

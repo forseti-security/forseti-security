@@ -26,13 +26,12 @@ from google.cloud.forseti.services import db
 
 # pylint: disable=no-member
 
-def define_violation(model_name, dbengine):
+def define_violation(dbengine):
     """Defines table class for violations.
 
     A violation table will be created on a per-model basis.
 
     Args:
-        model_name (str): name of the current model
         dbengine (engine): sqlalchemy database engine
 
     Returns:
@@ -40,7 +39,7 @@ def define_violation(model_name, dbengine):
     """
 
     base = declarative_base()
-    violations_tablename = '{}_violations'.format(model_name)
+    violations_tablename = 'violations'
 
     class Violation(base):
         """Row entry for a violation."""
@@ -48,6 +47,8 @@ def define_violation(model_name, dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
+        model_handle = Column(String(256))
+        resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
@@ -91,15 +92,19 @@ def define_violation(model_name, dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations):
+        def create(self, violations, model_handle):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
+                model_handle (str): Name of the model that the violations
+                    originate from.
             """
             with self.violationmaker() as session:
                 for violation in violations:
                     violation = self.TBL_VIOLATIONS(
+                        model_handle=model_handle,
+                        resource_id=violation.get('resource_id'),
                         resource_type=violation.get('resource_type'),
                         rule_name=violation.get('rule_name'),
                         rule_index=violation.get('rule_index'),
