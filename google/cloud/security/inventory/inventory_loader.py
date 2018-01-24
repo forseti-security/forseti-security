@@ -185,16 +185,17 @@ def _run_pipelines(pipelines):
                          exc_info=True)
             pipeline.status = 'FAILURE'
         run_statuses.append(pipeline.status == 'SUCCESS')
-    _postprocess_statuses(pipelines, run_statuses)
+    _adjust_group_members_status(pipelines, run_statuses)
     return run_statuses
 
-def _postprocess_statuses(pipelines, run_statuses):
-    """Look at related `pipelines` and adjust run statuses as needed.
-    Example: if the `groups` pipeline failed then the `group_members` pipeline
+def _adjust_group_members_status(pipelines, run_statuses):
+    """Adjust the `run_status` for the `group_members` pipeline if needed.
+
+    If the `groups` pipeline failed then the `group_members` pipeline
     should be marked as a failure as well.
 
-    Please note: this function will modify the data passed to it via the
-    arguments below if/as needed.
+    Please note: this function will modify the data passed to it directly
+    if/as needed.
 
     Args:
         pipelines (list): List of pipelines that were run.
