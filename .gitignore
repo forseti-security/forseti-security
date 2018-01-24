@@ -1,5 +1,6 @@
 # Intellij.
 .idea/
+*.org.iml
 
 # Eclipse metafile.
 .project
