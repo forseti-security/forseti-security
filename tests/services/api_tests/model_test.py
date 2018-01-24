@@ -108,27 +108,27 @@ class ModelTest(ForsetiTestCase):
 
         def test(client):
             """Test implementation with API client."""
-            self.assertTrue(client.playground.check_iam_policy(
+            self.assertTrue(client.explain.check_iam_policy(
                 'vm/instance-1',
                 'c',
                 'user/d').result)
-            self.assertTrue(client.playground.check_iam_policy(
+            self.assertTrue(client.explain.check_iam_policy(
                 'vm/instance-1',
                 'e',
                 'user/d').result)
-            self.assertTrue(client.playground.check_iam_policy(
+            self.assertTrue(client.explain.check_iam_policy(
                 'vm/instance-1',
                 'e',
                 'user/a').result)
-            self.assertFalse(client.playground.check_iam_policy(
+            self.assertFalse(client.explain.check_iam_policy(
                 'organization/org1',
                 'e',
                 'user/a').result)
-            self.assertFalse(client.playground.check_iam_policy(
+            self.assertFalse(client.explain.check_iam_policy(
                 'project/project2',
                 'e',
                 'user/c').result)
-            self.assertFalse(client.playground.check_iam_policy(
+            self.assertFalse(client.explain.check_iam_policy(
                 'vm/instance-1',
                 'e',
                 'user/c').result)

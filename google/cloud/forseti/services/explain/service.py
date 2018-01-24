@@ -64,7 +64,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """Lists members in the model."""
         handle = self._get_handle(context)
         member_names = self.explainer.list_group_members(handle,
-                                                            request.prefix)
+                                                         request.prefix)
         reply = explain_pb2.ListGroupMembersReply()
         reply.member_names.extend(member_names)
         return reply
@@ -73,7 +73,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """List roles from the model."""
         handle = self._get_handle(context)
         role_names = self.explainer.list_roles(handle,
-                                                  request.prefix)
+                                               request.prefix)
         reply = explain_pb2.ListRolesReply()
         reply.role_names.extend(role_names)
         return reply
@@ -82,7 +82,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """Gets the policy for a resource."""
         handle = self._get_handle(context)
         policy = self.explainer.get_iam_policy(handle,
-                                                  request.resource)
+                                               request.resource)
 
         reply = explain_pb2.GetIamPolicyReply()
 
@@ -103,9 +103,9 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """Checks access according to policy to a specified resource."""
         handle = self._get_handle(context)
         authorized = self.explainer.check_iam_policy(handle,
-                                                        request.resource,
-                                                        request.permission,
-                                                        request.identity)
+                                                     request.resource,
+                                                     request.permission,
+                                                     request.identity)
         reply = explain_pb2.CheckIamPolicyReply()
         reply.result = authorized
         return reply

@@ -89,8 +89,8 @@ class ImporterTest(ForsetiTestCase):
          '{}',
          {}),
 
-        ('playground list_members',
-         CLIENT.playground.list_members,
+        ('explainer list_members',
+         CLIENT.explain.list_members,
          [''],
          {},
          '{}',

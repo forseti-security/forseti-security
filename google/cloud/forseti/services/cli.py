@@ -14,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals,too-many-lines
+# pylint: disable=too-many-locals
 
 from argparse import ArgumentParser
 import json
