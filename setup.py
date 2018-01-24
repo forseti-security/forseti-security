@@ -23,7 +23,7 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-from setup.build import build_protos as forseti_protos
+from setup.utils import build_protos as forseti_protos
 
 import google.cloud.forseti
 
