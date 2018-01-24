@@ -77,8 +77,6 @@ def make_proto(path):
         Args:
           path (string): A reference path to start from.
     """
-    # Start running from one directory above the directory which is found by
-    # this scripts's location as __file__.
     cwd = os.path.dirname(path)
 
     # Find all the .proto files.
@@ -131,9 +129,11 @@ def main():
     arg_parser.set_defaults(feature=False)
     args = arg_parser.parse_args()
 
+    path = os.path.abspath(__file__)
+
     if args.clean:
-        clean()
-    make_proto()
+        clean(path)
+    make_proto(path)
 
 
 if __name__ == "__main__":
