@@ -33,4 +33,4 @@ script:
 
 after_success:
   # Execute codecov inside the docker container. Need to export env for codecov.io upload.
-  - docker exec it build /bin/bash -c "codecov"
+  - docker exec -it build /bin/bash -c "codecov"
