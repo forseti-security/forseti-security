@@ -19,7 +19,7 @@
 # Possible credentials. Don't ignore all json files
 # though, because some are used for schema definitions.
 /*.json
-scripts/gcp_setup/*.json
+build/installer/*.json
 
 # Scripts we don't want to commit
 scripts/dev*.sh

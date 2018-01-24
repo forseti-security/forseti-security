@@ -19,28 +19,8 @@
 FROM ubuntu:16.04
 
 # Install Forseti dependencies
-RUN apt-get update && apt-get install -qq -y \
-    curl \
-    git \
-    libffi-dev \
-    libssl-dev \
-    libmysqlclient-dev \
-    python-pip \
-    python-dev \
-    unzip \
-    wget \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN pip install -q --upgrade pip
-RUN pip install -q --upgrade \
-    coverage \
-    codecov \
-    google-apputils \
-    grpcio \
-    grpcio-tools \
-    mock \
-    netaddr \
-    parameterized \
-    pylint \
-    simple-crypt
-
+ADD . /forseti-security/
+WORKDIR /forseti-security/
+RUN apt-get update
+RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs)
+RUN rm -rf /var/lib/apt/lists/*

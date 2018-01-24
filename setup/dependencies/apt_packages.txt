@@ -1,0 +1,10 @@
+curl
+build-essential
+git
+libffi-dev
+libssl-dev
+libmysqlclient-dev
+python-pip
+python-dev
+unzip
+wget
