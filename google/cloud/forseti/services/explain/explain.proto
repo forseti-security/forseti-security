@@ -179,10 +179,6 @@ message Access {
   string role = 3;
 }
 
-message GetAccessByPermissionsReply {
-  repeated Access accesses = 1;
-}
-
 message GetAccessByResourcesRequest {
   string resource_name = 1;
   repeated string permission_names = 2;

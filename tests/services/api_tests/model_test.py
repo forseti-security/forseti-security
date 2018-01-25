@@ -66,20 +66,21 @@ MODEL = {
         'user/e': {},
     },
     'roles': {
-        'a': ['a', 'b', 'c', 'd', 'e'],
-        'b': ['a', 'b', 'c'],
-        'c': ['f', 'g', 'h'],
-        'd': ['f', 'g', 'i']
+        'role/a': ['permission/a', 'permission/b', 'permission/c',
+                   'permission/d', 'permission/e'],
+        'role/b': ['permission/a', 'permission/b', 'permission/c'],
+        'role/c': ['permission/f', 'permission/g', 'permission/h'],
+        'role/d': ['permission/f', 'permission/g', 'permission/i']
     },
     'bindings': {
         'organization/org1': {
-            'b': ['group/a'],
+            'role/b': ['group/a'],
         },
         'project/project2': {
-            'a': ['group/b'],
+            'role/a': ['group/b'],
         },
         'vm/instance-1': {
-            'a': ['user/a'],
+            'role/a': ['user/a'],
         },
     },
 }
@@ -103,6 +104,69 @@ class ModelTest(ForsetiTestCase):
     def setUp(self):
         self.setup = create_tester()
 
+    def test_list_resources(self):
+        """Test list resources."""
+
+        def test(client):
+            """Test implementation with API client."""
+            list_resources_reply = client.explain.list_resources('')
+            self.assertEqual(set(list_resources_reply.full_resource_names),
+                             set([
+                                 'organization/org1',
+                                 'project/project2',
+                                 'vm/instance-1',
+                                 'bucket/bucket2',
+                                 'project/project1',
+                                 'bucket/bucket1'
+                                 ]))
+        self.setup.run(test)
+
+    def test_list_members(self):
+        """Test list members."""
+
+        def test(client):
+            """Test implementation with API client."""
+            list_members_reply = client.explain.list_members('')
+            self.assertEqual(set(list_members_reply.member_names),
+                             set([
+                                 'group/a',
+                                 'group/b',
+                                 'user/a',
+                                 'user/b',
+                                 'user/c',
+                                 'user/d',
+                                 'user/e'
+                                 ]))
+        self.setup.run(test)
+
+    def test_list_roles(self):
+        """Test list roles."""
+
+        def test(client):
+            """Test implementation with API client."""
+            list_roles_reply = client.explain.list_roles('')
+            self.assertEqual(set(list_roles_reply.role_names),
+                             set([
+                                 'role/a',
+                                 'role/b',
+                                 'role/c',
+                                 'role/d'
+                                 ]))
+        self.setup.run(test)
+
+    def test_get_iam_policy(self):
+        """Test get_iam_policy."""
+
+        def test(client):
+            """Test implementation with API client."""
+            get_iam_policy_reply = client.explain.get_iam_policy('project/project2')
+            self.assertEqual(get_iam_policy_reply.resource, 'project/project2')
+            bindings_reply = {binding.role: set(binding.members)
+                              for binding in get_iam_policy_reply.policy.bindings}
+            self.assertEqual(bindings_reply,
+                             {'role/a': set(['group/b'])})
+        self.setup.run(test)
+
     def test_check_policy(self):
         """Test check policy."""
 
@@ -110,47 +174,58 @@ class ModelTest(ForsetiTestCase):
             """Test implementation with API client."""
             self.assertTrue(client.explain.check_iam_policy(
                 'vm/instance-1',
-                'c',
+                'permission/c',
                 'user/d').result)
             self.assertTrue(client.explain.check_iam_policy(
                 'vm/instance-1',
-                'e',
+                'permission/e',
                 'user/d').result)
             self.assertTrue(client.explain.check_iam_policy(
                 'vm/instance-1',
-                'e',
+                'permission/e',
                 'user/a').result)
             self.assertFalse(client.explain.check_iam_policy(
                 'organization/org1',
-                'e',
+                'permission/e',
                 'user/a').result)
             self.assertFalse(client.explain.check_iam_policy(
                 'project/project2',
-                'e',
+                'permission/e',
                 'user/c').result)
             self.assertFalse(client.explain.check_iam_policy(
                 'vm/instance-1',
-                'e',
+                'permission/e',
                 'user/c').result)
-
         self.setup.run(test)
 
-    def test_query_role_permissions(self):
-        """Test query_role_permissions."""
+    def test_explain_denied(self):
+        """Test explain_denied."""
         def test(client):
             """Test implementation with API client."""
-            response = client.explain.query_permissions_by_roles(
-                role_names=['a', 'b'])
-            self.assertTrue(len(response.permissionsbyroles) == 2)
-            for mapping in response.permissionsbyroles:
-                if mapping.role == 'a':
-                    self.assertEquals(
-                        set(mapping.permissions),
-                        set(['a', 'b', 'c', 'd', 'e']))
-                elif mapping.role == 'b':
-                    self.assertEquals(
-                        set(mapping.permissions),
-                        set(['a', 'b', 'c']))
+            response = client.explain.explain_denied(
+                member_name='user/d',
+                resource_names=[
+                    'bucket/bucket2'],
+                permission_names=['permission/f', 'permission/i'])
+            self.assertTrue(response, 'Expected to get a deny explanation')
+
+            response = client.explain.explain_denied(
+                member_name='user/e',
+                resource_names=[
+                    'bucket/bucket2'],
+                permission_names=['permission/a'])
+            self.assertTrue(response, 'Expected to get a deny explanation')
+        self.setup.run(test)
+
+    def test_explain_granted(self):
+        """Test explain_granted."""
+        def test(client):
+            """Test implementation with API client."""
+            response = client.explain.explain_granted(
+                member_name='user/d',
+                resource_name='bucket/bucket2',
+                role='role/b')
+            self.assertTrue(response, 'Expected to get a grant explanation')
         self.setup.run(test)
 
     def test_query_access_by_resources(self):
@@ -159,15 +234,15 @@ class ModelTest(ForsetiTestCase):
             """Test implementation with API client."""
             response = client.explain.query_access_by_resources(
                 resource_name='project/project2',
-                permission_names=['a', 'c'],
+                permission_names=['permission/a', 'permission/c'],
                 expand_groups=True)
             self.assertTrue(len(response.accesses) == 2)
             for access in response.accesses:
-                if access.role == 'a':
+                if access.role == 'role/a':
                     self.assertEqual(
                         set(access.members),
                         set(['group/b', 'user/a', 'user/d']))
-                elif access.role == 'b':
+                elif access.role == 'role/b':
                     self.assertEqual(
                         set(access.members),
                         set(['group/a',
@@ -184,10 +259,10 @@ class ModelTest(ForsetiTestCase):
             """Test implementation with API client."""
             response = client.explain.query_access_by_members(
                 'group/a',
-                'a',
+                'permission/a',
                 expand_resources=True)
             for access in response.accesses:
-                if access.role == 'b':
+                if access.role == 'role/b':
                     self.assertEqual(set(access.resources),
                                      set([
                                          'bucket/bucket1',
@@ -199,34 +274,53 @@ class ModelTest(ForsetiTestCase):
                                          ]))
         self.setup.run(test)
 
-    def test_explain_granted(self):
-        """Test explain_granted."""
+    def test_query_access_by_permissions(self):
+        """Test query_access_by_permissions."""
         def test(client):
             """Test implementation with API client."""
-            response = client.explain.explain_granted(
-                member_name='user/d',
-                resource_name='bucket/bucket2',
-                role='b')
-            self.assertTrue(response, 'Expected to get a grant explanation')
+            response = client.explain.query_access_by_permissions(
+                'role/a',
+                '',
+                expand_groups=True,
+                expand_resources=True)
+            access_details = {}
+            for access in response:
+                if not access.resource in access_details:
+                    access_details[access.resource] = {}
+                access_details[access.resource][access.role] = set(access.members)
+            self.assertEqual(access_details,
+                             {'vm/instance-1':{'role/a': set([
+                                 'group/b',
+                                 'user/a',
+                                 'user/d'])},
+                             'project/project2': {'role/a': set([
+                                 'group/b',
+                                 'user/a',
+                                 'user/d'])},
+                              'bucket/bucket2': {'role/a': set([
+                                  'group/b',
+                                  'user/a',
+                                  'user/d'])}
+                              })
         self.setup.run(test)
 
-    def test_explain_denied(self):
-        """Test explain_denied."""
+    def test_query_role_permissions(self):
+        """Test query_role_permissions."""
         def test(client):
             """Test implementation with API client."""
-            response = client.explain.explain_denied(
-                member_name='user/d',
-                resource_names=[
-                    'bucket/bucket2'],
-                permission_names=['f', 'i'])
-            self.assertTrue(response, 'Expected to get a deny explanation')
-
-            response = client.explain.explain_denied(
-                member_name='user/e',
-                resource_names=[
-                    'bucket/bucket2'],
-                permission_names=['a'])
-            self.assertTrue(response, 'Expected to get a deny explanation')
+            response = client.explain.query_permissions_by_roles(
+                role_names=['role/a', 'role/b'])
+            self.assertTrue(len(response.permissionsbyroles) == 2)
+            for mapping in response.permissionsbyroles:
+                if mapping.role == 'role/a':
+                    self.assertEquals(
+                        set(mapping.permissions),
+                        set(['permission/a', 'permission/b', 'permission/c',
+                             'permission/d', 'permission/e']))
+                elif mapping.role == 'role/b':
+                    self.assertEquals(
+                        set(mapping.permissions),
+                        set(['permission/a', 'permission/b', 'permission/c']))
         self.setup.run(test)
 
 

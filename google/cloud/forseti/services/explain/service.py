@@ -156,14 +156,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """Returns stream of access based on permission/role.
 
         Args:
-            request (object): grpg request.
-            context (object): grpg context.
+            request (object): grpc request.
+            context (object): grpc context.
 
         Yields:
             Generator for access tuples.
         """
         model_name = self._get_handle(context)
-
         for role, resource, members in (
                 self.explainer.get_access_by_permissions(
                     model_name,
