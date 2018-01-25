@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Set up the gcloud environment and Forseti prerequisites.
+""" GCP Installer runner.
 
 This has been tested with python 2.7.
 """
