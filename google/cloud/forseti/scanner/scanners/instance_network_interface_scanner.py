@@ -72,7 +72,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             violation_data['ip'] = violation.ip
             violation_data['raw_data'] = violation.raw_data
             yield {
-                'resource_id': violation.project,
+                'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
