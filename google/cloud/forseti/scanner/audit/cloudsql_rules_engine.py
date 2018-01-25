@@ -231,7 +231,7 @@ class Rule(object):
         if should_raise_violation:
             yield self.RuleViolation(
                 resource_type='cloudsql',
-                resource_id=cloudsql_acl.project_id,
+                resource_id=cloudsql_acl.instance_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='CLOUD_SQL_VIOLATION',
