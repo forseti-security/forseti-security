@@ -166,7 +166,7 @@ pip install --upgrade setuptools
 pip install -r setup/dependencies/pip_packages.txt
 
 # Set ownership of config and rules to $USER
-chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/installer/scripts/forseti_run.sh
+chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/installer/scripts/forseti_runner.sh
 
 # Build protos.
 python build_protos.py --clean
@@ -174,7 +174,7 @@ python build_protos.py --clean
 # Install Forseti
 python setup.py install
 
-# Export variables required by initialize_forseti_services.sh.
+# Export variables required by initialize_services_initializer.sh.
 {export_initialize_vars}
 
 # Export variables required by run_forseti.sh
@@ -185,7 +185,7 @@ python setup.py install
 sudo su $USER -c "python $FORSETI_HOME/setup/installer/utils/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Start Forseti service depends on vars defined above.
-bash ./setup/installer/scripts/forseti_services_initialize.sh
+bash ./setup/installer/scripts/forseti_services_initializer.sh
 
 echo "Starting services."
 systemctl start cloudsqlproxy
@@ -207,8 +207,8 @@ EOF
 )"
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
-sudo su $USER -c "$FORSETI_HOME/setup/installer/scripts/forseti_run.sh"
-(echo "{run_frequency} $FORSETI_HOME/setup/installer/scripts/forseti_run.sh") | crontab -u $USER -
+sudo su $USER -c "$FORSETI_HOME/setup/installer/scripts/forseti_runner.sh"
+(echo "{run_frequency} $FORSETI_HOME/setup/installer/scripts/forseti_runner.sh") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab"
 
 echo "Execution of startup script finished"
