@@ -423,7 +423,7 @@ class PlaygroundClient(ForsetiClient):
             metadata=self.metadata())
 
     @require_model
-    def delete_member(self, member_name, parent_name=None,
+    def delete_member(self, member_name, parent_name='',
                       only_delete_relationship=False):
         """Delete a member from the member relationship."""
 

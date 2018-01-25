@@ -73,7 +73,11 @@ def define_playground_parser(parent):
         'delete_member',
         help='Delete a member or relationship')
     delete_member_parser.add_argument(
-        'parent',
+        'member',
+        help='member to be deleted')
+    delete_member_parser.add_argument(
+        '--parent',
+        default='',
         help='Parent type/name in case of deleting a relationship')
     delete_member_parser.add_argument(
         '--delete_relation_only',
