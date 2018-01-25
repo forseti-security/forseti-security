@@ -71,7 +71,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             violation_data['domain'] = violation.domain
             violation_data['bucket'] = violation.bucket
             yield {
-                'resource_id': violation.resource_id,
+                'resource_id': violation.bucket,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
