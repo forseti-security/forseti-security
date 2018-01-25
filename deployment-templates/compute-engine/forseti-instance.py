@@ -169,7 +169,7 @@ pip install -r setup/dependencies/pip_packages.txt
 chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/installer/scripts/forseti_runner.sh
 
 # Build protos.
-python build_protos.py --clean
+python protos_builder.py --clean
 
 # Install Forseti
 python setup.py install
