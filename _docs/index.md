@@ -5,7 +5,7 @@ hide:
   left_sidebar: true
   right_sidebar: true
 ---
-**[Overview]({% link _docs/overview/overview.md %})**
+**[Concepts]({% link _docs/concepts/index.md %})**
 
 Learn the core concepts and get an overview of each Forseti Security module.
 
