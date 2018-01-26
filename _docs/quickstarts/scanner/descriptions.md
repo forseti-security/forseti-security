@@ -22,7 +22,7 @@ The BigQuery scanner supports a blacklist mode, to ensure unauthorized users
 don't gain access to your datasets.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
-[bigquery_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bigquery_rules.yaml)
+[`bigquery_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bigquery_rules.yaml)
 rule file.
 
 The bigquery scanner depends on the following Forseti Inventory pipelines:
