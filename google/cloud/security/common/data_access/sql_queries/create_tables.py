@@ -313,7 +313,7 @@ CREATE_FORWARDING_RULES_TABLE = """
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """
 
-CREATE_GKE_TABLE = """
+CREATE_KE_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `project_id` varchar(255) DEFAULT NULL,
@@ -574,7 +574,7 @@ CREATE_VIOLATIONS_TABLE = """
                               'FIREWALL_REQUIRED_VIOLATION',
                               'FIREWALL_WHITELIST_VIOLATION',
                               'FORWARDING_RULE_VIOLATION',
-                              'GKE_VERSION_VIOLATION',
+                              'KE_VERSION_VIOLATION',
                               'GROUP_VIOLATION',
                               'IAP_VIOLATION',
                               'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,

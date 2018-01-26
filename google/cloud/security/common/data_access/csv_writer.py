@@ -267,7 +267,7 @@ FORWARDING_RULES_FIELDNAMES = [
     'raw_forwarding_rule',
 ]
 
-GKE_FIELDNAMES = [
+KE_FIELDNAMES = [
     'project_id',
     'addons_config',
     'cluster_ipv4_cidr',
@@ -476,7 +476,7 @@ CSV_FIELDNAME_MAP = {
 
     'forwarding_rules': FORWARDING_RULES_FIELDNAMES,
 
-    'gke': GKE_FIELDNAMES,
+    'ke': KE_FIELDNAMES,
 
     'group_members': GROUP_MEMBERS_FIELDNAMES,
     'groups': GROUPS_FIELDNAMES,

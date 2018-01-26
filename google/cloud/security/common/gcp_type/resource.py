@@ -55,8 +55,8 @@ class ResourceType(object):
     # AppEngine
     APPENGINE = 'appengine'
 
-    # GKE
-    GKE = 'gke'
+    # KE
+    KE = 'ke'
 
     resource_types = frozenset([
         ORGANIZATION,
