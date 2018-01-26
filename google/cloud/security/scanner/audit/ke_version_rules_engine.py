@@ -427,7 +427,7 @@ class Rule(object):
         """
         node_pool_name = nodepool.get('name') if nodepool else ''
         return RuleViolation(
-            resource_type=resource_mod.ResourceType.KE,
+            resource_type=resource_mod.ResourceType.KENGINE,
             resource_id=ke_cluster.name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,

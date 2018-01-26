@@ -106,8 +106,8 @@ class KeVersionScanner(base_scanner.BaseScanner):
             list: KE Cluster data.
         """
         ke_clusters = (ke_dao
-                        .KeDao(self.global_configs)
-                        .get_clusters(self.snapshot_timestamp))
+            .KeDao(self.global_configs)
+            .get_clusters(self.snapshot_timestamp))
 
         return ke_clusters
 
