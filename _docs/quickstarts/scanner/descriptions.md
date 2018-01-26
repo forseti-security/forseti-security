@@ -52,7 +52,7 @@ Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
 to ensure unauthorized users don't gain access to your GCS bucket.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
-`[bucket_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bucket_rules.yaml)` rule file.
+`[bucket_rules.yaml]`(https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bucket_rules.yaml) rule file.
 
 The bucket scanner depends on the following Forseti Inventory pipelines:
 
