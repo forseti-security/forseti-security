@@ -29,6 +29,22 @@ The bigquery scanner depends on the following Forseti Inventory pipelines:
 
 - `load_bigquery_datasets_pipeline`
 
+## Blacklist scanner
+
+VM instances with external IP addresses communicate with the outside world 
+and in case they were compromised or misbehaved, they could end up in various 
+blacklists and is known to be malicious i.e. sending spam, hosting C&C etc.
+The blacklist scanner audits all your VM instances in your environment and 
+determines if any VMs with external IP addresses are on a specific blacklist 
+you've configured.
+
+For example of how to define scanner rules see the [blacklist_rules.yaml][bigquery_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/blacklist_rules.yaml)
+rule file.
+
+Blacklist scanner depends on the following Forseti Inventory pipelines:
+
+- `load_instances_pipeline
+
 ## Bucket ACL scanner
 
 GCS buckets have ACLs that can grant public access to your GCS bucket and
@@ -58,7 +74,7 @@ The cloudsql scanner depends on the following Forseti Inventory pipelines:
 
 - `load_projects_cloudsql_pipeline`
 
-## Load Balancer Forwarding Rules scanner
+## (Load Balancer) Forwarding Rules scanner
 
 Load balancer forwarding rules can be configured to direct unauthorized external
 traffic to your target instances. The forwarding rule scanner supports a
@@ -73,6 +89,20 @@ The load balancer forwarding rule scanner depends on the following Forseti
 Inventory pipelines:
 
 - `load_forwarding_rules_pipeline`
+
+## GKE Version scanner
+
+GKE clusters running on older GKE versions can be exposed to security 
+vulnerabilities, or lack of support.  The GKE version scanner can ensure 
+your GKE clusters are running supported versions, and versions that are safe.
+
+For examples of how to define scanner rules for your GKE versions, see the
+[gke_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/gke_rules.yaml)
+rule file.
+
+The gke version scanner depends on the following Forseti Inventory pipelines:
+
+- `load_gke_pipeline`
 
 ## Groups scanner
 
