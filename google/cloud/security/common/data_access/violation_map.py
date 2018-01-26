@@ -28,6 +28,7 @@ VIOLATION_RESOURCES = {
     'ADDED': 'policy_violations',
     'REMOVED': 'policy_violations',
     'BIGQUERY_VIOLATION': 'bigquery_acl_violations',
+    'BLACKLIST_VIOLATION': 'blacklist_violations',
     'BUCKET_VIOLATION': 'buckets_acl_violations',
     'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
     'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',
@@ -36,6 +37,7 @@ VIOLATION_RESOURCES = {
     'FIREWALL_REQUIRED_VIOLATION': 'firewall_rule_violations',
     'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
     'GROUP_VIOLATION': 'groups_violations',
+    'GKE_VERSION_VIOLATION': 'gke_version_violations',
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
         'instance_network_interface_violations'),

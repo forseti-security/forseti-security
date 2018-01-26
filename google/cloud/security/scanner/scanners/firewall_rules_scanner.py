@@ -13,8 +13,8 @@
 # limitations under the License.
 """Scanner for the firewall rule engine."""
 
+from collections import defaultdict
 from datetime import datetime
-import itertools
 import os
 import sys
 
@@ -156,16 +156,14 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         Returns:
             list: A list of all violations
         """
-        policies = itertools.chain(policies)
         all_violations = []
         LOGGER.info('Finding firewall policy violations...')
-        for policy in policies:
-            resource_id = policy.project_id
+        for resource_id, p_policies in policies.items():
             resource = resource_util.create_resource(
                 resource_id=resource_id, resource_type='project')
-            LOGGER.debug('%s => %s', resource, policy)
+            LOGGER.debug('%s => %s', resource, p_policies)
             violations = self.rules_engine.find_policy_violations(
-                resource, policy)
+                resource, p_policies)
             all_violations.extend(violations)
         return all_violations
 
@@ -173,23 +171,26 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            list: List of firewall policy data.
-            int: The resource count.
+            dict: Dict of project to firewall policy data.
+            dict: Dict of resource to resource count.
         """
         firewall_policies = (firewall_rule_dao
                              .FirewallRuleDao(self.global_configs)
                              .get_firewall_rules(self.snapshot_timestamp))
 
-
         if not firewall_policies:
             LOGGER.warn('No firewall policies found. Exiting.')
             sys.exit(1)
+
+        project_policies = defaultdict(list)
+        for policy in firewall_policies:
+            project_policies[policy.project_id].append(policy)
 
         resource_counts = {
             resource_type.ResourceType.FIREWALL_RULE: len(firewall_policies),
         }
 
-        return firewall_policies, resource_counts
+        return project_policies, resource_counts
 
     def run(self):
         """Runs the data collection."""

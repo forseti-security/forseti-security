@@ -1473,7 +1473,7 @@ class RuleBookTest(ForsetiTestCase):
             (exception, policy_violates_rule_1, []),
         )
         for resource, policy, expected_violation in resources_and_policies:
-          violations = rule_book.find_violations(resource, policy)
+          violations = rule_book.find_violations(resource, [policy])
           self.assert_rule_violation_lists_equal(
               expected_violation, list(violations))
 
@@ -1527,7 +1527,7 @@ class RuleEngineTest(ForsetiTestCase):
         rules_engine.build_rule_book({})
         self.assertEqual(4, len(rules_engine.rule_book.rules_map))
         self.assertEqual(1, len(rules_engine.rule_book.rule_groups_map))
-        self.assertEqual(5, len(rules_engine.rule_book.org_policy_rules_map))
+        self.assertEqual(6, len(rules_engine.rule_book.org_policy_rules_map))
 
     @parameterized.parameterized.expand([
         (
@@ -1601,7 +1601,7 @@ class RuleEngineTest(ForsetiTestCase):
         rules_engine.rule_book.org_res_rel_dao = mock.Mock()
         rules_engine.rule_book.org_res_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
-        violations = rules_engine.find_policy_violations(resource, policy)
+        violations = rules_engine.find_policy_violations(resource, [policy])
         expected_violations = [
             fre.RuleViolation(**v) for v in expected_violations_dicts]
         self.assert_rule_violation_lists_equal(expected_violations, violations)

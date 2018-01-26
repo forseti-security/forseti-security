@@ -43,6 +43,10 @@ SUPPORTED_APIS = {
         'default_version': 'beta',
         'supported_versions': ['v1', 'beta']
     },
+    'container': {
+        'default_version': 'v1',
+        'supported_versions': ['v1']
+    },
     'iam': {
         'default_version': 'v1',
         'supported_versions': ['v1']

@@ -84,9 +84,10 @@ def find_pipelines(pipeline_name):
                and issubclass(obj, BaseNotificationPipeline) \
                and obj is not BaseNotificationPipeline:
                 return obj
-    except ImportError, e:
+    except ImportError as e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
-        return None
+
+    return None
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.

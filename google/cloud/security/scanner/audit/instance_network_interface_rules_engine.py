@@ -237,6 +237,7 @@ class Rule(object):
                        if 'natIP' in config]
                 yield self.RuleViolation(
                     resource_type='instance',
+                    resource_id=instance_network_interface.name,
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,
                     violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
@@ -254,6 +255,6 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'rule_name',
+                               ['resource_type', 'resource_id', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
                                 'network', 'ip', 'raw_data'])

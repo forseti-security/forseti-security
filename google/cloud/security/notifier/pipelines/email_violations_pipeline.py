@@ -15,6 +15,7 @@
 """Email pipeline to perform notifications"""
 
 from datetime import datetime
+import tempfile
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
@@ -28,7 +29,6 @@ from google.cloud.security.notifier.pipelines import base_notification_pipeline 
 
 LOGGER = log_util.get_logger(__name__)
 
-TEMP_DIR = '/tmp'
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
@@ -70,34 +70,24 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                                                      output_timestamp)
         return output_filename
 
-    def _write_temp_attachment(self):
-        """Write the attachment to a temp file.
-
-        Returns:
-            str: The output filename for the violations json just written.
-        """
-        # Make attachment
-        output_file_name = self._get_output_filename()
-        output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
-        with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(self.violations))
-        return output_file_name
-
     def _make_attachment(self):
         """Create the attachment object.
 
         Returns:
-            attachment: SendGrid attachment object.
+            attachment: SendGrid attachment object or `None` in case of
+            failure.
         """
-        output_file_name = self._write_temp_attachment()
-        attachment = self.mail_util.create_attachment(
-            file_location='{}/{}'.format(TEMP_DIR, output_file_name),
-            content_type='text/json',
-            filename=output_file_name,
-            disposition='attachment',
-            content_id='Violations'
-        )
-
+        attachment = None
+        with tempfile.NamedTemporaryFile() as tmp_file:
+            tmp_file.write(parser.json_stringify(self.violations))
+            tmp_file.flush()
+            attachment = self.mail_util.create_attachment(
+                file_location=tmp_file.name,
+                content_type='text/json',
+                filename=self._get_output_filename(),
+                disposition='attachment',
+                content_id='Violations'
+            )
         return attachment
 
     def _make_content(self):
