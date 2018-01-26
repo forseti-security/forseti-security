@@ -71,6 +71,11 @@ against one or more projects. If it finds any differences in policy, Enforcer
 uses Google Cloud APIs to make changes and displays output of the results.
 
 Following are some ways you might want to use Enforcer:
+Helps you monitor inventoried GCP resources like Cloud IAM,
+BigQuery datasets, Cloud Storage bucket ACLs, and
+[more]({% link _docs/reference/resources.md %})
+to ensure that role-based access controls are set as you intended, by
+notifying you when specific policies change unexpectedly.
 
   * One-time enforcement of firewall policies on a single project.
   * Alert on changes to your expected firewall policy.
