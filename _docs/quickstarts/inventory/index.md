@@ -9,8 +9,6 @@ Inventory collects and stores information about your Google Cloud Platform
 (GCP) resources. Forseti Scanner and Enforcer use Inventory data to
 perform operations.
 
-{% include docs/resources.md %}
-
 ## Executing the inventory loader
 
 After you install Forseti, you can use the `forseti_inventory` command to

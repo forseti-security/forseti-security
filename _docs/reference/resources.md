@@ -1,8 +1,9 @@
-## Google Cloud Platform Resource Coverage
+---
+title: GCP Resources
+order: 003
+---
 
-This page lists the Google Cloud Platform (GCP) resources that currently have
-coverage in Forseti or are planned to have coverage. If a resource you're
-interested in isn't listed, please open an issue or contribute!
+This table lists the Google Cloud Platform (GCP) resources that are inventoried, scanned, and enforced. 
 
 {: .table .table-striped}
 | Resource                                | Inventory     | Scanner       | Enforcer      |
