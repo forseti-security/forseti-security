@@ -16,7 +16,7 @@ To complete this guide, you will need:
 
 ## Setting GCP infrastructure
 
-{% include docs/howto/deployment_prerequisites.md %}
+{% include docs/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
@@ -185,7 +185,7 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 
 Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
 `forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/howto/configure/configuring-forseti.md %}) 
+["Configuring Forseti"]({% link _docs/configure/configuring-forseti.md %}) 
 for more information.
 
 ### Executing Forseti commands

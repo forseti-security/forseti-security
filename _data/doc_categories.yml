@@ -4,9 +4,9 @@
   href: docs/concepts/
 - title: Setup
   href: docs/setup/
-- title: Configuration
-  href: docs/configuration/
-- title: Development
-  href: docs/development/
+- title: Configure
+  href: docs/configure/
+- title: Develop
+  href: docs/develop/
 - title: FAQ
-  href: docs/faqs/
+  href: docs/faq/

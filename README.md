@@ -42,8 +42,8 @@ defined in `_data/doc_categories.yml`. The tabs are defined by two properties:
 #### Adding a page to a category
 
 The categories are inferred based upon the directory that a page is in.
-For example, a page under `_docs/guides` belongs to the *Guides* category while
-a page under `_docs/quickstarts` belongs to the *Quick Starts* category. 
+For example, a page under `_docs/configure` belongs to the *Configure* category while
+a page under `_docs/develop` belongs to the *Develop* category. 
 
 Simply add your page to the appropriate directory.
 
@@ -53,9 +53,9 @@ The category is automatically assigned by the Jekyll configuration:
 defaults:
   ...
   - scope:
-      path: _docs/quickstarts
+      path: _docs/configure
     values:
-      category: Quick Starts
+      category: Configure 
   ...
 ```
 
@@ -78,13 +78,13 @@ Careful attention must be paid to nested pages.
 #### Nested pages
 
 Documentation pages can be nested by adding a new page to a category
-sub-directory, e.g., `_docs/quickstarts/subdir/sub_page.md`. This will cause
+sub-directory, e.g., `_docs/dir/subdir/sub_page.md`. This will cause
 your documentation page to be indented to the right.
 
 You must be careful when ordering nested pages. As far as Jekyll is
 concerned, the hierarchy is flat for a given category. If
-`docs/quickstarts/top_page.md` has `order: 2` and
-`_docs/quickstarts/subdir/sub_page.md` has `order: 1`, then `sub_page` will
+`docs/dir/top_page.md` has `order: 2` and
+`_docs/dir/subdir/sub_page.md` has `order: 1`, then `sub_page` will
 appear **above** `top_page`.
 
 #### Adding/updating categories

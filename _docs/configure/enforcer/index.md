@@ -4,7 +4,7 @@ order: 201
 ---
 # {{ page.title }}
 
-This quickstart describes how to get started with Forseti Enforcer. Forseti
+This document describes how to get started with Forseti Enforcer. Forseti
 Enforcer compares policy files that define the desired state of a resource
 against the current state of the resource. If it finds any differences in
 policy, Forseti Enforcer makes changes using Google Cloud APIs.

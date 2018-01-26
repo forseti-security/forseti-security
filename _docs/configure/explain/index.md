@@ -7,7 +7,7 @@ order: 202
 IAM Explain is not part of the main Forseti releases from master. Please
 deploy from the [IAM Explain experimental branch](https://github.com/GoogleCloudPlatform/forseti-security/tree/explain-experimental).
 
-This quickstart describes how to set up IAM Explain for Forseti Security.
+This document describes how to set up IAM Explain for Forseti Security.
 IAM Explain is a client-server based application that helps administrators,
 auditors, and users of Google Cloud to understand, test, and develop Cloud
 Identity and Access Management (Cloud IAM) policies. It can enumerate access by

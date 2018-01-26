@@ -15,7 +15,7 @@ currently schedule or execute Enforcer. You'll use DM to do the following:
   - Manage Forseti Security configuration and automatically run Forseti
   Inventory and Scanner.
 
-**This is the manual version of the [Quickstart]({% link _docs/quickstarts/forseti-security/index.md %}).**
+**This is the manual version of the [Quickstart]({% link _docs/setup/gcp-deployment.md %}).**
 
 ## Before you begin
 
@@ -27,7 +27,7 @@ To complete this guide, you will need:
 
 ## Setting up Forseti Security
 
-{% include docs/howto/deployment_prerequisites.md %}
+{% include docs/deployment_prerequisites.md %}
 
 ### Customizing deployment templates
 
@@ -108,7 +108,7 @@ To view your deployment details, access the Cloud Console
 ### Configuring Forseti Settings
 
 You MUST provide a Forseti configuration file before Forseti will run properly.
-Refer to ["Configuring Forseti"]({% link _docs/howto/configure/configuring-forseti.md %}) 
+Refer to ["Configuring Forseti"]({% link _docs/configure/configuring-forseti.md %}) 
 to prepare a forseti_conf.yaml.
 
 At the very minimum, you should edit the following values (the following values are specific 
@@ -118,12 +118,13 @@ other deployments):
 * **db_host**: Set this to "localhost" or "127.0.0.1".
 * **db_user**: Set this to "root".
 * **db_name**: Set this to "forseti_security".
-* **output_path**: Set this to gs://YOUR_SCANNER_BUCKET/scanner_violations (where YOUR_SCANNER_BUCKET is the `SCANNER_BUCKET` value you used in deploy-forseti.yaml).
+* **output_path**: Set this to gs://YOUR_SCANNER_BUCKET/scanner_violations
+(where YOUR_SCANNER_BUCKET is the `SCANNER_BUCKET` value you used in deploy-forseti.yaml).
 * **rules_path**: Set this to "/home/ubuntu/forseti-security/rules"
 
 ### Customize Forseti Rules
 
-Customize your Forseti rules by following [this guide]({% link _docs/quickstarts/scanner/rules.md %}).
+Customize your Forseti rules by following [this guide]({% link _docs/configure/scanner/rules.md %}).
 
 ### Move Configuration to GCS
 
@@ -145,8 +146,8 @@ At this point, Forseti should be installing on the GCE instance that was
 created from the Deployment Manager script. You can ssh into the GCE instance 
 and watch the /tmp/deployment.log to watch the progress.
 
-To ssh to your GCE instance, you can either use `gcloud compute ssh` ([official docs](https://cloud.google.com/sdk/gcloud/reference/compute/ssh)) or go to the GCE 
-instance details page from Google Cloud Console > Compute Engine, then click the 
+To ssh to your GCE instance, you can either use `gcloud compute ssh` ([official docs](https://cloud.google.com/sdk/gcloud/reference/compute/ssh))
+or go to the GCE instance details page from Google Cloud Console > Compute Engine, then click the 
 "SSH" button for your instance. If a window doesn't pop up right away (or gets blocked), 
 try clicking the SSH button again.
 
