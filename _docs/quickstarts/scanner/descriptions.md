@@ -38,7 +38,7 @@ The blacklist scanner audits all your VM instances in your environment and
 determines if any VMs with external IP addresses are on a specific blacklist 
 you've configured.
 
-For example of how to define scanner rules see the [blacklist_rules.yaml][bigquery_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/blacklist_rules.yaml)
+For example of how to define scanner rules see the [blacklist_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/blacklist_rules.yaml)
 rule file.
 
 Blacklist scanner depends on the following Forseti Inventory pipelines:
