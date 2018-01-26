@@ -38,7 +38,7 @@ hosting Command & Control servers, etc.  The blacklist scanner audits all your
 VM instances in your environment and determines if any VMs with external IP 
 addresses are on a specific blacklist you've configured.
 
-For example of how to define scanner rules see the [blacklist_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/blacklist_rules.yaml)
+For example of how to define scanner rules see the [`blacklist_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/blacklist_rules.yaml)
 rule file.
 
 Blacklist scanner depends on the following Forseti Inventory pipelines:
@@ -52,7 +52,7 @@ Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
 to ensure unauthorized users don't gain access to your GCS bucket.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
-[bucket_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bucket_rules.yaml) rule file.
+[`bucket_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bucket_rules.yaml) rule file.
 
 The bucket scanner depends on the following Forseti Inventory pipelines:
 
@@ -67,7 +67,7 @@ gain access to your Cloud SQL instances.
 
 For examples of how to define scanner rules for your Cloud SQL instances, see
 the
-[cloudsql_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/cloudsql_rules.yaml)
+[`cloudsql_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/cloudsql_rules.yaml)
 rule file.
 
 The cloudsql scanner depends on the following Forseti Inventory pipelines:
@@ -80,7 +80,7 @@ desired traffic into and out of your network. The firewall rules scanner can
 ensure that all your network's firewalls are properly configured.
 
 For examples of how to define scanner rules for your firewall rules scanner, see the
-[firewall_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/firewall_rules.yaml)
+[`firewall_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/firewall_rules.yaml)
 rule file.
 
 The firewall rules scanner depends on the following Forseti
@@ -97,7 +97,7 @@ whitelist mode, to ensure each forwarding rule only directs to the intended
 target instances.
 
 For examples of how to define scanner rules for your forwarding rules, see the
-[forwarding_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/forwarding_rules.yaml)
+[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/forwarding_rules.yaml)
 rule file.
 
 The load balancer forwarding rule scanner depends on the following Forseti
@@ -112,7 +112,7 @@ access on Google Cloud Platform. The group scanner supports a whitelist mode, to
 make sure that only authorized users are members of your GSuite group.
 
 For examples of how to define scanner rules for your GSuite groups, see the
-[group_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/group_rules.yaml)
+[`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/group_rules.yaml)
 rule file.
 
 The group scanner depends on the following Forseti Inventory pipelines:
@@ -131,7 +131,7 @@ granted in Cloud IAM policies, IAM scanner supports the following:
  - Access to specific organization, folder, or project resource types.
 
 For examples of how to define scanner rules for IAM policies, see the
-[iam_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iam_rules.yaml)
+[`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iam_rules.yaml)
 rule file.
 
 IAM scanner depends on the following Forseti Inventory pipelines:
@@ -152,7 +152,7 @@ rules are properly configured and prevents the introduction of other network
 paths that bypass the normal load balancer to instance flow.
 
 For examples of how to define scanner rules for IAP, see the
-[iap_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iap_rules.yaml)
+[`iap_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iap_rules.yaml)
 rule file.
 
 IAP scanner depends on the following Forseti Inventory pipelines:
@@ -172,7 +172,7 @@ all your VM instances in your environment, and determines if any VMs with
 external IP addresses are outside of the trusted networks.
 
 For examples of how to define scanner rules for network interfaces, see the 
-[instance_network_interface_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/instance_network_interface_rules.yaml)
+[`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/instance_network_interface_rules.yaml)
 rule file.
 
 Instance Network Interface scanner depends on the following Forseti Inventory pipelines:
@@ -187,7 +187,7 @@ version scanner can ensure your Kubernetes Engine clusters are running safe
 and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the
-[gke_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/gke_rules.yaml)
+[`gke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/gke_rules.yaml)
 rule file.
 
 The Kubernetes Engine version scanner depends on the following Forseti Inventory pipelines:
