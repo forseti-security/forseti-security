@@ -74,6 +74,21 @@ The cloudsql scanner depends on the following Forseti Inventory pipelines:
 
 - `load_projects_cloudsql_pipeline`
 
+## Firewall Rules scanner
+Network firewall rules can be configured to allow undesired access to your 
+environment. The firewall rules scanner can ensure that your network's 
+firewalls are configured to only allow access that you define.
+
+For examples of how to define scanner rules for your firewall scanner rules, see the
+[firewall_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/firewall_rules.yaml)
+rule file.
+
+The firewall rules scanner depends on the following Forseti
+Inventory pipelines:
+
+- `load_firewall_rules_pipeline`
+
+
 ## (Load Balancer) Forwarding Rules scanner
 
 Load balancer forwarding rules can be configured to direct unauthorized external
