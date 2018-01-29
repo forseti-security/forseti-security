@@ -84,6 +84,7 @@ class Crawler(crawler.Crawler):
             resource.get_cloudsql_policy(self.get_client())
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())
+            resource.get_container_service_config(self.get_client())
 
             self.write(resource)
         except Exception as e:
@@ -246,6 +247,7 @@ def run_crawler(storage,
         'max_servicemanagement_api_calls_per_100_seconds': 200,
         'max_compute_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20,
+        'max_container_api_calls_per_100_seconds': 1000,
         }
 
     root_id = config.get_root_resource_id()
