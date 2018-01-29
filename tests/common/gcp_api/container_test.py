@@ -22,8 +22,8 @@ from tests import unittest_utils
 from tests.common.gcp_api.test_data import (
     fake_container_responses as fake_container)
 from tests.common.gcp_api.test_data import http_mocks
-from google.cloud.security.common.gcp_api import container
-from google.cloud.security.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import container
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 
 
 class ContainerTest(unittest_utils.ForsetiTestCase):

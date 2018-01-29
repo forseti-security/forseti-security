@@ -16,11 +16,11 @@
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
-from google.cloud.security.common.gcp_api import _base_repository
-from google.cloud.security.common.gcp_api import api_helpers
-from google.cloud.security.common.gcp_api import errors as api_errors
-from google.cloud.security.common.gcp_api import repository_mixins
-from google.cloud.security.common.util import log_util
+from google.cloud.forseti.common.gcp_api import _base_repository
+from google.cloud.forseti.common.gcp_api import api_helpers
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import repository_mixins
+from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
