@@ -24,12 +24,12 @@ services:
 
 before_install:
   # Build the Forseti image and start the container.
-  - ./setup/scripts/docker_builder.sh
-  - ./setup/scripts/docker_runner.sh
+  - ./setup/scripts/build_docker.sh
+  - ./setup/scripts/run_docker.sh
 
 script:
   # Run pylint and unittests.
-  - ./setup/scripts/docker_test_runner.sh
+  - ./setup/scripts/run_docker_tests.sh
 
 after_success:
   # Execute codecov inside the docker container. Need to export env for codecov.io upload.
