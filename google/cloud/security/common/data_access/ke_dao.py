@@ -41,6 +41,6 @@ class KeDao(dao.Dao):
         """
         query = select_data.KE_CLUSTERS_JSON.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource.ResourceType.KENGINE, query, ())
+            resource.ResourceType.KE_CLUSTER, query, ())
         return [ke_cluster.KeCluster.from_json(**row)
                 for row in rows]

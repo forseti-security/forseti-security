@@ -40,11 +40,11 @@ from google.cloud.security.common.data_access import errors as data_access_error
 from google.cloud.security.common.data_access import firewall_rule_dao
 from google.cloud.security.common.data_access import folder_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao
-from google.cloud.security.common.data_access import ke_dao
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import instance_group_dao
 from google.cloud.security.common.data_access import instance_group_manager_dao
 from google.cloud.security.common.data_access import instance_template_dao
+from google.cloud.security.common.data_access import ke_dao
 from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import service_account_dao
