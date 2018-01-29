@@ -4,7 +4,7 @@ order: 101
 ---
 # {{ page.title }}
 
-This document describes how to get started with Forseti Scanner. Forseti
+This page describes how to get started with Forseti Scanner. Forseti
 Scanner uses a JSON or YAML rules definition file to audit your Google Cloud
 Platform (GCP) resources, such as organizations or projects. After running the
 audit, Forseti Scanner outputs rule violations to Cloud SQL and optionally
