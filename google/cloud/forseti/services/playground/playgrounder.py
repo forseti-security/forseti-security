@@ -76,8 +76,7 @@ class Playgrounder(object):
                 session,
                 member_name,
                 parent_name,
-                only_delete_relationship,
-                denorm=True)
+                only_delete_relationship)
 
     def delete_role(self, model_name, role_name):
         """Deletes role from the model."""

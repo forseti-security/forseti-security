@@ -143,10 +143,6 @@ message ExplainDeniedRequest {
 message DenormalizeRequest {
 }
 
-message DenormalizeReply {
-  repeated AuthorizationTuple authorizations = 1;
-}
-
 message AuthorizationTuple {
   string member = 1;
   string resource = 2;
