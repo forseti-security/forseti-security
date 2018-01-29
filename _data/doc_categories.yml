@@ -1,10 +1,12 @@
 # The order of the categories in this file (first-to-last) determines their
 # order in the UI (left-to-right)
-- title: Overview
-  href: docs/
-- title: Quickstarts
-  href: docs/quickstarts/
-- title: Howtos
-  href: docs/howto/
-- title: Guides
-  href: docs/guides/
+- title: Concepts
+  href: docs/concepts/
+- title: Setup
+  href: docs/setup/
+- title: Configure
+  href: docs/configure/
+- title: Develop
+  href: docs/develop/
+- title: FAQ
+  href: docs/faq/

@@ -51,17 +51,25 @@ defaults:
       category: Overview
       layout: docs
   - scope:
-      path: _docs/howto
+      path: _docs/concepts
     values:
-      category: Howtos
+      category: Concepts
   - scope:
-      path: _docs/quickstarts
+      path: _docs/setup
     values:
-      category: Quickstarts
+      category: Setup
   - scope:
-      path: _docs/guides
+      path: _docs/configure
     values:
-      category: Guides
+      category: Configure
+  - scope:
+      path: _docs/develop
+    values:
+      category: Develop
+  - scope:
+      path: _docs/faq
+    values:
+      category: FAQ
 # The order of faq categories is defined in _data/faq_categories.yml
   - scope:
       path: _faq/general

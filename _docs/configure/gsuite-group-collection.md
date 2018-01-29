@@ -17,7 +17,7 @@ service account just for this functionality. Read more about
 
 **Note:** If you used the setup wizard to setup Forseti, it already creates a G Suite 
 service account. You can go directly to the 
-[next section]({% link _docs/howto/configure/gsuite-group-collection.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
+[next section]({% link _docs/configure/gsuite-group-collection.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
 
 1. Go to
    [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
@@ -32,12 +32,12 @@ service account. You can go directly to the
       details to the consent screen later, edit your
       [OAuth consent screen](https://console.developers.google.com/apis/credentials/consent) settings.
             
-      ![create service account window with product name field highlighted](/images/docs/howto/create-service-account.png)
+      ![create service account window with product name field highlighted](/images/docs/configuration/create-service-account.png)
         
 1. To create and download a JSON key for the service account:
 
    * Click **More** on the service account row, then click **Create key**.
-      ![more menu with create key highlighted](/images/docs/howto/create-key.png)
+      ![more menu with create key highlighted](/images/docs/configuration/create-key.png)
    *  On the **Create private key** dialog that appears, select **JSON**, then click **Create**.
    *  In the **Save File** window that appears, save the file to a local directory.
 
@@ -46,7 +46,7 @@ service account. You can go directly to the
 1. On the **Client ID for Service account client** panel that appears, copy the **Client ID**
    value, which will be a large number.
     
-   ![service account panel with client ID highlighted](/images/docs/howto/client-id.png)
+   ![service account panel with client ID highlighted](/images/docs/configuration/client-id.png)
         
 ### Enable the service account in your G Suite admin control panel.
 You must have the **super admin** role in admin.google.com to complete these steps:
@@ -59,7 +59,7 @@ You must have the **super admin** role in admin.google.com to complete these ste
     https://www.googleapis.com/auth/admin.directory.group.readonly
     ```
 1. Click **Authorize**.
-   ![manage api client access in Google Admin Security settings](/images/docs/howto/admin-security.png)
+   ![manage api client access in Google Admin Security settings](/images/docs/configuration/admin-security.png)
 
 ## Configuring Forseti to enable G Suite Google Groups collection
 
@@ -76,13 +76,13 @@ in your `forseti_conf.yaml`.
 
 If you are running Forseti on GCP and made any changes to the above values, 
 you will need to copy the conf file to the GCS bucket. See 
-["Move Configuration to GCS"]({% link _docs/howto/deploy/gcp-deployment.md %}#move-configuration-to-gcs) 
+["Move Configuration to GCS"]({% link _docs/setup/gcp-deployment.md %}#move-configuration-to-gcs) 
 for details on how to do this.
 
 ## Deploying to GCP with G Suite Google Groups collection
 
 If you
-[created a deployment]({% link _docs/quickstarts/forseti-security/index.md %})
+[created a deployment]({% link _docs/setup/gcp-deployment.md %})
 on GCP, run the following command to copy your G Suite key to your Forseti instance:
 
   ```

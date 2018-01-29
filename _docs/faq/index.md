@@ -1,5 +1,8 @@
 ---
-title: Frequently Asked Questions 
+title: FAQ
+hide:
+  left_sidebar: true
+  right_sidebar: true
 ---
 # {{ page.title }}
 

@@ -1,5 +1,5 @@
 ---
-title: Overview 
+title: Docs 
 order: 1
 hide: 
   left_sidebar: true
@@ -9,15 +9,20 @@ hide:
 
 Learn the core concepts and get an overview of each Forseti Security module.
 
-**[Quickstarts]({% link _docs/quickstarts/index.md %})**
+**[Setup]({% link _docs/setup/index.md %})**
+
+Setup and install Forseti.
+
+**[Configure]({% link _docs/configure/index.md %})**
 
 Get started with Forseti Security and modules in a few minutes.
 
-**[Howtos]({% link _docs/howto/index.md %})**
+**[Develop]({% link _docs/develop/index.md %})**
 
 Perform specific tasks like changing a deployment or setting up email
 notifications.
 
-**[Guides]({% link _docs/guides/index.md %})**
+**[FAQ]({% link _docs/faq/index.md %})**
 
-Learn about important tasks like contributing code to Forseti.
+Get answers to common questions.
+

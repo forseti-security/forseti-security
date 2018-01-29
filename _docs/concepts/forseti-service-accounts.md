@@ -34,7 +34,7 @@ privilege separation because the service account key must be local to
 `forseti_inventory`. By using a separate service account, the key scope is
 limited to G Suite Groups if the machine is compromised.
 
-If you [enable]({% link _docs/howto/configure/gsuite-group-collection.md %})
+If you [enable]({% link _docs/configure/gsuite-group-collection.md %})
 G Suite Group inventory and create a service account, a good name
 for the service account would be `forseti-security-gsuite-groups`.
 
