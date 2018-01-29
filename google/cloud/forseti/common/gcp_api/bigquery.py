@@ -139,11 +139,15 @@ class BigQueryClient(object):
         try:
             results = self.repository.projects.list(
                 fields='nextPageToken,projects/id')
-            flattened = api_helpers.flatten_list_results(results, 'projects')
+            flattened_results = api_helpers\
+                .flatten_list_results(results, 'projects')
+            LOGGER.debug("Request and page through bigquery "
+                         "projectids, flattened_results = %s",
+                         flattened_results)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('bigquery', e)
 
-        project_ids = [result.get('id') for result in flattened
+        project_ids = [result.get('id') for result in flattened_results
                        if 'id' in result]
         return project_ids
 
@@ -163,7 +167,12 @@ class BigQueryClient(object):
         try:
             results = self.repository.datasets.list(
                 resource=project_id, all=True)
-            return api_helpers.flatten_list_results(results, 'datasets')
+            flattened_results = api_helpers\
+                .flatten_list_results(results, 'datasets')
+            LOGGER.debug("Getting bigquery datasets for a given project,"
+                         " project_id = %s, flattened_results = %s",
+                         project_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -185,6 +194,10 @@ class BigQueryClient(object):
             results = self.repository.datasets.get(resource=project_id,
                                                    target=dataset_id,
                                                    fields='access')
-            return results.get('access', [])
+            access = results.get('access', [])
+            LOGGER.debug("Geting the access portion of the dataset "
+                         "resource object, project_id = %s, dataset_id = %s,"
+                         " results = %s", project_id, dataset_id, access)
+            return access
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)

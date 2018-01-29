@@ -14,9 +14,15 @@
 
 """API errors."""
 
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
+
 
 class Error(Exception):
     """Base Error class."""
+    def __init__(self, message):
+        LOGGER.error(message)
 
 
 class ApiExecutionError(Error):

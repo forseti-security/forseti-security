@@ -643,8 +643,13 @@ class ComputeClient(object):
         """
         paged_results = self.repository.backend_services.aggregated_list(
             project_id)
-        return _flatten_aggregated_list_results(project_id, paged_results,
-                                                'backendServices')
+        flattened_results = _flatten_aggregated_list_results(project_id,
+                                                             paged_results,
+                                                             'backendServices')
+        LOGGER.debug("Getting the backend services of a project, "
+                     "project_id = %s, flattened_results = %s",
+                     project_id, flattened_results)
+        return flattened_results
 
     def get_disks(self, project_id, zone=None):
         """Return the list of all disks in the project.
@@ -666,6 +671,9 @@ class ComputeClient(object):
             results = _flatten_aggregated_list_results(project_id,
                                                        paged_results,
                                                        'disks')
+        LOGGER.debug("Getting the list of all disks in the project,"
+                     " project_id = %s, zone = %s, results = %s",
+                     project_id, zone, results)
         return results
 
     def get_firewall_rules(self, project_id):
@@ -678,7 +686,13 @@ class ComputeClient(object):
             list: A list of firewall rules for this project id.
         """
         paged_results = self.repository.firewalls.list(project_id)
-        return _flatten_list_results(project_id, paged_results, 'items')
+        flattened_results = _flatten_list_results(project_id,
+                                                  paged_results,
+                                                  'items')
+        LOGGER.debug("Getting the firewall rules of a given project, "
+                     "project_id = %s, flattened_results = %s",
+                     project_id, flattened_results)
+        return flattened_results
 
     def get_forwarding_rules(self, project_id, region=None):
         """Get the forwarding rules for a project.

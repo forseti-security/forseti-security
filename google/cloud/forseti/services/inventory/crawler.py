@@ -25,6 +25,9 @@ from Queue import Empty, Queue
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class CrawlerConfig(crawler.CrawlerConfig):
