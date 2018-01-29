@@ -196,9 +196,8 @@ class ExplainerTest(ForsetiTestCase):
         def test(client):
             """Test implementation with API client."""
             get_iam_policy_reply = client.explain.get_iam_policy('project/project2')
-            self.assertEqual(get_iam_policy_reply.resource, 'project/project2')
             bindings_reply = {binding.role: set(binding.members)
-                              for binding in get_iam_policy_reply.policy.bindings}
+                              for binding in get_iam_policy_reply.bindings}
             self.assertEqual(bindings_reply,
                              {'role/a': set(['group/b'])})
         self.setup.run(test)
@@ -698,20 +697,25 @@ class PlaygroundTest(ForsetiTestCase):
         def test(client):
             """Test implementation with API client."""
             get_iam_policy_reply = client.explain.get_iam_policy('project/project2')
-            self.assertEqual(get_iam_policy_reply.resource, 'project/project2')
             bindings_reply = {binding.role: set(binding.members)
-                              for binding in get_iam_policy_reply.policy.bindings}
+                              for binding in get_iam_policy_reply.bindings}
             self.assertEqual(bindings_reply,
                              {'role/a': set(['group/b'])})
             new_policy = {
-                'bindings': {
-                    'role/d': ['group/c']},
-                'etag': get_iam_policy_reply.policy.etag}
+                'bindings': [
+                    {
+                        'role':'role/d',
+                        'members': [
+                            'group/c'
+                        ]
+                    }
+                ],
+                'etag': get_iam_policy_reply.etag,
+                }
             client.playground.set_iam_policy('project/project2',new_policy)
             get_iam_policy_reply = client.explain.get_iam_policy('project/project2')
-            self.assertEqual(get_iam_policy_reply.resource, 'project/project2')
             bindings_reply = {binding.role: set(binding.members)
-                              for binding in get_iam_policy_reply.policy.bindings}
+                              for binding in get_iam_policy_reply.bindings}
             self.assertEqual(bindings_reply,
                              {'role/d': set(['group/c'])})
             response = client.explain.query_access_by_resources(

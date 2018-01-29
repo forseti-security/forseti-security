@@ -1006,14 +1006,14 @@ def define_model(model_name, dbengine, model_seed):
             """Deletes a role by name."""
             LOGGER.info("Deleting an existing role, role_name = %s,"
                         " session = %s", role_name, session)
-            bindings_tbd = [binding for binding in
-                            session.query(Binding)
-                            .filter(Binding.role_name == role_name)
-                            .all()]
+            bindings_to_be_delete = [binding for binding in
+                                     session.query(Binding)
+                                     .filter(Binding.role_name == role_name)
+                                     .all()]
             session.delete(session.query(Role)
                            .filter(Role.name == role_name)
                            .first())
-            for binding in bindings_tbd:
+            for binding in bindings_to_be_delete:
                 session.delete(binding)
             session.commit()
 
@@ -1052,9 +1052,9 @@ def define_model(model_name, dbengine, model_seed):
                          group_members.c.group_name == parent_type_name))
                 session.execute(group_members_delete)
             else:
-                member_tbd = session.query(Member).filter(
+                member_to_be_deleted = session.query(Member).filter(
                     Member.name == member_type_name).first()
-                session.delete(member_tbd)
+                session.delete(member_to_be_deleted)
                 session.commit()
             if denorm or member_type_name.startswith('group'):
                 cls.denorm_group_in_group(session)

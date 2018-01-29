@@ -249,7 +249,7 @@ class ExplainClient(ForsetiClient):
         return self.stub.GetIamPolicy(
             explain_pb2.GetIamPolicyRequest(
                 resource=full_resource_name),
-            metadata=self.metadata())
+            metadata=self.metadata()).policy
 
     @require_model
     def check_iam_policy(self, full_resource_name, permission_name,
@@ -438,11 +438,11 @@ class PlaygroundClient(ForsetiClient):
     def set_iam_policy(self, full_resource_name, policy):
         """Set the IAM policy on the resource."""
 
-        bindingspb = [
-            playground_pb2.Binding(
-                role=role,
-                members=members) for role,
-            members in policy['bindings'].iteritems()]
+        bindingspb = []
+        for binding in policy['bindings']:
+            bindingspb.append(playground_pb2.Binding(
+                role=binding['role'],
+                members=binding['members']))
         policypb = playground_pb2.Policy(
             bindings=bindingspb, etag=policy['etag'])
         return self.stub.SetIamPolicy(
