@@ -14,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals,too-many-lines
+# pylint: disable=too-many-locals
 
 from argparse import ArgumentParser
 import json
@@ -57,46 +57,6 @@ def define_playground_parser(parent):
         'role',
         help='Role name to delete')
 
-    list_roles_parser = action_subparser.add_parser(
-        'list_roles',
-        help='List roles by prefix')
-    list_roles_parser.add_argument(
-        '--prefix',
-        default='',
-        help='Role prefix to filter for')
-
-    add_resource_parser = action_subparser.add_parser(
-        'define_resource',
-        help='Defines a new resource')
-    add_resource_parser.add_argument(
-        'resource_type_name',
-        help='Resource type/name to define')
-    add_resource_parser.add_argument(
-        'parent_type_name',
-        default=None,
-        nargs='?',
-        help='Parent type/name')
-    add_resource_parser.add_argument(
-        '--no-parent',
-        default=False,
-        type=bool,
-        help='Set this flag if the resource is a root')
-
-    delete_resource_parser = action_subparser.add_parser(
-        'delete_resource',
-        help='Delete a resource')
-    delete_resource_parser.add_argument(
-        'resource_type_name',
-        help='Resource type/name to delete')
-
-    list_resource_parser = action_subparser.add_parser(
-        'list_resources',
-        help='List resources by prefix')
-    list_resource_parser.add_argument(
-        '--prefix',
-        default='',
-        help='Resource prefix to filter for')
-
     add_member_parser = action_subparser.add_parser(
         'define_member',
         help='Defines a new member')
@@ -113,34 +73,17 @@ def define_playground_parser(parent):
         'delete_member',
         help='Delete a member or relationship')
     delete_member_parser.add_argument(
-        'parent',
+        'member',
+        help='member to be deleted')
+    delete_member_parser.add_argument(
+        '--parent',
+        default='',
         help='Parent type/name in case of deleting a relationship')
     delete_member_parser.add_argument(
         '--delete_relation_only',
         type=bool,
         default=False,
         help='Delete only the relationship, not the member itself')
-
-    list_members_parser = action_subparser.add_parser(
-        'list_members',
-        help='List members by prefix')
-    list_members_parser.add_argument(
-        '--prefix',
-        default='',
-        help='Member prefix to filter for')
-
-    check_policy = action_subparser.add_parser(
-        'check_policy',
-        help='Check if a member has access to a resource')
-    check_policy.add_argument(
-        'resource',
-        help='Resource to check on')
-    check_policy.add_argument(
-        'permission',
-        help='Permissions to check on')
-    check_policy.add_argument(
-        'member',
-        help='Member to check access for')
 
     set_policy = action_subparser.add_parser(
         'set_policy',
@@ -151,13 +94,6 @@ def define_playground_parser(parent):
     set_policy.add_argument(
         'policy',
         help='Policy in json format')
-
-    get_policy = action_subparser.add_parser(
-        'get_policy',
-        help='Get a resource\'s direct policy')
-    get_policy.add_argument(
-        'resource',
-        help='Resource to get policy for')
 
 
 def define_inventory_parser(parent):
@@ -365,6 +301,64 @@ def define_explainer_parser(parent):
         'denormalize',
         help='Denormalize a model')
 
+    list_resource_parser = action_subparser.add_parser(
+        'list_resources',
+        help='List resources by prefix')
+    list_resource_parser.add_argument(
+        '--prefix',
+        default='',
+        help='Resource prefix to filter for')
+
+    list_members_parser = action_subparser.add_parser(
+        'list_members',
+        help='List members by prefix')
+    list_members_parser.add_argument(
+        '--prefix',
+        default='',
+        help='Member prefix to filter for')
+
+    list_roles_parser = action_subparser.add_parser(
+        'list_roles',
+        help='List roles by prefix')
+    list_roles_parser.add_argument(
+        '--prefix',
+        default='',
+        help='Role prefix to filter for')
+
+    perms_by_roles_parser = action_subparser.add_parser(
+        'list_permissions',
+        help='List permissions by role(s)')
+    perms_by_roles_parser.add_argument(
+        '--roles',
+        nargs='*',
+        default=[],
+        help='Role names')
+    perms_by_roles_parser.add_argument(
+        '--role_prefixes',
+        nargs='*',
+        default=[],
+        help='Role prefixes')
+
+    get_policy = action_subparser.add_parser(
+        'get_policy',
+        help='Get a resource\'s direct policy')
+    get_policy.add_argument(
+        'resource',
+        help='Resource to get policy for')
+
+    check_policy = action_subparser.add_parser(
+        'check_policy',
+        help='Check if a member has access to a resource')
+    check_policy.add_argument(
+        'resource',
+        help='Resource to check on')
+    check_policy.add_argument(
+        'permission',
+        help='Permissions to check on')
+    check_policy.add_argument(
+        'member',
+        help='Member to check access for')
+
     explain_granted_parser = action_subparser.add_parser(
         'why_granted',
         help='Explain why a role or permission is'
@@ -405,20 +399,6 @@ def define_explainer_parser(parent):
         nargs='*',
         default=[],
         help='Query for permissions')
-
-    perms_by_roles_parser = action_subparser.add_parser(
-        'list_permissions',
-        help='List permissions by role(s)')
-    perms_by_roles_parser.add_argument(
-        '--roles',
-        nargs='*',
-        default=[],
-        help='Role names')
-    perms_by_roles_parser.add_argument(
-        '--role_prefixes',
-        nargs='*',
-        default=[],
-        help='Role prefixes')
 
     query_access_by_member = action_subparser.add_parser(
         'access_by_member',
@@ -780,6 +760,39 @@ def run_explainer(client, config, output, _):
         for access in client.denormalize():
             output.write(access)
 
+    def do_list_resources():
+        """List resources by prefix"""
+        result = client.list_resources(config.prefix)
+        output.write(result)
+
+    def do_list_members():
+        """List resources by prefix"""
+        result = client.list_members(config.prefix)
+        output.write(result)
+
+    def do_list_roles():
+        """List roles by prefix"""
+        result = client.list_roles(config.prefix)
+        output.write(result)
+
+    def do_list_permissions():
+        """List permissions by roles or role prefixes."""
+        result = client.query_permissions_by_roles(config.roles,
+                                                   config.role_prefixes)
+        output.write(result)
+
+    def do_get_policy():
+        """Get access"""
+        result = client.get_iam_policy(config.resource)
+        output.write(result)
+
+    def do_check_policy():
+        """Check access"""
+        result = client.check_iam_policy(config.resource,
+                                         config.permission,
+                                         config.member)
+        output.write(result)
+
     def do_why_granted():
         """Explain why a permission or role is granted."""
         result = client.explain_granted(config.member,
@@ -794,12 +807,6 @@ def run_explainer(client, config, output, _):
                                        config.resources,
                                        config.roles,
                                        config.permissions)
-        output.write(result)
-
-    def do_list_permissions():
-        """List permissions by roles or role prefixes."""
-        result = client.query_permissions_by_roles(config.roles,
-                                                   config.role_prefixes)
         output.write(result)
 
     def do_query_access_by_member():
@@ -828,6 +835,11 @@ def run_explainer(client, config, output, _):
 
     actions = {
         'denormalize': do_denormalize,
+        'list_resources': do_list_resources,
+        'list_members': do_list_members,
+        'list_roles': do_list_roles,
+        'get_policy': do_get_policy,
+        'check_policy': do_check_policy,
         'why_granted': do_why_granted,
         'why_denied': do_why_not_granted,
         'list_permissions': do_list_permissions,
@@ -860,28 +872,6 @@ def run_playground(client, config, output, _):
         result = client.del_role(config.role)
         output.write(result)
 
-    def do_list_roles():
-        """List roles by prefix"""
-        result = client.list_roles(config.prefix)
-        output.write(result)
-
-    def do_define_resource():
-        """Define a new resource"""
-        result = client.add_resource(config.resource_type_name,
-                                     config.parent_type_name,
-                                     config.no_parent)
-        output.write(result)
-
-    def do_delete_resource():
-        """Delete a resource"""
-        result = client.del_resource(config.resource_type_name)
-        output.write(result)
-
-    def do_list_resources():
-        """List resources by prefix"""
-        result = client.list_resources(config.prefix)
-        output.write(result)
-
     def do_define_member():
         """Define a new member"""
         result = client.add_member(config.member,
@@ -895,23 +885,6 @@ def run_playground(client, config, output, _):
                                    config.delete_relation_only)
         output.write(result)
 
-    def do_list_members():
-        """List resources by prefix"""
-        result = client.list_members(config.prefix)
-        output.write(result)
-
-    def do_check_policy():
-        """Check access"""
-        result = client.check_iam_policy(config.resource,
-                                         config.permission,
-                                         config.member)
-        output.write(result)
-
-    def do_get_policy():
-        """Get access"""
-        result = client.get_iam_policy(config.resource)
-        output.write(result)
-
     def do_set_policy():
         """Set access"""
         result = client.set_iam_policy(config.resource,
@@ -921,15 +894,8 @@ def run_playground(client, config, output, _):
     actions = {
         'define_role': do_define_role,
         'delete_role': do_delete_role,
-        'list_roles': do_list_roles,
-        'define_resource': do_define_resource,
-        'delete_resource': do_delete_resource,
-        'list_resources': do_list_resources,
         'define_member': do_define_member,
         'delete_member': do_delete_member,
-        'list_members': do_list_members,
-        'check_policy': do_check_policy,
-        'get_policy': do_get_policy,
         'set_policy': do_set_policy}
 
     actions[config.action]()
