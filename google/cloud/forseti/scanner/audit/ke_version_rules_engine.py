@@ -18,8 +18,6 @@ import operator as op
 import threading
 from pkg_resources import parse_version
 
-from google.cloud.forseti.common.data_access import org_resource_rel_dao
-from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
@@ -50,21 +48,18 @@ class KeVersionRulesEngine(bre.BaseRulesEngine):
         self._lock = threading.Lock()
 
     def build_rule_book(self, global_configs=None):
-        """Build CloudSQLRuleBook from the rules definition file.
+        """Build KeVersionRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
         """
         with self._lock:
             self.rule_book = KeVersionRuleBook(
-                global_configs,
-                self._load_rule_definitions(),
-                self.snapshot_timestamp)
+                self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster,
-                               force_rebuild=False):
-        """Determine whether CloudSQL acls violates rules.
+    def find_policy_violations(self, ke_cluster, force_rebuild=False):
+        """Determine whether Kubernetes Engine cluster version violates rules.
 
         Args:
             ke_cluster (KeCluster): A KE Cluster object to check.
@@ -82,13 +77,11 @@ class KeVersionRulesEngine(bre.BaseRulesEngine):
 class KeVersionRuleBook(bre.BaseRuleBook):
     """The RuleBook for KE Version rules."""
 
-    def __init__(self, global_configs, rule_defs=None, snapshot_timestamp=None):
+    def __init__(self, rule_defs=None):
         """Initialization.
 
         Args:
-            global_configs (dict): Global configurations.
             rule_defs (list): KE Version rule definition dicts
-            snapshot_timestamp (int): Snapshot timestamp.
         """
         super(KeVersionRuleBook, self).__init__()
         self._lock = threading.Lock()
@@ -98,11 +91,6 @@ class KeVersionRuleBook(bre.BaseRuleBook):
         else:
             self.rule_defs = rule_defs
             self.add_rules(rule_defs)
-
-        self.snapshot_timestamp = snapshot_timestamp
-        self.org_res_rel_dao = org_resource_rel_dao.OrgResourceRelDao(
-            global_configs)
-        self.project_dao = project_dao.ProjectDao(global_configs)
 
     def add_rules(self, rule_defs):
         """Add rules to the rule book.
@@ -191,14 +179,9 @@ class KeVersionRuleBook(bre.BaseRuleBook):
         """
         LOGGER.debug('Looking for KE violations: %r', ke_cluster)
         violations = []
-        resource_ancestors = []
+        resource_ancestors = resource_util.get_ancestors_from_full_name(
+            ke_cluster.resource_full_name)
 
-        project = self.project_dao.get_project(ke_cluster.project_id,
-                                               self.snapshot_timestamp)
-        resource_ancestors.append(project)
-        resource_ancestors.extend(
-            self.org_res_rel_dao.find_ancestors(
-                project, self.snapshot_timestamp))
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
         checked_wildcards = set()

@@ -14,7 +14,7 @@
 
 """Scanner for the KE version rules engine."""
 
-from google.cloud.forseti.common.data_access import ke_dao
+from google.cloud.forseti.common.gcp_type.ke_cluster import KeCluster
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.scanner.audit import ke_version_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -25,21 +25,26 @@ LOGGER = log_util.get_logger(__name__)
 class KeVersionScanner(base_scanner.BaseScanner):
     """Check if the version of running KE clusters and nodes are allowed."""
 
-    def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
-                 rules):
+    def __init__(self, global_configs, scanner_configs, service_config,
+                 model_name, snapshot_timestamp, rules):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
+            service_config (ServiceConfig): Forseti 2.0 service configs
+            model_name (str): name of the data model
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(KeVersionScanner, self).__init__(
             global_configs,
             scanner_configs,
+            service_config,
+            model_name,
             snapshot_timestamp,
             rules)
+
         self.rules_engine = ke_version_rules_engine.KeVersionRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
@@ -105,9 +110,22 @@ class KeVersionScanner(base_scanner.BaseScanner):
         Returns:
             list: KE Cluster data.
         """
-        ke_clusters = (ke_dao
-                       .KeDao(self.global_configs)
-                       .get_clusters(self.snapshot_timestamp))
+        model_manager = self.service_config.model_manager
+        scoped_session, data_access = model_manager.get(self.model_name)
+        with scoped_session as session:
+            ke_clusters = []
+            for ke_cluster in data_access.scanner_iter(
+                    session, 'kubernetes_cluster'):
+                service_config = list(data_access.scanner_iter(
+                    session, 'container_service_config',
+                    parent_type_name=ke_cluster.type_name))[0]
+
+                project_id = ke_cluster.parent.name
+                ke_clusters.append(
+                    KeCluster.from_json(project_id,
+                                        service_config.data,
+                                        ke_cluster.data,
+                                        ke_cluster.parent.full_name))
 
         return ke_clusters
 

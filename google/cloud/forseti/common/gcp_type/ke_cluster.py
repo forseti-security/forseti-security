@@ -36,7 +36,8 @@ class KeCluster(object):
                  endpoint, initial_cluster_version, current_master_version,
                  current_node_version, create_time, status, status_message,
                  node_ipv4_cidr_size, instance_group_urls, current_node_count,
-                 expire_time, server_config=None, raw_json=None):
+                 expire_time, server_config=None, resource_full_name=None,
+                 raw_json=None):
         """Initialize."""
 
         self.project_id = project_id
@@ -74,16 +75,19 @@ class KeCluster(object):
         self.current_node_count = current_node_count
         self.expire_time = expire_time
         self.server_config = server_config
+        self.resource_full_name = resource_full_name
         self._json = raw_json
 
     @classmethod
-    def from_dict(cls, project_id, server_config, cluster):
+    def from_dict(cls, project_id, server_config, cluster,
+                  resource_full_name=None):
         """Returns a new ForwardingRule object from dict.
 
         Args:
             project_id (str): The project id.
             server_config (dict): The ServerConfig for the cluster's zone.
             cluster (dict): The KE Cluster resource.
+            resource_full_name (str): The full resource name and ancestory.
         Returns:
             KeCluster: A new KeCluster object.
         """
@@ -123,11 +127,12 @@ class KeCluster(object):
             current_node_count=cluster.get('currentNodeCount'),
             expire_time=cluster.get('expireTime'),
             server_config=server_config,
+            resource_full_name=resource_full_name,
             raw_json=json.dumps(cluster)
         )
 
     @staticmethod
-    def from_json(project_id, server_config, cluster):
+    def from_json(project_id, server_config, cluster, resource_full_name=None):
         """Returns a new ForwardingRule object from json data.
 
         Args:
@@ -136,6 +141,7 @@ class KeCluster(object):
                 ServerConfig for the cluster's zone.
             cluster (str): The json string representation of the KE Cluster
                 resource.
+            resource_full_name (str): The full resource name and ancestory.
         Returns:
            KeCluster: A new KeCluster object.
         """
@@ -143,7 +149,8 @@ class KeCluster(object):
         if server_config:
             server_config = json.loads(server_config)
 
-        return KeCluster.from_dict(project_id, server_config, cluster)
+        return KeCluster.from_dict(project_id, server_config, cluster,
+                                   resource_full_name)
 
     def __repr__(self):
         """String representation.
