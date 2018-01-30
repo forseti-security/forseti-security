@@ -19,26 +19,83 @@ package explain;
 service Explain {
   rpc Ping(PingRequest) returns (PingReply) {}
 
+  rpc ListResources (ListResourcesRequest) returns (ListResourcesReply) {}
+  rpc ListGroupMembers (ListGroupMembersRequest) returns (ListGroupMembersReply) {}
+  rpc ListRoles (ListRolesRequest) returns (ListRolesReply) {}
+  rpc GetIamPolicy (GetIamPolicyRequest) returns (GetIamPolicyReply) {}
+  rpc CheckIamPolicy (CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
+
   rpc GetAccessByPermissions(GetAccessByPermissionsRequest) returns (stream Access) {}
-
   rpc GetAccessByResources(GetAccessByResourcesRequest) returns (GetAccessByResourcesReply) {}
-
   rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
-
   rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
-
-  rpc CreateModel(CreateModelRequest) returns (CreateModelReply) {}
-
-  rpc DeleteModel(DeleteModelRequest) returns (DeleteModelReply) {}
-
-  rpc ListModel(ListModelRequest) returns (ListModelReply) {}
 
   rpc Denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
 
   rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
-
   rpc ExplainDenied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
 
+
+}
+message PingRequest {
+  string data = 1;
+}
+
+message PingReply {
+  string data = 1;
+}
+
+message ListResourcesRequest {
+  string prefix = 1;
+}
+
+message ListResourcesReply {
+  repeated string full_resource_names = 1;
+}
+
+message ListGroupMembersRequest {
+  string prefix = 1;
+}
+
+message ListGroupMembersReply {
+  repeated string member_names = 1;
+}
+
+message ListRolesRequest {
+  string prefix = 1;
+}
+
+message ListRolesReply {
+  repeated string role_names = 1;
+}
+
+message GetIamPolicyRequest {
+  string resource = 1;
+}
+
+message GetIamPolicyReply {
+  string resource = 1;
+  Policy policy = 2;
+}
+
+message Policy {
+  repeated BindingOnResource bindings = 1;
+  string etag = 2;
+}
+
+message BindingOnResource {
+  string role = 1;
+  repeated string members = 2;
+}
+
+message CheckIamPolicyRequest {
+  string resource = 1;
+  string permission = 2;
+  string identity = 3;
+}
+
+message CheckIamPolicyReply {
+  bool result = 1;
 }
 
 message ExplainGrantedRequest {
@@ -86,51 +143,10 @@ message ExplainDeniedRequest {
 message DenormalizeRequest {
 }
 
-message DenormalizeReply {
-  repeated AuthorizationTuple authorizations = 1;
-}
-
 message AuthorizationTuple {
   string member = 1;
   string resource = 2;
   string permission = 3;
-}
-
-message CreateModelRequest {
-  string type = 1;
-  string name = 2;
-  int32 id = 3;
-  bool background = 4;
-}
-
-message CreateModelReply {
-  Model model = 1;
-}
-
-message DeleteModelRequest {
-  string handle = 1;
-}
-
-message DeleteModelReply {
-  enum Status {
-    SUCCESS = 0;
-  }
-  Status status = 1;
-}
-
-message ListModelRequest {
-}
-
-message ListModelReply {
-  repeated Model models = 1;
-}
-
-message Model {
-  string handle = 1;
-  string name = 2;
-  string status = 3;
-  string message = 4;
-  string warnings = 5;
 }
 
 message GetPermissionsByRolesRequest {
@@ -157,10 +173,6 @@ message Access {
   repeated string members = 1;
   string resource = 2;
   string role = 3;
-}
-
-message GetAccessByPermissionsReply {
-  repeated Access accesses = 1;
 }
 
 message GetAccessByResourcesRequest {
@@ -192,12 +204,3 @@ message GetAccessByMembersReply {
   }
   repeated Access accesses = 1;
 }
-
-message PingRequest {
-  string data = 1;
-}
-
-message PingReply {
-  string data = 1;
-}
-

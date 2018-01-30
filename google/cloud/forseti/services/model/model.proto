@@ -32,7 +32,7 @@ service Modeller {
 message CreateModelRequest {
   string type = 1;
   string name = 2;
-  int32 id = 3;
+  string id = 3;
   bool background = 4;
 }
 
