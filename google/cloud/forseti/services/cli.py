@@ -127,7 +127,6 @@ def define_inventory_parser(parent):
         help='Delete an inventory')
     delete_inventory_parser.add_argument(
         'id',
-        type=int,
         help='Inventory id to delete')
 
     _ = action_subparser.add_parser(
@@ -139,7 +138,6 @@ def define_inventory_parser(parent):
         help='Get a particular inventory')
     get_inventory_parser.add_argument(
         'id',
-        type=int,
         help='Inventory id to get')
 
 
@@ -250,8 +248,7 @@ def define_model_parser(parent):
         help='Human readable name for this model')
     create_model_parser.add_argument(
         '--id',
-        type=int,
-        default=-1,
+        default='',
         help='Inventory id to import from, if "inventory" source'
         )
     create_model_parser.add_argument(

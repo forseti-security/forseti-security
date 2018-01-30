@@ -19,6 +19,7 @@ import json
 
 from sqlalchemy import Column
 from sqlalchemy import Text
+from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
@@ -68,7 +69,7 @@ class InventoryIndex(BASE):
 
     __tablename__ = 'inventory_index'
 
-    id = Column(Integer(), primary_key=True, autoincrement=True)
+    id = Column(String(32), primary_key=True)
     start_time = Column(DateTime())
     complete_time = Column(DateTime())
     status = Column(Text())
@@ -110,8 +111,10 @@ class InventoryIndex(BASE):
             object: InventoryIndex row object.
         """
 
+        start_time=cls._utcnow()
         return InventoryIndex(
-            start_time=cls._utcnow(),
+            id=start_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-1],
+            start_time=start_time,
             complete_time=datetime.datetime.utcfromtimestamp(0),
             status=InventoryState.CREATED,
             schema_version=CURRENT_SCHEMA,
@@ -163,7 +166,7 @@ class Inventory(BASE):
 
     # Order is used to resemble the order of insert for a given inventory
     order = Column(Integer, primary_key=True, autoincrement=True)
-    index = Column(Integer)
+    index = Column(String(32))
     type_class = Column(Text)
     key = Column(Text)
     type = Column(Text)
