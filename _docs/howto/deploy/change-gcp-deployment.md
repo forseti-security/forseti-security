@@ -15,9 +15,6 @@ get the correct version of Forseti. The deployment template's startup
 script has release-specific code, so things will break if you use a startup script that 
 is out of sync with the deployed release.
 
-You need to be where you previously retrieved the code from GitHub
-and did your previous deployment (e.g. Cloud Shell).
-
 1. Sync master branch:
 
    ```bash
@@ -73,9 +70,10 @@ properties have changed.
    vpc-name: VPC_NAME
    subnetwork-name: SUBNETWORK_NAME
    ```
-So, you would have to copy these new properties over to your generated
-`deploy-forseti-<timestamp>.yaml` and update the placeholders to the actual 
-values that you will use, e.g. the project id of the project that Forseti is 
+
+To upgrade, copy these new properties to your generated 
+deploy-forseti-<timestamp>.yaml. Then, update the placeholders to the values 
+you want to use. For example, the project id of the project that Forseti is 
 running in, "default", "default".
 
 1. Inspect `deploy-forseti-<timestamp>.yaml` and verify if your ```branch-name``` 
