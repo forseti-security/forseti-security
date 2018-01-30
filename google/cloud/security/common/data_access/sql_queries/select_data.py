@@ -198,9 +198,9 @@ FORWARDING_RULES_BY_PROJECT_ID = """
     WHERE project_id = %s
 """
 
-GKE_CLUSTERS_JSON = """
+KE_CLUSTERS_JSON = """
     SELECT project_id, server_config, raw_cluster AS cluster
-    FROM gke_{0}
+    FROM ke_{0}
 """
 
 INSTANCES = """

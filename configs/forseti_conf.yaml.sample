@@ -71,7 +71,7 @@ inventory:
           enabled: true
         - resource: forwarding_rules
           enabled: true
-        - resource: gke
+        - resource: ke
           enabled: true
         - resource: group_members
           enabled: true
@@ -128,7 +128,7 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: true
-        - name: gke_version_scanner
+        - name: ke_version_scanner
           enabled: true
         - name: group
           enabled: true

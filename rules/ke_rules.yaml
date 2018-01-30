@@ -35,7 +35,7 @@
 #        major version.
 
 rules:
-# The default GKE rule alerts if any node pool is running a version of
+# The default KE rule alerts if any node pool is running a version of
 # kubernetes that is no longer supported
   - name: Unsupported node pool version
     resource:

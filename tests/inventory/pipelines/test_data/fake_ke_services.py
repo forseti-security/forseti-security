@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Fake GKE services data."""
+"""Fake KE services data."""
 
 
 FAKE_SERVER_CONFIG = {  
-       'validImageTypes':[  
+       'validImageTypes':[
           'UBUNTU',
           'COS'
        ],
@@ -49,7 +49,7 @@ FAKE_SERVER_CONFIG = {
 
 # This is different from the api test data in the the server_config is included
 # in the cluster data.
-FAKE_GKE_SERVICES_MAP = {
+FAKE_KE_SERVICES_MAP = {
     'project1': [{
     'addonsConfig':{  
        'networkPolicyConfig':{  
@@ -140,7 +140,7 @@ FAKE_GKE_SERVICES_MAP = {
 }
 
 
-EXPECTED_LOADABLE_GKE_SERVICES = [
+EXPECTED_LOADABLE_KE_SERVICES = [
     {'addons_config': '{"networkPolicyConfig": {"disabled": true}}',
      'cluster_ipv4_cidr': '10.60.0.0/14',
      'create_time': '2016-11-12T17:57:49+00:00',
