@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Provides the data access object (DAO) for GKE."""
+"""Provides the data access object (DAO) for KE."""
 
 from google.cloud.security.common.data_access import dao
 from google.cloud.security.common.data_access.sql_queries import select_data
-from google.cloud.security.common.gcp_type import gke_cluster
+from google.cloud.security.common.gcp_type import ke_cluster
 from google.cloud.security.common.gcp_type import resource
 from google.cloud.security.common.util import log_util
 
@@ -24,23 +24,23 @@ from google.cloud.security.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 
-class GkeDao(dao.Dao):
+class KeDao(dao.Dao):
     """"Data access object (DAO) for Kubernetes Engine."""
 
     def get_clusters(self, timestamp):
-        """Get GKE clusters from a particular snapshot.
+        """Get KE clusters from a particular snapshot.
 
         Args:
             timestamp (str): The snapshot timestamp.
 
         Returns:
-            list: A list of GkeCluster objects.
+            list: A list of KeCluster objects.
 
         Raises:
             MySQLError if a MySQL error occurs.
         """
-        query = select_data.GKE_CLUSTERS_JSON.format(timestamp)
+        query = select_data.KE_CLUSTERS_JSON.format(timestamp)
         rows = self.execute_sql_with_fetch(
-            resource.ResourceType.GKE, query, ())
-        return [gke_cluster.GkeCluster.from_json(**row)
+            resource.ResourceType.KE_CLUSTER, query, ())
+        return [ke_cluster.KeCluster.from_json(**row)
                 for row in rows]

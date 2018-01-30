@@ -23,8 +23,8 @@ import json
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 # pylint: disable=too-many-locals,missing-param-doc,missing-type-doc
 # pylint: disable=invalid-name
-class GkeCluster(object):
-    """Represents GKE Cluster resource."""
+class KeCluster(object):
+    """Represents KE Cluster resource."""
 
     def __init__(self, project_id, name, description, initial_node_count,
                  node_config, logging_service, monitoring_service,
@@ -83,9 +83,9 @@ class GkeCluster(object):
         Args:
             project_id (str): The project id.
             server_config (dict): The ServerConfig for the cluster's zone.
-            cluster (dict): The GKE Cluster resource.
+            cluster (dict): The KE Cluster resource.
         Returns:
-            GkeCluster: A new GkeCluster object.
+            KeCluster: A new KeCluster object.
         """
         return cls(
             project_id=project_id,
@@ -134,16 +134,16 @@ class GkeCluster(object):
             project_id (str): the project id.
             server_config (str): The json string representations of the
                 ServerConfig for the cluster's zone.
-            cluster (str): The json string representation of the GKE Cluster
+            cluster (str): The json string representation of the KE Cluster
                 resource.
         Returns:
-           GkeCluster: A new GkeCluster object.
+           KeCluster: A new KeCluster object.
         """
         cluster = json.loads(cluster)
         if server_config:
             server_config = json.loads(server_config)
 
-        return GkeCluster.from_dict(project_id, server_config, cluster)
+        return KeCluster.from_dict(project_id, server_config, cluster)
 
     def __repr__(self):
         """String representation.

@@ -57,7 +57,7 @@ API_MAP = {
             'class_name': 'StorageClient',
             'version': None
         },
-    'gke_api':
+    'ke_api':
         {
             'module_name': 'container',
             'class_name': 'ContainerClient',

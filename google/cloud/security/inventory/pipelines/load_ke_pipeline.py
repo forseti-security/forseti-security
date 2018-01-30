@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pipeline to load GKE services into Inventory."""
+"""Pipeline to load KE services into Inventory."""
 
 from google.cloud.security.common.data_access import project_dao as proj_dao
 from google.cloud.security.common.util import log_util
@@ -22,14 +22,14 @@ from google.cloud.security.inventory.pipelines import base_pipeline
 LOGGER = log_util.get_logger(__name__)
 
 
-class LoadGkePipeline(base_pipeline.BasePipeline):
-    """Load all GKE services for all projects."""
+class LoadKePipeline(base_pipeline.BasePipeline):
+    """Load all KE services for all projects."""
 
-    RESOURCE_NAME = 'gke'
+    RESOURCE_NAME = 'ke'
 
 
     def _retrieve(self):
-        """Retrieve GKE data from GCP.
+        """Retrieve KE data from GCP.
 
         Get all the projects in the current snapshot and retrieve the
         the clusters for each project.  For each distinct zone in cluster,
@@ -39,7 +39,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
         is a 1:1 relationship, which saves adding another table.
 
         Returns:
-            dict: Mapping projects with their GKE clusters:
+            dict: Mapping projects with their KE clusters:
                 {project1: [clusters],
                  project2: [clusters],
                  project3: [clusters]}
@@ -48,7 +48,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
             proj_dao
             .ProjectDao(self.global_configs)
             .get_projects(self.cycle_timestamp))
-        gke_services = {}
+        ke_services = {}
         for project in projects:
             clusters = self.safe_api_call('get_clusters', project.id)
 
@@ -65,17 +65,17 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
                         'get_serverconfig', project.id, zone)
                     cluster['serverConfig'] = server_config
 
-                gke_services[project.id] = clusters
+                ke_services[project.id] = clusters
 
 
-        return gke_services
+        return ke_services
     # pylint: enable=too-many-locals, too-many-nested-blocks
 
     def _transform(self, resource_from_api):
-        """Create an iterator of GKE services to load into database.
+        """Create an iterator of KE services to load into database.
 
         Args:
-            resource_from_api (dict): GKE services from GCP API, keyed by
+            resource_from_api (dict): KE services from GCP API, keyed by
                 project id, with list of clusters as values.
 
             {project1: [clusters],
@@ -85,7 +85,7 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
             Each cluster has additional server_config data included.
 
         Yields:
-            iterator: GKE service in a dict.
+            iterator: KE service in a dict.
         """
         for project_id, clusters in resource_from_api.iteritems():
             for cluster in clusters:
@@ -127,10 +127,10 @@ class LoadGkePipeline(base_pipeline.BasePipeline):
 
     def run(self):
         """Run the pipeline."""
-        gke_services = self._retrieve()
+        ke_services = self._retrieve()
 
-        if gke_services:
-            loadable_gke_services = self._transform(gke_services)
-            self._load(self.RESOURCE_NAME, loadable_gke_services)
+        if ke_services:
+            loadable_ke_services = self._transform(ke_services)
+            self._load(self.RESOURCE_NAME, loadable_ke_services)
 
         self._get_loaded_count()
