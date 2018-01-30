@@ -106,6 +106,39 @@ rules:
     how the current version compares with the allowed version. If a minor version is not included,
     the operator applies to major version. Otherwise it applies to minor versions within a single major version.
 
+# Upgrade notes
+To enable the KE inventory, add the following to the inventory section in your forseti_confi.yaml file.
+
+```
+inventory:
+    pipelines:
+        - resource: ke
+          enabled: true
+```
+
+To enable the KE scanner, add the followings to the scanner section in your forseti_conf.yaml file.
+
+```
+scanner:
+   scanners:
+        - name: ke_version_scanner
+          enabled: true
+```
+
+To enable the KE notifier or blacklist notifier, add the followings to the notifier section in your forseti_conf.yaml file.
+
+```
+    resources:
+        - resource: ke_version_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
+```
+
 ## Blacklist rules
 
 ```yaml
@@ -115,6 +148,30 @@ rules:
 ```
 - **blacklist**: The name of your blacklist
 - **url**: Url that contains a list of IPs to check against
+
+# Upgrade notes
+To enable the blacklist scanner, add the followings to the scanner section in your forseti_conf.yaml file.
+
+```
+scanner:
+   scanners:
+        - name: blacklist
+          enabled: true
+```
+
+To enable the blacklist notifier, add the followings to the notifier section in your forseti_conf.yaml file.
+
+```
+    resources:
+        - resource: blacklist_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
+```
 
 ## Google Groups rules
 

@@ -77,7 +77,7 @@ you want to use. For example, the project id of the project that Forseti is
 running in, "default", "default".
 
 1. Inspect `deploy-forseti-<timestamp>.yaml` and verify if your ```branch-name``` 
-   property is hardcoded to a specific version.  If so, update it to the latest 
+   property is hardcoded to a specific version. If so, update it to the latest 
    version.
    
 ### Run the Deployment Manager update
