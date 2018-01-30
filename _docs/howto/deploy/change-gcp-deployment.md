@@ -8,12 +8,14 @@ Note: If you used the Forseti setup wizard to deploy, your `deploy-forseti.yaml`
 will have a timestamp suffix, e.g. `deploy-forseti-20171001000000.yaml`.
 
 ### Get a particular deployment template version
-This step is **optional**.
 
 If you need to change the `release-version` for your Forseti deployment, you MUST 
 get the correct version of Forseti. The deployment template's startup 
 script has release-specific code, so things will break if you use a startup script that 
 is out of sync with the deployed release.
+
+You need to be where you previously retrieved the code from GitHub
+and did your previous deployment (e.g. Cloud Shell).
 
 1. Sync master branch:
 
@@ -50,26 +52,44 @@ is out of sync with the deployed release.
 
 ### Change deployment properties
 1. Check `deploy-forseti.yaml.sample` to see if there are any new properties 
-   that you need to copy over to your previous `deploy-forseti.yaml`. You can use
-   `git diff` to compare what changed. For example, to see the diff between the latest 
-   (HEAD) and one revision ago:
+   that you need to copy over to your previously generated 
+   `deploy-forseti-<timestamp>.yaml`. You can use `git diff` to compare what 
+   changed. For example, to see the diff between the latest (HEAD) and one revision ago:
 
    ```bash
-   $ git diff origin..HEAD~1 -- deploy-forseti.yaml.sample
+   $ git diff origin/master..HEAD~1 -- deploy-forseti.yaml.sample
    ```
 
-1. Edit `deploy-forseti.yaml` and update the values you want to change. If you 
-   previously deployed the `master` branch, you don't need to change it.
+1. Edit `deploy-forseti-<timestamp>.yaml` and update the values of the new properties.
+
+For example, from v1.1.7 to v1.1.10, the following Compute Engine instance 
+properties have changed.
+
+   ```yaml
+   region: $(ref.cloudsql-instance.region)
+
+   network-host-project-id: NETWORK_HOST_PROJECT_ID
+   vpc-name: VPC_NAME
+   subnetwork-name: SUBNETWORK_NAME
+   ```
+So, you would have to copy these new properties over to your generated
+`deploy-forseti-<timestamp>.yaml` and update the placeholders to the actual 
+values that you will use, e.g. the project id of the project that Forseti is 
+running in, "default", "default".
+
+1. Inspect `deploy-forseti-<timestamp>.yaml` and verify if your ```branch-name``` 
+   property is hardcoded to a specific version.  If so, update it to the latest 
+   version.
    
 ### Run the Deployment Manager update
 Run the following update command:
 
 ```bash
 $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
-  --config path/to/deploy-forseti.yaml
+  --config path/to/deploy-forseti-<timestamp>.yaml
 ```
 
-If you changed the properties in the `deploy-forseti.yaml` "Compute Engine" 
+If you changed the properties in the `deploy-forseti-<timestamp>.yaml` "Compute Engine" 
 section or the startup script in `forseti-instance.py`, you need to reset 
 the instance for changes to take effect:
 
