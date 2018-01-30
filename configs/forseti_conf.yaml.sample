@@ -126,7 +126,7 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: true
-        - name: gke_version_scanner
+        - name: ke_version_scanner
           enabled: true
         - name: group
           enabled: true

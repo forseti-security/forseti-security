@@ -46,7 +46,7 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
         self.assertEqual(None, container_client.repository._rate_limiter)
 
     def test_get_serverconfig(self):
-        """Test get GKE serverconfig."""
+        """Test get KE serverconfig."""
         http_mocks.mock_http_response(
             fake_container.FAKE_GET_SERVERCONFIG_RESPONSE)
 
@@ -67,7 +67,7 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
 
 
     def test_get_clusters(self):
-        """Test get GKE clusters."""
+        """Test get KE clusters."""
         http_mocks.mock_http_response(
             fake_container.FAKE_GET_CLUSTERS_RESPONSE)
 

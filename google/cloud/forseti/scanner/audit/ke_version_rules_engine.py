@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Rules engine for verifying GKE Versions are allowed."""
+"""Rules engine for verifying KE Versions are allowed."""
 
 from collections import namedtuple
 import operator as op
@@ -31,8 +31,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 LOGGER = log_util.get_logger(__name__)
 
 
-class GkeVersionRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for GKE Version scanner."""
+class KeVersionRulesEngine(bre.BaseRulesEngine):
+    """Rules engine for KE Version scanner."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -43,7 +43,7 @@ class GkeVersionRulesEngine(bre.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(GkeVersionRulesEngine,
+        super(KeVersionRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
         self.snapshot_timestamp = snapshot_timestamp
@@ -56,18 +56,18 @@ class GkeVersionRulesEngine(bre.BaseRulesEngine):
             global_configs (dict): Global configurations.
         """
         with self._lock:
-            self.rule_book = GkeVersionRuleBook(
+            self.rule_book = KeVersionRuleBook(
                 global_configs,
                 self._load_rule_definitions(),
                 self.snapshot_timestamp)
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, gke_cluster,
+    def find_policy_violations(self, ke_cluster,
                                force_rebuild=False):
         """Determine whether CloudSQL acls violates rules.
 
         Args:
-            gke_cluster (GkeCluster): A GKE Cluster object to check.
+            ke_cluster (KeCluster): A KE Cluster object to check.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -76,21 +76,21 @@ class GkeVersionRulesEngine(bre.BaseRulesEngine):
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
-        return self.rule_book.find_violations(gke_cluster)
+        return self.rule_book.find_violations(ke_cluster)
 
 
-class GkeVersionRuleBook(bre.BaseRuleBook):
-    """The RuleBook for GKE Version rules."""
+class KeVersionRuleBook(bre.BaseRuleBook):
+    """The RuleBook for KE Version rules."""
 
     def __init__(self, global_configs, rule_defs=None, snapshot_timestamp=None):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
-            rule_defs (list): GKE Version rule definition dicts
+            rule_defs (list): KE Version rule definition dicts
             snapshot_timestamp (int): Snapshot timestamp.
         """
-        super(GkeVersionRuleBook, self).__init__()
+        super(KeVersionRuleBook, self).__init__()
         self._lock = threading.Lock()
         self.resource_rules_map = {}
         if not rule_defs:
@@ -180,20 +180,20 @@ class GkeVersionRuleBook(bre.BaseRuleBook):
         """
         return self.resource_rules_map.get(resource)
 
-    def find_violations(self, gke_cluster):
+    def find_violations(self, ke_cluster):
         """Find violations in the rule book.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
 
         Returns:
             list: RuleViolation
         """
-        LOGGER.debug('Looking for GKE violations: %r', gke_cluster)
+        LOGGER.debug('Looking for KE violations: %r', ke_cluster)
         violations = []
         resource_ancestors = []
 
-        project = self.project_dao.get_project(gke_cluster.project_id,
+        project = self.project_dao.get_project(ke_cluster.project_id,
                                                self.snapshot_timestamp)
         resource_ancestors.append(project)
         resource_ancestors.extend(
@@ -207,7 +207,7 @@ class GkeVersionRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(gke_cluster))
+                    resource_rule.find_policy_violations(ke_cluster))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -217,7 +217,7 @@ class GkeVersionRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(wildcard_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(gke_cluster))
+                    resource_rule.find_policy_violations(ke_cluster))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -240,18 +240,18 @@ class ResourceRules(object):
         self.resource = resource
         self.rules = rules
 
-    def find_policy_violations(self, gke_cluster):
+    def find_policy_violations(self, ke_cluster):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
 
         Returns:
             list: RuleViolation
         """
         violations = []
         for rule in self.rules:
-            rule_violations = rule.find_policy_violations(gke_cluster)
+            rule_violations = rule.find_policy_violations(ke_cluster)
             if rule_violations:
                 violations.extend(rule_violations)
         return violations
@@ -388,38 +388,38 @@ class Rule(object):
         self.allowed_versions = frozenset(allowed_nodepool_versions)
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, gke_cluster):
-        """Find GKE Version violations in based on the rule.
+    def find_policy_violations(self, ke_cluster):
+        """Find KE Version violations in based on the rule.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
 
         Returns:
             list: Returns a list of RuleViolation named tuples
         """
         violations = []
         if self.check_valid_node_versions:
-            violation = self._node_versions_valid(gke_cluster)
+            violation = self._node_versions_valid(ke_cluster)
             if violation:
                 violations.append(violation)
 
         if self.check_valid_master_version:
-            violation = self._master_version_valid(gke_cluster)
+            violation = self._master_version_valid(ke_cluster)
             if violation:
                 violations.append(violation)
 
         if self.allowed_versions:
-            violation = self._node_versions_allowed(gke_cluster)
+            violation = self._node_versions_allowed(ke_cluster)
             if violation:
                 violations.append(violation)
         return violations
 
-    def _make_violation(self, gke_cluster, nodepool, violation_reason):
+    def _make_violation(self, ke_cluster, nodepool, violation_reason):
         """Build a RuleViolation for the cluster.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
-            nodepool (dict): A node pool in the GKE cluster.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
+            nodepool (dict): A node pool in the KE cluster.
             violation_reason (str): The violation details.
 
         Returns:
@@ -427,78 +427,78 @@ class Rule(object):
         """
         node_pool_name = nodepool.get('name') if nodepool else ''
         return RuleViolation(
-            resource_type=resource_mod.ResourceType.GKE,
-            resource_id=gke_cluster.name,
+            resource_type=resource_mod.ResourceType.KE_CLUSTER,
+            resource_id=ke_cluster.name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
-            violation_type='GKE_VERSION_VIOLATION',
+            violation_type='KE_VERSION_VIOLATION',
             violation_reason=violation_reason,
-            project_id=gke_cluster.project_id,
-            cluster_name=gke_cluster.name,
+            project_id=ke_cluster.project_id,
+            cluster_name=ke_cluster.name,
             node_pool_name=node_pool_name)
 
-    def _node_versions_valid(self, gke_cluster):
+    def _node_versions_valid(self, ke_cluster):
         """Check the node pool versions against the supported version list.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
 
         Returns:
             RuleViolation: A RuleViolation if the version is not supported,
                 else None.
         """
-        if not gke_cluster.server_config:
-            LOGGER.warn('Server config missing from gke cluster, cannot check '
-                        'if node versions are supported: %s', gke_cluster)
+        if not ke_cluster.server_config:
+            LOGGER.warn('Server config missing from ke cluster, cannot check '
+                        'if node versions are supported: %s', ke_cluster)
             return None
-        supported_versions = gke_cluster.server_config.get('validNodeVersions')
-        for nodepool in gke_cluster.node_pools:
+        supported_versions = ke_cluster.server_config.get('validNodeVersions')
+        for nodepool in ke_cluster.node_pools:
             LOGGER.debug('Checking %s in cluster %s', nodepool.get('name'),
-                         gke_cluster.name)
+                         ke_cluster.name)
             if nodepool.get('version') not in supported_versions:
                 violation = ('Node pool version %s is not supported (%s).' %
                              (nodepool.get('version'),
                               sorted(supported_versions)))
 
-                return self._make_violation(gke_cluster, nodepool, violation)
+                return self._make_violation(ke_cluster, nodepool, violation)
 
-    def _master_version_valid(self, gke_cluster):
+    def _master_version_valid(self, ke_cluster):
         """Check the master version against the supported version list.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
 
         Returns:
             RuleViolation: A RuleViolation if the version is not supported,
                 else None.
         """
-        if not gke_cluster.server_config:
-            LOGGER.warn('Server config missing from gke cluster, cannot check '
-                        'if master version is supported: %s', gke_cluster)
+        if not ke_cluster.server_config:
+            LOGGER.warn('Server config missing from ke cluster, cannot check '
+                        'if master version is supported: %s', ke_cluster)
             return None
 
-        supported_versions = gke_cluster.server_config.get(
+        supported_versions = ke_cluster.server_config.get(
             'validMasterVersions')
-        if gke_cluster.current_master_version not in supported_versions:
+        if ke_cluster.current_master_version not in supported_versions:
             violation = ('Master version %s is not supported (%s).' %
-                         (gke_cluster.current_master_version,
+                         (ke_cluster.current_master_version,
                           sorted(supported_versions)))
 
-            return self._make_violation(gke_cluster, None, violation)
+            return self._make_violation(ke_cluster, None, violation)
 
-    def _node_versions_allowed(self, gke_cluster):
+    def _node_versions_allowed(self, ke_cluster):
         """Check the node pool versions against the allowed versions list.
 
         Args:
-            gke_cluster (GkeCluster): GKE Cluster and ServerConfig data.
+            ke_cluster (KeCluster): KE Cluster and ServerConfig data.
 
         Returns:
             RuleViolation: A RuleViolation if the version is not allowed,
                 else None.
         """
-        for nodepool in gke_cluster.node_pools:
+        for nodepool in ke_cluster.node_pools:
             LOGGER.debug('Checking %s in cluster %s', nodepool.get('name'),
-                         gke_cluster.name)
+                         ke_cluster.name)
             version_allowed = any(
                 version_rule.is_version_allowed(nodepool.get('version', ''))
                 for version_rule in self.allowed_versions)
@@ -507,7 +507,7 @@ class Rule(object):
                              (nodepool.get('version'),
                               sorted(repr(v) for v in self.allowed_versions)))
 
-                return self._make_violation(gke_cluster, nodepool, violation)
+                return self._make_violation(ke_cluster, nodepool, violation)
 
     def __eq__(self, other):
         """Test whether Rule equals other Rule.
@@ -559,7 +559,7 @@ class Rule(object):
 # resource_id: string
 # rule_name: string
 # rule_index: int
-# violation_type: GKE_VERSION_VIOLATION
+# violation_type: KE_VERSION_VIOLATION
 # violation_reason: string
 # project_id: string
 # cluster_name: string

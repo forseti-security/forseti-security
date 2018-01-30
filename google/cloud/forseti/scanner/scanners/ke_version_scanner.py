@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the GKE version rules engine."""
+"""Scanner for the KE version rules engine."""
 
-from google.cloud.forseti.common.data_access import gke_dao
+from google.cloud.forseti.common.data_access import ke_dao
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.scanner.audit import gke_version_rules_engine
+from google.cloud.forseti.scanner.audit import ke_version_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class GkeVersionScanner(base_scanner.BaseScanner):
-    """Check if the version of running GKE clusters and nodes are allowed."""
+class KeVersionScanner(base_scanner.BaseScanner):
+    """Check if the version of running KE clusters and nodes are allowed."""
 
     def __init__(self, global_configs, scanner_configs, snapshot_timestamp,
                  rules):
@@ -35,12 +35,12 @@ class GkeVersionScanner(base_scanner.BaseScanner):
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
-        super(GkeVersionScanner, self).__init__(
+        super(KeVersionScanner, self).__init__(
             global_configs,
             scanner_configs,
             snapshot_timestamp,
             rules)
-        self.rules_engine = gke_version_rules_engine.GkeVersionRulesEngine(
+        self.rules_engine = ke_version_rules_engine.KeVersionRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
@@ -80,21 +80,21 @@ class GkeVersionScanner(base_scanner.BaseScanner):
         all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, gke_clusters):
+    def _find_violations(self, ke_clusters):
         """Find violations in the policies.
 
         Args:
-            gke_clusters (list): Clusters to find violations in.
+            ke_clusters (list): Clusters to find violations in.
 
         Returns:
             list: All violations.
         """
         all_violations = []
-        LOGGER.info('Finding gke cluster version violations...')
+        LOGGER.info('Finding ke cluster version violations...')
 
-        for gke_cluster in gke_clusters:
+        for ke_cluster in ke_clusters:
             violations = self.rules_engine.find_policy_violations(
-                gke_cluster)
+                ke_cluster)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
@@ -103,15 +103,15 @@ class GkeVersionScanner(base_scanner.BaseScanner):
         """Runs the data collection.
 
         Returns:
-            list: GKE Cluster data.
+            list: KE Cluster data.
         """
-        gke_clusters = (gke_dao
-                        .GkeDao(self.global_configs)
-                        .get_clusters(self.snapshot_timestamp))
+        ke_clusters = (ke_dao
+                       .KeDao(self.global_configs)
+                       .get_clusters(self.snapshot_timestamp))
 
-        return gke_clusters
+        return ke_clusters
 
     def run(self):
-        gke_clusters = self._retrieve()
-        all_violations = self._find_violations(gke_clusters)
+        ke_clusters = self._retrieve()
+        all_violations = self._find_violations(ke_clusters)
         self._output_results(all_violations)

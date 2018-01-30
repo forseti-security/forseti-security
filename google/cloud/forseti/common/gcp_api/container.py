@@ -87,7 +87,7 @@ class _ContainerProjectsZonesRepository(
             component='projects.zones', **kwargs)
 
     def get_serverconfig(self, project_id, zone, fields=None, **kwargs):
-        """Get GKE serverconfig for zone.
+        """Get KE serverconfig for zone.
 
         Args:
             project_id (str): The id of the project to query.

@@ -12,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GKE Version Rule Scanner Tests."""
+"""KE Version Rule Scanner Tests."""
 
 import unittest
 import mock
 
 from tests import unittest_utils
 from google.cloud.forseti.common.gcp_type import (
-    gke_cluster as gke_cluster_type)
+    ke_cluster as ke_cluster_type)
 from google.cloud.forseti.common.gcp_type import (
     organization as organization_type)
 from google.cloud.forseti.common.gcp_type import project as project_type
-from google.cloud.forseti.scanner.scanners import gke_version_scanner
+from google.cloud.forseti.scanner.scanners import ke_version_scanner
 
 
 # pylint: disable=bad-indentation
@@ -39,7 +39,7 @@ class FakeOrgDao(object):
         return [organization_type.Organization(organization_id=123456)]
 
 
-class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
+class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
 
     def tearDown(self):
         self.org_patcher.stop()
@@ -78,9 +78,9 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
             ]
         }
 
-        self.gke_clusters = {
+        self.ke_clusters = {
             # The main backend service.
-            'master-version-invalid': gke_cluster_type.GkeCluster.from_dict(
+            'master-version-invalid': ke_cluster_type.KeCluster.from_dict(
                 'foo', self.server_config,
                 {
                     'name': 'master-version-invalid',
@@ -92,7 +92,7 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                     'currentMasterVersion': '1.6.13-gke.1',
                     'currentNodeVersion': '1.6.13-gke.1'
                 }),
-            'node-version-invalid': gke_cluster_type.GkeCluster.from_dict(
+            'node-version-invalid': ke_cluster_type.KeCluster.from_dict(
                 'foo', self.server_config,
                 {
                     'name': 'node-version-invalid',
@@ -104,7 +104,7 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                     'currentMasterVersion': '1.8.6-gke.0',
                     'currentNodeVersion': '1.8.4-gke.1'
                 }),
-            'node-version-not-allowed': gke_cluster_type.GkeCluster.from_dict(
+            'node-version-not-allowed': ke_cluster_type.KeCluster.from_dict(
                 'foo', self.server_config,
                 {
                     'name': 'node-version-not-allowed',
@@ -116,7 +116,7 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                     'currentMasterVersion': '1.7.11-gke.1',
                     'currentNodeVersion': '1.7.10-gke.1'
                 }),
-            'multiple-node-pools': gke_cluster_type.GkeCluster.from_dict(
+            'multiple-node-pools': ke_cluster_type.KeCluster.from_dict(
                 'foo', self.server_config,
                 {
                     'name': 'multiple-node-pools',
@@ -132,21 +132,21 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                     'currentNodeVersion': '1.7.11-gke.1'
                 })
         }
-        self.scanner = gke_version_scanner.GkeVersionScanner(
+        self.scanner = ke_version_scanner.KeVersionScanner(
             {}, {}, '',
             unittest_utils.get_datafile_path(
-                __file__, 'gke_version_scanner_test_data.yaml'))
+                __file__, 'ke_version_scanner_test_data.yaml'))
         self.scanner._retrieve = mock.Mock(
-            return_value=self.gke_clusters.values())
+            return_value=self.ke_clusters.values())
 
     @mock.patch.object(
-        gke_version_scanner.GkeVersionScanner,
+        ke_version_scanner.KeVersionScanner,
         '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results):
         self.scanner.run()
         expected_violations = [
             {'resource_id': 'node-version-not-allowed',
-             'resource_type': 'gke',
+             'resource_type': 'ke',
              'rule_index': 2,
              'rule_name': 'Disallowed node pool version',
              'violation_data': {'cluster_name': 'node-version-not-allowed',
@@ -157,9 +157,9 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                                     "allowed (['>= 1.6.13-gke.1', "
                                     "'>= 1.7.11-gke.1', '>= 1.8.4-gke.1', "
                                     "'>= 1.9.*']).")},
-             'violation_type': 'GKE_VERSION_VIOLATION'},
+             'violation_type': 'KE_VERSION_VIOLATION'},
             {'resource_id': 'master-version-invalid',
-             'resource_type': 'gke',
+             'resource_type': 'ke',
              'rule_index': 1,
              'rule_name': 'Unsupported master version',
              'violation_data': {'cluster_name': 'master-version-invalid',
@@ -169,9 +169,9 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                                     "Master version 1.6.13-gke.1 is not "
                                     "supported (['1.7.11-gke.1', "
                                     "'1.8.6-gke.0']).")},
-             'violation_type': 'GKE_VERSION_VIOLATION'},
+             'violation_type': 'KE_VERSION_VIOLATION'},
             {'resource_id': 'node-version-invalid',
-             'resource_type': 'gke',
+             'resource_type': 'ke',
              'rule_index': 0,
              'rule_name': 'Unsupported node pool version',
              'violation_data': {'cluster_name': 'node-version-invalid',
@@ -182,7 +182,7 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
                                     "supported (['1.6.13-gke.1', "
                                     "'1.7.10-gke.1', '1.7.11-gke.1', "
                                     "'1.8.6-gke.0']).")},
-             'violation_type': 'GKE_VERSION_VIOLATION'}]
+             'violation_type': 'KE_VERSION_VIOLATION'}]
         mock_output_results.assert_called_once_with(mock.ANY,
                                                     expected_violations)
 
