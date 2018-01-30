@@ -14,6 +14,8 @@ Forseti bucket or copy them to the `rules_path` (found in `forseti_conf.yaml`).
 
 ## Cloud IAM policy rules
 
+### Rule definition
+
 Forseti Scanner recognizes the following rule grammar in YAML or JSON:
 
 ```yaml
@@ -67,6 +69,8 @@ rules:
 
 ## Kubernetes Engine (KE) rules
 
+### Rule definition
+
 ```yaml
 rules:
   - name: Nodepool version not patched for critical security vulnerabilities
@@ -106,10 +110,11 @@ rules:
     how the current version compares with the allowed version. If a minor version is not included,
     the operator applies to major version. Otherwise it applies to minor versions within a single major version.
 
-### Upgrade notes
+### Enabling
+
 To enable the KE inventory, add the following to the inventory section in your forseti_confi.yaml file.
 
-```
+```yaml
 inventory:
     pipelines:
         - resource: ke
@@ -118,7 +123,7 @@ inventory:
 
 To enable the KE scanner, add the followings to the scanner section in your forseti_conf.yaml file.
 
-```
+```yaml
 scanner:
    scanners:
         - name: ke_version_scanner
@@ -127,7 +132,7 @@ scanner:
 
 To enable the KE notifier or blacklist notifier, add the followings to the notifier section in your forseti_conf.yaml file.
 
-```
+```yaml
     resources:
         - resource: ke_version_violations
           should_notify: true
@@ -141,18 +146,21 @@ To enable the KE notifier or blacklist notifier, add the followings to the notif
 
 ## Blacklist rules
 
+### Rule definition
+
 ```yaml
 rules:
   - blacklist: Emerging Threat blacklist
     url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
 ```
+
 - **blacklist**: The name of your blacklist
 - **url**: Url that contains a list of IPs to check against
 
-###Upgrade notes
+### Enabling
 To enable the blacklist scanner, add the followings to the scanner section in your forseti_conf.yaml file.
 
-```
+```yaml
 scanner:
    scanners:
         - name: blacklist
@@ -161,7 +169,7 @@ scanner:
 
 To enable the blacklist notifier, add the followings to the notifier section in your forseti_conf.yaml file.
 
-```
+```yaml
     resources:
         - resource: blacklist_violations
           should_notify: true
@@ -175,6 +183,8 @@ To enable the blacklist notifier, add the followings to the notifier section in 
 
 ## Google Groups rules
 
+### Rule definition
+
 ```yaml
 - name: Allow my company users and gmail users to be in my company groups.
   group_email: my_customer
@@ -185,6 +195,8 @@ To enable the blacklist notifier, add the followings to the notifier section in 
 ```
 
 ## GCS bucket ACL rules
+
+### Rule definition
 
 ```yaml
 rules:
@@ -214,6 +226,8 @@ documentation.
 
 ## Cloud SQL rules
 
+### Rule definition
+
 ```yaml
 rules:
   - name: sample cloudsql rule to search for publicly exposed instances
@@ -232,6 +246,8 @@ rules:
  - **resource**: The resource under which the instance resides.
 
 ## BigQuery rules
+
+### Rule definition
 
 BigQuery scanner rules serve as blacklists.
 
@@ -262,6 +278,8 @@ make sure that the entity you specified doesn't have access.
 
 ## Forwarding rules
 
+### Rule definition
+
 ```yaml
 rules:
   - name: Rule Name Example
@@ -285,6 +303,9 @@ To learn more, see the
 documentation.
 
 ## IAP rules
+
+### Rule definition
+
 ```yaml
 rules:
   # custom rules
@@ -316,6 +337,9 @@ rules:
   access to services in your GCP environment.  
   
 ## Instance Network Interface rules
+
+### Rule definition
+
 ```yaml
 rules:
   # This rule helps with:
