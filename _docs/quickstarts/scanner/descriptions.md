@@ -179,17 +179,16 @@ Instance Network Interface scanner depends on the following Forseti Inventory pi
 
  - `load_instances_pipeline`
 
-## Kubernetes Engine Version scanner
+## KE Version scanner
 
-Kubernetes Engine clusters running on older versions can be exposed to security 
-vulnerabilities, or lack of support.  The Kubernetes Engine 
-version scanner can ensure your Kubernetes Engine clusters are running safe
-and supported versions.
+Kubernetes Engine (KE) clusters running on older versions can be exposed to security 
+vulnerabilities, or lack of support.  The KE version scanner can ensure your 
+Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the
-[`gke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/gke_rules.yaml)
+[`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/ke_rules.yaml)
 rule file.
 
-The Kubernetes Engine version scanner depends on the following Forseti Inventory pipelines:
+The KE version scanner depends on the following Forseti Inventory pipelines:
 
- - `load_kubernetes_engine_pipeline`
+ - `load_ke_pipeline`
