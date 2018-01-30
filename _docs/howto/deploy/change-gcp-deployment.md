@@ -50,26 +50,45 @@ is out of sync with the deployed release.
 
 ### Change deployment properties
 1. Check `deploy-forseti.yaml.sample` to see if there are any new properties 
-   that you need to copy over to your previous `deploy-forseti.yaml`. You can use
-   `git diff` to compare what changed. For example, to see the diff between the latest 
-   (HEAD) and one revision ago:
+   that you need to copy over to your previously generated 
+   `deploy-forseti-<TIMESTAMP>.yaml`. You can use `git diff` to compare what 
+   changed. For example, to see the diff between the latest (HEAD) and one revision ago:
 
    ```bash
-   $ git diff origin..HEAD~1 -- deploy-forseti.yaml.sample
+   $ git diff origin/master..HEAD~1 -- deploy-forseti.yaml.sample
    ```
 
-1. Edit `deploy-forseti.yaml` and update the values you want to change. If you 
-   previously deployed the `master` branch, you don't need to change it.
+1. Edit `deploy-forseti-<TIMESTAMP>.yaml` and update the values of the new properties.
+
+For example, from v1.1.7 to v1.1.10, the following Compute Engine instance 
+properties have been changed and/or added.
+
+   ```yaml
+   region: $(ref.cloudsql-instance.region)
+
+   network-host-project-id: NETWORK_HOST_PROJECT_ID
+   vpc-name: VPC_NAME
+   subnetwork-name: SUBNETWORK_NAME
+   ```
+
+To upgrade, copy these new properties to your generated 
+deploy-forseti-<TIMESTAMP>.yaml. Then, update the placeholders to the values 
+you want to use. For example, the id of the project that Forseti is 
+running in, "default", "default".
+
+1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify if your ```branch-name``` 
+   property is hardcoded to a specific version. If so, update it to the latest 
+   version.
    
 ### Run the Deployment Manager update
 Run the following update command:
 
 ```bash
 $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
-  --config path/to/deploy-forseti.yaml
+  --config path/to/deploy-forseti-<TIMESTAMP>.yaml
 ```
 
-If you changed the properties in the `deploy-forseti.yaml` "Compute Engine" 
+If you changed the properties in the `deploy-forseti-<TIMESTAMP>.yaml` "Compute Engine" 
 section or the startup script in `forseti-instance.py`, you need to reset 
 the instance for changes to take effect:
 
