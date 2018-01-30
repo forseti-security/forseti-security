@@ -69,16 +69,24 @@ rules:
 
 ```yaml
 rules:
-  - name: Only allow supported versions of 1.8 on projects
+  - name: Nodepool version not patched for critical security vulnerabilities
     resource:
       - type: organization
         resource_ids:
-          - YOUR_ORG_ID / YOUR_FOLDER_ID / YOUR_PROJECT_ID
-    check_serverconfig_valid_node_versions: true
+          - '*'
+    check_serverconfig_valid_node_versions: false
     check_serverconfig_valid_master_versions: false
     allowed_nodepool_versions:
+      - major: '1.6'
+        minor: '13-gke.1'
+        operator: '>='
+      - major: '1.7'
+        minor: '11-gke.1'
+        operator: '>='
       - major: '1.8'
-        minor: '0'
+        minor: '4-gke.1'
+        operator: '>='
+      - major: '1.9'
         operator: '>='
  ```
 - **name**: The description of your rule.
