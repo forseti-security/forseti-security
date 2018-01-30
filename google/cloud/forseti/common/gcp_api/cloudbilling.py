@@ -18,6 +18,7 @@ from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api.errors import API_EXECUTION_ERROR_ARG_FORMAT
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -159,5 +160,7 @@ class CloudBillingClient(object):
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
                 LOGGER.warn(e)
                 return {}
-            raise api_errors.ApiExecutionError('billing_info, project_id = {}'
-                                               .format(project_id), e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('billing_info',
+                                                      'project_id',
+                                                      project_id), e)

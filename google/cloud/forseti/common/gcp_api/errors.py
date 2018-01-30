@@ -18,6 +18,9 @@ from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
+API_EXECUTION_ERROR_ARG_FORMAT = '{}, {} = {},'
+# {Resource}, {Identifier_key} = {Identifier_value},
+
 
 class Error(Exception):
     """Base Error class."""
@@ -31,16 +34,16 @@ class ApiExecutionError(Error):
     CUSTOM_ERROR_MESSAGE = (
         'GCP API Error: unable to get {0} from GCP:\n{1}\n{2}')
 
-    def __init__(self, resource_name, e):
+    def __init__(self, api_execution_arg, e):
         """Initialize.
 
         Args:
-            resource_name (str): The resource name.
+            api_execution_arg (str): The resource name.
             e (Exception): The exception.
         """
         super(ApiExecutionError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(
-                resource_name, e, e.content.decode('utf-8')))
+                api_execution_arg, e, e.content.decode('utf-8')))
         self.http_error = e
 
 

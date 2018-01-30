@@ -23,6 +23,7 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
+from google.cloud.forseti.common.gcp_api.errors import API_EXECUTION_ERROR_ARG_FORMAT
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -139,9 +140,9 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
 
 
 class _StorageBucketsRepository(
-        repository_mixins.GetIamPolicyQueryMixin,
-        repository_mixins.ListQueryMixin,
-        _base_repository.GCPRepository):
+    repository_mixins.GetIamPolicyQueryMixin,
+    repository_mixins.ListQueryMixin,
+    _base_repository.GCPRepository):
     """Implementation of Storage Buckets repository."""
 
     def __init__(self, **kwargs):
@@ -176,8 +177,8 @@ class _StorageBucketsRepository(
 
 
 class _StorageBucketAclsRepository(
-        repository_mixins.ListQueryMixin,
-        _base_repository.GCPRepository):
+    repository_mixins.ListQueryMixin,
+    _base_repository.GCPRepository):
     """Implementation of Storage Bucket Access Controls repository."""
 
     def __init__(self, **kwargs):
@@ -191,8 +192,8 @@ class _StorageBucketAclsRepository(
 
 
 class _StorageDefaultObjectAclsRepository(
-        repository_mixins.ListQueryMixin,
-        _base_repository.GCPRepository):
+    repository_mixins.ListQueryMixin,
+    _base_repository.GCPRepository):
     """Implementation of Storage Default Object Access Controls repository."""
 
     def __init__(self, **kwargs):
@@ -207,9 +208,9 @@ class _StorageDefaultObjectAclsRepository(
 
 
 class _StorageObjectsRepository(
-        repository_mixins.GetIamPolicyQueryMixin,
-        repository_mixins.ListQueryMixin,
-        _base_repository.GCPRepository):
+    repository_mixins.GetIamPolicyQueryMixin,
+    repository_mixins.ListQueryMixin,
+    _base_repository.GCPRepository):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
     def __init__(self, **kwargs):
@@ -298,8 +299,8 @@ class _StorageObjectsRepository(
 
 
 class _StorageObjectAclsRepository(
-        repository_mixins.ListQueryMixin,
-        _base_repository.GCPRepository):
+    repository_mixins.ListQueryMixin,
+    _base_repository.GCPRepository):
     """Implementation of Storage Object Access Controls repository."""
 
     def __init__(self, **kwargs):
@@ -344,7 +345,11 @@ class StorageClient(object):
             full_bucket_path)
 
         with open(local_file_path, 'rb') as f:
-            return self.repository.objects.upload(bucket, object_name, f)
+            results = self.repository.objects.upload(bucket, object_name, f)
+            LOGGER.debug("Putting a text object into a bucket, local_file_path"
+                         " = %s, full_bucket_path = %s, results = %s",
+                         local_file_path, full_bucket_path, results)
+            return results
 
     def get_text_file(self, full_bucket_path):
         """Gets a text file object as a string.
@@ -361,7 +366,10 @@ class StorageClient(object):
         """
         bucket, object_name = get_bucket_and_path_from(full_bucket_path)
         try:
-            return self.repository.objects.download(bucket, object_name)
+            results = self.repository.objects.download(bucket, object_name)
+            LOGGER.debug("Getting a text file object as a string, "
+                         "full_bucket_path = %s, results = %s",
+                         full_bucket_path, results)
         except errors.HttpError as e:
             LOGGER.error('Unable to download file: %s', e)
             raise
@@ -383,10 +391,17 @@ class StorageClient(object):
         try:
             paged_results = self.repository.buckets.list(project_id,
                                                          projection='full')
-            return api_helpers.flatten_list_results(paged_results, 'items')
+            flattened_results = api_helpers.flatten_list_results(paged_results,
+                                                                 'items')
+            LOGGER.debug("Getting all GCS buckets for a project, project_id ="
+                         " %s, flattened_results = %s",
+                         project_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
-            raise api_errors.ApiExecutionError('buckets', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('buckets',
+                                                      'project_id',
+                                                      project_id), e)
 
     def get_bucket_acls(self, bucket):
         """Gets acls for GCS bucket.
@@ -403,10 +418,17 @@ class StorageClient(object):
         """
         try:
             results = self.repository.bucket_acls.list(resource=bucket)
-            return api_helpers.flatten_list_results(results, 'items')
+            flattened_results = api_helpers.flatten_list_results(results,
+                                                                 'items')
+            LOGGER.debug("Getting acls for a GCS Bucket, bucket = %s,"
+                         " flattened_results = %s",
+                         bucket, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
-            raise api_errors.ApiExecutionError('bucketAccessControls', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('bucketAccessControls',
+                                                      bucket,
+                                                      'bucket'), e)
 
     def get_bucket_iam_policy(self, bucket):
         """Gets the IAM policy for a bucket.
@@ -422,10 +444,15 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            return self.repository.buckets.get_iam_policy(bucket)
+            results = self.repository.buckets.get_iam_policy(bucket)
+            LOGGER.debug("Getting the IAM policy for a bucket, bucket = %s,"
+                         " results = %s", bucket, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
-            raise api_errors.ApiExecutionError('bucketIamPolicy', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('bucketIamPolicy',
+                                                      'bucket',
+                                                      bucket), e)
 
     def get_default_object_acls(self, bucket):
         """Gets acls for GCS bucket.
@@ -442,13 +469,20 @@ class StorageClient(object):
         """
         try:
             results = self.repository.default_object_acls.list(resource=bucket)
-            return api_helpers.flatten_list_results(results, 'items')
+            flattened_results = api_helpers.flatten_list_results(results,
+                                                                 'items')
+            LOGGER.debug("Getting default object acls for GCS bucket, bucket"
+                         " = %s, flattened_results = %s",
+                         bucket, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
-            raise api_errors.ApiExecutionError('defaultObjectAccessControls', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('defaultObjectAccessControls',
+                                                      'bucket',
+                                                      bucket), e)
 
     def get_objects(self, bucket):
-        """Gets all GCS buckets for a project.
+        """Gets all objects in a bucket
 
         Args:
             bucket (str): The bucket to list to objects in.
@@ -464,13 +498,20 @@ class StorageClient(object):
         try:
             paged_results = self.repository.objects.list(bucket,
                                                          projection='full')
-            return api_helpers.flatten_list_results(paged_results, 'items')
+            flattened_results = api_helpers.flatten_list_results(paged_results,
+                                                                 'items')
+            LOGGER.debug("Getting all the objects in a bucket, bucket = %s,"
+                         " flattened_results = %s",
+                         bucket, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
-            raise api_errors.ApiExecutionError('objects', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('objects',
+                                                      'bucket',
+                                                      bucket), e)
 
     def get_object_acls(self, bucket, object_name):
-        """Gets acls for GCS objects.
+        """Gets acls for GCS object.
 
         Args:
             bucket (str): The name of the bucket.
@@ -486,10 +527,17 @@ class StorageClient(object):
         try:
             results = self.repository.object_acls.list(resource=bucket,
                                                        object=object_name)
-            return api_helpers.flatten_list_results(results, 'items')
+            flattened_results = api_helpers.flatten_list_results(results,
+                                                                 'items')
+            LOGGER.debug("Getting acls for GCS object, bucket = %s, "
+                         "object_name = %s, flattened_results = %s",
+                         bucket, object_name, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
-            raise api_errors.ApiExecutionError('objectAccessControls', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('objectAccessControls',
+                                                      'bucket',
+                                                      bucket), e)
 
     def get_object_iam_policy(self, bucket, object_name):
         """Gets the IAM policy for an object.
@@ -506,7 +554,14 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            return self.repository.objects.get_iam_policy(bucket, object_name)
+            results = self.repository.objects.get_iam_policy(bucket,
+                                                             object_name)
+            LOGGER.debug("Getting the IAM policy for an object, bucket = %s,"
+                         " object_name = %s, results = %s",
+                         bucket, object_name, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(bucket, e))
-            raise api_errors.ApiExecutionError('objectIamPolicy', e)
+            raise api_errors.ApiExecutionError(
+                API_EXECUTION_ERROR_ARG_FORMAT.format('objectIamPolicy',
+                                                      'bucket',
+                                                      bucket),e)

@@ -646,8 +646,8 @@ class ComputeClient(object):
         flattened_results = _flatten_aggregated_list_results(project_id,
                                                              paged_results,
                                                              'backendServices')
-        LOGGER.debug("Getting the backend services of a project, "
-                     "project_id = %s, flattened_results = %s",
+        LOGGER.debug('Getting the backend services of a project, '
+                     'project_id = %s, flattened_results = %s',
                      project_id, flattened_results)
         return flattened_results
 
@@ -671,8 +671,8 @@ class ComputeClient(object):
             results = _flatten_aggregated_list_results(project_id,
                                                        paged_results,
                                                        'disks')
-        LOGGER.debug("Getting the list of all disks in the project,"
-                     " project_id = %s, zone = %s, results = %s",
+        LOGGER.debug('Getting the list of all disks in the project,'
+                     ' project_id = %s, zone = %s, results = %s',
                      project_id, zone, results)
         return results
 
@@ -689,8 +689,8 @@ class ComputeClient(object):
         flattened_results = _flatten_list_results(project_id,
                                                   paged_results,
                                                   'items')
-        LOGGER.debug("Getting the firewall rules of a given project, "
-                     "project_id = %s, flattened_results = %s",
+        LOGGER.debug('Getting the firewall rules of a given project, '
+                     'project_id = %s, flattened_results = %s',
                      project_id, flattened_results)
         return flattened_results
 
@@ -716,6 +716,9 @@ class ComputeClient(object):
             results = _flatten_aggregated_list_results(project_id,
                                                        paged_results,
                                                        'forwardingRules')
+        LOGGER.debug('Getting the forwarding rules for a project, '
+                     'project_id = %s, region = %s, results = %s',
+                     project_id, region, results)
         return results
 
     def get_global_operation(self, project_id, operation_id):
@@ -734,8 +737,12 @@ class ComputeClient(object):
 
         """
         try:
-            return self.repository.global_operations.get(
-                project_id, operation_id)
+            results = self.repository.global_operations\
+                .get(project_id, operation_id)
+            LOGGER.debug('Getting the operation status, project_id = %s,'
+                         ' operation_id = %s, results = %s',
+                         project_id, operation_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_not_enabled, details = _api_not_enabled(e)
             if api_not_enabled:
@@ -754,7 +761,11 @@ class ComputeClient(object):
             https://cloud.google.com/compute/docs/reference/latest/images
         """
         try:
-            return self.repository.images.get(project_id, target=image_name)
+            results = self.repository.images.get(project_id, target=image_name)
+            LOGGER.debug('Getting an image from a project, project_id = %s, '
+                         'image_name = %s, results = %s',
+                         project_id, image_name, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_not_enabled, details = _api_not_enabled(e)
             if api_not_enabled:
@@ -771,7 +782,13 @@ class ComputeClient(object):
             list: A list of images for this project.
         """
         paged_results = self.repository.images.list(project_id)
-        return _flatten_list_results(project_id, paged_results, 'items')
+        flattened_results = _flatten_list_results(project_id,
+                                                  paged_results,
+                                                  'items')
+        LOGGER.debug('Getting all images created in a project, '
+                     'project_id = %s, flattened_results = %s',
+                     project_id, flattened_results)
+        return flattened_results
 
     def get_instance_group_instances(self, project_id, instance_group_name,
                                      region=None, zone=None):
@@ -793,8 +810,10 @@ class ComputeClient(object):
             ValueError: invalid combination of parameters
         """
         if not bool(zone) ^ bool(region):
-            raise ValueError('One and only one of zone and region must be '
-                             'specified.')
+            err_message = 'One and only one of zone ' \
+                          'and region must be specified.'
+            LOGGER.error(err_message)
+            raise ValueError(err_message)
         if zone:
             repository = self.repository.instance_groups
             paged_results = repository.list_instances(
@@ -808,12 +827,19 @@ class ComputeClient(object):
                 project_id, instance_group_name, region,
                 fields='items/instance,nextPageToken',
                 body={'instanceState': 'ALL'})
-        return [
+
+        results = [
             instance_data.get('instance')
             for instance_data in _flatten_list_results(
                 project_id, paged_results, 'items')
             if 'instance' in instance_data
         ]
+        LOGGER.debug('Getting the instance group for a project, project_id'
+                     ' = %s, instance_group_name = %s, region = %s, '
+                     'zone = %s, flattened_results = %s',
+                     project_id, instance_group_name, region, zone, results)
+
+        return results
 
     def get_instance_group_managers(self, project_id):
         """Get the instance group managers for a project.
@@ -826,8 +852,14 @@ class ComputeClient(object):
         """
         paged_results = self.repository.instance_group_managers.aggregated_list(
             project_id)
-        return _flatten_aggregated_list_results(project_id, paged_results,
-                                                'instanceGroupManagers')
+        flattened_results = _flatten_aggregated_list_results(
+            project_id, paged_results, 'instanceGroupManagers')
+
+        LOGGER.debug('Getting the instance group managers for a project, '
+                     'project_id = %s, flattened_results = %s',
+                     project_id, flattened_results)
+
+        return flattened_results
 
     def get_instance_groups(self, project_id):
         """Get the instance groups for a project.
@@ -852,6 +884,11 @@ class ComputeClient(object):
                 # Turn zone and region URLs into a names
                 zone=os.path.basename(instance_group.get('zone', '')),
                 region=os.path.basename(instance_group.get('region', '')))
+
+        LOGGER.debug('Getting the instance groups for a project, '
+                     'project_id = %s, instance_groups = %s',
+                     project_id, instance_groups)
+
         return instance_groups
 
     def get_instance_templates(self, project_id):
@@ -864,7 +901,13 @@ class ComputeClient(object):
             list: A list of instance templates for this project.
         """
         paged_results = self.repository.instance_templates.list(project_id)
-        return _flatten_list_results(project_id, paged_results, 'items')
+        flattened_results = _flatten_list_results(project_id,
+                                                  paged_results,
+                                                  'items')
+        LOGGER.debug('Getting the instance templates for a project, '
+                     'project_id = %s, flattened_results = %s',
+                     project_id, flattened_results)
+        return flattened_results
 
     def get_instances(self, project_id, zone=None):
         """Get the instances for a project.
@@ -879,13 +922,18 @@ class ComputeClient(object):
         repository = self.repository.instances
         if zone:
             paged_results = repository.list(project_id, zone)
-            results = _flatten_list_results(project_id, paged_results, 'items')
+            flattened_results = _flatten_list_results(project_id,
+                                                      paged_results,
+                                                      'items')
         else:
             paged_results = repository.aggregated_list(project_id)
-            results = _flatten_aggregated_list_results(project_id,
+            flattened_results = _flatten_aggregated_list_results(project_id,
                                                        paged_results,
                                                        'instances')
-        return results
+        LOGGER.debug('Getting the instances for a project, project_id'
+                     ' = %s, flattened_results = %s',
+                     project_id, flattened_results)
+        return flattened_results
 
     def get_networks(self, project_id):
         """Get the networks list for a given project id.
@@ -897,7 +945,13 @@ class ComputeClient(object):
             list: A list of networks for this project id.
         """
         paged_results = self.repository.networks.list(project_id)
-        return _flatten_list_results(project_id, paged_results, 'items')
+        flattened_results = _flatten_list_results(project_id,
+                                                  paged_results,
+                                                  'items')
+        LOGGER.debug('Getting the network list for a given project,'
+                     ' project_id = %s, flattened_results = %s',
+                     project_id, flattened_results)
+        return flattened_results
 
     def get_project(self, project_id):
         """Returns the specified Project resource.
@@ -910,7 +964,10 @@ class ComputeClient(object):
             https://cloud.google.com/compute/docs/reference/latest/projects/get
         """
         try:
-            return self.repository.projects.get(project_id)
+            results = self.repository.projects.get(project_id)
+            LOGGER.debug('Getting the specified project resource, project_id'
+                         ' = %s, results = %s', project_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_not_enabled, details = _api_not_enabled(e)
             if api_not_enabled:
@@ -938,12 +995,16 @@ class ComputeClient(object):
         """
         resource = self.get_project(project_id)
         quotas = resource.get('quotas', [])
+        LOGGER.debug('Getting the quota for any metric, project_id = %s,'
+                     ' metric = %s, quotas = %s', project_id, metric, quotas)
         for quota in quotas:
             if quota.get('metric', '') == metric:
                 return quota
-        raise KeyError(
-            "Passed in metric, %s, was not found for project id, %s." %
+        err = KeyError(
+            'Passed in metric, %s, was not found for project id, %s.' %
             (metric, project_id))
+        LOGGER.error(err)
+        raise err
 
     def get_firewall_quota(self, project_id):
         """Calls get_quota to request the firewall quota
@@ -964,6 +1025,8 @@ class ComputeClient(object):
         """
         metric = 'FIREWALLS'
         resource = self.get_quota(project_id, metric)
+        LOGGER.debug('Getting the firewall quota, project_id = %s,'
+                     ' resource = %s', project_id, resource)
         return resource
 
     def get_subnetworks(self, project_id, region=None):
@@ -980,13 +1043,18 @@ class ComputeClient(object):
         repository = self.repository.subnetworks
         if region:
             paged_results = repository.list(project_id, region)
-            results = _flatten_list_results(project_id, paged_results, 'items')
+            flattened_results = _flatten_list_results(project_id,
+                                                      paged_results,
+                                                      'items')
         else:
             paged_results = repository.aggregated_list(project_id)
-            results = _flatten_aggregated_list_results(project_id,
+            flattened_results = _flatten_aggregated_list_results(project_id,
                                                        paged_results,
                                                        'subnetworks')
-        return results
+        LOGGER.debug('Getting a list of all subnetworks in the project, '
+                     'project_id = %s, region = %s, flattened_results = %s',
+                     project_id, region, flattened_results)
+        return flattened_results
 
     def is_api_enabled(self, project_id):
         """Checks if the Compute API is enabled for the specified project.
@@ -999,6 +1067,8 @@ class ComputeClient(object):
         """
         try:
             result = self.repository.projects.get(project_id, fields='name')
+            LOGGER.debug('Checking if Compute API is enabled, project_id = '
+                         '%s, result = %s', project_id, result)
             return bool('name' in result)  # True if name, otherwise False.
         except (errors.HttpError, HttpLib2Error) as e:
             api_not_enabled, _ = _api_not_enabled(e)
