@@ -8,6 +8,7 @@ Note: If you used the Forseti setup wizard to deploy, your `deploy-forseti.yaml`
 will have a timestamp suffix, e.g. `deploy-forseti-20171001000000.yaml`.
 
 ### Get a particular deployment template version
+-This step is **optional**.
 
 If you need to change the `release-version` for your Forseti deployment, you MUST 
 get the correct version of Forseti. The deployment template's startup 
