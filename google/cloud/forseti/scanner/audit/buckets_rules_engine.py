@@ -234,7 +234,7 @@ class Rule(object):
         if should_raise_violation:
             yield self.RuleViolation(
                 resource_type='bucket',
-                resource_id=bucket_acl.project_id,
+                resource_id=bucket_acl.bucket,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='BUCKET_VIOLATION',
@@ -242,7 +242,8 @@ class Rule(object):
                 entity=bucket_acl.entity,
                 email=bucket_acl.email,
                 domain=bucket_acl.domain,
-                bucket=bucket_acl.bucket)
+                bucket=bucket_acl.bucket,
+                project_id=bucket_acl.project_id)
 
     # Rule violation.
     # resource_type: string
@@ -258,4 +259,5 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'rule_name',
                                 'rule_index', 'violation_type', 'role',
-                                'entity', 'email', 'domain', 'bucket'])
+                                'entity', 'email', 'domain', 'bucket',
+                                'project_id'])
