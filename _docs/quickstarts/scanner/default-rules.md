@@ -11,7 +11,10 @@ Forseti Scanner has default rules that create a [violation]({% link _docs/quicks
   * Datasets should not be public.
   * Datasets should not be accessible by users who are @gmail.com.
   * Datasets should not be accessible by groups who are @gmail.com.
- 
+
+* Blacklist
+  * IP address of any GCP instances should not be listed on the [emergingthreats](https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt) website
+
 * Cloud Storage (_note: this is NOT the same as Cloud Storage IAM policies!_)
   * Buckets ACLs should not be publicly accessible (`AllUsers`).
   * Buckets ACLs should not be accessible by any authenticated user (`AllAuthenticatedUsers`).
@@ -29,3 +32,10 @@ Forseti Scanner has default rules that create a [violation]({% link _docs/quicks
 * Cloud Identity Aware Proxy (IAP) bypass access
   * Forbid any IAP bypasses on all resources in my organization, when IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
+
+* Kubernetes Engine (KE)
+  * Only allow the following supported versions
+    * For major version 1.6, the minor version has to be at least 13-gke.1
+    * For major version 1.7, the minor version has to be at least 11-gke.1
+    * For major version 1.8, the minor version has to be at least 4-gke.1
+    * For major version 1.9, any minor version is allowed

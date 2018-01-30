@@ -65,6 +65,49 @@ rules:
     such as `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
     `user:*@company.com` (anyone with an identity at company.com).
 
+## Kubernetes Engine (KE) rules
+
+```yaml
+rules:
+  - name: Only allow supported versions of 1.8 on projects
+    resource:
+      - type: organization
+        resource_ids:
+          - YOUR_ORG_ID / YOUR_FOLDER_ID / YOUR_PROJECT_ID
+    check_serverconfig_valid_node_versions: true
+    check_serverconfig_valid_master_versions: false
+    allowed_nodepool_versions:
+      - major: '1.8'
+        minor: '0'
+        operator: '>='
+ ```
+- **name**: The description of your rule.
+- **resource**: A mapping of resources that this rule applies to.
+  - **type**: The type of resource, can be organization, folder, or project.
+  - **resource_ids**: A list of one or more numeric ids to match, or '*' for all.
+- **check_serverconfig_valid_node_versions**: If true, will raise a violation for any node pool
+  running a version that is not listed as supported for the zone the cluster is running in.
+- **check_serverconfig_valid_master_versions**: If true, will raise a violation for
+  any cluster running an out of date master version. New clusters can only
+  be created with a supported master version.
+- **allowed_nodepool_versions**: Optional, if not included all versions are allowed.
+  The list of rules for what versions are allowed on nodes.
+  - **major**: The major version that is allowed.
+  - **minor**: Optional, the minor version that is allowed. If not included, all minor versions are allowed.
+  - **operator**: Optional, defaults to =, can be one of (=, >, <, >=, <=). The operator determines
+    how the current version compares with the allowed version. If a minor version is not included,
+    the operator applies to major version. Otherwise it applies to minor versions within a single major version.
+
+## Blacklist rules
+
+```yaml
+rules:
+  - blacklist: Emerging Threat blacklist
+    url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
+```
+- **blacklist**: The name of your blacklist
+- **url**: Url that contains a list of IPs to check against
+
 ## Google Groups rules
 
 ```yaml
