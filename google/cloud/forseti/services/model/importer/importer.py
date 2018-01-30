@@ -94,7 +94,7 @@ class InventoryImporter(object):
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
-            inventory_id (int): Inventory id to import from
+            inventory_id (str): Inventory id to import from
             *args (list): Unused.
             **kwargs (dict): Unused.
         """
