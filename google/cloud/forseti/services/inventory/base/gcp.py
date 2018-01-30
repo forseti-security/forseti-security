@@ -361,7 +361,7 @@ class ApiClientImpl(ApiClient):
     def fetch_container_serviceconfig(self, projectid, zone):
         """Kubernetes Engine per zone service config from gcp API call.
 
-        Yields:
+        Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
         return self.container.get_serverconfig(projectid, zone)

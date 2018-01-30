@@ -726,6 +726,7 @@ class Storage(BaseStorage):
             raise Exception('Opened storage readonly')
         self.index.add_warning(self.session, message)
 
+    # pylint: disable=too-many-locals
     def iter(self,
              type_list=None,
              fetch_iam_policy=False,
@@ -806,6 +807,7 @@ class Storage(BaseStorage):
 
         for row in base_query.yield_per(PER_YIELD):
             yield row
+    # pylint: enable=too-many-locals
 
     def __enter__(self):
         """To support with statement for auto closing."""

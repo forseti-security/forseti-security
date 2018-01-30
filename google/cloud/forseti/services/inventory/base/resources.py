@@ -701,7 +701,7 @@ class KubernetesClusterIterator(ResourceIterator):
         if self.resource.container_api_enabled():
             for data in gcp.iter_container_clusters(
                     projectid=self.resource['projectId']):
-              yield FACTORIES['kubernetes_cluster'].create_new(data)
+                yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 class ComputeIterator(ResourceIterator):
     def iter(self):
