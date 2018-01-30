@@ -56,7 +56,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         LOGGER.info('Run notifier service with inventory index id: %s',
                     request.inventory_index_id)
         result = self.notifier.run(
-            request.config_dir,
+            request.config_file,
             request.inventory_index_id,
             self.service_config)
 
@@ -74,7 +74,7 @@ class GrpcNotifierFactory(object):
     def create_and_register_service(self, server):
         """Create and register the Notifier service."""
         service = GrpcNotifier(notifier_api=notifier,
-                              service_config=self.config)
+                               service_config=self.config)
         notifier_pb2_grpc.add_NotifierServicer_to_server(service, server)
         LOGGER.info("service %s created and registered", service)
         return service

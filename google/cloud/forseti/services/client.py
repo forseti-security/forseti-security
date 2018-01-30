@@ -111,11 +111,19 @@ class NotifierClient(ForsetiClient):
         echo = self.stub.Ping(notifier_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def run(self, config_dir, inventory_index_id):
-        """Runs the notifier"""
+    def run(self, config_file, inventory_index_id):
+        """Runs the notifier.
+
+        Args:
+            config_file (str): Path the to the forseti config file.
+            inventory_index_id (int): Inventory Index Id.
+
+        Returns:
+            Any service response.
+        """
 
         request = notifier_pb2.RunRequest(
-            config_dir=config_dir,
+            config_file=config_file,
             inventory_index_id=inventory_index_id)
         return self.stub.Run(request,
                              metadata=self.metadata())

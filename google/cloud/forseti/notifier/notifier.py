@@ -54,11 +54,15 @@ try:
         'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass
+flags.DEFINE_string(
+    'inventory_index_id',
+    '-1',
+    'Inventory index id')
+
 
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-# pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
 
@@ -81,7 +85,6 @@ def find_pipelines(pipeline_name):
                 return obj
     except ImportError, e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
-# pylint: enable=inconsistent-return-statements
 
 def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
     """Get latest snapshot timestamp.
@@ -145,14 +148,15 @@ def process(message):
             payload.get('email_description'))
         return
 
-def run(forseti_config, model_name=None, service_config=None):
+# pylint: disable=unused-argument
+def run(forseti_config, inventory_index_id, service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
         forseti_config (dict): Forseti 1.0 config
-        model_name (str): name of the data model
+        inventory_index_id (str): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs
 
     Returns:
@@ -233,7 +237,7 @@ def main(_):
         int: Status code.
     """
 
-    run(FLAGS.forseti_config)
+    run(FLAGS.forseti_config, FLAGS.inventory_index_id)
     return 0
 
 
