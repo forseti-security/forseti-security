@@ -168,8 +168,7 @@ def run(forseti_config, inventory_index_id, service_config=None):
 
     try:
         configs = file_loader.read_and_parse_file(forseti_config)
-    except IOError as e:
-        print e
+    except IOError:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try again.')
         sys.exit()
