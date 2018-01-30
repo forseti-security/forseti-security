@@ -22,7 +22,7 @@ get the correct version of Forseti. The deployment template's startup
 script has release-specific code, so things will break if you use a startup script that 
 is out of sync with the deployed release.
 
-Note: If you used the Forseti setup wizard to deploy your `deploy-forseti.yaml` 
+Note: If you used the Forseti setup wizard to deploy then your `deploy-forseti.yaml` 
 will have a timestamp suffix, e.g. `deploy-forseti-20171001000000.yaml`.
 
 1. Sync master branch:
