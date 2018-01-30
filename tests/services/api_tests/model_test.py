@@ -14,6 +14,7 @@
 """Tests the Forseti Server model service."""
 
 import unittest
+import json
 from tests.services.api_tests.api_tester import ModelTestRunner
 from tests.services.utils.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
@@ -553,6 +554,8 @@ class PlaygroundTest(ForsetiTestCase):
 
         def test(client):
             """Test implementation with API client."""
+            model_before = client.model.get_model(client.config['handle'])
+            self.assertTrue(json.loads(model_before.description)['pristine'])
             client.playground.add_role('role/t',[
                 'permission/a',
                 'permission/c',
@@ -568,6 +571,8 @@ class PlaygroundTest(ForsetiTestCase):
                 'role/t permission/f',
                 'role/t permission/t'
                 ]))
+            model_after = client.model.get_model(client.config['handle'])
+            self.assertFalse(json.loads(model_after.description)['pristine'])
         self.setup.run(test)
 
     def test_delete_role(self):
@@ -610,6 +615,8 @@ class PlaygroundTest(ForsetiTestCase):
                 'group/c bucket/bucket2 permission/d',
                 'group/c project/project2 permission/e',
                 'group/c project/project2 permission/d']))
+            model_after = client.model.get_model(client.config['handle'])
+            self.assertFalse(json.loads(model_after.description)['pristine'])
         self.setup.run(test)
 
     def test_add_member(self):
@@ -635,6 +642,8 @@ class PlaygroundTest(ForsetiTestCase):
                 'user/t vm/instance-1 role/b',
                 'user/t bucket/bucket1 role/b'
                 ]))
+            model_after = client.model.get_model(client.config['handle'])
+            self.assertFalse(json.loads(model_after.description)['pristine'])
         self.setup.run(test)
 
     def test_delete_member(self):
@@ -662,6 +671,8 @@ class PlaygroundTest(ForsetiTestCase):
             access_details = expand_message(response.accesses, "access_by_member")
             self.assertEqual(access_details,set([
                 ]))
+            model_after = client.model.get_model(client.config['handle'])
+            self.assertFalse(json.loads(model_after.description)['pristine'])
         self.setup.run(test_delete_group)
 
         def test_delete_membership(client):
@@ -689,6 +700,8 @@ class PlaygroundTest(ForsetiTestCase):
             access_details = expand_message(response.accesses, "access_by_member")
             self.assertEqual(access_details,set([
                 ]))
+            model_after = client.model.get_model(client.config['handle'])
+            self.assertFalse(json.loads(model_after.description)['pristine'])
         self.setup.run(test_delete_membership)
 
     def test_set_policy(self):
@@ -736,6 +749,8 @@ class PlaygroundTest(ForsetiTestCase):
                 'group/b project/project2 role/b',
                 'user/d project/project2 role/b',
                 ]))
+            model_after = client.model.get_model(client.config['handle'])
+            self.assertFalse(json.loads(model_after.description)['pristine'])
         self.setup.run(test)
 
 
