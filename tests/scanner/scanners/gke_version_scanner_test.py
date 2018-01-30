@@ -18,12 +18,12 @@ import unittest
 import mock
 
 from tests import unittest_utils
-from google.cloud.security.common.gcp_type import (
+from google.cloud.forseti.common.gcp_type import (
     gke_cluster as gke_cluster_type)
-from google.cloud.security.common.gcp_type import (
+from google.cloud.forseti.common.gcp_type import (
     organization as organization_type)
-from google.cloud.security.common.gcp_type import project as project_type
-from google.cloud.security.scanner.scanners import gke_version_scanner
+from google.cloud.forseti.common.gcp_type import project as project_type
+from google.cloud.forseti.scanner.scanners import gke_version_scanner
 
 
 # pylint: disable=bad-indentation
@@ -48,13 +48,13 @@ class GkeVersionScannerTest(unittest_utils.ForsetiTestCase):
     def setUp(self):
         # patch the daos
         self.org_patcher = mock.patch(
-            'google.cloud.security.common.data_access.'
+            'google.cloud.forseti.common.data_access.'
             'org_resource_rel_dao.OrgResourceRelDao')
         self.mock_org_rel_dao = self.org_patcher.start()
         self.mock_org_rel_dao.return_value = FakeOrgDao()
 
         self.project_patcher = mock.patch(
-            'google.cloud.security.common.data_access.'
+            'google.cloud.forseti.common.data_access.'
             'project_dao.ProjectDao')
         self.mock_project_dao = self.project_patcher.start()
         self.mock_project_dao.return_value = FakeProjectDao()

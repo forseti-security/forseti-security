@@ -14,10 +14,10 @@
 
 """Scanner for the GKE version rules engine."""
 
-from google.cloud.security.common.data_access import gke_dao
-from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner.audit import gke_version_rules_engine
-from google.cloud.security.scanner.scanners import base_scanner
+from google.cloud.forseti.common.data_access import gke_dao
+from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.scanner.audit import gke_version_rules_engine
+from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = log_util.get_logger(__name__)
 

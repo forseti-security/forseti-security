@@ -18,14 +18,14 @@ import operator as op
 import threading
 from pkg_resources import parse_version
 
-from google.cloud.security.common.data_access import org_resource_rel_dao
-from google.cloud.security.common.data_access import project_dao
-from google.cloud.security.common.gcp_type import errors as resource_errors
-from google.cloud.security.common.gcp_type import resource as resource_mod
-from google.cloud.security.common.gcp_type import resource_util
-from google.cloud.security.common.util import log_util
-from google.cloud.security.scanner.audit import base_rules_engine as bre
-from google.cloud.security.scanner.audit import errors as audit_errors
+from google.cloud.forseti.common.data_access import org_resource_rel_dao
+from google.cloud.forseti.common.data_access import project_dao
+from google.cloud.forseti.common.gcp_type import errors as resource_errors
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
+from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.scanner.audit import base_rules_engine as bre
+from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
 LOGGER = log_util.get_logger(__name__)
