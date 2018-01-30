@@ -11,7 +11,7 @@ There are four steps steps to upgrading existing deployments of Forseti.
  1. [Upgrade the codebase](#get-the-latest-version)
  1. [Check for differences in the deployment](#check-for-changes-to-the-deployment-template)
  1. [Check for and enable any new capabilities](#enable-new-features)
- 1. [Upgrade the deployment](update-the-deployment)
+ 1. [Upgrade the deployment](#update-the-deployment)
 
 ## Get the latest version
 
