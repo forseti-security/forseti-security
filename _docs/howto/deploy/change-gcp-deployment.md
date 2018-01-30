@@ -77,20 +77,19 @@ properties have been changed and/or added.
    ```yaml
    region: $(ref.cloudsql-instance.region)
 
-   network-host-project-id: NETWORK_HOST_PROJECT_ID
-   vpc-name: VPC_NAME
-   subnetwork-name: SUBNETWORK_NAME
+   network-host-project-id: YOUR_PROJECT_ID
+   vpc-name: default 
+   subnetwork-name: default 
    ```
 
 To upgrade, copy these new properties to your generated 
-deploy-forseti-<TIMESTAMP>.yaml. Then, update the placeholders to the values 
+`deploy-forseti-<TIMESTAMP>.yaml`. Then, update the placeholders to the values 
 you want to use. For example, the id of the project that Forseti is 
 running in, "default", "default".
 
-1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify if your ```branch-name``` 
+1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify if your `branch-name` 
    property is hardcoded to a specific version. If so, update it to the latest 
    version.
-   
 
 ### Change deployment properties
 
@@ -104,26 +103,6 @@ running in, "default", "default".
    ```
 
 1. Edit `deploy-forseti-<TIMESTAMP>.yaml` and update the values of the new properties.
-
-For example, from v1.1.7 to v1.1.10, the following Compute Engine instance 
-properties have been changed and/or added.
-
-   ```yaml
-   region: $(ref.cloudsql-instance.region)
-
-   network-host-project-id: NETWORK_HOST_PROJECT_ID
-   vpc-name: VPC_NAME
-   subnetwork-name: SUBNETWORK_NAME
-   ```
-
-To upgrade, copy these new properties to your generated 
-deploy-forseti-<TIMESTAMP>.yaml. Then, update the placeholders to the values 
-you want to use. For example, the id of the project that Forseti is 
-running in, "default", "default".
-
-1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify if your ```branch-name``` 
-   property is hardcoded to a specific version. If so, update it to the latest 
-   version.
 
 ## Enable new features
 
@@ -144,10 +123,10 @@ To do this its best to:
 
 Run the following update command:
 
-```bash
-$ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
-  --config path/to/deploy-forseti-<TIMESTAMP>.yaml
-```
+  ```bash
+  $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
+    --config path/to/deploy-forseti-<TIMESTAMP>.yaml
+  ```
 
 If you changed the properties in the `deploy-forseti-<TIMESTAMP>.yaml` "Compute Engine" 
 section or the startup script in `forseti-instance.py`, you need to reset 
