@@ -67,7 +67,7 @@ rules:
     such as `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
     `user:*@company.com` (anyone with an identity at company.com).
 
-## Kubernetes Engine (KE) rules
+## Kubernetes Engine rules
 
 ### Rule definition
 
