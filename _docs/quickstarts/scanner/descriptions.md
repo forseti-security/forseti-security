@@ -188,7 +188,7 @@ Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the
 [`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/ke_rules.yaml)
-rule file.
+file.
 
 The KE version scanner depends on the following Forseti Inventory pipelines:
 
