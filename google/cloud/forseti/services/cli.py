@@ -349,6 +349,33 @@ def define_scanner_parser(parent):
         help='Scanner config file')
 
 
+def define_notifier_parser(parent):
+    """Define the notifier service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser('notifier', help='notifier service')
+
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    create_notifier_parser = action_subparser.add_parser(
+        'run',
+        help='Run the notifier')
+
+    create_notifier_parser.add_argument(
+        '--config_file',
+        help='Fully qualified path to Forseti config file')
+    create_notifier_parser.add_argument(
+        '--id',
+        type=int,
+        default=-1,
+        help='Inventory id to notify violations on'
+        )
+
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -547,6 +574,7 @@ def create_parser(parser_cls, config_env):
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
     define_scanner_parser(service_subparsers)
+    define_notifier_parser(service_subparsers)
     return main_parser
 
 
@@ -656,6 +684,28 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
+        result = client.run(config.config_file)
+        output.write(result)
+
+    actions = {
+        'run': do_run}
+
+    actions[config.action]()
+
+
+def run_notifier(client, config, output, _):
+    """Run notifier commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+            _ (object): Configuration environment.
+    """
+
+    client = client.notifier
+
+    def do_run():
+        """Run the notifier."""
         result = client.run(config.config_file)
         output.write(result)
 
@@ -947,6 +997,7 @@ SERVICES = {
     'config': run_config,
     'model': run_model,
     'scanner': run_scanner,
+    'notifier': run_notifier,
     }
 
 
