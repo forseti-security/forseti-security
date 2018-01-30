@@ -106,7 +106,7 @@ rules:
     how the current version compares with the allowed version. If a minor version is not included,
     the operator applies to major version. Otherwise it applies to minor versions within a single major version.
 
-# Upgrade notes
+### Upgrade notes
 To enable the KE inventory, add the following to the inventory section in your forseti_confi.yaml file.
 
 ```
@@ -149,7 +149,7 @@ rules:
 - **blacklist**: The name of your blacklist
 - **url**: Url that contains a list of IPs to check against
 
-# Upgrade notes
+###Upgrade notes
 To enable the blacklist scanner, add the followings to the scanner section in your forseti_conf.yaml file.
 
 ```
