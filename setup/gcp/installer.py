@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" GCP Installer runner.
+""" GCP Installer.
 
 This has been tested with python 2.7.
 """

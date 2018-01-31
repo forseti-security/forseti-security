@@ -21,9 +21,9 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 import mock
-from setup.installer.environment import gcloud_env
+from setup.gcp.environment import gcloud_env
 
-from setup.installer.environment import utils
+from setup.gcp.environment import utils
 from tests.unittest_utils import ForsetiTestCase
 
 FAKE_PROJECT = 'fake-project'
