@@ -59,9 +59,11 @@ class InventoryTypeClass(object):
     DATASET_POLICY = 'dataset_policy'
     BILLING_INFO = 'billing_info'
     ENABLED_APIS = 'enabled_apis'
+    SERVICE_CONFIG = 'kubernetes_service_config'
+
     SUPPORTED_TYPECLASS = frozenset(
         [RESOURCE, IAM_POLICY, GCS_POLICY, DATASET_POLICY, BILLING_INFO,
-         ENABLED_APIS])
+         ENABLED_APIS, SERVICE_CONFIG])
 
 
 class InventoryIndex(BASE):
@@ -194,6 +196,7 @@ class Inventory(BASE):
         dataset_policy = resource.get_dataset_policy()
         billing_info = resource.get_billing_info()
         enabled_apis = resource.get_enabled_apis()
+        service_config = resource.get_kubernetes_service_config()
 
         rows = []
         rows.append(
@@ -272,6 +275,20 @@ class Inventory(BASE):
                     parent_type=resource.type(),
                     other=None,
                     error=None))
+
+        if service_config:
+            rows.append(
+                Inventory(
+                    index=index.id,
+                    type_class=InventoryTypeClass.SERVICE_CONFIG,
+                    key=resource.key(),
+                    type=resource.type(),
+                    data=json.dumps(service_config),
+                    parent_key=resource.key(),
+                    parent_type=resource.type(),
+                    other=None,
+                    error=None))
+
         return rows
 
     def copy_inplace(self, new_row):
@@ -712,6 +729,7 @@ class Storage(BaseStorage):
             raise Exception('Opened storage readonly')
         self.index.add_warning(self.session, message)
 
+    # pylint: disable=too-many-locals
     def iter(self,
              type_list=None,
              fetch_iam_policy=False,
@@ -719,6 +737,7 @@ class Storage(BaseStorage):
              fetch_dataset_policy=False,
              fetch_billing_info=False,
              fetch_enabled_apis=False,
+             fetch_service_config=False,
              with_parent=False):
         """Iterate the objects in the storage.
 
@@ -729,6 +748,7 @@ class Storage(BaseStorage):
             fetch_dataset_policy (bool): Yield dataset policies.
             fetch_billing_info (bool): Yield project billing info.
             fetch_enabled_apis (bool): Yield project enabled APIs info.
+            fetch_service_config (bool): Yield container service config info.
             with_parent (bool): Join parent with results, yield tuples.
 
         Yields:
@@ -758,6 +778,10 @@ class Storage(BaseStorage):
             filters.append(
                 Inventory.type_class == InventoryTypeClass.ENABLED_APIS)
 
+        elif fetch_service_config:
+            filters.append(
+                Inventory.type_class == InventoryTypeClass.SERVICE_CONFIG)
+
         else:
             filters.append(
                 Inventory.type_class == InventoryTypeClass.RESOURCE)
@@ -786,6 +810,7 @@ class Storage(BaseStorage):
 
         for row in base_query.yield_per(PER_YIELD):
             yield row
+    # pylint: enable=too-many-locals
 
     def get_root(self):
         return self.session.query(Inventory).filter(

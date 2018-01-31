@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_api import cloud_resource_manager
 from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
 from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import container
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
 from google.cloud.forseti.common.gcp_api import storage
@@ -138,6 +139,7 @@ class ApiClientImpl(ApiClient):
         self.cloudbilling = None
         self.cloudsql = None
         self.compute = None
+        self.container = None
         self.iam = None
         self.servicemanagement = None
         self.storage = None
@@ -194,6 +196,13 @@ class ApiClientImpl(ApiClient):
             object: Client
         """
         return compute.ComputeClient(self.config)
+
+    def _create_container(self):
+        """Create Kubernetes Engine API client
+        Returns:
+            object: Client
+        """
+        return container.ContainerClient(self.config)
 
     def _create_iam(self):
         """Create IAM API client
@@ -335,6 +344,27 @@ class ApiClientImpl(ApiClient):
         for instance in self.appengine.list_instances(
                 projectid, serviceid, versionid):
             yield instance
+
+    @create_lazy('container', _create_container)
+    def iter_container_clusters(self, projectid):
+        """Kubernetes Engine Cluster Iterator from gcp API call.
+
+        Yields:
+            dict: Generator of Kubernetes Engine Cluster resources.
+        """
+        for cluster in self.container.get_clusters(projectid):
+            # Don't store the master auth data in the database.
+            cluster.pop('masterAuth', None)
+            yield cluster
+
+    @create_lazy('container', _create_container)
+    def fetch_container_serviceconfig(self, projectid, zone):
+        """Kubernetes Engine per zone service config from gcp API call.
+
+        Returns:
+            dict: Generator of Kubernetes Engine Cluster resources.
+        """
+        return self.container.get_serverconfig(projectid, zone)
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):

@@ -24,6 +24,10 @@ import ctypes
 from functools import partial
 import json
 
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
+
 
 def from_root_id(client, root_id):
     root_map = {
@@ -175,6 +179,10 @@ class Resource(object):
     def get_enabled_apis(self, client=None):
         return None
 
+    @cached('service_config')
+    def get_kubernetes_service_config(self, client=None):
+        return None
+
     def stack(self):
         if self._stack is None:
             raise Exception('Stack not initialized yet')
@@ -296,6 +304,11 @@ class Project(Resource):
         return (self.billing_enabled() and
                 self.is_api_enabled('compute.googleapis.com'))
 
+    def container_api_enabled(self):
+        # Compute API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('container.googleapis.com'))
+
     def storage_api_enabled(self):
         return self.is_api_enabled('storage-component.googleapis.com')
 
@@ -341,6 +354,26 @@ class GcsObject(Resource):
     def key(self):
         return self['id']
 
+class KubernetesCluster(Resource):
+    @cached('service_config')
+    def get_kubernetes_service_config(self, client=None):
+        return client.fetch_container_serviceconfig(self.parent().key(),
+                                                    self.zone())
+
+    def key(self):
+        # Clusters do not have globally unique IDs, use size_t hash of selfLink
+        return '%u' % ctypes.c_size_t(hash(self['selfLink'])).value
+
+    def type(self):
+        return 'kubernetes_cluster'
+
+    def zone(self):
+        try:
+            self_link_parts = self['selfLink'].split('/')
+            return self_link_parts[self_link_parts.index('zones')+1]
+        except KeyError:
+            LOGGER.warn('selfLink not found: %s', self._data)
+            return ''
 
 class DataSet(Resource):
     @cached('dataset_policy')
@@ -662,6 +695,13 @@ class AppEngineInstanceIterator(ResourceIterator):
                 versionid=self.resource['id']):
             yield FACTORIES['appengine_instance'].create_new(data)
 
+class KubernetesClusterIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.container_api_enabled():
+            for data in gcp.iter_container_clusters(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 class ComputeIterator(ResourceIterator):
     def iter(self):
@@ -869,6 +909,7 @@ FACTORIES = {
             CloudSqlIterator,
             ServiceAccountIterator,
             AppEngineAppIterator,
+            KubernetesClusterIterator,
             ComputeIterator,
             ImageIterator,
             InstanceIterator,
@@ -926,6 +967,12 @@ FACTORIES = {
     'dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DataSet,
+        'contains': [
+            ]}),
+
+    'kubernetes_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesCluster,
         'contains': [
             ]}),
 

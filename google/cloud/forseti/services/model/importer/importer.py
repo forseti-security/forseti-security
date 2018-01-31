@@ -147,7 +147,8 @@ class InventoryImporter(object):
             'forwardingrule',
             'network',
             'subnetwork',
-            'cloudsqlinstance'
+            'cloudsqlinstance',
+            'kubernetes_cluster',
             ]
 
         gsuite_type_list = [
@@ -191,6 +192,12 @@ class InventoryImporter(object):
                                              fetch_dataset_policy=True):
                     item_counter += 1
                     self._convert_dataset_policy(policy)
+                self.session.flush()
+
+                for config in inventory.iter(
+                        gcp_type_list, fetch_service_config=True):
+                    item_counter += 1
+                    self._convert_service_config(config)
                 self.session.flush()
 
                 for resource in inventory.iter(gsuite_type_list):
@@ -485,6 +492,9 @@ class InventoryImporter(object):
             'cloudsqlinstance': (None,
                                  self._convert_cloudsqlinstance,
                                  None),
+            'kubernetes_cluster': (None,
+                                   self._convert_kubernetes_cluster,
+                                   None),
             None: (None, None, None),
             }
 
@@ -554,6 +564,45 @@ class InventoryImporter(object):
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(bucket, resource)
+
+    def _convert_kubernetes_cluster(self, cluster):
+        """Convert an AppEngine resource to a database object.
+
+        Args:
+            cluster (dict): A Kubernetes cluster resource to store.
+        """
+        data = cluster.get_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            cluster)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=cluster.get_key(),
+            type=cluster.get_type(),
+            display_name=data.get('name', ''),
+            data=cluster.get_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(cluster, resource)
+
+    def _convert_service_config(self, service_config):
+        """Convert Kubernetes Service Config to a database object.
+
+        Args:
+            service_config (dict): A Service Config resource to store.
+        """
+        sc_type_name = to_type_name(service_config.get_type_class(),
+                                    service_config.get_key())
+        parent, full_res_name = self._get_parent(service_config)
+        sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
+        self.session.add(
+            self.dao.TBL_RESOURCE(
+                full_name=sc_res_name,
+                type_name=sc_type_name,
+                name=service_config.get_key(),
+                type=service_config.get_type_class(),
+                data=service_config.get_data_raw(),
+                parent=parent))
 
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.
