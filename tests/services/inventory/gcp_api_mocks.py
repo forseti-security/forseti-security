@@ -35,6 +35,7 @@ def mock_gcp():
     bq_patcher = _mock_bigquery()
     cloudbilling_patcher = _mock_cloudbilling()
     cloudsql_patcher = _mock_cloudsql()
+    container_patcher = _mock_container()
     crm_patcher = _mock_crm()
     gce_patcher = _mock_gce()
     gcs_patcher = _mock_gcs()
@@ -48,6 +49,7 @@ def mock_gcp():
         bq_patcher.stop()
         cloudbilling_patcher.stop()
         cloudsql_patcher.stop()
+        container_patcher.stop()
         crm_patcher.stop()
         gce_patcher.stop()
         gcs_patcher.stop()
@@ -162,6 +164,25 @@ def _mock_cloudsql():
     mock_sql.get_instances.side_effect = _mock_sql_get_instances
 
     return sql_patcher
+
+
+def _mock_container():
+    """Mock admin directory client."""
+
+    def _mock_ke_get_clusters(projectid):
+        return results.KE_GET_CLUSTERS[projectid]
+
+    def _mock_ke_get_service_config(projectid, zone):
+        del projectid
+        return results.KE_GET_SERVICECONFIG[zone]
+
+    container_patcher = mock.patch(
+        MODULE_PATH + 'container.ContainerClient', spec=True)
+    mock_ke = container_patcher.start().return_value
+    mock_ke.get_clusters.side_effect = _mock_ke_get_clusters
+    mock_ke.get_serverconfig.side_effect = _mock_ke_get_service_config
+
+    return container_patcher
 
 
 def _mock_crm():
