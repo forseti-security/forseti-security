@@ -79,14 +79,22 @@ and include values for any new deployment variables.
      ```yaml
      region: $(ref.cloudsql-instance.region)
 
-     network-host-project-id: YOUR_PROJECT_ID
-     vpc-name: default 
-     subnetwork-name: default 
+     network-host-project-id: {NETWORK_HOST_PROJECT_ID}
+     vpc-name: {VPC_NAME}
+     subnetwork-name: {SUBNETWORK_NAME}
      ```
 
     To upgrade, copy these new properties to your generated 
     `deploy-forseti-<TIMESTAMP>.yaml`. Then, update the placeholders to the values 
     you want to use.
+    For example:
+    ```yaml
+     region: $(ref.cloudsql-instance.region)
+
+     network-host-project-id: YOUR_PROJECT_ID
+     vpc-name: default
+     subnetwork-name: default
+     ```
 
 1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify your `branch-name` or `release-version`
    property is set correctly as discussed above.
