@@ -1004,13 +1004,17 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def delete_role_by_name(cls, session, role_name):
             """Deletes a role by name."""
-
             LOGGER.info("Deleting an existing role, role_name = %s,"
                         " session = %s", role_name, session)
-            session.query(Role).filter(Role.name == role_name).delete()
-            role_permission_delete = role_permissions.delete(
-                role_permissions.c.roles_name == role_name)
-            session.execute(role_permission_delete)
+            bindings_to_be_delete = [binding for binding in
+                                     session.query(Binding)
+                                     .filter(Binding.role_name == role_name)
+                                     .all()]
+            session.delete(session.query(Role)
+                           .filter(Role.name == role_name)
+                           .first())
+            for binding in bindings_to_be_delete:
+                session.delete(binding)
             session.commit()
 
         @classmethod
@@ -1048,14 +1052,11 @@ def define_model(model_name, dbengine, model_seed):
                          group_members.c.group_name == parent_type_name))
                 session.execute(group_members_delete)
             else:
-                (session.query(Member)
-                 .filter(Member.name == member_type_name)
-                 .delete())
-                group_members_delete = group_members.delete(
-                    group_members.c.members_name == member_type_name)
-                session.execute(group_members_delete)
-            session.commit()
-            if denorm:
+                member_to_be_deleted = session.query(Member).filter(
+                    Member.name == member_type_name).first()
+                session.delete(member_to_be_deleted)
+                session.commit()
+            if denorm or member_type_name.startswith('group'):
                 cls.denorm_group_in_group(session)
 
         @classmethod
@@ -1122,31 +1123,6 @@ def define_model(model_name, dbengine, model_seed):
                                              type_name_prefix,
                                              type_prefix,
                                              name_prefix))
-
-        @classmethod
-        def delete_resource_by_name(cls, session, resource_type_name):
-            """Deletes a resource specified via full name."""
-
-            LOGGER.info("Deleting resource via full name, "
-                        "resource_type_name = %s, session = %s",
-                        resource_type_name, session)
-            resource = (
-                session.query(Resource)
-                .filter(Resource.type_name == resource_type_name).one())
-
-            # Find all children
-            res_qry = (session.query(Resource)
-                       .filter(Resource.full_name.startswith(
-                           resource.full_name)))
-
-            res_type_names = [r.type_name for r in res_qry.yield_per(1024)]
-            binding_qry = (
-                session.query(Binding)
-                .filter(Binding.resource_type_name.in_(res_type_names)))
-            binding_qry.delete(synchronize_session='fetch')
-
-            res_qry.delete(synchronize_session='fetch')
-            session.commit()
 
         @classmethod
         def add_resource_by_name(cls,

@@ -29,6 +29,60 @@ class Explainer(object):
     def __init__(self, config):
         self.config = config
 
+    def list_resources(self, model_name, full_resource_name_prefix):
+        """Lists resources by resource name prefix."""
+
+        LOGGER.debug("Listing resources, model_name = %s,"
+                     " full_resource_name_prefix = %s",
+                     model_name, full_resource_name_prefix)
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            return data_access.list_resources_by_prefix(
+                session, full_resource_name_prefix)
+
+    def list_group_members(self, model_name, member_name_prefix):
+        """Lists a member from the model."""
+
+        LOGGER.debug("Listing Group members, model_name = %s, "
+                     "member_name_prefix = %s", model_name, member_name_prefix)
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            return data_access.list_group_members(session, member_name_prefix)
+
+    def list_roles(self, model_name, role_name_prefix):
+        """Lists the role in the model matching the prefix."""
+
+        LOGGER.info("Listing roles, model_name = %s,"
+                    " role_name_prefix = %s", model_name, role_name_prefix)
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            return data_access.list_roles_by_prefix(session, role_name_prefix)
+
+    def get_iam_policy(self, model_name, resource):
+        """Gets the IAM policy for the resource."""
+
+        LOGGER.debug("Retrieving IAM policy, model_name = %s, resource = %s",
+                     model_name, resource)
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            return data_access.get_iam_policy(session, resource)
+
+    def check_iam_policy(self, model_name, resource, permission, identity):
+        """Checks access according to IAM policy for the resource."""
+
+        LOGGER.debug("Checking IAM policy, model_name = %s, resource = %s,"
+                     " permission = %s, identity = %s",
+                     model_name, resource, permission, identity)
+        model_manager = self.config.model_manager
+        scoped_session, data_access = model_manager.get(model_name)
+        with scoped_session as session:
+            return data_access.check_iam_policy(
+                session, resource, permission, identity)
+
     def explain_denied(self, model_name, member, resources, permissions, roles):
         """Provides information on granting a member access to a resource."""
 
