@@ -82,7 +82,7 @@ class CrawlerTest(ForsetiTestCase):
             if item.get_enabled_apis():
                 item_counts.setdefault('enabled_apis', 0)
                 item_counts['enabled_apis'] += 1
-            if item.get_container_service_config():
+            if item.get_kubernetes_service_config():
                 item_counts.setdefault('service_config', 0)
                 item_counts['service_config'] += 1
 

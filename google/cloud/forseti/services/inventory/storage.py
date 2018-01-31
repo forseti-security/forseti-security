@@ -59,7 +59,7 @@ class InventoryTypeClass(object):
     DATASET_POLICY = 'dataset_policy'
     BILLING_INFO = 'billing_info'
     ENABLED_APIS = 'enabled_apis'
-    SERVICE_CONFIG = 'container_service_config'
+    SERVICE_CONFIG = 'kubernetes_service_config'
 
     SUPPORTED_TYPECLASS = frozenset(
         [RESOURCE, IAM_POLICY, GCS_POLICY, DATASET_POLICY, BILLING_INFO,
@@ -196,7 +196,7 @@ class Inventory(BASE):
         dataset_policy = resource.get_dataset_policy()
         billing_info = resource.get_billing_info()
         enabled_apis = resource.get_enabled_apis()
-        service_config = resource.get_container_service_config()
+        service_config = resource.get_kubernetes_service_config()
 
         rows = []
         rows.append(

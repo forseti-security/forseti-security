@@ -180,7 +180,7 @@ class Resource(object):
         return None
 
     @cached('service_config')
-    def get_container_service_config(self, client=None):
+    def get_kubernetes_service_config(self, client=None):
         return None
 
     def stack(self):
@@ -356,7 +356,7 @@ class GcsObject(Resource):
 
 class KubernetesCluster(Resource):
     @cached('service_config')
-    def get_container_service_config(self, client=None):
+    def get_kubernetes_service_config(self, client=None):
         return client.fetch_container_serviceconfig(self.parent().key(),
                                                     self.zone())
 

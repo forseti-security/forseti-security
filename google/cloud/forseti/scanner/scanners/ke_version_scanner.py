@@ -117,7 +117,7 @@ class KeVersionScanner(base_scanner.BaseScanner):
             for ke_cluster in data_access.scanner_iter(
                     session, 'kubernetes_cluster'):
                 service_config = list(data_access.scanner_iter(
-                    session, 'container_service_config',
+                    session, 'kubernetes_service_config',
                     parent_type_name=ke_cluster.type_name))[0]
 
                 project_id = ke_cluster.parent.name

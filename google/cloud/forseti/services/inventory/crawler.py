@@ -84,7 +84,7 @@ class Crawler(crawler.Crawler):
             resource.get_cloudsql_policy(self.get_client())
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())
-            resource.get_container_service_config(self.get_client())
+            resource.get_kubernetes_service_config(self.get_client())
 
             self.write(resource)
         except Exception as e:

@@ -138,7 +138,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                     project)
                 ke_cluster.data = data
                 sc = data_access.add_resource(
-                    session, 'container_service_config/%s' % name,
+                    session, 'kubernetes_service_config/%s' % name,
                     ke_cluster)
                 sc.data = SERVER_CONFIG
 
