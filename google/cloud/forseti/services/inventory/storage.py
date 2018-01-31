@@ -813,6 +813,11 @@ class Storage(BaseStorage):
     # pylint: enable=too-many-locals
 
     def get_root(self):
+        """get the resource root from the inventory
+
+        Returns:
+            object: A row in gcp_inventory of the root
+        """
         return self.session.query(Inventory).filter(
             and_(
                 Inventory.index == self.index.id,
