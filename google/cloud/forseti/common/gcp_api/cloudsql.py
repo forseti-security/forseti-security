@@ -20,8 +20,6 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.gcp_api.errors import (
-    API_EXECUTION_ERROR_ARG_FORMAT)
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -127,7 +125,7 @@ class CloudsqlClient(object):
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('instances',
-                                                      'project_id',
-                                                      project_id), e)
+            api_exception = api_errors.ApiExecutionError(
+                'instances', 'project_id', project_id, e)
+            LOGGER.error(api_exception)
+            raise api_exception

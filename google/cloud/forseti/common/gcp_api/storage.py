@@ -23,8 +23,6 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.gcp_api.errors import (
-    API_EXECUTION_ERROR_ARG_FORMAT)
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -400,10 +398,12 @@ class StorageClient(object):
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('buckets',
-                                                      'project_id',
-                                                      project_id), e)
+            api_exception = api_errors.ApiExecutionError('buckets',
+                                                         'project_id',
+                                                         project_id,
+                                                         e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_bucket_acls(self, bucket):
         """Gets acls for GCS bucket.
@@ -427,10 +427,10 @@ class StorageClient(object):
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('bucketAccessControls',
-                                                      bucket,
-                                                      'bucket'), e)
+            api_exception = api_errors.ApiExecutionError(
+                'bucketAccessControls',bucket,'bucket', e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_bucket_iam_policy(self, bucket):
         """Gets the IAM policy for a bucket.
@@ -451,10 +451,10 @@ class StorageClient(object):
                          " results = %s", bucket, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('bucketIamPolicy',
-                                                      'bucket',
-                                                      bucket), e)
+            api_exception = api_errors.ApiExecutionError(
+                'bucketIamPolicy','bucket',bucket, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_default_object_acls(self, bucket):
         """Gets acls for GCS bucket.
@@ -478,14 +478,13 @@ class StorageClient(object):
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format(
-                    'defaultObjectAccessControls',
-                    'bucket',
-                    bucket), e)
+            api_exception = api_errors.ApiExecutionError(
+                'defaultObjectAccessControls','bucket',bucket,e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_objects(self, bucket):
-        """Gets all objects in a bucket
+        """Gets all objects in a bucket.
 
         Args:
             bucket (str): The bucket to list to objects in.
@@ -508,10 +507,10 @@ class StorageClient(object):
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('objects',
-                                                      'bucket',
-                                                      bucket), e)
+            api_exception = api_errors.ApiExecutionError(
+                'objects', 'bucket', bucket, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_object_acls(self, bucket, object_name):
         """Gets acls for GCS object.
@@ -537,10 +536,10 @@ class StorageClient(object):
                          bucket, object_name, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('objectAccessControls',
-                                                      'bucket',
-                                                      bucket), e)
+            api_exception = api_errors.ApiExecutionError(
+                'objectAccessControls', 'bucket', bucket, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_object_iam_policy(self, bucket, object_name):
         """Gets the IAM policy for an object.
@@ -564,7 +563,7 @@ class StorageClient(object):
                          bucket, object_name, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('objectIamPolicy',
-                                                      'bucket',
-                                                      bucket), e)
+            api_exception = api_errors.ApiExecutionError(
+                'objectIamPolicy', 'bucket', bucket, e)
+            LOGGER.error(api_exception)
+            raise api_exception

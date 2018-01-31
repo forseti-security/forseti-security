@@ -20,8 +20,6 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.gcp_api.errors import (
-    API_EXECUTION_ERROR_ARG_FORMAT)
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -293,10 +291,10 @@ class IAMClient(object):
                          parent, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('project_roles',
-                                                      'parent',
-                                                      parent), e)
+            api_exception = api_errors.ApiExecutionError(
+                'project_roles', 'parent', parent, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_organization_roles(self, org_id):
         """Get information about custom organization roles.
@@ -323,10 +321,10 @@ class IAMClient(object):
                          org_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('organizations_roles',
-                                                      'name',
-                                                      name), e)
+            api_exception = api_errors.ApiExecutionError(
+                'organizations_roles', 'name', name, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_project_roles(self, project_id):
         """Get information about custom project roles.
@@ -353,10 +351,10 @@ class IAMClient(object):
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('projects_roles',
-                                                      'name',
-                                                      name), e)
+            api_exception = api_errors.ApiExecutionError(
+                'projects_roles', 'name', name, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_service_accounts(self, project_id):
         """Get Service Accounts associated with a project.
@@ -382,10 +380,10 @@ class IAMClient(object):
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('serviceAccounts',
-                                                      'name',
-                                                      name), e)
+            api_exception = api_errors.ApiExecutionError(
+                'serviceAccounts', 'name', name, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_service_account_iam_policy(self, name):
         """Get IAM policy associated with a service account.
@@ -408,11 +406,10 @@ class IAMClient(object):
                          ' account, name = %s, results = %s', name, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format(
-                    'serviceAccountIamPolicy',
-                    'name',
-                    name), e)
+            api_exception = api_errors.ApiExecutionError(
+                'serviceAccountIamPolicy', 'name', name, e)
+            LOGGER.error(api_exception)
+            raise api_exception
 
     def get_service_account_keys(self, name, key_type=None):
         """Get keys associated with the given Service Account.
@@ -450,7 +447,7 @@ class IAMClient(object):
                          name, key_type, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('serviceAccountKeys',
-                                                      'name',
-                                                      name), e)
+            api_exception = api_errors.ApiExecutionError(
+                'serviceAccountKeys', 'name', name, e)
+            LOGGER.error(api_exception)
+            raise api_exception

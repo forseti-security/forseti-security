@@ -30,7 +30,6 @@ class Error(Exception):
         Args:
             message (str): error message
         """
-        LOGGER.error(message)
         super(Error, self).__init__(message)
 
 
@@ -51,6 +50,19 @@ class ApiExecutionError(Error):
             self.CUSTOM_ERROR_MESSAGE.format(
                 resource_name, e, e.content.decode('utf-8')))
         self.http_error = e
+
+    def __init__(self, resource_name, resource_key, resource_value, e):
+        """Initialize.
+
+        Args:
+            resource_name (str): The resource name.
+            resource_key (str): The resource identifier.
+            resource_value (str): Value of the resource identifier.
+            e (Exception): The exception.
+        """
+        formatted_arg = API_EXECUTION_ERROR_ARG_FORMAT.format(
+            resource_name, resource_key, resource_value)
+        self.__init__(formatted_arg, e)
 
 
 class ApiNotEnabledError(Error):
