@@ -23,7 +23,8 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.gcp_api.errors import API_EXECUTION_ERROR_ARG_FORMAT
+from google.cloud.forseti.common.gcp_api.errors \
+    import API_EXECUTION_ERROR_ARG_FORMAT
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -140,9 +141,9 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
 
 
 class _StorageBucketsRepository(
-    repository_mixins.GetIamPolicyQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Storage Buckets repository."""
 
     def __init__(self, **kwargs):
@@ -177,8 +178,8 @@ class _StorageBucketsRepository(
 
 
 class _StorageBucketAclsRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Storage Bucket Access Controls repository."""
 
     def __init__(self, **kwargs):
@@ -192,8 +193,8 @@ class _StorageBucketAclsRepository(
 
 
 class _StorageDefaultObjectAclsRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Storage Default Object Access Controls repository."""
 
     def __init__(self, **kwargs):
@@ -208,9 +209,9 @@ class _StorageDefaultObjectAclsRepository(
 
 
 class _StorageObjectsRepository(
-    repository_mixins.GetIamPolicyQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Iam Projects ServiceAccounts repository."""
 
     def __init__(self, **kwargs):
@@ -299,8 +300,8 @@ class _StorageObjectsRepository(
 
 
 class _StorageObjectAclsRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Storage Object Access Controls repository."""
 
     def __init__(self, **kwargs):
@@ -370,6 +371,7 @@ class StorageClient(object):
             LOGGER.debug("Getting a text file object as a string, "
                          "full_bucket_path = %s, results = %s",
                          full_bucket_path, results)
+            return results
         except errors.HttpError as e:
             LOGGER.error('Unable to download file: %s', e)
             raise
@@ -477,9 +479,10 @@ class StorageClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(
-                API_EXECUTION_ERROR_ARG_FORMAT.format('defaultObjectAccessControls',
-                                                      'bucket',
-                                                      bucket), e)
+                API_EXECUTION_ERROR_ARG_FORMAT.format(
+                    'defaultObjectAccessControls',
+                    'bucket',
+                    bucket), e)
 
     def get_objects(self, bucket):
         """Gets all objects in a bucket
@@ -564,4 +567,4 @@ class StorageClient(object):
             raise api_errors.ApiExecutionError(
                 API_EXECUTION_ERROR_ARG_FORMAT.format('objectIamPolicy',
                                                       'bucket',
-                                                      bucket),e)
+                                                      bucket), e)

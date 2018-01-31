@@ -928,8 +928,8 @@ class ComputeClient(object):
         else:
             paged_results = repository.aggregated_list(project_id)
             flattened_results = _flatten_aggregated_list_results(project_id,
-                                                       paged_results,
-                                                       'instances')
+                                                                 paged_results,
+                                                                 'instances')
         LOGGER.debug('Getting the instances for a project, project_id'
                      ' = %s, flattened_results = %s',
                      project_id, flattened_results)
@@ -1049,8 +1049,8 @@ class ComputeClient(object):
         else:
             paged_results = repository.aggregated_list(project_id)
             flattened_results = _flatten_aggregated_list_results(project_id,
-                                                       paged_results,
-                                                       'subnetworks')
+                                                                 paged_results,
+                                                                 'subnetworks')
         LOGGER.debug('Getting a list of all subnetworks in the project, '
                      'project_id = %s, region = %s, flattened_results = %s',
                      project_id, region, flattened_results)

@@ -25,7 +25,13 @@ API_EXECUTION_ERROR_ARG_FORMAT = '{}, {} = {},'
 class Error(Exception):
     """Base Error class."""
     def __init__(self, message):
+        """Init
+
+        Args:
+            message (str): error message
+        """
         LOGGER.error(message)
+        super(Error, self).__init__(message)
 
 
 class ApiExecutionError(Error):

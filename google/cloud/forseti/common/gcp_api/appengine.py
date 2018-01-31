@@ -280,6 +280,7 @@ class AppEngineClient(object):
             LOGGER.debug("Getting information about a specific service, "
                          "project_id = %s, service_id = %s, results = %s",
                          project_id, service_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
                 LOGGER.warn(e)

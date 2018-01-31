@@ -18,7 +18,8 @@ from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-from google.cloud.forseti.common.gcp_api.errors import API_EXECUTION_ERROR_ARG_FORMAT
+from google.cloud.forseti.common.gcp_api.errors \
+    import API_EXECUTION_ERROR_ARG_FORMAT
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
