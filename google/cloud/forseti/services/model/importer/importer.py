@@ -166,14 +166,15 @@ class InventoryImporter(object):
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_id, True) as inventory:
-
+                root = inventory.get_root()
                 self.model.add_description(json.dumps({
                     "source":"inventory",
                     "source_info":str(inventory.index),
+                    "source_root":self._type_name(root),
                     "pristine":True
                     }))
 
-                for resource in inventory.iter(['organization']):
+                if root.get_type() in ['organization']:
                     self.found_root = True
                 if not self.found_root:
                     raise Exception(

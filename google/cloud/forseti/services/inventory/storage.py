@@ -787,6 +787,15 @@ class Storage(BaseStorage):
         for row in base_query.yield_per(PER_YIELD):
             yield row
 
+    def get_root(self):
+        return self.session.query(Inventory).filter(
+            and_(
+                Inventory.index == self.index.id,
+                Inventory.key == Inventory.parent_key,
+                Inventory.type == Inventory.parent_type,
+                Inventory.type_class == InventoryTypeClass.RESOURCE
+                )).first()
+
     def __enter__(self):
         """To support with statement for auto closing."""
 
