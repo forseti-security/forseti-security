@@ -361,8 +361,8 @@ class CloudResourceManagerClient(object):
         try:
             paged_results = self.repository.projects.list_org_policies(
                 resource_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'policies')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'policies')
             LOGGER.debug("Getting all the org policies for a given project, "
                          "project_id = %s, flattened_results = %s",
                          project_id, flattened_results)
@@ -396,8 +396,8 @@ class CloudResourceManagerClient(object):
         """
         try:
             paged_results = self.repository.organizations.search()
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'organizations')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'organizations')
             LOGGER.debug("Getting organzations that the auth'd account "
                          "has access to, flattened_results = %s",
                          flattened_results)
@@ -442,8 +442,8 @@ class CloudResourceManagerClient(object):
         try:
             paged_results = self.repository.organizations.list_org_policies(
                 resource_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'policies')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'policies')
             LOGGER.debug("Getting all the org policies for a given org, "
                          "org_id = %s, resource_id = %s, "
                          "flattened_results = %s",
@@ -503,8 +503,8 @@ class CloudResourceManagerClient(object):
             paged_results = self.repository.folders.search(query=query)
 
         try:
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'folders')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'folders')
             LOGGER.debug("Getting all the folders that the auth'd account "
                          "has access to, parent = %s, show_deleted = %s, "
                          "flattened_results = %s",
@@ -552,8 +552,8 @@ class CloudResourceManagerClient(object):
         try:
             paged_results = self.repository.folders_v1.list_org_policies(
                 resource_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'policies')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'policies')
             LOGGER.debug("Getting all the org policies of a given folder,"
                          " folder_id = %s, flattened_results = %s",
                          folder_id, flattened_results)

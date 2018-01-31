@@ -20,8 +20,8 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.gcp_api.errors \
-    import API_EXECUTION_ERROR_ARG_FORMAT
+from google.cloud.forseti.common.gcp_api.errors import (
+    API_EXECUTION_ERROR_ARG_FORMAT)
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -402,8 +402,8 @@ class IAMClient(object):
                 GCP API fails.
         """
         try:
-            results = self.repository.projects_serviceaccounts\
-                .get_iam_policy(name)
+            results = self.repository.projects_serviceaccounts.get_iam_policy(
+                name)
             LOGGER.debug('Getting the IAM Policy associated with the service'
                          ' account, name = %s, results = %s', name, results)
             return results

@@ -20,8 +20,8 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.gcp_api.errors \
-    import API_EXECUTION_ERROR_ARG_FORMAT
+from google.cloud.forseti.common.gcp_api.errors import (
+    API_EXECUTION_ERROR_ARG_FORMAT)
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
@@ -120,8 +120,8 @@ class CloudsqlClient(object):
 
         try:
             paged_results = self.repository.instances.list(project_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'items')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'items')
             LOGGER.debug("Getting all the cloudsql instances of a project, "
                          "project_id = %s, flattened_results = %s",
                          project_id, flattened_results)

@@ -298,8 +298,8 @@ class AppEngineClient(object):
         """
         try:
             paged_results = self.repository.app_services.list(project_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'services')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'services')
             LOGGER.debug("Listing services of a project, project_id = %s, "
                          "flattened_results = %s",
                          project_id, flattened_results)
@@ -349,8 +349,8 @@ class AppEngineClient(object):
         try:
             paged_results = self.repository.service_versions.list(
                 project_id, services_id=service_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'versions')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'versions')
             LOGGER.debug("Listing versions of a given service, project_id = "
                          "%s, service_id = %s, flattened_results = %s",
                          project_id, service_id, flattened_results)
@@ -404,8 +404,8 @@ class AppEngineClient(object):
         try:
             paged_results = self.repository.version_instances.list(
                 project_id, services_id=service_id, versions_id=version_id)
-            flattened_results = api_helpers.\
-                flatten_list_results(paged_results, 'instances')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'instances')
             LOGGER.debug("Listing instances of a given service and version,"
                          " project_id = %s, service_id = %s, version_id = %s,"
                          " flattened_results = %s",

@@ -737,8 +737,8 @@ class ComputeClient(object):
 
         """
         try:
-            results = self.repository.global_operations\
-                .get(project_id, operation_id)
+            results = self.repository.global_operations.get(
+                project_id, operation_id)
             LOGGER.debug('Getting the operation status, project_id = %s,'
                          ' operation_id = %s, results = %s',
                          project_id, operation_id, results)
@@ -810,8 +810,8 @@ class ComputeClient(object):
             ValueError: invalid combination of parameters
         """
         if not bool(zone) ^ bool(region):
-            err_message = 'One and only one of zone ' \
-                          'and region must be specified.'
+            err_message = ('One and only one of zone '
+                           'and region must be specified.')
             LOGGER.error(err_message)
             raise ValueError(err_message)
         if zone:

@@ -40,16 +40,16 @@ class ApiExecutionError(Error):
     CUSTOM_ERROR_MESSAGE = (
         'GCP API Error: unable to get {0} from GCP:\n{1}\n{2}')
 
-    def __init__(self, api_execution_arg, e):
+    def __init__(self, resource_name, e):
         """Initialize.
 
         Args:
-            api_execution_arg (str): The resource name.
+            resource_name (str): The resource name.
             e (Exception): The exception.
         """
         super(ApiExecutionError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(
-                api_execution_arg, e, e.content.decode('utf-8')))
+                resource_name, e, e.content.decode('utf-8')))
         self.http_error = e
 
 

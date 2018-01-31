@@ -209,8 +209,8 @@ class AdminDirectoryClient(object):
         """
         try:
             paged_results = self.repository.groups.list(customer=customer_id)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'groups')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'groups')
             LOGGER.debug("Getting all the groups for customer_id = %s,"
                          " flattened_results = %s",
                          customer_id, flattened_results)
@@ -238,8 +238,8 @@ class AdminDirectoryClient(object):
         try:
             paged_results = self.repository.users.list(customer=customer_id,
                                                        viewType='admin_view')
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'users')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'users')
             LOGGER.debug("Getting all the users for customer_id = %s,"
                          " flattened_results = %s",
                          customer_id, flattened_results)
