@@ -145,6 +145,6 @@ class ServiceManagementClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'name', 'project_id', project_id, e)
+                'name', e, 'project_id', project_id)
             LOGGER.error(api_exception)
             raise api_exception

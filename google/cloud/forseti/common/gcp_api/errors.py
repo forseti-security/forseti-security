@@ -24,14 +24,6 @@ API_EXECUTION_ERROR_ARG_FORMAT = '{}, {} = {},'
 
 class Error(Exception):
     """Base Error class."""
-    def __init__(self, message):
-        """Init
-
-        Args:
-            message (str): error message
-        """
-        super(Error, self).__init__(message)
-
 
 class ApiExecutionError(Error):
     """Error for API executions."""
@@ -39,30 +31,23 @@ class ApiExecutionError(Error):
     CUSTOM_ERROR_MESSAGE = (
         'GCP API Error: unable to get {0} from GCP:\n{1}\n{2}')
 
-    def __init__(self, resource_name, e):
+    def __init__(self, resource_name, e,
+                 resource_key=None, resource_value=None):
         """Initialize.
 
         Args:
             resource_name (str): The resource name.
             e (Exception): The exception.
+            resource_key (str): optional, The resource identifier.
+            resource_value (str): optional, Value of the resource identifier.
         """
+        if resource_key and resource_value:
+            resource_name = API_EXECUTION_ERROR_ARG_FORMAT.format(
+                resource_name, resource_key, resource_value)
         super(ApiExecutionError, self).__init__(
             self.CUSTOM_ERROR_MESSAGE.format(
                 resource_name, e, e.content.decode('utf-8')))
         self.http_error = e
-
-    def __init__(self, resource_name, resource_key, resource_value, e):
-        """Initialize.
-
-        Args:
-            resource_name (str): The resource name.
-            resource_key (str): The resource identifier.
-            resource_value (str): Value of the resource identifier.
-            e (Exception): The exception.
-        """
-        formatted_arg = API_EXECUTION_ERROR_ARG_FORMAT.format(
-            resource_name, resource_key, resource_value)
-        self.__init__(formatted_arg, e)
 
 
 class ApiNotEnabledError(Error):

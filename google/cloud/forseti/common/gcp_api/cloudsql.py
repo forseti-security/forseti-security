@@ -126,6 +126,6 @@ class CloudsqlClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'instances', 'project_id', project_id, e)
+                'instances', e, 'project_id', project_id)
             LOGGER.error(api_exception)
             raise api_exception

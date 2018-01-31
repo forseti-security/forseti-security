@@ -160,6 +160,6 @@ class CloudBillingClient(object):
                 LOGGER.warn(e)
                 return {}
             api_exception = api_errors.ApiExecutionError(
-                'billing_info', 'project_id', project_id, e)
+                'billing_info', e, 'project_id', project_id)
             LOGGER.error(api_exception)
             raise api_exception

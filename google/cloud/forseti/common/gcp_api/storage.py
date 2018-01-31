@@ -398,10 +398,8 @@ class StorageClient(object):
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            api_exception = api_errors.ApiExecutionError('buckets',
-                                                         'project_id',
-                                                         project_id,
-                                                         e)
+            api_exception = api_errors.ApiExecutionError(
+                'buckets', e, 'project_id', project_id)
             LOGGER.error(api_exception)
             raise api_exception
 
@@ -428,7 +426,7 @@ class StorageClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'bucketAccessControls',bucket,'bucket', e)
+                'bucketAccessControls', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
@@ -452,7 +450,7 @@ class StorageClient(object):
             return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'bucketIamPolicy','bucket',bucket, e)
+                'bucketIamPolicy', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
@@ -479,7 +477,7 @@ class StorageClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'defaultObjectAccessControls','bucket',bucket,e)
+                'defaultObjectAccessControls', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
@@ -508,7 +506,7 @@ class StorageClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'objects', 'bucket', bucket, e)
+                'objects', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
@@ -537,7 +535,7 @@ class StorageClient(object):
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'objectAccessControls', 'bucket', bucket, e)
+                'objectAccessControls', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
@@ -564,6 +562,6 @@ class StorageClient(object):
             return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
-                'objectIamPolicy', 'bucket', bucket, e)
+                'objectIamPolicy', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
