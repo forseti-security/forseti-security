@@ -23,6 +23,8 @@ from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.storage import InventoryState
 from google.cloud.forseti.services.model.importer import importer
 
+FAKE_TIMESTAMP = '2018-01-28T10:20:30.00000'
+
 
 class ServiceConfig(object):
     """Helper class to implement dependency injection to Forseti Server services.
@@ -80,7 +82,7 @@ class ImporterTest(ForsetiTestCase):
                                          session=session),
                 data_access,
                 self.service_config,
-                inventory_id=1)
+                inventory_id=FAKE_TIMESTAMP)
             import_runner.run()
 
         model = self.model_manager.model(self.model_name)
