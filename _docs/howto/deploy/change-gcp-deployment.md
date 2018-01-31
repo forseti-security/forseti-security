@@ -88,9 +88,8 @@ and include values for any new deployment variables.
     `deploy-forseti-<TIMESTAMP>.yaml`. Then, update the placeholders to the values 
     you want to use.
 
-1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify if your `branch-name` 
-   property is hardcoded to a specific version. If so, update it to the latest 
-   version.
+1. Inspect `deploy-forseti-<TIMESTAMP>.yaml` and verify your `branch-name` or `release-version`
+   property is set correctly as discussed above.
 
 ## Enable new features
 
