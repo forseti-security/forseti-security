@@ -8,7 +8,7 @@ This page describes how to change or _upgrade_ an existing installation of Forse
 steps to accomplishing this with existing deployments of Forseti.
 
  1. [Get the latest version](#get-the-latest-version)
- 1. [Check for differences](#check-for-differences)
+ 1. [Check for differences and make changes](#check-for-differences-and-make-changes)
  1. [Enable new features](#enable-new-features)
  1. [Update the deployment](#update-the-deployment)
 
