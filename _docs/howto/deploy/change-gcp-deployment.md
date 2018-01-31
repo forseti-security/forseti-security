@@ -87,6 +87,7 @@ and include values for any new deployment variables.
     To upgrade, copy these new properties to your generated 
     `deploy-forseti-<TIMESTAMP>.yaml`. Then, update the placeholders to the values 
     you want to use.
+    
     For example:
     ```yaml
      region: $(ref.cloudsql-instance.region)
