@@ -102,7 +102,7 @@ To do this it's best to:
 
   1. Review the release notes for version of Forseti you used from above.
   1. Review the configuration Forseti uses (this is likely stored in GCS) and compare it to the
-      config file for that release ([`configs/forseti_conf.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/deployment-templates/deploy-forseti.yaml.in))
+      config file for that release ([`configs/forseti_conf.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/configs/forseti_conf.yaml.in))
       to see what's new.
   1. Review the list of [scanners]({% link _docs/quickstarts/scanner/rules.md %}) and their rules to
       either write new ones or adjust existing ones.
