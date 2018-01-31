@@ -22,9 +22,11 @@ PYTHONPATH=. python tests/services/model/importer/update_test_dbs.py
 
 """
 
+import datetime
 import os
 import shutil
 import time
+import mock
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks
 from tests.services.utils.db import create_test_engine_with_file
@@ -34,6 +36,7 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.server import InventoryConfig
 
@@ -85,6 +88,10 @@ def main():
         for progress in client.inventory.create(background=False,
                                                 import_as=''):
             continue
+
+    fake_time = datetime.datetime(2018, 1, 28, 10, 20, 30, 0)
+    fake_datetime = mock.patch.object(
+        InventoryIndex, '_utcnow', return_value=fake_time).start()
 
     engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)
