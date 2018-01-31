@@ -4,9 +4,8 @@ order: 104
 ---
 #  {{ page.title }}
 
-This page describes how to change or _upgrade_ an existing installation of Forseti.
-
-There are four steps steps to upgrading existing deployments of Forseti.
+This page describes how to change or _upgrade_ an existing installation of Forseti. There are four
+steps to accomplishing this with existing deployments of Forseti.
 
  1. [Get the latest version](#get-the-latest-version)
  1. [Check for differences](#check-for-differences)
