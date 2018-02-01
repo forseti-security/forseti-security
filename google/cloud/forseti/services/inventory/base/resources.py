@@ -19,6 +19,7 @@
 # pylint: disable=missing-docstring,unused-argument
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc
 # pylint: disable=attribute-defined-outside-init
+# pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
 import datetime
