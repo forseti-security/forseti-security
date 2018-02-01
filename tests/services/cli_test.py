@@ -45,6 +45,9 @@ CLIENT.model.list_models = mock.Mock(return_value=iter(['test']))
 CLIENT.scanner = CLIENT
 CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
 
+CLIENT.notifier = CLIENT
+CLIENT.notifier.run = mock.Mock(return_value=iter(['test']))
+
 
 class ArgumentParserError(Exception):
     pass
@@ -155,6 +158,13 @@ class ImporterTest(ForsetiTestCase):
         ('scanner run /tmp/config',
          CLIENT.scanner.run,
          ['/tmp/config'],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('notifier run --inventory_id 88',
+         CLIENT.scanner.run,
+         ['88'],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
