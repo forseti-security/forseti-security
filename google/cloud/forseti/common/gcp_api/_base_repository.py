@@ -388,7 +388,7 @@ class GCPRepository(object):
         while request is not None:
             response = self._execute(request)
             number_of_pages_processed += 1
-            LOGGER.debug('Executing paged request #%s',
+            LOGGER.debug('Executing paged request # %s',
                          number_of_pages_processed)
             request = self._build_next_request(verb, request, response)
             yield response
@@ -415,7 +415,7 @@ class GCPRepository(object):
             request = self._build_request(verb, verb_arguments)
             response = self._execute(request)
             number_of_pages_processed += 1
-            LOGGER.debug('Executing paged request #%s',
+            LOGGER.debug('Executing paged request # %s',
                          number_of_pages_processed)
             next_page_token = response.get('nextPageToken')
             yield response

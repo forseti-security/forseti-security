@@ -29,18 +29,43 @@ from tests.unittest_utils import ForsetiTestCase
 
 CLIENT = mock.Mock()
 
-CLIENT.playground = CLIENT
-
 CLIENT.inventory = CLIENT
 CLIENT.inventory.create = mock.Mock(return_value=iter(['test']))
-CLIENT.inventory.get = mock.Mock(return_value='test')
 CLIENT.inventory.delete = mock.Mock(return_value='test')
+CLIENT.inventory.list = mock.Mock(return_value=iter(['test']))
+CLIENT.inventory.get = mock.Mock(return_value='test')
+
+reply_model_s = mock.Mock()
+reply_model_s.status = "SUCCESS"
+reply_model_s.handle = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+reply_model_b = mock.Mock()
+reply_model_b.status = "BROKEN"
+CLIENT.model = CLIENT
+CLIENT.model.list_models = mock.Mock(return_value=iter(['test']))
+CLIENT.model.get_model = mock.Mock(return_value=reply_model_s)
+CLIENT.model.delete_model = mock.Mock(return_value='test')
+CLIENT.model.new_model = mock.Mock(return_value='test')
 
 CLIENT.explain = CLIENT
 CLIENT.explain.denormalize = mock.Mock(return_value=iter(['test']))
+CLIENT.explain.list_resources = mock.Mock(return_value='test')
+CLIENT.explain.list_members = mock.Mock(return_value='test')
+CLIENT.explain.list_roles = mock.Mock(return_value='test')
+CLIENT.explain.query_permissions_by_roles = mock.Mock(return_value='test')
+CLIENT.explain.get_iam_policy = mock.Mock(return_value='test')
+CLIENT.explain.check_iam_policy = mock.Mock(return_value='test')
+CLIENT.explain.explain_granted = mock.Mock(return_value='test')
+CLIENT.explain.explain_denied = mock.Mock(return_value='test')
+CLIENT.explain.query_access_by_members = mock.Mock(return_value='test')
+CLIENT.explain.query_access_by_permissions = mock.Mock(return_value=iter(['test']))
+CLIENT.explain.query_access_by_resources = mock.Mock(return_value='test')
 
-CLIENT.model = CLIENT
-CLIENT.model.list_models = mock.Mock(return_value=iter(['test']))
+CLIENT.playground = CLIENT
+CLIENT.playground.add_role = mock.Mock(return_value='test')
+CLIENT.playground.del_role = mock.Mock(return_value='test')
+CLIENT.playground.add_member = mock.Mock(return_value='test')
+CLIENT.playground.del_member = mock.Mock(return_value='test')
+CLIENT.playground.set_iam_policy = mock.Mock(return_value='test')
 
 CLIENT.scanner = CLIENT
 CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
@@ -85,20 +110,6 @@ class ImporterTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @test_cmds([
-        ('explainer denormalize',
-         CLIENT.explain.denormalize,
-         [],
-         {},
-         '{}',
-         {}),
-
-        ('playground list_members',
-         CLIENT.playground.list_members,
-         [''],
-         {},
-         '{}',
-         {}),
-
         ('inventory create --background --import_as "bar"',
          CLIENT.inventory.create,
          [True, 'bar'],
@@ -106,40 +117,194 @@ class ImporterTest(ForsetiTestCase):
          '{}',
          {}),
 
-        ('inventory get 1',
-         CLIENT.inventory.get,
-         [1],
-         {},
-         '{}',
-         {}),
-
         ('inventory delete 1',
          CLIENT.inventory.delete,
-         [1],
-         {},
-         '{}',
-         {}),
-
-        ('inventory delete 1',
-         CLIENT.inventory.delete,
-         [1],
+         ['1'],
          {},
          '{}',
          {'endpoint': 'localhost:50051'}),
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
-         [1],
+         ['1'],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
         ('--endpoint 10.0.0.1:8080 inventory delete 1',
          CLIENT.inventory.delete,
-         [1],
+         ['1'],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '10.0.0.1:8080'}),
+
+        ('inventory list',
+         CLIENT.inventory.list,
+         [],
+         {},
+         '{}',
+         {}),
+
+        ('inventory get 1',
+         CLIENT.inventory.get,
+         ['1'],
+         {},
+         '{}',
+         {}),
+
+        ('model use foo',
+         CLIENT.model.get_model,
+         ["foo"],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model list',
+         CLIENT.model.list_models,
+         [],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model get foo',
+         CLIENT.model.get_model,
+         ["foo"],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model delete foo',
+         CLIENT.model.delete_model,
+         ["foo"],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('model create inventory foo --id 1',
+         CLIENT.model.new_model,
+         ["inventory", "foo", '1', False],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('explainer denormalize',
+         CLIENT.explain.denormalize,
+         [],
+         {},
+         '{}',
+         {}),
+
+        ('explainer list_resources',
+         CLIENT.explain.list_resources,
+         [''],
+         {},
+         '{}',
+         {}),
+
+        ('explainer list_members',
+         CLIENT.explain.list_members,
+         [''],
+         {},
+         '{}',
+         {}),
+
+        ('explainer list_roles',
+         CLIENT.explain.list_roles,
+         [''],
+         {},
+         '{}',
+         {}),
+
+        ('explainer list_permissions --roles roles/foo',
+         CLIENT.explain.query_permissions_by_roles,
+         [['roles/foo'],[]],
+         {},
+         '{}',
+         {}),
+
+        ('explainer get_policy resource/foo',
+         CLIENT.explain.get_iam_policy,
+         ['resource/foo'],
+         {},
+         '{}',
+         {}),
+
+        ('explainer check_policy resource/foo permission/bar member/Adam',
+         CLIENT.explain.check_iam_policy,
+         ['resource/foo', 'permission/bar', 'member/Adam'],
+         {},
+         '{}',
+         {}),
+
+        ('explainer why_granted member/foo resource/bar',
+         CLIENT.explain.explain_granted,
+         ['member/foo', 'resource/bar', None, None],
+         {},
+         '{}',
+         {}),
+
+        ('explainer why_denied member/foo resource/bar --role role/r1',
+         CLIENT.explain.explain_denied,
+         ['member/foo', ['resource/bar'], ['role/r1'], []],
+         {},
+         '{}',
+         {}),
+
+        ('explainer access_by_member member/foo',
+         CLIENT.explain.query_access_by_members,
+         ['member/foo', [], False],
+         {},
+         '{}',
+         {}),
+
+        ('explainer access_by_authz --role role/foo',
+         CLIENT.explain.query_access_by_permissions,
+         ['role/foo', None, False, False],
+         {},
+         '{}',
+         {}),
+
+        ('explainer access_by_resource resource/foo --expand_groups True',
+         CLIENT.explain.query_access_by_resources,
+         ['resource/foo', [], True],
+         {},
+         '{}',
+         {}),
+
+        ('playground define_role resource/foo permission/a permission/b',
+         CLIENT.playground.add_role,
+         ['resource/foo', ['permission/a', 'permission/b']],
+         {},
+         '{}',
+         {}),
+
+        ('playground delete_role resource/foo',
+         CLIENT.playground.del_role,
+         ['resource/foo'],
+         {},
+         '{}',
+         {}),
+
+        ('playground define_member member/child member/parent',
+         CLIENT.playground.add_member,
+         ['member/child', ['member/parent']],
+         {},
+         '{}',
+         {}),
+
+        ('playground delete_member member/foo',
+         CLIENT.playground.del_member,
+         ['member/foo', '', False],
+         {},
+         '{}',
+         {}),
+
+        ('playground set_policy resource/foo {\\\"foo\\\":\\\"bar\\\"}',
+         CLIENT.playground.set_iam_policy,
+         ['resource/foo', {'foo': 'bar'}],
+         {},
+         '{}',
+         {}),
 
         ('config show',
          None,
@@ -165,20 +330,6 @@ class ImporterTest(ForsetiTestCase):
         ('notifier run --inventory_id 88',
          CLIENT.scanner.run,
          ['88'],
-         {},
-         '{"endpoint": "192.168.0.1:80"}',
-         {'endpoint': '192.168.0.1:80'}),
-
-        ('model list',
-         CLIENT.model.list_models,
-         [],
-         {},
-         '{"endpoint": "192.168.0.1:80"}',
-         {'endpoint': '192.168.0.1:80'}),
-
-        ('model list',
-         CLIENT.model.list_models,
-         [],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
@@ -217,13 +368,11 @@ class ImporterTest(ForsetiTestCase):
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
                         json.load(StringIO.StringIO(config_string)))
-
                     config = cli.main(
-                        args,
-                        env_config,
-                        CLIENT,
+                        args=args,
+                        config_env=env_config,
+                        client=CLIENT,
                         parser_cls=MockArgumentParser)
-
                     if client_func is not None:
                         client_func.assert_called_with(*func_args, **func_kwargs)
 

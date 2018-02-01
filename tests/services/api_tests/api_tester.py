@@ -64,24 +64,49 @@ class ModelTestRunner(ApiTestRunner):
         super(ModelTestRunner, self).__init__(*args, **kwargs)
         self.model = model
 
-    def _install_model(self, model, client):
+    def _install_model(self, model, model_manager, model_handle):
         """Installs the declarative model in the database."""
-        self._install_resources(model['resources'], client.playground)
-        self._install_memberships(model['memberships'], client.playground)
-        self._install_roles(model['roles'], client.playground)
-        self._install_bindings(model['bindings'], client.playground)
+        scoped_session, model_access = model_manager.get(model_handle)
+        self._install_resources(model['resources'],
+                                scoped_session,
+                                model_access)
+        self._install_memberships(model['memberships'],
+                                  scoped_session,
+                                  model_access)
+        self._install_roles(model['roles'],
+                            scoped_session,
+                            model_access)
+        self._install_bindings(model['bindings'],
+                               scoped_session,
+                               model_access)
 
-    def _recursive_install_resources(self, node, model, client, parent):
+    def _recursive_install_resources(self, node,
+                                     model,
+                                     session,
+                                     model_access,
+                                     parent):
         """Install resources."""
 
-        client.add_resource(node, parent, bool(not parent))
+        model_access.add_resource_by_name(
+            session,
+            node,
+            parent,
+            bool(not parent))
         for root, tree in model.iteritems():
-            self._recursive_install_resources(root, tree, client, node)
+            self._recursive_install_resources(root, tree, session, model_access, node)
 
-    def _install_resources(self, model_view, client):
+    def _install_resources(self, model_view,
+                           scoped_session,
+                           model_access):
         """Install resources."""
-        for root, tree in model_view.iteritems():
-            self._recursive_install_resources(root, tree, client, '')
+        with scoped_session as session:
+            for root, tree in model_view.iteritems():
+                self._recursive_install_resources(root,
+                                                  tree,
+                                                  session,
+                                                  model_access,
+                                                  '')
+            session.commit()
 
     def _recursive_invert_membership(self, node, model, parentship):
         """Invert declarative membership model mapping."""
@@ -112,7 +137,7 @@ class ModelTestRunner(ApiTestRunner):
 
         return any(visit(v) for v in graph)
 
-    def _install_memberships(self, model_view, client):
+    def _install_memberships(self, model_view, scoped_session, model_access):
         """Install membership relation."""
         parent_relationship = defaultdict(set)
         for root, tree in model_view.iteritems():
@@ -121,29 +146,38 @@ class ModelTestRunner(ApiTestRunner):
         if self._cyclic(parent_relationship):
             raise Exception('Cyclic membership relation not supported!')
 
-        installed_members = set()
-        while parent_relationship:
-            for child, parents in parent_relationship.iteritems():
-                if parents.issubset(installed_members):
-                    installed_members.add(child)
-                    client.add_member(child, list(parents))
-                    parent_relationship.pop(child)
-                    break
+        with scoped_session as session:
+            installed_members = set()
+            while parent_relationship:
+                for child, parents in parent_relationship.iteritems():
+                    if parents.issubset(installed_members):
+                        installed_members.add(child)
+                        model_access.add_group_member(
+                            session,
+                            child,
+                            list(parents),
+                            denorm=True)
+                        parent_relationship.pop(child)
+                        break
+            session.commit()
 
-    def _install_roles(self, model_view, client):
+    def _install_roles(self, model_view, scoped_session, model_access):
         """Install roles."""
-        for role, permissions in model_view.iteritems():
-            client.add_role(role, permissions)
+        with scoped_session as session:
+            for role, permissions in model_view.iteritems():
+                model_access.add_role_by_name(session, role, permissions)
 
-    def _install_bindings(self, model_view, client):
+    def _install_bindings(self, model_view, scoped_session, model_access):
         """Install bindings."""
-        for resource_name, bindings in model_view.iteritems():
-            reply = client.get_iam_policy(resource_name)
-            if reply.policy.bindings:
-                raise Exception('policy should have been empty')
-            client.set_iam_policy(
-                resource_name,
-                {'bindings': bindings, 'etag': reply.policy.etag})
+        with scoped_session as session:
+            for resource_name, bindings in model_view.iteritems():
+                policy = model_access.get_iam_policy(session, resource_name)
+                if policy['bindings']:
+                    raise Exception('policy should have been empty')
+                model_access.set_iam_policy(
+                    session,
+                    resource_name,
+                    {'bindings': bindings, 'etag': policy['etag']})
 
     def _get_model_name_deterministic(self):
         """Create deterministic sequence of names for models."""
@@ -162,6 +196,7 @@ class ModelTestRunner(ApiTestRunner):
                 source='EMPTY',
                 name=self._get_model_name_deterministic())
             client.switch_model(reply.model.handle)
-            self._install_model(self.model, client)
+            model_manager = self.service_config.model_manager
+            self._install_model(self.model, model_manager, reply.model.handle)
             test_callback(client)
         super(ModelTestRunner, self).run(callback_wrapper)
