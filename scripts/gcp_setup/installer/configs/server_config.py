@@ -44,7 +44,7 @@ class ServerConfig(Config):
             self.datetimestamp)
         self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
 
-        # forseti_conf.yaml.in properties
+        # forseti_conf_server.yaml.in properties
         self.sendgrid_api_key = kwargs.get('sendgrid_api_key')
         self.notification_sender_email = None
         self.notification_recipient_email = (

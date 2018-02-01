@@ -82,7 +82,7 @@ class ForsetiInstaller:
                                   authed_user,
                                   self.config.force_no_cloudshell,
                                   is_devshell)
-        lookup_organization(self.project_id)
+        self.organization_id = lookup_organization(self.project_id)
         check_billing_enabled(self.project_id, self.organization_id)
         self.format_gcp_service_acct_id()
         self.gcp_service_account = create_reuse_service_acct(
@@ -113,7 +113,7 @@ class ForsetiInstaller:
             # If deployed successfully, copy configuration file, deployment
             # template file and rule files to the GCS bucket
             conf_output_path = FORSETI_CONF_PATH.format(bucket_name,
-                                                        self.template_type)
+                                                        self.config.template_type)
             copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -181,7 +181,7 @@ class ForsetiInstaller:
         deploy_values = self.get_deployment_values()
 
         deploy_tpl_path = generate_deployment_templates(
-            self.template_type,
+            self.config.template_type,
             deploy_values,
             self.config.datetimestamp)
 
@@ -202,7 +202,7 @@ class ForsetiInstaller:
 
         conf_values = self.get_configuration_values()
 
-        forseti_conf_path = generate_forseti_conf(self.template_type,
+        forseti_conf_path = generate_forseti_conf(self.config.template_type,
                                                   conf_values,
                                                   self.config.datetimestamp)
 

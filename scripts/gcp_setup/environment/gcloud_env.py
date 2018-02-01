@@ -360,7 +360,7 @@ class ForsetiGcpSetup(object):
         self.deploy_tpl_path = None
         self.forseti_conf_path = None
 
-        # forseti_conf.yaml.in properties
+        # forseti_conf_server.yaml.in properties
         self.skip_email = False
         self.sendgrid_api_key = kwargs.get('sendgrid_api_key')
         self.notification_sender_email = None
@@ -972,7 +972,7 @@ class ForsetiGcpSetup(object):
             os.path.join(
                 ROOT_DIR_PATH,
                 'deployment-templates',
-                'deploy-forseti.yaml.in'))
+                'deploy-forseti-server.yaml.in'))
         out_tpl_path = os.path.abspath(
             os.path.join(
                 ROOT_DIR_PATH,
@@ -1011,7 +1011,7 @@ class ForsetiGcpSetup(object):
         print('\nGenerate forseti_conf_%s.yaml...' % self.datetimestamp)
         forseti_conf_in = os.path.abspath(
             os.path.join(
-                ROOT_DIR_PATH, 'configs', 'forseti_conf.yaml.in'))
+                ROOT_DIR_PATH, 'configs', 'forseti_conf_server.yaml.in'))
         forseti_conf_gen = os.path.abspath(
             os.path.join(
                 ROOT_DIR_PATH, 'configs',

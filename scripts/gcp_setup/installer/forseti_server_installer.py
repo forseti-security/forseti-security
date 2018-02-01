@@ -80,7 +80,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
 
-        success = super(ForsetiServerInstaller, self).deploy(
+        success, deployment_name = super(ForsetiServerInstaller, self).deploy(
             deploy_tpl_path, conf_file_path, bucket_name)
 
         if success:
@@ -92,6 +92,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gsuite_service_account,
                 self.gcp_service_account,
                 self.user_can_grant_roles)
+
+        return success, deployment_name
 
     def should_setup_explain(self):
         """Ask user if they want to configure setup for Explain."""
@@ -194,11 +196,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
             if choice_index and choice_index <= len(RESOURCE_TYPES):
                 self.access_target = RESOURCE_TYPES[choice_index-1]
                 if self.access_target == 'organization':
-                    choose_organization()
+                    self.target_id = choose_organization()
                 elif self.access_target == 'folder':
-                    choose_folder(self.organization_id)
+                    self.target_id = choose_folder(self.organization_id)
                 else:
-                    choose_project()
+                    self.target_id = choose_project()
 
         self.resource_root_id = format_resource_id(
             '%ss' % self.access_target, self.target_id)

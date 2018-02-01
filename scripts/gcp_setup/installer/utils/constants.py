@@ -34,8 +34,8 @@ INPUT_DEPLOYMENT_TEMPLATE_FILENAME = {
 }
 
 INPUT_CONFIGURATION_TEMPLATE_FILENAME = {
-    'server': 'deploy-forseti-server.yaml.in',
-    'cli': 'deploy-forseti-cli.yaml.in'
+    'server': 'forseti_conf_server.yaml.in',
+    'cli': 'forseti_conf_cli.yaml.in'
 }
 
 NOTIFICATION_SENDER_EMAIL = 'forseti-notify@localhost.domain'
@@ -109,7 +109,8 @@ RESOURCE_TYPES = ['organization', 'folder', 'project']
 ROOT_DIR_PATH = os.path.dirname(
     os.path.dirname(
         os.path.dirname(
-            os.path.dirname(__file__))))
+            os.path.dirname(
+                os.path.dirname(__file__)))))
 
 RULES_DIR_PATH = os.path.abspath(
     os.path.join(

@@ -230,7 +230,7 @@ def create_deployment(project_id, organization_id,
 
     print ('This may take a few minutes.')
     deployment_name = 'forseti-security-{}'.format(datetimestamp)
-    print('Deployment name: %s' % deployment_name)
+    print('Deployment name: {}'.format(deployment_name))
     print('Deployment Manager Dashboard: '
           'https://console.cloud.google.com/deployments/details/'
           '{}?project={}&organizationId={}\n'.format(

@@ -30,6 +30,7 @@ class Config(object):
     advanced_mode = None
     dry_run = None
     bucket_location = None
+    template_type = None
 
     def __init__(self, **kwargs):
         """Initialize.
