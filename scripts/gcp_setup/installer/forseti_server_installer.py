@@ -71,10 +71,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.inform_access_on_target()
 
         enable_apis(self.config.dry_run)
-        create_reuse_service_acct('gsuite_service_account',
-                                  self.gsuite_service_account,
-                                  self.config.advanced_mode,
-                                  self.config.dry_run)
+        self.gsuite_service_account = create_reuse_service_acct(
+            'gsuite_service_account',
+            self.gsuite_service_account,
+            self.config.advanced_mode,
+            self.config.dry_run)
         self.get_email_settings()
 
     def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):

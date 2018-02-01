@@ -85,10 +85,11 @@ class ForsetiInstaller:
         lookup_organization(self.project_id)
         check_billing_enabled(self.project_id, self.organization_id)
         self.format_gcp_service_acct_id()
-        create_reuse_service_acct('gcp_service_account',
-                                  self.gcp_service_account,
-                                  self.config.advanced_mode,
-                                  self.config.dry_run)
+        self.gcp_service_account = create_reuse_service_acct(
+            'gcp_service_account',
+            self.gcp_service_account,
+            self.config.advanced_mode,
+            self.config.dry_run)
 
     def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template

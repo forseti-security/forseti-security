@@ -386,7 +386,7 @@ def create_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
     elif choice_index == 1:
         return_code, out, err = run_command(
             ['gcloud', 'iam', 'service-accounts', 'create',
-             acct_id[:acct_id.index('@')]])
+             acct_id[:acct_id.index('@'), '--display-name', acct_type]])
         if return_code:
             print(err)
             print('Could not create the service account. Terminating '
