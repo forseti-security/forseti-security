@@ -257,7 +257,10 @@ class CloudResourceManagerClient(object):
             ApiExecutionError: An error has occurred when executing the API.
         """
         try:
-            return self.repository.projects.get(project_id)
+            result = self.repository.projects.get(project_id)
+            LOGGER.debug("Getting all the projects from organization,"
+                         " project_id = %s, result = %s", project_id, result)
+            return result
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -293,6 +296,11 @@ class CloudResourceManagerClient(object):
         try:
             for response in self.repository.projects.list(
                     filter=' '.join(filters)):
+                LOGGER.debug("Geting all the projects the authenticated "
+                             "account has access to, parent_id = %s, "
+                             "parent_type = %s, **filterargs = %s,"
+                             " response = %s",
+                             parent_id, parent_type, filterargs, response)
                 yield response
         except (errors.HttpError, HttpLib2Error) as e:
             if parent_id and parent_type:
@@ -313,7 +321,11 @@ class CloudResourceManagerClient(object):
         """
         try:
             results = self.repository.projects.get_ancestry(project_id)
-            return results.get('ancestor', [])
+            ancestor = results.get('ancestor', [])
+            LOGGER.debug("Getting the full folder ancestry for a project,"
+                         " project_id = %s, ancestor = %s",
+                         project_id, ancestor)
+            return ancestor
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -328,7 +340,10 @@ class CloudResourceManagerClient(object):
             https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy
         """
         try:
-            return self.repository.projects.get_iam_policy(project_id)
+            results = self.repository.projects.get_iam_policy(project_id)
+            LOGGER.debug("Getting all the iam policies for a given project,"
+                         " project_id = %s, results = %s", project_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -346,8 +361,12 @@ class CloudResourceManagerClient(object):
         try:
             paged_results = self.repository.projects.list_org_policies(
                 resource_id)
-            return api_helpers.flatten_list_results(paged_results,
-                                                    'policies')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'policies')
+            LOGGER.debug("Getting all the org policies for a given project, "
+                         "project_id = %s, flattened_results = %s",
+                         project_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_id, e)
 
@@ -362,7 +381,10 @@ class CloudResourceManagerClient(object):
         """
         name = self.repository.organizations.get_name(org_name)
         try:
-            return self.repository.organizations.get(name)
+            results = self.repository.organizations.get(name)
+            LOGGER.debug("Getting organization by org_name, org_name = %s, "
+                         "results = %s", org_name, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(org_name, e)
 
@@ -374,8 +396,12 @@ class CloudResourceManagerClient(object):
         """
         try:
             paged_results = self.repository.organizations.search()
-            return api_helpers.flatten_list_results(paged_results,
-                                                    'organizations')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'organizations')
+            LOGGER.debug("Getting organzations that the auth'd account "
+                         "has access to, flattened_results = %s",
+                         flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('All Organizations', e)
 
@@ -394,7 +420,11 @@ class CloudResourceManagerClient(object):
         """
         resource_id = self.repository.organizations.get_name(org_id)
         try:
-            return self.repository.organizations.get_iam_policy(resource_id)
+            results = self.repository.organizations.get_iam_policy(resource_id)
+            LOGGER.debug("Getting all the iam policies of an org, org_id = %s,"
+                         " resource_id = %s, results = %s",
+                         org_id, resource_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_id, e)
 
@@ -412,8 +442,13 @@ class CloudResourceManagerClient(object):
         try:
             paged_results = self.repository.organizations.list_org_policies(
                 resource_id)
-            return api_helpers.flatten_list_results(paged_results,
-                                                    'policies')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'policies')
+            LOGGER.debug("Getting all the org policies for a given org, "
+                         "org_id = %s, resource_id = %s, "
+                         "flattened_results = %s",
+                         org_id, resource_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_id, e)
 
@@ -432,7 +467,10 @@ class CloudResourceManagerClient(object):
         """
         name = self.repository.folders.get_name(folder_name)
         try:
-            return self.repository.folders.get(name)
+            results = self.repository.folders.get(name)
+            LOGGER.debug("Getting folder by folder name, folder_name = %s,"
+                         " results = %s", folder_name, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(folder_name, e)
 
@@ -465,7 +503,13 @@ class CloudResourceManagerClient(object):
             paged_results = self.repository.folders.search(query=query)
 
         try:
-            return api_helpers.flatten_list_results(paged_results, 'folders')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'folders')
+            LOGGER.debug("Getting all the folders that the auth'd account "
+                         "has access to, parent = %s, show_deleted = %s, "
+                         "flattened_results = %s",
+                         parent, show_deleted, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             if parent:
                 resource_name = parent
@@ -474,7 +518,7 @@ class CloudResourceManagerClient(object):
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_folder_iam_policies(self, folder_id):
-        """Get all the iam policies of an folder.
+        """Get all the iam policies of a folder.
 
         Args:
             folder_id (int): The folder id.
@@ -487,7 +531,10 @@ class CloudResourceManagerClient(object):
         """
         resource_id = self.repository.folders.get_name(folder_id)
         try:
-            return self.repository.folders.get_iam_policy(resource_id)
+            results = self.repository.folders.get_iam_policy(resource_id)
+            LOGGER.debug("Getting all the iam policies of a folder, "
+                         "folder_id = %s, results = %s", folder_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_id, e)
 
@@ -505,8 +552,12 @@ class CloudResourceManagerClient(object):
         try:
             paged_results = self.repository.folders_v1.list_org_policies(
                 resource_id)
-            return api_helpers.flatten_list_results(paged_results,
-                                                    'policies')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'policies')
+            LOGGER.debug("Getting all the org policies of a given folder,"
+                         " folder_id = %s, flattened_results = %s",
+                         folder_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_id, e)
 
@@ -544,6 +595,11 @@ class CloudResourceManagerClient(object):
         else:
             org_policy_method = getattr(repository, 'get_org_policy')
         try:
-            return org_policy_method(resource_id, constraint)
+            results = org_policy_method(resource_id, constraint)
+            LOGGER.debug("Getting a specific org policy constraint for a given"
+                         " resource, resouce_id = %s, constraint = %s, "
+                         "effective_policy = %s, results = %s",
+                         resource_id, constraint, effective_policy, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(resource_id, e)

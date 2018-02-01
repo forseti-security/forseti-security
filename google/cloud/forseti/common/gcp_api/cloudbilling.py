@@ -128,7 +128,7 @@ class CloudBillingClient(object):
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_billing_info(self, project_id):
-        """Gets the biling information for a project.
+        """Gets the billing information for a project.
 
         Args:
             project_id (int): The project id for a GCP project.
@@ -151,9 +151,15 @@ class CloudBillingClient(object):
 
         try:
             name = self.repository.projects.get_name(project_id)
-            return self.repository.projects.get_billing_info(name)
+            results = self.repository.projects.get_billing_info(name)
+            LOGGER.debug("Getting the billing information for a project, "
+                         "project_id = %s, results = %s", project_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                LOGGER.warn(e)
                 return {}
-            LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
-            raise api_errors.ApiExecutionError('billing_info', e)
+            api_exception = api_errors.ApiExecutionError(
+                'billing_info', e, 'project_id', project_id)
+            LOGGER.error(api_exception)
+            raise api_exception
