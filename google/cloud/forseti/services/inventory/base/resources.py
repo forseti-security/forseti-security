@@ -146,16 +146,20 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            for resource in yielder.iter():
-                res = resource
-                new_stack = stack + [self]
+            try:
+                for resource in yielder.iter():
+                    res = resource
+                    new_stack = stack + [self]
 
-                # Parallelization for resource subtrees.
-                if res.should_dispatch():
-                    callback = partial(res.try_accept, visitor, new_stack)
-                    visitor.dispatch(callback)
-                else:
-                    res.try_accept(visitor, new_stack)
+                    # Parallelization for resource subtrees.
+                    if res.should_dispatch():
+                        callback = partial(res.try_accept, visitor, new_stack)
+                        visitor.dispatch(callback)
+                    else:
+                        res.try_accept(visitor, new_stack)
+            except Exception as e:
+                self.add_warning(e)
+                visitor.on_child_error(e)
 
         if self._warning:
             visitor.update(self)
