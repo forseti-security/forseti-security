@@ -1,4 +1,3 @@
-# pylint: disable=too-many-lines
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,7 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals
+# pylint: disable=too-many-locals,too-many-lines
 
 from argparse import ArgumentParser
 import json
