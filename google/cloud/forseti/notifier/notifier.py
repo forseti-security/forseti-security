@@ -43,17 +43,6 @@ from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeli
 # Setup flags
 FLAGS = flags.FLAGS
 
-# Hack to make the test pass due to duplicate flag error here
-# and inventory_loader.
-# TODO: Find a way to remove this try/except, possibly dividing the tests
-# into different test suites.
-try:
-    flags.DEFINE_string(
-        'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
-        'Fully qualified path and filename of the Forseti config file.')
-except flags.DuplicateFlagError:
-    pass
 flags.DEFINE_string(
     'inventory_index_id',
     '-1',
@@ -151,25 +140,21 @@ def process(message):
         return
 
 # pylint: disable=unused-argument
-def run(forseti_config, inventory_index_id, service_config=None):
+def run(inventory_index_id, service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
-        forseti_config (dict): Forseti 1.0 config
         inventory_index_id (str): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs
 
     Returns:
         int: Status code.
     """
-    if forseti_config is None:
-        LOGGER.error('Path to Forseti Security config needs to be specified.')
-        sys.exit()
-
     try:
-        configs = file_loader.read_and_parse_file(forseti_config)
+        configs = file_loader.read_and_parse_file(
+            service_config.forseti_config_file_path)
     except IOError:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try again.')
@@ -238,7 +223,7 @@ def main(_):
         int: Status code.
     """
 
-    run(FLAGS.forseti_config, FLAGS.inventory_index_id)
+    run(FLAGS.inventory_index_id)
     return 0
 
 

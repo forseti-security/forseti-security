@@ -24,8 +24,7 @@ service Notifier {
 }
 
 message RunRequest {
-  string config_file = 1;
-  string inventory_index_id = 2;
+  string inventory_id = 1;
 }
 
 message RunReply {

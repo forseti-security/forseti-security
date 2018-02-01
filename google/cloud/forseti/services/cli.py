@@ -367,12 +367,9 @@ def define_notifier_parser(parent):
         help='Run the notifier')
 
     create_notifier_parser.add_argument(
-        '--config_file',
-        help='Fully qualified path to Forseti config file')
-    create_notifier_parser.add_argument(
-        '--inventory_index_id',
+        '--inventory_id',
         default=-1,
-        help='Id of the inventory index to send violation notifications for'
+        help='Id of the inventory index to send violation notifications'
         )
 
 def define_explainer_parser(parent):
@@ -705,8 +702,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        result = client.run(config.config_file,
-                            config.inventory_index_id)
+        result = client.run(config.inventory_id)
         output.write(result)
 
     actions = {

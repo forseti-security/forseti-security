@@ -54,10 +54,9 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         """Run notifier."""
 
         LOGGER.info('Run notifier service with inventory index id: %s',
-                    request.inventory_index_id)
+                    request.inventory_id)
         result = self.notifier.run(
-            request.config_file,
-            request.inventory_index_id,
+            request.inventory_id,
             self.service_config)
 
         reply = notifier_pb2.RunReply()

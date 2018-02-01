@@ -217,14 +217,17 @@ class ServiceConfig(AbstractServiceConfig):
 
     def __init__(self,
                  inventory_config,
-                 explain_connect_string,
+                 forseti_db_connect_string,
+                 forseti_config_file_path,
                  endpoint):
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
-        self.engine = create_engine(explain_connect_string, pool_recycle=3600)
+        self.engine = create_engine(forseti_db_connect_string,
+                                    pool_recycle=3600)
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
+        self.forseti_config_file_path = forseti_config_file_path
         self.endpoint = endpoint
 
         self.inventory_config = inventory_config
@@ -286,7 +289,8 @@ class ServiceConfig(AbstractServiceConfig):
 
 
 def serve(endpoint, services,
-          explain_connect_string,
+          forseti_db_connect_string,
+          forseti_config_file_path,
           gsuite_sa_path, gsuite_admin_email,
           root_resource_id, log_level,
           max_workers=32, wait_shutdown_secs=3):
@@ -311,7 +315,8 @@ def serve(endpoint, services,
                                        gsuite_sa_path,
                                        gsuite_admin_email)
     config = ServiceConfig(inventory_config,
-                           explain_connect_string,
+                           forseti_db_connect_string,
+                           forseti_config_file_path,
                            endpoint)
     inventory_config.set_service_config(config)
 
@@ -340,6 +345,9 @@ def main():
         help=('Forseti database string, formatted as '
               '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
+        '--forseti_config_file_path',
+        help=('Path to Forseti configuration file.'))
+    parser.add_argument(
         '--gsuite_private_keyfile',
         help='Path to G Suite service account private keyfile')
     parser.add_argument(
@@ -365,8 +373,9 @@ def main():
     args = vars(parser.parse_args())
 
     serve(args['endpoint'], args['services'], args['forseti_db'],
-          args['gsuite_private_keyfile'], args['gsuite_admin_email'],
-          args['root_resource_id'], args['log_level'])
+          args['forseti_config_file_path'], args['gsuite_private_keyfile'],
+          args['gsuite_admin_email'], args['root_resource_id'],
+          args['log_level'])
 
 
 if __name__ == "__main__":
