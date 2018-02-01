@@ -39,7 +39,7 @@ def run():
                         action='store_true',
                         help=('Generate config files but do not modify '
                               'GCP infrastructure (i.e. do not actually '
-                              'set up Forseti'))
+                              'set up Forseti)'))
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
