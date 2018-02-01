@@ -118,7 +118,14 @@ class CloudsqlClient(object):
 
         try:
             paged_results = self.repository.instances.list(project_id)
-            return api_helpers.flatten_list_results(paged_results, 'items')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'items')
+            LOGGER.debug("Getting all the cloudsql instances of a project, "
+                         "project_id = %s, flattened_results = %s",
+                         project_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
-            raise api_errors.ApiExecutionError('instances', e)
+            api_exception = api_errors.ApiExecutionError(
+                'instances', e, 'project_id', project_id)
+            LOGGER.error(api_exception)
+            raise api_exception

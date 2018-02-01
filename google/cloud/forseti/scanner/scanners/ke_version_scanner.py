@@ -12,25 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the Big Query rules engine."""
+"""Scanner for the KE version rules engine."""
 
-from google.cloud.forseti.common.gcp_type.bigquery_access_controls import (
-    BigqueryAccessControls)
-
+from google.cloud.forseti.common.gcp_type.ke_cluster import KeCluster
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.scanner.audit import bigquery_rules_engine
+from google.cloud.forseti.scanner.audit import ke_version_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
-
 
 LOGGER = log_util.get_logger(__name__)
 
 
-class BigqueryScanner(base_scanner.BaseScanner):
-    """Scanner for BigQuery acls."""
+class KeVersionScanner(base_scanner.BaseScanner):
+    """Check if the version of running KE clusters and nodes are allowed."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp,
-                 rules):
+                 model_name, snapshot_timestamp, rules):
         """Initialization.
 
         Args:
@@ -41,14 +37,15 @@ class BigqueryScanner(base_scanner.BaseScanner):
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
-        super(BigqueryScanner, self).__init__(
+        super(KeVersionScanner, self).__init__(
             global_configs,
             scanner_configs,
             service_config,
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = bigquery_rules_engine.BigqueryRulesEngine(
+
+        self.rules_engine = ke_version_rules_engine.KeVersionRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
@@ -64,14 +61,12 @@ class BigqueryScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['dataset_id'] = violation.dataset_id
-            violation_data['access_domain'] = violation.domain
-            violation_data['access_user_by_email'] = violation.user_email
-            violation_data['access_special_group'] = violation.special_group
-            violation_data['access_group_by_email'] = violation.group_email
-            violation_data['role'] = violation.role
-            violation_data['view'] = violation.view
+            violation_data = {
+                'violation_reason': violation.violation_reason,
+                'project_id': violation.project_id,
+                'cluster_name': violation.cluster_name,
+                'node_pool_name': violation.node_pool_name
+            }
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -85,54 +80,56 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            all_violations (list): A list of BigQuery violations.
+            all_violations (list): All violations
         """
-        all_violations = self._flatten_violations(all_violations)
+        all_violations = list(self._flatten_violations(all_violations))
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, bigquery_data):
+    def _find_violations(self, ke_clusters):
         """Find violations in the policies.
 
         Args:
-            bigquery_data (list): Big Query data to find violations in
+            ke_clusters (list): Clusters to find violations in.
 
         Returns:
-            list: A list of BigQuery violations
+            list: All violations.
         """
         all_violations = []
-        LOGGER.info('Finding BigQuery acl violations...')
+        LOGGER.info('Finding ke cluster version violations...')
 
-        for bigquery_acl in bigquery_data:
+        for ke_cluster in ke_clusters:
             violations = self.rules_engine.find_policy_violations(
-                bigquery_acl)
+                ke_cluster)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
 
     def _retrieve(self):
-        """Retrieves the data for scanner.
+        """Runs the data collection.
 
         Returns:
-            list: BigQuery ACL data
+            list: KE Cluster data.
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            bq_acls = []
+            ke_clusters = []
+            for ke_cluster in data_access.scanner_iter(
+                    session, 'kubernetes_cluster'):
+                service_config = list(data_access.scanner_iter(
+                    session, 'kubernetes_service_config',
+                    parent_type_name=ke_cluster.type_name))[0]
 
-            for policy in data_access.scanner_iter(session, 'dataset_policy'):
-                project_id = policy.parent.parent.name
-                dataset_id = policy.parent.name
-                bq_acls.extend(
-                    BigqueryAccessControls.from_json(
-                        project_id=project_id,
-                        dataset_id=dataset_id,
-                        acls=policy.data))
+                project_id = ke_cluster.parent.name
+                ke_clusters.append(
+                    KeCluster.from_json(project_id,
+                                        service_config.data,
+                                        ke_cluster.data,
+                                        ke_cluster.parent.full_name))
 
-        return bq_acls
+        return ke_clusters
 
     def run(self):
-        """Runs the data collection."""
-        bigquery_acls_data = self._retrieve()
-        all_violations = self._find_violations(bigquery_acls_data)
+        ke_clusters = self._retrieve()
+        all_violations = self._find_violations(ke_clusters)
         self._output_results(all_violations)

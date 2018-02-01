@@ -38,7 +38,7 @@ BIGQUERY_DATA = [{
 BIGQUERY_EXPECTED_VIOLATION_LIST = [
     Rule.RuleViolation(
         domain='',
-        resource_id='12345678',
+        resource_id='xza',
         special_group='',
         group_email='',
         rule_name='BigQuery test rule',
@@ -51,7 +51,7 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
         view=''),
     Rule.RuleViolation(
         domain='',
-        resource_id='12345678',
+        resource_id='xza',
         special_group='',
         group_email='',
         rule_name='BigQuery test rule',

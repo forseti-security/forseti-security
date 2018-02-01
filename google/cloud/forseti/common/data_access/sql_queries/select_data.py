@@ -198,6 +198,11 @@ FORWARDING_RULES_BY_PROJECT_ID = """
     WHERE project_id = %s
 """
 
+KE_CLUSTERS_JSON = """
+    SELECT project_id, server_config, raw_cluster AS cluster
+    FROM ke_{0}
+"""
+
 INSTANCES = """
     SELECT id, project_id, creation_timestamp, name, description,
     can_ip_forward, cpu_platform, disks, machine_type, metadata,
