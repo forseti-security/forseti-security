@@ -78,12 +78,13 @@ class Crawler(crawler.Crawler):
         progresser = self.config.progresser
         try:
 
-            resource.getIamPolicy(self.get_client())
-            resource.getGCSPolicy(self.get_client())
-            resource.getDatasetPolicy(self.get_client())
-            resource.getCloudSQLPolicy(self.get_client())
-            resource.getBillingInfo(self.get_client())
-            resource.getEnabledAPIs(self.get_client())
+            resource.get_iam_policy(self.get_client())
+            resource.get_gcs_policy(self.get_client())
+            resource.get_dataset_policy(self.get_client())
+            resource.get_cloudsql_policy(self.get_client())
+            resource.get_billing_info(self.get_client())
+            resource.get_enabled_apis(self.get_client())
+            resource.get_kubernetes_service_config(self.get_client())
 
             self.write(resource)
         except Exception as e:
@@ -246,6 +247,7 @@ def run_crawler(storage,
         'max_servicemanagement_api_calls_per_100_seconds': 200,
         'max_compute_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20,
+        'max_container_api_calls_per_100_seconds': 1000,
         }
 
     root_id = config.get_root_resource_id()

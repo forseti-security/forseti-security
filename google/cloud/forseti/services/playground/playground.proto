@@ -17,22 +17,14 @@ syntax = "proto3";
 package playground;
 
 service Playground {
-  rpc Ping(PingRequest) returns (PingReply) {}
-  rpc SetIamPolicy(SetIamPolicyRequest) returns (SetIamPolicyReply) {}
-  rpc GetIamPolicy(GetIamPolicyRequest) returns (GetIamPolicyReply) {}
-  rpc CheckIamPolicy(CheckIamPolicyRequest) returns (CheckIamPolicyReply) {}
+  rpc Ping (PingRequest) returns (PingReply) {}
+  rpc SetIamPolicy (SetIamPolicyRequest) returns (SetIamPolicyReply) {}
 
-  rpc AddGroupMember(AddGroupMemberRequest) returns (AddGroupMemberReply) {}
-  rpc DelGroupMember(DelGroupMemberRequest) returns (DelGroupMemberReply) {}
-  rpc ListGroupMembers(ListGroupMembersRequest) returns (ListGroupMembersReply) {}
+  rpc AddGroupMember (AddGroupMemberRequest) returns (AddGroupMemberReply) {}
+  rpc DeleteGroupMember (DeleteGroupMemberRequest) returns (DeleteGroupMemberReply) {}
 
-  rpc AddResource(AddResourceRequest) returns (AddResourceReply) {}
-  rpc DelResource(DelResourceRequest) returns (DelResourceReply) {}
-  rpc ListResources(ListResourcesRequest) returns (ListResourcesReply) {}
-
-  rpc AddRole(AddRoleRequest) returns (AddRoleReply) {}
-  rpc DelRole(DelRoleRequest) returns (DelRoleReply) {}
-  rpc ListRoles(ListRolesRequest) returns (ListRolesReply) {}
+  rpc AddRole (AddRoleRequest) returns (AddRoleReply) {}
+  rpc DeleteRole (DeleteRoleRequest) returns (DeleteRoleReply) {}
 }
 
 message AddRoleRequest {
@@ -43,35 +35,11 @@ message AddRoleRequest {
 message AddRoleReply {
 }
 
-message DelRoleRequest {
+message DeleteRoleRequest {
   string role_name = 1;
 }
 
-message DelRoleReply {
-}
-
-message ListRolesRequest {
-  string prefix = 1;
-}
-
-message ListRolesReply {
-  repeated string role_names = 1;
-}
-
-message ListGroupMembersRequest {
-  string prefix = 1;
-}
-
-message ListGroupMembersReply {
-  repeated string member_names = 1;
-}
-
-message ListResourcesRequest {
-  string prefix = 1;
-}
-
-message ListResourcesReply {
-  repeated string full_resource_names = 1;
+message DeleteRoleReply {
 }
 
 message AddGroupMemberRequest {
@@ -82,30 +50,13 @@ message AddGroupMemberRequest {
 message AddGroupMemberReply {
 }
 
-message DelGroupMemberRequest {
+message DeleteGroupMemberRequest {
   string member_name = 1;
   string parent_name = 2;
   bool only_delete_relationship = 3;
 }
 
-message DelGroupMemberReply {
-}
-
-message AddResourceRequest {
-  string resource_type_name = 1;
-  string parent_type_name = 2;
-  bool no_require_parent = 3;
-}
-
-message AddResourceReply {
-}
-
-message DelResourceRequest {
-  string resource_type_name = 1;
-}
-
-message DelResourceReply {
-
+message DeleteGroupMemberReply {
 }
 
 message PingRequest {
@@ -116,40 +67,21 @@ message PingReply {
   string data = 1;
 }
 
-message Binding {
-	string role = 1;
-	repeated string members = 2;
-}
-
-message Policy {
-	repeated Binding bindings = 1;
-	string etag = 2;
-}
-
-message CheckIamPolicyRequest {
-	string resource = 1;
-	string permission = 2;
-	string identity = 3;
-}
-
-message CheckIamPolicyReply {
-	bool result = 1;
-}
-
 message SetIamPolicyRequest {
-	string resource = 1;
-	Policy policy = 2;
+  string resource = 1;
+  Policy policy = 2;
 }
 
 message SetIamPolicyReply {
-	bool accepted = 1;
+  bool accepted = 1;
 }
 
-message GetIamPolicyRequest {
-	string resource = 1;
+message Policy {
+  repeated Binding bindings = 1;
+  string etag = 2;
 }
 
-message GetIamPolicyReply {
-	string resource = 1;
-	Policy policy = 2;
+message Binding {
+  string role = 1;
+  repeated string members = 2;
 }

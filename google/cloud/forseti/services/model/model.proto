@@ -30,25 +30,25 @@ service Modeller {
 }
 
 message CreateModelRequest {
-	string type = 1;
-	string name = 2;
-	int32 id = 3;
-	bool background = 4;
+  string type = 1;
+  string name = 2;
+  string id = 3;
+  bool background = 4;
 }
 
 message CreateModelReply {
-	ModelSimplified model = 1;
+  ModelSimplified model = 1;
 }
 
 message DeleteModelRequest {
-	string handle = 1;
+  string handle = 1;
 }
 
 message DeleteModelReply {
-	enum Status {
-		SUCCESS = 0;
-	}
-	Status status = 1;
+  enum Status {
+    SUCCESS = 0;
+  }
+  Status status = 1;
 }
 
 message ListModelRequest {
@@ -56,24 +56,24 @@ message ListModelRequest {
 
 
 message ModelSimplified {
-	string handle = 1;
-	string name = 2;
-	string status = 3;
-	string description = 4;
-	string message = 5;
+  string handle = 1;
+  string name = 2;
+  string status = 3;
+  string description = 4;
+  string message = 5;
 }
 
 message GetModelRequest {
-	string identifier = 1;
+  string identifier = 1;
 }
 
 message ModelDetails {
-	string handle = 1;
-	string name = 2;
-	string status = 3;
-	string description = 4;
-	string message = 5;
-	string warnings = 6;
+  string handle = 1;
+  string name = 2;
+  string status = 3;
+  string description = 4;
+  string message = 5;
+  string warnings = 6;
 }
 
 message PingRequest {

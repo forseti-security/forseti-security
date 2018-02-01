@@ -16,13 +16,17 @@
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-return-type-doc,missing-return-doc,broad-except
-# pylint: disable=missing-docstring,unused-argument,invalid-name
-# pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc,attribute-defined-outside-init
-# pylint: disable=useless-suppression,cell-var-from-loop,protected-access,too-many-instance-attributes
+# pylint: disable=missing-docstring,unused-argument
+# pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc
+# pylint: disable=attribute-defined-outside-init
 
 import ctypes
 from functools import partial
 import json
+
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
 def from_root_id(client, root_id):
@@ -148,31 +152,35 @@ class Resource(object):
             visitor.update(self)
 
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         return None
 
     @cached('gcs_policy')
-    def getGCSPolicy(self, client=None):
+    def get_gcs_policy(self, client=None):
         return None
 
     @cached('sql_policy')
-    def getCloudSQLPolicy(self, client=None):
+    def get_cloudsql_policy(self, client=None):
         return None
 
     @cached('dataset_policy')
-    def getDatasetPolicy(self, client=None):
+    def get_dataset_policy(self, client=None):
         return None
 
     @cached('group_members')
-    def getGroupMembers(self, client=None):
+    def get_group_members(self, client=None):
         return None
 
     @cached('billing_info')
-    def getBillingInfo(self, client=None):
+    def get_billing_info(self, client=None):
         return None
 
     @cached('enabled_apis')
-    def getEnabledAPIs(self, client=None):
+    def get_enabled_apis(self, client=None):
+        return None
+
+    @cached('service_config')
+    def get_kubernetes_service_config(self, client=None):
         return None
 
     def stack(self):
@@ -203,7 +211,7 @@ class Organization(Resource):
         return FACTORIES['organization'].create_new(data, root=True)
 
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         return client.get_organization_iam_policy(self['name'])
 
     def key(self):
@@ -224,7 +232,7 @@ class Folder(Resource):
         return self['name'].split('/', 1)[-1]
 
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         return client.get_folder_iam_policy(self['name'])
 
     def type(self):
@@ -239,19 +247,19 @@ class Project(Resource):
         return FACTORIES['project'].create_new(data, root=True)
 
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         if self.enumerable():
             return client.get_project_iam_policy(self['projectId'])
         return {}
 
     @cached('billing_info')
-    def getBillingInfo(self, client=None):
+    def get_billing_info(self, client=None):
         if self.enumerable():
             return client.get_project_billing_info(self['projectId'])
         return {}
 
     @cached('enabled_apis')
-    def getEnabledAPIs(self, client=None):
+    def get_enabled_apis(self, client=None):
         enabled_apis = []
         if self.enumerable():
             enabled_apis = client.get_enabled_apis(self['projectId'])
@@ -271,7 +279,7 @@ class Project(Resource):
         return self['lifecycleState'] == 'ACTIVE'
 
     def billing_enabled(self):
-        return self.getBillingInfo().get('billingEnabled', False)
+        return self.get_billing_info().get('billingEnabled', False)
 
     def is_api_enabled(self, service_name):
         """Returns True if the API service is enabled on the project.
@@ -296,6 +304,11 @@ class Project(Resource):
         return (self.billing_enabled() and
                 self.is_api_enabled('compute.googleapis.com'))
 
+    def container_api_enabled(self):
+        # Compute API depends on billing being enabled
+        return (self.billing_enabled() and
+                self.is_api_enabled('container.googleapis.com'))
+
     def storage_api_enabled(self):
         return self.is_api_enabled('storage-component.googleapis.com')
 
@@ -305,10 +318,10 @@ class Project(Resource):
 
 class GcsBucket(Resource):
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         return client.get_bucket_iam_policy(self.key())
 
-    def getGCSPolicy(self, client=None):
+    def get_gcs_policy(self, client=None):
         # Full projection returns GCS policy with the resource.
         try:
             return self['acl']
@@ -324,11 +337,11 @@ class GcsBucket(Resource):
 
 class GcsObject(Resource):
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         return client.get_object_iam_policy(self.parent()['name'],
                                             self['name'])
 
-    def getGCSPolicy(self, client=None):
+    def get_gcs_policy(self, client=None):
         # Full projection returns GCS policy with the resource.
         try:
             return self['acl']
@@ -341,10 +354,30 @@ class GcsObject(Resource):
     def key(self):
         return self['id']
 
+class KubernetesCluster(Resource):
+    @cached('service_config')
+    def get_kubernetes_service_config(self, client=None):
+        return client.fetch_container_serviceconfig(self.parent().key(),
+                                                    self.zone())
+
+    def key(self):
+        # Clusters do not have globally unique IDs, use size_t hash of selfLink
+        return '%u' % ctypes.c_size_t(hash(self['selfLink'])).value
+
+    def type(self):
+        return 'kubernetes_cluster'
+
+    def zone(self):
+        try:
+            self_link_parts = self['selfLink'].split('/')
+            return self_link_parts[self_link_parts.index('zones')+1]
+        except KeyError:
+            LOGGER.warn('selfLink not found: %s', self._data)
+            return ''
 
 class DataSet(Resource):
     @cached('dataset_policy')
-    def getDatasetPolicy(self, client=None):
+    def get_dataset_policy(self, client=None):
         return client.get_dataset_dataset_policy(
             self.parent().key(),
             self['datasetReference']['datasetId'])
@@ -510,7 +543,7 @@ class CloudSqlInstance(Resource):
 
 class ServiceAccount(Resource):
     @cached('iam_policy')
-    def getIamPolicy(self, client=None):
+    def get_iam_policy(self, client=None):
         return client.get_serviceaccount_iam_policy(self['name'])
 
     def key(self):
@@ -662,6 +695,13 @@ class AppEngineInstanceIterator(ResourceIterator):
                 versionid=self.resource['id']):
             yield FACTORIES['appengine_instance'].create_new(data)
 
+class KubernetesClusterIterator(ResourceIterator):
+    def iter(self):
+        gcp = self.client
+        if self.resource.container_api_enabled():
+            for data in gcp.iter_container_clusters(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 class ComputeIterator(ResourceIterator):
     def iter(self):
@@ -869,6 +909,7 @@ FACTORIES = {
             CloudSqlIterator,
             ServiceAccountIterator,
             AppEngineAppIterator,
+            KubernetesClusterIterator,
             ComputeIterator,
             ImageIterator,
             InstanceIterator,
@@ -926,6 +967,12 @@ FACTORIES = {
     'dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DataSet,
+        'contains': [
+            ]}),
+
+    'kubernetes_cluster': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KubernetesCluster,
         'contains': [
             ]}),
 

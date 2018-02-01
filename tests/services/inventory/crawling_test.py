@@ -36,10 +36,11 @@ class NullProgresser(Progresser):
         self.objects += 1
 
     def on_warning(self, warning):
+        logging.error("Progressor Warning: %s", warning)
         self.warnings += 1
 
     def on_error(self, error):
-        logging.error("Progressor Error: %s", error)
+        logging.exception("Progressor Error: %s", error)
         self.errors += 1
 
     def get_summary(self):
@@ -66,21 +67,24 @@ class CrawlerTest(ForsetiTestCase):
             item_counts = result_counts.setdefault(
                 item_type, {'resource': 0})
             item_counts['resource'] += 1
-            if item.getIamPolicy():
+            if item.get_iam_policy():
                 item_counts.setdefault('iam_policy', 0)
                 item_counts['iam_policy'] += 1
-            if item.getGCSPolicy():
+            if item.get_gcs_policy():
                 item_counts.setdefault('gcs_policy', 0)
                 item_counts['gcs_policy'] += 1
-            if item.getDatasetPolicy():
+            if item.get_dataset_policy():
                 item_counts.setdefault('dataset_policy', 0)
                 item_counts['dataset_policy'] += 1
-            if item.getBillingInfo():
+            if item.get_billing_info():
                 item_counts.setdefault('billing_info', 0)
                 item_counts['billing_info'] += 1
-            if item.getEnabledAPIs():
+            if item.get_enabled_apis():
                 item_counts.setdefault('enabled_apis', 0)
                 item_counts['enabled_apis'] += 1
+            if item.get_kubernetes_service_config():
+                item_counts.setdefault('service_config', 0)
+                item_counts['service_config'] += 1
 
         return result_counts
 
@@ -125,9 +129,10 @@ class CrawlerTest(ForsetiTestCase):
             'gsuite_user_member': {'resource': 3},
             'image': {'resource': 2},
             'instance': {'resource': 4},
-            'instancegroup': {'resource': 1},
-            'instancegroupmanager': {'resource': 1},
-            'instancetemplate': {'resource': 1},
+            'instancegroup': {'resource': 2},
+            'instancegroupmanager': {'resource': 2},
+            'instancetemplate': {'resource': 2},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
@@ -205,9 +210,10 @@ class CrawlerTest(ForsetiTestCase):
             'firewall': {'resource': 3},
             'forwardingrule': {'resource': 1},
             'instance': {'resource': 3},
-            'instancegroup': {'resource': 1},
-            'instancegroupmanager': {'resource': 1},
-            'instancetemplate': {'resource': 1},
+            'instancegroup': {'resource': 2},
+            'instancegroupmanager': {'resource': 2},
+            'instancetemplate': {'resource': 2},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
             'network': {'resource': 1},
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},

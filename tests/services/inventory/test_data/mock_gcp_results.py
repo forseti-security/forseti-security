@@ -1053,6 +1053,15 @@ GCE_GET_INSTANCE_GROUPS = {
                 instance1="iap_instance1",
                 instance2="iap_instance2",
                 instance3="iap_instance3")),
+        json.loads(
+            GCE_INSTANCE_GROUPS_TEMPLATE.format(
+                id=2,
+                name="gke-cluster-1-default-pool-12345678-grp",
+                project="project1",
+                network="default",
+                instance1="ke_instance1",
+                instance2="ke_instance2",
+                instance3="ke_instance3")),
     ]
 }
 
@@ -1164,11 +1173,44 @@ INSTANCE_GROUP_MANAGER_TEMPLATE = """
 }}
 """
 
+# Fields: id, name, project, template, zone
+KE_INSTANCE_GROUP_MANAGER_TEMPLATE = """
+{{
+ "kind": "compute#instanceGroupManager",
+ "id": "112{id}",
+ "creationTimestamp": "2017-10-24T12:36:42.373-07:00",
+ "name": "{name}",
+ "zone": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}",
+ "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/{project}/global/instanceTemplates/{template}",
+ "instanceGroup": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instanceGroups/{name}",
+ "baseInstanceName": "{template}",
+ "fingerprint": "Y81gWm4KRRY=",
+ "currentActions": {{
+  "none": 3,
+  "creating": 0,
+  "creatingWithoutRetries": 0,
+  "recreating": 0,
+  "deleting": 0,
+  "abandoning": 0,
+  "restarting": 0,
+  "refreshing": 0
+ }},
+ "targetSize": 3,
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instanceGroupManagers/{name}"
+}}
+"""
+
 GCE_GET_INSTANCE_GROUP_MANAGERS = {
     "project1": [
         json.loads(
             INSTANCE_GROUP_MANAGER_TEMPLATE.format(
                 id=1, name="igm-1", project="project1", template="it-1")),
+        json.loads(
+            KE_INSTANCE_GROUP_MANAGER_TEMPLATE.format(
+                id=2, name="gke-cluster-1-default-pool-12345678-grp",
+                project="project1",
+                template="gke-cluster-1-default-pool-12345678",
+                zone="us-central1-a")),
     ]
 }
 
@@ -1249,6 +1291,13 @@ GCE_GET_INSTANCE_TEMPLATES = {
             INSTANCE_TEMPLATES_TEMPLATE.format(
                 id=1,
                 name="it-1",
+                project="project1",
+                network="default",
+                num=PROJECT_ID_PREFIX + "1")),
+        json.loads(
+            INSTANCE_TEMPLATES_TEMPLATE.format(
+                id=2,
+                name="gke-cluster-1-default-pool-12345678",
                 project="project1",
                 network="default",
                 num=PROJECT_ID_PREFIX + "1")),
@@ -1547,6 +1596,148 @@ IAM_GET_SERVICEACCOUNT_KEYS = {
     ],
 }
 
+CONTAINER_SERVERCONFIG = """
+{
+  "defaultClusterVersion": "1.7.11-gke.1",
+  "validNodeVersions": [
+    "1.8.6-gke.0",
+    "1.8.5-gke.0",
+    "1.8.4-gke.1",
+    "1.8.3-gke.0",
+    "1.8.2-gke.0",
+    "1.8.1-gke.1",
+    "1.7.12-gke.0",
+    "1.7.11-gke.1",
+    "1.7.11",
+    "1.7.10-gke.0",
+    "1.7.8-gke.0",
+    "1.6.13-gke.1",
+    "1.6.11-gke.0",
+    "1.5.7"
+  ],
+  "defaultImageType": "COS",
+  "validImageTypes": [
+    "UBUNTU",
+    "COS"
+  ],
+  "validMasterVersions": [
+    "1.8.6-gke.0",
+    "1.8.5-gke.0",
+    "1.7.12-gke.0",
+    "1.7.11-gke.1"
+  ]
+}
+"""
+
+# Fields: project, cl_name, np_name, zone
+CONTAINER_CLUSTERS_TEMPLATE = """
+{{
+  "name": "{cl_name}",
+  "nodeConfig": {{
+    "machineType": "n1-standard-1",
+    "diskSizeGb": 100,
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/compute",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring",
+      "https://www.googleapis.com/auth/servicecontrol",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/trace.append"
+    ],
+    "imageType": "COS",
+    "serviceAccount": "default"
+  }},
+  "masterAuth": {{
+    "username": "user",
+    "password": "pass",
+    "clusterCaCertificate": "AB",
+    "clientCertificate": "AB",
+    "clientKey": "AB"
+  }},
+  "loggingService": "logging.googleapis.com",
+  "monitoringService": "none",
+  "network": "default",
+  "clusterIpv4Cidr": "10.8.0.0/14",
+  "addonsConfig": {{
+    "httpLoadBalancing": {{}},
+    "kubernetesDashboard": {{}},
+    "networkPolicyConfig": {{
+      "disabled": true
+    }}
+  }},
+  "subnetwork": "default",
+  "nodePools": [
+    {{
+      "name": "{np_name}",
+      "config": {{
+        "machineType": "n1-standard-1",
+        "diskSizeGb": 100,
+        "oauthScopes": [
+          "https://www.googleapis.com/auth/compute",
+          "https://www.googleapis.com/auth/devstorage.read_only",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring",
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/service.management.readonly",
+          "https://www.googleapis.com/auth/trace.append"
+        ],
+        "imageType": "COS",
+        "serviceAccount": "default"
+      }},
+      "initialNodeCount": 3,
+      "autoscaling": {{}},
+      "management": {{
+        "autoUpgrade": true
+      }},
+      "selfLink": "https://container.googleapis.com/v1/projects/{project}/zones/{zone}/clusters/{cl_name}/nodePools/{np_name}",
+      "version": "1.7.11-gke.1",
+      "instanceGroupUrls": [
+        "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instanceGroupManagers/gke-{cl_name}-{np_name}-12345678-grp"
+      ],
+      "status": "RUNNING"
+    }}
+  ],
+  "locations": [
+    "us-central1-a"
+  ],
+  "labelFingerprint": "abcdef12",
+  "legacyAbac": {{}},
+  "networkPolicy": {{
+    "provider": "CALICO"
+  }},
+  "ipAllocationPolicy": {{}},
+  "masterAuthorizedNetworksConfig": {{}},
+  "selfLink": "https://container.googleapis.com/v1/projects/{project}/zones/{zone}/clusters/{cl_name}",
+  "zone": "{zone}",
+  "endpoint": "10.0.0.1",
+  "initialClusterVersion": "1.7.6-gke.1",
+  "currentMasterVersion": "1.7.11-gke.1",
+  "currentNodeVersion": "1.7.11-gke.1",
+  "createTime": "2017-10-24T19:36:21+00:00",
+  "status": "RUNNING",
+  "nodeIpv4CidrSize": 24,
+  "servicesIpv4Cidr": "10.11.240.0/20",
+  "instanceGroupUrls": [
+    "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instanceGroupManagers/gke-{cl_name}-{np_name}-12345678-grp"
+  ],
+  "currentNodeCount": 3
+}}
+"""
+
+KE_GET_CLUSTERS = {
+    "project1": [
+        json.loads(
+            CONTAINER_CLUSTERS_TEMPLATE.format(
+                project="project1", cl_name="cluster-1", np_name="default-pool",
+                zone="us-central1-a")),
+    ],
+}
+
+KE_GET_SERVICECONFIG = {
+    "us-central1-a": json.loads(CONTAINER_SERVERCONFIG),
+}
+
 # Fields: project, role
 PROJECT_ROLES_TEMPLATE = """
 {{
@@ -1727,6 +1918,13 @@ COMPUTE_API_ENABLED = """
 }
 """
 
+CONTAINER_API_ENABLED = """
+{
+ "serviceName": "container.googleapis.com",
+ "producerProjectId": "google.com:cloud-kubernetes-devrel"
+}
+"""
+
 STORAGE_API_ENABLED = """
 {
  "serviceName": "storage-component.googleapis.com",
@@ -1738,6 +1936,7 @@ SERVICEMANAGEMENT_ENABLED_APIS = {
     "project1": [
         json.loads(STORAGE_API_ENABLED),
         json.loads(COMPUTE_API_ENABLED),
+        json.loads(CONTAINER_API_ENABLED),
     ],
     "project2": [
         json.loads(STORAGE_API_ENABLED),

@@ -118,41 +118,41 @@ class ApiTest(ForsetiTestCase):
             reply = client.new_model('EMPTY', name='test1')
             client.switch_model(reply.model.handle)
             self.assertEqual(
-                len(client.playground.list_members('').member_names),
+                len(client.explain.list_members('').member_names),
                 0,
                 'Expect no members in the empty model')
             client.playground.add_member('user/user1')
             self.assertEqual(
-                len(client.playground.list_members('').member_names),
+                len(client.explain.list_members('').member_names),
                 1,
                 'Expect one members in the empty model')
             client.playground.add_member('group/group1')
             self.assertEqual(
-                len(client.playground.list_members('').member_names),
+                len(client.explain.list_members('').member_names),
                 2,
                 'Expect two members in the empty model')
             client.playground.add_member('user/user2', ['group/group1'])
             self.assertEqual(
-                len(client.playground.list_members('').member_names),
+                len(client.explain.list_members('').member_names),
                 3,
                 'Expect three members in the empty model')
             self.assertEqual(
-                len(client.playground.list_members('user').member_names),
+                len(client.explain.list_members('user').member_names),
                 2)
             self.assertEqual(
-                len(client.playground.list_members('group').member_names),
+                len(client.explain.list_members('group').member_names),
                 1)
-            client.playground.del_member('user/user1')
+            client.playground.delete_member('user/user1')
             self.assertEqual(
-                len(client.playground.list_members('user').member_names),
+                len(client.explain.list_members('user').member_names),
                 1)
             self.assertEqual(
-                len(client.playground.list_members('group').member_names),
+                len(client.explain.list_members('group').member_names),
                 1)
-            client.playground.del_member('group/group1')
-            client.playground.del_member('user/user2')
+            client.playground.delete_member('group/group1')
+            client.playground.delete_member('user/user2')
             self.assertEqual(
-                len(client.playground.list_members('').member_names),
+                len(client.explain.list_members('').member_names),
                 0,
                 'Expect no members in the empty model')
 
