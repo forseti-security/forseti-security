@@ -48,10 +48,13 @@ INSTALL_REQUIRES = [
     'requests[security]>=2.18.4',
     'sendgrid>=3.6.3',
     'SQLAlchemy>=1.1.9',
+    'protobuf>=3.2.0',
     'pygraph>=0.2.1',
     'unicodecsv>=0.14.1',
     # Setup.
     'google-apputils>=0.4.2',
+    'grpcio',
+    'grpcio-tools',
     'python-gflags>=3.1.1',
     # Test.
     'mock>=2.0.0',
@@ -110,9 +113,7 @@ setup(
     keywords='gcp google cloud platform security tools',
     entry_points={
         'console_scripts': [
-            'forseti_scanner = google.cloud.forseti.stubs:RunForsetiScanner',
             'forseti_enforcer = google.cloud.forseti.stubs:RunForsetiEnforcer',
-            'forseti_notifier = google.cloud.forseti.stubs:RunForsetiNotifier',
             'forseti_server = google.cloud.forseti.stubs:RunForsetiServer',
             'forseti = google.cloud.forseti.stubs:RunForsetiCli',
         ]
