@@ -34,8 +34,7 @@ NAMESPACE_PACKAGES = [
     'google.cloud.forseti'
 ]
 
-INSTALL_REQUIRES = [
-    # Install.
+INSTALL_REQUIRES= [
     'anytree>=2.1.4',
     'futures>=3.0.5',
     'google-api-python-client>=1.6.1',
@@ -51,14 +50,18 @@ INSTALL_REQUIRES = [
     'protobuf>=3.2.0',
     'pygraph>=0.2.1',
     'unicodecsv>=0.14.1',
-    # Setup.
+]
+
+SETUP_REQUIRES = [
     'google-apputils>=0.4.2',
     'grpcio',
     'grpcio-tools',
     'python-gflags>=3.1.1',
-    # Test.
+]
+
+TESTS_REQUIRE = [
     'mock>=2.0.0',
-    'SQLAlchemy>=1.1.9',
+    'SQLAlchemy>=1.1.9', # Required duplicate from above, change accordingly.
     'parameterized>=0.6.1',
     'simple-crypt>=4.1.7',
 ]
@@ -100,7 +103,9 @@ setup(
     cmdclass={
         'install': PostInstallCommand,
     },
-    install_requires=INSTALL_REQUIRES,
+    install_requires=SETUP_REQUIRES + INSTALL_REQUIRES,
+    setup_requires=SETUP_REQUIRES,
+    tests_require=INSTALL_REQUIRES + SETUP_REQUIRES + TESTS_REQUIRE,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
