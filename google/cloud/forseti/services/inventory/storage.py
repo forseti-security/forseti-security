@@ -197,6 +197,7 @@ class Inventory(BASE):
         billing_info = resource.get_billing_info()
         enabled_apis = resource.get_enabled_apis()
         service_config = resource.get_kubernetes_service_config()
+        other = json.dumps({'timestamp': resource.get_timestamp()})
 
         rows = []
         rows.append(
@@ -208,7 +209,7 @@ class Inventory(BASE):
                 data=json.dumps(resource.data()),
                 parent_key=None if not parent else parent.key(),
                 parent_type=None if not parent else parent.type(),
-                other=None,
+                other=other,
                 error=resource.get_warning()))
 
         if iam_policy:
@@ -221,7 +222,7 @@ class Inventory(BASE):
                     data=json.dumps(iam_policy),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
-                    other=None,
+                    other=other,
                     error=None))
 
         if gcs_policy:
@@ -234,7 +235,7 @@ class Inventory(BASE):
                     data=json.dumps(gcs_policy),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
-                    other=None,
+                    other=other,
                     error=None))
 
         if dataset_policy:
@@ -247,7 +248,7 @@ class Inventory(BASE):
                     data=json.dumps(dataset_policy),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
-                    other=None,
+                    other=other,
                     error=None))
 
         if billing_info:
@@ -260,7 +261,7 @@ class Inventory(BASE):
                     data=json.dumps(billing_info),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
-                    other=None,
+                    other=other,
                     error=None))
 
         if enabled_apis:
@@ -273,7 +274,7 @@ class Inventory(BASE):
                     data=json.dumps(enabled_apis),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
-                    other=None,
+                    other=other,
                     error=None))
 
         if service_config:
@@ -286,7 +287,7 @@ class Inventory(BASE):
                     data=json.dumps(service_config),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
-                    other=None,
+                    other=other,
                     error=None))
 
         return rows

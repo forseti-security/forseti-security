@@ -17,12 +17,12 @@ import os
 import shutil
 import tempfile
 import unittest
+import json
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
-from google.cloud.forseti.services.inventory.storage import InventoryState
 from google.cloud.forseti.services.model.importer import importer
-
+from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 FAKE_TIMESTAMP = '2018-01-28T10:20:30.00000'
 
 
@@ -84,13 +84,19 @@ class ImporterTest(ForsetiTestCase):
                 self.service_config,
                 inventory_id=FAKE_TIMESTAMP)
             import_runner.run()
+            with Inventory(session, FAKE_TIMESTAMP, True) as inventory:
+                inventory_info = str(inventory.index)
 
         model = self.model_manager.model(self.model_name)
         print model
         self.assertIn(model.state,
-                      [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS],
+                      ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
+        self.assertEquals(json.loads(model.description),
+                          {'pristine': True,
+                           'source': 'inventory',
+                           'source_info': inventory_info})
 
 
 if __name__ == '__main__':
