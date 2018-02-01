@@ -19,10 +19,13 @@
 # pylint: disable=missing-docstring,unused-argument
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc
 # pylint: disable=attribute-defined-outside-init
+# pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
+import datetime
 from functools import partial
 import json
+import pytz
 
 from google.cloud.forseti.common.util import log_util
 
@@ -82,6 +85,12 @@ class Resource(object):
         self._contains = [] if contains is None else contains
         self._warning = []
         self._enabled_service_names = None
+        self._timestamp = self._utcnow()
+
+    @staticmethod
+    def _utcnow():
+        """Wrapper for datetime.datetime.now() injection."""
+        return datetime.datetime.now(pytz.UTC)
 
     def __getitem__(self, key):
         try:
@@ -182,6 +191,10 @@ class Resource(object):
     @cached('service_config')
     def get_kubernetes_service_config(self, client=None):
         return None
+
+    def get_timestamp(self):
+        """Returns a string timestamp when the resource object was created."""
+        return self._timestamp.strftime('%Y-%m-%dT%H:%M:%S%z')
 
     def stack(self):
         if self._stack is None:

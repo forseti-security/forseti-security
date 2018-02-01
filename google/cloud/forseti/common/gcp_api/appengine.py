@@ -20,6 +20,9 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 
 class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -248,11 +251,15 @@ class AppEngineClient(object):
             dict: The response of retrieving the AppEngine app.
         """
         try:
-            return self.repository.apps.get(project_id)
+            results = self.repository.apps.get(project_id)
+            LOGGER.debug("Getting information about an application, "
+                         "project_id = %s, result = %s", project_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
                 # TODO: handle error more gracefully
                 # application not found
+                LOGGER.warn(e)
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -268,10 +275,15 @@ class AppEngineClient(object):
                 service_id.
         """
         try:
-            return self.repository.app_services.get(
+            results = self.repository.app_services.get(
                 project_id, target=service_id)
+            LOGGER.debug("Getting information about a specific service, "
+                         "project_id = %s, service_id = %s, results = %s",
+                         project_id, service_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                LOGGER.warn(e)
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -286,9 +298,15 @@ class AppEngineClient(object):
         """
         try:
             paged_results = self.repository.app_services.list(project_id)
-            return api_helpers.flatten_list_results(paged_results, 'services')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'services')
+            LOGGER.debug("Listing services of a project, project_id = %s, "
+                         "flattened_results = %s",
+                         project_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                LOGGER.warn(e)
                 return []
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -305,10 +323,16 @@ class AppEngineClient(object):
                 service_id.
         """
         try:
-            return self.repository.service_versions.get(
+            results = self.repository.service_versions.get(
                 project_id, target=version_id, services_id=service_id)
+            LOGGER.debug("Getting information about a specific version "
+                         "of a service, project_id = %s, service_id = %s, "
+                         "version_id = %s, results = %s",
+                         project_id, service_id, version_id, results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                LOGGER.warn(e)
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -325,9 +349,15 @@ class AppEngineClient(object):
         try:
             paged_results = self.repository.service_versions.list(
                 project_id, services_id=service_id)
-            return api_helpers.flatten_list_results(paged_results, 'versions')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'versions')
+            LOGGER.debug("Listing versions of a given service, project_id = "
+                         "%s, service_id = %s, flattened_results = %s",
+                         project_id, service_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                LOGGER.warn(e)
                 return []
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -345,10 +375,17 @@ class AppEngineClient(object):
                 service_id and version_id.
         """
         try:
-            return self.repository.version_instances.get(
+            results = self.repository.version_instances.get(
                 project_id, target=instances_id, services_id=service_id,
                 versions_id=version_id)
+            LOGGER.debug("Getting information about a specific instance of"
+                         " a service, project_id = %s, service_id = %s, "
+                         "version_id = %s, instance_id = %s, results = %s",
+                         project_id, service_id, version_id, instances_id,
+                         results)
+            return results
         except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.warn(e)
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
@@ -367,8 +404,15 @@ class AppEngineClient(object):
         try:
             paged_results = self.repository.version_instances.list(
                 project_id, services_id=service_id, versions_id=version_id)
-            return api_helpers.flatten_list_results(paged_results, 'instances')
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'instances')
+            LOGGER.debug("Listing instances of a given service and version,"
+                         " project_id = %s, service_id = %s, version_id = %s,"
+                         " flattened_results = %s",
+                         project_id, service_id, version_id, flattened_results)
+            return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
             if isinstance(e, errors.HttpError) and e.resp.status == 404:
+                LOGGER.warn(e)
                 return []
             raise api_errors.ApiExecutionError(project_id, e)
