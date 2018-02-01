@@ -288,6 +288,7 @@ class ServiceConfig(AbstractServiceConfig):
         return Storage
 
 
+# pylint: disable=too-many-locals
 def serve(endpoint, services,
           forseti_db_connect_string,
           forseti_config_file_path,
@@ -332,6 +333,8 @@ def serve(endpoint, services,
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
+# pylint: enable=too-many-locals
+
 
 def main():
     """Run."""

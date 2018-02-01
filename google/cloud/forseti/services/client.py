@@ -115,7 +115,7 @@ class NotifierClient(ForsetiClient):
         """Runs the notifier.
 
         Args:
-            inventory_index_id (int): Inventory Index Id.
+            inventory_id (int): Inventory Index Id.
 
         Returns:
             Any service response.

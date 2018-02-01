@@ -140,13 +140,13 @@ def process(message):
         return
 
 # pylint: disable=unused-argument
-def run(inventory_index_id, service_config=None):
+def run(inventory_id, service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
-        inventory_index_id (str): Inventory index id.
+        inventory_id (str): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs
 
     Returns:
