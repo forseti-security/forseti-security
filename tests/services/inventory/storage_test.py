@@ -132,6 +132,9 @@ class StorageTest(ForsetiTestCase):
                 storage.commit()
 
                 verify_resource_timestamps_from_storage(storage)
+                self.assertEqual(1,
+                                 len(self.reduced_inventory(storage, [])),
+                                 'Unexpected number of resources in inventory')
 
 
 if __name__ == '__main__':
