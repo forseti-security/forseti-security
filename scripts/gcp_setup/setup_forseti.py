@@ -21,6 +21,7 @@ import argparse
 
 from installer.forseti_server_installer import ForsetiServerInstaller
 from installer.forseti_cli_installer import ForsetiCLIInstaller
+from installer.configs.config import Config
 
 
 def run():
@@ -64,7 +65,7 @@ def run():
                               help='Notification recipient email')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
-
+    Config()
     args = vars(parser.parse_args())
     if args.get('server'):
         forseti_setup = ForsetiServerInstaller(**args)

@@ -18,7 +18,7 @@ from __future__ import print_function
 import random
 
 from forseti_installer import ForsetiInstaller
-from scripts.gcp_setup.installer.utils.utils import (
+from utils.utils import (
     print_banner, format_resource_id, format_service_acct_id)
 from utils.constants import (
     MESSAGE_ENABLE_GSUITE_GROUP, MESSAGE_SETUP_IAM_EXPLAIN,

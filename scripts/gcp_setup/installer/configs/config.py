@@ -16,7 +16,7 @@
 
 import datetime
 
-from scripts.gcp_setup.installer.utils.constants import CONFIG_FILENAME_FMT
+from ..utils.constants import CONFIG_FILENAME_FMT
 
 
 class Config(object):
