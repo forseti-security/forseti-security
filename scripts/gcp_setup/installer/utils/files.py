@@ -17,8 +17,9 @@
 from __future__ import print_function
 import os
 
-from constants import ROOT_DIR_PATH, INPUT_DEPLOYMENT_TEMPLATE_FILENAME,\
-    INPUT_CONFIGURATION_TEMPLATE_FILENAME
+from constants import (
+    ROOT_DIR_PATH, INPUT_DEPLOYMENT_TEMPLATE_FILENAME,
+    INPUT_CONFIGURATION_TEMPLATE_FILENAME)
 from utils import print_banner, run_command
 
 
@@ -33,8 +34,8 @@ def generate_deployment_templates(template_type, vals, datetimestamp):
     Returns:
         str: Path of the deployment template
 
-    Raise:
-        KeyError
+    Raises:
+        KeyError: KeyError
     """
 
     template_type = template_type.lower()
@@ -76,8 +77,8 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
     Returns:
         str: Path of the deployment template
 
-    Raise:
-        KeyError
+    Raises:
+        KeyError: KeyError
     """
 
     template_type = template_type.lower()

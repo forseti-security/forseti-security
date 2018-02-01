@@ -20,12 +20,13 @@ import sys
 import json
 
 from utils import run_command, print_banner, id_from_name
-from constants import GCLOUD_VERSION_REGEX, GCLOUD_ALPHA_REGEX, \
-    GCLOUD_MIN_VERSION, MESSAGE_GCLOUD_VERSION_MISMATCH, REQUIRED_APIS, \
-    GCP_READ_IAM_ROLES, GCP_WRITE_IAM_ROLES, PROJECT_IAM_ROLES, \
-    SVC_ACCT_ROLES, MESSAGE_CREATE_ROLE_SCRIPT, QUESTION_CHOOSE_FOLDER, \
-    MESSAGE_BILLING_NOT_ENABLED, MESSAGE_NO_ORGANIZATION, \
-    RESOURCE_TYPE_ARGS_MAP
+from constants import (
+    GCLOUD_VERSION_REGEX, GCLOUD_ALPHA_REGEX, GCLOUD_MIN_VERSION,
+    MESSAGE_GCLOUD_VERSION_MISMATCH, REQUIRED_APIS, GCP_READ_IAM_ROLES,
+    GCP_WRITE_IAM_ROLES, PROJECT_IAM_ROLES, SVC_ACCT_ROLES,
+    MESSAGE_CREATE_ROLE_SCRIPT, QUESTION_CHOOSE_FOLDER,
+    MESSAGE_BILLING_NOT_ENABLED, MESSAGE_NO_ORGANIZATION,
+    RESOURCE_TYPE_ARGS_MAP, MESSAGE_NO_CLOUD_SHELL)
 
 
 def get_gcloud_info():
@@ -51,10 +52,28 @@ def get_gcloud_info():
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
             print('Read gcloud info successfully')
-            return project_id, authed_user, is_devshell
         except ValueError as verr:
             print(verr)
             sys.exit(1)
+    return project_id, authed_user, is_devshell
+
+
+def verify_gcloud_information(project_id,
+                              authed_user,
+                              force_no_cloudshell,
+                              is_devshell):
+    """Verify all the gcloud related information are valid
+
+    Args:
+        project_id (str): project id
+        authed_user (str): authenticated user
+        force_no_cloudshell (bool): force no cloudshell
+        is_devshell (bool): is dev shell
+    """
+    check_proper_gcloud()
+    _check_cloudshell(force_no_cloudshell, is_devshell)
+    _check_authed_user(authed_user)
+    _check_project_id(project_id)
 
 
 def check_proper_gcloud():
@@ -208,8 +227,8 @@ def _assign_roles(roles_map, target_id, project_id,
 
         for role in roles:
             iam_role_cmd = _grant_role(role, resource_args,
-                        resource_id, gcp_service_account,
-                        user_can_grant_roles)
+                                       resource_id, gcp_service_account,
+                                       user_can_grant_roles)
             if iam_role_cmd is not None:
                 assign_roles_cmds.append(iam_role_cmd)
     return assign_roles_cmds
@@ -244,12 +263,11 @@ def _grant_role(role, resource_args, resource_id,
         return_code, _, err = run_command(iam_role_cmd)
         if return_code:
             print(err)
-            return iam_role_cmd
         else:
             print('Done.')
             return None
-    else:
-        return iam_role_cmd
+
+    return iam_role_cmd
 
 
 def choose_organization():
@@ -526,3 +544,46 @@ def lookup_organization(project_id):
     if organization_id:
         print('Organization id: %s' % organization_id)
         return organization_id
+
+
+def _check_cloudshell(force_no_cloudshell, is_cloudshell):
+    """Check whether using Cloud Shell or bypassing Cloud Shell.
+
+    Args:
+        force_no_cloudshell (bool): Whether or not user decided
+                                    to not use cloudshell
+        is_cloudshell (bool): Whether or not we are using cloudshell
+    """
+    if not force_no_cloudshell:
+        if not is_cloudshell:
+            print(MESSAGE_NO_CLOUD_SHELL)
+            sys.exit(1)
+        else:
+            print('Using Cloud Shell, continuing...')
+    else:
+        print('Bypass Cloud Shell check, continuing...')
+
+
+def _check_authed_user(authed_user):
+    """Get the current authed user.
+
+    Args:
+        authed_user (str): Authenticated user
+    """
+    if not authed_user:
+        print('Error getting authed user. You may need to run '
+              '"gcloud auth login". Exiting.')
+        sys.exit(1)
+    print('You are: {}'.format(authed_user))
+
+
+def _check_project_id(project_id):
+    """Get the project.
+
+    Args:
+        project_id (str): GCP project id
+    """
+    if not project_id:
+        print('You need to have an active project! Exiting.')
+        sys.exit(1)
+    print('Project id: %s' % project_id)

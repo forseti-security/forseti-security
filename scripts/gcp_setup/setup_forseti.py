@@ -19,7 +19,8 @@ This has been tested with python 2.7.
 
 import argparse
 
-from environment import gcloud_env
+from installer.forseti_server_installer import ForsetiServerInstaller
+from installer.forseti_cli_installer import ForsetiCLIInstaller
 
 
 def run():
@@ -65,7 +66,10 @@ def run():
                               help='G Suite super admin email')
 
     args = vars(parser.parse_args())
-    forseti_setup = gcloud_env.ForsetiGcpSetup(**args)
+    if args.get('server'):
+        forseti_setup = ForsetiServerInstaller(**args)
+    else:
+        forseti_setup = ForsetiCLIInstaller(**args)
     forseti_setup.run_setup()
 
 

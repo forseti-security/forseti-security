@@ -24,8 +24,9 @@ import re
 import os
 import time
 
-from constants import VERSIONFILE_REGEX, FORSETI_SRC_PATH,\
-    SERVICE_ACCT_EMAIL_FMT, SERVICE_ACCT_FMT
+from constants import (
+    VERSIONFILE_REGEX, FORSETI_SRC_PATH, SERVICE_ACCT_EMAIL_FMT,
+    SERVICE_ACCT_FMT)
 
 
 def id_from_name(name):

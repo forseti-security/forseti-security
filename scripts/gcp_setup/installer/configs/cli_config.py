@@ -12,30 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti CLI installer"""
+"""Forseti installer CLI config object"""
 
-from forseti_installer import ForsetiInstaller
-
-from configs.cli_config import CLIConfig
+from config import Config
 
 
-class ForsetiCLIInstaller(ForsetiInstaller):
-    """Forseti command line interface installer"""
-
-    def __init__(self, **kwargs):
-        """Init
-
-        Args:
-            kwargs (dict): The kwargs.
-        """
-        self.config = CLIConfig(**kwargs)
-        super(ForsetiCLIInstaller, self).__init__()
-
-    def run_setup(self):
-        pass
-
-    def get_deployment_values(self):
-        pass
-
-    def get_configuration_values(self):
-        pass
+class CLIConfig(Config):
+    """Forseti installer CLI config object"""

@@ -18,34 +18,37 @@ from __future__ import print_function
 import random
 
 from forseti_installer import ForsetiInstaller
-
-from scripts.gcp_setup.installer.utils.utils import print_banner, \
-    format_resource_id, format_service_acct_id
-
-from utils.constants import TEMPLATE_TYPE_SERVER, MESSAGE_ENABLE_GSUITE_GROUP,\
-    DEFAULT_CLOUDSQL_INSTANCE_NAME, MESSAGE_SETUP_IAM_EXPLAIN,\
-    QUESTION_ENABLE_IAM_EXPLAIN, QUESTION_ACCESS_TO_GRANT_ROLES,\
-    RESOURCE_TYPES, MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL,\
-    QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL, MESSAGE_ASK_SENDGRID_API_KEY,\
-    QUESTION_SENDGRID_API_KEY, NOTIFICATION_SENDER_EMAIL, MESSAGE_SKIP_EMAIL,\
-    QUESTION_NOTIFICATION_RECIPIENT_EMAIL, QUESTION_GSUITE_SUPERADMIN_EMAIL,\
-    MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,\
-    MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION
-
-from utils.gcloud import enable_apis, create_reuse_service_acct, \
-    choose_organization, choose_folder, choose_project, grant_gcp_svc_acct_roles
+from scripts.gcp_setup.installer.utils.utils import (
+    print_banner, format_resource_id, format_service_acct_id)
+from utils.constants import (
+    MESSAGE_ENABLE_GSUITE_GROUP, MESSAGE_SETUP_IAM_EXPLAIN,
+    QUESTION_ENABLE_IAM_EXPLAIN, QUESTION_ACCESS_TO_GRANT_ROLES,
+    RESOURCE_TYPES, MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL,
+    QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL, MESSAGE_ASK_SENDGRID_API_KEY,
+    QUESTION_SENDGRID_API_KEY, NOTIFICATION_SENDER_EMAIL, MESSAGE_SKIP_EMAIL,
+    QUESTION_NOTIFICATION_RECIPIENT_EMAIL, QUESTION_GSUITE_SUPERADMIN_EMAIL,
+    MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,
+    MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION)
+from utils.gcloud import (
+    enable_apis, create_reuse_service_acct, choose_organization,
+    choose_folder, choose_project, grant_gcp_svc_acct_roles)
+from configs.server_config import ServerConfig
 
 
 class ForsetiServerInstaller(ForsetiInstaller):
     """Forseti server installer"""
 
+    # pylint: disable=too-many-instance-attributes
+    # Having ten variables is reasonable in this case.
+
     gsuite_service_account = None
-    skip_email = False
     has_roles_script = False
     setup_explain = True
     enable_write_access = False
     user_can_grant_roles = False
     resource_root_id = None
+    access_target = None
+    target_id = None
 
     def __init__(self, **kwargs):
         """Init
@@ -53,20 +56,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Args:
             kwargs (dict): The kwargs.
         """
-        super(ForsetiServerInstaller, self).__init__(**kwargs)
-
-        self.template_type = TEMPLATE_TYPE_SERVER
-        self.cloudsql_instance = '{}-{}'.format(
-            DEFAULT_CLOUDSQL_INSTANCE_NAME,
-            self.datetimestamp)
-        self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
-
-        # forseti_conf.yaml.in properties
-        self.sendgrid_api_key = kwargs.get('sendgrid_api_key')
-        self.notification_sender_email = None
-        self.notification_recipient_email = (
-            kwargs.get('notification_recipient_email'))
-        self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
+        self.config = ServerConfig(**kwargs)
+        super(ForsetiServerInstaller, self).__init__()
 
     def preflight_checks(self):
         """Pre-flight checks for server instance"""
@@ -79,33 +70,34 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.format_gsuite_service_acct_id()
         self.inform_access_on_target()
 
-        enable_apis(self.dry_run)
+        enable_apis(self.config.dry_run)
         create_reuse_service_acct('gsuite_service_account',
                                   self.gsuite_service_account,
-                                  self.advanced_mode,
-                                  self.dry_run)
+                                  self.config.advanced_mode,
+                                  self.config.dry_run)
         self.get_email_settings()
 
     def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
 
-        success, deployment_name = super(ForsetiServerInstaller, self)\
-            .deploy(deploy_tpl_path, conf_file_path, bucket_name)
+        success = super(ForsetiServerInstaller, self).deploy(
+            deploy_tpl_path, conf_file_path, bucket_name)
 
         if success:
-            grant_gcp_svc_acct_roles(self.enable_write_access,
-                                     self.access_target,
-                                     self.target_id,
-                                     self.project_id,
-                                     self.gsuite_service_account,
-                                     self.gcp_service_account,
-                                     self.user_can_grant_roles)
+            self.has_roles_script = grant_gcp_svc_acct_roles(
+                self.enable_write_access,
+                self.access_target,
+                self.target_id,
+                self.project_id,
+                self.gsuite_service_account,
+                self.gcp_service_account,
+                self.user_can_grant_roles)
 
     def should_setup_explain(self):
         """Ask user if they want to configure setup for Explain."""
         print_banner('Enable IAM Explain')
         print(MESSAGE_SETUP_IAM_EXPLAIN)
         choice = None
-        if not self.advanced_mode:
+        if not self.config.advanced_mode:
             choice = 'y'
             print('Automatically enabling IAM Explain (basic setup mode).')
 
@@ -118,7 +110,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         print_banner('Current IAM access')
         choice = None
 
-        if not self.advanced_mode:
+        if not self.config.advanced_mode:
             choice = 'y'
 
         while choice != 'y' and choice != 'n':
@@ -142,14 +134,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 forseti deployment template
         """
         return {
-            'CLOUDSQL_REGION': self.cloudsql_region,
-            'CLOUDSQL_INSTANCE_NAME': self.cloudsql_instance,
+            'CLOUDSQL_REGION': self.config.cloudsql_region,
+            'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
             'SCANNER_BUCKET': self.generate_bucket_name()[len('gs://'):],
-            'BUCKET_LOCATION': self.bucket_location,
+            'BUCKET_LOCATION': self.config.bucket_location,
             'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
             'SERVICE_ACCOUNT_GSUITE': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
-            'GSUITE_ADMIN_EMAIL': self.gsuite_superadmin_email,
+            'GSUITE_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
             'rand_minute': random.randint(0, 59)
         }
@@ -162,11 +154,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 forseti configuration file
         """
         return {
-            'EMAIL_RECIPIENT': self.notification_recipient_email,
-            'EMAIL_SENDER': self.notification_sender_email,
-            'SENDGRID_API_KEY': self.sendgrid_api_key,
+            'EMAIL_RECIPIENT': self.config.notification_recipient_email,
+            'EMAIL_SENDER': self.config.notification_sender_email,
+            'SENDGRID_API_KEY': self.config.sendgrid_api_key,
             'SCANNER_BUCKET': self.generate_bucket_name()[len('gs://'):],
-            'DOMAIN_SUPER_ADMIN_EMAIL': self.gsuite_superadmin_email,
+            'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ENABLE_GROUP_SCANNER': 'true',
         }
 
@@ -177,7 +169,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         print_banner('Forseti access target')
 
-        if not self.advanced_mode:
+        if not self.config.advanced_mode:
             self.access_target = RESOURCE_TYPES[0]
             self.target_id = self.organization_id
 
@@ -215,33 +207,32 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def get_email_settings(self):
         """Ask user for specific setup values."""
-        if not self.sendgrid_api_key:
+        if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key
             print(MESSAGE_ASK_SENDGRID_API_KEY)
-            self.sendgrid_api_key = \
-                raw_input(QUESTION_SENDGRID_API_KEY).strip()
-        if self.sendgrid_api_key:
-            self.notification_sender_email = NOTIFICATION_SENDER_EMAIL
+            self.config.sendgrid_api_key = raw_input(
+                QUESTION_SENDGRID_API_KEY).strip()
+        if self.config.sendgrid_api_key:
+            self.config.notification_sender_email = NOTIFICATION_SENDER_EMAIL
 
             # Ask for notification recipient email
-            if not self.notification_recipient_email:
-                self.notification_recipient_email = \
-                    raw_input(QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
-        else:
-            self.skip_email = True
+            if not self.config.notification_recipient_email:
+                self.config.notification_recipient_email = raw_input(
+                    QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
-        if not self.gsuite_superadmin_email:
+        if not self.config.gsuite_superadmin_email:
             # Ask for G Suite super admin email
             print(MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
-            self.gsuite_superadmin_email = \
-                raw_input(QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
+            self.config.gsuite_superadmin_email = raw_input(
+                QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
     def format_gsuite_service_acct_id(self):
         """Format the gsuite service account id"""
-        self.gcp_service_account = format_service_acct_id('gsuite',
-                                                          'reader',
-                                                          self.timestamp,
-                                                          self.project_id)
+        self.gsuite_service_account = format_service_acct_id(
+            'gsuite',
+            'reader',
+            self.config.timestamp,
+            self.project_id)
 
     def format_gcp_service_acct_id(self):
         """Format the service account ids."""
@@ -249,16 +240,17 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if self.enable_write_access:
             modifier = 'readwrite'
 
-        self.gcp_service_account = format_service_acct_id('gcp',
-                                                          modifier,
-                                                          self.timestamp,
-                                                          self.project_id)
+        self.gcp_service_account = format_service_acct_id(
+            'gcp',
+            modifier,
+            self.config.timestamp,
+            self.project_id)
 
     def should_enable_write_access(self):
         """Ask if user wants to enable write access for Forseti."""
         print_banner('Enable Forseti write access')
         choice = None
-        if not self.advanced_mode:
+        if not self.config.advanced_mode:
             choice = 'y'
 
         while choice != 'y' and choice != 'n':
@@ -280,10 +272,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if self.has_roles_script:
             print(MESSAGE_HAS_ROLE_SCRIPT.format(self.resource_root_id))
 
-        if self.skip_email:
+        if not self.config.sendgrid_api_key:
             print(MESSAGE_SKIP_EMAIL)
 
-        if self.gsuite_superadmin_email:
+        if self.config.gsuite_superadmin_email:
             print(MESSAGE_GSUITE_DATA_COLLECTION.format(
                 self.project_id,
                 self.organization_id,
