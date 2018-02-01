@@ -117,8 +117,9 @@ class StorageTest(ForsetiTestCase):
         """Crawl from project, verify every resource has a timestamp."""
 
         def verify_resource_timestamps_from_storage(storage):
-            for item in storage.iter(list()):
+            for i, item in enumerate(storage.iter(list()), start=1):
                 self.assertTrue('timestamp' in item.get_other())
+            return i
 
         engine = create_test_engine()
 
@@ -131,9 +132,9 @@ class StorageTest(ForsetiTestCase):
                 storage.write(res_org)
                 storage.commit()
 
-                verify_resource_timestamps_from_storage(storage)
-                self.assertEqual(1,
-                                 len(self.reduced_inventory(storage, [])),
+                resource_count = (
+                    verify_resource_timestamps_from_storage(storage))
+                self.assertEqual(1, resource_count,
                                  'Unexpected number of resources in inventory')
 
 
