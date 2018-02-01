@@ -96,7 +96,8 @@ class ImporterTest(ForsetiTestCase):
         self.assertEquals(json.loads(model.description),
                           {'pristine': True,
                            'source': 'inventory',
-                           'source_info': inventory_info})
+                           'source_info': inventory_info,
+                           'source_root': 'organization/111222333'})
 
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@
 """ Importer implementations. """
 
 # pylint: disable=unused-argument,too-many-instance-attributes
-# pylint: disable=no-self-use,not-callable,too-many-lines
+# pylint: disable=no-self-use,not-callable,too-many-lines,too-many-locals
 
 from StringIO import StringIO
 import traceback
