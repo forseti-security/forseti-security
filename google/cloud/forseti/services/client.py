@@ -20,6 +20,7 @@ import grpc
 
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.model import model_pb2
@@ -30,7 +31,6 @@ from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-
 from google.cloud.forseti.services.utils import oneof
 
 
@@ -494,7 +494,10 @@ class ClientComposition(object):
 
     DEFAULT_ENDPOINT = 'localhost:50051'
 
-    def __init__(self, endpoint=DEFAULT_ENDPOINT, ping=False):
+    def __init__(self, endpoint=None, ping=False):
+        if not endpoint:
+            endpoint = self.get_default_endpoint()
+        print ("ENDPOINT : " + endpoint)
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
@@ -515,6 +518,23 @@ class ClientComposition(object):
         if ping:
             if not all([c.is_available() for c in self.clients]):
                 raise Exception('gRPC connected but services not registered')
+
+    def get_default_endpoint(self):
+        """Get server address from the forseti_client_conf.yaml file
+
+        Returns:
+            str: Forseti server endpoint
+        """
+        conf_path = ('/home/ubuntu/forseti-security/configs'
+                     '/forseti_conf_client.yaml')
+        try:
+            configs = file_loader.read_and_parse_file(conf_path)
+            server_ip = configs.get('server_ip')
+            if server_ip:
+                return '{}:50051'.format(server_ip)
+        except IOError:
+            pass
+        return self.DEFAULT_ENDPOINT
 
     def new_model(self, source, name, inventory_id="", background=False):
         """Create a new model from the specified source."""

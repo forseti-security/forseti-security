@@ -560,7 +560,6 @@ def get_forseti_server_info():
         print (err)
         sys.exit(1)
     try:
-        print (out)
         instances = json.loads(out)
         for instance in instances:
             if 'forseti-security-server' in instance.get('name'):

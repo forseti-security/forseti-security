@@ -78,7 +78,7 @@ class ForsetiInstaller:
     def preflight_checks(self):
         """Pre-flight checks"""
         self.check_run_properties()
-        infer_version(self.config.advanced_mode)
+        self.branch = infer_version(self.config.advanced_mode)
         self.project_id, authed_user, is_devshell = get_gcloud_info()
         verify_gcloud_information(self.project_id,
                                   authed_user,

@@ -29,6 +29,7 @@ from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
 
+
 def define_playground_parser(parent):
     """Define the playground service parser.
 
@@ -1090,7 +1091,6 @@ def main(args,
     Returns:
         object: Environment configuration.
     """
-
     parser = create_parser(parser_cls, config_env)
     config = parser.parse_args(args)
     if not client:
