@@ -1729,7 +1729,6 @@ class ModelManager(object):
 
         Args:
             model_name (str): Model name
-            new_description(str): The description in json format.
             session (object): Database session.
 
         Returns:

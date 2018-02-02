@@ -51,7 +51,8 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
-    def _flatten_violations(self, violations):
+    @staticmethod
+    def _flatten_violations(violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
