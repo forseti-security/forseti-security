@@ -531,7 +531,8 @@ class ClientComposition(object):
             server_ip = configs.get('server_ip')
             if server_ip:
                 return '{}:50051'.format(server_ip)
-        except IOError:
+        except IOError as err:
+            print (err)
             pass
         return self.DEFAULT_ENDPOINT
 

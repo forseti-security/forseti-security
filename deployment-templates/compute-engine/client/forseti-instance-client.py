@@ -35,12 +35,12 @@ mv forseti-security-{release_version} forseti-security
             src_path=context.properties['src-path'],
             release_version=context.properties['release-version'])
 
-    FORSETI_CONF = '%s/configs/forseti_conf_client.yaml'.format(
+    FORSETI_CONF = 'gs://{}/configs/forseti_conf_client.yaml'.format(
         context.properties['gcs-bucket'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     PERSIST_FORSETI_VARS = (
-        '\nFORSETI_HOME={forseti_home}\n'
-        'FORSETI_CONF={forseti_conf}\n'
+        '\nexport FORSETI_HOME={forseti_home}\n'
+        'export FORSETI_CONF={forseti_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_conf=FORSETI_CONF)
 
@@ -134,7 +134,9 @@ python build_protos.py --clean
 python setup.py install
 
 # Export variables
-echo {persist_forseti_vars} >> $USER_HOME/.bashrc
+echo "{persist_forseti_vars}"
+echo $USER_HOME"/.bashrc"
+echo "{persist_forseti_vars}" >> $USER_HOME/.bashrc
 
 echo "Execution of startup script finished"
 """.format(
