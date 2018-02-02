@@ -121,7 +121,7 @@ pip install --upgrade setuptools
 pip install grpcio grpcio-tools google-apputils
 
 # Download Forseti source code
-echo {download_forseti} >> $USER_HOME/.bashrc
+{download_forseti}
 cd forseti-security
 
 # Set ownership of config and rules to $USER
@@ -134,7 +134,7 @@ python build_protos.py --clean
 python setup.py install
 
 # Export variables
-{export_forseti_vars}
+echo {persist_forseti_vars} >> $USER_HOME/.bashrc
 
 echo "Execution of startup script finished"
 """.format(
@@ -145,7 +145,7 @@ echo "Execution of startup script finished"
     forseti_home=FORSETI_HOME,
 
     # Env variables for Forseti
-    export_forseti_vars=EXPORT_FORSETI_VARS,
+    persist_forseti_vars=PERSIST_FORSETI_VARS,
 
     # Download the Forseti conf and rules.
     forseti_conf=FORSETI_CONF,
