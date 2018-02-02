@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utils.
+"""Forseti Security Installer Environment Utils.
 
 This has been tested with python 2.7.
 """
