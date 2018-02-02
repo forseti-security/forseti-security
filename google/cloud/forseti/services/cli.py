@@ -1030,8 +1030,11 @@ class DefaultConfig(dict):
         """
         try:
             conf_path = os.environ['FORSETI_CONF']
+            print (conf_path)
             configs = file_loader.read_and_parse_file(conf_path)
+            print (configs)
             server_ip = configs.get('server_ip')
+            print (server_ip)
             if server_ip:
                 return '{}:50051'.format(server_ip)
         except IOError as err:
@@ -1136,7 +1139,7 @@ def get_config_path():
     """
 
     default_path = os.path.join(os.getenv('HOME'), '.forseti')
-    config_path = read_env('FORSETI_CLIENT_CONFIG', default_path)
+    config_path = read_env('FORSETI_CONFIG', default_path)
     return config_path
 
 
