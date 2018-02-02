@@ -38,9 +38,9 @@ mv forseti-security-{release_version} forseti-security
     FORSETI_CONF = '%s/configs/forseti_conf_client.yaml'.format(
         context.properties['gcs-bucket'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    EXPORT_FORSETI_VARS = (
-        'export FORSETI_HOME={forseti_home}\n'
-        'export FORSETI_CONF={forseti_conf}\n'
+    PERSIST_FORSETI_VARS = (
+        '\nFORSETI_HOME={forseti_home}\n'
+        'FORSETI_CONF={forseti_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_conf=FORSETI_CONF)
 
@@ -121,7 +121,7 @@ pip install --upgrade setuptools
 pip install grpcio grpcio-tools google-apputils
 
 # Download Forseti source code
-{download_forseti}
+echo {download_forseti} >> $USER_HOME/.bashrc
 cd forseti-security
 
 # Set ownership of config and rules to $USER
