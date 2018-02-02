@@ -14,7 +14,6 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
-import random
 
 def GenerateConfig(context):
     """Generate configuration."""
@@ -36,7 +35,8 @@ mv forseti-security-{release_version} forseti-security
             src_path=context.properties['src-path'],
             release_version=context.properties['release-version'])
 
-    FORSETI_CONF = '%s/configs/forseti_conf_client.yaml'.format(FORSETI_HOME)
+    FORSETI_CONF = '%s/configs/forseti_conf_client.yaml'.format(
+        context.properties['gcs-bucket'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
