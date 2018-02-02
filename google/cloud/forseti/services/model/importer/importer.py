@@ -169,9 +169,9 @@ class InventoryImporter(object):
             with Inventory(self.session, self.inventory_id, True) as inventory:
 
                 self.model.add_description(json.dumps({
-                    "source":"inventory",
-                    "source_info":str(inventory.index),
-                    "pristine":True
+                    'source': 'inventory',
+                    'source_info': {'inventory_id': inventory.index.id},
+                    'pristine': True
                     }))
 
                 for resource in inventory.iter(['organization']):

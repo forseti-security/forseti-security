@@ -16,13 +16,13 @@
 
 # pylint: disable=too-many-lines,singleton-comparison
 
-import datetime
-import os
 import binascii
 import collections
-import struct
+import datetime
 import hmac
 import json
+import os
+import struct
 from threading import Lock
 
 from sqlalchemy import Column
@@ -1723,6 +1723,28 @@ class ModelManager(object):
             model = session.query(Model).filter(
                 Model.handle == model_name).one()
         model.add_description(new_description)
+
+    def get_description(self, model_name, session=None):
+        """Get the description to a model.
+
+        Args:
+            model_name (str): Model name
+            new_description(str): The description in json format.
+            session (object): Database session.
+
+        Returns:
+            A json of the model description.
+        """
+        if not session:
+            with self.modelmaker() as scoped_session:
+                model = scoped_session.query(Model).filter(
+                    Model.handle == model_name).one()
+                return json.loads(model.description)
+        else:
+            model = session.query(Model).filter(
+                Model.handle == model_name).one()
+            return json.loads(model.description)
+
 
 def create_engine(*args, **kwargs):
     """Create engine wrapper to patch database options.

@@ -47,7 +47,7 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
-        model_handle = Column(String(256))
+        inventory_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
         rule_name = Column(String(256))
@@ -92,18 +92,17 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations, model_handle):
+        def create(self, violations, inventory_id):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
-                model_handle (str): Name of the model that the violations
-                    originate from.
+                inventory_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
                 for violation in violations:
                     violation = self.TBL_VIOLATIONS(
-                        model_handle=model_handle,
+                        inventory_id=inventory_id,
                         resource_id=violation.get('resource_id'),
                         resource_type=violation.get('resource_type'),
                         rule_name=violation.get('rule_name'),
