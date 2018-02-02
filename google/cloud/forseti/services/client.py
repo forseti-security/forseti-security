@@ -525,9 +525,8 @@ class ClientComposition(object):
         Returns:
             str: Forseti server endpoint
         """
-        conf_path = ('/home/ubuntu/forseti-security/configs'
-                     '/forseti_conf_client.yaml')
         try:
+            conf_path = os.environ['FORSETI_CONF']
             configs = file_loader.read_and_parse_file(conf_path)
             server_ip = configs.get('server_ip')
             if server_ip:
