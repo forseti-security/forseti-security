@@ -43,6 +43,7 @@ from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeli
 # Setup flags
 FLAGS = flags.FLAGS
 
+
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
@@ -60,6 +61,11 @@ try:
         'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass
+
+flags.DEFINE_string(
+    'inventory_index_id',
+    '-1',
+    'Inventory index id')
 
 LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
@@ -151,22 +157,22 @@ def process(message):
             payload.get('email_description'))
         return
 
-def main(_):
-    """Main function.
+# pylint: disable=unused-argument
+def run(inventory_id, service_config=None):
+    """Run the notifier.
 
-        Args:
-            _ (obj): Result of the last expression evaluated in the interpreter.
+    Entry point when the notifier is run as a library.
+
+    Args:
+        inventory_id (str): Inventory index id.
+        service_config (ServiceConfig): Forseti 2.0 service configs
+
+    Returns:
+        int: Status code.
     """
-    notifier_flags = FLAGS.FlagValuesDict()
-
-    forseti_config = notifier_flags.get('forseti_config')
-
-    if forseti_config is None:
-        LOGGER.error('Path to Forseti Security config needs to be specified.')
-        sys.exit()
-
     try:
-        configs = file_loader.read_and_parse_file(forseti_config)
+        configs = file_loader.read_and_parse_file(
+            service_config.forseti_config_file_path)
     except IOError:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try again.')
@@ -220,6 +226,23 @@ def main(_):
     # run the pipelines
     for pipeline in pipelines:
         pipeline.run()
+
+    LOGGER.info('Notification complete!')
+    return 0
+
+
+def main(_):
+    """Entry point when the notifier is run as an executable.
+
+    Args:
+        _ (list): args that aren't used
+
+    Returns:
+        int: Status code.
+    """
+
+    run(FLAGS.inventory_index_id)
+    return 0
 
 
 if __name__ == '__main__':

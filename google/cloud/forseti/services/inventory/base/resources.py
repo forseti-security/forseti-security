@@ -19,10 +19,13 @@
 # pylint: disable=missing-docstring,unused-argument
 # pylint: disable=no-self-use,missing-yield-doc,missing-yield-type-doc
 # pylint: disable=attribute-defined-outside-init
+# pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
+import datetime
 from functools import partial
 import json
+import pytz
 
 from google.cloud.forseti.common.util import log_util
 
@@ -82,6 +85,12 @@ class Resource(object):
         self._contains = [] if contains is None else contains
         self._warning = []
         self._enabled_service_names = None
+        self._timestamp = self._utcnow()
+
+    @staticmethod
+    def _utcnow():
+        """Wrapper for datetime.datetime.now() injection."""
+        return datetime.datetime.now(pytz.UTC)
 
     def __getitem__(self, key):
         try:
@@ -137,16 +146,20 @@ class Resource(object):
         visitor.visit(self)
         for yielder_cls in self._contains:
             yielder = yielder_cls(self, visitor.get_client())
-            for resource in yielder.iter():
-                res = resource
-                new_stack = stack + [self]
+            try:
+                for resource in yielder.iter():
+                    res = resource
+                    new_stack = stack + [self]
 
-                # Parallelization for resource subtrees.
-                if res.should_dispatch():
-                    callback = partial(res.try_accept, visitor, new_stack)
-                    visitor.dispatch(callback)
-                else:
-                    res.try_accept(visitor, new_stack)
+                    # Parallelization for resource subtrees.
+                    if res.should_dispatch():
+                        callback = partial(res.try_accept, visitor, new_stack)
+                        visitor.dispatch(callback)
+                    else:
+                        res.try_accept(visitor, new_stack)
+            except Exception as e:
+                self.add_warning(e)
+                visitor.on_child_error(e)
 
         if self._warning:
             visitor.update(self)
@@ -182,6 +195,10 @@ class Resource(object):
     @cached('service_config')
     def get_kubernetes_service_config(self, client=None):
         return None
+
+    def get_timestamp(self):
+        """Returns a string timestamp when the resource object was created."""
+        return self._timestamp.strftime('%Y-%m-%dT%H:%M:%S%z')
 
     def stack(self):
         if self._stack is None:

@@ -18,14 +18,16 @@ import binascii
 import os
 import grpc
 
-from google.cloud.forseti.services.model import model_pb2
-from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
-from google.cloud.forseti.services.playground import playground_pb2_grpc
-from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2
 from google.cloud.forseti.services.inventory import inventory_pb2_grpc
+from google.cloud.forseti.services.model import model_pb2
+from google.cloud.forseti.services.model import model_pb2_grpc
+from google.cloud.forseti.services.notifier import notifier_pb2
+from google.cloud.forseti.services.notifier import notifier_pb2_grpc
+from google.cloud.forseti.services.playground import playground_pb2_grpc
+from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
@@ -90,6 +92,37 @@ class ScannerClient(ForsetiClient):
 
         request = scanner_pb2.RunRequest(
             config_dir=config_dir)
+        return self.stub.Run(request,
+                             metadata=self.metadata())
+
+
+class NotifierClient(ForsetiClient):
+    """Notifier service allows the client to send violation notifications."""
+
+    def __init__(self, config):
+        super(NotifierClient, self).__init__(config)
+        self.stub = notifier_pb2_grpc.NotifierStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Notifier' service is available by performing a ping.
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(notifier_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    def run(self, inventory_id):
+        """Runs the notifier.
+
+        Args:
+            inventory_id (int): Inventory Index Id.
+
+        Returns:
+            Any service response.
+        """
+
+        request = notifier_pb2.RunRequest(
+            inventory_id=inventory_id)
         return self.stub.Run(request,
                              metadata=self.metadata())
 
@@ -469,12 +502,14 @@ class ClientComposition(object):
         self.playground = PlaygroundClient(self.config)
         self.inventory = InventoryClient(self.config)
         self.scanner = ScannerClient(self.config)
+        self.notifier = NotifierClient(self.config)
         self.model = ModelClient(self.config)
 
         self.clients = [self.explain,
                         self.playground,
                         self.inventory,
                         self.scanner,
+                        self.notifier,
                         self.model]
 
         if ping:
