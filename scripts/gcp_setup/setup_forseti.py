@@ -20,7 +20,7 @@ This has been tested with python 2.7.
 import argparse
 
 from installer.forseti_server_installer import ForsetiServerInstaller
-from installer.forseti_cli_installer import ForsetiCLIInstaller
+from installer.forseti_client_installer import ForsetiClientInstaller
 from installer.configs.config import Config
 
 
@@ -53,7 +53,7 @@ def run():
     mutex_group.add_argument('--server',
                              action='store_true',
                              help='Install Forseti server instance')
-    mutex_group.add_argument('--cli',
+    mutex_group.add_argument('--client',
                              action='store_true',
                              help='Install Forseti command line '
                                   'interface instance')
@@ -70,7 +70,7 @@ def run():
     if args.get('server'):
         forseti_setup = ForsetiServerInstaller(**args)
     else:
-        forseti_setup = ForsetiCLIInstaller(**args)
+        forseti_setup = ForsetiClientInstaller(**args)
     forseti_setup.run_setup()
 
 

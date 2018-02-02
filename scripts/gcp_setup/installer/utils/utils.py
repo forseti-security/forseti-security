@@ -206,14 +206,19 @@ def infer_version(advanced_mode):
     return branch
 
 
-def create_deployment(project_id, organization_id,
-                      deploy_tpl_path, datetimestamp, dry_run):
+def create_deployment(project_id,
+                      organization_id,
+                      deploy_tpl_path,
+                      template_type,
+                      datetimestamp,
+                      dry_run):
     """Create the GCP deployment.
 
     Args:
         project_id (str): GCP project id
         organization_id (str): GCP organization id
         deploy_tpl_path (str): Path of deployment template
+        template_type (str): Type of the template (client/server)
         datetimestamp (str): Timestamp
         dry_run (bool): Whether the installer is in dry run mode
 
@@ -229,7 +234,8 @@ def create_deployment(project_id, organization_id,
         return 0
 
     print ('This may take a few minutes.')
-    deployment_name = 'forseti-security-{}'.format(datetimestamp)
+    deployment_name = 'forseti-security-{}-{}'.format(template_type,
+                                                      datetimestamp)
     print('Deployment name: {}'.format(deployment_name))
     print('Deployment Manager Dashboard: '
           'https://console.cloud.google.com/deployments/details/'

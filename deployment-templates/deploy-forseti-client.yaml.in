@@ -17,25 +17,12 @@
 # what you're doing.
 
 imports:
-- path: cloudsql/cloudsql-instance.py
-  name: cloudsql-instance.py
-- path: cloudsql/cloudsql-database.py
-  name: cloudsql-database.py
-- path: compute-engine/server/forseti-instance-server.py
-  name: forseti-instance-server.py
+- path: compute-engine/client/forseti-instance-client.py
+  name: forseti-instance-client.py
 - path: storage/bucket.py
   name: bucket.py
 
 resources:
-
-# Cloud SQL
-- name: cloudsql-instance
-  type: cloudsql-instance.py
-  properties:
-    region: {CLOUDSQL_REGION}
-    instance-name: {CLOUDSQL_INSTANCE_NAME}
-- name: forseti_security
-  type: cloudsql-database.py
 
 # Cloud Storage
 - name: {SCANNER_BUCKET}
@@ -44,24 +31,18 @@ resources:
     location: {BUCKET_LOCATION}
 
 # Compute Engine
-- name: forseti-instance-server
-  type: forseti-instance-server.py
+- name: forseti-instance-client
+  type: forseti-instance-client.py
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1604-lts
     instance-type: n1-standard-2
-    zone: $(ref.cloudsql-instance.region)-c
+    zone: {FORSETI_SERVER_ZONE}
 
     service-account: {SERVICE_ACCOUNT_GCP}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    service-account-gsuite: {SERVICE_ACCOUNT_GSUITE}
-    gsuite-admin-email: {GSUITE_ADMIN_EMAIL}
-
-    scanner-bucket: {SCANNER_BUCKET}
-    database-name: forseti_security
-    root-resource-id: {ROOT_RESOURCE_ID}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -81,14 +62,3 @@ resources:
     {BRANCH_OR_RELEASE}
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
-
-    # Cloud SQL
-    cloudsqlproxy-os-arch: linux.amd64
-    db-port: 3306
-
-    # Forseti run frequency
-    # WARNING: only change if you know exactly what you're doing!
-    # This is the Forseti crontab schedule.
-    # The default is "run at some random minute 0-59 (configured in
-    # forseti-instance-server.py), every other hour".
-    run-frequency: "{rand_minute} */2 * * *"

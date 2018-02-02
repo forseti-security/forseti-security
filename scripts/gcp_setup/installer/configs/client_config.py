@@ -15,7 +15,17 @@
 """Forseti installer CLI config object"""
 
 from config import Config
+from ..utils.constants import TEMPLATE_TYPE_CLIENT
 
 
-class CLIConfig(Config):
+class ClientConfig(Config):
     """Forseti installer CLI config object"""
+
+    def __init__(self, **kwargs):
+        """Initialize.
+
+        Args:
+            kwargs (dict): The kwargs.
+        """
+        super(ClientConfig, self).__init__(**kwargs)
+        self.template_type = TEMPLATE_TYPE_CLIENT

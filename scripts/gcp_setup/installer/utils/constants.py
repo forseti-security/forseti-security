@@ -30,19 +30,19 @@ SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
 INPUT_DEPLOYMENT_TEMPLATE_FILENAME = {
     'server': 'deploy-forseti-server.yaml.in',
-    'cli': 'deploy-forseti-cli.yaml.in'
+    'client': 'deploy-forseti-client.yaml.in'
 }
 
 INPUT_CONFIGURATION_TEMPLATE_FILENAME = {
     'server': 'forseti_conf_server.yaml.in',
-    'cli': 'forseti_conf_cli.yaml.in'
+    'client': 'forseti_conf_client.yaml.in'
 }
 
 NOTIFICATION_SENDER_EMAIL = 'forseti-notify@localhost.domain'
 
 TEMPLATE_TYPE_SERVER = 'server'
 
-TEMPLATE_TYPE_CLI = 'cli'
+TEMPLATE_TYPE_CLIENT = 'client'
 
 RESOURCE_TYPE_ARGS_MAP = {
     'organizations': ['organizations'],
@@ -224,7 +224,7 @@ MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN = \
     ('A Forseti configuration file has been generated. '
      'After you create your deployment, copy this file to '
      'the bucket created in the deployment:\n\n'
-     '    gsutil cp {} {}/configs/forseti_conf.yaml\n\n')
+     '    gsutil cp {} {}/configs/forseti_conf_server.yaml\n\n')
 
 MESSAGE_DEPLOYMENT_HAD_ISSUES = \
     ('Your deployment had some issues. Please review the error '

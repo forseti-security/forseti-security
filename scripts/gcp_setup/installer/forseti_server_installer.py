@@ -79,7 +79,18 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.get_email_settings()
 
     def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
+        """Deploy Forseti using the deployment template.
+        Grant access to service account.
 
+        Args:
+            deploy_tpl_path (str): Deployment template path
+            conf_file_path (str): Configuration file path
+            bucket_name (str): Name of the GCS bucket
+
+        Returns:
+            bool: Whether or not the deployment was successful
+            str: Deployment name
+        """
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
             deploy_tpl_path, conf_file_path, bucket_name)
 
@@ -134,7 +145,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         Returns:
             dict: A dictionary of values needed to generate
-                forseti deployment template
+                the forseti deployment template
         """
         return {
             'CLOUDSQL_REGION': self.config.cloudsql_region,
@@ -154,7 +165,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         Returns:
             dict: A dictionary of values needed to generate
-                forseti configuration file
+                the forseti configuration file
         """
         return {
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,

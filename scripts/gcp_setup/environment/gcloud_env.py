@@ -295,7 +295,7 @@ def sanitize_conf_values(conf_values):
 
     Args:
         conf_values (dict): The conf values to replace in the
-            forseti_conf.yaml.
+            forseti_conf_server.yaml.
 
     Returns:
         dict: The sanitized values.
@@ -414,7 +414,7 @@ class ForsetiGcpSetup(object):
         # Actual deployment.
         # 1. Create deployment.
         # 2. If deployment succeeds:
-        #    a. Copy configs (forseti_conf.yaml, rules) to bucket.
+        #    a. Copy configs (forseti_conf_server.yaml, rules) to bucket.
         #    b. Grant service account roles.
         return_code = self.create_deployment()
         if not return_code:
@@ -1007,7 +1007,7 @@ class ForsetiGcpSetup(object):
         """Generate Forseti conf file."""
         # Create a forseti_conf_$TIMESTAMP.yaml config file with
         # values filled in.
-        # forseti_conf.yaml in file
+        # forseti_conf_server.yaml in file
         print('\nGenerate forseti_conf_%s.yaml...' % self.datetimestamp)
         forseti_conf_in = os.path.abspath(
             os.path.join(
@@ -1116,10 +1116,10 @@ class ForsetiGcpSetup(object):
             print('This is a dry run, so skipping this step.')
             return False, False
 
-        print('Copy forseti_conf.yaml to {}'.format(self.bucket_name))
+        print('Copy forseti_conf_server.yaml to {}'.format(self.bucket_name))
         return_code, out, err = utils.run_command(
             ['gsutil', 'cp', self.forseti_conf_path,
-             '{}/configs/forseti_conf.yaml'.format(self.bucket_name)])
+             '{}/configs/forseti_conf_server.yaml'.format(self.bucket_name)])
         if return_code:
             print(err)
         else:
@@ -1170,7 +1170,7 @@ class ForsetiGcpSetup(object):
             print('A Forseti configuration file has been generated. '
                   'After you create your deployment, copy this file to '
                   'the bucket created in the deployment:\n\n'
-                  '    gsutil cp %s %s/configs/forseti_conf.yaml\n\n' %
+                  '    gsutil cp %s %s/configs/forseti_conf_server.yaml\n\n' %
                   (self.forseti_conf_path,
                    self.bucket_name))
         else:

@@ -546,6 +546,35 @@ def lookup_organization(project_id):
         return organization_id
 
 
+def get_forseti_server_info():
+    """ Get forseti server ip and zone information if exists, exit if not.
+
+    Returns:
+        str: IP address of the forseti server application
+        str: Zone of the forseti server application, default to 'us-central1-c'
+    """
+    return_code, out, err = run_command(
+        ['gcloud', 'compute', 'instances', 'list', '--format=json'])
+
+    if return_code:
+        print (err)
+        sys.exit(1)
+    try:
+        print (out)
+        instances = json.loads(out)
+        for instance in instances:
+            if 'forseti-security-server' in instance.get('name'):
+                zone = instance.get('zone').split("/zones/")[1]
+                # found forseti server vm instance
+                network_interfaces = instance.get('networkInterfaces')
+                access_configs = network_interfaces[0].get('accessConfigs')
+                return access_configs[0].get('natIP'), zone
+    except ValueError:
+        print('Error retrieving forseti server ip address, '
+              'will leave the server ip empty for now.')
+    return '', 'us-central1-c'
+
+
 def _check_cloudshell(force_no_cloudshell, is_cloudshell):
     """Check whether using Cloud Shell or bypassing Cloud Shell.
 

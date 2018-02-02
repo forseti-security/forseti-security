@@ -41,7 +41,6 @@ class ForsetiInstaller:
     __metaclass__ = ABCMeta
 
     # Class variables initialization
-    template_type = None
     branch = None
     project_id = None
     organization_id = None
@@ -57,8 +56,10 @@ class ForsetiInstaller:
         """Run the setup steps"""
         print_banner('Forseti %s Setup' % get_forseti_version())
 
+        # Preflight checks
         self.preflight_checks()
 
+        # Deployment
         bucket_name = self.generate_bucket_name()
         conf_file_path = self.generate_forseti_conf()
         deployment_tpl_path = self.generate_deployment_templates()
@@ -67,6 +68,7 @@ class ForsetiInstaller:
                                                       conf_file_path,
                                                       bucket_name)
 
+        # After deployment
         self.post_install_instructions(deploy_success,
                                        deployment_name,
                                        deployment_tpl_path,
@@ -107,13 +109,15 @@ class ForsetiInstaller:
             self.project_id,
             self.organization_id,
             deploy_tpl_path,
+            self.config.template_type,
             self.config.datetimestamp,
             self.config.dry_run)
         if not return_code:
             # If deployed successfully, copy configuration file, deployment
             # template file and rule files to the GCS bucket
-            conf_output_path = FORSETI_CONF_PATH.format(bucket_name,
-                                                        self.config.template_type)
+            conf_output_path = FORSETI_CONF_PATH.format(
+                bucket_name,
+                self.config.template_type)
             copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -122,7 +126,8 @@ class ForsetiInstaller:
                 RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
-            dpl_tpl_output_path = self._get_deployment_tpl_gcs_path(bucket_name)
+            dpl_tpl_output_path = DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
+                bucket_name)
             copy_file_to_destination(
                 deploy_tpl_path, dpl_tpl_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -156,7 +161,7 @@ class ForsetiInstaller:
 
         Returns:
             dict: A dictionary of values needed to generate
-                forseti deployment template
+                the forseti deployment template
         """
         return {}
 
@@ -166,7 +171,7 @@ class ForsetiInstaller:
 
         Returns:
             dict: A dictionary of values needed to generate
-                forseti configuration file
+                the forseti configuration file
         """
         return {}
 
@@ -197,8 +202,9 @@ class ForsetiInstaller:
         """
         # Create a forseti_conf_$TIMESTAMP.yaml config file with
         # values filled in.
-        # forseti_conf.yaml in file
-        print('\nGenerate forseti_conf_%s.yaml...' % self.config.datetimestamp)
+        # forseti_conf_server.yaml in file
+        print('\nGenerate forseti_conf_{}_{}.yaml...'
+              .format(self.config.template_type, self.config.datetimestamp))
 
         conf_values = self.get_configuration_values()
 
@@ -236,7 +242,8 @@ class ForsetiInstaller:
         else:
             print(MESSAGE_DEPLOYMENT_HAD_ISSUES)
 
-        deploy_tpl_gcs_path = self._get_deployment_tpl_gcs_path(bucket_name)
+        deploy_tpl_gcs_path = DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
+            bucket_name)
 
         print(MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
             deploy_tpl_path, deploy_tpl_gcs_path))
@@ -252,15 +259,3 @@ class ForsetiInstaller:
 
             print(MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
                 self.config.datetimestamp, bucket_name))
-
-    @staticmethod
-    def _get_deployment_tpl_gcs_path(bucket_name):
-        """Get deployment template GCS output path
-
-        Args:
-            bucket_name (str): Name of the GCS bucket
-
-        Returns:
-            str: Deployment template GCS path
-        """
-        return DEPLOYMENT_TEMPLATE_OUTPUT_PATH .format(bucket_name)

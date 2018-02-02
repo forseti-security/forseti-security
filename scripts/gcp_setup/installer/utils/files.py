@@ -23,12 +23,12 @@ from constants import (
 from utils import print_banner, run_command
 
 
-def generate_deployment_templates(template_type, vals, datetimestamp):
+def generate_deployment_templates(template_type, values, datetimestamp):
     """Generate deployment templates.
 
     Args:
         template_type (str): Type of the template, either cli or server
-        vals (dict): Values needed for deployment
+        values (dict): Values needed for deployment
         datetimestamp (str): Timestamp
 
     Returns:
@@ -51,6 +51,7 @@ def generate_deployment_templates(template_type, vals, datetimestamp):
             ROOT_DIR_PATH,
             'deployment-templates',
             input_template_filename))
+
     out_tpl_path = os.path.abspath(
         os.path.join(
             ROOT_DIR_PATH,
@@ -60,7 +61,7 @@ def generate_deployment_templates(template_type, vals, datetimestamp):
     # Create Deployment template with values filled in.
     with open(deploy_tpl_path, 'r') as in_tmpl:
         tmpl_contents = in_tmpl.read()
-        out_contents = tmpl_contents.format(**vals)
+        out_contents = tmpl_contents.format(**values)
         with open(out_tpl_path, 'w') as out_tmpl:
             out_tmpl.write(out_contents)
             return out_tpl_path
@@ -90,7 +91,7 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
 
     forseti_conf_in = os.path.abspath(
         os.path.join(
-            ROOT_DIR_PATH, 'configs', input_template_name))
+            ROOT_DIR_PATH, 'configs', template_type, input_template_name))
     forseti_conf_gen = os.path.abspath(
         os.path.join(
             ROOT_DIR_PATH, 'configs',
@@ -124,7 +125,7 @@ def copy_file_to_destination(file_path, output_path,
 
     if dry_run:
         print('This is a dry run, so skipping this step.')
-        return False, False
+        return False
 
     if is_directory:
         args = ['gsutil', 'cp', '-r', file_path, output_path]
@@ -145,7 +146,7 @@ def sanitize_conf_values(conf_values):
 
     Args:
         conf_values (dict): The conf values to replace in the
-            forseti_conf.yaml.
+            forseti_conf_server.yaml.
 
     Returns:
         dict: The sanitized values.
