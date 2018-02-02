@@ -60,22 +60,28 @@ GCP_READ_IAM_ROLES = [
     'roles/appengine.appViewer',
     'roles/bigquery.dataViewer',
     'roles/servicemanagement.quotaViewer',
-    'roles/cloudsql.viewer',
+    'roles/cloudsql.viewer'
 ]
 
 GCP_WRITE_IAM_ROLES = [
-    'roles/compute.securityAdmin',
+    'roles/compute.securityAdmin'
 ]
 
-PROJECT_IAM_ROLES = [
+PROJECT_IAM_ROLES_SERVER = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
     'roles/cloudsql.client',
-    'roles/logging.logWriter',
+    'roles/logging.logWriter'
+]
+
+PROJECT_IAM_ROLES_CLIENT = [
+    'roles/storage.objectViewer',
+    'roles/storage.objectCreator',
+    'roles/logging.logWriter'
 ]
 
 SVC_ACCT_ROLES = [
-    'roles/iam.serviceAccountKeyAdmin',
+    'roles/iam.serviceAccountKeyAdmin'
 ]
 
 # Required APIs
@@ -99,7 +105,7 @@ REQUIRED_APIS = [
     {'name': 'Deployment Manager',
      'service': 'deploymentmanager.googleapis.com'},
     {'name': 'IAM',
-     'service': 'iam.googleapis.com'},
+     'service': 'iam.googleapis.com'}
 ]
 
 # Org Resource Types

@@ -31,7 +31,7 @@ from utils.constants import (
     MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION)
 from utils.gcloud import (
     enable_apis, create_reuse_service_acct, choose_organization,
-    choose_folder, choose_project, grant_gcp_svc_acct_roles)
+    choose_folder, choose_project, grant_server_svc_acct_roles)
 from configs.server_config import ServerConfig
 
 
@@ -45,7 +45,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
     has_roles_script = False
     setup_explain = True
     enable_write_access = False
-    user_can_grant_roles = False
     resource_root_id = None
     access_target = None
     target_id = None
@@ -95,7 +94,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             deploy_tpl_path, conf_file_path, bucket_name)
 
         if success:
-            self.has_roles_script = grant_gcp_svc_acct_roles(
+            self.has_roles_script = grant_server_svc_acct_roles(
                 self.enable_write_access,
                 self.access_target,
                 self.target_id,

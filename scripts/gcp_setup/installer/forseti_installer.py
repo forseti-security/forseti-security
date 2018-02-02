@@ -45,6 +45,7 @@ class ForsetiInstaller:
     project_id = None
     organization_id = None
     gcp_service_account = None
+    user_can_grant_roles = True
     config = Config()
 
     @abstractmethod

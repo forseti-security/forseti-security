@@ -23,10 +23,10 @@ from utils import run_command, print_banner, id_from_name
 from constants import (
     GCLOUD_VERSION_REGEX, GCLOUD_ALPHA_REGEX, GCLOUD_MIN_VERSION,
     MESSAGE_GCLOUD_VERSION_MISMATCH, REQUIRED_APIS, GCP_READ_IAM_ROLES,
-    GCP_WRITE_IAM_ROLES, PROJECT_IAM_ROLES, SVC_ACCT_ROLES,
+    GCP_WRITE_IAM_ROLES, PROJECT_IAM_ROLES_SERVER, SVC_ACCT_ROLES,
     MESSAGE_CREATE_ROLE_SCRIPT, QUESTION_CHOOSE_FOLDER,
     MESSAGE_BILLING_NOT_ENABLED, MESSAGE_NO_ORGANIZATION,
-    RESOURCE_TYPE_ARGS_MAP, MESSAGE_NO_CLOUD_SHELL)
+    RESOURCE_TYPE_ARGS_MAP, MESSAGE_NO_CLOUD_SHELL, PROJECT_IAM_ROLES_CLIENT)
 
 
 def get_gcloud_info():
@@ -139,13 +139,42 @@ def enable_apis(dry_run=False):
             print('Done.')
 
 
-def grant_gcp_svc_acct_roles(enable_write,
-                             access_target,
-                             target_id,
-                             project_id,
-                             gsuite_service_account,
-                             gcp_service_account,
-                             user_can_grant_roles):
+def grant_client_svc_acct_roles(project_id,
+                                gcp_service_account,
+                                user_can_grant_roles):
+    """Grant the following IAM roles to GCP service account.
+
+    Project:
+        Storage Object Viewer, Storage Object Creator, Logging LogWriter
+
+    Args:
+        project_id (str): GCP Project Id
+        gcp_service_account (str): GCP service account email
+        user_can_grant_roles (bool): Whether or not user has
+                                        access to grant roles
+
+    Returns:
+        bool: Whether or not a role script has been generated
+    """
+
+    print_banner('Assigning roles to the GCP service account')
+
+    roles = {
+        'forseti_project': PROJECT_IAM_ROLES_CLIENT
+    }
+
+    return _grant_svc_acct_roles(
+        False, None, project_id, None,
+        gcp_service_account, user_can_grant_roles, roles)
+
+
+def grant_server_svc_acct_roles(enable_write,
+                                access_target,
+                                target_id,
+                                project_id,
+                                gsuite_service_account,
+                                gcp_service_account,
+                                user_can_grant_roles):
     """Grant the following IAM roles to GCP service account.
 
     Org/Folder/Project:
@@ -177,9 +206,40 @@ def grant_gcp_svc_acct_roles(enable_write,
 
     roles = {
         '%ss' % access_target: access_target_roles,
-        'forseti_project': PROJECT_IAM_ROLES,
+        'forseti_project': PROJECT_IAM_ROLES_SERVER,
         'service_accounts': SVC_ACCT_ROLES,
     }
+
+    return _grant_svc_acct_roles(
+        enable_write ,target_id, project_id, gsuite_service_account,
+        gcp_service_account, user_can_grant_roles, roles)
+
+
+def _grant_svc_acct_roles(enable_write,
+                          target_id,
+                          project_id,
+                          gsuite_service_account,
+                          gcp_service_account,
+                          user_can_grant_roles,
+                          roles):
+    """Grant roles to GCP service account.
+
+    Args:
+        enable_write (bool): Whether or not to enable write access
+        target_id (str): Id of the access_target
+        project_id (str): GCP Project Id
+        gsuite_service_account (str): GSuite service account email
+        gcp_service_account (str): GCP service account email
+        user_can_grant_roles (bool): Whether or not user has
+                                        access to grant roles
+        roles (dict): Roles to grant
+    Returns:
+        bool: Whether or not a role script has been generated
+    """
+
+    access_target_roles = GCP_READ_IAM_ROLES
+    if enable_write:
+        access_target_roles.extend(GCP_WRITE_IAM_ROLES)
 
     assign_roles_cmds = _assign_roles(roles, target_id, project_id,
                                       gsuite_service_account,

@@ -17,7 +17,7 @@
 from forseti_installer import ForsetiInstaller
 
 from configs.client_config import ClientConfig
-from utils.gcloud import get_forseti_server_info
+from utils.gcloud import get_forseti_server_info, grant_client_svc_acct_roles
 
 
 class ForsetiClientInstaller(ForsetiInstaller):
@@ -36,6 +36,30 @@ class ForsetiClientInstaller(ForsetiInstaller):
         super(ForsetiClientInstaller, self).__init__()
         self.config = ClientConfig(**kwargs)
         self.server_ip, self.server_zone = get_forseti_server_info()
+
+    def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
+        """Deploy Forseti using the deployment template.
+        Grant access to service account.
+
+        Args:
+            deploy_tpl_path (str): Deployment template path
+            conf_file_path (str): Configuration file path
+            bucket_name (str): Name of the GCS bucket
+
+        Returns:
+            bool: Whether or not the deployment was successful
+            str: Deployment name
+        """
+        success, deployment_name = super(ForsetiClientInstaller, self).deploy(
+            deploy_tpl_path, conf_file_path, bucket_name)
+
+        if success:
+            grant_client_svc_acct_roles(
+                self.project_id,
+                self.gcp_service_account,
+                self.user_can_grant_roles)
+
+        return success, deployment_name
 
     def get_configuration_values(self):
         """Get configuration values
