@@ -26,6 +26,7 @@ from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
 from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import file_loader
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -997,8 +998,10 @@ class DefaultConfigParser(object):
 class DefaultConfig(dict):
     """Represents the configuration."""
 
+    DEFAULT_ENDPOINT = 'localhost:50051'
+
     DEFAULT = {
-        'endpoint': 'localhost:50051',
+        'endpoint': '',
         'model': '',
         'format': 'text',
         }
@@ -1012,10 +1015,29 @@ class DefaultConfig(dict):
         """
         super(DefaultConfig, self).__init__(*args, **kwargs)
 
+        self.DEFAULT['endpoint'] = self.get_default_endpoint()
+
         # Initialize default values
         for key, value in self.DEFAULT.iteritems():
             if key not in self:
                 self[key] = value
+
+    def get_default_endpoint(self):
+        """Get server address from the forseti_client_conf.yaml file
+
+        Returns:
+            str: Forseti server endpoint
+        """
+        try:
+            conf_path = os.environ['FORSETI_CONF']
+            configs = file_loader.read_and_parse_file(conf_path)
+            server_ip = configs.get('server_ip')
+            if server_ip:
+                return '{}:50051'.format(server_ip)
+        except IOError as err:
+            LOGGER.error(err)
+            pass
+        return self.DEFAULT_ENDPOINT
 
     def __getitem__(self, key):
         """Get item by key.

@@ -494,10 +494,7 @@ class ClientComposition(object):
 
     DEFAULT_ENDPOINT = 'localhost:50051'
 
-    def __init__(self, endpoint=None, ping=False):
-        if not endpoint:
-            endpoint = self.get_default_endpoint()
-        print ("ENDPOINT : " + endpoint)
+    def __init__(self, endpoint=DEFAULT_ENDPOINT, ping=False):
         self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
@@ -518,26 +515,6 @@ class ClientComposition(object):
         if ping:
             if not all([c.is_available() for c in self.clients]):
                 raise Exception('gRPC connected but services not registered')
-
-    def get_default_endpoint(self):
-        """Get server address from the forseti_client_conf.yaml file
-
-        Returns:
-            str: Forseti server endpoint
-        """
-        try:
-            conf_path = os.environ['FORSETI_CONF']
-            print (conf_path)
-            configs = file_loader.read_and_parse_file(conf_path)
-            print (configs)
-            server_ip = configs.get('server_ip')
-            print (server_ip)
-            if server_ip:
-                return '{}:50051'.format(server_ip)
-        except IOError as err:
-            print (err)
-            pass
-        return self.DEFAULT_ENDPOINT
 
     def new_model(self, source, name, inventory_id="", background=False):
         """Create a new model from the specified source."""
