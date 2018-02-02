@@ -1733,7 +1733,7 @@ class ModelManager(object):
             session (object): Database session.
 
         Returns:
-            A json of the model description.
+            Dictionary of the model description.
         """
         if not session:
             with self.modelmaker() as scoped_session:
