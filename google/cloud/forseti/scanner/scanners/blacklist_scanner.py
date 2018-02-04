@@ -16,7 +16,6 @@
 
 from google.cloud.forseti.common.gcp_type.instance import Instance
 from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.data_access import instance_dao
 from google.cloud.forseti.scanner.audit import blacklist_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 

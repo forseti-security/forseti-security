@@ -32,7 +32,7 @@ def create_list_of_instence_network_interface_obj_from_data():
     return fake_instances_list
 
 class BlacklistScannerTest(ForsetiTestCase):
-    '''
+
     @patch('google.cloud.security.scanner.audit.' + \
            'blacklist_rules_engine.urllib2.urlopen')
     def test_get_blacklist_url(self, mock_urlopen):
@@ -60,7 +60,7 @@ class BlacklistScannerTest(ForsetiTestCase):
         self.assertEqual(2, len(rules_engine.rule_book.resource_rules_map))
         self.assertEqual('http://threatintel.localdomain/verybadips.txt',
                           rules_engine.rule_book.rule_defs['rules'][0]['url'])
-    '''
+
     @patch('google.cloud.security.scanner.audit.' + \
            'blacklist_rules_engine.urllib2.urlopen')
     def test_blacklist_scanner_all_match(self, mock_urlopen):
