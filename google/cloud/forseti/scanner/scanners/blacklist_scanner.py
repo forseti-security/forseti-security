@@ -140,4 +140,3 @@ class BlacklistScanner(base_scanner.BaseScanner):
         all_violations = (
             self._find_violations(instances_network_interface_data))
         self._output_results(all_violations)
-
