@@ -29,17 +29,24 @@ FAKE_BLACKLIST_SOURCE_2 = '\n'.join(['5.5.5.5'])
 
 EXPECTED_BLACKLIST_1 = [['1.2.3.4'], ['5.6.7.0/24']]
 
-INSTANCE_DATA = [{
-    'network_interfaces': '[{"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/us-central1/subnetworks/default", "fingerprint": "x=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT"}]}]',
+INSTANCE_DATA = [
+    {
+        'network_interfaces': [
+            {"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/us-central1/subnetworks/default", "fingerprint": "x=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT"}]}],
     },
     {
-    'network_interfaces': '[{"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/default", "fingerprint": "y=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "1.2.3.4"}]}, {"kind": "compute#networkInterface", "name": "nic1", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/testnetwork", "networkIP": "1.1.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/sadadasd", "fingerprint": "z=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "5.6.7.8"}]}]'
+        'network_interfaces': [
+            {"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/default", "fingerprint": "y=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "1.2.3.4"}]},
+            {"kind": "compute#networkInterface", "name": "nic1", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/testnetwork", "networkIP": "1.1.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/sadadasd", "fingerprint": "z=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "5.6.7.8"}]}]
     },
     {
-    'network_interfaces':    '[{"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.3", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/default", "fingerprint": "d=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "9.10.11.12"}]}, {"kind": "compute#networkInterface", "name": "nic1", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/testnetwork", "networkIP": "1.1.0.3", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/sadadasd", "fingerprint": "c=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "5.5.5.5"}]}]'
+        'network_interfaces': [
+            {"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.3", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/default", "fingerprint": "d=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "9.10.11.12"}]},
+            {"kind": "compute#networkInterface", "name": "nic1", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/testnetwork", "networkIP": "1.1.0.3", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/asia-east1/subnetworks/sadadasd", "fingerprint": "c=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "5.5.5.5"}]}]
     },
     {
-    'network_interfaces':    '[{"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/us-east4/subnetworks/default", "fingerprint": "v=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "5.6.7.254"}]}]'
+        'network_interfaces':  [
+            {"kind": "compute#networkInterface", "name": "nic0", "network": "https://www.googleapis.com/compute/beta/projects/dev-project/global/networks/default", "networkIP": "1.2.0.2", "subnetwork": "https://www.googleapis.com/compute/beta/projects/dev-project/regions/us-east4/subnetworks/default", "fingerprint": "v=", "accessConfigs": [{"kind": "compute#accessConfig", "name": "External NAT", "type": "ONE_TO_ONE_NAT", "natIP": "5.6.7.254"}]}]
     }
 ]
 
@@ -50,4 +57,4 @@ EXPECTED_VIOLATIONS = [
     [RuleViolation(resource_type='instance', rule_blacklist='ET', rule_index=0, violation_type='BLACKLIST_VIOLATION', project=u'dev-project', network=u'default', ip=u'1.2.3.4', rule_name='ET'), RuleViolation(resource_type='instance', rule_blacklist='ET', rule_index=0, violation_type='BLACKLIST_VIOLATION', project=u'dev-project', network=u'testnetwork', ip=u'5.6.7.8', rule_name='ET')],
     [RuleViolation(resource_type='instance', rule_blacklist='Spam', rule_index=1, violation_type='BLACKLIST_VIOLATION', project=u'dev-project', network=u'testnetwork', ip=u'5.5.5.5', rule_name='Spam')],
     [RuleViolation(resource_type='instance', rule_blacklist='ET', rule_index=0, violation_type='BLACKLIST_VIOLATION', project=u'dev-project', network=u'default', ip=u'5.6.7.254', rule_name='ET')]
-    ]
+]

@@ -207,8 +207,10 @@ class Rule(object):
 
     def find_violations(self, instance_network_interface):
         """Raise violation if the IP is not in the whitelist.
+
         Args:
             instance_network_interface (InstanceNetworkInterface): object
+
         Yields:
             namedtuple: Returns RuleViolation named tuple
         """
