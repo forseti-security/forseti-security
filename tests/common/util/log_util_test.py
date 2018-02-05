@@ -23,6 +23,15 @@ from google.cloud.forseti.common.util import log_util
 class LogUtilTest(ForsetiTestCase):
     """Test the Logging utility."""
 
+    def setUp(self):
+        """Test with default log level of info."""
+        self.current_level = log_util.LOGLEVEL
+        log_util.set_logger_level(logging.INFO)
+
+    def tearDown(self):
+        """Reset log level on all loggers."""
+        log_util.set_logger_level(self.current_level)
+
     def test_set_logger_level_changes_existing_loggers(self):
         """Test if loggers instantiated before set_logger_level will be affected."""
 
