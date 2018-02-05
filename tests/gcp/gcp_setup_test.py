@@ -12,20 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the gcp_setup."""
+"""Tests the Installer."""
 
 import json
-import mock
 import sys
 import unittest
-
-from contextlib import contextmanager
 from StringIO import StringIO
+from contextlib import contextmanager
 
-from scripts.gcp_setup.environment import gcloud_env
-from scripts.gcp_setup.environment import utils
+import mock
+from setup.gcp.environment import gcloud_env
+
+from setup.gcp.environment import utils
 from tests.unittest_utils import ForsetiTestCase
-
 
 FAKE_PROJECT = 'fake-project'
 FAKE_ACCOUNT = 'fake-account@localhost.domain'
@@ -89,10 +88,10 @@ def captured_output():
 
 
 class GcloudEnvTest(ForsetiTestCase):
-    """Test the gcp_setup."""
+    """Test the install_forseti."""
 
     def setUp(self):
-        self.gcp_setup = gcloud_env.ForsetiGcpSetup()
+        self.install_forseti = gcloud_env.ForsetiGcpSetup()
         utils.run_command = mock.MagicMock()
         gcloud_env.GCLOUD_MIN_VERSION = GCLOUD_MIN_VERSION
         self.gcloud_min_ver_formatted = '.'.join([str(d) for d in GCLOUD_MIN_VERSION])
@@ -163,7 +162,7 @@ class GcloudEnvTest(ForsetiTestCase):
             None
         )
         with captured_output() as (out, err):
-            self.gcp_setup.gcloud_info()
+            self.install_forseti.gcloud_info()
             output = out.getvalue().strip()
             self.assertEqual('Read gcloud info successfully', output)
 
@@ -187,39 +186,39 @@ class GcloudEnvTest(ForsetiTestCase):
         )
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.gcloud_info()
+                self.install_forseti.gcloud_info()
 
     def test_check_cloudshell_no_flag_no_cloudshell(self):
         """Test check_cloudshell() when no cloudshell and no flag to bypass."""
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.check_cloudshell()
+                self.install_forseti.check_cloudshell()
 
     def test_check_cloudshell_with_flag_no_cloudshell(self):
         """Test check_cloudshell() when no cloudshell and flag to bypass."""
         output_head = 'Bypass Cloud Shell'
-        self.gcp_setup.force_no_cloudshell = True
+        self.install_forseti.force_no_cloudshell = True
         with captured_output() as (out, err):
-            self.gcp_setup.check_cloudshell()
+            self.install_forseti.check_cloudshell()
             output = out.getvalue().strip()[:len(output_head)]
             self.assertEqual(output_head, output)
 
     def test_check_cloudshell_no_flag_is_cloudshell(self):
         """Test check_cloudshell() when using cloudshell, no flag to bypass."""
         output_head = 'Using Cloud Shell'
-        self.gcp_setup.is_devshell = True
+        self.install_forseti.is_devshell = True
         with captured_output() as (out, err):
-            self.gcp_setup.check_cloudshell()
+            self.install_forseti.check_cloudshell()
             output = out.getvalue().strip()[:len(output_head)]
             self.assertEqual(output_head, output)
 
     def test_check_cloudshell_has_flag_is_cloudshell(self):
         """Test check_cloudshell() when using cloudshell and flag to bypass."""
         output_head = 'Bypass Cloud Shell'
-        self.gcp_setup.force_no_cloudshell = True
-        self.gcp_setup.is_devshell = True
+        self.install_forseti.force_no_cloudshell = True
+        self.install_forseti.is_devshell = True
         with captured_output() as (out, err):
-            self.gcp_setup.check_cloudshell()
+            self.install_forseti.check_cloudshell()
             output = out.getvalue().strip()[:len(output_head)]
             self.assertEqual(output_head, output)
 
@@ -227,12 +226,12 @@ class GcloudEnvTest(ForsetiTestCase):
         """Test check_authed_user()."""
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.check_authed_user()
+                self.install_forseti.check_authed_user()
 
-        self.gcp_setup.authed_user = FAKE_ACCOUNT
+        self.install_forseti.authed_user = FAKE_ACCOUNT
         output_head = 'You are'
         with captured_output() as (out, err):
-            self.gcp_setup.check_authed_user()
+            self.install_forseti.check_authed_user()
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
@@ -240,12 +239,12 @@ class GcloudEnvTest(ForsetiTestCase):
         """Test check_project_id()."""
         with self.assertRaises(SystemExit):
             with captured_output():
-                self.gcp_setup.check_project_id()
+                self.install_forseti.check_project_id()
 
-        self.gcp_setup.project_id = FAKE_PROJECT
+        self.install_forseti.project_id = FAKE_PROJECT
         output_head = 'Project id'
         with captured_output() as (out, err):
-            self.gcp_setup.check_project_id()
+            self.install_forseti.check_project_id()
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
@@ -273,7 +272,7 @@ class GcloudEnvTest(ForsetiTestCase):
             'name': 'folders/34567',
             'parent': 'organizations/1111122222'
         })
-        self.gcp_setup.project_id = FAKE_PROJECT
+        self.install_forseti.project_id = FAKE_PROJECT
         utils.run_command.side_effect = [
             [0, project_desc, None],
             [0, folder_12345_desc, None],
@@ -283,7 +282,7 @@ class GcloudEnvTest(ForsetiTestCase):
 
         output_head = 'Organization id'
         with captured_output() as (out, err):
-            self.gcp_setup.lookup_organization()
+            self.install_forseti.lookup_organization()
             # collect all the output, the last line (excluding blank line)
             # should be 'Organization id: ...'
             all_output = [s for s in out.getvalue().split('\n') if len(s)]
@@ -372,38 +371,38 @@ class GcloudEnvTest(ForsetiTestCase):
     def test_should_setup_explain(self, mock_rawinput):
         """Test should_setup_explain()."""
         with captured_output() as (out, err):
-            self.gcp_setup.should_setup_explain()
-            self.assertTrue(self.gcp_setup.setup_explain)
+            self.install_forseti.should_setup_explain()
+            self.assertTrue(self.install_forseti.setup_explain)
 
-        self.gcp_setup.advanced_mode = True
+        self.install_forseti.advanced_mode = True
         with captured_output() as (out, err):
-            self.gcp_setup.should_setup_explain()
-            self.assertTrue(self.gcp_setup.setup_explain)
+            self.install_forseti.should_setup_explain()
+            self.assertTrue(self.install_forseti.setup_explain)
 
     @mock.patch('__builtin__.raw_input')
     def test_determine_access_target_orgs(self, mock_rawinput):
         """Test determine_access_target() for organizations."""
         fake_org_id = '1234567890'
-        self.gcp_setup.organization_id = fake_org_id
+        self.install_forseti.organization_id = fake_org_id
         mock_rawinput.side_effect = ['1', fake_org_id]
 
         with captured_output() as (out, err):
-            self.gcp_setup.determine_access_target()
+            self.install_forseti.determine_access_target()
             self.assertEqual(
-                'organizations/%s' % fake_org_id, self.gcp_setup.resource_root_id)
+                'organizations/%s' % fake_org_id, self.install_forseti.resource_root_id)
 
-        self.gcp_setup.advanced_mode = True
-        self.gcp_setup.setup_explain = True
+        self.install_forseti.advanced_mode = True
+        self.install_forseti.setup_explain = True
         with captured_output() as (out, err):
-            self.gcp_setup.determine_access_target()
+            self.install_forseti.determine_access_target()
             self.assertEqual(
-                'organizations/%s' % fake_org_id, self.gcp_setup.resource_root_id)
+                'organizations/%s' % fake_org_id, self.install_forseti.resource_root_id)
 
-        self.gcp_setup.setup_explain = False
+        self.install_forseti.setup_explain = False
         with captured_output() as (out, err):
-            self.gcp_setup.determine_access_target()
+            self.install_forseti.determine_access_target()
             self.assertEqual(
-                'organizations/%s' % fake_org_id, self.gcp_setup.resource_root_id)
+                'organizations/%s' % fake_org_id, self.install_forseti.resource_root_id)
 
     @mock.patch('__builtin__.raw_input')
     def test_determine_access_target_folders(self, mock_rawinput):
@@ -411,12 +410,12 @@ class GcloudEnvTest(ForsetiTestCase):
         fake_folder_id = '334455'
         mock_rawinput.side_effect = ['2', fake_folder_id]
 
-        self.gcp_setup.advanced_mode = True
-        self.gcp_setup.setup_explain = False
+        self.install_forseti.advanced_mode = True
+        self.install_forseti.setup_explain = False
         with captured_output() as (out, err):
-            self.gcp_setup.determine_access_target()
+            self.install_forseti.determine_access_target()
             self.assertEqual(
-                'folders/%s' % fake_folder_id, self.gcp_setup.resource_root_id)
+                'folders/%s' % fake_folder_id, self.install_forseti.resource_root_id)
 
     @mock.patch('__builtin__.raw_input')
     def test_determine_access_target_projects(self, mock_rawinput):
@@ -424,12 +423,12 @@ class GcloudEnvTest(ForsetiTestCase):
         fake_project_id = 'project-abc'
         mock_rawinput.side_effect = ['3', fake_project_id]
 
-        self.gcp_setup.advanced_mode = True
-        self.gcp_setup.setup_explain = False
+        self.install_forseti.advanced_mode = True
+        self.install_forseti.setup_explain = False
         with captured_output() as (out, err):
-            self.gcp_setup.determine_access_target()
+            self.install_forseti.determine_access_target()
             self.assertEqual(
-                'projects/%s' % fake_project_id, self.gcp_setup.resource_root_id)
+                'projects/%s' % fake_project_id, self.install_forseti.resource_root_id)
 
     @mock.patch('__builtin__.raw_input')
     def test_choose_organization(self, mock_rawinput):
@@ -437,16 +436,16 @@ class GcloudEnvTest(ForsetiTestCase):
         # No orgs
         utils.run_command.return_value = (0, '{}', None)
         with captured_output() as (out, err):
-            self.gcp_setup.choose_organization()
-            self.assertEqual(None, self.gcp_setup.target_id)
+            self.install_forseti.choose_organization()
+            self.assertEqual(None, self.install_forseti.target_id)
 
         mock_rawinput.side_effect = ['abc', '123']
         # Has orgs
         utils.run_command.return_value = (
             0, '[{"name": "organizations/123", "displayName": "fake org"}]', None)
         with captured_output() as (out, err):
-            self.gcp_setup.choose_organization()
-            self.assertEqual('123', self.gcp_setup.target_id)
+            self.install_forseti.choose_organization()
+            self.assertEqual('123', self.install_forseti.target_id)
 
     @mock.patch('__builtin__.raw_input')
     def test_choose_folder(self, mock_rawinput):
@@ -454,8 +453,8 @@ class GcloudEnvTest(ForsetiTestCase):
         mock_rawinput.side_effect = ['abc', '123']
         # Has orgs
         with captured_output() as (out, err):
-            self.gcp_setup.choose_folder()
-            self.assertEqual('123', self.gcp_setup.target_id)
+            self.install_forseti.choose_folder()
+            self.assertEqual('123', self.install_forseti.target_id)
 
     @mock.patch('__builtin__.raw_input')
     def test_choose_project(self, mock_rawinput):
@@ -463,68 +462,68 @@ class GcloudEnvTest(ForsetiTestCase):
         mock_rawinput.side_effect = ['abc']
         # Has orgs
         with captured_output() as (out, err):
-            self.gcp_setup.choose_project()
-            self.assertEqual('abc', self.gcp_setup.target_id)
+            self.install_forseti.choose_project()
+            self.assertEqual('abc', self.install_forseti.target_id)
 
     @mock.patch('__builtin__.raw_input')
     def test_should_enable_write_access_true(self, mock_rawinput):
         """Test should_enable_write_access()."""
         with captured_output() as (out, err):
-            self.gcp_setup.should_enable_write_access()
-            self.assertTrue(self.gcp_setup.enable_write_access)
+            self.install_forseti.should_enable_write_access()
+            self.assertTrue(self.install_forseti.enable_write_access)
 
     @mock.patch('__builtin__.raw_input')
     def test_should_enable_write_access_false(self, mock_rawinput):
         """Test should_enable_write_access(), in the "no" case."""
-        self.gcp_setup.advanced_mode = True
+        self.install_forseti.advanced_mode = True
         mock_rawinput.side_effect = ['n']
         with captured_output() as (out, err):
-            self.gcp_setup.should_enable_write_access()
-            self.assertFalse(self.gcp_setup.enable_write_access)
+            self.install_forseti.should_enable_write_access()
+            self.assertFalse(self.install_forseti.enable_write_access)
 
     def test_format_service_acct_ids(self):
         """Test format_service_acct_ids()."""
-        self.gcp_setup.project_id = 'fake-project'
-        self.gcp_setup.timestamp = '1'
+        self.install_forseti.project_id = 'fake-project'
+        self.install_forseti.timestamp = '1'
         gcp_email_1 = gcloud_env.full_service_acct_email(
             gcloud_env.SERVICE_ACCT_FMT.format(
-                'gcp', 'reader', self.gcp_setup.timestamp),
-            self.gcp_setup.project_id)
+                'gcp', 'reader', self.install_forseti.timestamp),
+            self.install_forseti.project_id)
         gsuite_email_1 = gcloud_env.full_service_acct_email(
             gcloud_env.SERVICE_ACCT_FMT.format(
-                'gsuite', 'reader', self.gcp_setup.timestamp),
-            self.gcp_setup.project_id)
-        self.gcp_setup.format_service_acct_ids()
-        self.assertEquals(gcp_email_1, self.gcp_setup.gcp_service_account)
-        self.assertEquals(gsuite_email_1, self.gcp_setup.gsuite_service_account)
+                'gsuite', 'reader', self.install_forseti.timestamp),
+            self.install_forseti.project_id)
+        self.install_forseti.format_service_acct_ids()
+        self.assertEquals(gcp_email_1, self.install_forseti.gcp_service_account)
+        self.assertEquals(gsuite_email_1, self.install_forseti.gsuite_service_account)
 
-        self.gcp_setup.enable_write_access = True
+        self.install_forseti.enable_write_access = True
         gcp_email_2 = gcloud_env.full_service_acct_email(
             gcloud_env.SERVICE_ACCT_FMT.format(
-                'gcp', 'readwrite', self.gcp_setup.timestamp),
-            self.gcp_setup.project_id)
-        self.gcp_setup.format_service_acct_ids()
-        self.assertEquals(gcp_email_2, self.gcp_setup.gcp_service_account)
+                'gcp', 'readwrite', self.install_forseti.timestamp),
+            self.install_forseti.project_id)
+        self.install_forseti.format_service_acct_ids()
+        self.assertEquals(gcp_email_2, self.install_forseti.gcp_service_account)
 
     def test_inform_access_on_target_basic(self):
         """Test inform_access_on_target()."""
         with captured_output() as (out, err):
-            self.gcp_setup.inform_access_on_target()
-            self.assertTrue(self.gcp_setup.user_can_grant_roles)
+            self.install_forseti.inform_access_on_target()
+            self.assertTrue(self.install_forseti.user_can_grant_roles)
 
     @mock.patch('__builtin__.raw_input')
     def test_inform_access_on_target_advanced(self, mock_rawinput):
         """Test inform_access_on_target()."""
-        self.gcp_setup.advanced_mode = True
+        self.install_forseti.advanced_mode = True
         mock_rawinput.side_effect = ['y', 'n']
 
         with captured_output() as (out, err):
-            self.gcp_setup.inform_access_on_target()
-            self.assertTrue(self.gcp_setup.user_can_grant_roles)
+            self.install_forseti.inform_access_on_target()
+            self.assertTrue(self.install_forseti.user_can_grant_roles)
 
         with captured_output() as (out, err):
-            self.gcp_setup.inform_access_on_target()
-            self.assertFalse(self.gcp_setup.user_can_grant_roles)
+            self.install_forseti.inform_access_on_target()
+            self.assertFalse(self.install_forseti.user_can_grant_roles)
 
 
 if __name__ == '__main__':

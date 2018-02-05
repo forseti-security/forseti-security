@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Set up the gcloud environment and Forseti prerequisites.
+""" GCP Installer.
 
 This has been tested with python 2.7.
 """
@@ -39,7 +39,7 @@ def run():
                         action='store_true',
                         help=('Generate config files but do not modify '
                               'GCP infrastructure (i.e. do not actually '
-                              'set up Forseti'))
+                              'set up Forseti)'))
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
