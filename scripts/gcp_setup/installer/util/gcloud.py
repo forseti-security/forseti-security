@@ -70,10 +70,26 @@ def verify_gcloud_information(project_id,
         force_no_cloudshell (bool): force no cloudshell
         is_devshell (bool): is dev shell
     """
+
     check_proper_gcloud()
-    _check_cloudshell(force_no_cloudshell, is_devshell)
-    _check_authed_user(authed_user)
-    _check_project_id(project_id)
+    if not force_no_cloudshell:
+        if not is_devshell:
+            print(MESSAGE_NO_CLOUD_SHELL)
+            sys.exit(1)
+        else:
+            print('Using Cloud Shell, continuing...')
+    else:
+        print('Bypass Cloud Shell check, continuing...')
+    if not authed_user:
+        print('Error getting authed user. You may need to run '
+              '"gcloud auth login". Exiting.')
+        sys.exit(1)
+    print('You are: {}'.format(authed_user))
+
+    if not project_id:
+        print('You need to have an active project! Exiting.')
+        sys.exit(1)
+    print('Project id: %s' % project_id)
 
 
 def check_proper_gcloud():
@@ -623,55 +639,12 @@ def get_forseti_server_info():
         instances = json.loads(out)
         for instance in instances:
             if 'forseti-security-server' in instance.get('name'):
-                zone = instance.get('zone').split("/zones/")[1]
                 # found forseti server vm instance
+                zone = instance.get('zone').split("/zones/")[1]
                 network_interfaces = instance.get('networkInterfaces')
-                access_configs = network_interfaces[0].get('accessConfigs')
-                return access_configs[0].get('natIP'), zone
+                internal_ip = network_interfaces[0].get('networkIP')
+                return internal_ip, zone
     except ValueError:
         print('Error retrieving forseti server ip address, '
               'will leave the server ip empty for now.')
     return '', 'us-central1-c'
-
-
-def _check_cloudshell(force_no_cloudshell, is_cloudshell):
-    """Check whether using Cloud Shell or bypassing Cloud Shell.
-
-    Args:
-        force_no_cloudshell (bool): Whether or not user decided
-                                    to not use cloudshell
-        is_cloudshell (bool): Whether or not we are using cloudshell
-    """
-    if not force_no_cloudshell:
-        if not is_cloudshell:
-            print(MESSAGE_NO_CLOUD_SHELL)
-            sys.exit(1)
-        else:
-            print('Using Cloud Shell, continuing...')
-    else:
-        print('Bypass Cloud Shell check, continuing...')
-
-
-def _check_authed_user(authed_user):
-    """Get the current authed user.
-
-    Args:
-        authed_user (str): Authenticated user
-    """
-    if not authed_user:
-        print('Error getting authed user. You may need to run '
-              '"gcloud auth login". Exiting.')
-        sys.exit(1)
-    print('You are: {}'.format(authed_user))
-
-
-def _check_project_id(project_id):
-    """Get the project.
-
-    Args:
-        project_id (str): GCP project id
-    """
-    if not project_id:
-        print('You need to have an active project! Exiting.')
-        sys.exit(1)
-    print('Project id: %s' % project_id)

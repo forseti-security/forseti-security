@@ -58,13 +58,13 @@ def generate_deployment_templates(template_type, values, datetimestamp):
             'deployment-templates',
             'deploy-forseti-{}-{}.yaml'.format(template_type, datetimestamp)))
 
-    # Create Deployment template with values filled in.
-    with open(deploy_tpl_path, 'r') as in_tmpl:
-        tmpl_contents = in_tmpl.read()
-        out_contents = tmpl_contents.format(**values)
-        with open(out_tpl_path, 'w') as out_tmpl:
-            out_tmpl.write(out_contents)
-            return out_tpl_path
+    if generate_file_from_template(deploy_tpl_path,
+                                    out_tpl_path,
+                                    values):
+        return out_tpl_path
+
+    # Deployment template not generated successfully
+    return None
 
 
 def generate_forseti_conf(template_type, vals, datetimestamp):
@@ -99,12 +99,37 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
 
     conf_values = sanitize_conf_values(vals)
 
-    with open(forseti_conf_in, 'rt') as in_tmpl:
-        tmpl_contents = in_tmpl.read()
-        out_contents = tmpl_contents.format(**conf_values)
-        with open(forseti_conf_gen, 'w') as out_tmpl:
-            out_tmpl.write(out_contents)
-            return forseti_conf_gen
+    if generate_file_from_template(forseti_conf_in,
+                                    forseti_conf_gen,
+                                    conf_values):
+        return forseti_conf_gen
+
+    # forseti_conf not generated successfully
+    return None
+
+
+def generate_file_from_template(template_path, output_path, template_values):
+    """Write to file.
+
+    Args:
+        template_path (str): Input template path
+        output_path (str): Path of the output file
+        template_values (dict): Values to replace the
+                                ones in the input template
+    Returns:
+        bool: Whether or not file has been generated
+    """
+
+    try:
+        with open(template_path, 'r') as in_tmpl:
+            tmpl_contents = in_tmpl.read()
+            out_contents = tmpl_contents.format(**template_values)
+            with open(output_path, 'w') as out_file:
+                out_file.write(out_contents)
+                return True
+    except EnvironmentError:
+        pass
+    return False
 
 
 def copy_file_to_destination(file_path, output_path,

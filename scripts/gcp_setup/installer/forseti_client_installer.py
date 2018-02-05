@@ -17,7 +17,7 @@
 from forseti_installer import ForsetiInstaller
 
 from configs.client_config import ClientConfig
-from utils.gcloud import get_forseti_server_info, grant_client_svc_acct_roles
+from util.gcloud import get_forseti_server_info, grant_client_svc_acct_roles
 
 
 class ForsetiClientInstaller(ForsetiInstaller):

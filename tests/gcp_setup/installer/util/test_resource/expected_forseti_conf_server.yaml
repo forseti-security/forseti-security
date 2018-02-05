@@ -26,14 +26,14 @@ global:
 
     # gsuite
     groups_service_account_key_file: /home/ubuntu/gsuite_key.json
-    domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
+    domain_super_admin_email: test@forseti_test_gmail.com
 
     # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    email_recipient: {EMAIL_RECIPIENT}
-    email_sender: {EMAIL_SENDER}
-    sendgrid_api_key: {SENDGRID_API_KEY}
+    email_recipient: rec@forseti_test_gmail.com
+    email_sender: send@forseti_test_gmail.com
+    sendgrid_api_key: TESTING_API_KEY
 
     # quota
     # The pre-populated values are the defaults from GCP.
@@ -109,7 +109,7 @@ scanner:
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
     # gs://bucket-name/path/for/output
-    output_path: gs://{SCANNER_BUCKET}/scanner_violations
+    output_path: gs://TESTING_BUCKET/scanner_violations
 
     # Rules path (do not include filename).
     # If GCS location, the format of the path should be:
@@ -134,7 +134,7 @@ scanner:
         - name: ke_version_scanner
           enabled: true
         - name: group
-          enabled: {ENABLE_GROUP_SCANNER}
+          enabled: true
         - name: iam_policy
           enabled: true
         - name: iap
@@ -155,14 +155,14 @@ notifier:
             # Email violations
             - name: email_violations_pipeline
               configuration:
-                sendgrid_api_key: {SENDGRID_API_KEY}
-                sender: {EMAIL_SENDER}
-                recipient: {EMAIL_RECIPIENT}
+                sendgrid_api_key: TESTING_API_KEY
+                sender: send@forseti_test_gmail.com
+                recipient: rec@forseti_test_gmail.com
             # Upload violations to GCS.
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
             # Slack webhook pipeline.
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations
@@ -178,7 +178,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: buckets_acl_violations
           should_notify: true
@@ -187,7 +187,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: cloudsql_acl_violations
           should_notify: true
@@ -196,7 +196,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: firewall_rule_violations
           should_notify: false
@@ -205,7 +205,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: forwarding_rule_violations
           should_notify: true
@@ -214,7 +214,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: ke_version_violations
           should_notify: true
@@ -223,7 +223,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: groups_violations
           should_notify: true
@@ -232,7 +232,7 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: instance_network_interface_violations
           should_notify: true
@@ -241,4 +241,4 @@ notifier:
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+                gcs_path: gs://TESTING_BUCKET/scanner_violations

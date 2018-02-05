@@ -39,7 +39,7 @@ def id_from_name(name):
     Returns:
         str: The resource id.
     """
-    if not name or name.index('/') < 0:
+    if not name or not '/' in name:
         return name
     return name[name.index('/')+1:]
 
@@ -258,7 +258,7 @@ def run_command(cmd_args):
     """Wrapper to run a command in subprocess.
 
     Args:
-        cmd_args (str): The list of command arguments.
+        cmd_args (list): The list of command arguments.
 
     Returns:
         int: The return code. 0 is "ok", anything else is "error".

@@ -16,7 +16,7 @@
 
 import datetime
 
-from ..utils.constants import CONFIG_FILENAME_FMT
+from ..util.constants import CONFIG_FILENAME_FMT
 
 
 class Config(object):

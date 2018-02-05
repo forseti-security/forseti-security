@@ -18,19 +18,19 @@ from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
 
-from utils.utils import (
+from util.utils import (
     print_banner, get_forseti_version, format_service_acct_id,
     infer_version, create_deployment)
-from utils.constants import (
+from util.constants import (
     FORSETI_CONF_PATH, RULES_DIR_PATH, DEFAULT_BUCKET_FMT,
     MESSAGE_FORSETI_BRANCH_DEPLOYED, MESSAGE_DEPLOYMENT_HAD_ISSUES,
     MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION, MESSAGE_VIEW_DEPLOYMENT_DETAILS,
     MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN,
     MESSAGE_FORSETI_CONFIGURATION_GENERATED, DEPLOYMENT_TEMPLATE_OUTPUT_PATH)
-from utils.gcloud import (
+from util.gcloud import (
     create_reuse_service_acct, check_billing_enabled, lookup_organization,
     get_gcloud_info, verify_gcloud_information)
-from utils.files import (
+from util.files import (
     copy_file_to_destination, generate_deployment_templates,
     generate_forseti_conf)
 from configs.config import Config

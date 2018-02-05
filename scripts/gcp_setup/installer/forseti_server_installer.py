@@ -18,9 +18,9 @@ from __future__ import print_function
 import random
 
 from forseti_installer import ForsetiInstaller
-from utils.utils import (
+from util.utils import (
     print_banner, format_resource_id, format_service_acct_id)
-from utils.constants import (
+from util.constants import (
     MESSAGE_ENABLE_GSUITE_GROUP, MESSAGE_SETUP_IAM_EXPLAIN,
     QUESTION_ENABLE_IAM_EXPLAIN, QUESTION_ACCESS_TO_GRANT_ROLES,
     RESOURCE_TYPES, MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL,
@@ -29,7 +29,7 @@ from utils.constants import (
     QUESTION_NOTIFICATION_RECIPIENT_EMAIL, QUESTION_GSUITE_SUPERADMIN_EMAIL,
     MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,
     MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION)
-from utils.gcloud import (
+from util.gcloud import (
     enable_apis, create_reuse_service_acct, choose_organization,
     choose_folder, choose_project, grant_server_svc_acct_roles)
 from configs.server_config import ServerConfig
@@ -55,8 +55,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Args:
             kwargs (dict): The kwargs.
         """
-        self.config = ServerConfig(**kwargs)
         super(ForsetiServerInstaller, self).__init__()
+        self.config = ServerConfig(**kwargs)
 
     def preflight_checks(self):
         """Pre-flight checks for server instance"""

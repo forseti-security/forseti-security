@@ -15,7 +15,7 @@
 """Forseti installer server config object"""
 
 from config import Config
-from ..utils.constants import (
+from ..util.constants import (
     TEMPLATE_TYPE_SERVER, DEFAULT_CLOUDSQL_INSTANCE_NAME)
 
 
