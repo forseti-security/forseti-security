@@ -15,6 +15,7 @@
 """Unit Tests: Database abstraction objects for Forseti Server."""
 
 from collections import defaultdict
+import logging
 import unittest
 from sqlalchemy.orm.exc import NoResultFound
 from tests.unittest_utils import ForsetiTestCase
@@ -549,7 +550,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
+            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -574,7 +575,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
+            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -597,7 +598,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            print '{}, {}'.format((acc_res, acc_members), access)
+            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
