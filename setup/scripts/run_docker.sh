@@ -22,9 +22,9 @@ if [ -x "$(command -v docker)" ]; then
         # Required for codecov.io to export coverage within a Docker container.
         "CI_ENV=`bash <(curl -s https://codecov.io/env)`"
         # Start the container for testing and codee verification.
-        docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash
+        docker -l error run ${CI_ENV} -it -d --name build forseti/build /bin/bash
     else
         # We're not on Travis, run without the CI_ENV environment variable.
-        docker run -it -d --name build forseti/build /bin/bash
+        docker -l error run -it -d --name build forseti/build /bin/bash
     fi
 fi
