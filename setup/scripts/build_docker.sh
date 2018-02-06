@@ -36,7 +36,7 @@ if [ -x "$(command -v docker)" ]; then
     echo "Building our docker base image."
     docker -l error build -t forseti/base -f setup/docker/base .
     echo "Building our Forseti image from the base image."
-    docker -l errorbuild -t forseti/build -f setup/docker/forseti --no-cache .
+    docker -l error build -t forseti/build -f setup/docker/forseti --no-cache .
 else
     echo "Docker must be installed."
 fi
