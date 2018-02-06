@@ -17,7 +17,7 @@
 if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
     echo "Force removing any running containers."
-    docker rm -f $(docker ps -a -q)
+    docker -l error rm -f $(docker ps -a -q)
 fi
 
 # Update docker only on Travis.
