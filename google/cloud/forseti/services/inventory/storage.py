@@ -23,6 +23,7 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
+from sqlalchemy import exists
 from sqlalchemy.orm import aliased
 
 
@@ -812,6 +813,23 @@ class Storage(BaseStorage):
         for row in base_query.yield_per(PER_YIELD):
             yield row
     # pylint: enable=too-many-locals
+
+    def type_exists(self,
+                    type_list=None):
+        """Check if certain types of resources exists in the inventory
+
+        Args:
+            type_list (list): List of types to check
+
+        Returns:
+            bool: If these types of resources exists
+        """
+        return self.session.query(exists().where(and_(
+            Inventory.index == self.index.id,
+            Inventory.type_class == InventoryTypeClass.RESOURCE,
+            Inventory.type.in_(type_list)
+            ))).scalar()
+
 
     def __enter__(self):
         """To support with statement for auto closing."""

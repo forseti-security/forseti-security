@@ -171,7 +171,9 @@ class InventoryImporter(object):
                 self.model.add_description(json.dumps({
                     "source":"inventory",
                     "source_info":str(inventory.index),
-                    "pristine":True
+                    "pristine":True,
+                    "GSuite_enabled":inventory.type_exists(
+                        ["gsuite_group", "gsuite_user"])
                     }))
 
                 for resource in inventory.iter(['organization']):
