@@ -97,7 +97,8 @@ class ImporterTest(ForsetiTestCase):
                           {'pristine': True,
                            'source': 'inventory',
                            'source_info': inventory_info,
-                           'source_root': 'organization/111222333'})
+                           'source_root': 'organization/111222333',
+                           'GSuite_enabled': True})
 
 
 if __name__ == '__main__':

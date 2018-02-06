@@ -172,7 +172,9 @@ class InventoryImporter(object):
                     "source":"inventory",
                     "source_info":str(inventory.index),
                     "source_root":self._type_name(root),
-                    "pristine":True
+                    "pristine":True,
+                    "GSuite_enabled":inventory.type_exists(
+                        ["gsuite_group", "gsuite_user"])
                     }))
 
                 if root.get_type() in ['organization']:
