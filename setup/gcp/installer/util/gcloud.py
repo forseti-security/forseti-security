@@ -227,7 +227,7 @@ def grant_server_svc_acct_roles(enable_write,
     }
 
     return _grant_svc_acct_roles(
-        enable_write ,target_id, project_id, gsuite_service_account,
+        enable_write, target_id, project_id, gsuite_service_account,
         gcp_service_account, user_can_grant_roles, roles)
 
 

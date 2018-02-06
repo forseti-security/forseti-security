@@ -1030,16 +1030,13 @@ class DefaultConfig(dict):
         """
         try:
             conf_path = os.environ['FORSETI_CONF']
-            print (conf_path)
             configs = file_loader.read_and_parse_file(conf_path)
-            print (configs)
             server_ip = configs.get('server_ip')
-            print (server_ip)
             if server_ip:
                 return '{}:50051'.format(server_ip)
         except IOError as err:
             LOGGER.error(err)
-            pass
+
         return self.DEFAULT_ENDPOINT
 
     def __getitem__(self, key):

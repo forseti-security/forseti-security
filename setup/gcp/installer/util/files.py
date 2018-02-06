@@ -59,8 +59,8 @@ def generate_deployment_templates(template_type, values, datetimestamp):
             'deploy-forseti-{}-{}.yaml'.format(template_type, datetimestamp)))
 
     if generate_file_from_template(deploy_tpl_path,
-                                    out_tpl_path,
-                                    values):
+                                   out_tpl_path,
+                                   values):
         return out_tpl_path
 
     # Deployment template not generated successfully
@@ -100,8 +100,8 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
     conf_values = sanitize_conf_values(vals)
 
     if generate_file_from_template(forseti_conf_in,
-                                    forseti_conf_gen,
-                                    conf_values):
+                                   forseti_conf_gen,
+                                   conf_values):
         return forseti_conf_gen
 
     # forseti_conf not generated successfully
