@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Set up the gcloud environment and Forseti prerequisites.
+""" GCP Installer.
 
 This has been tested with python 2.7.
 """
@@ -21,7 +21,6 @@ import argparse
 
 from installer.forseti_server_installer import ForsetiServerInstaller
 from installer.forseti_client_installer import ForsetiClientInstaller
-from installer.configs.config import Config
 
 
 def run():
@@ -41,7 +40,7 @@ def run():
                         action='store_true',
                         help=('Generate config files but do not modify '
                               'GCP infrastructure (i.e. do not actually '
-                              'set up Forseti'))
+                              'set up Forseti)'))
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
@@ -65,7 +64,6 @@ def run():
                               help='Notification recipient email')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
-    Config()
     args = vars(parser.parse_args())
     if args.get('server'):
         forseti_setup = ForsetiServerInstaller(**args)

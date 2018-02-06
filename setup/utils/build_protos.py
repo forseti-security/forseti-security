@@ -21,16 +21,27 @@ import subprocess
 
 
 def is_grpc_service_dir(files):
-    """Returns true iff the directory hosts a gRPC service."""
+    """Returns true iff the directory hosts a gRPC service.
+
+        Args:
+          files (list): The 'files' output of os.walk().
+
+        Returns:
+           Boolean: True if '.grpc_service' is in the files, otherwise False.
+    """
     return ".grpc_service" in files
 
 
-def clean():
-    """Clean out compiled protos."""
+def clean(path):
+    """Clean out compiled protos.
+
+        Args:
+          path (string): A reference path to start from.
+    """
     # Start running from one directory above the directory which is found by
     # this scripts's location as __file__.
     logging.info("Cleaning out compiled protos.")
-    cwd = os.path.dirname(os.path.abspath(__file__))
+    cwd = os.path.dirname(path)
 
     # Find all the .proto files.
     for (root, dirs, files) in os.walk(cwd):
@@ -46,7 +57,11 @@ def clean():
 
 
 def make_proto_service(root):
-    """Generate a proto service from the definition file."""
+    """Generate a proto service from the definition file.
+
+        Args:
+          root (string): The path to a root directory.
+    """
     script_basename = "mkproto.sh"
     script_path = os.path.join(root, script_basename)
     subprocess.check_call(
@@ -56,11 +71,13 @@ def make_proto_service(root):
         ])
 
 
-def make_proto():
-    """Make sure our protos have been compiled to python libraries."""
-    # Start running from one directory above the directory which is found by
-    # this scripts's location as __file__.
-    cwd = os.path.dirname(os.path.abspath(__file__))
+def make_proto(path):
+    """Make sure our protos have been compiled to python libraries.
+
+        Args:
+          path (string): A reference path to start from.
+    """
+    cwd = os.path.dirname(path)
 
     # Find all the .proto files.
     protos_to_compile = []
@@ -112,9 +129,11 @@ def main():
     arg_parser.set_defaults(feature=False)
     args = arg_parser.parse_args()
 
+    path = os.path.abspath(__file__)
+
     if args.clean:
-        clean()
-    make_proto()
+        clean(path)
+    make_proto(path)
 
 
 if __name__ == "__main__":

@@ -598,7 +598,6 @@ def lookup_organization(project_id):
         print(err)
         print('Error trying to find current organization from '
               'project! Exiting.')
-        sys.exit(1)
 
     try:
         project = json.loads(out)

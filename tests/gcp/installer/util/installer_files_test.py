@@ -19,7 +19,7 @@ TEST_RESOURCE_DIR_PATH = os.path.join(
 TEST_TMP_DIR_PREFIX = 'forseti-test-'
 
 
-class TestFilesModule(ForsetiTestCase):
+class FilesModuleTest(ForsetiTestCase):
 
     def test_sanitize_conf_values_normal_input(self):
         """Normal config values"""

@@ -12,25 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo: required
+ARG BASE_IMAGE=forseti/base
+FROM ${BASE_IMAGE}
 
-language: python
+ADD . /forseti-security/
+WORKDIR /forseti-security/
 
-python:
-  - "2.7"
-
-services:
-  - docker
-
-before_install:
-  # Build the Forseti image and start the container.
-  - ./setup/scripts/build_docker.sh
-  - ./setup/scripts/run_docker.sh
-
-script:
-  # Run pylint and unittests.
-  - ./setup/scripts/run_docker_tests.sh
-
-after_success:
-  # Execute codecov inside the docker container. Need to export env for codecov.io upload.
-  - docker exec -it build /bin/bash -c "codecov"
+RUN pip install -q --upgrade pip
+RUN pip install -q -r setup/dependencies/pip_packages.txt --upgrade
+RUN python setup.py install
+RUN yes | which forseti_server

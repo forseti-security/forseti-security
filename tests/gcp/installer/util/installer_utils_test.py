@@ -12,7 +12,7 @@ import scripts.gcp_setup.installer.util.utils as utils
 from tests.unittest_utils import ForsetiTestCase
 
 
-class TestUtilsModule(ForsetiTestCase):
+class UtilsModuleTest(ForsetiTestCase):
 
     def test_id_from_name_normal(self):
         """The name of the resource, formatted as
