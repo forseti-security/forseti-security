@@ -17,7 +17,7 @@
 if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
     echo "Force removing any running containers."
-    docker rm -f $(docker ps -a -q)
+    docker -l error rm -f $(docker ps -a -q)
 fi
 
 # Update docker only on Travis.
@@ -26,7 +26,7 @@ if [ ${TRAVIS+x} ]; then
     echo "Updating docker to the latest on Travis."
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt-get update
+    sudo apt-get update -qq
     sudo apt-get -qq -y install docker-ce
 fi
 
@@ -34,9 +34,9 @@ fi
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
     echo "Building our docker base image."
-    docker build -t forseti/base -f setup/docker/base .
+    docker -l error build -t forseti/base -f setup/docker/base .
     echo "Building our Forseti image from the base image."
-    docker build -t forseti/build -f setup/docker/forseti --no-cache .
+    docker -l error build -t forseti/build -f setup/docker/forseti --no-cache .
 else
     echo "Docker must be installed."
 fi
