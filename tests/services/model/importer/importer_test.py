@@ -88,7 +88,6 @@ class ImporterTest(ForsetiTestCase):
                 inventory_info = str(inventory.index)
 
         model = self.model_manager.model(self.model_name)
-        print model
         self.assertIn(model.state,
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
