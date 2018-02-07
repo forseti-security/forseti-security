@@ -19,6 +19,7 @@ echo "Running tests."
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
     docker exec -it build /bin/bash -c "DOCKER_ENV=1 coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
+    bash <(curl -s https://codecov.io/bash)
 else
     # We are NOT on Travis.
     docker exec -it build /bin/bash -c "python -m unittest discover -s . -p '*_test.py'"
