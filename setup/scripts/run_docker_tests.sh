@@ -18,13 +18,13 @@ echo "Running tests."
 # Check to see if we're on Travis.
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
+    # Run our tests with codecov
     docker exec -it build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
-    bash <(curl -s https://codecov.io/bash)
 else
     # We are NOT on Travis.
     docker exec -it build /bin/bash -c "python -m unittest discover -s . -p '*_test.py'"
 fi
 
-echo "Running pylint".
+echo "Running pylint."
 
 docker exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"

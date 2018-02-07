@@ -19,6 +19,8 @@ if [ -x "$(command -v docker)" ]; then
     # Check to see if we're on Travis.
     if [ ${TRAVIS+x} ]; then
         # We are on Travis.
+        # Required for codecov.io to export coverage within a Docker container.
+        CI_ENV=`bash <(curl -s https://codecov.io/env)`
         # Start the container for testing and code verification.
         docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash
     else
