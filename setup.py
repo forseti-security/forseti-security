@@ -77,6 +77,7 @@ def build_forseti_protos(clean_only=False):
     if not clean_only:
         build_protos.make_proto(abs_path)
 
+
 class BuildProtosCommand(install):
     """A command to build protos in all children directories."""
 
@@ -112,9 +113,9 @@ setup(
         'License :: OSI Approved :: Apache Software License'
     ],
     cmdclass={
-        'install': PostInstallCommand,
         'build_protos': BuildProtosCommand,
         'clean_protos': CleanProtosCommand,
+        'install': PostInstallCommand,
     },
     install_requires=REQUIRED_PACKAGES,
     setup_requires=REQUIRED_PACKAGES,
