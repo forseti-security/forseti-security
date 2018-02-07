@@ -24,10 +24,10 @@ fi
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
     echo "Updating docker to the latest on Travis."
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - 1> /dev/null
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt-get update -qq
-    sudo apt-get -qq -y install docker-ce
+    sudo apt-get update -qq 1> /dev/null
+    sudo apt-get -qq -y install docker-ce 1> /dev/null
 fi
 
 # Check to see that the docker command is available to us.
