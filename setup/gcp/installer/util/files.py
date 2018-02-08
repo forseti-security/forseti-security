@@ -20,7 +20,7 @@ import os
 from constants import (
     ROOT_DIR_PATH, INPUT_DEPLOYMENT_TEMPLATE_FILENAME,
     INPUT_CONFIGURATION_TEMPLATE_FILENAME)
-from utils import print_banner, run_command
+from utils import print_banner, run_command, sanitize_conf_values
 
 
 def generate_deployment_templates(template_type, values, datetimestamp):
@@ -94,7 +94,7 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
             ROOT_DIR_PATH, 'configs', template_type, input_template_name))
     forseti_conf_gen = os.path.abspath(
         os.path.join(
-            ROOT_DIR_PATH, 'configs',
+            ROOT_DIR_PATH, 'configs', template_type,
             'forseti_conf_{}_{}.yaml'.format(template_type, datetimestamp)))
 
     conf_values = sanitize_conf_values(vals)
@@ -164,19 +164,3 @@ def copy_file_to_destination(file_path, output_path,
         print(out)
         return True
     return False
-
-
-def sanitize_conf_values(conf_values):
-    """Sanitize the forseti_conf values not to be zero-length strings.
-
-    Args:
-        conf_values (dict): The conf values to replace in the
-            forseti_conf_server.yaml.
-
-    Returns:
-        dict: The sanitized values.
-    """
-    for key in conf_values.keys():
-        if not conf_values[key]:
-            conf_values[key] = '""'
-    return conf_values

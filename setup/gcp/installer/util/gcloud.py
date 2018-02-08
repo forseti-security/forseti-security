@@ -19,7 +19,7 @@ import re
 import sys
 import json
 
-from utils import run_command, print_banner, id_from_name
+from utils import run_command, print_banner, id_from_name, get_choice_id
 from constants import (
     GCLOUD_VERSION_REGEX, GCLOUD_ALPHA_REGEX, GCLOUD_MIN_VERSION,
     MESSAGE_GCLOUD_VERSION_MISMATCH, REQUIRED_APIS, GCP_READ_IAM_ROLES,
@@ -141,7 +141,6 @@ def enable_apis(dry_run=False):
     """
     print_banner('Enabling required APIs')
     if dry_run:
-        # TODO: should we generate a script with the APIs to enable?
         print('This is a dry run, so skipping this step.')
         return
 
@@ -179,8 +178,14 @@ def grant_client_svc_acct_roles(project_id,
         'forseti_project': PROJECT_IAM_ROLES_CLIENT
     }
 
+    # Forseti client doesn't have write access,
+    # no target id and gsuite account are needed
+    enable_write = False
+    target_id = ''
+    gsuite_account = ''
+
     return _grant_svc_acct_roles(
-        False, None, project_id, None,
+        enable_write, target_id, project_id, gsuite_account,
         gcp_service_account, user_can_grant_roles, roles)
 
 
@@ -257,25 +262,25 @@ def _grant_svc_acct_roles(enable_write,
     if enable_write:
         access_target_roles.extend(GCP_WRITE_IAM_ROLES)
 
-    assign_roles_cmds = _assign_roles(roles, target_id, project_id,
-                                      gsuite_service_account,
-                                      gcp_service_account,
-                                      user_can_grant_roles)
+    grant_roles_cmds = _grant_roles(roles, target_id, project_id,
+                                    gsuite_service_account,
+                                    gcp_service_account,
+                                    user_can_grant_roles)
 
-    if assign_roles_cmds:
+    if grant_roles_cmds:
         print(MESSAGE_CREATE_ROLE_SCRIPT)
 
         with open('grant_forseti_roles.sh', 'wt') as roles_script:
             roles_script.write('#!/bin/bash\n\n')
-            for cmd in assign_roles_cmds:
+            for cmd in grant_roles_cmds:
                 roles_script.write('%s\n' % ' '.join(cmd))
         return True
     return False
 
 
-def _assign_roles(roles_map, target_id, project_id,
-                  gsuite_service_account, gcp_service_account,
-                  user_can_grant_roles):
+def _grant_roles(roles_map, target_id, project_id,
+                 gsuite_service_account, gcp_service_account,
+                 user_can_grant_roles):
     """Assign the corresponding roles to users
 
     Args:
@@ -323,7 +328,8 @@ def _grant_role(role, resource_args, resource_id,
                                      access to grant roles
 
     Returns:
-        str: A command to grant the IAM role
+        str: A command to grant the IAM role if the role was
+            not granted successfully
     """
     iam_role_cmd = ['gcloud']
     iam_role_cmd.extend(resource_args)
@@ -449,7 +455,7 @@ def create_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
         choice_index = 1
     else:
         print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
-        choice_index = _get_choice_id(choices, print_fun)
+        choice_index = get_choice_id(choices, print_fun)
 
     # If the choice is "Create service account", create the service
     # account. The default is to create the service account with a
@@ -462,7 +468,8 @@ def create_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
     elif choice_index == 1:
         return_code, out, err = run_command(
             ['gcloud', 'iam', 'service-accounts', 'create',
-             acct_id[:acct_id.index('@')], '--display-name', acct_type])
+             acct_id[:acct_id.index('@')], '--display-name',
+             acct_id[:acct_id.index('@')]])
         if return_code:
             print(err)
             print('Could not create the service account. Terminating '
@@ -488,37 +495,10 @@ def create_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
                                            .format(ind+1,
                                                    val.get('displayName', ''),
                                                    val['email']))
-        acct_idx = _get_choice_id(svc_accts, print_fun)
+        acct_idx = get_choice_id(svc_accts, print_fun)
         acct_id = svc_accts[acct_idx - 1]['email']
 
     return acct_id
-
-
-def _get_choice_id(choices, print_function):
-    """Get choice id from user
-
-    Args:
-        choices (list): A list of choices
-        print_function (function): Print function
-    Returns:
-        int: choice id
-    """
-    while True:
-        for (i, choice) in enumerate(choices):
-            print_function(i, choice)
-
-        choice_input = raw_input(
-            'Enter the number of your choice: ').strip()
-
-        try:
-            choice_index = int(choice_input)
-            if choice_index < 1 or choice_index > len(choices):
-                raise ValueError
-            else:
-                break
-        except ValueError:
-            print('Invalid choice "%s", try again' % choice_input)
-    return choice_index
 
 
 def check_billing_enabled(project_id, organization_id):
@@ -627,6 +607,7 @@ def get_forseti_server_info():
     Returns:
         str: IP address of the forseti server application
         str: Zone of the forseti server application, default to 'us-central1-c'
+        str: Name of the forseti server instance
     """
     return_code, out, err = run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
@@ -642,8 +623,108 @@ def get_forseti_server_info():
                 zone = instance.get('zone').split("/zones/")[1]
                 network_interfaces = instance.get('networkInterfaces')
                 internal_ip = network_interfaces[0].get('networkIP')
-                return internal_ip, zone
+                name = instance.get('name')
+                return internal_ip, zone, name
+        print('No forseti server detected, you will need to install'
+              ' forseti server before installing the client, exiting...')
+        sys.exit(1)
     except ValueError:
         print('Error retrieving forseti server ip address, '
               'will leave the server ip empty for now.')
-    return '', 'us-central1-c'
+    return '', 'us-central1-c', ''
+
+
+def create_firewall_rule(rule_name,
+                         service_accounts,
+                         action,
+                         rules,
+                         direction,
+                         priority):
+    """Create a firewall rule for a specific gcp service account.
+
+    Args:
+        rule_name (str): Name of the firewall rule
+        service_accounts (list): Target service account
+        action (FirewallRuleAction): ALLOW or DENY
+        rules (list): [PROTOCOL[:PORT[-PORT]],...]
+                    will not be used if action is passed in
+        direction (FirewallRuleDirection): INGRESS, EGRESS, IN or OUT
+        priority (int): Integer between 0 and 65535
+    Raises:
+        Exception: Not enough arguments to execute command
+    """
+    format_service_accounts = ','.join(service_accounts)
+    rule_name = rule_name.lower()
+    format_rules = ','.join(rules)
+    gcloud_command_args = ['gcloud', 'compute', 'firewall-rules', 'create',
+                           rule_name, '--action', action.value,
+                           '--target-service-accounts',
+                           format_service_accounts, '--priority',
+                           str(priority), '--direction', direction.value,
+                           '--rules', format_rules]
+    return_code, _, err = run_command(gcloud_command_args)
+    if return_code:
+        print (err)
+
+
+def enable_os_login(instance_name, zone):
+    """Enable os login for the given VM instance.
+
+    Args:
+        instance_name (str): Name of the VM instance
+        zone (str): Zone of the VM instance
+    """
+    gcloud_command_args = ['gcloud', 'compute', 'instances', 'add-metadata',
+                           instance_name, '--metadata', 'enable-oslogin=TRUE',
+                           '--zone', zone]
+
+    return_code, _, err = run_command(gcloud_command_args)
+    if return_code:
+        print (err)
+
+
+def create_deployment(project_id,
+                      organization_id,
+                      deploy_tpl_path,
+                      template_type,
+                      datetimestamp,
+                      dry_run):
+    """Create the GCP deployment.
+
+    Args:
+        project_id (str): GCP project id
+        organization_id (str): GCP organization id
+        deploy_tpl_path (str): Path of deployment template
+        template_type (str): Type of the template (client/server)
+        datetimestamp (str): Timestamp
+        dry_run (bool): Whether the installer is in dry run mode
+
+    Returns:
+        str: Name of the deployment
+        int: The return code value of running `gcloud` command to create
+            the deployment.
+    """
+    print_banner('Create Forseti deployment')
+
+    if dry_run:
+        print('This is a dry run, so skipping this step.')
+        return 0
+
+    print ('This may take a few minutes.')
+    deployment_name = 'forseti-security-{}-{}'.format(template_type,
+                                                      datetimestamp)
+    print('Deployment name: {}'.format(deployment_name))
+    print('Deployment Manager Dashboard: '
+          'https://console.cloud.google.com/deployments/details/'
+          '{}?project={}&organizationId={}\n'.format(
+              deployment_name, project_id, organization_id))
+    return_code, out, err = run_command(
+        ['gcloud', 'deployment-manager', 'deployments', 'create',
+         deployment_name, '--config={}'.format(deploy_tpl_path)])
+    if return_code:
+        print(err)
+    else:
+        print(out)
+        print('\nCreated deployment successfully.')
+
+    return deployment_name, return_code

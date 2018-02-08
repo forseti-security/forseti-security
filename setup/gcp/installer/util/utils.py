@@ -22,7 +22,6 @@ from __future__ import print_function
 import subprocess
 import re
 import os
-import time
 
 from constants import (
     VERSIONFILE_REGEX, FORSETI_SRC_PATH, SERVICE_ACCT_EMAIL_FMT,
@@ -30,7 +29,7 @@ from constants import (
 
 
 def id_from_name(name):
-    """Extract the id (number) from the resource name.
+    """Extract the id from the resource name.
 
     Args:
         name (str): The name of the resource, formatted as
@@ -206,52 +205,65 @@ def infer_version(advanced_mode):
     return branch
 
 
-def create_deployment(project_id,
-                      organization_id,
-                      deploy_tpl_path,
-                      template_type,
-                      datetimestamp,
-                      dry_run):
-    """Create the GCP deployment.
+def get_zone_from_bucket_location(bucket_location):
+    """Get zone from bucket location.
 
     Args:
-        project_id (str): GCP project id
-        organization_id (str): GCP organization id
-        deploy_tpl_path (str): Path of deployment template
-        template_type (str): Type of the template (client/server)
-        datetimestamp (str): Timestamp
-        dry_run (bool): Whether the installer is in dry run mode
+        bucket_location (str): Bucket location
 
     Returns:
-        str: Name of the deployment
-        int: The return code value of running `gcloud` command to create
-            the deployment.
+        str: Zone for that given bucket location
     """
-    print_banner('Create Forseti deployment')
 
-    if dry_run:
-        print('This is a dry run, so skipping this step.')
-        return 0
+    return '{}-c'.format(bucket_location)
 
-    print ('This may take a few minutes.')
-    deployment_name = 'forseti-security-{}-{}'.format(template_type,
-                                                      datetimestamp)
-    print('Deployment name: {}'.format(deployment_name))
-    print('Deployment Manager Dashboard: '
-          'https://console.cloud.google.com/deployments/details/'
-          '{}?project={}&organizationId={}\n'.format(
-              deployment_name, project_id, organization_id))
-    return_code, out, err = run_command(
-        ['gcloud', 'deployment-manager', 'deployments', 'create',
-         deployment_name, '--config={}'.format(deploy_tpl_path)])
-    time.sleep(2)
-    if return_code:
-        print(err)
-    else:
-        print(out)
-        print('\nCreated deployment successfully.')
 
-    return deployment_name, return_code
+def get_choice_id(choices, print_function):
+    """Get choice id from user
+
+    Args:
+        choices (list): A list of choices
+        print_function (method): Print function
+    Returns:
+        int: choice id
+    """
+    while True:
+        for (i, choice) in enumerate(choices):
+            print_function(i, choice)
+
+        choice_input = raw_input(
+            'Enter the number of your choice: ').strip()
+
+        try:
+            choice_index = int(choice_input)
+            if choice_index < 1 or choice_index > len(choices):
+                raise ValueError
+            else:
+                break
+        except ValueError:
+            print('Invalid choice "%s", try again' % choice_input)
+    return choice_index
+
+
+def extract_timestamp_from_name(instance_name, include_date=False):
+    """Extract timestamp from instance name.
+
+    Example instance_name: forseti-security-server-20180207125916-vm
+    Example output: '125916' if include_date is false,
+                    '20180207125916' otherwise
+    Args:
+        instance_name (str): Name of the instance
+        include_date (bool): Include date in the timestamp
+
+    Returns:
+        str: Timestamp
+    """
+    if instance_name is None:
+        return ''
+
+    if include_date:
+        return instance_name.split('-')[-2]
+    return instance_name.split('-')[-2][8:]
 
 
 def run_command(cmd_args):
@@ -270,3 +282,19 @@ def run_command(cmd_args):
                             stderr=subprocess.PIPE)
     out, err = proc.communicate()
     return proc.returncode, out, err
+
+
+def sanitize_conf_values(conf_values):
+    """Sanitize the forseti_conf values not to be zero-length strings.
+
+    Args:
+        conf_values (dict): The conf values to replace in the
+            forseti_conf_server.yaml.
+
+    Returns:
+        dict: The sanitized values.
+    """
+    for key in conf_values.keys():
+        if not conf_values[key]:
+            conf_values[key] = '""'
+    return conf_values

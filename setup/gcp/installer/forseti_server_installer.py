@@ -28,10 +28,12 @@ from util.constants import (
     QUESTION_SENDGRID_API_KEY, NOTIFICATION_SENDER_EMAIL, MESSAGE_SKIP_EMAIL,
     QUESTION_NOTIFICATION_RECIPIENT_EMAIL, QUESTION_GSUITE_SUPERADMIN_EMAIL,
     MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,
-    MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION)
+    MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION,
+    FirewallRuleAction, FirewallRuleDirection)
 from util.gcloud import (
     enable_apis, create_reuse_service_acct, choose_organization,
-    choose_folder, choose_project, grant_server_svc_acct_roles)
+    choose_folder, choose_project, grant_server_svc_acct_roles,
+    create_firewall_rule)
 from configs.server_config import ServerConfig
 
 
@@ -103,7 +105,35 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
+        # Create firewall rule to block out all the ingress traffic
+        create_firewall_rule(
+            self.format_firewall_rule_name('forseti-server-deny-all'),
+            [self.gcp_service_account],
+            FirewallRuleAction.DENY,
+            ['icmp', 'udp', 'tcp'],
+            FirewallRuleDirection.INGRESS,
+            1)
+
+        # Create firewall rule to allow only port tcp:50051
+        create_firewall_rule(
+            self.format_firewall_rule_name('forseti-server-allow-grpc'),
+            [self.gcp_service_account],
+            FirewallRuleAction.ALLOW,
+            ['tcp:50051'],
+            FirewallRuleDirection.INGRESS,
+            1)
         return success, deployment_name
+
+    def format_firewall_rule_name(self, rule_name):
+        """Format firewall rule name.
+
+        Args:
+            rule_name (str): Name of the firewall rule
+
+        Returns:
+            str: Firewall rule name
+        """
+        return '{}-{}'.format(rule_name, self.config.datetimestamp)
 
     def should_setup_explain(self):
         """Ask user if they want to configure setup for Explain."""
@@ -146,10 +176,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti deployment template
         """
+        bucket_name = self.generate_bucket_name(self.project_id,
+                                                self.config.timestamp)
         return {
             'CLOUDSQL_REGION': self.config.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
-            'SCANNER_BUCKET': self.generate_bucket_name()[len('gs://'):],
+            'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
             'SERVICE_ACCOUNT_GSUITE': self.gsuite_service_account,
@@ -166,11 +198,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti configuration file
         """
+        bucket_name = self.generate_bucket_name(self.project_id,
+                                                self.config.timestamp)
         return {
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
-            'SCANNER_BUCKET': self.generate_bucket_name()[len('gs://'):],
+            'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ENABLE_GROUP_SCANNER': 'true',
         }

@@ -26,6 +26,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
     # Class variables initialization
     server_ip = ''
     server_zone = ''
+    server_name = ''
 
     def __init__(self, **kwargs):
         """Init
@@ -35,7 +36,8 @@ class ForsetiClientInstaller(ForsetiInstaller):
         """
         super(ForsetiClientInstaller, self).__init__()
         self.config = ClientConfig(**kwargs)
-        self.server_ip, self.server_zone = get_forseti_server_info()
+        (self.server_ip, self.server_zone,
+         self.server_name) = get_forseti_server_info()
 
     def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template.
@@ -58,7 +60,6 @@ class ForsetiClientInstaller(ForsetiInstaller):
                 self.project_id,
                 self.gcp_service_account,
                 self.user_can_grant_roles)
-
         return success, deployment_name
 
     def get_configuration_values(self):
@@ -79,8 +80,10 @@ class ForsetiClientInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti deployment template
         """
+        bucket_name = self.generate_bucket_name(self.project_id,
+                                                self.config.timestamp)
         return {
-            'SCANNER_BUCKET': self.generate_bucket_name()[len('gs://'):],
+            'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),

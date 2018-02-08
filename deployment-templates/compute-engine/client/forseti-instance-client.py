@@ -35,14 +35,15 @@ mv forseti-security-{release_version} forseti-security
             src_path=context.properties['src-path'],
             release_version=context.properties['release-version'])
 
-    FORSETI_CONF = 'gs://{}/configs/forseti_conf_client.yaml'.format(
-        context.properties['gcs-bucket'])
+    FORSETI_CLIENT_CONF = ('gs://{bucket_name}/configs/'
+                           '{bucket_name}/forseti_conf_client.yaml').format(
+        bucket_name=context.properties['gcs-bucket'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     PERSIST_FORSETI_VARS = (
         '\nexport FORSETI_HOME={forseti_home}\n'
-        'export FORSETI_CONF={forseti_conf}\n'
+        'export FORSETI_CLIENT_CONFIG={forseti_client_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
-                 forseti_conf=FORSETI_CONF)
+                 forseti_client_conf=FORSETI_CLIENT_CONF)
 
     resources = []
 
@@ -124,35 +125,31 @@ pip install grpcio grpcio-tools google-apputils
 {download_forseti}
 cd forseti-security
 
-# Set ownership of config and rules to $USER
-chown -R $USER {forseti_home}/configs {forseti_home}/rules
-
 # Build protos.
 python build_protos.py --clean
 
 # Install Forseti
 python setup.py install
 
+# Set ownership of the forseti project to $USER
+chown -R $USER {forseti_home}
+
 # Export variables
-echo "{persist_forseti_vars}"
-echo $USER_HOME"/.bashrc"
-echo "{persist_forseti_vars}" >> $USER_HOME/.bashrc
+{persist_forseti_vars}
+
+sudo echo "{persist_forseti_vars}" >> /etc/profile.d/forseti-env-vars.sh
 
 echo "Execution of startup script finished"
 """.format(
-    # Install Forseti.
-    download_forseti=DOWNLOAD_FORSETI,
+                        # Install Forseti.
+                        download_forseti=DOWNLOAD_FORSETI,
 
-    # Set ownership for Forseti conf and rules dirs
-    forseti_home=FORSETI_HOME,
+                        # Set ownership for Forseti conf and rules dirs
+                        forseti_home=FORSETI_HOME,
 
-    # Env variables for Forseti
-    persist_forseti_vars=PERSIST_FORSETI_VARS,
-
-    # Download the Forseti conf and rules.
-    forseti_conf=FORSETI_CONF,
-
-)
+                        # Env variables for Forseti
+                        persist_forseti_vars=PERSIST_FORSETI_VARS,
+                    )
                 }]
             }
         }

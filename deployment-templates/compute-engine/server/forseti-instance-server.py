@@ -44,7 +44,7 @@ mv forseti-security-{release_version} forseti-security
     SCANNER_BUCKET = context.properties['scanner-bucket']
     FORSETI_DB_NAME = context.properties['database-name']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_CONF = '%s/configs/forseti_conf_server.yaml'.format(FORSETI_HOME)
+    FORSETI_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
     GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
     GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
@@ -67,7 +67,7 @@ mv forseti-security-{release_version} forseti-security
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
-        'export FORSETI_CONF={forseti_conf}\n'
+        'export FORSETI_SERVER_CONF={forseti_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_conf=FORSETI_CONF)
 
@@ -165,9 +165,6 @@ pip install --upgrade pip
 pip install --upgrade setuptools
 pip install -r setup/dependencies/pip_packages.txt
 
-# Set ownership of config and rules to $USER
-chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
-
 # Build protos.
 python setup/utils/build_protos.py --clean
 
@@ -179,6 +176,9 @@ python setup.py install
 
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
+
+# Set ownership of the project to $USER
+chown -R $USER {forseti_home}
 
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server

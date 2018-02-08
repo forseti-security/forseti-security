@@ -10,7 +10,7 @@ import tempfile
 import filecmp
 import os
 
-import scripts.gcp_setup.installer.util.files as files
+import setup.gcp.installer.util.files as files
 
 from tests.unittest_utils import ForsetiTestCase
 
@@ -20,28 +20,6 @@ TEST_TMP_DIR_PREFIX = 'forseti-test-'
 
 
 class FilesModuleTest(ForsetiTestCase):
-
-    def test_sanitize_conf_values_normal_input(self):
-        """Normal config values"""
-        input_conf = {
-            'apple': '12',
-            'orange': '5',
-            'banana': ''
-        }
-        expected_conf = {
-            'apple': '12',
-            'orange': '5',
-            'banana': '""'
-        }
-        self.assertEquals(
-            files.sanitize_conf_values(input_conf), expected_conf)
-
-    def test_sanitize_conf_values_empty_input(self):
-        """empty config values"""
-        input_conf = {}
-        expected_conf = {}
-        self.assertEquals(
-            files.sanitize_conf_values(input_conf), expected_conf)
 
     def test_generate_file_from_template_forseti_conf_client(self):
         """Test generation of forseti_conf client template"""

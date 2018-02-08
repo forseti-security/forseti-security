@@ -15,6 +15,20 @@
 """ Constants used for the setup of Forseti"""
 
 import os
+from enum import Enum
+
+
+class FirewallRuleAction(Enum):
+    """Firewall rule action object"""
+    ALLOW = 'ALLOW'
+    DENY = 'DENY'
+
+
+class FirewallRuleDirection(Enum):
+    """Firewall rule direction object"""
+    INGRESS = 'INGRESS'
+    EGRESS = 'EGRESS'
+
 
 CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
 
@@ -125,7 +139,8 @@ RULES_DIR_PATH = os.path.abspath(
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
 
-FORSETI_CONF_PATH = '{}/configs/forseti_conf_{}.yaml'
+FORSETI_CONF_PATH = ('{bucket_name}/configs/{template_type}/'
+                     'forseti_conf_{template_type}.yaml')
 
 DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'
 
@@ -217,11 +232,12 @@ MESSAGE_NO_CLOUD_SHELL = (
     'i.e.\n\n    python setup_forseti.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
-    'A Forseti configuration file (configs/forseti_conf_{}.yaml) '
+    'A Forseti configuration file (configs/{template_type}/'
+    'forseti_conf_{template_type}_{datetimestamp}.yaml) '
     'has been generated. If you wish to change your '
     'Forseti configuration or rules, e.g. enabling G Suite '
     'Groups collection, either download the conf file in '
-    'your bucket `{}` or edit your local copy, then follow '
+    'your bucket `{bucket_name}` or edit your local copy, then follow '
     'the guide below to copy the files to Cloud Storage:\n\n'
     '    http://forsetisecurity.org/docs/howto/deploy/'
     'gcp-deployment.html#move-configuration-to-gcs\n\n')

@@ -1029,7 +1029,7 @@ class DefaultConfig(dict):
             str: Forseti server endpoint
         """
         try:
-            conf_path = os.environ['FORSETI_CONF']
+            conf_path = os.environ['FORSETI_CLIENT_CONFIG']
             configs = file_loader.read_and_parse_file(conf_path)
             server_ip = configs.get('server_ip')
             if server_ip:
@@ -1136,7 +1136,7 @@ def get_config_path():
     """
 
     default_path = os.path.join(os.getenv('HOME'), '.forseti')
-    config_path = read_env('FORSETI_CONFIG', default_path)
+    config_path = read_env('FORSETI_SERVER_CONFIG', default_path)
     return config_path
 
 

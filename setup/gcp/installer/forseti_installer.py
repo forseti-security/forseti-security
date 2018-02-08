@@ -20,7 +20,7 @@ from abc import abstractmethod
 
 from util.utils import (
     print_banner, get_forseti_version, format_service_acct_id,
-    infer_version, create_deployment)
+    infer_version)
 from util.constants import (
     FORSETI_CONF_PATH, RULES_DIR_PATH, DEFAULT_BUCKET_FMT,
     MESSAGE_FORSETI_BRANCH_DEPLOYED, MESSAGE_DEPLOYMENT_HAD_ISSUES,
@@ -29,7 +29,7 @@ from util.constants import (
     MESSAGE_FORSETI_CONFIGURATION_GENERATED, DEPLOYMENT_TEMPLATE_OUTPUT_PATH)
 from util.gcloud import (
     create_reuse_service_acct, check_billing_enabled, lookup_organization,
-    get_gcloud_info, verify_gcloud_information)
+    get_gcloud_info, verify_gcloud_information, create_deployment)
 from util.files import (
     copy_file_to_destination, generate_deployment_templates,
     generate_forseti_conf)
@@ -61,7 +61,8 @@ class ForsetiInstaller:
         self.preflight_checks()
 
         # Deployment
-        bucket_name = self.generate_bucket_name()
+        bucket_name = self.generate_bucket_name(self.project_id,
+                                                self.config.timestamp)
         conf_file_path = self.generate_forseti_conf()
         deployment_tpl_path = self.generate_deployment_templates()
 
@@ -117,8 +118,8 @@ class ForsetiInstaller:
             # If deployed successfully, copy configuration file, deployment
             # template file and rule files to the GCS bucket
             conf_output_path = FORSETI_CONF_PATH.format(
-                bucket_name,
-                self.config.template_type)
+                bucket_name=bucket_name,
+                template_type=self.config.template_type)
             copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -147,14 +148,18 @@ class ForsetiInstaller:
                                                           self.config.timestamp,
                                                           self.project_id)
 
-    def generate_bucket_name(self):
-        """Generate bucket name for the rules.
+    @staticmethod
+    def generate_bucket_name(project_id, timestamp):
+        """Generate GCS bucket name.
+
+        Args:
+            project_id (str): Project Id
+            timestamp (str): Timestamp
 
         Returns:
             str: Name of the GCS bucket
         """
-        return DEFAULT_BUCKET_FMT.format(
-            self.project_id, self.config.timestamp)
+        return DEFAULT_BUCKET_FMT.format(project_id, timestamp)
 
     @abstractmethod
     def get_deployment_values(self):
@@ -213,9 +218,10 @@ class ForsetiInstaller:
                                                   conf_values,
                                                   self.config.datetimestamp)
 
-        print('\nCreated forseti_conf_%s.yaml config file:\n    %s\n' %
-              (self.config.datetimestamp,
-               forseti_conf_path))
+        print('\nCreated forseti_conf_{}_{}.yaml config file:\n    {}\n'.
+              format(self.config.template_type,
+                     self.config.datetimestamp,
+                     forseti_conf_path))
         return forseti_conf_path
 
     def post_install_instructions(self, deploy_success, deployment_name,
@@ -259,4 +265,6 @@ class ForsetiInstaller:
                 self.organization_id))
 
             print(MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
-                self.config.datetimestamp, bucket_name))
+                template_type=self.config.template_type,
+                datetimestamp=self.config.datetimestamp,
+                bucket_name=bucket_name))
