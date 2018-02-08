@@ -17,7 +17,7 @@
 import json
 
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-arguments
 class BigqueryAccessControls(object):
     """BigQuery ACL Resource."""
 
