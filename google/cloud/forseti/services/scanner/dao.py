@@ -47,13 +47,15 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
-        inventory_id = Column(String(256))
+        inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
+        full_name = Column(String(1024))
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
         violation_type = Column(String(256), nullable=False)
         data = Column(Text)
+        inventory_data = Column(Text)
 
         def __repr__(self):
             """String representation.
@@ -92,23 +94,25 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations, inventory_id):
+        def create(self, violations, inventory_index_id):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
-                inventory_id (str): Id of the inventory index.
+                inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
                 for violation in violations:
                     violation = self.TBL_VIOLATIONS(
-                        inventory_id=inventory_id,
+                        inventory_index_id=inventory_index_id,
                         resource_id=violation.get('resource_id'),
                         resource_type=violation.get('resource_type'),
+                        full_name=violation.get('full_name'),
                         rule_name=violation.get('rule_name'),
                         rule_index=violation.get('rule_index'),
                         violation_type=violation.get('violation_type'),
-                        data=json.dumps(violation.get('violation_data'))
+                        data=json.dumps(violation.get('violation_data')),
+                        inventory_data=violation.get('inventory_data')
                     )
                     session.add(violation)
 

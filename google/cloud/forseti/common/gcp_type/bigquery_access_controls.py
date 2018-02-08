@@ -21,13 +21,15 @@ import json
 class BigqueryAccessControls(object):
     """BigQuery ACL Resource."""
 
-    def __init__(self, project_id, dataset_id, special_group, user_email,
-                 domain, group_email, role, view, raw_json):
+    def __init__(self, project_id, dataset_id, full_name,
+                 special_group, user_email, domain, group_email, role,
+                 view, raw_json):
         """Initialize.
 
         Args:
             project_id (str): the project id
             dataset_id (str): BigQuery dataset_id
+            full_name (str): The full resource name and ancestory.
             special_group (str): BigQuery access_special_group
             user_email (str): BigQuery access_by_user_email
             domain (str): BigQuery access_domain
@@ -39,6 +41,7 @@ class BigqueryAccessControls(object):
         """
         self.project_id = project_id
         self.dataset_id = dataset_id
+        self.full_name = full_name
         self.special_group = special_group
         self.user_email = user_email
         self.domain = domain
@@ -48,12 +51,13 @@ class BigqueryAccessControls(object):
         self.json = raw_json
 
     @classmethod
-    def from_dict(cls, project_id, dataset_id, acl):
+    def from_dict(cls, project_id, dataset_id, full_name, acl):
         """Returns a new BigqueryAccessControls object from dict.
 
         Args:
             project_id (str): the project id
             dataset_id (str): BigQuery dataset_id
+            full_name (str): The full resource name and ancestory.
             acl (dict): The Bigquery Dataset Access ACL.
 
         Returns:
@@ -62,6 +66,7 @@ class BigqueryAccessControls(object):
         return cls(
             project_id=project_id,
             dataset_id=dataset_id,
+            full_name=full_name,
             domain=acl.get('domain', ''),
             user_email=acl.get('userByEmail', ''),
             special_group=acl.get('specialGroup', ''),
@@ -72,12 +77,13 @@ class BigqueryAccessControls(object):
         )
 
     @staticmethod
-    def from_json(project_id, dataset_id, acls):
+    def from_json(project_id, dataset_id, full_name, acls):
         """Yields a new BigqueryAccessControls object from for each acl.
 
         Args:
             project_id (str): the project id
             dataset_id (str): BigQuery dataset_id
+            full_name (str): The full resource name and ancestory.
             acls (str): The json dataset access list.
 
         Yields:
@@ -87,7 +93,7 @@ class BigqueryAccessControls(object):
         acls = json.loads(acls)
         for acl in acls:
             yield BigqueryAccessControls.from_dict(
-                project_id, dataset_id, acl)
+                project_id, dataset_id, full_name, acl)
 
     def __hash__(self):
         """Return hash of properties.

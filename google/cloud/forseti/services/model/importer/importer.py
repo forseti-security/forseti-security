@@ -170,7 +170,7 @@ class InventoryImporter(object):
 
                 self.model.add_description(json.dumps({
                     'source': 'inventory',
-                    'source_info': {'inventory_id': inventory.index.id},
+                    'source_info': {'inventory_index_id': inventory.index.id},
                     'pristine': True
                     }))
 
