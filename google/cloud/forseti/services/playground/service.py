@@ -14,30 +14,28 @@
 
 """ Playground gRPC service. """
 
-import time
-from concurrent import futures
-import grpc
-
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playgrounder
 from google.cloud.forseti.common.util import log_util
 
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-
 LOGGER = log_util.get_logger(__name__)
 
-# pylint: disable=no-self-use
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     """Playground gRPC handler."""
 
     HANDLE_KEY = "handle"
 
     def _get_handle(self, context):
-        """Extract the model handle from the gRPC context."""
+        """Extract the model handle from the gRPC context.
+
+        Args:
+            context (object): GRPC context
+
+        Returns:
+            str: handle of the GRPC call
+        """
         metadata = context.invocation_metadata()
         metadata_dict = {}
         for key, value in metadata:
@@ -45,16 +43,35 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, playgrounder_api):
+        """Args:
+            playgrounder_api(object): playgrounder library
+        """
         super(GrpcPlaygrounder, self).__init__()
         self.playgrounder = playgrounder_api
 
     def Ping(self, request, _):
-        """Ping implemented to check service availability."""
+        """Ping implemented to check service availability.
+
+        Args:
+            request (object): gRPC request
+            _ (object): not used
+
+        Returns:
+            object: pb2 object of Ping
+        """
         LOGGER.debug("request.data = %s", request.data)
         return playground_pb2.PingReply(data=request.data)
 
     def SetIamPolicy(self, request, context):
-        """Sets the policy for a resource."""
+        """Sets the policy for a resource.
+
+        Args:
+            request (object): gRPC request
+            context (object): gRPC context
+
+        Returns:
+            object: pb2 object of SetIamPolicy (blank)
+        """
         handle = self._get_handle(context)
         policy = {'etag': request.policy.etag, 'bindings': {}}
         for binding in request.policy.bindings:
@@ -67,7 +84,15 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         return playground_pb2.SetIamPolicyReply()
 
     def AddGroupMember(self, request, context):
-        """Adds a member to the model."""
+        """Adds a member to the model.
+
+        Args:
+            request (object): gRPC request
+            context (object): gRPC context
+
+        Returns:
+            object: pb2 object of AddGroupMember (blank)
+        """
         handle = self._get_handle(context)
         self.playgrounder.add_group_member(handle,
                                            request.member_type_name,
@@ -75,7 +100,15 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         return playground_pb2.AddGroupMemberReply()
 
     def DeleteGroupMember(self, request, context):
-        """Deletes a member from the model."""
+        """Deletes a member from the model.
+
+        Args:
+            request (object): gRPC request
+            context (object): gRPC context
+
+        Returns:
+            object: pb2 object of DeleteGroupMember (blank)
+        """
         handle = self._get_handle(context)
         self.playgrounder.delete_group_member(handle,
                                               request.member_name,
@@ -84,14 +117,30 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         return playground_pb2.DeleteGroupMemberReply()
 
     def DeleteRole(self, request, context):
-        """Deletes a role within the model."""
+        """Deletes a role within the model.
+
+        Args:
+            request (object): gRPC request
+            context (object): gRPC context
+
+        Returns:
+            object: pb2 object of DeleteRole (Blank)
+        """
         handle = self._get_handle(context)
         self.playgrounder.delete_role(handle,
                                       request.role_name)
         return playground_pb2.DeleteRoleReply()
 
     def AddRole(self, request, context):
-        """Adds a role to the model."""
+        """Adds a role to the model.
+
+        Args:
+            request (object): gRPC request
+            context (object): gRPC context
+
+        Returns:
+            object: pb2 object of AddRole (Blank)
+        """
         handle = self._get_handle(context)
         self.playgrounder.add_role(handle,
                                    request.role_name,
@@ -103,10 +152,20 @@ class GrpcPlaygrounderFactory(object):
     """Factory class for Playground service gRPC interface"""
 
     def __init__(self, config):
+        """Args:
+            config(object): ServiceConfig in server
+        """
         self.config = config
 
     def create_and_register_service(self, server):
-        """Creates a playground service and registers it in the server"""
+        """Creates a playground service and registers it in the server
+
+        Args:
+            server (object): Server to register service to.
+
+        Returns:
+            object: The instantiated gRPC service for playground.
+        """
 
         service = GrpcPlaygrounder(
             playgrounder_api=playgrounder.Playgrounder(
@@ -114,33 +173,3 @@ class GrpcPlaygrounderFactory(object):
         playground_pb2_grpc.add_PlaygroundServicer_to_server(service, server)
         LOGGER.info("service %s created and registered", service)
         return service
-
-
-def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
-    """Test function to serve playground service as standalone."""
-
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers))
-    GrpcPlaygrounderFactory(config).create_and_register_service(server)
-    server.add_insecure_port(endpoint)
-    server.start()
-    while True:
-        try:
-            time.sleep(1)
-            print "Looping\n"
-        except KeyboardInterrupt:
-            server.stop(wait_shutdown_secs).wait()
-            return
-
-
-if __name__ == "__main__":
-    class DummyConfig(object):
-        """Dummy configuration for testing."""
-
-        def run_in_background(self, function):
-            """Dummy method, does not run in background."""
-
-            function()
-
-    import sys
-    serve(endpoint=sys.argv[1] if len(sys.argv) >
-          1 else '[::]:50051', config=DummyConfig())

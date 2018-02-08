@@ -30,9 +30,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from google.cloud.forseti.services.inventory.base.storage import \
     Storage as BaseStorage
 
-# TODO: Remove this when time allows
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
@@ -310,7 +308,11 @@ class Inventory(BASE):
         self.error = new_row.error
 
     def __repr__(self):
-        """String representation of the database row object."""
+        """String representation of the database row object.
+
+        Returns:
+            str: A description of inventory_index
+        """
 
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
@@ -404,6 +406,10 @@ class BufferedDbWriter(object):
     """Buffered db writing."""
 
     def __init__(self, session, max_size=1024):
+        """Args:
+            session(object): db session
+            max_size(int): max size of buffer
+        """
         self.session = session
         self.buffer = []
         self.max_size = max_size
@@ -436,7 +442,10 @@ class DataAccess(object):
 
         Args:
             session (object): Database session.
-            inventory_id (int): Id specifying which inventory to delete.
+            inventory_id (str): Id specifying which inventory to delete.
+
+        Returns:
+            InventoryIndex: An expunged entry corresponding the inventory_id
 
         Raises:
             Exception: Reraises any exception.
@@ -475,7 +484,7 @@ class DataAccess(object):
 
         Args:
             session (object): Database session
-            inventory_id (int): Inventory id
+            inventory_id (str): Inventory id
 
         Returns:
             InventoryIndex: Entry corresponding the id
@@ -503,6 +512,11 @@ class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
     def __init__(self, session, existing_id=None, readonly=False):
+        """Args:
+            session(object): db session
+            existing_id(str): The inventory id if wants to open an existing one
+            readonly(bool): whether to keep the inventory read-only
+        """
         self.session = session
         self.opened = False
         self.index = None
@@ -542,6 +556,9 @@ class Storage(BaseStorage):
 
     def _open(self, existing_id):
         """Open an existing inventory.
+
+        Args:
+            existing_id(str): the id of the inventory to open
 
         Returns:
             object: The inventory db row.
@@ -583,11 +600,11 @@ class Storage(BaseStorage):
         """Open the storage, potentially create a new index.
 
         Args:
-            handle (int): If None, create a new index instead
+            handle (str): If None, create a new index instead
                           of opening an existing one.
 
         Returns:
-            int: Index number of the opened or created inventory.
+            str: Index id of the opened or created inventory.
 
         Raises:
             Exception: if open was called more than once
@@ -717,10 +734,10 @@ class Storage(BaseStorage):
         self.index.set_error(self.session, message)
 
     def warning(self, message):
-        """Store a fatal error in storage. This will help debug problems.
+        """Store a Warning message in storage. This will help debug problems.
 
         Args:
-            message (str): Error message describing the problem.
+            message (str): Warning message describing the problem.
 
         Raises:
             Exception: If the storage was opened readonly.
@@ -814,7 +831,11 @@ class Storage(BaseStorage):
     # pylint: enable=too-many-locals
 
     def __enter__(self):
-        """To support with statement for auto closing."""
+        """To support with statement for auto closing.
+
+        Returns:
+            Storage: The inventory storage object
+        """
 
         self.open()
         return self

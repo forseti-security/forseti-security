@@ -17,16 +17,15 @@
 from google.cloud.forseti.services.model.importer import importer
 from google.cloud.forseti.common.util import log_util
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
-
 LOGGER = log_util.get_logger(__name__)
 
 class Modeller(object):
     """Implements the Modeller API."""
 
     def __init__(self, config):
+        """Args:
+            config(object): ServiceConfig in server
+        """
         self.config = config
 
     def create_model(self, source, name, inventory_id, background):
@@ -68,19 +67,34 @@ class Modeller(object):
         return model_manager.model(model_handle, expunge=True)
 
     def list_model(self):
-        """Lists all models."""
+        """Lists all models.
+
+        Returns:
+            list: list of Models in dao
+        """
 
         model_manager = self.config.model_manager
         return model_manager.models()
 
     def get_model(self, model):
-        """Get details of a model by name or handle."""
+        """Get details of a model by name or handle.
+
+        Args:
+            model (str): name or handle of the model to query
+
+        Returns:
+            Model: db Model instance dao
+        """
 
         model_manager = self.config.model_manager
         return model_manager.get_model(model)
 
     def delete_model(self, model_name):
-        """Deletes a model."""
+        """Deletes a model.
+
+        Args:
+            model_name (str): name of the model to be deleted
+        """
 
         LOGGER.info("Deleting model: %s", model_name)
         model_manager = self.config.model_manager

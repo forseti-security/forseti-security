@@ -19,9 +19,6 @@ from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.model import modeller
 from google.cloud.forseti.common.util import log_util
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
 
 LOGGER = log_util.get_logger(__name__)
 
@@ -47,6 +44,9 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, modeller_api):
+        """Args:
+            modeller_api(object): model library
+        """
         super(GrpcModeller, self).__init__()
         self.modeller = modeller_api
 
@@ -55,6 +55,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of PingRequest
+            _(object): Not used
 
         Returns:
             object: pb2 object of the PingReply
@@ -67,6 +68,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of CreateModelRequest
+            context (object): gRPC context
 
         Returns:
             object: pb2 object of ModelSimplified
@@ -88,6 +90,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of DeleteModelRequest
+            _(object): Not used
 
         Returns:
             object: pb2 object of DeleteModelReply
@@ -102,6 +105,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of ListModelRequest
+            _(object): Not used
 
         Yields:
             object: pb2 object of ModelSimplified
@@ -120,6 +124,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of GetModelRequest
+            _(object): Not used
 
         Returns:
             object: pb2 object of ModelDetails
@@ -141,10 +146,20 @@ class GrpcModellerFactory(object):
     """Factory class for model service gRPC interface"""
 
     def __init__(self, config):
+        """Args:
+            config(object): ServiceConfig in server
+        """
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the Model service."""
+        """Create and register the Model service.
+
+        Args:
+            server (object): Server to register service to.
+
+        Returns:
+            object: The instantiated gRPC service for model.
+        """
 
         service = GrpcModeller(modeller_api=modeller.Modeller(self.config))
         model_pb2_grpc.add_ModellerServicer_to_server(service, server)

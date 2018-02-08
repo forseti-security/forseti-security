@@ -21,13 +21,17 @@ from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory
 from google.cloud.forseti.services.utils import autoclose_stream
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,no-member
+# pylint: disable=no-member
 
 
 def inventory_pb_from_object(inventory_index):
-    """Convert internal inventory data structure to protobuf."""
+    """Convert internal inventory data structure to protobuf.
+    Args:
+        inventory_index(object): InventoryIndex class in inventory storage
+
+    Returns:
+        object: proto message of InventoryIndex
+    """
 
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
@@ -46,6 +50,9 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
     def __init__(self, inventory_api):
+        """Args:
+            inventory_api(object): inventory library
+        """
         super(GrpcInventory, self).__init__()
         self.inventory = inventory_api
 
@@ -118,7 +125,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     def Delete(self, request, _):
         """Deletes existing inventory.
 
-        Returns:
+        Args:
             request (object): gRPC request object.
             _ (object): Unused
 
@@ -135,6 +142,9 @@ class GrpcInventoryFactory(object):
     """Factory class for Inventory service gRPC interface"""
 
     def __init__(self, config):
+        """Args:
+            config(object): ServiceConfig in server
+        """
         self.config = config
 
     def create_and_register_service(self, server):
