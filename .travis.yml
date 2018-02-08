@@ -32,5 +32,6 @@ script:
   - ./setup/scripts/run_docker_tests.sh
 
 after_success:
-  # Execute codecov inside the docker container. Need to export env for codecov.io upload.
-  - docker exec -it build /bin/bash -c "codecov"
+  # Collect codecov results.
+  - docker exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
+  #- docker exec -it build /bin/bash -c "codecov"
