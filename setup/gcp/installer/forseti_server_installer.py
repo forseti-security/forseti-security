@@ -121,7 +121,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             FirewallRuleAction.ALLOW,
             ['tcp:50051'],
             FirewallRuleDirection.INGRESS,
-            1)
+            0)
         return success, deployment_name
 
     def format_firewall_rule_name(self, rule_name):

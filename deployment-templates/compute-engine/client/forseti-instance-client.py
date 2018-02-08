@@ -36,7 +36,7 @@ mv forseti-security-{release_version} forseti-security
             release_version=context.properties['release-version'])
 
     FORSETI_CLIENT_CONF = ('gs://{bucket_name}/configs/'
-                           '{bucket_name}/forseti_conf_client.yaml').format(
+                           'client/forseti_conf_client.yaml').format(
         bucket_name=context.properties['gcs-bucket'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     PERSIST_FORSETI_VARS = (
