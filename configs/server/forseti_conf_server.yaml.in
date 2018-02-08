@@ -123,6 +123,8 @@ scanner:
     scanners:
         - name: bigquery
           enabled: true
+        - name: blacklist
+          enabled: true
         - name: bucket_acl
           enabled: true
         - name: cloudsql_acl
@@ -170,6 +172,15 @@ notifier:
             - name: slack_webhook_pipeline
               configuration:
                 webhook_url: ''
+
+        - resource: blacklist_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
         - resource: bigquery_acl_violations
           should_notify: true
