@@ -103,23 +103,3 @@ def make_proto(path):
                     protofile,
                 ],
                 cwd=protodir)
-
-
-def main():
-    """Generate python code from .proto files."""
-
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--clean", dest="clean", action="store_true",
-                            help="Clean out compiled protos.")
-    arg_parser.set_defaults(feature=False)
-    args = arg_parser.parse_args()
-
-    path = os.path.abspath(__file__)
-
-    if args.clean:
-        clean(path)
-    make_proto(path)
-
-
-if __name__ == "__main__":
-    main()
