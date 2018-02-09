@@ -22,12 +22,12 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.utils.db import create_test_engine
 
-
-FAKE_MODEL_HANDLE = 'fake_model_handle111'
+FAKE_INVENTORY_INDEX_ID = 'aaa'
 
 FAKE_VIOLATIONS = [
-    {'model_handle': FAKE_MODEL_HANDLE,
+    {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_111',
+     'full_name': 'full_name_111',
      'rule_name': 'disallow_all_ports_111',
      'rule_index': 111,
      'violation_data':
@@ -35,10 +35,12 @@ FAKE_VIOLATIONS = [
           'recommended_actions':
               {'DELETE_FIREWALL_RULES': ['fw-tag-match_111']}},
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
-     'resource_type': 'firewall_rule'},
+     'resource_type': 'firewall_rule',
+     'inventory_data': 'inventory_data_111'},
 
-    {'model_handle': FAKE_MODEL_HANDLE,
+    {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_222',
+     'full_name': 'full_name_222',
      'rule_name': 'disallow_all_ports_222',
      'rule_index': 222,
      'violation_data':
@@ -46,7 +48,8 @@ FAKE_VIOLATIONS = [
           'recommended_actions':
               {'DELETE_FIREWALL_RULES': ['fw-tag-match_222']}},
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
-     'resource_type': 'firewall_rule'},
+     'resource_type': 'firewall_rule',
+     'inventory_data': 'inventory_data_222'},
 ]
 
 
@@ -68,12 +71,12 @@ class ScannerDaoTest(ForsetiTestCase):
         violation_access_cls = scanner_dao.define_violation(engine)
         violation_access = violation_access_cls(engine)
 
-        violation_access.create(FAKE_VIOLATIONS, FAKE_MODEL_HANDLE)
+        violation_access.create(FAKE_VIOLATIONS, FAKE_INVENTORY_INDEX_ID)
         saved_violations = violation_access.list()
 
-        keys = ['model_handle', 'resource_id', 'resource_type',
-                'rule_name', 'rule_index', 'violation_type',
-                'violation_data']
+        keys = ['inventory_index_id', 'resource_id', 'full_name',
+                'resource_type', 'rule_name', 'rule_index', 'violation_type',
+                'violation_data', 'inventory_data']
         for fake, saved in izip(FAKE_VIOLATIONS, saved_violations):
             for key in keys:
                 if key != 'violation_data':
