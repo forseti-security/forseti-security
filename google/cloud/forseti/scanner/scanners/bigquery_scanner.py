@@ -66,6 +66,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         for violation in violations:
             violation_data = {}
             violation_data['dataset_id'] = violation.dataset_id
+            violation_data['full_name'] = violation.full_name
             violation_data['access_domain'] = violation.domain
             violation_data['access_user_by_email'] = violation.user_email
             violation_data['access_special_group'] = violation.special_group
@@ -75,10 +76,12 @@ class BigqueryScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -127,6 +130,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                     BigqueryAccessControls.from_json(
                         project_id=project_id,
                         dataset_id=dataset_id,
+                        full_name=policy.full_name,
                         acls=policy.data))
 
         return bq_acls

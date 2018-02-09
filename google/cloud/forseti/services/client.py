@@ -86,11 +86,10 @@ class ScannerClient(ForsetiClient):
         return echo == data
 
     @require_model
-    def run(self, config_dir):
+    def run(self):
         """Runs the scanner"""
 
-        request = scanner_pb2.RunRequest(
-            config_dir=config_dir)
+        request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
                              metadata=self.metadata())
 

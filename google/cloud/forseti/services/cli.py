@@ -277,13 +277,9 @@ def define_scanner_parser(parent):
         title='action',
         dest='action')
 
-    create_scanner_parser = action_subparser.add_parser(
+    action_subparser.add_parser(
         'run',
         help='Run the scanner')
-
-    create_scanner_parser.add_argument(
-        'config_file',
-        help='Scanner config file')
 
 
 def define_notifier_parser(parent):
@@ -661,7 +657,7 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
-        result = client.run(config.config_file)
+        result = client.run()
         output.write(result)
 
     actions = {
