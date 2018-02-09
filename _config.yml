@@ -59,6 +59,10 @@ defaults:
     values:
       category: Setup
   - scope:
+      path: _docs/use
+    values:
+      category: Use
+  - scope:
       path: _docs/configure
     values:
       category: Configure
