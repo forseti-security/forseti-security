@@ -55,7 +55,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         model_name = self._get_handle(context)
         LOGGER.info('Run scanner service with model: %s', model_name)
-        result = self.scanner.run(request.config_dir, model_name,
+        result = self.scanner.run(model_name,
                                   self.service_config)
 
         reply = scanner_pb2.RunReply()

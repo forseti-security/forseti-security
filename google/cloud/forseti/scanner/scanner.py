@@ -33,23 +33,9 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 # Setup flags
 FLAGS = flags.FLAGS
 
-
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
-
-# Hack to make the test pass due to duplicate flag error here
-# and inventory_loader.
-# TODO: Find a way to remove this try/except, possibly dividing the tests
-# into different test suites.
-try:
-    flags.DEFINE_string(
-        'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
-        'Fully qualified path and filename of the Forseti config file.')
-except flags.DuplicateFlagError:
-    pass
-
 
 LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
@@ -75,13 +61,12 @@ def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
 
     return latest_timestamp
 
-def run(forseti_config, model_name=None, service_config=None):
+def run(model_name=None, service_config=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
 
     Args:
-        forseti_config (dict): Forseti 1.0 config
         model_name (str): name of the data model
         service_config (ServiceConfig): Forseti 2.0 service configs
 
@@ -89,12 +74,9 @@ def run(forseti_config, model_name=None, service_config=None):
         int: Status code.
     """
 
-    if forseti_config is None:
-        LOGGER.error('Path to Forseti Security config needs to be specified.')
-        return 1
-
     try:
-        configs = file_loader.read_and_parse_file(forseti_config)
+        configs = file_loader.read_and_parse_file(
+            service_config.forseti_config_file_path)
     except IOError:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try again.')
@@ -141,7 +123,7 @@ def main(_):
         int: Status code.
     """
 
-    run(FLAGS.forseti_config)
+    run()
     return 0
 
 
