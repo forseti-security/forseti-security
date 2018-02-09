@@ -168,7 +168,7 @@ def run(inventory_index_id, service_config=None):
     violation_access = violation_access_cls(service_config.engine)
     service_config.violation_access = violation_access
     violations = violation_access.list(inventory_index_id)
-    
+
     violations_as_dict = []
     for violation in violations:
         violations_as_dict.append(
