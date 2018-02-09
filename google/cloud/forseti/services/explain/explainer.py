@@ -24,7 +24,7 @@ from google.cloud.forseti.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 class Explainer(object):
-    """Implements the IAM Explain API."""
+    """Implements the Explain API."""
 
     def __init__(self, config):
         self.config = config

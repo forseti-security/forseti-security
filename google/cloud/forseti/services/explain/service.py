@@ -30,7 +30,7 @@ from google.cloud.forseti.common.util import log_util
 LOGGER = log_util.get_logger(__name__)
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
-    """IAM Explain gRPC implementation."""
+    """Explain gRPC implementation."""
 
     HANDLE_KEY = "handle"
 
@@ -249,7 +249,7 @@ class GrpcExplainerFactory(object):
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the IAM Explain service."""
+        """Create and register the Explain service."""
         service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
         LOGGER.info("service %s created and registered", service)
