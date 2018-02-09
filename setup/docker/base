@@ -28,4 +28,4 @@ RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "
 RUN rm -rf /var/lib/apt/lists/*
 
 # Install the CloudSDK for `gcloud`.
-RUN curl -sSL https://sdk.cloud.google.com | bash
+RUN curl -sSL https://sdk.cloud.google.com 1> /dev/null | bash
