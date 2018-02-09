@@ -84,7 +84,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
        to whom Forseti should send the email notifications.
      * G Suite super admin email: This is part of the 
        [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %}) 
-       and is necessary for running [IAM Explain]({% link _docs/configure/explain/index.md %}). 
+       and is necessary for running [Explain]({% link _docs/configure/explain/index.md %}). 
        Ask your G Suite Admin if you don't know what the super admin email is.
 
   1. If you previously used Cloud Shell to SSH to a Compute Engine instance and 
@@ -95,7 +95,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
   1. After the setup wizard successfully completes Forseti setup and deployment, 
      complete the steps to [enable G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %}).
-     This is a **required** step if you also plan to deploy IAM Explain.
+     This is a **required** step if you also plan to deploy Explain.
 
 ## What's next
 
