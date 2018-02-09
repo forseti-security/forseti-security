@@ -93,7 +93,7 @@ def _get_latest_inventory_index_id(service_config):
             if item.status in allowed_status:
                 inventory_index_id = item.id
     LOGGER.info(
-        'Latest success/partial_success inventory id is: %s',
+        'Latest success/partial_success inventory index id is: %s',
         inventory_index_id)
     return inventory_index_id
 
