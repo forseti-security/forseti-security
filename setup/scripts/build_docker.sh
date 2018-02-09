@@ -20,7 +20,7 @@ if [ -z ${TRAVIS+x} ]; then
     docker rm -f $(docker ps -a -q)
 fi
 
-# Update docker only on Travis.
+# Install docker only on Travis.
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
     echo "Updating docker to the latest on Travis."

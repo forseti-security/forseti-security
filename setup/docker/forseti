@@ -15,9 +15,11 @@
 ARG BASE_IMAGE=forseti/base
 FROM ${BASE_IMAGE}
 
+# Expose our source.
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 
+# Install Forseti dependencies.
 RUN pip install -q --upgrade pip
 RUN pip install -q -r setup/dependencies/pip_packages.txt --upgrade
 RUN python setup.py install
