@@ -54,7 +54,7 @@ def define_violation(dbengine):
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
         violation_type = Column(String(256), nullable=False)
-        data = Column(Text)
+        violation_data = Column(Text)
         inventory_data = Column(Text)
 
         def __repr__(self):
@@ -111,20 +111,32 @@ def define_violation(dbengine):
                         rule_name=violation.get('rule_name'),
                         rule_index=violation.get('rule_index'),
                         violation_type=violation.get('violation_type'),
-                        data=json.dumps(violation.get('violation_data')),
+                        violation_data=json.dumps(
+                            violation.get('violation_data')),
                         inventory_data=violation.get('inventory_data')
                     )
                     session.add(violation)
 
-        def list(self):
+        def list(self, inventory_index_id=None):
             """List all violations from the db table.
+
+            Args:
+                inventory_index_id (str): Id of the inventory index.
 
             Returns:
                 list: List of Violation row entry objects.
             """
             with self.violationmaker() as session:
-                return session.query(self.TBL_VIOLATIONS).all()
-
+                if inventory_index_id:
+                    return (
+                        session.query(self.TBL_VIOLATIONS)
+                        .filter(
+                            self.TBL_VIOLATIONS.inventory_index_id ==
+                            inventory_index_id)
+                        .all())
+                return (
+                    session.query(self.TBL_VIOLATIONS)
+                    .all())
 
     base.metadata.create_all(dbengine)
 

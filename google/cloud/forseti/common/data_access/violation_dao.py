@@ -20,6 +20,7 @@ from collections import defaultdict
 from collections import namedtuple
 
 import MySQLdb
+from sqlalchemy import inspect
 
 from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import errors as db_errors
@@ -146,6 +147,19 @@ def _format_violation(violation, resource_name):
     formatted_output = vm.VIOLATION_MAP[resource_name](violation)
     return formatted_output
 
+# pylint: disable=invalid-name
+def _convert_sqlalchemy_object_to_dict(obj):
+    """Convert a sqlalchemy row/record object to a dictionary.
+
+    Args:
+        obj (sqlchemy object): A sqlalchemy row/record object
+
+    Returns:
+        dict: A dict of sqlalchemy object's attributes.
+    """
+
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
 
 def map_by_resource(violation_rows):
     """Create a map of violation types to violations of that resource.
@@ -161,13 +175,16 @@ def map_by_resource(violation_rows):
 
     for v_data in violation_rows:
         try:
-            v_data['violation_data'] = json.loads(v_data['violation_data'])
+            v_data.violation_data = json.loads(v_data.violation_data)
+            v_data.inventory_data = json.loads(v_data.inventory_data)
         except ValueError:
             LOGGER.warn('Invalid violation data, unable to parse json for %s',
-                        v_data['violation_data'])
+                        v_data.violation_data)
 
-        v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
+        v_resource = vm.VIOLATION_RESOURCES.get(v_data.violation_type)
         if v_resource:
-            v_by_type[v_resource].append(v_data)
+            v_by_type[v_resource].append(
+                _convert_sqlalchemy_object_to_dict(v_data)
+            )
 
     return dict(v_by_type)

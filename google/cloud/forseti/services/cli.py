@@ -302,10 +302,12 @@ def define_notifier_parser(parent):
         help='Run the notifier')
 
     create_notifier_parser.add_argument(
-        '--inventory_id',
-        default=-1,
-        help='Id of the inventory index to send violation notifications'
-        )
+        '--inventory_index_id',
+        default=None,
+        help=('Id of the inventory index to send violation notifications. '
+              'If this is not specified, then the last inventory index id '
+              'will be used.'
+             ))
 
 def define_explainer_parser(parent):
     """Define the explainer service parser.
@@ -681,7 +683,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        result = client.run(config.inventory_id)
+        result = client.run(config.inventory_index_id)
         output.write(result)
 
     actions = {
