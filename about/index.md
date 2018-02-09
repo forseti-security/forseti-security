@@ -80,9 +80,9 @@ notifying you when specific policies change unexpectedly.
 
 ### [Explain]({% link _docs/configure/explain/index.md %})
 
-Use an addon module like IAM Explain to understand your Cloud Identity and
+Use an addon module like Explain to understand your Cloud Identity and
 Access Management (Cloud IAM) access policies in context of your groups and
-resources. IAM Explain can help you understand the following:
+resources. Explain can help you understand the following:
 
 Who has access to what resource and how that user can interact with the
 resource. Why a principal has permission on a resource, or why they don't have a

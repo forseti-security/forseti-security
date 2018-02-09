@@ -13,9 +13,9 @@ scenarios for which it's best to use separate service accounts:
  inventory, scanning, and enforcement actions.
  * **[G Suite Groups service account](#g-suite-groups-service-account)**
  (optional): Used to inventory G Suite Groups and their members.
- Forseti IAM Explain requires this to be enabled.
+ Forseti Explain requires this to be enabled.
  * **[Forseti Explain service account](#forseti-explain-service-account)**
- (optional): Used to provide IAM Explain functionality.
+ (optional): Used to provide Explain functionality.
 
 When naming service accounts, it's best to use a descriptive name like
 `forseti-security` or `forseti-security-gsuite`.
@@ -39,13 +39,13 @@ G Suite Group inventory and create a service account, a good name
 for the service account would be `forseti-security-gsuite-groups`.
 
 ### Forseti Explain service account
-You can use the Forseti Security service account for IAM Explain. However,
+You can use the Forseti Security service account for Explain. However,
 since the `explain` service is an interactive tool and runs on its own
 Compute Engine instance, it's best to apply privilege separation principles
-by creating a separate service account for IAM Explain.
+by creating a separate service account for Explain.
 
-If you enable IAM Explain and create a service account, a good name for the
-service account would be `forseti-security-iam-explain`.
+If you enable Explain and create a service account, a good name for the
+service account would be `forseti-security-explain`.
 
 ## Service account key security
 Whether you install and deploy Forseti manually or by using the setup wizard,
@@ -74,7 +74,7 @@ service account needs is read-access on the Groups and Group Members services.
 
  * `https://www.googleapis.com/auth/admin.directory.group.readonly`
  
-### Service account for Forseti IAM Explain
+### Service account for Forseti Explain
 Forseti Explain should have its own service account and it only requires access
 to read from the inventory stored in Cloud SQL.
 

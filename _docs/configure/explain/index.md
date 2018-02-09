@@ -1,19 +1,19 @@
 ---
-title: IAM Explain
+title: Explain
 order: 202
 ---
 # {{ page.title }}
 
-IAM Explain is not part of the main Forseti releases from master. Please
-deploy from the [IAM Explain experimental branch](https://github.com/GoogleCloudPlatform/forseti-security/tree/explain-experimental).
+Explain is not part of the main Forseti releases from master. Please
+deploy from the [Explain experimental branch](https://github.com/GoogleCloudPlatform/forseti-security/tree/explain-experimental).
 
-This page describes how to set up IAM Explain for Forseti Security.
-IAM Explain is a client-server based application that helps administrators,
+This page describes how to set up Explain for Forseti Security.
+Explain is a client-server based application that helps administrators,
 auditors, and users of Google Cloud to understand, test, and develop Cloud
 Identity and Access Management (Cloud IAM) policies. It can enumerate access by
 resource or member, answer why a principal has access to a certain resource, or
 offer possible strategies for how to grant a specific resource. You'll use a
-command-line interface to deploy IAM Explain on a dedicated virtual machine.
+command-line interface to deploy Explain on a dedicated virtual machine.
 
 For more detail about your Cloud IAM policies, you can use the denormalizer,
 which calculates all the principals, permissions, and resources for the model.
@@ -23,12 +23,12 @@ denormalizer, run `forseti_iam explainer denormalize` or
 `forseti_iam explainer --help`. You can also explore the `forseti_iam` tool by
 using `forseti_iam --help`.
 
-Because IAM Explain and its API are still in early development, third party
+Because Explain and its API are still in early development, third party
 clients won't be supported until a first stable API version is released.
 
-## Deploying IAM Explain 
+## Deploying Explain 
 
-You can use the provided [IAM Explain deployment script](https://github.com/GoogleCloudPlatform/forseti-security/blob/explain-experimental/scripts/iam_auto_deployment.sh) that will walk you through
+You can use the provided [Explain deployment script](https://github.com/GoogleCloudPlatform/forseti-security/blob/explain-experimental/scripts/iam_auto_deployment.sh) that will walk you through
 the deployment. Make sure you have the permission inside your organization to
 create projects, set IAM policies, create service accounts and enable the required
 APIs.
@@ -50,7 +50,7 @@ startup script to install all dependencies and start the services. You can obser
 the progress by looking at the deployment log at /tmp/deployment.log.
 ## Running the client
 
-The IAM Explain client uses hierarchical command parsing. At the top level,
+The Explain client uses hierarchical command parsing. At the top level,
 commands divide into "explainer" and "playground".
 
 ### Setting up an explain model
@@ -83,7 +83,7 @@ $ forseti_iam --use-model ... explainer denormalize
 
 ## Running the server
 
-The IAM Explain server uses its own database for IAM models, simulations and inventory.
+The Explain server uses its own database for IAM models, simulations and inventory.
 
 
   - Standard start/restart, if you used the deployment manager to create IAM
@@ -97,7 +97,7 @@ The IAM Explain server uses its own database for IAM models, simulations and inv
     - The services should automatically start right after the deployment.
     - You can find a deployment log at `/tmp/deployment.log`.
 
-### Using IAM Explain
+### Using Explain
 
 To use a model, run the commands below:
 
@@ -123,7 +123,7 @@ To use a model, run the commands below:
 
 ### Using the playground
 
-IAM Explain playground is a simluator that allows you to inspect and modify
+Explain playground is a simluator that allows you to inspect and modify
 the current state of a model. For example,
 `forseti_iam playground list_resources` displays all the resources available
 in the model. On its own, it enables you to set and check new policies. When
@@ -131,5 +131,5 @@ used with an explain model, it also enables you to simulate a state
 modification and compare it to the live explain output.
 
 To view all the
-commands available for IAM Explain playground, run
+commands available for Explain playground, run
 `forseti_iam playground --help`.
