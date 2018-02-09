@@ -86,12 +86,15 @@ def _get_latest_inventory_index_id(service_config):
         string: The latest snapshot timestamp.
     """
 
+    allowed_status = ('SUCCESS', 'PARTIAL_SUCCESS')
     # pylint: disable=undefined-loop-variable
     inventory_index_id = ''
     with service_config.scoped_session() as session:
         for item in DataAccess.list(session):
-            pass
-        inventory_index_id = item.id
+            if item.status in allowed_status:
+                inventory_index_id = item.id
+    LOGGER.info('Latest success/partial_success inventory id is: {}'.format(
+                inventory_index_id))
     return inventory_index_id
 
 def process(message):
@@ -136,7 +139,6 @@ def process(message):
             payload.get('email_description'))
         return
 
-# pylint: disable=unused-argument
 def run(inventory_index_id, service_config=None):
     """Run the notifier.
 

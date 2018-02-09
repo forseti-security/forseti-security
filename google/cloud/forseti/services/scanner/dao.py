@@ -124,7 +124,7 @@ def define_violation(dbengine):
                     )
                     session.add(violation)
 
-        def list(self, inventory_index_id=None):
+        def list(self, inventory_index_id=None, status=None):
             """List all violations from the db table.
 
             Args:
