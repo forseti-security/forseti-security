@@ -5,7 +5,7 @@ order: 202
 # {{ page.title }}
 
 Explain is not part of the main Forseti releases from master. Please
-deploy from the [Explain experimental branch](https://github.com/GoogleCloudPlatform/forseti-security/tree/explain-experimental).
+deploy from the Explain experimental branch.
 
 This page describes how to set up Explain for Forseti Security.
 Explain is a client-server based application that helps administrators,
@@ -28,7 +28,7 @@ clients won't be supported until a first stable API version is released.
 
 ## Deploying Explain 
 
-You can use the provided [Explain deployment script](https://github.com/GoogleCloudPlatform/forseti-security/blob/explain-experimental/scripts/iam_auto_deployment.sh) that will walk you through
+You can use the provided Explain deployment script
 the deployment. Make sure you have the permission inside your organization to
 create projects, set IAM policies, create service accounts and enable the required
 APIs.
