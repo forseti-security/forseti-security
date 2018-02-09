@@ -320,9 +320,9 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
-        ('scanner run /tmp/config',
+        ('scanner run',
          CLIENT.scanner.run,
-         ['/tmp/config'],
+         [],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),

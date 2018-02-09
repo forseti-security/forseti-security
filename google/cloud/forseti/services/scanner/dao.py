@@ -150,18 +150,18 @@ def define_violation(dbengine):
     return ViolationAccess
 
 # pylint: disable=invalid-name
-def convert_sqlalchemy_object_to_dict(obj):
+def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
     """Convert a sqlalchemy row/record object to a dictionary.
 
     Args:
-        obj (sqlalchemy object): A sqlalchemy row/record object
+        sqlalchemy_obj (sqlalchemy_object): A sqlalchemy row/record object
 
     Returns:
         dict: A dict of sqlalchemy object's attributes.
     """
 
-    return {c.key: getattr(obj, c.key)
-            for c in inspect(obj).mapper.column_attrs}
+    return {c.key: getattr(sqlalchemy_obj, c.key)
+            for c in inspect(sqlalchemy_obj).mapper.column_attrs}
 
 def map_by_resource(violation_rows):
     """Create a map of violation types to violations of that resource.
