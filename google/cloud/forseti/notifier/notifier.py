@@ -87,14 +87,14 @@ def _get_latest_inventory_index_id(service_config):
     """
 
     allowed_status = ('SUCCESS', 'PARTIAL_SUCCESS')
-    # pylint: disable=undefined-loop-variable
     inventory_index_id = ''
     with service_config.scoped_session() as session:
         for item in DataAccess.list(session):
             if item.status in allowed_status:
                 inventory_index_id = item.id
-    LOGGER.info('Latest success/partial_success inventory id is: {}'.format(
-                inventory_index_id))
+    LOGGER.info(
+        'Latest success/partial_success inventory id is: %s',
+        inventory_index_id)
     return inventory_index_id
 
 def process(message):

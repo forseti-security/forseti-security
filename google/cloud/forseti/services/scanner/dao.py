@@ -124,7 +124,7 @@ def define_violation(dbengine):
                     )
                     session.add(violation)
 
-        def list(self, inventory_index_id=None, status=None):
+        def list(self, inventory_index_id=None):
             """List all violations from the db table.
 
             Args:
@@ -154,7 +154,7 @@ def convert_sqlalchemy_object_to_dict(obj):
     """Convert a sqlalchemy row/record object to a dictionary.
 
     Args:
-        obj (sqlchemy object): A sqlalchemy row/record object
+        obj (sqlalchemy object): A sqlalchemy row/record object
 
     Returns:
         dict: A dict of sqlalchemy object's attributes.
