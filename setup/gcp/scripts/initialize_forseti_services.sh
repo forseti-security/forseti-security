@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 # Try to guess if a user has invoked this unexpectedly, and print info.
 if [[ -z "${GSUITE_ADMIN_CREDENTIAL_PATH}" ]]; then
     echo "This script is a piece of the Forseti deployment infrastructure."

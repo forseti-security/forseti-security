@@ -126,12 +126,6 @@ exec 2>&1
 sudo apt-get update -y
 sudo apt-get upgrade -y
 
-# Forseti setup.
-sudo apt-get install -y git unzip
-
-# Forseti dependencies
-sudo apt-get install -y libffi-dev libssl-dev libmysqlclient-dev python-pip python-dev build-essential
-
 USER=ubuntu
 USER_HOME=/home/ubuntu
 
@@ -155,19 +149,27 @@ fi
 # Install Forseti Security.
 cd $USER_HOME
 rm -rf *forseti*
-pip install --upgrade pip
-pip install --upgrade setuptools
-pip install grpcio grpcio-tools google-apputils
 
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
 
+# Forseti Host Setup
+sudo apt-get install -y git unzip
+
+# Forseti host dependencies
+sudo apt-get install -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs)
+
+# Forseti dependencies
+pip install --upgrade pip
+pip install --upgrade setuptools
+pip install -r setup/dependencies/pip_packages.txt
+
 # Set ownership of config and rules to $USER
-chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/scripts/gcp_setup/bash_sripts/run_forseti.sh
+chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
 
 # Build protos.
-python build_protos.py --clean
+python setup/utils/build_protos.py --clean
 
 # Install Forseti
 python setup.py install
@@ -180,10 +182,10 @@ python setup.py install
 
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server
-sudo su $USER -c "python $FORSETI_HOME/scripts/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
+sudo su $USER -c "python $FORSETI_HOME/setup/gcp/utils/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Start Forseti service depends on vars defined above.
-bash ./scripts/gcp_setup/bash_scripts/initialize_forseti_services.sh
+bash ./setup/gcp/scripts/initialize_forseti_services.sh
 
 echo "Starting services."
 systemctl start cloudsqlproxy
@@ -205,8 +207,8 @@ EOF
 )"
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
-sudo su $USER -c "$FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh"
-(echo "{run_frequency} $FORSETI_HOME/scripts/gcp_setup/bash_scripts/run_forseti.sh") | crontab -u $USER -
+sudo su $USER -c "$FORSETI_HOME/setup/gcp/scripts/run_forseti.sh"
+(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab"
 
 echo "Execution of startup script finished"

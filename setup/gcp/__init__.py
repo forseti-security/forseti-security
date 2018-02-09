@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,26 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sudo: required
+""" Forseti Security Installer. """
 
-language: python
-
-python:
-  - "2.7"
-
-services:
-  - docker
-
-before_install:
-  # Build the Forseti image and start the container.
-  - ./setup/scripts/build_docker.sh
-  - ./setup/scripts/run_docker.sh
-
-script:
-  # Run pylint and unittests.
-  - ./setup/scripts/run_docker_tests.sh
-
-after_success:
-  # Collect codecov results.
-  - docker exec -it build /bin/bash -c "bash <(curl -s https://codecov.io/bash)"
-  #- docker exec -it build /bin/bash -c "codecov"
+try:
+    __import__('pkg_resources').declare_namespace(__name__)
+except ImportError:
+    __path__ = __import__('pkgutil').extend_path(__path__, __name__)

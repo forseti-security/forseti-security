@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Set up Forseti Security on GCP.
+"""Forseti Security Installer Gcloud.
 
 This has been tested with python 2.7.
 """
@@ -32,7 +32,6 @@ import sys
 import time
 
 import utils
-
 
 CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
 
@@ -484,7 +483,7 @@ class ForsetiGcpSetup(object):
                       '4) Set your project using '
                       '"gcloud config project set <PROJECT_ID>".\n'
                       '5) Run this setup again, with the --no-cloudshell flag, '
-                      'i.e.\n\n    python setup_forseti.py --no-cloudshell\n')
+                      'i.e.\n\n\tpython setup/installer.py --no-cloudshell\n')
                 sys.exit(1)
             else:
                 print('Using Cloud Shell, continuing...')

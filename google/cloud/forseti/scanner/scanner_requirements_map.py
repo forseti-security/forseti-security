@@ -22,6 +22,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'bigquery_scanner',
          'class_name': 'BigqueryScanner',
          'rules_filename': 'bigquery_rules.yaml'},
+    'blacklist':
+        {'module_name': 'blacklist_scanner',
+         'class_name': 'BlacklistScanner',
+         'rules_filename': 'blacklist_rules.yaml'},
     'bucket_acl':
         {'module_name': 'bucket_rules_scanner',
          'class_name': 'BucketsAclScanner',

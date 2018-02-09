@@ -87,6 +87,7 @@ class ImporterTest(ForsetiTestCase):
 
         model = self.model_manager.model(self.model_name)
         model_description = self.model_manager.get_description(self.model_name)
+
         self.assertIn(model.state,
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
