@@ -555,7 +555,7 @@ class ForsetiGcpSetup(object):
         for api in REQUIRED_APIS:
             print('Enabling the {} API...'.format(api['name']))
             return_code, _, err = self.run_command(
-                ['gcloud', 'service-management',
+                ['gcloud', 'services',
                  'enable', api['service']])
             if return_code:
                 print(err)
