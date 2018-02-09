@@ -29,8 +29,6 @@ import gflags as flags
 
 # pylint: disable=line-too-long
 from google.apputils import app
-from google.cloud.forseti.common.data_access import errors as db_errors
-from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
@@ -78,7 +76,7 @@ def find_pipelines(pipeline_name):
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
-def _get_timestamp(service_config):
+def _get_latest_inventory_index_id(service_config):
     """Get latest snapshot timestamp.
 
     Args:
@@ -95,7 +93,6 @@ def _get_timestamp(service_config):
             pass
         inventory_index_id = item.id
     return inventory_index_id
-    
 
 def process(message):
     """Process messages about what notifications to send.
@@ -163,21 +160,21 @@ def run(inventory_index_id, service_config=None):
     notifier_configs = configs.get('notifier')
 
     if not inventory_index_id:
-        inventory_index_id = _get_timestamp(service_config)
+        inventory_index_id = _get_latest_inventory_index_id(service_config)
 
     # get violations
-    try:
-        violation_access = scanner_dao.define_violation(service_config.engine)
-        violation_access = violation_access(service_config.engine)
-        service_config.violation_access = violation_access
-        violations = violation_access.list(inventory_index_id)
-    except db_errors.MySQLError, e:
-        # even if an error is raised we still want to continue execution
-        # this is because if we don't have violations the Mysql table
-        # is not present and an error is thrown
-        LOGGER.error('get_all_violations error: %s', e.message)
+    violation_access_cls = scanner_dao.define_violation(
+        service_config.engine)
+    violation_access = violation_access_cls(service_config.engine)
+    service_config.violation_access = violation_access
+    violations = violation_access.list(inventory_index_id)
+    
+    violations_as_dict = []
+    for violation in violations:
+        violations_as_dict.append(
+            scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
-    violations = violation_dao.map_by_resource(violations)
+    violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',

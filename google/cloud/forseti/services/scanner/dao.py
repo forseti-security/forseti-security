@@ -14,14 +14,21 @@
 
 """ Database access objects for Forseti Scanner. """
 
+from collections import defaultdict
 import json
 
 from sqlalchemy import Column
 from sqlalchemy import String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import inspect
 from sqlalchemy.orm import sessionmaker
 
+from google.cloud.forseti.common.data_access import violation_map as vm
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services import db
+
+
+LOGGER = log_util.get_logger(__name__)
 
 
 # pylint: disable=no-member
@@ -37,7 +44,7 @@ def define_violation(dbengine):
     Returns:
         ViolationAcccess: facade for accessing violations.
     """
-
+    # TODO: Determine if dbengine is really needed as a method arg here.
     base = declarative_base()
     violations_tablename = 'violations'
 
@@ -141,3 +148,45 @@ def define_violation(dbengine):
     base.metadata.create_all(dbengine)
 
     return ViolationAccess
+
+# pylint: disable=invalid-name
+def convert_sqlalchemy_object_to_dict(obj):
+    """Convert a sqlalchemy row/record object to a dictionary.
+
+    Args:
+        obj (sqlchemy object): A sqlalchemy row/record object
+
+    Returns:
+        dict: A dict of sqlalchemy object's attributes.
+    """
+
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
+
+def map_by_resource(violation_rows):
+    """Create a map of violation types to violations of that resource.
+
+    Args:
+        violation_rows (list): A list of dict of violation data.
+
+    Returns:
+        dict: A dict of violation types mapped to the list of corresponding
+            violation types, i.e. { resource => [violation_data...] }.
+    """
+    # The defaultdict makes it easy to add a value to a key without having
+    # to check if the key exists.
+    v_by_type = defaultdict(list)
+
+    for v_data in violation_rows:
+        try:
+            v_data['violation_data'] = json.loads(v_data['violation_data'])
+            v_data['inventory_data'] = json.loads(v_data['inventory_data'])
+        except ValueError:
+            LOGGER.warn('Invalid violation data, unable to parse json for %s',
+                        v_data['violation_data'])
+
+        v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
+        if v_resource:
+            v_by_type[v_resource].append(v_data)
+
+    return dict(v_by_type)
