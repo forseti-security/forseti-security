@@ -76,7 +76,7 @@ class KeCluster(object):
         self.expire_time = expire_time
         self.server_config = server_config
         self.resource_full_name = resource_full_name
-        self._json = raw_json
+        self.json = raw_json
 
     @classmethod
     def from_dict(cls, project_id, server_config, cluster,
@@ -157,11 +157,11 @@ class KeCluster(object):
         Returns:
             str: Json string.
         """
-        return self._json
+        return self.json
 
     def __hash__(self):
         """Return hash of properties.
         Returns:
             hash: The hash of the class properties.
         """
-        return hash(self._json)
+        return hash(self.json)

@@ -65,15 +65,18 @@ class KeVersionScanner(base_scanner.BaseScanner):
                 'violation_reason': violation.violation_reason,
                 'project_id': violation.project_id,
                 'cluster_name': violation.cluster_name,
+                'full_name': violation.full_name,
                 'node_pool_name': violation.node_pool_name
             }
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
