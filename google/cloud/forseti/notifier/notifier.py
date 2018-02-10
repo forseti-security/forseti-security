@@ -119,6 +119,7 @@ def process(message):
             payload.get('email_description'))
         return
 
+# pylint: disable=too-many-locals
 def run(inventory_index_id, service_config=None):
     """Run the notifier.
 
