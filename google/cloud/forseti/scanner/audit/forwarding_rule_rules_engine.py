@@ -93,7 +93,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
             full_name=forwarding_rule.full_name,
             rule_index=len(resource_rules),
             resource_type=ResourceType.FORWARDING_RULE,
-            inventory_data=forwarding_rule._json)
+            inventory_data=forwarding_rule.json)
 
     def add_rules(self, rules):
         """Add rules to the rule book.
@@ -162,7 +162,7 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
                              'ip_address': ip_address,
                              'ip_protocol': ip_protocol,
                              'port': port,
-                             'full_name': '' }
+                             'full_name': ''}
 
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,

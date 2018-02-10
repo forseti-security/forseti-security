@@ -71,7 +71,7 @@ class ForwardingRule(object):
         self.subnetwork = subnetwork
         self.network = network
         self.backend_service = backend_service
-        self._json = raw_json
+        self.json = raw_json
 
 
     @classmethod
