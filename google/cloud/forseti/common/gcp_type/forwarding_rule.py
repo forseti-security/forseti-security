@@ -26,8 +26,8 @@ import json
 class ForwardingRule(object):
     """Represents ForwardRule resource."""
 
-    def __init__(self, project_id, resource_id, creation_timestamp, name,
-                 description, region, ip_address, ip_protocol, port_range,
+    def __init__(self, project_id, resource_id, full_name, creation_timestamp,
+                 name, description, region, ip_address, ip_protocol, port_range,
                  ports, target, self_link, load_balancing_scheme,
                  subnetwork, network, backend_service, raw_json):
         """Forwarding rule resource.
@@ -35,6 +35,7 @@ class ForwardingRule(object):
         Args:
             project_id (str): The project containing the forwarding rule.
             resource_id (str): The id of the forwarding rule.
+            full_name (str): The full resource name and ancestory.
             creation_timestamp (str): Timestampe when the forwarding rule was
                 created.
             name (str): The name of the forwarding rule.
@@ -55,6 +56,7 @@ class ForwardingRule(object):
         """
         self.project_id = project_id
         self.resource_id = resource_id
+        self.full_name = full_name
         self.creation_timestamp = creation_timestamp
         self.name = name
         self.description = description
@@ -73,11 +75,12 @@ class ForwardingRule(object):
 
 
     @classmethod
-    def from_dict(cls, project_id, forwarding_rule):
+    def from_dict(cls, project_id, full_name, forwarding_rule):
         """Returns a new ForwardingRule object from dict.
 
         Args:
             project_id (str): The project id.
+            full_name (str): The full resource name and ancestory.
             forwarding_rule (dict): The forwarding rule.
 
         Returns:
@@ -86,6 +89,7 @@ class ForwardingRule(object):
         return cls(
             project_id=project_id,
             resource_id=forwarding_rule.get('id'),
+            full_name=full_name,
             creation_timestamp=forwarding_rule.get('creationTimestamp', ''),
             name=forwarding_rule.get('name', ''),
             description=forwarding_rule.get('description', ''),
@@ -105,11 +109,12 @@ class ForwardingRule(object):
         )
 
     @staticmethod
-    def from_json(project_id, forwarding_rule_data):
+    def from_json(project_id, full_name, forwarding_rule_data):
         """Returns a new ForwardingRule object from json data.
 
         Args:
             project_id (str): the project id.
+            full_name (str): The full resource name and ancestory.
             forwarding_rule_data (str): The json data representing
                 the forwarding rule.
 
@@ -117,7 +122,7 @@ class ForwardingRule(object):
            ForwardingRule: A new ForwardingRule object.
         """
         forwarding_rule = json.loads(forwarding_rule_data)
-        return ForwardingRule.from_dict(project_id, forwarding_rule)
+        return ForwardingRule.from_dict(project_id, full_name, forwarding_rule)
 
     def __hash__(self):
         """Return hash of properties.

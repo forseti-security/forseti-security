@@ -16,6 +16,7 @@
 import json
 
 
+# pylint: disable=too-many-instance-attributes
 class BucketAccessControls(object):
     """Bucket ACL Resource.
     """
