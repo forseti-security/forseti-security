@@ -53,10 +53,12 @@ class GroupsScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': violation.member_email,
                 'resource_type': 'group_member',
+                'full_name': None,
                 'rule_index': None,
                 'rule_name': violation.violated_rule_names,
                 'violation_type': 'group_violation',
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -266,7 +268,7 @@ class MemberNode(anytree.node.NodeMixin):
     """A custom anytree node with Group Member attributes."""
 
     def __init__(self, member_id, member_email,
-                 member_type=None, member_status=None, parent=None):
+                 member_type=None, member_status=None, parent=None,):
         """Initialization.
 
         Args:
@@ -278,6 +280,7 @@ class MemberNode(anytree.node.NodeMixin):
         """
         self.member_id = member_id
         self.member_email = member_email
+        self.inventory_data = member_email
         self.member_type = member_type
         self.member_status = member_status
         self.parent = parent
