@@ -99,7 +99,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl_dict = json.loads(
             BUCKET_ACL_TEMPLATE.format(entity='project-owners-123456'))
         acl = bucket_access_controls.BucketAccessControls.from_dict(
-            'test-project', acl_dict)
+            'test-project', 'fake_inventory_data', acl_dict)
         violation = all_users_rule.find_policy_violations(acl)
         self.assertEquals(0, len(list(violation)))
 
@@ -107,7 +107,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl_dict = json.loads(
             BUCKET_ACL_TEMPLATE.format(entity='allUsers'))
         acl = bucket_access_controls.BucketAccessControls.from_dict(
-            'test-project', acl_dict)
+            'test-project', 'fake_inventory_data', acl_dict)
         violation = all_users_rule.find_policy_violations(acl)
         self.assertEquals(1, len(list(violation)))
 
@@ -115,7 +115,7 @@ class BucketsRulesEngineTest(ForsetiTestCase):
         acl_dict = json.loads(
             BUCKET_ACL_TEMPLATE.format(entity='allAuthenticatedUsers'))
         acl = bucket_access_controls.BucketAccessControls.from_dict(
-            'test-project', acl_dict)
+            'test-project', 'fake_inventory_data', acl_dict)
         violation = all_authenticated_users_rule.find_policy_violations(acl)
         self.assertEquals(1, len(list(violation)))
 
