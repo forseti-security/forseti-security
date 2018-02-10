@@ -14,14 +14,21 @@
 
 """ Database access objects for Forseti Scanner. """
 
+from collections import defaultdict
 import json
 
 from sqlalchemy import Column
 from sqlalchemy import String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import inspect
 from sqlalchemy.orm import sessionmaker
 
+from google.cloud.forseti.common.data_access import violation_map as vm
+from google.cloud.forseti.common.util import log_util
 from google.cloud.forseti.services import db
+
+
+LOGGER = log_util.get_logger(__name__)
 
 
 # pylint: disable=no-member
@@ -37,7 +44,7 @@ def define_violation(dbengine):
     Returns:
         ViolationAcccess: facade for accessing violations.
     """
-
+    # TODO: Determine if dbengine is really needed as a method arg here.
     base = declarative_base()
     violations_tablename = 'violations'
 
@@ -54,7 +61,7 @@ def define_violation(dbengine):
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
         violation_type = Column(String(256), nullable=False)
-        data = Column(Text)
+        violation_data = Column(Text)
         inventory_data = Column(Text)
 
         def __repr__(self):
@@ -111,21 +118,75 @@ def define_violation(dbengine):
                         rule_name=violation.get('rule_name'),
                         rule_index=violation.get('rule_index'),
                         violation_type=violation.get('violation_type'),
-                        data=json.dumps(violation.get('violation_data')),
+                        violation_data=json.dumps(
+                            violation.get('violation_data')),
                         inventory_data=violation.get('inventory_data')
                     )
                     session.add(violation)
 
-        def list(self):
+        def list(self, inventory_index_id=None):
             """List all violations from the db table.
+
+            Args:
+                inventory_index_id (str): Id of the inventory index.
 
             Returns:
                 list: List of Violation row entry objects.
             """
             with self.violationmaker() as session:
-                return session.query(self.TBL_VIOLATIONS).all()
-
+                if inventory_index_id:
+                    return (
+                        session.query(self.TBL_VIOLATIONS)
+                        .filter(
+                            self.TBL_VIOLATIONS.inventory_index_id ==
+                            inventory_index_id)
+                        .all())
+                return (
+                    session.query(self.TBL_VIOLATIONS)
+                    .all())
 
     base.metadata.create_all(dbengine)
 
     return ViolationAccess
+
+# pylint: disable=invalid-name
+def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
+    """Convert a sqlalchemy row/record object to a dictionary.
+
+    Args:
+        sqlalchemy_obj (sqlalchemy_object): A sqlalchemy row/record object
+
+    Returns:
+        dict: A dict of sqlalchemy object's attributes.
+    """
+
+    return {c.key: getattr(sqlalchemy_obj, c.key)
+            for c in inspect(sqlalchemy_obj).mapper.column_attrs}
+
+def map_by_resource(violation_rows):
+    """Create a map of violation types to violations of that resource.
+
+    Args:
+        violation_rows (list): A list of dict of violation data.
+
+    Returns:
+        dict: A dict of violation types mapped to the list of corresponding
+            violation types, i.e. { resource => [violation_data...] }.
+    """
+    # The defaultdict makes it easy to add a value to a key without having
+    # to check if the key exists.
+    v_by_type = defaultdict(list)
+
+    for v_data in violation_rows:
+        try:
+            v_data['violation_data'] = json.loads(v_data['violation_data'])
+            v_data['inventory_data'] = json.loads(v_data['inventory_data'])
+        except ValueError:
+            LOGGER.warn('Invalid violation data, unable to parse json for %s',
+                        v_data['violation_data'])
+
+        v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
+        if v_resource:
+            v_by_type[v_resource].append(v_data)
+
+    return dict(v_by_type)
