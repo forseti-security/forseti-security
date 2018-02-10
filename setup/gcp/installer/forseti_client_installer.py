@@ -17,7 +17,9 @@
 from forseti_installer import ForsetiInstaller
 
 from configs.client_config import ClientConfig
-from util.gcloud import get_forseti_server_info, grant_client_svc_acct_roles
+from util.gcloud import (get_forseti_server_info,
+                         grant_client_svc_acct_roles,
+                         enable_os_login)
 
 
 class ForsetiClientInstaller(ForsetiInstaller):
@@ -60,6 +62,9 @@ class ForsetiClientInstaller(ForsetiInstaller):
                 self.project_id,
                 self.gcp_service_account,
                 self.user_can_grant_roles)
+            instance_name = '{}-vm'.format(deployment_name)
+            zone = '{}-c'.format(self.config.bucket_location)
+            enable_os_login(instance_name, zone)
         return success, deployment_name
 
     def get_configuration_values(self):

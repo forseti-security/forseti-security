@@ -29,11 +29,12 @@ from util.constants import (
     QUESTION_NOTIFICATION_RECIPIENT_EMAIL, QUESTION_GSUITE_SUPERADMIN_EMAIL,
     MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,
     MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION,
-    FirewallRuleAction, FirewallRuleDirection)
+    RULES_DIR_PATH, FirewallRuleAction, FirewallRuleDirection)
 from util.gcloud import (
     enable_apis, create_reuse_service_acct, choose_organization,
     choose_folder, choose_project, grant_server_svc_acct_roles,
     create_firewall_rule)
+from util.files import copy_file_to_destination
 from configs.server_config import ServerConfig
 
 
@@ -104,6 +105,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gsuite_service_account,
                 self.gcp_service_account,
                 self.user_can_grant_roles)
+
+        # Copy the rule directory to the GCS bucket
+        copy_file_to_destination(
+            RULES_DIR_PATH, bucket_name,
+            is_directory=True, dry_run=self.config.dry_run)
 
         # Create firewall rule to block out all the ingress traffic
         create_firewall_rule(

@@ -22,11 +22,11 @@ from util.utils import (
     print_banner, get_forseti_version, format_service_acct_id,
     infer_version)
 from util.constants import (
-    FORSETI_CONF_PATH, RULES_DIR_PATH, DEFAULT_BUCKET_FMT,
-    MESSAGE_FORSETI_BRANCH_DEPLOYED, MESSAGE_DEPLOYMENT_HAD_ISSUES,
-    MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION, MESSAGE_VIEW_DEPLOYMENT_DETAILS,
-    MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN,
-    MESSAGE_FORSETI_CONFIGURATION_GENERATED, DEPLOYMENT_TEMPLATE_OUTPUT_PATH)
+    FORSETI_CONF_PATH, DEPLOYMENT_TEMPLATE_OUTPUT_PATH,
+    MESSAGE_DEPLOYMENT_HAD_ISSUES, MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION,
+    MESSAGE_VIEW_DEPLOYMENT_DETAILS, MESSAGE_FORSETI_CONFIGURATION_GENERATED,
+    MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN, DEFAULT_BUCKET_FMT,
+    MESSAGE_FORSETI_BRANCH_DEPLOYED)
 from util.gcloud import (
     create_reuse_service_acct, check_billing_enabled, lookup_organization,
     get_gcloud_info, verify_gcloud_information, create_deployment)
@@ -123,10 +123,6 @@ class ForsetiInstaller:
             copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
-
-            copy_file_to_destination(
-                RULES_DIR_PATH, bucket_name,
-                is_directory=True, dry_run=self.config.dry_run)
 
             dpl_tpl_output_path = DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
                 bucket_name)
