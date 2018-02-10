@@ -130,4 +130,4 @@ class ForwardingRule(object):
         Returns:
             hash: The hash of the class properties.
         """
-        return hash(self._json)
+        return hash(self.json)
