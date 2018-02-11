@@ -238,13 +238,14 @@ class Rule(object):
                 yield self.RuleViolation(
                     resource_type='instance',
                     resource_id=instance_network_interface.name,
+                    full_name=instance_network_interface.full_name,
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,
                     violation_type='INSTANCE_NETWORK_INTERFACE_VIOLATION',
                     project=project,
                     network=network,
                     ip=ips,
-                    raw_data=instance_network_interface.as_json())
+                    inventory_data=instance_network_interface.as_json())
 
     # Rule violation.
     # resource_type: string
@@ -255,6 +256,6 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type', 'project',
-                                'network', 'ip', 'raw_data'])
+                               ['resource_type', 'resource_id', 'full_name',
+                                'rule_name', 'rule_index', 'violation_type',
+                                'project', 'network', 'ip', 'inventory_data'])

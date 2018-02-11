@@ -68,16 +68,19 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         for violation in violations:
             violation_data = {}
             violation_data['project'] = violation.project
+            violation_data['full_name'] = violation.full_name
             violation_data['network'] = violation.network
             violation_data['ip'] = violation.ip
-            violation_data['raw_data'] = violation.raw_data
+            violation_data['inventory_data'] = violation.inventory_data
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -139,6 +142,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             for instance_from_data_model in data_access.scanner_iter(
                     session, "instance"):
                 instance = Instance.from_json(
+                    instance_from_data_model.full_name,
                     instance_from_data_model.data,
                     instance_from_data_model.parent.name)
                 network_interfaces.append(instance.create_network_interfaces())

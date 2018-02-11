@@ -537,6 +537,7 @@ class IapScanner(base_scanner.BaseScanner):
                     session, 'instance', parent_type_name=parent_type_name):
                 instances.append(
                     instance_type.Instance.from_json(
+                        full_name='',
                         project_id=instance.parent.name,
                         json_string=instance.data))
         return instances
