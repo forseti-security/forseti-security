@@ -71,7 +71,7 @@ class ForwardingRule(object):
         self.subnetwork = subnetwork
         self.network = network
         self.backend_service = backend_service
-        self.json = raw_json
+        self._json = raw_json
 
 
     @classmethod
@@ -124,10 +124,17 @@ class ForwardingRule(object):
         forwarding_rule = json.loads(forwarding_rule_data)
         return ForwardingRule.from_dict(project_id, full_name, forwarding_rule)
 
+    def __repr__(self):
+        """String representation.
+        Returns:
+            str: Json string.
+        """
+        return self._json
+
     def __hash__(self):
         """Return hash of properties.
 
         Returns:
             hash: The hash of the class properties.
         """
-        return hash(self.json)
+        return hash(self._json)

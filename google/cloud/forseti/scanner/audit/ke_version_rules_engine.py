@@ -420,7 +420,7 @@ class Rule(object):
             project_id=ke_cluster.project_id,
             cluster_name=ke_cluster.name,
             node_pool_name=node_pool_name,
-            inventory_data=ke_cluster.json)
+            inventory_data=str(ke_cluster))
 
     def _node_versions_valid(self, ke_cluster):
         """Check the node pool versions against the supported version list.

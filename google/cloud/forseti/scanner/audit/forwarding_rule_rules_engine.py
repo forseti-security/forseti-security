@@ -93,7 +93,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
             full_name=forwarding_rule.full_name,
             rule_index=len(resource_rules),
             resource_type=ResourceType.FORWARDING_RULE,
-            inventory_data=forwarding_rule.json)
+            inventory_data=str(forwarding_rule))
 
     def add_rules(self, rules):
         """Add rules to the rule book.
