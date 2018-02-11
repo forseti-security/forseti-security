@@ -462,13 +462,15 @@ class Rule(object):
                 resource_type=resource_mod.ResourceType.BACKEND_SERVICE,
                 resource_name=resource.name,
                 resource_id=resource.resource_id,
+                full_name=resource.full_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='IAP_VIOLATION',
                 alternate_services_violations=alternate_services_violations,
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
-                    direct_sources_violations))
+                    direct_sources_violations),
+                inventory_data=resource.json)
         return None
 
     def __repr__(self):
@@ -532,7 +534,7 @@ class Rule(object):
 
 RuleViolation = namedtuple(
     'RuleViolation',
-    ['resource_type', 'resource_id', 'resource_name', 'rule_name',
-     'rule_index', 'violation_type',
-     'alternate_services_violations',
-     'iap_enabled_violation', 'direct_access_sources_violations'])
+    ['resource_type', 'resource_id', 'full_name', 'resource_name', 'rule_name',
+     'rule_index', 'violation_type', 'alternate_services_violations',
+     'iap_enabled_violation', 'direct_access_sources_violations',
+     'inventory_data'])
