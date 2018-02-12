@@ -17,9 +17,9 @@
 import os
 import subprocess
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 def is_grpc_service_dir(files):
     """Returns true iff the directory hosts a gRPC service.

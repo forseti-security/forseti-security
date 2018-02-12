@@ -24,7 +24,7 @@ from googleapiclient import errors
 from google.apputils import datelib
 
 from google.cloud.forseti.common.gcp_api import compute
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import gce_firewall_enforcer as fe
 
@@ -38,7 +38,7 @@ STATUS_UNSPECIFIED = enforcer_log_pb2.ENFORCEMENT_STATUS_UNSPECIFIED
 # before the status is changed to ERROR and the enforcement fails.
 MAX_ENFORCEMENT_RETRIES = 3
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ProjectEnforcer(object):

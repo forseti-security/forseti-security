@@ -20,7 +20,7 @@ import unittest
 from sendgrid.helpers import mail
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.util import email_util
+from google.cloud.forseti.common.util import email
 from google.cloud.forseti.common.util import errors as util_errors
 
 
@@ -32,7 +32,7 @@ class EmailUtilTest(ForsetiTestCase):
 
         email = mail.Mail()
         email_recipient='foo@company.com'
-        util = email_util.EmailUtil('fake_sendgrid_key')
+        util = email.EmailUtil('fake_sendgrid_key')
         email = util._add_recipients(email, email_recipient)
 
         self.assertEquals(1, len(email.personalizations))
@@ -47,7 +47,7 @@ class EmailUtilTest(ForsetiTestCase):
 
         email = mail.Mail()
         email_recipient='foo@company.com,bar@company.com'
-        util = email_util.EmailUtil('fake_sendgrid_key')
+        util = email.EmailUtil('fake_sendgrid_key')
         email = util._add_recipients(email, email_recipient)
 
         self.assertEquals(1, len(email.personalizations))
@@ -60,7 +60,7 @@ class EmailUtilTest(ForsetiTestCase):
     @mock.patch('sendgrid.helpers.mail.Mail', autospec=True)
     def test_no_sender_recip_no_email(self, mock_mail):
         """Test that no sender/recip doesn't send email."""
-        util = email_util.EmailUtil('fake_sendgrid_key')
+        util = email.EmailUtil('fake_sendgrid_key')
         with self.assertRaises(util_errors.EmailSendError):
             util.send()
 

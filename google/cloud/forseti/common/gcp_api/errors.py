@@ -14,9 +14,9 @@
 
 """API errors."""
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 API_EXECUTION_ERROR_ARG_FORMAT = '{}, {} = {},'
 # {Resource}, {Identifier_key} = {Identifier_value},

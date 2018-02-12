@@ -21,12 +21,12 @@ import re
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_type import bigquery_access_controls as bq_acls
 # pylint: enable=line-too-long
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.util.regex_util import escape_and_globify
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.regex import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class BigqueryRulesEngine(bre.BaseRulesEngine):

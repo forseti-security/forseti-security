@@ -18,11 +18,11 @@ import importlib
 import inspect
 import sys
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ScannerBuilder(object):

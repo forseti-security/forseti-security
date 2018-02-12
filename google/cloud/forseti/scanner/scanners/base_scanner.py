@@ -19,10 +19,10 @@ import os
 import shutil
 
 from google.cloud.forseti.common.gcp_api import storage
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class BaseScanner(object):
