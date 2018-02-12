@@ -32,7 +32,7 @@ import gflags as flags
 from google.apputils import app
 
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import batch_enforcer
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 
@@ -83,7 +83,7 @@ flags.DEFINE_integer('maximum_project_writer_threads', 1,
 # Setup flags
 FLAGS = flags.FLAGS
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class Error(Exception):

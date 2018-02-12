@@ -30,7 +30,7 @@ import gflags as flags
 # pylint: disable=line-too-long
 from google.apputils import app
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
@@ -48,7 +48,8 @@ flags.DEFINE_string(
     '-1',
     'Inventory index id')
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
+
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 # pylint: disable=inconsistent-return-statements

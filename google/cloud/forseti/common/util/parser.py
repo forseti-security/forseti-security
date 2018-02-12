@@ -19,10 +19,10 @@ import json
 from dateutil import parser as dateutil_parser
 
 from google.cloud.forseti.common.data_access import errors as da_errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 def parse_member_info(member):
