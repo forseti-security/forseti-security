@@ -1032,7 +1032,7 @@ class DefaultConfig(dict):
             server_ip = configs.get('server_ip')
             if server_ip:
                 return '{}:50051'.format(server_ip)
-        except IOError as err:
+        except (KeyError, IOError) as err:
             LOGGER.error(err)
 
         return self.DEFAULT_ENDPOINT

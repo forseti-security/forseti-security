@@ -78,9 +78,10 @@ def run(model_name=None, service_config=None):
     try:
         configs = file_loader.read_and_parse_file(
             service_config.forseti_config_file_path)
-    except IOError:
+    except (AttributeError, IOError) as err:
         LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try again.')
+                     'Please check your path and filename and try '
+                     'again. Error: {}'.format(err))
         return 1
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
