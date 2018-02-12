@@ -45,7 +45,7 @@ def clean(path):
     cwd = os.path.dirname(path)
 
     # Find all the .proto files.
-    for (root, dirs, files) in os.walk(cwd):
+    for (root, _, files) in os.walk(cwd):
         if is_grpc_service_dir(files):
             LOGGER.info(
                 'Cleaning a service proto, restart any servers: %s',
