@@ -47,9 +47,9 @@ def clean(path):
     # Find all the .proto files.
     for (root, dirs, files) in os.walk(cwd):
         if is_grpc_service_dir(files):
-            LOGGER.info('Skipping grpc service directory: %s', root)
-            dirs[:] = []
-            continue
+            LOGGER.info(
+                'Cleaning a service proto, restart any servers: %s',
+                root)
         for filename in files:
             full_filename = os.path.join(root, filename)
             if full_filename.endswith("_pb2.py") or full_filename.endswith(
