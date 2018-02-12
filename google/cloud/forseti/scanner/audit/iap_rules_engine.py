@@ -20,7 +20,7 @@ from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import regex
+from google.cloud.forseti.common.util import regular_expressions
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
@@ -140,16 +140,16 @@ class IapRuleBook(bre.BaseRuleBook):
                         'Missing resource ids in rule {}'.format(rule_index))
 
                 allowed_alternate_services = [
-                    regex.escape_and_globify(glob)
+                    regular_expressions.escape_and_globify(glob)
                     for glob in rule_def.get(
                         'allowed_alternate_services', '').split(',')
                     if glob]
                 allowed_direct_access_sources = [
-                    regex.escape_and_globify(glob)
+                    regular_expressions.escape_and_globify(glob)
                     for glob in rule_def.get(
                         'allowed_direct_access_sources', '').split(',')
                     if glob]
-                allowed_iap_enabled = regex.escape_and_globify(
+                allowed_iap_enabled = regular_expressions.escape_and_globify(
                     rule_def.get('allowed_iap_enabled', '*'))
 
                 # For each resource id associated with the rule, create a
