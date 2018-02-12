@@ -201,7 +201,7 @@ export PATH=$PATH:/usr/local/bin
 
 # Forseti environment variables
 export FORSETI_HOME=/home/ubuntu/forseti-security
-export FORSETI_CONF=$FORSETI_HOME/configs/forseti_conf_server.yaml
+export FORSETI_CONF=$FORSETI_HOME/configs/server/forseti_conf_server.yaml
 export SCANNER_BUCKET={scanner_bucket}
 EOF
 )"
