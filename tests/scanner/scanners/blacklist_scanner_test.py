@@ -33,7 +33,7 @@ def create_list_of_instence_network_interface_obj_from_data():
 
 class BlacklistScannerTest(ForsetiTestCase):
 
-    @patch('google.cloud.security.scanner.audit.' + \
+    @patch('google.cloud.forseti.scanner.audit.' + \
            'blacklist_rules_engine.urllib2.urlopen')
     def test_get_blacklist_url(self, mock_urlopen):
         a = Mock()
@@ -45,7 +45,7 @@ class BlacklistScannerTest(ForsetiTestCase):
         self.assertEqual(sorted(fbsd.EXPECTED_BLACKLIST_1), sorted(output))
         return output
 
-    @patch('google.cloud.security.scanner.audit.' + \
+    @patch('google.cloud.forseti.scanner.audit.' + \
            'blacklist_rules_engine.urllib2.urlopen')
     def test_build_rule_book_from_local_yaml_file_works(self, mock_urlopen):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -61,7 +61,7 @@ class BlacklistScannerTest(ForsetiTestCase):
         self.assertEqual('http://threatintel.localdomain/verybadips.txt',
                           rules_engine.rule_book.rule_defs['rules'][0]['url'])
 
-    @patch('google.cloud.security.scanner.audit.' + \
+    @patch('google.cloud.forseti.scanner.audit.' + \
            'blacklist_rules_engine.urllib2.urlopen')
     def test_blacklist_scanner_all_match(self, mock_urlopen):
         a = Mock()
