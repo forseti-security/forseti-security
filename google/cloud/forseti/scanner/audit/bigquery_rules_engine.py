@@ -22,7 +22,7 @@ import re
 from google.cloud.forseti.common.gcp_type import bigquery_access_controls as bq_acls
 # pylint: enable=line-too-long
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.regular_expressions import escape_and_globify
+from google.cloud.forseti.common.util.regular_exp import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
