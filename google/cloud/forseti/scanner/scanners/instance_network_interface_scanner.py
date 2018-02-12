@@ -17,13 +17,13 @@
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type.instance import Instance
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.audit import instance_network_interface_rules_engine
 # pylint: enable=line-too-long
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):

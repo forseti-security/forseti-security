@@ -21,7 +21,7 @@ import httplib
 import socket
 
 from google.cloud.forseti.common.util import errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
@@ -30,7 +30,7 @@ REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
 HTTP_SUCCESS = httplib.OK
 HTTP_GET = 'GET'
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):

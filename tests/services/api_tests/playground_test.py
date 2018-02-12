@@ -15,9 +15,9 @@
 
 import unittest
 from tests.services.api_tests.api_tester import ApiTestRunner
-from tests.services.utils.db import cleanup
-from tests.services.utils.db import create_test_engine
-from tests.services.utils.mock import MockServerConfig
+from tests.services.util.db import cleanup
+from tests.services.util.db import create_test_engine
+from tests.services.util.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory

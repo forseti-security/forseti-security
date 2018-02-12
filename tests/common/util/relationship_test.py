@@ -18,7 +18,7 @@ from tests.unittest_utils import ForsetiTestCase
 import mock
 import unittest
 
-from google.cloud.forseti.common.util import relationship_util
+from google.cloud.forseti.common.util import relationship
 
 
 class RelationshipUtilTest(ForsetiTestCase):
@@ -31,7 +31,7 @@ class RelationshipUtilTest(ForsetiTestCase):
         mock_starting_resource.type = 'organization'
         mock_starting_resource.id = 'org1'
         resource_ancestors = (
-            relationship_util.find_ancestors(
+            relationship.find_ancestors(
                 mock_starting_resource,
                 'organization/org1/'))
 
@@ -41,7 +41,7 @@ class RelationshipUtilTest(ForsetiTestCase):
         mock_starting_resource.type = 'project'
         mock_starting_resource.id = 'project3'
         resource_ancestors = (
-            relationship_util.find_ancestors(
+            relationship.find_ancestors(
                 mock_starting_resource,
                 'organization/org1/folder/folder2/project/project3/'))
 
@@ -54,7 +54,7 @@ class RelationshipUtilTest(ForsetiTestCase):
         mock_starting_resource.type = 'firewall'        
         mock_starting_resource.id = 'firewall5'
         resource_ancestors = (
-            relationship_util.find_ancestors(
+            relationship.find_ancestors(
                 mock_starting_resource,
                 ('organization/org1/folder/folder2/folder/folder3/'
                  'project/project4/firewall/firewall5/')))

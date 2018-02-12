@@ -20,11 +20,11 @@ Loads YAML rules either from local file system or Cloud Storage bucket.
 import abc
 
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class BaseRulesEngine(object):
