@@ -14,7 +14,6 @@
 
 """A script to prepare the source tree for building."""
 
-import argparse
 import os
 import subprocess
 
