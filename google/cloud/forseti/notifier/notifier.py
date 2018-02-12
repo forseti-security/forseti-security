@@ -76,26 +76,6 @@ def find_pipelines(pipeline_name):
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
-def _get_latest_inventory_index_id(service_config):
-    """Get latest snapshot timestamp.
-
-    Args:
-        service_config (dict): 2.0 service configs.
-
-    Returns:
-        string: The latest snapshot timestamp.
-    """
-
-    allowed_status = ('SUCCESS', 'PARTIAL_SUCCESS')
-    inventory_index_id = ''
-    with service_config.scoped_session() as session:
-        for item in DataAccess.list(session):
-            if item.status in allowed_status:
-                inventory_index_id = item.id
-    LOGGER.info(
-        'Latest success/partial_success inventory index id is: %s',
-        inventory_index_id)
-    return inventory_index_id
 
 def process(message):
     """Process messages about what notifications to send.
@@ -139,6 +119,7 @@ def process(message):
             payload.get('email_description'))
         return
 
+# pylint: disable=too-many-locals
 def run(inventory_index_id, service_config=None):
     """Run the notifier.
 
@@ -162,7 +143,9 @@ def run(inventory_index_id, service_config=None):
     notifier_configs = configs.get('notifier')
 
     if not inventory_index_id:
-        inventory_index_id = _get_latest_inventory_index_id(service_config)
+        with service_config.scoped_session() as session:
+            inventory_index_id = (
+                DataAccess.get_latest_inventory_index_id(session))
 
     # get violations
     violation_access_cls = scanner_dao.define_violation(
