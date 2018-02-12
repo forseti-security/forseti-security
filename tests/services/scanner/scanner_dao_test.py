@@ -16,11 +16,14 @@
 
 from itertools import izip
 import json
+import mock
 import unittest
 
-from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+from tests.unittest_utils import ForsetiTestCase
+from tests.common.data_access.test_data import fake_violation_dao_data as fake_data
 from tests.services.utils.db import create_test_engine
+
 
 FAKE_INVENTORY_INDEX_ID = 'aaa'
 
@@ -85,8 +88,61 @@ class ScannerDaoTest(ForsetiTestCase):
                         'key %s differs' % key)
                 else:
                     self.assertEquals(
-                        fake.get(key), json.loads(getattr(saved, 'data')),
+                        fake.get(key), json.loads(getattr(saved,
+                                                          'violation_data')),
                         'key %s differs' % key)
+
+    def test_convert_sqlalchemy_object_to_dict(self):
+        engine = create_test_engine()
+        violation_access_cls = scanner_dao.define_violation(engine)
+        violation_access = violation_access_cls(engine)
+
+        violation_access.create(FAKE_VIOLATIONS, FAKE_INVENTORY_INDEX_ID)
+        saved_violations = violation_access.list()
+
+        converted_violations_as_dict = []
+        for violation in saved_violations:
+            converted_violations_as_dict.append(
+                scanner_dao.convert_sqlalchemy_object_to_dict(violation))
+
+        expected_violations_as_dict = [
+            {'full_name': u'full_name_111',
+             'id': 1,
+             'inventory_data': u'inventory_data_111',
+             'inventory_index_id': u'aaa',
+             'resource_id': u'fake_firewall_111',
+             'resource_type': u'firewall_rule',
+             'rule_index': 111,
+             'rule_name': u'disallow_all_ports_111',
+             'violation_data': u'{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}',
+             'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_111'},
+            {'full_name': u'full_name_222',
+             'id': 2,
+             'inventory_data': u'inventory_data_222',
+             'inventory_index_id': u'aaa',
+             'resource_id': u'fake_firewall_222',
+             'resource_type': u'firewall_rule',
+             'rule_index': 222,
+             'rule_name': u'disallow_all_ports_222',
+             'violation_data': u'{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}',
+            'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222'}]
+
+        self.assertEquals(expected_violations_as_dict,
+                          converted_violations_as_dict)
+
+    def test_map_by_type(self):
+        """Test violation_dao.map_by_resource() util method."""
+        actual = scanner_dao.map_by_resource(
+            fake_data.ROWS_MAP_BY_RESOURCE_1)
+
+        self.assertEqual(
+            fake_data.EXPECTED_MAP_BY_RESOURCE_1, actual)
+
+        violation_data = (
+            actual.get('policy_violations')[0].get('violation_data'))
+        self.assertTrue(
+            type(violation_data) is dict,
+            'violation_data must be dict type to be compatible with slack')
 
 
 if __name__ == '__main__':
