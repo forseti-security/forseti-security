@@ -16,12 +16,12 @@
 
 from google.cloud.forseti.common.gcp_type.cloudsql_access_controls import (
     CloudSqlAccessControl)
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import cloudsql_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class CloudSqlAclScanner(base_scanner.BaseScanner):

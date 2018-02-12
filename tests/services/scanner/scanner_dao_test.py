@@ -22,7 +22,7 @@ import unittest
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.unittest_utils import ForsetiTestCase
 from tests.common.data_access.test_data import fake_violation_dao_data as fake_data
-from tests.services.utils.db import create_test_engine
+from tests.services.util.db import create_test_engine
 
 
 FAKE_INVENTORY_INDEX_ID = 'aaa'

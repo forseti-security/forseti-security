@@ -169,7 +169,7 @@ pip install -r setup/dependencies/pip_packages.txt
 chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
 
 # Build protos.
-python setup/utils/build_protos.py --clean
+python setup/util/build_protos.py --clean
 
 # Install Forseti
 python setup.py install
@@ -182,7 +182,7 @@ python setup.py install
 
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server
-sudo su $USER -c "python $FORSETI_HOME/setup/gcp/utils/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
+sudo su $USER -c "python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Start Forseti service depends on vars defined above.
 bash ./setup/gcp/scripts/initialize_forseti_services.sh
