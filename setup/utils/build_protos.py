@@ -14,11 +14,12 @@
 
 """A script to prepare the source tree for building."""
 
-import argparse
-import logging
 import os
 import subprocess
 
+from google.cloud.forseti.common.util import log_util
+
+LOGGER = log_util.get_logger(__name__)
 
 def is_grpc_service_dir(files):
     """Returns true iff the directory hosts a gRPC service.
@@ -40,35 +41,20 @@ def clean(path):
     """
     # Start running from one directory above the directory which is found by
     # this scripts's location as __file__.
-    logging.info("Cleaning out compiled protos.")
+    LOGGER.info("Cleaning out compiled protos.")
     cwd = os.path.dirname(path)
 
     # Find all the .proto files.
-    for (root, dirs, files) in os.walk(cwd):
+    for (root, _, files) in os.walk(cwd):
         if is_grpc_service_dir(files):
-            logging.info('Skipping grpc service directory: %s', root)
-            dirs[:] = []
-            continue
+            LOGGER.info(
+                'Cleaning a service proto, restart any servers: %s',
+                root)
         for filename in files:
             full_filename = os.path.join(root, filename)
             if full_filename.endswith("_pb2.py") or full_filename.endswith(
                     "_pb2.pyc"):
                 os.unlink(full_filename)
-
-
-def make_proto_service(root):
-    """Generate a proto service from the definition file.
-
-        Args:
-          root (string): The path to a root directory.
-    """
-    script_basename = "mkproto.sh"
-    script_path = os.path.join(root, script_basename)
-    subprocess.check_call(
-        [
-            "/bin/sh",
-            script_path
-        ])
 
 
 def make_proto(path):
@@ -99,10 +85,10 @@ def make_proto(path):
                 protos_to_compile.append(full_filename)
 
     if not protos_to_compile:
-        logging.info("No protos needed to be compiled.")
+        LOGGER.info("No protos needed to be compiled.")
     else:
         for proto in protos_to_compile:
-            logging.info("Compiling %s", proto)
+            LOGGER.info("Compiling %s", proto)
             protodir, protofile = os.path.split(proto)
 
             subprocess.check_call(
@@ -116,25 +102,3 @@ def make_proto(path):
                     protofile,
                 ],
                 cwd=protodir)
-
-
-def main():
-    """Generate python code from .proto files."""
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("--clean", dest="clean", action="store_true",
-                            help="Clean out compiled protos")
-    arg_parser.set_defaults(feature=False)
-    args = arg_parser.parse_args()
-
-    path = os.path.abspath(__file__)
-
-    if args.clean:
-        clean(path)
-    make_proto(path)
-
-
-if __name__ == "__main__":
-    main()
