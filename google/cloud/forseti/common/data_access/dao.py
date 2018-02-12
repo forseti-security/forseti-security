@@ -29,10 +29,10 @@ from google.cloud.forseti.common.data_access.errors import MySQLError
 from google.cloud.forseti.common.data_access.errors import NoResultsError
 from google.cloud.forseti.common.data_access.sql_queries import create_tables
 from google.cloud.forseti.common.data_access.sql_queries import select_data
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 CREATE_TABLE_MAP = {
     # appengine

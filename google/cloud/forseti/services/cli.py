@@ -25,9 +25,9 @@ import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 def define_playground_parser(parent):
     """Define the playground service parser.
