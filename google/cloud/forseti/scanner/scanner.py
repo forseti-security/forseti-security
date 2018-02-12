@@ -25,7 +25,7 @@ from google.apputils import app
 from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 
@@ -37,7 +37,7 @@ FLAGS = flags.FLAGS
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
@@ -84,7 +84,7 @@ def run(model_name=None, service_config=None):
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
 
-    log_util.set_logger_level_from_config(scanner_configs.get('loglevel'))
+    logger.set_logger_level_from_config(scanner_configs.get('loglevel'))
 
     # TODO: Figure out if we still need to get the latest model here,
     # or should it be set in the server context before calling the scanner.

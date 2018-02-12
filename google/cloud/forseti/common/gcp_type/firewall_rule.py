@@ -20,10 +20,10 @@ See: https://cloud.google.com/compute/docs/reference/latest/firewalls
 import json
 import netaddr
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=too-many-instance-attributes
 

@@ -25,7 +25,7 @@ from retrying import retry
 from google.cloud import forseti as forseti_security
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
 
@@ -37,7 +37,7 @@ HTTP_REQUEST_TIMEOUT = 30.0
 # Per thread storage.
 LOCAL_THREAD = threading.local()
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # Default value num_retries within HttpRequest execute method
 NUM_HTTP_RETRIES = 5

@@ -25,7 +25,7 @@ from google.cloud.forseti.services.utils import to_type_name
 
 
 class ServerUtilsTest(ForsetiTestCase):
-    """Test Forseti Server utils."""
+    """Test Forseti Server util."""
 
     def test_autoclose_stream_decorator(self):
         """Test autoclose_stream wrapper."""
