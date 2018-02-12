@@ -535,17 +535,17 @@ class ForsetiGcpSetup(object):
 
     def should_setup_explain(self):
         """Ask user if they want to configure setup for Explain."""
-        print_banner('Enable IAM Explain')
-        print('IAM Explain requires granting Forseti access on the '
+        print_banner('Enable Explain')
+        print('Explain requires granting Forseti access on the '
               'organization-level IAM.\n')
         choice = None
         if not self.advanced_mode:
             choice = 'y'
-            print('Automatically enabling IAM Explain (basic setup mode).')
+            print('Automatically enabling Explain (basic setup mode).')
 
         while not choice:
             choice = raw_input(
-                'Do you want to enable IAM Explain? (y/n) ').strip()
+                'Do you want to enable Explain? (y/n) ').strip()
         self.setup_explain = choice == 'y'
 
     def determine_access_target(self):
@@ -1033,7 +1033,7 @@ class ForsetiGcpSetup(object):
         if not self.gsuite_superadmin_email:
             # Ask for G Suite super admin email
             print('\nTo read G Suite Groups data, for example, if you want to '
-                  'use IAM Explain, please provide a G Suite super admin '
+                  'use Explain, please provide a G Suite super admin '
                   'email address. '
                   'This step is optional and can be configured later.')
             self.gsuite_superadmin_email = raw_input(
@@ -1213,7 +1213,7 @@ class ForsetiGcpSetup(object):
                       self.gsuite_service_account))
         else:
             print('If you want to enable G Suite Groups collection in '
-                  'Forseti, for example, to use IAM Explain), follow '
+                  'Forseti, for example, to use Explain), follow '
                   ' the steps in the guide below:\n\n'
                   '    '
                   'http://forsetisecurity.org/docs/howto/configure/'

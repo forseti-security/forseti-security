@@ -18,13 +18,13 @@
 
 FROM ubuntu:16.04
 
-# Expose our source so we can read in dependencies..
+# Expose our source so we can read in dependencies.
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 
 # Install host dependencies.
-RUN apt-get update
-RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs)
+RUN apt-get update -qq 1> /dev/null
+RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /devnull
 RUN rm -rf /var/lib/apt/lists/*
 
 # Install the CloudSDK for `gcloud`.
