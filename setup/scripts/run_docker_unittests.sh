@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Running tests."
+echo "Running unittests."
 
 # Check to see if we're on Travis.
 if [ ${TRAVIS+x} ]; then
@@ -24,7 +24,3 @@ else
     # We are NOT on Travis.
     docker -l error exec -it build /bin/bash -c "python -m unittest discover -s . -p '*_test.py'"
 fi
-
-echo "Running pylint."
-
-docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"

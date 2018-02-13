@@ -29,7 +29,8 @@ before_install:
 
 script:
   # Run pylint and unittests.
-  - ./setup/scripts/run_docker_tests.sh
+  - ./setup/scripts/run_docker_unittests.sh
+  - ./setup/scripts/run_docker_pylint.sh
 
 after_success:
   # Collect codecov results.
