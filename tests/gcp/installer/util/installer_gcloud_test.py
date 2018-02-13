@@ -195,8 +195,10 @@ class GcloudModuleTest(ForsetiTestCase):
             with captured_output():
                 gcloud.get_gcloud_info()
 
-    def test_check_cloudshell_no_flag_no_cloudshell(self):
+    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
+    def test_check_cloudshell_no_flag_no_cloudshell(self, test_patch):
         """Test check_cloudshell() when no cloudshell and no flag to bypass."""
+        test_patch.return_value = {}
         force_no_cloudshell = False
         is_dev_shell = False
         with self.assertRaises(SystemExit):
@@ -204,8 +206,10 @@ class GcloudModuleTest(ForsetiTestCase):
                 gcloud.verify_gcloud_information(
                     'id', 'user', force_no_cloudshell, is_dev_shell)
 
-    def test_check_cloudshell_with_flag_no_cloudshell(self):
+    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
+    def test_check_cloudshell_with_flag_no_cloudshell(self, test_patch):
         """Test check_cloudshell() when no cloudshell and flag to bypass."""
+        test_patch.return_value = {}
         output_head = 'Bypass Cloud Shell'
         force_no_cloudshell = True
         is_dev_shell = False
@@ -215,8 +219,10 @@ class GcloudModuleTest(ForsetiTestCase):
             output = out.getvalue().strip()
             self.assertTrue(output_head in output)
 
-    def test_check_cloudshell_no_flag_is_cloudshell(self):
+    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
+    def test_check_cloudshell_no_flag_is_cloudshell(self, test_patch):
         """Test check_cloudshell() when using cloudshell, no flag to bypass."""
+        test_patch.return_value = {}
         output_head = 'Using Cloud Shell'
         force_no_cloudshell = False
         is_dev_shell = True
@@ -226,8 +232,10 @@ class GcloudModuleTest(ForsetiTestCase):
             output = out.getvalue().strip()
             self.assertTrue(output_head in output)
 
-    def test_check_cloudshell_has_flag_is_cloudshell(self):
+    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
+    def test_check_cloudshell_has_flag_is_cloudshell(self, test_patch):
         """Test check_cloudshell() when using cloudshell and flag to bypass."""
+        test_patch.return_value = {}
         output_head = 'Bypass Cloud Shell'
         force_no_cloudshell = True
         is_dev_shell = True
