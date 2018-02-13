@@ -81,7 +81,7 @@ def run(model_name=None, service_config=None):
     except (AttributeError, IOError) as err:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try '
-                     'again. Error: {}'.format(err))
+                     'again. Error: %s', err)
         return 1
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
