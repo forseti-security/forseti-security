@@ -1,4 +1,4 @@
-# These are here instead of setup.py, that way they won't build from source.
+# Needed for compliation of Forseti protos during the build & install.
 protobuf
 grpcio
 grpcio-tools

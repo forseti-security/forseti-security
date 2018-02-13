@@ -161,9 +161,8 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip install --upgrade pip
-pip install --upgrade setuptools
-pip install -r setup/dependencies/pip_packages.txt
+pip install -q --upgrade setuptools pkg_resources pip wheel
+pip install -q --upgrade -r requirements.txt
 
 # Set ownership of config and rules to $USER
 chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
