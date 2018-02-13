@@ -21,10 +21,10 @@ WORKDIR /forseti-security/
 
 # Install Forseti Security dependencies.
 RUN pip install -q --upgrade setuptools pip wheel 1> /dev/null
-RUN pip install -q --upgrade -r setup/dependencies/pip_packages.txt 1> /dev/null
+RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
 
 # Install Forseti Security.
-RUN pip install .
+RUN python setup.py install
 
 # Test to see Forseti Security was installed.
 RUN yes | which forseti_server
