@@ -137,7 +137,7 @@ chown -R $USER {forseti_home}
 # Export variables
 {persist_forseti_vars}
 
-sudo echo "{persist_forseti_vars}" >> $USER_HOME/.bash_rc
+sudo echo "{persist_forseti_vars}" >> $USER_HOME/.bashrc
 
 echo "Execution of startup script finished"
 """.format(
