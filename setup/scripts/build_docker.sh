@@ -20,10 +20,10 @@ if [ -z ${TRAVIS+x} ]; then
     docker -l error rm -f $(docker ps -a -q)
 fi
 
-# Install docker only on Travis.
+# Install and update docker only on Travis.
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
-    echo "Updating docker to the latest on Travis."
+    echo "Install and then update docker to the latest on Travis."
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - 1> /dev/null
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
     sudo apt-get update -qq 1> /dev/null
