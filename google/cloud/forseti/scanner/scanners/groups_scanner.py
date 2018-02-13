@@ -14,8 +14,8 @@
 
 """Scanner for Google Groups."""
 
-import anytree
 import yaml
+import anytree
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.scanners import base_scanner
