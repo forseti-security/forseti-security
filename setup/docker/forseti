@@ -18,7 +18,7 @@ FROM ${BASE_IMAGE}
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 
-RUN pip install -q --upgrade setuptools pkg_resources pip wheel 1> /dev/null
+RUN pip install -q --upgrade setuptools pip wheel 1> /dev/null
 RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
-RUN python setup.py install 1> /dev/null
+RUN pip install .
 RUN yes | which forseti_server

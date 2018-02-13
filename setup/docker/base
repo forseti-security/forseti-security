@@ -22,5 +22,5 @@ FROM ubuntu:16.04
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 RUN apt-get update -qq 1> /dev/null
-RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /devnull
+RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null
 RUN rm -rf /var/lib/apt/lists/*
