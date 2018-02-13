@@ -18,9 +18,14 @@
 
 FROM ubuntu:16.04
 
-# Install Forseti dependencies.
+# Expose our source so we can read in dependencies.
 ADD . /forseti-security/
 WORKDIR /forseti-security/
+
+# Install host dependencies.
 RUN apt-get update -qq 1> /dev/null
 RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null
 RUN rm -rf /var/lib/apt/lists/*
+
+# Install the CloudSDK for `gcloud`.
+RUN curl -sSL https://sdk.cloud.google.com 1> /dev/null | bash
