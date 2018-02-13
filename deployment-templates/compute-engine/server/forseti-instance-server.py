@@ -166,7 +166,7 @@ pip install --upgrade setuptools
 pip install -r setup/dependencies/pip_packages.txt
 
 # Build protos.
-python setup/util/build_protos.py --clean
+python setup.py build_protos
 
 # Install Forseti
 python setup.py install
