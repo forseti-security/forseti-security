@@ -35,27 +35,22 @@ def run():
     parser.add_argument('--advanced',
                         action='store_true',
                         help='Advanced setup mode (more options)')
-
     parser.add_argument('--dry-run',
                         action='store_true',
                         help=('Generate config files but do not modify '
                               'GCP infrastructure (i.e. do not actually '
                               'set up Forseti)'))
+    parser.add_argument('--type',
+                       required=True,
+                       choices=['client', 'server'],
+                       help='Type of the installation, '
+                            'either client or server')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
                        help='The GCS bucket location')
     group.add_argument('--cloudsql-region',
                        help='The Cloud SQL region')
-
-    mutex_group = parser.add_mutually_exclusive_group(required=True)
-    mutex_group.add_argument('--server',
-                             action='store_true',
-                             help='Install Forseti server instance')
-    mutex_group.add_argument('--client',
-                             action='store_true',
-                             help='Install Forseti command line '
-                                  'interface instance')
 
     email_params = parser.add_argument_group(title='email')
     email_params.add_argument('--sendgrid-api-key',
@@ -65,7 +60,8 @@ def run():
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
     args = vars(parser.parse_args())
-    if args.get('server'):
+
+    if args.get('type') == 'server':
         forseti_setup = ForsetiServerInstaller(**args)
     else:
         forseti_setup = ForsetiClientInstaller(**args)
