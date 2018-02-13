@@ -1,3 +1,7 @@
+**If you have a general question and/or need help please use discuss@forsetisecurity.org**. Otherwise, if you've found a bug and have a feature request continue opening an issue
+
+---
+
 First, help us help you by providing the following information when opening an issue.
 
  - [ ] Which version of Forseti Security you're using (look in `google/cloud/security/__init__.py` in your installation).
