@@ -116,15 +116,15 @@ def define_inventory_parser(parent):
         'create',
         help='Start a new inventory')
     create_inventory_parser.add_argument(
+        'import_as',
+        metavar=('MODEL_NAME',),
+        help='Import the inventory when complete, requires a model name')
+    create_inventory_parser.add_argument(
         '--background',
         '-b',
         action='store_true',
         help='Execute inventory in background',
         )
-    create_inventory_parser.add_argument(
-        '--import_as',
-        metavar=('MODEL_NAME',),
-        help='Import the inventory when complete, requres a model name')
 
     delete_inventory_parser = action_subparser.add_parser(
         'delete',
