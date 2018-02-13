@@ -41,10 +41,10 @@ def run():
                               'GCP infrastructure (i.e. do not actually '
                               'set up Forseti)'))
     parser.add_argument('--type',
-                       required=True,
-                       choices=['client', 'server'],
-                       help='Type of the installation, '
-                            'either client or server')
+                        required=True,
+                        choices=['client', 'server'],
+                        help='Type of the installation, '
+                             'either client or server')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
