@@ -1443,6 +1443,47 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.assertEqual(expected_violations, actual_violations)
 
+    def test_policy_all_projects_must_have_owners_from_wildcard_domain(self):
+        """Test a policy where the owner belongs to the required domain and the
+        domain is specified as a wildcard user ('members': ['user:*@xyz.edu'])
+
+        Setup:
+            * Create a Rules Engine
+            * Create the policy bindings.
+            * Created expected violations list.
+
+        Expected results:
+            No policy violations found.
+        """
+        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
+            side_effect=[self.org789])
+
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES12, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
+            find_ancestor_mock
+
+        policy = {
+            'bindings': [{
+                'role': 'roles/owner',
+                'members': ['user:def@xyz.edu']
+            }]
+        }
+
+        actual_violations = set(rules_engine.find_policy_violations(
+            self.project1, policy))
+
+        # expected
+        expected_violations = set()
+
+        self.assertEqual(expected_violations, actual_violations)
+
 
 if __name__ == '__main__':
     unittest.main()

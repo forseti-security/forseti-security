@@ -432,3 +432,24 @@ RULES11 = {
         },
     ]
 }
+
+# Requiring projects to have owners from a specific domain, expressed as a
+# wildcard user
+RULES12 = {
+    'rules': [
+        {
+            'name': 'All projects must have an owner from my domain',
+            'mode': 'required',
+            'resource': [{
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': ['*']
+                }],
+            'inherit_from_parents': True,
+            'bindings': [{
+                    'role': 'roles/owner',
+                    'members': ['user:*@xyz.edu']
+                }]
+        },
+    ]
+}
