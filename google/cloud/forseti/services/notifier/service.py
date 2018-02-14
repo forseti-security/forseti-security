@@ -17,9 +17,9 @@
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -54,9 +54,9 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         """Run notifier."""
 
         LOGGER.info('Run notifier service with inventory index id: %s',
-                    request.inventory_id)
+                    request.inventory_index_id)
         result = self.notifier.run(
-            request.inventory_id,
+            request.inventory_index_id,
             self.service_config)
 
         reply = notifier_pb2.RunReply()

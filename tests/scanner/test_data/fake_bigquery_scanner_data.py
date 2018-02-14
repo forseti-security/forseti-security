@@ -18,27 +18,32 @@ from google.cloud.forseti.scanner.audit.bigquery_rules_engine import Rule
 BIGQUERY_DATA = [{
     'project_id': '12345678',
     'dataset_id': 'xza',
+    'full_name': '/org/1111/dataset/222',
     'access_domain': '',
     'access_user_by_email': 'user@mockedexample.com',
     'access_group_by_email': '',
     'access_special_group': '',
     'role': 'OWNER',
     'view': '',
+    'inventory_data': 'inventory_dataset222'
 }, {
     'project_id': '12345678',
     'dataset_id': 'xza',
+    'full_name': '/org/1111/dataset/333',
     'access_domain': '',
     'access_user_by_email': 'user1@mockedexample.com',
     'access_group_by_email': '',
     'access_special_group': '',
     'role': 'OWNER',
     'view': '',
+    'inventory_data': 'inventory_dataset333'
 }]
 
 BIGQUERY_EXPECTED_VIOLATION_LIST = [
     Rule.RuleViolation(
         domain='',
         resource_id='xza',
+        full_name='/org/1111/dataset/222',
         special_group='',
         group_email='',
         rule_name='BigQuery test rule',
@@ -48,10 +53,12 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
         dataset_id='xza',
         violation_type='BIGQUERY_VIOLATION',
         resource_type='bigquery_dataset',
-        view=''),
+        view='',
+        inventory_data='inventory_dataset222'),
     Rule.RuleViolation(
         domain='',
         resource_id='xza',
+        full_name='/org/1111/dataset/333',
         special_group='',
         group_email='',
         rule_name='BigQuery test rule',
@@ -61,5 +68,6 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
         dataset_id='xza',
         violation_type='BIGQUERY_VIOLATION',
         resource_type='bigquery_dataset',
-        view='')
+        view='',
+        inventory_data='inventory_dataset333')
 ]

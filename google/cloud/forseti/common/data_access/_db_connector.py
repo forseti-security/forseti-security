@@ -18,10 +18,10 @@ import MySQLdb
 from MySQLdb import OperationalError
 
 from google.cloud.forseti.common.data_access.errors import MySQLError
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 class DbConnector(object):
     """Database connector."""

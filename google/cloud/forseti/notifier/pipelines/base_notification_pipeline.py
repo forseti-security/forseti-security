@@ -19,9 +19,9 @@ import abc
 from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.data_access import violation_dao
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 # pylint: disable=too-many-instance-attributes

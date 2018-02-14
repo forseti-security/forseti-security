@@ -27,9 +27,9 @@ from functools import partial
 import json
 import pytz
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 def from_root_id(client, root_id):

@@ -20,13 +20,13 @@ from datetime import datetime
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_api import storage
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'

@@ -169,11 +169,11 @@ class InventoryImporter(object):
             with Inventory(self.session, self.inventory_id, True) as inventory:
                 root = inventory.get_root()
                 self.model.add_description(json.dumps({
-                    "source":"inventory",
-                    "source_info":str(inventory.index),
+                    'source': 'inventory',
+                    'source_info': {'inventory_index_id': inventory.index.id},
                     "source_root":self._type_name(root),
-                    "pristine":True,
-                    "GSuite_enabled":inventory.type_exists(
+                    'pristine': True,
+                    "gsuite_enabled":inventory.type_exists(
                         ["gsuite_group", "gsuite_user"])
                     }))
 
