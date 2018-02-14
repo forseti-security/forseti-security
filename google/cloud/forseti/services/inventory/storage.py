@@ -177,7 +177,7 @@ class Inventory(BASE):
     type_class = Column(Text)
     key = Column(Text)
     type = Column(Text)
-    data = Column(Text)
+    data = Column(Text(16777215))
     parent_key = Column(Text)
     parent_type = Column(Text)
     other = Column(Text)

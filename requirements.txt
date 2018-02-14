@@ -1,0 +1,12 @@
+# Any dependencies added here should be related to the compiling/testing of Forseti. Additions,
+# here should also be added to setup.py
+
+# Needed for compiling of Forseti protos during the build & install.
+protobuf
+grpcio
+grpcio-tools
+pyYAML
+
+# Needed for CI/CD and Development.
+codecov
+pylint

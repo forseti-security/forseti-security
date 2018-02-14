@@ -117,16 +117,14 @@ fi
 # Install Forseti Security.
 cd $USER_HOME
 rm -rf *forseti*
-pip install --upgrade pip
-pip install --upgrade setuptools
-pip install grpcio grpcio-tools google-apputils
+
+# Forseti dependencies
+pip install -q --upgrade setuptools pip wheel
+pip install -q --upgrade -r requirements.txt
 
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
-
-# Build protos.
-python build_protos.py --clean
 
 # Install Forseti
 python setup.py install
