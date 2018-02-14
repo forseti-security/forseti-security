@@ -192,6 +192,11 @@ class IamPolicyTest(ForsetiTestCase):
         other = IamPolicyMember.create_from('user:u@xyz.edu')
         self.assertFalse(member._check_domain_membership(other))
 
+    def test_check_domain_membership_fail_invalid_email(self):
+        member = IamPolicyMember.create_from('domain:xyz.edu')
+        other = IamPolicyMember.create_from('user:u!xyz.edu')
+        self.assertFalse(member._check_domain_membership(other))
+
 
 if __name__ == '__main__':
     unittest.main()

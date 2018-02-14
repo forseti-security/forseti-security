@@ -303,7 +303,11 @@ class IamPolicyMember(object):
         if self.type != 'domain' or other.type != 'user':
             return False
 
-        _, domain = other.name.rsplit('@', 1)
+        try:
+            _, domain = other.name.rsplit('@', 1)
+        except ValueError:
+            return False
+
         return self.name == domain
 
     def matches(self, other):
