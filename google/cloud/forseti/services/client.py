@@ -118,18 +118,14 @@ class ScannerClient(ForsetiClient):
         return echo == data
 
     @require_model
-    def run(self, config_dir):
+    def run(self):
         """Runs the scanner
-
-        Args:
-            config_dir(str): location of config file on server side
 
         Returns:
             proto: the returned proto message.
         """
 
-        request = scanner_pb2.RunRequest(
-            config_dir=config_dir)
+        request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
                              metadata=self.metadata())
 
@@ -155,18 +151,18 @@ class NotifierClient(ForsetiClient):
         echo = self.stub.Ping(notifier_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def run(self, inventory_id):
+    def run(self, inventory_index_id):
         """Runs the notifier.
 
         Args:
-            inventory_id (int): Inventory Index Id.
+            inventory_index_id (int): Inventory Index Id.
 
         Returns:
             proto: the returned proto message.
         """
 
         request = notifier_pb2.RunRequest(
-            inventory_id=inventory_id)
+            inventory_index_id=inventory_index_id)
         return self.stub.Run(request,
                              metadata=self.metadata())
 

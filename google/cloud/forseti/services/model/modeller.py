@@ -15,9 +15,9 @@
 """ Modeller API. """
 
 from google.cloud.forseti.services.model.importer import importer
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 class Modeller(object):
     """Implements the Modeller API."""

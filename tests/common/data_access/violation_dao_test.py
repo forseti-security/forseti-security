@@ -25,7 +25,6 @@ from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.data_access.sql_queries import select_data
 from google.cloud.forseti.common.gcp_type import iam_policy as iam
 from google.cloud.forseti.scanner.audit import rules
-from tests.common.data_access.test_data import fake_violation_dao_data as fake_data
 
 
 class ViolationDaoTest(ForsetiTestCase):
@@ -284,20 +283,6 @@ class ViolationDaoTest(ForsetiTestCase):
                 self.fake_snapshot_timestamp),
             (violation_type,))
         self.assertEqual(expected, violations)
-
-    def test_map_by_type(self):
-        """Test violation_dao.map_by_resource() util method."""
-        actual = violation_dao.map_by_resource(
-            fake_data.ROWS_MAP_BY_RESOURCE_1)
-
-        self.assertEqual(
-            fake_data.EXPECTED_MAP_BY_RESOURCE_1, actual)
-
-        violation_data = (
-            actual.get('policy_violations')[0].get('violation_data'))
-        self.assertTrue(
-            type(violation_data) is dict,
-            'violation_data must be dict type to be compatible with slack')
 
 
 if __name__ == '__main__':

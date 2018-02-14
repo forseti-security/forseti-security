@@ -29,11 +29,11 @@ from sendgrid.helpers import mail
 from retrying import retry
 
 from google.cloud.forseti.common.util import errors as util_errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class EmailUtil(object):

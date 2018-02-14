@@ -25,9 +25,9 @@ import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 def define_playground_parser(parent):
     """Define the playground service parser.
@@ -275,13 +275,9 @@ def define_scanner_parser(parent):
         title='action',
         dest='action')
 
-    create_scanner_parser = action_subparser.add_parser(
+    action_subparser.add_parser(
         'run',
         help='Run the scanner')
-
-    create_scanner_parser.add_argument(
-        'config_file',
-        help='Scanner config file')
 
 
 def define_notifier_parser(parent):
@@ -302,10 +298,12 @@ def define_notifier_parser(parent):
         help='Run the notifier')
 
     create_notifier_parser.add_argument(
-        '--inventory_id',
-        default=-1,
-        help='Id of the inventory index to send violation notifications'
-        )
+        '--inventory_index_id',
+        default=None,
+        help=('Id of the inventory index to send violation notifications. '
+              'If this is not specified, then the last inventory index id '
+              'will be used.'
+             ))
 
 def define_explainer_parser(parent):
     """Define the explainer service parser.
@@ -659,7 +657,7 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
-        result = client.run(config.config_file)
+        result = client.run()
         output.write(result)
 
     actions = {
@@ -681,7 +679,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        result = client.run(config.inventory_id)
+        result = client.run(config.inventory_index_id)
         output.write(result)
 
     actions = {

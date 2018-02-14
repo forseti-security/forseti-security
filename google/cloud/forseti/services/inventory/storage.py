@@ -23,15 +23,17 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
+from sqlalchemy import or_
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
-
-from sqlalchemy.ext.declarative import declarative_base
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base.storage import \
     Storage as BaseStorage
 
 # pylint: disable=too-many-instance-attributes
 
+LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
@@ -497,6 +499,28 @@ class DataAccess(object):
         session.expunge(result)
         return result
 
+    @classmethod
+    def get_latest_inventory_index_id(cls, session):
+        """List all inventory index entries.
+
+        Args:
+            session (object): Database session
+
+        Returns:
+            str: inventory index id
+        """
+
+        inventory_index = (
+            session.query(InventoryIndex)
+            .filter(or_(InventoryIndex.status == 'SUCCESS',
+                        InventoryIndex.status == 'PARTIAL_SUCCESS'))
+            .order_by(InventoryIndex.id.desc())
+            .first())
+        session.expunge(inventory_index)
+        LOGGER.info(
+            'Latest success/partial_success inventory index id is: %s',
+            inventory_index.id)
+        return inventory_index.id
 
 def initialize(engine):
     """Create all tables in the database if not existing.

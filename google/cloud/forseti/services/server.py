@@ -35,7 +35,7 @@ from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
@@ -333,7 +333,7 @@ def serve(endpoint, services,
         raise Exception("No services to start")
 
     # Configuring log level for the application
-    log_util.set_logger_level_from_config(log_level)
+    logger.set_logger_level_from_config(log_level)
 
     # Setting up configurations
     inventory_config = InventoryConfig(root_resource_id,

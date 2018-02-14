@@ -16,13 +16,13 @@
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.util.email_util import EmailUtil
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 # pylint: disable=arguments-differ

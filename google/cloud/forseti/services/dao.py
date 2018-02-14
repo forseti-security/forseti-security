@@ -17,13 +17,13 @@
 # pylint: disable=too-many-lines,singleton-comparison
 # pylint: disable=too-many-branches
 
-import datetime
-import os
 import binascii
 import collections
-import struct
+import datetime
 import hmac
 import json
+import os
+import struct
 from threading import Lock
 
 from sqlalchemy import Column
@@ -52,9 +52,10 @@ from google.cloud.forseti.services.utils import mutual_exclusive
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
+
 POOL_RECYCLE_SECONDS = 300
 PER_YIELD = 1024
 
@@ -2222,6 +2223,27 @@ class ModelManager(object):
             model = session.query(Model).filter(
                 Model.handle == model_name).one()
         model.add_description(new_description)
+
+    def get_description(self, model_name, session=None):
+        """Get the description to a model.
+
+        Args:
+            model_name (str): Model name
+            session (object): Database session.
+
+        Returns:
+            json: Dictionary of the model description.
+        """
+        if not session:
+            with self.modelmaker() as scoped_session:
+                model = scoped_session.query(Model).filter(
+                    Model.handle == model_name).one()
+                return json.loads(model.description)
+        else:
+            model = session.query(Model).filter(
+                Model.handle == model_name).one()
+            return json.loads(model.description)
+
 
 def create_engine(*args, **kwargs):
     """Create engine wrapper to patch database options.

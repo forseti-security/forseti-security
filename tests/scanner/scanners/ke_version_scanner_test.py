@@ -18,7 +18,7 @@ import unittest
 import mock
 
 from tests import unittest_utils
-from tests.services.utils.db import create_test_engine
+from tests.services.util.db import create_test_engine
 from google.cloud.forseti.scanner.scanners import ke_version_scanner
 from google.cloud.forseti.services.dao import ModelManager
 

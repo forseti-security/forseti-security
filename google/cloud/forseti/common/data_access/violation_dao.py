@@ -14,9 +14,6 @@
 
 """Provides the data access object (DAO) for Organizations."""
 
-import json
-
-from collections import defaultdict
 from collections import namedtuple
 
 import MySQLdb
@@ -26,10 +23,10 @@ from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.data_access.sql_queries import load_data
 from google.cloud.forseti.common.data_access.sql_queries import select_data
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ViolationDao(dao.Dao):
@@ -145,29 +142,3 @@ def _format_violation(violation, resource_name):
     """
     formatted_output = vm.VIOLATION_MAP[resource_name](violation)
     return formatted_output
-
-
-def map_by_resource(violation_rows):
-    """Create a map of violation types to violations of that resource.
-
-    Args:
-        violation_rows (list): A list of dict of violation data.
-
-    Returns:
-        dict: A dict of violation types mapped to the list of corresponding
-            violation types, i.e. { resource => [violation_data...] }.
-    """
-    v_by_type = defaultdict(list)
-
-    for v_data in violation_rows:
-        try:
-            v_data['violation_data'] = json.loads(v_data['violation_data'])
-        except ValueError:
-            LOGGER.warn('Invalid violation data, unable to parse json for %s',
-                        v_data['violation_data'])
-
-        v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
-        if v_resource:
-            v_by_type[v_resource].append(v_data)
-
-    return dict(v_by_type)

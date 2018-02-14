@@ -20,14 +20,14 @@ from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 # pylint: disable=no-member
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
-    """IAM Explain gRPC implementation."""
+    """Explain gRPC implementation."""
 
     HANDLE_KEY = "handle"
 
@@ -355,7 +355,7 @@ class GrpcExplainerFactory(object):
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the IAM Explain service.
+        """Create and register the Explain service.
 
         Args:
             server (object): Server to register service to.
