@@ -417,7 +417,9 @@ RULES10 = {
 RULES11 = {
     'rules': [
         {
-            'name': 'All projects must have an owner from my domain',
+            'name': (
+                'this rule uses domain in member of the IAM policy to '
+                'stipulate that all owners must belong to my domain'),
             'mode': 'required',
             'resource': [{
                     'type': 'project',
@@ -438,7 +440,9 @@ RULES11 = {
 RULES12 = {
     'rules': [
         {
-            'name': 'All projects must have an owner from my domain',
+            'name': (
+                'this rule uses a wildcard user in member of the IAM policy '
+                'to stipulate that all owners must belong to my domain'),
             'mode': 'required',
             'resource': [{
                     'type': 'project',

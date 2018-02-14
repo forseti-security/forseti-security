@@ -1403,7 +1403,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         ])
         self.assertItemsEqual(expected_violations, actual_violations)
 
-    def test_policy_all_projects_must_have_owners_from_domain(self):
+    def test_policy_all_projects_must_have_owners_from_domain_type(self):
         """Test a policy where the owner belongs to the required domain.
 
         Setup:
@@ -1442,7 +1442,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.assertEqual(expected_violations, actual_violations)
 
-    def test_policy_all_projects_must_have_owners_from_wildcard_domain(self):
+    def test_policy_all_projects_must_have_owners_from_wildcard_domain_of_user_type(self):
         """Test a policy where the owner belongs to a wildcard domain.
 
         Test a policy where the owner belongs to the required domain and the
@@ -1484,7 +1484,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.assertEqual(expected_violations, actual_violations)
 
-    def test_policy_all_projects_must_have_owners_from_domain_failure(self):
+    def test_policy_all_projects_must_have_owners_from_domain_type_fail(self):
         """Test a policy where the owner does not belong to a required domain.
 
         Setup:
@@ -1528,7 +1528,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         expected_violations = set([
             scanner_rules.RuleViolation(
                 rule_index=0,
-                rule_name='All projects must have an owner from my domain',
+                rule_name=test_rules.RULES11['rules'][0]['name'],
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
                 violation_type='REMOVED',
@@ -1538,7 +1538,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.assertEqual(expected_violations, actual_violations)
 
-    def test_policy_all_projects_must_have_owners_from_wcard_domain_fail(self):
+    def test_policy_all_projects_must_have_owners_from_wildcard_domain_of_user_type_fail(self):
         """Test a policy where the owner does not belongs to a wildcard domain.
 
         Test a policy where the owner does not belong to the required domain
@@ -1586,7 +1586,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         expected_violations = set([
             scanner_rules.RuleViolation(
                 rule_index=0,
-                rule_name='All projects must have an owner from my domain',
+                rule_name=test_rules.RULES12['rules'][0]['name'],
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
                 violation_type='REMOVED',
