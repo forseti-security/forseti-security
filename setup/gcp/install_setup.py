@@ -41,7 +41,6 @@ def run():
                               'GCP infrastructure (i.e. do not actually '
                               'set up Forseti)'))
     parser.add_argument('--type',
-                        required=True,
                         choices=['client', 'server'],
                         help='Type of the installation, '
                              'either client or server')
@@ -61,10 +60,17 @@ def run():
                               help='G Suite super admin email')
     args = vars(parser.parse_args())
 
+    if not args.get('type'):
+        # If the user didn't specify a type, install both server and client
+        ForsetiServerInstaller(**args).run_setup()
+        ForsetiClientInstaller(**args).run_setup()
+        return
+
     if args.get('type') == 'server':
         forseti_setup = ForsetiServerInstaller(**args)
     else:
         forseti_setup = ForsetiClientInstaller(**args)
+
     forseti_setup.run_setup()
 
 
