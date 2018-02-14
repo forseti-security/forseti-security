@@ -194,7 +194,7 @@ class IamPolicyTest(ForsetiTestCase):
 
     def test_user_is_in_domain_fail_invalid_email(self):
         member = IamPolicyMember.create_from('domain:xyz.edu')
-        other = IamPolicyMember.create_from('user:u!xyz.edu')
+        other = IamPolicyMember.create_from('user:u AT xyz DOT edu')
         self.assertFalse(member._user_is_in_domain(other))
 
 
