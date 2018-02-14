@@ -1425,8 +1425,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
+            find_ancestor_mock)
 
         policy = {
             'bindings': [{
@@ -1438,13 +1438,14 @@ class IamRulesEngineTest(ForsetiTestCase):
         actual_violations = set(rules_engine.find_policy_violations(
             self.project1, policy))
 
-        # expected
         expected_violations = set()
 
         self.assertEqual(expected_violations, actual_violations)
 
     def test_policy_all_projects_must_have_owners_from_wildcard_domain(self):
-        """Test a policy where the owner belongs to the required domain and the
+        """Test a policy where the owner belongs to a wildcard domain.
+
+        Test a policy where the owner belongs to the required domain and the
         domain is specified as a wildcard user ('members': ['user:*@xyz.edu'])
 
         Setup:
@@ -1466,8 +1467,8 @@ class IamRulesEngineTest(ForsetiTestCase):
         rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         find_ancestor_mock = mock.MagicMock(
             side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = \
-            find_ancestor_mock
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
+            find_ancestor_mock)
 
         policy = {
             'bindings': [{
@@ -1479,8 +1480,119 @@ class IamRulesEngineTest(ForsetiTestCase):
         actual_violations = set(rules_engine.find_policy_violations(
             self.project1, policy))
 
-        # expected
         expected_violations = set()
+
+        self.assertEqual(expected_violations, actual_violations)
+
+    def test_policy_all_projects_must_have_owners_from_domain_failure(self):
+        """Test a policy where the owner does not belong to a required domain.
+
+        Setup:
+            * Create a Rules Engine
+            * Create the policy bindings.
+            * Created expected violations list.
+
+        Expected results:
+            The user belongs to the wrong domain and this violation is detected.
+        """
+        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
+            side_effect=[self.org789])
+
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES11, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
+            find_ancestor_mock)
+
+        policy = {
+            'bindings': [{
+                'role': 'roles/owner',
+                'members': ['user:def@abc.edu']
+            }]
+        }
+
+        actual_violations = set(rules_engine.find_policy_violations(
+            self.project1, policy))
+
+        expected_outstanding = {
+            'roles/owner': [
+                IamPolicyMember.create_from('domain:xyz.edu')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='All projects must have an owner from my domain',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='REMOVED',
+                role='roles/owner',
+                members=tuple(expected_outstanding['roles/owner'])),
+        ])
+
+        self.assertEqual(expected_violations, actual_violations)
+
+    def test_policy_all_projects_must_have_owners_from_wcard_domain_fail(self):
+        """Test a policy where the owner does not belongs to a wildcard domain.
+
+        Test a policy where the owner does not belong to the required domain
+        and the domain is specified as a wildcard user ('members':
+        ['user:*@xyz.edu'])
+
+        Setup:
+            * Create a Rules Engine
+            * Create the policy bindings.
+            * Created expected violations list.
+
+        Expected results:
+            The user belongs to the wrong domain and this violation is detected.
+        """
+        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
+            side_effect=[self.org789])
+
+        # actual
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES12, self.fake_timestamp)
+        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
+        find_ancestor_mock = mock.MagicMock(
+            side_effect=[[self.org789]])
+        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
+            find_ancestor_mock)
+
+        policy = {
+            'bindings': [{
+                'role': 'roles/owner',
+                'members': ['user:def@abc.edu']
+            }]
+        }
+
+        actual_violations = set(rules_engine.find_policy_violations(
+            self.project1, policy))
+
+        expected_outstanding = {
+            'roles/owner': [
+                IamPolicyMember.create_from('user:*@xyz.edu')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name='All projects must have an owner from my domain',
+                resource_id=self.project1.id,
+                resource_type=self.project1.type,
+                violation_type='REMOVED',
+                role='roles/owner',
+                members=tuple(expected_outstanding['roles/owner'])),
+        ])
 
         self.assertEqual(expected_violations, actual_violations)
 
