@@ -42,22 +42,26 @@ class ViolationDaoTest(ForsetiTestCase):
             rules.RuleViolation(
                 resource_type='x',
                 resource_id='1',
+                full_name='',
                 rule_name='rule name',
                 rule_index=0,
                 violation_type='ADDED',
                 role='roles/editor',
                 members=[iam.IamPolicyMember.create_from(m)
                     for m in ['user:a@foo.com', 'user:b@foo.com']],
+                inventory_data='',
             ),
             rules.RuleViolation(
                 resource_type='%se' % ('a'*300),
                 resource_id='1',
+                full_name='',
                 rule_name='%sh' % ('b'*300),
                 rule_index=1,
                 violation_type='REMOVED',
                 role='%s' % ('c'*300),
                 members=[iam.IamPolicyMember.create_from(
                     'user:%s' % ('d'*300))],
+                inventory_data=''
             ),
         ]
         long_string = '{"member": "user:%s", "role": "%s"}' % (('d'*300),('c'*300))
