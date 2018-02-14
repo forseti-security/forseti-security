@@ -339,7 +339,7 @@ def define_model(model_name, dbengine, model_seed):
         name = Column(String(128), primary_key=True)
         title = Column(String(128), default='')
         stage = Column(String(128), default='')
-        description = Column(String(256), default='')
+        description = Column(String(1024), default='')
         custom = Column(Boolean, default=False)
         permissions = relationship('Permission',
                                    secondary=role_permissions,
