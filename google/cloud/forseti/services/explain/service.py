@@ -35,7 +35,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """Return the handle associated with the gRPC call.
 
         Args:
-            context(object): gRPC context
+            context (object): gRPC context
 
         Returns:
             str: handle of the GRPC call
@@ -47,8 +47,10 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, explainer_api):
-        """Args:
-            explainer_api(object): explainer library
+        """Initialize
+
+        Args:
+            explainer_api (object): explainer library
         """
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer_api
@@ -349,8 +351,10 @@ class GrpcExplainerFactory(object):
     """Factory class for Explain service gRPC interface"""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
 

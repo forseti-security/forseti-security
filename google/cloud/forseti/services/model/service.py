@@ -44,8 +44,10 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, modeller_api):
-        """Args:
-            modeller_api(object): model library
+        """Initialize
+
+        Args:
+            modeller_api (object): model library
         """
         super(GrpcModeller, self).__init__()
         self.modeller = modeller_api
@@ -90,7 +92,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of DeleteModelRequest
-            _(object): Not used
+            _ (object): Not used
 
         Returns:
             object: pb2 object of DeleteModelReply
@@ -105,7 +107,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of ListModelRequest
-            _(object): Not used
+            _ (object): Not used
 
         Yields:
             object: pb2 object of ModelSimplified
@@ -124,7 +126,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             request (object): pb2 object of GetModelRequest
-            _(object): Not used
+            _ (object): Not used
 
         Returns:
             object: pb2 object of ModelDetails
@@ -146,8 +148,10 @@ class GrpcModellerFactory(object):
     """Factory class for model service gRPC interface"""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
 

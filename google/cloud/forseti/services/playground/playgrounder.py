@@ -25,7 +25,9 @@ class Playgrounder(object):
     """Playground API implementation."""
 
     def __init__(self, config):
-        """Args:
+        """Initialize
+
+        Args:
             config (object): ServiceConfig in server
         """
         self.config = config

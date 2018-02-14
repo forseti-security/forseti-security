@@ -26,8 +26,9 @@ from google.cloud.forseti.services.utils import autoclose_stream
 
 def inventory_pb_from_object(inventory_index):
     """Convert internal inventory data structure to protobuf.
+
     Args:
-        inventory_index(object): InventoryIndex class in inventory storage
+        inventory_index (object): InventoryIndex class in inventory storage
 
     Returns:
         object: proto message of InventoryIndex
@@ -50,8 +51,10 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
     def __init__(self, inventory_api):
-        """Args:
-            inventory_api(object): inventory library
+        """Initialize
+
+        Args:
+            inventory_api (object): inventory library
         """
         super(GrpcInventory, self).__init__()
         self.inventory = inventory_api
@@ -142,8 +145,10 @@ class GrpcInventoryFactory(object):
     """Factory class for Inventory service gRPC interface"""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
 

@@ -500,6 +500,7 @@ def read_env(var_key, default):
 
 def define_parent_parser(parser_cls, config_env):
     """Define the parent parser.
+
     Args:
         parser_cls (type): Class to instantiate parser from.
         config_env (object): Configuration environment.
@@ -529,6 +530,7 @@ def define_parent_parser(parser_cls, config_env):
 
 def create_parser(parser_cls, config_env):
     """Create argument parser hierarchy.
+
     Args:
         parser_cls (cls): Class to instantiate parser from.
         config_env (object): Configuration environment

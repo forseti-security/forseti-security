@@ -151,7 +151,9 @@ def create_lazy(attribute, factory):
 class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""
     def __init__(self, config):
-        """Args:
+        """Initialize
+
+        Args:
             config (dict): GCP API client configuration
         """
         self.ad = None
@@ -172,6 +174,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_ad(self):
         """Create admin directory API client
+
         Returns:
             object: Client
         """
@@ -179,6 +182,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_appengine(self):
         """Create AppEngine API client
+
         Returns:
             object: Client
         """
@@ -187,12 +191,14 @@ class ApiClientImpl(ApiClient):
     def _create_bq(self):
         """Create bigquery API client
         Returns:
+ 
             object: Client
         """
         return bigquery.BigQueryClient(self.config)
 
     def _create_crm(self):
         """Create resource manager API client
+
         Returns:
             object: Client
         """
@@ -200,6 +206,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_cloudbilling(self):
         """Create cloud billing API client
+
         Returns:
             object: Client
         """
@@ -207,6 +214,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_cloudsql(self):
         """Create cloud sql API client
+
         Returns:
             object: Client
         """
@@ -214,6 +222,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_compute(self):
         """Create compute API client
+
         Returns:
             object: Client
         """
@@ -221,6 +230,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_container(self):
         """Create Kubernetes Engine API client
+
         Returns:
             object: Client
         """
@@ -228,6 +238,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_iam(self):
         """Create IAM API client
+
         Returns:
             object: Client
         """
@@ -235,6 +246,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_servicemanagement(self):
         """Create servicemanagement API client
+
         Returns:
             object: Client
         """
@@ -242,6 +254,7 @@ class ApiClientImpl(ApiClient):
 
     def _create_storage(self):
         """Create storage API client
+
         Returns:
             object: Client
         """

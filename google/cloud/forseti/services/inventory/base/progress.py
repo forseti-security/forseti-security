@@ -20,6 +20,7 @@
 class Progresser(object):
     """Progress state Interface"""
     def __init__(self):
+        """Initialize"""
         pass
 
     def on_new_object(self, resource):
@@ -67,6 +68,7 @@ class Progresser(object):
 class CliProgresser(object):
     """The command line progress state"""
     def __init__(self):
+        """Initialize"""
         self.errors = []
         self.warnings = []
 

@@ -23,8 +23,10 @@ class Explainer(object):
     """Implements the Explain API."""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
 
@@ -32,8 +34,8 @@ class Explainer(object):
         """Lists resources by resource name prefix.
 
             Args:
-                model_name(str): Model to operate on.
-                full_resource_name_prefix(ste): the prefix of the resource name
+                model_name (str): Model to operate on.
+                full_resource_name_prefix (ste): the prefix of the resource name
 
             Returns:
                 list: list of Resources match the query
@@ -52,8 +54,8 @@ class Explainer(object):
         """Lists a member from the model.
 
             Args:
-                model_name(str): Model to operate on.
-                member_name_prefix(str): the prefix of the member_name
+                model_name (str): Model to operate on.
+                member_name_prefix (str): the prefix of the member_name
 
             Returns:
                 list: list of Members that match the query
@@ -70,8 +72,8 @@ class Explainer(object):
         """Lists the role in the model matching the prefix.
 
             Args:
-                model_name(str): Model to operate on.
-                role_name_prefix(str): prefix of the role_name
+                model_name (str): Model to operate on.
+                role_name_prefix (str): prefix of the role_name
 
             Returns:
                 list: list of role_names that match the query
@@ -88,8 +90,8 @@ class Explainer(object):
         """Gets the IAM policy for the resource.
 
             Args:
-                model_name(str): Model to operate on.
-                resource(str): Resource to query
+                model_name (str): Model to operate on.
+                resource (str): Resource to query
 
             Returns:
                 dict: the IAM policy
@@ -106,10 +108,10 @@ class Explainer(object):
         """Checks access according to IAM policy for the resource.
 
             Args:
-                model_name(str): Model to operate on.
-                resource(str): Resource to check
-                permission(str): Permission to check
-                identity(str): Member to check
+                model_name (str): Model to operate on.
+                resource (str): Resource to check
+                permission (str): Permission to check
+                identity (str): Member to check
 
             Returns:
                 bool: whether such access is allowed
@@ -129,10 +131,10 @@ class Explainer(object):
 
         Args:
             model_name (str): Model to operate on.
-            member(str): Member to query
-            resources(list): Resources to query
-            permissions(list): Permissions to query
-            roles(list): Roles to query
+            member (str): Member to query
+            resources (list): Resources to query
+            permissions (list): Permissions to query
+            roles (list): Roles to query
 
         Returns:
             list: list of tuples,
@@ -158,17 +160,16 @@ class Explainer(object):
 
         Args:
             model_name (str): Model to operate on.
-            member(str): Member to query
-            resource(str): Resource to query
-            role(str): Role to query
-            permission(str): Permission to query
+            member (str): Member to query
+            resource (str): Resource to query
+            role (str): Role to query
+            permission (str): Permission to query
 
         Returns:
             tuples: (bindings, member_graph, resource_type_names)
-                    bindings, the bindings to grant the access
-                    member_graph, the graph to have member included in the
-                                  binding
-                    resource_type_names, the resource tree
+                bindings, the bindings to grant the access
+                member_graph, the graph to have member included in the binding
+                resource_type_names, the resource tree
         """
 
         LOGGER.debug("Explaining why the member has access to a resource, "
@@ -250,7 +251,7 @@ class Explainer(object):
 
         Args:
             model_name (str): Model to operate on.
-            member_name(str): Member name to query
+            member_name (str): Member name to query
             permission_names (list): Permission names to query for.
             expand_resources (bool): Whether to expand resources.
 
@@ -276,7 +277,7 @@ class Explainer(object):
         Args:
             model_name (str): Model to operate on.
             role_names (list): Role names to query for.
-            role_prefixes(list): Role name prefixes to query for
+            role_prefixes (list): Role name prefixes to query for
 
         Yields:
             tuple: Generator for (Role, Permission).

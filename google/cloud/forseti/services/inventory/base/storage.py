@@ -27,7 +27,7 @@ class Storage(object):
 
         Args:
             handle (str): If None, create a new index instead
-                          of opening an existing one.
+                of opening an existing one.
 
         Raises:
             NotImplementedError: Because not implemented.
@@ -107,6 +107,7 @@ class Memory(Storage):
     """The storage in memory"""
 
     def __init__(self):
+        """Initialize"""
         super(Memory, self).__init__()
         self.mem = {}
 
@@ -115,7 +116,7 @@ class Memory(Storage):
 
         Args:
             handle (str): If None, create a new index instead
-                          of opening an existing one.
+                of opening an existing one.
 
         Returns:
             str: inventory index
@@ -184,6 +185,7 @@ class Memory(Storage):
         return self
 
     def __exit__(self, type_p, value, tb):
+        """To support with statement for auto closing."""
         self.close()
 
     def commit(self):

@@ -41,7 +41,7 @@ def require_model(f):
     """Decorator to perform check that the model handle exists in the service.
 
     Args:
-        f(func): The model handle should exists when executing function f
+        f (func): The model handle should exists when executing function f
 
     Returns:
         wrapper: Function wrapper to perform model handle existence check.
@@ -82,8 +82,10 @@ class ForsetiClient(object):
     """Client base class."""
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
         """
         self.config = config
 
@@ -100,8 +102,10 @@ class ScannerClient(ForsetiClient):
     """Scanner service allows the client to scan a model."""
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+ 
+        Args:
+            config (ClientConfig): the client config object
         """
         super(ScannerClient, self).__init__(config)
         self.stub = scanner_pb2_grpc.ScannerStub(config['channel'])
@@ -134,8 +138,10 @@ class NotifierClient(ForsetiClient):
     """Notifier service allows the client to send violation notifications."""
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
         """
         super(NotifierClient, self).__init__(config)
         self.stub = notifier_pb2_grpc.NotifierStub(config['channel'])
@@ -176,8 +182,10 @@ class ModelClient(ForsetiClient):
     """
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
         """
         super(ModelClient, self).__init__(config)
         self.stub = model_pb2_grpc.ModellerStub(config['channel'])
@@ -197,11 +205,11 @@ class ModelClient(ForsetiClient):
         """Creates a new model, reply contains the handle.
 
         Args:
-            source(str): the source to create the model, either EMPTY
+            source (str): the source to create the model, either EMPTY
                 or INVENTORY
-            name(str): the name for the model
-            inventory_id(str): the id of the inventory to import from
-            background(bool): whether to run in background
+            name (str): the name for the model
+            inventory_id (str): the index id of the inventory to import from
+            background (bool): whether to run in background
 
         Returns:
             proto: the returned proto message of creating model
@@ -227,7 +235,7 @@ class ModelClient(ForsetiClient):
         """Get the details of a model by name or handle.
 
         Args:
-            model(str): the name or the handle for the data model to query
+            model (str): the name or the handle for the data model to query
 
         Returns:
             proto: the returned proto message of get model
@@ -242,7 +250,7 @@ class ModelClient(ForsetiClient):
         """Delete a model, deletes all corresponding data.
 
         Args:
-            model_name(str): the handle of the data model to delete
+            model_name (str): the handle of the data model to delete
 
         Returns:
             proto: the returned proto message of deleting model
@@ -263,8 +271,10 @@ class InventoryClient(ForsetiClient):
     """
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
         """
         super(InventoryClient, self).__init__(config)
         self.stub = inventory_pb2_grpc.InventoryStub(config['channel'])
@@ -284,9 +294,9 @@ class InventoryClient(ForsetiClient):
         """Creates a new inventory, with an optional import.
 
         Args:
-            background(bool): whether to run in background
-            import_as(str): the name of the data model to create after
-            inventory is created
+            background (bool): whether to run in background
+            import_as (str): the name of the data model to create after
+                inventory is created
 
         Returns:
             proto: the returned proto message of create inventory
@@ -301,7 +311,7 @@ class InventoryClient(ForsetiClient):
         """Returns all information about a particular inventory.
 
         Args:
-            inventory_id(str): the id of the inventory to query
+            inventory_id (str): the index id of the inventory to query
 
         Returns:
             proto: the returned proto message of get inventory
@@ -315,7 +325,7 @@ class InventoryClient(ForsetiClient):
         """Delete an inventory.
 
         Args:
-            inventory_id(str): the id of the inventory to delete
+            inventory_id (str): the index id of the inventory to delete
 
         Returns:
             proto: the returned proto message of delete inventory
@@ -346,8 +356,10 @@ class ExplainClient(ForsetiClient):
     """
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
         """
         super(ExplainClient, self).__init__(config)
         self.stub = explain_pb2_grpc.ExplainStub(config['channel'])
@@ -367,7 +379,7 @@ class ExplainClient(ForsetiClient):
         """List resources by name prefix.
 
         Args:
-            resource_name_prefix(str): the prefix of resource_name to query
+            resource_name_prefix (str): the prefix of resource_name to query
 
         Returns:
             proto: the returned proto message of list_resources
@@ -383,7 +395,7 @@ class ExplainClient(ForsetiClient):
         """List members by prefix.
 
         Args:
-            member_name_prefix(str): the prefix of member_name to query
+            member_name_prefix (str): the prefix of member_name to query
 
         Returns:
             proto: the returned proto message of list_members
@@ -399,7 +411,7 @@ class ExplainClient(ForsetiClient):
         """List roles by prefix, can be empty.
 
         Args:
-            role_name_prefix(str): the prefix of role_name to query
+            role_name_prefix (str): the prefix of role_name to query
 
         Returns:
             proto: the returned proto message of list_roles
@@ -415,7 +427,7 @@ class ExplainClient(ForsetiClient):
         """Get the IAM policy from the resource.
 
         Args:
-            full_resource_name(str): the resource to query iam_policy
+            full_resource_name (str): the resource to query iam_policy
 
         Returns:
             proto: the returned proto message of get_iam_policy
@@ -432,9 +444,9 @@ class ExplainClient(ForsetiClient):
         """Check access via IAM policy.
 
         Args:
-            full_resource_name(str): the resource to check iam_policy
-            permission_name(str): the permission to check iam_policy
-            member_name(str): the member to check iam_policy
+            full_resource_name (str): the resource to check iam_policy
+            permission_name (str): the permission to check iam_policy
+            member_name (str): the member to check iam_policy
 
         Returns:
             proto: the returned proto message of check_iam_policy
@@ -453,11 +465,11 @@ class ExplainClient(ForsetiClient):
         """List possibilities to grant access which is currently denied.
 
         Args:
-            member_name(str): the member to explain denied
-            resource_names(list): the resources to explain denied
-            roles(list): the roles to explain denied, one of roles or
+            member_name (str): the member to explain denied
+            resource_names (list): the resources to explain denied
+            roles (list): the roles to explain denied, one of roles or
                 permission_names should be not none
-            permission_names(list): the permissions to explain denied,
+            permission_names (list): the permissions to explain denied,
                 one of roles or permission_names should be not none
 
         Returns:
@@ -485,11 +497,11 @@ class ExplainClient(ForsetiClient):
            how a member has access to a resources.
 
         Args:
-            member_name(str): the member to explain granted
-            resource_name(str): the resource to explain granted
-            role(str): the role to explain granted, one of role or permission
+            member_name (str): the member to explain granted
+            resource_name (str): the resource to explain granted
+            role (str): the role to explain granted, one of role or permission
                 should be not none
-            permission(str): the permission to explain granted, one of role
+            permission (str): the permission to explain granted, one of role
                 or permission should be not none
 
         Returns:
@@ -516,9 +528,9 @@ class ExplainClient(ForsetiClient):
         """List members who have access to a given resource.
 
         Args:
-            resource_name(str): the resource to query who have access to
-            permission_names(list): the permissions to constrain the query
-            expand_groups(bool): whether to expand group relations
+            resource_name (str): the resource to query who have access to
+            permission_names (list): the permissions to constrain the query
+            expand_groups (bool): whether to expand group relations
 
         Returns:
             proto: the returned proto message of query_access_by_resources
@@ -537,10 +549,10 @@ class ExplainClient(ForsetiClient):
         """List resources to which a set of members has access to.
 
         Args:
-            member_name(str): the member to query what resources he/she
-            has access to
-            permission_names(list): the permissions to constrain the query
-            expand_resources(bool): whether to expand resource hierarchy
+            member_name (str): the member to query what resources he/she
+                               has access to
+            permission_names (list): the permissions to constrain the query
+            expand_resources (bool): whether to expand resource hierarchy
 
         Returns:
             proto: the returned proto message of query_access_by_members
@@ -585,7 +597,7 @@ class ExplainClient(ForsetiClient):
 
         Args:
             role_names (list): Role names to query for.
-            role_prefixes(list): Role name prefixes to query for.
+            role_prefixes (list): Role name prefixes to query for.
 
         Returns:
             proto: the returned proto message of query_permissions_by_roles
@@ -625,8 +637,10 @@ class PlaygroundClient(ForsetiClient):
     """
 
     def __init__(self, config):
-        """Args:
-            config(ClientConfig): the client config object
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
         """
         super(PlaygroundClient, self).__init__(config)
         self.stub = playground_pb2_grpc.PlaygroundStub(config['channel'])
@@ -648,8 +662,8 @@ class PlaygroundClient(ForsetiClient):
         """Add a role associated with a list of permissions to the model.
 
         Args:
-            role_name(str): the role to add to the data model
-            permissions(list): the permissions associated with this role
+            role_name (str): the role to add to the data model
+            permissions (list): the permissions associated with this role
 
         Returns:
             proto: the returned proto message of add_role
@@ -666,7 +680,7 @@ class PlaygroundClient(ForsetiClient):
         """Delete a role from the model.
 
         Args:
-            role_name(str): the role to be deleted from the data model
+            role_name (str): the role to be deleted from the data model
 
         Returns:
             proto: the returned proto message of delete_role
@@ -682,8 +696,8 @@ class PlaygroundClient(ForsetiClient):
         """Add a member to the member relationship.
 
         Args:
-            member_type_name(str): the member/group to add in the data model
-            parent_type_names(list): the parent groups associated with
+            member_type_name (str): the member/group to add in the data model
+            parent_type_names (list): the parent groups associated with
                 this member/group
 
         Returns:
@@ -704,9 +718,9 @@ class PlaygroundClient(ForsetiClient):
         """Delete a member from the member relationship.
 
         Args:
-            member_name(str): the member to be deleted from the data model
-            parent_name(str): the parent relation to delete in the data model
-            only_delete_relationship(bool): whether to only delete the relation
+            member_name (str): the member to be deleted from the data model
+            parent_name (str): the parent relation to delete in the data model
+            only_delete_relationship (bool): whether to only delete the relation
 
         Returns:
             proto: the returned proto message of delete_member
@@ -724,8 +738,8 @@ class PlaygroundClient(ForsetiClient):
         """Set the IAM policy on the resource.
 
         Args:
-            full_resource_name(str): the resource to set the new policy
-            policy(json): policy to be set on the resource
+            full_resource_name (str): the resource to set the new policy
+            policy (json): policy to be set on the resource
 
         Returns:
             proto: the returned proto message of set_iam_policy
@@ -755,9 +769,11 @@ class ClientComposition(object):
     DEFAULT_ENDPOINT = 'localhost:50051'
 
     def __init__(self, endpoint=DEFAULT_ENDPOINT, ping=False):
-        """Args:
-            endpoint(str): the channel endpoint
-            ping(bool): whether to ping to test if all services registered
+        """Initialize
+
+        Args:
+            endpoint (str): the channel endpoint
+            ping (bool): whether to ping to test if all services registered
 
         Raises:
             Exception: gRPC connected but services not registered
@@ -787,11 +803,11 @@ class ClientComposition(object):
         """Create a new model from the specified source.
 
         Args:
-            source(str): the source to create the model, either EMPTY
+            source (str): the source to create the model, either EMPTY
                 or INVENTORY
-            name(str): the name for the model
-            inventory_id(str): the id of the inventory to import from
-            background(bool): whether to run in background
+            name (str): the name for the model
+            inventory_id (str): the index id of the inventory to import from
+            background (bool): whether to run in background
 
         Returns:
             proto: the returned proto message of creating model
@@ -812,7 +828,7 @@ class ClientComposition(object):
         """Get the details of a model by name or handle
 
         Args:
-            model(str): the name or the handle for the data model to query
+            model (str): the name or the handle for the data model to query
 
         Returns:
             proto: the returned proto message of get model
@@ -824,7 +840,7 @@ class ClientComposition(object):
         """Switch the client into using a model.
 
         Args:
-            model_name(str): the handle of the data model to switch to
+            model_name (str): the handle of the data model to switch to
         """
 
         self.config['handle'] = model_name
@@ -833,7 +849,7 @@ class ClientComposition(object):
         """Delete a model. Deletes all associated data.
 
         Args:
-            model_name(str): the handle of the data model to delete
+            model_name (str): the handle of the data model to delete
 
         Returns:
             proto: the returned proto message of deleting model

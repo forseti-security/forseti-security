@@ -23,8 +23,10 @@ class Modeller(object):
     """Implements the Modeller API."""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
 

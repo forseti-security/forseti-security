@@ -408,9 +408,11 @@ class BufferedDbWriter(object):
     """Buffered db writing."""
 
     def __init__(self, session, max_size=1024):
-        """Args:
-            session(object): db session
-            max_size(int): max size of buffer
+        """Initialize
+
+        Args:
+            session (object): db session
+            max_size (int): max size of buffer
         """
         self.session = session
         self.buffer = []
@@ -536,10 +538,12 @@ class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
     def __init__(self, session, existing_id=None, readonly=False):
-        """Args:
-            session(object): db session
-            existing_id(str): The inventory id if wants to open an existing one
-            readonly(bool): whether to keep the inventory read-only
+        """Initialize
+
+        Args:
+            session (object): db session
+            existing_id (str): The inventory id if wants to open an existing one
+            readonly (bool): whether to keep the inventory read-only
         """
         self.session = session
         self.opened = False
@@ -582,7 +586,7 @@ class Storage(BaseStorage):
         """Open an existing inventory.
 
         Args:
-            existing_id(str): the id of the inventory to open
+            existing_id (str): the id of the inventory to open
 
         Returns:
             object: The inventory db row.
@@ -625,7 +629,7 @@ class Storage(BaseStorage):
 
         Args:
             handle (str): If None, create a new index instead
-                          of opening an existing one.
+                of opening an existing one.
 
         Returns:
             str: Index id of the opened or created inventory.
@@ -680,8 +684,8 @@ class Storage(BaseStorage):
 
         Raises:
             Exception: If the storage was not opened before or
-                       if the storage is writeable but neither
-                       rollback nor commit has been called.
+                if the storage is writeable but neither
+                rollback nor commit has been called.
         """
 
         if not self.opened:

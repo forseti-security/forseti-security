@@ -27,7 +27,9 @@ class Progress(object):
     """Progress state."""
 
     def __init__(self, final_message=False, step="", inventory_id=""):
-        """Args:
+        """Initialize
+
+        Args:
             final_message (bool): whether it is the last message
             step (str): which step is this progress about
             inventory_id (str): The id of the inventory
@@ -45,7 +47,9 @@ class QueueProgresser(Progress):
     """Queue based progresser."""
 
     def __init__(self, queue):
-        """Args:
+        """Initialize
+
+        Args:
             queue (Queue): progress queue to storage status
         """
         super(QueueProgresser, self).__init__()
@@ -107,14 +111,17 @@ class QueueProgresser(Progress):
 
 
 class FirstMessageQueueProgresser(QueueProgresser):
-    """Queue base progresser only delivers first message.
-    Then throws away all subsequent messages. This is used
-    to make sure that we're not creating an internal buffer of
+    """Queue base progresser
+
+    only delivers first message. Then throws away all subsequent messages.
+    This is used to make sure that we're not creating an internal buffer of
     infinite size as we're crawling in background without a queue consumer.
     """
 
     def __init__(self, *args, **kwargs):
-        """Args:
+        """Initialize
+
+        Args:
             *args (list): Arguments.
             **kwargs (dict): Arguments.
         """
@@ -193,8 +200,10 @@ class Inventory(object):
     """Inventory API implementation."""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
         init_storage(self.config.get_engine())
@@ -218,9 +227,10 @@ class Inventory(object):
 
         def do_inventory():
             """Run the inventory.
+
             Returns:
                 object: inventory crawler result if no model_name specified,
-                        otherwise, model import result
+                    otherwise, model import result
             """
 
             with self.config.scoped_session() as session:

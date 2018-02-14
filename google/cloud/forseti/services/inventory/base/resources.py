@@ -95,13 +95,16 @@ def cached(field_name):
 class ResourceFactory(object):
     """ResourceFactory for visitor pattern"""
     def __init__(self, attributes):
-        """Args:
+        """Initialize
+
+        Args:
             attributes (dict): attributes for a specific type of resource
         """
         self.attributes = attributes
 
     def create_new(self, data, root=False):
         """Create a new instance of a Resouce type
+
         Args:
             data (str): raw data
             root (Resource): root of this resource
@@ -117,7 +120,9 @@ class ResourceFactory(object):
 class ResourceKey(object):
     """ResourceKey class"""
     def __init__(self, res_type, res_id):
-        """Args:
+        """Initialize
+
+        Args:
             res_type (str): type of the resource
             res_id (str): id of the resource
         """
@@ -126,10 +131,11 @@ class ResourceKey(object):
 
 
 class Resource(object):
-    """The Resource tamplate
-    """
+    """The Resource template"""
     def __init__(self, data, root=False, contains=None, **kwargs):
-        """Args:
+        """Initialize
+
+        Args:
             data (str): raw data
             root (Resource): the root of this crawling
             contains (list): child types to crawl
@@ -154,7 +160,9 @@ class Resource(object):
         return datetime.datetime.now(pytz.UTC)
 
     def __getitem__(self, key):
-        """Args:
+        """Get Item
+
+        Args:
             key (str): key of this resource
 
         Returns:
@@ -169,6 +177,7 @@ class Resource(object):
             raise KeyError('key: {}, data: {}'.format(key, self._data))
 
     def __setitem__(self, key, value):
+        """set the value of an item"""
         self._data[key] = value
 
     def type(self):
@@ -387,7 +396,9 @@ class Resource(object):
         return False
 
     def __repr__(self):
-        """Returns:
+        """String Representation
+
+        Returns:
             str: Resource representation
         """
         return '{}<data="{}", parent_type="{}", parent_key="{}">'.format(
@@ -427,13 +438,17 @@ class Organization(Resource):
         return client.get_organization_iam_policy(self['name'])
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['name'].split('/', 1)[-1]
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'organization'
         """
         return 'organization'
@@ -458,7 +473,9 @@ class Folder(Resource):
         return folder
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['name'].split('/', 1)[-1]
@@ -476,7 +493,9 @@ class Folder(Resource):
         return client.get_folder_iam_policy(self['name'])
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'folder'
         """
         return 'folder'
@@ -547,7 +566,9 @@ class Project(Resource):
         return enabled_apis
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['projectId']
@@ -636,7 +657,9 @@ class Project(Resource):
         return self.is_api_enabled('storage-component.googleapis.com')
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'project'
         """
         return 'project'
@@ -673,13 +696,17 @@ class GcsBucket(Resource):
             return []
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'bucket'
         """
         return 'bucket'
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
@@ -716,13 +743,17 @@ class GcsObject(Resource):
             return []
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'storage_object'
         """
         return 'storage_object'
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
@@ -744,14 +775,18 @@ class KubernetesCluster(Resource):
                                                     self.zone())
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         # Clusters do not have globally unique IDs, use size_t hash of selfLink
         return '%u' % ctypes.c_size_t(hash(self['selfLink'])).value
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'kubernetes_cluster'
         """
         return 'kubernetes_cluster'
@@ -787,13 +822,17 @@ class DataSet(Resource):
             self['datasetReference']['datasetId'])
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'dataset'
         """
         return 'dataset'
@@ -803,14 +842,18 @@ class AppEngineApp(Resource):
     """The Resource implementation for AppEngineApp
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         # Apps do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'appengine_app'
         """
         return 'appengine_app'
@@ -820,14 +863,18 @@ class AppEngineService(Resource):
     """The Resource implementation for AppEngineService
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         # Services do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'appengine_service'
         """
         return 'appengine_service'
@@ -837,14 +884,18 @@ class AppEngineVersion(Resource):
     """The Resource implementation for AppEngineVersion
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         # Versions do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'appengine_version'
         """
         return 'appengine_version'
@@ -854,14 +905,18 @@ class AppEngineInstance(Resource):
     """The Resource implementation for AppEngineInstance
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         # Instances do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'appengine_instance'
         """
         return 'appengine_instance'
@@ -871,13 +926,17 @@ class ComputeProject(Resource):
     """The Resource implementation for ComputeProject
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'compute_project'
         """
         return 'compute_project'
@@ -887,13 +946,17 @@ class Instance(Resource):
     """The Resource implementation for Instance
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'instance'
         """
         return 'instance'
@@ -903,13 +966,17 @@ class Firewall(Resource):
     """The Resource implementation for Firewall
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'firewall'
         """
         return 'firewall'
@@ -919,13 +986,17 @@ class Image(Resource):
     """The Resource implementation for Image
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'image'
         """
         return 'image'
@@ -935,13 +1006,17 @@ class InstanceGroup(Resource):
     """The Resource implementation for InstanceGroup
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'instancegroup'
         """
         return 'instancegroup'
@@ -951,13 +1026,17 @@ class InstanceGroupManager(Resource):
     """The Resource implementation for InstanceGroupManager
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'instancegroupmanager'
         """
         return 'instancegroupmanager'
@@ -967,13 +1046,17 @@ class InstanceTemplate(Resource):
     """The Resource implementation for InstanceTemplate
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'instancetemplate'
         """
         return 'instancetemplate'
@@ -983,13 +1066,17 @@ class Network(Resource):
     """The Resource implementation for Network
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'network'
         """
         return 'network'
@@ -999,13 +1086,17 @@ class Subnetwork(Resource):
     """The Resource implementation for Subnetwork
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'subnetwork'
         """
         return 'subnetwork'
@@ -1015,13 +1106,17 @@ class BackendService(Resource):
     """The Resource implementation for BackendService
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'backendservice'
         """
         return 'backendservice'
@@ -1031,13 +1126,17 @@ class ForwardingRule(Resource):
     """The Resource implementation for ForwardingRule
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'forwardingrule'
         """
         return 'forwardingrule'
@@ -1047,18 +1146,27 @@ class CuratedRole(Resource):
     """The Resource implementation for CuratedRole
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['name']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'role'
         """
         return 'role'
 
     def parent(self):
+        """Get parent of this resource
+
+        Returns:
+            None: curated role doesn't have parent
+        """
         # Curated roles have no parent.
         return None
 
@@ -1067,13 +1175,17 @@ class Role(Resource):
     """The Resource implementation for role
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: key of this resource
         """
         return self['name']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'role'
         """
         return 'role'
@@ -1083,13 +1195,17 @@ class CloudSqlInstance(Resource):
     """The Resource implementation for cloudsqlinstance
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: id key of this resource
         """
         return self['name']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'cloudsqlinstance'
         """
         return 'cloudsqlinstance'
@@ -1111,13 +1227,17 @@ class ServiceAccount(Resource):
         return client.get_serviceaccount_iam_policy(self['name'])
 
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: id key of this resource
         """
         return self['uniqueId']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'serviceaccount'
         """
         return 'serviceaccount'
@@ -1127,7 +1247,9 @@ class ServiceAccountKey(Resource):
     """The Resource implementation for serviceaccount_key
     """
     def key(self):
-        """Key name is in the format:
+        """Get key of this resource
+
+        Key name is in the format:
            projects/{project_id}/serviceAccounts/{service_account}/keys/{key_id}
         Returns:
             str: id key of this resource
@@ -1135,7 +1257,9 @@ class ServiceAccountKey(Resource):
         return self['name'].split('/')[-1]
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'serviceaccount_key'
         """
         return 'serviceaccount_key'
@@ -1145,13 +1269,17 @@ class GsuiteUser(Resource):
     """The Resource implementation for gsuite_user
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: id key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'gsuite_user'
         """
         return 'gsuite_user'
@@ -1161,13 +1289,17 @@ class GsuiteGroup(Resource):
     """The Resource implementation for gsuite_group
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: id key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'gsuite_group'
         """
         return 'gsuite_group'
@@ -1177,13 +1309,17 @@ class GsuiteUserMember(Resource):
     """The Resource implementation for gsuite_user_member
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: id key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'gsuite_user_member'
         """
         return 'gsuite_user_member'
@@ -1193,13 +1329,17 @@ class GsuiteGroupMember(Resource):
     """The Resource implementation for gsuite_group_member
     """
     def key(self):
-        """Returns:
+        """Get key of this resource
+
+        Returns:
             str: id key of this resource
         """
         return self['id']
 
     def type(self):
-        """Returns:
+        """Get type of this resource
+
+        Returns:
             str: 'gsuite_group_member'
         """
         return 'gsuite_group_member'
@@ -1209,7 +1349,9 @@ class ResourceIterator(object):
     """The Resource iterator template
     """
     def __init__(self, resource, client):
-        """Args:
+        """Initialize
+
+        Args:
             resource (Resource): The parent
             client (object): GCP API Client
         """

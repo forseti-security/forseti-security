@@ -42,8 +42,10 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, playgrounder_api):
-        """Args:
-            playgrounder_api(object): playgrounder library
+        """Initialize
+
+        Args:
+            playgrounder_api (object): playgrounder library
         """
         super(GrpcPlaygrounder, self).__init__()
         self.playgrounder = playgrounder_api
@@ -151,8 +153,10 @@ class GrpcPlaygrounderFactory(object):
     """Factory class for Playground service gRPC interface"""
 
     def __init__(self, config):
-        """Args:
-            config(object): ServiceConfig in server
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
         """
         self.config = config
 

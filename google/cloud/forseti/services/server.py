@@ -158,10 +158,12 @@ class InventoryConfig(AbstractInventoryConfig):
                  gsuite_admin_email,
                  *args,
                  **kwargs):
-        """Args:
-            root_resource_id(str): Root resource to start crawling from
-            gsuite_sa_path(str): Path to G Suite service account private keyfile
-            gsuite_admin_email(str): G Suite admin email
+        """Initialize
+
+        Args:
+            root_resource_id (str): Root resource to start crawling from
+            gsuite_sa_path (str): Path to G Suite service account private keyfile
+            gsuite_admin_email (str): G Suite admin email
             args: args when creating InventoryConfig
             kwargs: kwargs when creating InventoryConfig
         """
@@ -226,11 +228,13 @@ class ServiceConfig(AbstractServiceConfig):
                  forseti_db_connect_string,
                  forseti_config_file_path,
                  endpoint):
-        """Args:
-            inventory_config(InventoryConfig): the inventory_config
-            forseti_db_connect_string(str): Forseti database string
-            forseti_config_file_path(str): Path to Forseti configuration file.
-            endpoint(str): server endpoint
+        """Initialize
+
+        Args:
+            inventory_config (InventoryConfig): the inventory_config
+            forseti_db_connect_string (str): Forseti database string
+            forseti_config_file_path (str): Path to Forseti configuration file.
+            endpoint (str): server endpoint
         """
 
         super(ServiceConfig, self).__init__()
@@ -310,16 +314,16 @@ def serve(endpoint, services,
     """Instantiate the services and serves them via gRPC.
 
     Args:
-        endpoint(str): the server channel endpoint
-        services(list): services to register on the server
-        forseti_db_connect_string(str): Forseti database string
-        forseti_config_file_path(str): Path to Forseti configuration file.
-        gsuite_sa_path(str): Path to G Suite service account private keyfile
-        gsuite_admin_email(str): G Suite admin email
-        root_resource_id(str): Root resource to start crawling from
-        log_level(str): Sets the threshold for Forseti's logger.
-        max_workers(int): maximum number of workers for the crawler
-        wait_shutdown_secs(int): seconds to wait before shutdown
+        endpoint (str): the server channel endpoint
+        services (list): services to register on the server
+        forseti_db_connect_string (str): Forseti database string
+        forseti_config_file_path (str): Path to Forseti configuration file.
+        gsuite_sa_path (str): Path to G Suite service account private keyfile
+        gsuite_admin_email (str): G Suite admin email
+        root_resource_id (str): Root resource to start crawling from
+        log_level (str): Sets the threshold for Forseti's logger.
+        max_workers (int): maximum number of workers for the crawler
+        wait_shutdown_secs (int): seconds to wait before shutdown
 
     Raises:
         Exception: No services to start

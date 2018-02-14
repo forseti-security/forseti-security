@@ -24,7 +24,7 @@ def autoclose_stream(f):
     """Decorator to close gRPC stream.
 
     Args:
-        f(func): The function to decorate
+        f (func): The function to decorate
 
     Returns:
         wrapper: wrapper of the decorator
@@ -44,7 +44,7 @@ def autoclose_stream(f):
             """Returns true iff the connection is closed.
 
             Args:
-                context(object): the connection to check
+                context (object): the connection to check
 
             Returns:
                 bool: whether the connection is closed
@@ -63,8 +63,8 @@ def logcall(f, level=logging.CRITICAL):
     """Call logging decorator.
 
     Args:
-        f(func): The function to decorate
-        level(str): the level of logging
+        f (func): The function to decorate
+        level (str): the level of logging
 
     Returns:
         wrapper: wrapper of the decorator
@@ -91,7 +91,7 @@ def mutual_exclusive(lock):
     """ Mutex decorator.
 
     Args:
-        lock(object): The lock to lock out exclusive method
+        lock (object): The lock to lock out exclusive method
 
     Returns:
         object: decorator generator
@@ -101,7 +101,7 @@ def mutual_exclusive(lock):
         """Decorator generator.
 
         Args:
-            f(func): the function to decorate
+            f (func): the function to decorate
 
         Returns:
             func: the decorated function
@@ -142,7 +142,7 @@ def full_to_type_name(full_resource_name):
     """Creates a type/name format from full resource name.
 
     Args:
-        full_resource_name(str): the full_resource_name of the resource
+        full_resource_name (str): the full_resource_name of the resource
 
     Returns:
         str: type_name of that resource
@@ -155,8 +155,8 @@ def to_full_resource_name(full_parent_name, resource_type_name):
     """Creates a full resource name by parent full name and type name.
 
     Args:
-        full_parent_name(str): the full_resource_name of the parent
-        resource_type_name(str): the full_resource_name of the child
+        full_parent_name (str): the full_resource_name of the parent
+        resource_type_name (str): the full_resource_name of the child
 
     Returns:
         str: full_resource_name of the child
@@ -169,8 +169,8 @@ def to_type_name(resource_type, resource_name):
     """Creates a type/name from type and name.
 
     Args:
-        resource_type(str): the resource type
-        resource_name(str): the resource name
+        resource_type (str): the resource type
+        resource_name (str): the resource name
 
     Returns:
         str: type_name of the resource
@@ -183,7 +183,7 @@ def split_type_name(resource_type_name):
     """Split the type name of the resource
 
     Args:
-        resource_type_name(str): the type_name of the resource
+        resource_type_name (str): the type_name of the resource
 
     Returns:
         tuples: type and name of the resource
@@ -196,7 +196,7 @@ def resource_to_type_name(resource):
     """Creates a type/name format from a resource dbo.
 
     Args:
-        resource(object): the resource to get the the type_name
+        resource (object): the resource to get the the type_name
 
     Returns:
         str: type_name of the resource
@@ -209,7 +209,7 @@ def get_sql_dialect(session):
     """Return the active SqlAlchemy dialect.
 
     Args:
-        session(object): the session to check for SqlAlchemy dialect
+        session (object): the session to check for SqlAlchemy dialect
 
     Returns:
         str: name of the SqlAlchemy dialect
