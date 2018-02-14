@@ -21,10 +21,10 @@ from google.cloud.forseti.common.data_access.sql_queries import select_data
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ProjectDao(dao.Dao):

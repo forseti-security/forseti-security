@@ -15,10 +15,18 @@
 ARG BASE_IMAGE=forseti/base
 FROM ${BASE_IMAGE}
 
+# Expose our source so we can install Forseti Security.
 ADD . /forseti-security/
 WORKDIR /forseti-security/
 
-RUN pip install -q --upgrade pip
-RUN pip install -q -r setup/dependencies/pip_packages.txt --upgrade
+# Install Forseti Security dependencies.
+# This should stay in sync with the deployment script used on the host machine in
+#   deployment-templates/compute-engine/forseti-instance.py
+RUN pip install -q --upgrade setuptools pip wheel 1> /dev/null
+RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
+
+# Install Forseti Security.
 RUN python setup.py install
+
+# Test to see Forseti Security was installed.
 RUN yes | which forseti_server

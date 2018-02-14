@@ -29,8 +29,8 @@ import time
 import mock
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks
-from tests.services.utils.db import create_test_engine_with_file
-from tests.services.utils.mock import MockServerConfig
+from tests.services.util.db import create_test_engine_with_file
+from tests.services.util.mock import MockServerConfig
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition

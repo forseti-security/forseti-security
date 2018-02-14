@@ -24,15 +24,16 @@ from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
 from sqlalchemy import or_
+from sqlalchemy import exists
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base.storage import \
     Storage as BaseStorage
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 # TODO: Remove this when time allows
@@ -177,7 +178,7 @@ class Inventory(BASE):
     type_class = Column(Text)
     key = Column(Text)
     type = Column(Text)
-    data = Column(Text)
+    data = Column(Text(16777215))
     parent_key = Column(Text)
     parent_type = Column(Text)
     other = Column(Text)
@@ -839,6 +840,36 @@ class Storage(BaseStorage):
         for row in base_query.yield_per(PER_YIELD):
             yield row
     # pylint: enable=too-many-locals
+
+    def get_root(self):
+        """get the resource root from the inventory
+
+        Returns:
+            object: A row in gcp_inventory of the root
+        """
+        return self.session.query(Inventory).filter(
+            and_(
+                Inventory.index == self.index.id,
+                Inventory.key == Inventory.parent_key,
+                Inventory.type == Inventory.parent_type,
+                Inventory.type_class == InventoryTypeClass.RESOURCE
+                )).first()
+
+    def type_exists(self,
+                    type_list=None):
+        """Check if certain types of resources exists in the inventory
+
+        Args:
+            type_list (list): List of types to check
+
+        Returns:
+            bool: If these types of resources exists
+        """
+        return self.session.query(exists().where(and_(
+            Inventory.index == self.index.id,
+            Inventory.type_class == InventoryTypeClass.RESOURCE,
+            Inventory.type.in_(type_list)
+            ))).scalar()
 
     def __enter__(self):
         """To support with statement for auto closing."""

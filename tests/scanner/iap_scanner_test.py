@@ -18,7 +18,7 @@ import json
 import unittest
 import mock
 
-from tests.services.utils.db import create_test_engine
+from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 from google.cloud.forseti.common.gcp_type import backend_service as backend_service_type
