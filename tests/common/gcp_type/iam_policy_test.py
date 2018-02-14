@@ -17,7 +17,6 @@
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyBindingError
 from google.cloud.security.common.gcp_type.errors import InvalidIamPolicyMemberError
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicy
@@ -171,6 +170,27 @@ class IamPolicyTest(ForsetiTestCase):
         empty_policy = IamPolicy()
         self.assertTrue(empty_policy.is_empty())
         self.assertEqual(False, bool(empty_policy.bindings))
+
+    def test_member_create_from_domain_is_correct(self):
+        member = IamPolicyMember.create_from('domain:xyz.edu')
+        self.assertEqual('domain', member.type)
+        self.assertEqual('xyz.edu', member.name)
+        self.assertEqual('^xyz\\.edu$', member.name_pattern.pattern)
+
+    def test_check_domain_membership_success(self):
+        member = IamPolicyMember.create_from('domain:xyz.edu')
+        other = IamPolicyMember.create_from('user:u@xyz.edu')
+        self.assertTrue(member._check_domain_membership(other))
+
+    def test_check_domain_membership_fail_wrong_domain(self):
+        member = IamPolicyMember.create_from('domain:xyz.edu')
+        other = IamPolicyMember.create_from('user:u@abc.edu')
+        self.assertFalse(member._check_domain_membership(other))
+
+    def test_check_domain_membership_fail_wrong_type(self):
+        member = IamPolicyMember.create_from('group:xyz.edu')
+        other = IamPolicyMember.create_from('user:u@xyz.edu')
+        self.assertFalse(member._check_domain_membership(other))
 
 
 if __name__ == '__main__':

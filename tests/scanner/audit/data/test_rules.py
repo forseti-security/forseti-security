@@ -427,7 +427,7 @@ RULES11 = {
             'inherit_from_parents': True,
             'bindings': [{
                     'role': 'roles/owner',
-                    'members': ['domain:@xyz.edu']
+                    'members': ['domain:xyz.edu']
                 }]
         },
     ]
