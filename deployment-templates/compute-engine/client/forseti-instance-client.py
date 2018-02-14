@@ -118,13 +118,13 @@ fi
 cd $USER_HOME
 rm -rf *forseti*
 
-# Forseti dependencies
-pip install -q --upgrade setuptools pip wheel
-pip install -q --upgrade -r requirements.txt
-
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
+
+# Forseti dependencies
+pip install -q --upgrade setuptools pip wheel
+pip install -q --upgrade -r requirements.txt
 
 # Install Forseti
 python setup.py install
