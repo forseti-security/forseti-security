@@ -288,7 +288,7 @@ class IamPolicyMember(object):
             member_name = identity_parts[1]
         return cls(identity_parts[0], member_name=member_name)
 
-    def _check_domain_membership(self, other):
+    def _user_is_in_domain(self, other):
         """Determine whether user belongs to domain.
 
         This applies to a situation where a rule has a `domain` style `members`
@@ -331,4 +331,4 @@ class IamPolicyMember(object):
         return ((self.type == self.ALL_USERS) or
                 (self.type == other_member.type and
                  self.name_pattern.match(other_member.name)) or
-                self._check_domain_membership(other_member))
+                self._user_is_in_domain(other_member))

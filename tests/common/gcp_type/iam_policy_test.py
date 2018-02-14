@@ -177,25 +177,25 @@ class IamPolicyTest(ForsetiTestCase):
         self.assertEqual('xyz.edu', member.name)
         self.assertEqual('^xyz\\.edu$', member.name_pattern.pattern)
 
-    def test_check_domain_membership_success(self):
+    def test_user_is_in_domain_success(self):
         member = IamPolicyMember.create_from('domain:xyz.edu')
         other = IamPolicyMember.create_from('user:u@xyz.edu')
-        self.assertTrue(member._check_domain_membership(other))
+        self.assertTrue(member._user_is_in_domain(other))
 
-    def test_check_domain_membership_fail_wrong_domain(self):
+    def test_user_is_in_domain_fail_wrong_domain(self):
         member = IamPolicyMember.create_from('domain:xyz.edu')
         other = IamPolicyMember.create_from('user:u@abc.edu')
-        self.assertFalse(member._check_domain_membership(other))
+        self.assertFalse(member._user_is_in_domain(other))
 
-    def test_check_domain_membership_fail_wrong_type(self):
+    def test_user_is_in_domain_fail_wrong_type(self):
         member = IamPolicyMember.create_from('group:xyz.edu')
         other = IamPolicyMember.create_from('user:u@xyz.edu')
-        self.assertFalse(member._check_domain_membership(other))
+        self.assertFalse(member._user_is_in_domain(other))
 
-    def test_check_domain_membership_fail_invalid_email(self):
+    def test_user_is_in_domain_fail_invalid_email(self):
         member = IamPolicyMember.create_from('domain:xyz.edu')
         other = IamPolicyMember.create_from('user:u!xyz.edu')
-        self.assertFalse(member._check_domain_membership(other))
+        self.assertFalse(member._user_is_in_domain(other))
 
 
 if __name__ == '__main__':
