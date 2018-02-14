@@ -21,8 +21,6 @@ import yaml
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.security.common.data_access import _db_connector
-from google.cloud.security.common.data_access import org_resource_rel_dao as org_rel_dao
 from google.cloud.security.common.gcp_type import folder
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.security.common.gcp_type.iam_policy import IamPolicyMember
