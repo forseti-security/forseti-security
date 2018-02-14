@@ -31,6 +31,21 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
+class DefaultParser(ArgumentParser):
+    """Default parser, when error is triggered, instead of printing
+    error message, it will print the help message (-h).
+    """
+    def error(self, message):
+        """This method will be triggered when error occurred.
+
+        Args:
+            message (str): Error message.
+        """
+        sys.stderr.write('error: {}\n'.format(message))
+        self.print_help()
+        sys.exit(2)
+
+
 def define_playground_parser(parent):
     """Define the playground service parser.
 
@@ -118,6 +133,7 @@ def define_inventory_parser(parent):
     create_inventory_parser.add_argument(
         'import_as',
         metavar=('MODEL_NAME',),
+        nargs='?',
         help='Import the inventory when complete, requires a model name')
     create_inventory_parser.add_argument(
         '--background',
@@ -1033,7 +1049,7 @@ class DefaultConfig(dict):
             if server_ip:
                 return '{}:50051'.format(server_ip)
         except (KeyError, IOError) as err:
-            LOGGER.error(err)
+            LOGGER.warn(err)
 
         return self.DEFAULT_ENDPOINT
 
@@ -1097,7 +1113,7 @@ def main(args,
          config_env,
          client=None,
          outputs=None,
-         parser_cls=ArgumentParser,
+         parser_cls=DefaultParser,
          services=None):
     """Main function.
     Args:
