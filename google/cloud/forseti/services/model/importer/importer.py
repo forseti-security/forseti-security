@@ -15,7 +15,7 @@
 """ Importer implementations. """
 
 # pylint: disable=unused-argument,too-many-instance-attributes
-# pylint: disable=no-self-use,not-callable,too-many-lines
+# pylint: disable=no-self-use,not-callable,too-many-lines,too-many-locals
 
 from StringIO import StringIO
 import traceback
@@ -167,14 +167,17 @@ class InventoryImporter(object):
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_id, True) as inventory:
-
+                root = inventory.get_root()
                 self.model.add_description(json.dumps({
                     'source': 'inventory',
                     'source_info': {'inventory_index_id': inventory.index.id},
-                    'pristine': True
+                    "source_root":self._type_name(root),
+                    'pristine': True,
+                    "gsuite_enabled":inventory.type_exists(
+                        ["gsuite_group", "gsuite_user"])
                     }))
 
-                for resource in inventory.iter(['organization']):
+                if root.get_type() in ['organization']:
                     self.found_root = True
                 if not self.found_root:
                     raise Exception(
