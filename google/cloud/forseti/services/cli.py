@@ -41,8 +41,7 @@ class DefaultParser(ArgumentParser):
         Args:
             message (str): Error message.
         """
-        sys.stderr.write('error: {}\n'.format(message))
-        self.print_help()
+        self.print_usage()
         sys.exit(2)
 
 
