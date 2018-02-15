@@ -140,7 +140,7 @@ class ForsetiInstaller:
         return not return_code, deployment_name
 
     @staticmethod
-    def wait_until_vm_initialized(self, vm_name):
+    def wait_until_vm_initialized(vm_name):
         """Check vm init status.
 
         Args:
@@ -151,11 +151,11 @@ class ForsetiInstaller:
         _, zone, name = get_vm_instance_info(vm_name)
 
         # VT100 control codes, use to remove the last line
-        ERASE_LINE = '\x1b[2K'
+        erase_line = '\x1b[2K'
 
         for i in range(0, MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
-            sys.stdout.write('\r{}Initializing VM {}'.format(ERASE_LINE, dots))
+            sys.stdout.write('\r{}Initializing VM {}'.format(erase_line, dots))
             sys.stdout.flush()
             if check_vm_init_status(name, zone):
                 break
