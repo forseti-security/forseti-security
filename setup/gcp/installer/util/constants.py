@@ -35,7 +35,6 @@ MAXIMUM_LOOP_COUNT = 600
 CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
 
 DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
-DEFAULT_CLOUDSQL_INSTANCE_NAME = 'forseti-security'
 
 GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
@@ -55,10 +54,6 @@ INPUT_CONFIGURATION_TEMPLATE_FILENAME = {
 }
 
 NOTIFICATION_SENDER_EMAIL = 'forseti-notify@localhost.domain'
-
-TEMPLATE_TYPE_SERVER = 'server'
-
-TEMPLATE_TYPE_CLIENT = 'client'
 
 RESOURCE_TYPE_ARGS_MAP = {
     'organizations': ['organizations'],

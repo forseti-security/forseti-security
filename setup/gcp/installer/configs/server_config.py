@@ -15,8 +15,6 @@
 """Forseti installer server config object."""
 
 from config import Config
-from setup.gcp.installer.util.constants import (
-    TEMPLATE_TYPE_SERVER, DEFAULT_CLOUDSQL_INSTANCE_NAME)
 
 
 class ServerConfig(Config):
@@ -38,9 +36,9 @@ class ServerConfig(Config):
             kwargs (dict): The kwargs.
         """
         super(ServerConfig, self).__init__(**kwargs)
-        self.template_type = TEMPLATE_TYPE_SERVER
+        self.template_type = 'server'
         self.cloudsql_instance = '{}-{}'.format(
-            DEFAULT_CLOUDSQL_INSTANCE_NAME,
+            'forseti-security',
             self.datetimestamp)
         self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
 
