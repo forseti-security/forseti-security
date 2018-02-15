@@ -18,7 +18,6 @@ import abc
 
 from google.cloud.forseti.common.data_access import dao
 from google.cloud.forseti.common.data_access import project_dao
-from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -54,7 +53,6 @@ class BaseNotificationPipeline(object):
         # Initializing DAOs
         self.dao = None
         self.project_dao = None
-        self.violation_dao = None
 
         # Get violations
         self.violations = violations
@@ -78,35 +76,6 @@ class BaseNotificationPipeline(object):
         if not self.project_dao:
             self.project_dao = project_dao.ProjectDao(self.global_configs)
         return self.project_dao
-
-    def _get_violation_dao(self):
-        """Init or get violation dao.
-
-        Returns:
-            violation_dao: ViolationDao instance
-        """
-        if not self.violation_dao:
-            self.violation_dao = violation_dao.ViolationDao(self.global_configs)
-        return self.violation_dao
-
-    def _get_violations(self, timestamp):
-        """Get all violtions.
-
-        Args:
-            timestamp (str): String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            dict: Violations organized per resource type.
-        """
-        vdao = self._get_violation_dao()
-        violations = {
-            'violations': vdao.get_all_violations(
-                timestamp, 'violations'),
-            'bucket_acl_violations': vdao.get_all_violations(
-                timestamp, 'buckets_acl_violations')
-        }
-
-        return violations
 
     @abc.abstractmethod
     def run(self):

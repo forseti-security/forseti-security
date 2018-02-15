@@ -27,89 +27,11 @@ from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.data_access import load_data_sql_provider
 from google.cloud.forseti.common.data_access.errors import MySQLError
 from google.cloud.forseti.common.data_access.errors import NoResultsError
-from google.cloud.forseti.common.data_access.sql_queries import create_tables
 from google.cloud.forseti.common.data_access.sql_queries import select_data
 from google.cloud.forseti.common.util import logger
 
 
 LOGGER = logger.get_logger(__name__)
-
-CREATE_TABLE_MAP = {
-    # appengine
-    'appengine': create_tables.CREATE_APPENGINE_TABLE,
-
-    # appengine services
-    'appengine_services': create_tables.CREATE_APPENGINE_SERVICES_TABLE,
-
-    # appengine versions
-    'appengine_versions': create_tables.CREATE_APPENGINE_VERSIONS_TABLE,
-
-    # appengine instances
-    'appengine_instances': create_tables.CREATE_APPENGINE_INSTANCES_TABLE,
-
-    # backend services
-    'backend_services': create_tables.CREATE_BACKEND_SERVICES_TABLE,
-
-    # bigquery
-    'bigquery_datasets': create_tables.CREATE_BIGQUERY_DATASETS_TABLE,
-
-    # buckets
-    'buckets': create_tables.CREATE_BUCKETS_TABLE,
-    'raw_buckets': create_tables.CREATE_RAW_BUCKETS_TABLE,
-    'buckets_acl': create_tables.CREATE_BUCKETS_ACL_TABLE,
-
-    # cloudsql
-    'cloudsql_instances': create_tables.CREATE_CLOUDSQL_INSTANCES_TABLE,
-    'cloudsql_ipaddresses': create_tables.CREATE_CLOUDSQL_IPADDRESSES_TABLE,
-    'cloudsql_ipconfiguration_authorizednetworks':\
-        create_tables.CREATE_CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS,
-
-    # folders
-    'folders': create_tables.CREATE_FOLDERS_TABLE,
-    'folder_iam_policies': create_tables.CREATE_FOLDER_IAM_POLICIES_TABLE,
-    'raw_folder_iam_policies': (
-        create_tables.CREATE_RAW_FOLDER_IAM_POLICIES_TABLE),
-
-    # load balancer
-    'forwarding_rules': create_tables.CREATE_FORWARDING_RULES_TABLE,
-
-    # firewall_rules
-    'firewall_rules': create_tables.CREATE_FIREWALL_RULES_TABLE,
-
-    # groups
-    'groups': create_tables.CREATE_GROUPS_TABLE,
-    'group_members': create_tables.CREATE_GROUP_MEMBERS_TABLE,
-
-    # instances
-    'instances': create_tables.CREATE_INSTANCES_TABLE,
-
-    # instance groups
-    'instance_groups': create_tables.CREATE_INSTANCE_GROUPS_TABLE,
-
-    # instance templates
-    'instance_templates': create_tables.CREATE_INSTANCE_TEMPLATES_TABLE,
-
-    # instance group managers
-    'instance_group_managers': (
-        create_tables.CREATE_INSTANCE_GROUP_MANAGERS_TABLE),
-
-    # organizations
-    'organizations': create_tables.CREATE_ORGANIZATIONS_TABLE,
-    'org_iam_policies': create_tables.CREATE_ORG_IAM_POLICIES_TABLE,
-    'raw_org_iam_policies': create_tables.CREATE_RAW_ORG_IAM_POLICIES_TABLE,
-
-    # projects
-    'projects': create_tables.CREATE_PROJECT_TABLE,
-    'project_iam_policies': create_tables.CREATE_PROJECT_IAM_POLICIES_TABLE,
-    'raw_project_iam_policies':
-        create_tables.CREATE_RAW_PROJECT_IAM_POLICIES_TABLE,
-
-    # IAM
-    'service_accounts': create_tables.CREATE_SERVICE_ACCOUNTS_TABLE,
-
-    # rule violations
-    'violations': create_tables.CREATE_VIOLATIONS_TABLE,
-}
 
 SNAPSHOT_STATUS_FILTER_CLAUSE = ' where status in ({})'
 
@@ -131,25 +53,6 @@ class Dao(_db_connector.DbConnector):
             obj_class: A new "obj_class", created from the row.
         """
         return object_class(**row)
-
-    def create_snapshot_table(self, resource_name, timestamp):
-        """Creates a snapshot table.
-
-        Args:
-            resource_name (str): String of the resource name.
-            timestamp (str): String of timestamp, formatted as
-                YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            str: String of the created snapshot table.
-        """
-        snapshot_table_name = self._create_snapshot_table_name(
-            resource_name, timestamp)
-        create_table_sql = CREATE_TABLE_MAP[resource_name]
-        create_snapshot_sql = create_table_sql.format(snapshot_table_name)
-        cursor = self.conn.cursor()
-        cursor.execute(create_snapshot_sql)
-        return snapshot_table_name
 
     @staticmethod
     def _create_snapshot_table_name(resource_name, timestamp):
