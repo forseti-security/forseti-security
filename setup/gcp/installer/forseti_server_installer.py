@@ -111,6 +111,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
+            instance_name = '{}-vm'.format(deployment_name)
+            self.wait_until_vm_initialized(instance_name)
+
             # Create firewall rule to block out all the ingress traffic
             create_firewall_rule(
                 self.format_firewall_rule_name('forseti-server-deny-all'),
@@ -128,9 +131,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 ['tcp:50051'],
                 FirewallRuleDirection.INGRESS,
                 0)
-
-            instance_name = '{}-vm'.format(deployment_name)
-            self.wait_until_vm_initialized(instance_name)
 
         return success, deployment_name
 

@@ -19,6 +19,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
+import time
 
 from util.utils import (
     print_banner, get_forseti_version, format_service_acct_id,
@@ -69,6 +70,8 @@ class ForsetiInstaller:
                                                 self.config.timestamp)
         conf_file_path = self.generate_forseti_conf()
         deployment_tpl_path = self.generate_deployment_templates()
+
+        time.sleep(2) # make sure conf and deployment template are generated
 
         deploy_success, deployment_name = self.deploy(deployment_tpl_path,
                                                       conf_file_path,
