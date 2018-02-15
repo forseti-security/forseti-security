@@ -33,6 +33,8 @@ class Organization(resource.Resource):
     def __init__(
             self,
             organization_id,
+            full_name=None,
+            data=None,
             name=None,
             display_name=None,
             lifecycle_state=OrgLifecycleState.UNSPECIFIED):
@@ -40,6 +42,8 @@ class Organization(resource.Resource):
 
         Args:
             organization_id (int): The organization id.
+            full_name (str): The full resource name and ancestory.
+            data (str): Resource representation of the organization.
             name (str): The organization's unique GCP name, with the
                 format "organizations/{id}".
             display_name (str): The organization's display name.
@@ -52,3 +56,5 @@ class Organization(resource.Resource):
             name=name,
             display_name=display_name,
             lifecycle_state=lifecycle_state)
+        self.full_name = full_name
+        self.data = data

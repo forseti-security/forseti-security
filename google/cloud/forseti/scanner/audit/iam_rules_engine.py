@@ -613,11 +613,13 @@ class ResourceRules(object):
                 yield scanner_rules.RuleViolation(
                     resource_type=resource.type,
                     resource_id=resource.id,
+                    full_name=resource.full_name,
                     rule_name=rule.rule_name,
                     rule_index=rule.rule_index,
                     violation_type=violation_type,
                     role=role_name,
-                    members=tuple(members))
+                    members=tuple(members),
+                    inventory_data=resource.data)
 
     def _check_whitelistblacklist_rules(self, resource, rule, policy_bindings):
         """Check whitelist and blacklist rules.
@@ -648,11 +650,13 @@ class ResourceRules(object):
                     yield scanner_rules.RuleViolation(
                         resource_type=resource.type,
                         resource_id=resource.id,
+                        full_name=resource.full_name,
                         rule_name=rule.rule_name,
                         rule_index=rule.rule_index,
                         violation_type=violation_type,
                         role=policy_binding.role_name,
-                        members=tuple(violating_members))
+                        members=tuple(violating_members),
+                        inventory_data=resource.data)
 
     def _dispatch_rule_mode_check(self, mode, rule_members=None,
                                   policy_members=None):

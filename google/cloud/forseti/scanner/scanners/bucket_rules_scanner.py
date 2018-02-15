@@ -70,14 +70,17 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             violation_data['email'] = violation.email
             violation_data['domain'] = violation.domain
             violation_data['bucket'] = violation.bucket
+            violation_data['full_name'] = violation.full_name
             violation_data['project_id'] = violation.project_id
             yield {
                 'resource_id': violation.resource_id,
+                'full_name': violation.full_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -125,6 +128,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
                 bucket_acls.extend(
                     BucketAccessControls.from_list(
                         project_id=project_id,
+                        full_name=bucket.full_name,
                         acls=bucket_data.get('acl', [])))
 
         return bucket_acls

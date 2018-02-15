@@ -95,11 +95,20 @@ class ImporterTest(ForsetiTestCase):
         self.assertEquals(
             {'pristine': True,
              'source': 'inventory',
-             'source_info': {'inventory_index_id': FAKE_TIMESTAMP}},
-            model_description,
-)
-
-#{"pristine": true, "source": "inventory", "source_info": {"inventory_index_id": "2018-02-02T01:47:39.16075"}}
+             'source_info': {'inventory_index_id': FAKE_TIMESTAMP},
+             'source_root': 'organization/111222333',
+             'gsuite_enabled': True
+             },
+            model_description)
+        #{
+        #    "pristine": true,
+        #    "source": "inventory",
+        #    "source_info": {
+        #        "inventory_index_id": "2018-02-02T01:47:39.16075"
+        #    },
+        #    "source_root": "organization/111222333",
+        #    "gsuite_enabled": True
+        #}
 
 if __name__ == '__main__':
     unittest.main()

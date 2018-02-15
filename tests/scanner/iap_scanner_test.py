@@ -562,7 +562,9 @@ class IapScannerTest(ForsetiTestCase):
                     'direct_access_sources_violations': ''
                 },
                 'violation_type': 'IAP_VIOLATION',
-                'resource_type': 'backend_service'
+                'resource_type': 'backend_service',
+                'inventory_data': '{"port": 81, "backends": [{"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_managed"}], "id": "None", "name": "bs1_different_port"}',
+                'full_name': 'organization/12345/project/foo/backendservice/bs1_different_port/',                
             }, {
                 'resource_id': u'None',
                 'rule_name': 'test',
@@ -574,7 +576,9 @@ class IapScannerTest(ForsetiTestCase):
                     'direct_access_sources_violations': ''
                 },
                 'violation_type': 'IAP_VIOLATION',
-                'resource_type': 'backend_service'
+                'resource_type': 'backend_service',
+                'inventory_data': '{"port": 80, "backends": [{"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_different_network"}], "id": "None", "name": "bs1_different_network"}',
+                'full_name': 'organization/12345/project/foo/backendservice/bs1_different_network/', 
             }, {
                 'resource_id': u'None',
                 'rule_name': 'test',
@@ -590,7 +594,9 @@ class IapScannerTest(ForsetiTestCase):
                         u'10.0.2.0/24, applies_8080, applies_all, tag_match'
                 },
                 'violation_type': 'IAP_VIOLATION',
-                'resource_type': 'backend_service'
+                'resource_type': 'backend_service',
+                'inventory_data': '{"name": "bs1", "id": "None", "port": 80, "backends": [{"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_managed"}, {"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_unmanaged"}], "portName": "http", "iap": {"enabled": true}}',
+                'full_name': 'organization/12345/project/foo/backendservice/bs1/',
             }, {
                 'resource_id': u'None',
                 'rule_name': 'test',
@@ -602,7 +608,9 @@ class IapScannerTest(ForsetiTestCase):
                     'direct_access_sources_violations': ''
                 },
                 'violation_type': 'IAP_VIOLATION',
-                'resource_type': 'backend_service'
+                'resource_type': 'backend_service',
+                'inventory_data': '{"port": 80, "backends": [{"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_different_instance"}], "id": "None", "name": "bs1_different_instance"}',
+                'full_name': 'organization/12345/project/foo/backendservice/bs1_different_instance/',
             }, {
                 'resource_id': u'None',
                 'rule_name': 'test',
@@ -614,7 +622,9 @@ class IapScannerTest(ForsetiTestCase):
                     'direct_access_sources_violations': ''
                 },
                 'violation_type': 'IAP_VIOLATION',
-                'resource_type': 'backend_service'
+                'resource_type': 'backend_service',
+                'inventory_data': '{"port": 80, "backends": [{"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_managed"}], "id": "None", "name": "bs1_same_backend"}',
+                'full_name': 'organization/12345/project/foo/backendservice/bs1_same_backend/',                
             }, {
                 'resource_id': u'None',
                 'rule_name': 'test',
@@ -626,7 +636,9 @@ class IapScannerTest(ForsetiTestCase):
                     'direct_access_sources_violations': ''
                 },
                 'violation_type': 'IAP_VIOLATION',
-                'resource_type': 'backend_service'
+                'resource_type': 'backend_service',
+                'inventory_data': '{"port": 80, "backends": [{"group": "https://www.googleapis.com/compute/v1/projects/foo/regions/wl-redqueen1/instanceGroups/ig_same_instance"}], "id": "None", "name": "bs1_same_instance"}',
+                'full_name': 'organization/12345/project/foo/backendservice/bs1_same_instance/', 
             }],
             resource_name='violations',
             write_header=True)

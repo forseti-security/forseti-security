@@ -41,20 +41,42 @@ class IamRulesEngineTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
         self.fake_timestamp = '12345'
-        self.org789 = Organization('778899', display_name='My org')
+
+        self.org789 = Organization(
+            '778899',
+            display_name='My org',
+            full_name='fake_org_full_name111',
+            data='fake_org_data111')
+
         self.project1 = Project(
-            'my-project-1', 12345,
+            'my-project-1',
+            project_number=12345,
             display_name='My project 1',
-            parent=self.org789)
-        self.project2 = Project('my-project-2', 12346,
-            display_name='My project 2')
+            parent=self.org789,
+            full_name='fake_project_full_name111',
+            data='fake_project_data111')
+
+        self.project2 = Project(
+            'my-project-2',
+            project_number=12346,
+            display_name='My project 2',
+            full_name='fake_project_full_name222',
+            data='fake_project_data222')
 
         self.folder1 = folder.Folder(
-            '333', display_name='Folder 1', parent=self.org789)
+            '333',
+            display_name='Folder 1',
+            parent=self.org789,
+            full_name='fake_folder_full_name111',
+            data='fake_folder_data111')
+
         self.project3 = Project(
-            'my-project-3', 12347,
+            'my-project-3',
+            project_number=12347,
             display_name='My project 3',
-            parent=self.folder1)
+            parent=self.folder1,
+            full_name='fake_project_full_name333',
+            data='fake_project_data333')
 
         self.mock_org_policy_resource = mock.MagicMock()
         self.mock_org_policy_resource.full_name = (
@@ -373,11 +395,13 @@ class IamRulesEngineTest(ForsetiTestCase):
             scanner_rules.RuleViolation(
                 resource_type=self.project1.type,
                 resource_id=self.project1.id,
+                full_name=self.project1.full_name,
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 role='roles/editor',
                 violation_type=scanner_rules.VIOLATION_TYPE.get(rule.mode),
-                members=tuple(expected_outstanding['roles/editor']))
+                members=tuple(expected_outstanding['roles/editor']),
+                inventory_data=self.project1.data)
         ])
 
         self.assertEqual(expected_violations, actual_violations)
@@ -541,34 +565,42 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='my rule',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding1['roles/editor'])),
+                members=tuple(expected_outstanding1['roles/editor']),
+                inventory_data=self.project1.data),
             scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='my rule',
                 resource_type=self.project2.type,
                 resource_id=self.project2.id,
+                full_name=self.project2.full_name,
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding1['roles/editor'])),
+                members=tuple(expected_outstanding1['roles/editor']),
+                inventory_data=self.project2.data),
             scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='my other rule',
                 resource_type=self.project2.type,
                 resource_id=self.project2.id,
+                full_name=self.project2.full_name,
                 violation_type='ADDED',
                 role=policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding2['roles/editor'])),
+                members=tuple(expected_outstanding2['roles/editor']),
+                inventory_data=self.project2.data),
             scanner_rules.RuleViolation(
                 rule_index=2,
                 rule_name='required rule',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='REMOVED',
                 role='roles/viewer',
                 members=tuple([IamPolicyMember.create_from(
-                    'user:project_viewer@company.com')]))
+                    'user:project_viewer@company.com')]),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -684,25 +716,31 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='my blacklist rule',
                 resource_id=self.org789.id,
                 resource_type=self.org789.type,
+                full_name=self.org789.full_name,
                 violation_type='ADDED',
                 role=org_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_org['roles/editor'])),
+                members=tuple(expected_outstanding_org['roles/editor']),
+                inventory_data=self.org789.data),
             scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='my whitelist rule',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_project['roles/editor'])),
+                members=tuple(expected_outstanding_project['roles/editor']),
+                inventory_data=self.project1.data),
             scanner_rules.RuleViolation(
                 rule_index=2,
                 rule_name='my required rule',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='REMOVED',
                 role='roles/viewer',
-                members=tuple(expected_outstanding_project['roles/viewer'])),
+                members=tuple(expected_outstanding_project['roles/viewer']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -777,17 +815,21 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='org whitelist',
                 resource_id=self.org789.id,
                 resource_type=self.org789.type,
+                full_name=self.org789.full_name,
                 violation_type='ADDED',
                 role=org_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_org['roles/owner'])),
+                members=tuple(expected_outstanding_org['roles/owner']),
+                inventory_data=self.org789.data),
             scanner_rules.RuleViolation(
                 rule_index=1,
                 rule_name='project whitelist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/editor'])),
+                members=tuple(expected_outstanding_proj['roles/editor']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -890,9 +932,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='project blacklist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/owner'])),
+                members=tuple(expected_outstanding_proj['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -949,9 +993,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='org blacklist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/owner'])),
+                members=tuple(expected_outstanding_proj['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -1066,9 +1112,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='project blacklist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/owner'])),
+                members=tuple(expected_outstanding_proj['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -1123,9 +1171,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='project blacklist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/owner'])),
+                members=tuple(expected_outstanding_proj['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -1177,9 +1227,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='org whitelist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/owner'])),
+                members=tuple(expected_outstanding_proj['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -1249,17 +1301,21 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='org whitelist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding_proj['roles/owner'])),
+                members=tuple(expected_outstanding_proj['roles/owner']),
+                inventory_data=self.project1.data),
             scanner_rules.RuleViolation(
                 rule_index=0,
                 rule_name='org whitelist',
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][1]['role'],
-                members=tuple(expected_outstanding_proj['roles/editor'])),
+                members=tuple(expected_outstanding_proj['roles/editor']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertItemsEqual(expected_violations, actual_violations)
@@ -1319,9 +1375,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='folder rule 1',
                 resource_id=self.folder1.id,
                 resource_type=self.folder1.type,
+                full_name=self.folder1.full_name,
                 violation_type='ADDED',
                 role=project_policy['bindings'][0]['role'],
-                members=tuple(expected_outstanding['roles/editor'])),
+                members=tuple(expected_outstanding['roles/editor']),
+                inventory_data=self.folder1.data),
         ])
         self.assertItemsEqual(expected_violations, actual_violations)
 
@@ -1383,9 +1441,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name='project required',
                 resource_id=self.project2.id,
                 resource_type=self.project2.type,
+                full_name=self.project2.full_name,
                 violation_type='REMOVED',
                 role='roles/owner',
-                members=tuple(expected_outstanding['roles/owner'])),
+                members=tuple(expected_outstanding['roles/owner']),
+                inventory_data=self.project2.data),
         ])
         self.assertItemsEqual(expected_violations, actual_violations)
 
