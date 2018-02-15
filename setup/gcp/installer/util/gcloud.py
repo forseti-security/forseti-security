@@ -609,9 +609,12 @@ def get_forseti_server_info():
         str: Zone of the forseti server application, default to 'us-central1-c'
         str: Name of the forseti server instance
     """
-    ip, zone, name = get_vm_instance_info('forseti-security-server',
-                                          try_match=True)
-    return ('', 'us-central1-c', '') if ip is None else (ip, zone, name)
+    ip_addr, zone, name = get_vm_instance_info('forseti-security-server',
+                                               try_match=True)
+
+    return ('', 'us-central1-c', '') if ip_addr is None else (ip_addr,
+                                                              zone,
+                                                              name)
 
 
 def get_vm_instance_info(instance_name, try_match=False):
@@ -764,7 +767,7 @@ def check_vm_init_status(vm_name, zone):
 
     check_script_executed = 'tail -n1 /tmp/deployment.log'
 
-    return_code, out, err = run_command(
+    _, out, _ = run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
          '--zone', zone, '--command', check_script_executed])
 

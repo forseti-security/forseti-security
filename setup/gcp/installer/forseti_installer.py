@@ -17,7 +17,6 @@
 from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
-from time import sleep
 
 import sys
 
@@ -140,6 +139,7 @@ class ForsetiInstaller:
 
         return not return_code, deployment_name
 
+    @staticmethod
     def wait_until_vm_initialized(self, vm_name):
         """Check vm init status.
 
@@ -147,16 +147,20 @@ class ForsetiInstaller:
             vm_name (str): Name of the VM instance.
         """
         print_banner('VM Initialization')
-        print ('This may take a few minutes.')
+        print ('This may take a few minutes.\n')
         _, zone, name = get_vm_instance_info(vm_name)
-        for i in range (0, MAXIMUM_LOOP_COUNT):
+
+        # VT100 control codes, use to remove the last line
+        ERASE_LINE = '\x1b[2K'
+
+        for i in range(0, MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
-            sys.stdout.write('\rInitializing VM .{}'.format(dots))
+            sys.stdout.write('\r{}Initializing VM {}'.format(ERASE_LINE, dots))
             sys.stdout.flush()
             if check_vm_init_status(name, zone):
                 break
         # print new line
-        print ('Done.')
+        print ('\nDone.')
         return
 
     def check_run_properties(self):
