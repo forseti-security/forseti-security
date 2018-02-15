@@ -90,7 +90,7 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
         for gcp_forwarding_rule_resource_data in gcp_forwarding_rules_resource_data:
             gcp_forwarding_rules_resource_objs.append(
                 fr.ForwardingRule.from_dict(
-                    project_id, gcp_forwarding_rule_resource_data))
+                    project_id, '', gcp_forwarding_rule_resource_data))
 
         violations = scanner._find_violations(gcp_forwarding_rules_resource_objs)
         self.assertEqual(0, len(violations))
@@ -158,7 +158,7 @@ class ForwardingRuleScannerTest(ForsetiTestCase):
         for gcp_forwarding_rule_resource_data in gcp_forwarding_rules_resource_data:
             gcp_forwarding_rules_resource_objs.append(
                 fr.ForwardingRule.from_dict(
-                    project_id, gcp_forwarding_rule_resource_data)
+                    project_id, '', gcp_forwarding_rule_resource_data)
                 )
 
         violations = scanner._find_violations(gcp_forwarding_rules_resource_objs)

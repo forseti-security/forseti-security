@@ -74,16 +74,19 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         for violation in violations:
             for member in violation.members:
                 violation_data = {}
+                violation_data['full_name'] = violation.full_name
                 violation_data['role'] = violation.role
                 violation_data['member'] = '%s:%s' % (member.type, member.name)
 
                 yield {
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
+                    'full_name': violation.full_name,
                     'rule_index': violation.rule_index,
                     'rule_name': violation.rule_name,
                     'violation_type': violation.violation_type,
-                    'violation_data': violation_data
+                    'violation_data': violation_data,
+                    'inventory_data': violation.inventory_data
                 }
 
     def _output_results(self, all_violations, resource_counts):
@@ -160,6 +163,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding IAM policy violations...')
         for (resource, policy) in policies:
+            # At this point, the variable's meanings are switched:
+            # "policy" is really the resource from the data model.
+            # "resource" is the generated Forseti gcp type.
             LOGGER.debug('%s => %s', resource, policy)
             violations = self.rules_engine.find_policy_violations(
                 resource, policy)
@@ -190,15 +196,26 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 if policy.parent.type == 'project':
                     project_iam_policy_counter += 1
                     policy_data.append(
-                        (Project(policy.parent.name), policy))
+                        (Project(policy.parent.name,
+                                 policy.full_name,
+                                 policy.data),
+                         policy))
                 elif policy.parent.type == 'folder':
                     folder_iam_policy_counter += 1
                     policy_data.append(
-                        (Folder(policy.parent.name), policy))
+                        (Folder(
+                            policy.parent.name,
+                            policy.full_name,
+                            policy.data),
+                         policy))
                 elif policy.parent.type == 'organization':
                     org_iam_policy_counter += 1
                     policy_data.append(
-                        (Organization(policy.parent.name), policy))
+                        (Organization(
+                            policy.parent.name,
+                            policy.full_name,
+                            policy.data),
+                         policy))
 
         if not policy_data:
             LOGGER.warn('No policies found. Exiting.')

@@ -371,10 +371,11 @@ ORGANIZATIONS_FIELDNAMES = [
 VIOLATION_FIELDNAMES = [
     'resource_id',
     'resource_type',
+    'full_name',
     'rule_index',
     'rule_name',
     'violation_type',
-    'violation_data'
+    'violation_data',
 ]
 
 PROJECT_IAM_POLICIES_FIELDNAMES = [
@@ -493,6 +494,9 @@ def write_csv(resource_name, data, write_header=False):
             writer.writeheader()
 
         for i in data:
+            # Not ready to send these data via CSV attachment as they break
+            # across multiple columns.
+            i.pop('inventory_data')
             writer.writerow(i)
 
         # This must be closed before returned for loading.
