@@ -64,6 +64,8 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_boolean('list_resources', False,
                      'List valid resources for inventory.')
+flags.DEFINE_boolean('clear_previous', False,
+                     'Drop all database tables.')
 
 # Hack to make the test pass due to duplicate flag error here
 # and scanner, enforcer.
@@ -282,6 +284,18 @@ def _create_dao_map(global_configs):
         LOGGER.error('Error to creating DAO map.\n%s', e)
         sys.exit()
 
+def drop_all_tables(inventory_dao):
+    try:
+        conn = inventory_dao.conn
+        cursor = conn.cursor()
+        cursor.execute("SHOW TABLES")
+        tables = cursor.fetchall()
+        for table in tables:
+            cursor.execute("DROP TABLE {0}".format(table[0]))
+    except data_access_errors.MySQLError as e:
+        LOGGER.error('Error dropping tables.\n%s', e)
+        sys.exit()
+
 def main(_):
     """Runs the Inventory Loader.
 
@@ -312,6 +326,9 @@ def main(_):
     log_util.set_logger_level_from_config(inventory_configs.get('loglevel'))
 
     dao_map = _create_dao_map(global_configs)
+
+    if inventory_flags.get('clear_previous'):
+        drop_all_tables(dao_map.get('dao'))
 
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
