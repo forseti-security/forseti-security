@@ -58,7 +58,8 @@ class ForsetiInstaller:
 
     def run_setup(self):
         """Run the setup steps"""
-        print_banner('Forseti %s Setup' % get_forseti_version())
+        print_banner('Installing Forseti {} v{}'.format(
+            self.config.template_type, get_forseti_version()))
 
         # Preflight checks
         self.preflight_checks()
@@ -160,7 +161,7 @@ class ForsetiInstaller:
             if check_vm_init_status(name, zone):
                 break
         # print new line
-        print ('\nDone.')
+        print ('\n\nDone.')
         return
 
     def check_run_properties(self):
