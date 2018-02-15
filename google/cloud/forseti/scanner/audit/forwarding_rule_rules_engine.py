@@ -16,12 +16,12 @@
 from collections import namedtuple
 
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ForwardingRuleRulesEngine(bre.BaseRulesEngine):

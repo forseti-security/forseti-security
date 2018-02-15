@@ -17,9 +17,9 @@
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc

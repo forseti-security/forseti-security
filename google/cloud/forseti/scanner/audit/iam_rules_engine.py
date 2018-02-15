@@ -27,14 +27,14 @@ from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.util import relationship_util
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 def _check_whitelist_members(rule_members=None, policy_members=None):
@@ -403,7 +403,7 @@ class IamRuleBook(bre.BaseRuleBook):
         violations = itertools.chain()
 
         resource_ancestors = (
-            relationship_util.find_ancestors(resource, policy.full_name))
+            relationship.find_ancestors(resource, policy.full_name))
 
         for curr_resource in resource_ancestors:
             wildcard_resource = resource_util.create_resource(

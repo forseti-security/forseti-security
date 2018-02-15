@@ -18,12 +18,12 @@ import json
 
 from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
     BucketAccessControls)
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import buckets_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class BucketsAclScanner(base_scanner.BaseScanner):

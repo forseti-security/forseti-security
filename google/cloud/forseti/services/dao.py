@@ -51,14 +51,14 @@ from google.cloud.forseti.services.utils import mutual_exclusive
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,too-many-branches
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 POOL_RECYCLE_SECONDS = 300
 PER_YIELD = 1024
 

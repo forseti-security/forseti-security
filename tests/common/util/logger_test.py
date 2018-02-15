@@ -17,7 +17,7 @@ import logging
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
 class LogUtilTest(ForsetiTestCase):
@@ -25,44 +25,44 @@ class LogUtilTest(ForsetiTestCase):
 
     def setUp(self):
         """Test with default log level of info."""
-        self.current_level = log_util.LOGLEVEL
-        log_util.set_logger_level(logging.INFO)
+        self.current_level = logger.LOGLEVEL
+        logger.set_logger_level(logging.INFO)
 
     def tearDown(self):
         """Reset log level on all loggers."""
-        log_util.set_logger_level(self.current_level)
+        logger.set_logger_level(self.current_level)
 
     def test_set_logger_level_changes_existing_loggers(self):
         """Test if loggers instantiated before set_logger_level will be affected."""
 
-        previous_logger = log_util.get_logger('test_module_1')
+        previous_logger = logger.get_logger('test_module_1')
         self.assertEqual(previous_logger.level, logging.INFO, 'Expecting default level to be info')
-        log_util.set_logger_level(logging.ERROR)
+        logger.set_logger_level(logging.ERROR)
         self.assertEqual(previous_logger.level, logging.ERROR, 'Level should have changed to ERROR')
-        log_util.set_logger_level(logging.INFO)
+        logger.set_logger_level(logging.INFO)
         self.assertEqual(previous_logger.level, logging.INFO, 'Level should have changed back to INFO')
 
     def test_set_logger_level_changes_future_loggers(self):
         """Test if loggers instantiated after set_logger_level will be affected."""
 
-        previous_logger = log_util.get_logger('test_module_2')
+        previous_logger = logger.get_logger('test_module_2')
         self.assertEqual(previous_logger.level, logging.INFO, 'Expecting default level to be info')
-        log_util.set_logger_level(logging.ERROR)
-        future_logger = log_util.get_logger('test_module_3')
+        logger.set_logger_level(logging.ERROR)
+        future_logger = logger.get_logger('test_module_3')
         self.assertEqual(future_logger.level, logging.ERROR, 'Level should have changed to ERROR')
-        log_util.set_logger_level(logging.INFO)
+        logger.set_logger_level(logging.INFO)
         self.assertEqual(previous_logger.level, logging.INFO, 'Level should have changed back to INFO')
 
     def test_set_logger_level_from_config(self):
         """Test that a config value for logger sets the correct logger level."""
-        previous_logger = log_util.get_logger('test_module_4')
+        previous_logger = logger.get_logger('test_module_4')
         self.assertEqual(previous_logger.level, logging.INFO,
             'Default loglevel should be INFO')
-        log_util.set_logger_level_from_config('debug')
-        future_logger = log_util.get_logger('test_module_5')
+        logger.set_logger_level_from_config('debug')
+        future_logger = logger.get_logger('test_module_5')
         self.assertEqual(future_logger.level, logging.DEBUG,
             'Next loglevel should be DEBUG')
-        log_util.set_logger_level_from_config('junk')
+        logger.set_logger_level_from_config('junk')
         self.assertEqual(previous_logger.level, logging.DEBUG,
             'Level should have remained DEBUG')
 

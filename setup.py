@@ -22,7 +22,7 @@ from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
 
-from setup.utils import build_protos
+from setup.util import build_protos
 
 import google.cloud.forseti
 
@@ -66,11 +66,30 @@ if sys.version_info.major > 2:
     sys.exit('Sorry, Python 3 is not supported.')
 
 
-def build_forseti_protos():
-    """Clean and Build protos."""
+def build_forseti_protos(clean_only=False):
+    """Clean and optionally Build protos.
+
+      Args:
+        clean_only (boolean): Whether to only clean previously built protos.
+    """
     abs_path = os.path.abspath(__file__)
     build_protos.clean(abs_path)
-    build_protos.make_proto(abs_path)
+    if not clean_only:
+        build_protos.make_proto(abs_path)
+
+
+class BuildProtosCommand(install):
+    """A command to build protos in all children directories."""
+
+    def run(self):
+        build_forseti_protos()
+
+
+class CleanProtosCommand(install):
+    """A command to clean protos in all children directories."""
+
+    def run(self):
+        build_forseti_protos(clean_only=True)
 
 
 class PostInstallCommand(install):
@@ -94,6 +113,8 @@ setup(
         'License :: OSI Approved :: Apache Software License'
     ],
     cmdclass={
+        'build_protos': BuildProtosCommand,
+        'clean_protos': CleanProtosCommand,
         'install': PostInstallCommand,
     },
     install_requires=REQUIRED_PACKAGES,

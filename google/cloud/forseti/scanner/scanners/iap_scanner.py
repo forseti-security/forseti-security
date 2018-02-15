@@ -31,12 +31,12 @@ from google.cloud.forseti.common.gcp_type import (
     instance_template as instance_template_type)
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iap_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 IapResource = collections.namedtuple(
     'IapResource',
     ['project_full_name',
