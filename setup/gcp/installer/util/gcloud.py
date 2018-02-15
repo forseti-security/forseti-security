@@ -728,6 +728,14 @@ def create_deployment(project_id,
         int: The return code value of running `gcloud` command to create
             the deployment.
     """
+
+    def _ping_deployment_manager():
+        """Check deployment manager status.
+        """
+        run_command(
+            ['gcloud', 'deployment-manager', 'deployments',
+             'describe', 'testing-deployment-manager-connection'])
+
     print_banner('Create Forseti deployment')
 
     if dry_run:
@@ -735,6 +743,7 @@ def create_deployment(project_id,
         return 0
 
     print ('This may take a few minutes.')
+    _ping_deployment_manager() # Make sure deployment-manager is ready
     deployment_name = 'forseti-security-{}-{}'.format(template_type,
                                                       datetimestamp)
     print('Deployment name: {}'.format(deployment_name))

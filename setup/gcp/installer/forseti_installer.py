@@ -19,7 +19,6 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
-import time
 
 from util.utils import (
     print_banner, get_forseti_version, format_service_acct_id,
@@ -70,8 +69,6 @@ class ForsetiInstaller:
                                                 self.config.timestamp)
         conf_file_path = self.generate_forseti_conf()
         deployment_tpl_path = self.generate_deployment_templates()
-
-        time.sleep(2) # make sure conf and deployment template are generated
 
         deploy_success, deployment_name = self.deploy(deployment_tpl_path,
                                                       conf_file_path,
@@ -141,14 +138,15 @@ class ForsetiInstaller:
 
         return not return_code, deployment_name
 
-    @staticmethod
-    def wait_until_vm_initialized(vm_name):
+    def wait_until_vm_initialized(self, vm_name):
         """Check vm init status.
 
         Args:
             vm_name (str): Name of the VM instance.
         """
-        print_banner('VM Initialization')
+        installer_type = self.config.template_type
+        installer_type.capitalize()
+        print_banner('{} VM Initialization'.format(installer_type))
         print ('This may take a few minutes.\n')
         _, zone, name = get_vm_instance_info(vm_name)
 
@@ -163,7 +161,6 @@ class ForsetiInstaller:
                 break
         # print new line
         print ('\n\nDone.')
-        return
 
     def check_run_properties(self):
         """Check script run properties."""

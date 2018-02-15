@@ -15,7 +15,7 @@
 """Forseti installer CLI config object."""
 
 from config import Config
-from ..util.constants import TEMPLATE_TYPE_CLIENT
+from setup.gcp.installer.util.constants import TEMPLATE_TYPE_CLIENT
 
 
 class ClientConfig(Config):
