@@ -32,8 +32,6 @@ class FirewallRuleDirection(Enum):
 
 MAXIMUM_LOOP_COUNT = 600
 
-CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
-
 DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
 
 GCLOUD_MIN_VERSION = (180, 0, 0)

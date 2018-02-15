@@ -16,8 +16,6 @@
 
 import datetime
 
-from setup.gcp.installer.util.constants import CONFIG_FILENAME_FMT
-
 
 class Config(object):
     """Forseti installer config object."""
@@ -26,7 +24,7 @@ class Config(object):
     datetimestamp = None
     timestamp = None
     force_no_cloudshell = None
-    config_filename = None
+    config_filename = 'forseti-setup-{}.cfg'
     advanced_mode = None
     dry_run = None
     bucket_location = None
@@ -43,7 +41,7 @@ class Config(object):
         self.timestamp = self.datetimestamp[8:]
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.config_filename = (kwargs.get('config') or
-                                CONFIG_FILENAME_FMT.format(
+                                self.config_filename.format(
                                     self.datetimestamp))
         self.advanced_mode = bool(kwargs.get('advanced'))
         self.dry_run = bool(kwargs.get('dry_run'))
