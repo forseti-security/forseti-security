@@ -55,7 +55,8 @@ class ResourceUtilTest(ForsetiTestCase):
         actual_org = resource_util.create_resource(
             12345, ResourceType.ORGANIZATION)
         self.assertEqual(expect_org, actual_org)
-        expect_proj = Project('abcd', 54321)
+
+        expect_proj = Project('abcd', project_number=54321)
         actual_proj = resource_util.create_resource(
             'abcd', ResourceType.PROJECT, project_number=54321)
         self.assertEqual(expect_proj, actual_proj)

@@ -143,6 +143,7 @@ class CloudSqlRuleBook(bre.BaseRuleBook):
             rule_def_resource = CloudSqlAccessControl(
                 project_id='',
                 instance_name=escape_and_globify(instance_name),
+                full_name='',
                 ipv4_enabled=True,
                 authorized_networks=escape_and_globify(authorized_networks),
                 require_ssl=require_ssl,
@@ -232,12 +233,14 @@ class Rule(object):
             yield self.RuleViolation(
                 resource_type='cloudsql',
                 resource_id=cloudsql_acl.instance_name,
+                full_name=cloudsql_acl.full_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='CLOUD_SQL_VIOLATION',
                 instance_name=cloudsql_acl.instance_name,
                 authorized_networks=cloudsql_acl.authorized_networks,
-                require_ssl=cloudsql_acl.require_ssl)
+                require_ssl=cloudsql_acl.require_ssl,
+                inventory_data=cloudsql_acl.json)
 
     # Rule violation.
     # resource_type: string
@@ -249,7 +252,7 @@ class Rule(object):
     # authorized_networks: string
     # ssl_enabled: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type',
+                               ['resource_type', 'resource_id', 'full_name',
+                                'rule_name', 'rule_index', 'violation_type',
                                 'instance_name', 'authorized_networks',
-                                'require_ssl'])
+                                'require_ssl', 'inventory_data'])

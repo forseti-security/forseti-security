@@ -577,13 +577,18 @@ class Rule(object):
         """
         if not policies:
             raise ValueError('No policies in violation')
+        inventory_data = []
+        for policy in policies:
+            inventory_data.append(policy.as_json())
         return RuleViolation(
             resource_type='firewall_rule',
             resource_id=policies[0].project_id,
+            full_name=policies[0].full_name,
             rule_id=self.id,
             violation_type=violation_type,
             policy_names=[p.name for p in policies],
             recommended_actions=recommended_actions,
+            inventory_data=inventory_data
         )
 
 # Rule violation.
@@ -594,9 +599,9 @@ class Rule(object):
 # policy_names: string
 # recommeded_action: string
 RuleViolation = namedtuple('RuleViolation',
-                           ['resource_type', 'resource_id', 'rule_id',
-                            'violation_type', 'policy_names',
-                            'recommended_actions'])
+                           ['resource_type', 'resource_id', 'full_name',
+                            'rule_id', 'violation_type', 'policy_names',
+                            'recommended_actions', 'inventory_data'])
 
 def is_whitelist_violation(rules, policy):
     """Checks if the policy is not a subset of those allowed by the rules.

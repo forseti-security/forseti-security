@@ -413,10 +413,12 @@ class IapScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations, resource_counts):
@@ -499,6 +501,7 @@ class IapScanner(base_scanner.BaseScanner):
                     parent_type_name=parent_type_name):
                 backend_services.append(
                     backend_service_type.BackendService.from_json(
+                        full_name=backend_service.full_name,
                         project_id=backend_service.parent.name,
                         json_string=backend_service.data))
         return backend_services
@@ -537,6 +540,7 @@ class IapScanner(base_scanner.BaseScanner):
                     session, 'instance', parent_type_name=parent_type_name):
                 instances.append(
                     instance_type.Instance.from_json(
+                        full_name='',
                         project_id=instance.parent.name,
                         json_string=instance.data))
         return instances
