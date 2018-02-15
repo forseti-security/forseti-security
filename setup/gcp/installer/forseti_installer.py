@@ -123,8 +123,6 @@ class ForsetiInstaller:
             # If deployed successfully, make sure the VM has been initialized,
             # copy configuration file, deployment template file and
             # rule files to the GCS bucket
-            instance_name = '{}-vm'.format(deployment_name)
-            self.wait_until_vm_initialized(instance_name)
             conf_output_path = FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
                 template_type=self.config.template_type)

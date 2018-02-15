@@ -106,28 +106,32 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
-        # Copy the rule directory to the GCS bucket
-        copy_file_to_destination(
-            RULES_DIR_PATH, bucket_name,
-            is_directory=True, dry_run=self.config.dry_run)
+            # Copy the rule directory to the GCS bucket
+            copy_file_to_destination(
+                RULES_DIR_PATH, bucket_name,
+                is_directory=True, dry_run=self.config.dry_run)
 
-        # Create firewall rule to block out all the ingress traffic
-        create_firewall_rule(
-            self.format_firewall_rule_name('forseti-server-deny-all'),
-            [self.gcp_service_account],
-            FirewallRuleAction.DENY,
-            ['icmp', 'udp', 'tcp'],
-            FirewallRuleDirection.INGRESS,
-            1)
+            # Create firewall rule to block out all the ingress traffic
+            create_firewall_rule(
+                self.format_firewall_rule_name('forseti-server-deny-all'),
+                [self.gcp_service_account],
+                FirewallRuleAction.DENY,
+                ['icmp', 'udp', 'tcp'],
+                FirewallRuleDirection.INGRESS,
+                1)
 
-        # Create firewall rule to allow only port tcp:50051
-        create_firewall_rule(
-            self.format_firewall_rule_name('forseti-server-allow-grpc'),
-            [self.gcp_service_account],
-            FirewallRuleAction.ALLOW,
-            ['tcp:50051'],
-            FirewallRuleDirection.INGRESS,
-            0)
+            # Create firewall rule to allow only port tcp:50051
+            create_firewall_rule(
+                self.format_firewall_rule_name('forseti-server-allow-grpc'),
+                [self.gcp_service_account],
+                FirewallRuleAction.ALLOW,
+                ['tcp:50051'],
+                FirewallRuleDirection.INGRESS,
+                0)
+
+            instance_name = '{}-vm'.format(deployment_name)
+            self.wait_until_vm_initialized(instance_name)
+
         return success, deployment_name
 
     def format_firewall_rule_name(self, rule_name):

@@ -65,6 +65,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
             instance_name = '{}-vm'.format(deployment_name)
             zone = '{}-c'.format(self.config.bucket_location)
             enable_os_login(instance_name, zone)
+            self.wait_until_vm_initialized(instance_name)
         return success, deployment_name
 
     def get_configuration_values(self):
