@@ -12,23 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Constants used for the setup of Forseti"""
+""" Constants used for the setup of Forseti."""
 
 import os
 from enum import Enum
 
 
 class FirewallRuleAction(Enum):
-    """Firewall rule action object"""
+    """Firewall rule action object."""
     ALLOW = 'ALLOW'
     DENY = 'DENY'
 
 
 class FirewallRuleDirection(Enum):
-    """Firewall rule direction object"""
+    """Firewall rule direction object."""
     INGRESS = 'INGRESS'
     EGRESS = 'EGRESS'
 
+
+MAXIMUM_LOOP_COUNT = 600
 
 CONFIG_FILENAME_FMT = 'forseti-setup-{}.cfg'
 

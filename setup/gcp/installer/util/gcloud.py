@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""gcloud utility functions"""
+"""gcloud utility functions."""
 
 from __future__ import print_function
 import re
@@ -609,6 +609,24 @@ def get_forseti_server_info():
         str: Zone of the forseti server application, default to 'us-central1-c'
         str: Name of the forseti server instance
     """
+    ip, zone, name = get_vm_instance_info('forseti-security-server',
+                                          try_match=True)
+    return ('', 'us-central1-c', '') if ip is None else (ip, zone, name)
+
+
+def get_vm_instance_info(instance_name, try_match=False):
+    """Get forseti server ip and zone information if exists, exit if not.
+
+    Args:
+        instance_name (str): Name of the vm instance
+        try_match (bool): Match instance that contains instance_name
+                          inside their name
+
+    Returns:
+        str: IP address of the forseti server application
+        str: Zone of the forseti server application, default to 'us-central1-c'
+        str: Name of the forseti server instance
+    """
     return_code, out, err = run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
@@ -618,7 +636,10 @@ def get_forseti_server_info():
     try:
         instances = json.loads(out)
         for instance in instances:
-            if 'forseti-security-server' in instance.get('name'):
+            cur_instance_name = instance.get('name')
+            match = (try_match and instance_name in cur_instance_name or
+                     (not try_match and instance_name == cur_instance_name))
+            if match:
                 # found forseti server vm instance
                 zone = instance.get('zone').split("/zones/")[1]
                 network_interfaces = instance.get('networkInterfaces')
@@ -631,7 +652,7 @@ def get_forseti_server_info():
     except ValueError:
         print('Error retrieving forseti server ip address, '
               'will leave the server ip empty for now.')
-    return '', 'us-central1-c', ''
+    return None, None, None
 
 
 def create_firewall_rule(rule_name,
@@ -728,3 +749,26 @@ def create_deployment(project_id,
         print('\nCreated deployment successfully.')
 
     return deployment_name, return_code
+
+
+def check_vm_init_status(vm_name, zone):
+    """Check vm initialization status.
+
+    Args:
+        vm_name (str): Name of the VM instance.
+        zone (str): Zone of the VM instance.
+
+    Returns:
+        bool: Whether or not the VM has finished initializing.
+    """
+
+    check_script_executed = 'tail -n1 /tmp/deployment.log'
+
+    return_code, out, err = run_command(
+        ['gcloud', 'compute', 'ssh', vm_name,
+         '--zone', zone, '--command', check_script_executed])
+
+    if 'Execution of startup script finished' in out:
+        return True
+
+    return False

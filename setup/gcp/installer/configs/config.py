@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti installer config object"""
+"""Forseti installer config object."""
 
 import datetime
 
@@ -20,7 +20,7 @@ from ..util.constants import CONFIG_FILENAME_FMT
 
 
 class Config(object):
-    """Forseti installer config object"""
+    """Forseti installer config object."""
 
     # Class variables initialization
     datetimestamp = None

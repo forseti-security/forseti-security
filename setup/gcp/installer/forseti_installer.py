@@ -17,6 +17,9 @@
 from __future__ import print_function
 from abc import ABCMeta
 from abc import abstractmethod
+from time import sleep
+
+import sys
 
 from util.utils import (
     print_banner, get_forseti_version, format_service_acct_id,
@@ -26,10 +29,11 @@ from util.constants import (
     MESSAGE_DEPLOYMENT_HAD_ISSUES, MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION,
     MESSAGE_VIEW_DEPLOYMENT_DETAILS, MESSAGE_FORSETI_CONFIGURATION_GENERATED,
     MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN, DEFAULT_BUCKET_FMT,
-    MESSAGE_FORSETI_BRANCH_DEPLOYED)
+    MESSAGE_FORSETI_BRANCH_DEPLOYED, MAXIMUM_LOOP_COUNT)
 from util.gcloud import (
     create_reuse_service_acct, check_billing_enabled, lookup_organization,
-    get_gcloud_info, verify_gcloud_information, create_deployment)
+    get_gcloud_info, verify_gcloud_information, create_deployment,
+    check_vm_init_status, get_vm_instance_info)
 from util.files import (
     copy_file_to_destination, generate_deployment_templates,
     generate_forseti_conf)
@@ -114,9 +118,13 @@ class ForsetiInstaller:
             self.config.template_type,
             self.config.datetimestamp,
             self.config.dry_run)
+
         if not return_code:
-            # If deployed successfully, copy configuration file, deployment
-            # template file and rule files to the GCS bucket
+            # If deployed successfully, make sure the VM has been initialized,
+            # copy configuration file, deployment template file and
+            # rule files to the GCS bucket
+            instance_name = '{}-vm'.format(deployment_name)
+            self.wait_until_vm_initialized(instance_name)
             conf_output_path = FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
                 template_type=self.config.template_type)
@@ -131,6 +139,25 @@ class ForsetiInstaller:
                 is_directory=False, dry_run=self.config.dry_run)
 
         return not return_code, deployment_name
+
+    def wait_until_vm_initialized(self, vm_name):
+        """Check vm init status.
+
+        Args:
+            vm_name (str): Name of the VM instance.
+        """
+        print_banner('VM Initialization')
+        print ('This may take a few minutes.')
+        _, zone, name = get_vm_instance_info(vm_name)
+        for i in range (0, MAXIMUM_LOOP_COUNT):
+            dots = '.' * (i % 10)
+            sys.stdout.write('\rInitializing VM .{}'.format(dots))
+            sys.stdout.flush()
+            if check_vm_init_status(name, zone):
+                break
+        # print new line
+        print ('Done.')
+        return
 
     def check_run_properties(self):
         """Check script run properties."""

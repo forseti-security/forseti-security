@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti installer server config object"""
+"""Forseti installer server config object."""
 
 from config import Config
 from ..util.constants import (
@@ -20,9 +20,9 @@ from ..util.constants import (
 
 
 class ServerConfig(Config):
-    """Forseti installer server config object"""
+    """Forseti installer server config object."""
 
-    #Class variable initialization
+    # Class variable initialization
     template_type = None
     cloudsql_instance = None
     cloudsql_region = None

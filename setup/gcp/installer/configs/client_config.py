@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti installer CLI config object"""
+"""Forseti installer CLI config object."""
 
 from config import Config
 from ..util.constants import TEMPLATE_TYPE_CLIENT
 
 
 class ClientConfig(Config):
-    """Forseti installer CLI config object"""
+    """Forseti installer CLI config object."""
 
     def __init__(self, **kwargs):
         """Initialize.
