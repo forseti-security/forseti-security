@@ -39,6 +39,7 @@ class BackendService(resource.Resource):
             resource_type=resource.ResourceType.BACKEND_SERVICE,
             name=kwargs.get('name'),
             display_name=kwargs.get('name'))
+        self.full_name = kwargs.get('full_name')
         self.affinity_cookie_ttl_sec = kwargs.get('affinity_cookie_ttl_sec')
         self.backends = kwargs.get('backends')
         self.cdn_policy = kwargs.get('cdn_policy')
@@ -60,10 +61,11 @@ class BackendService(resource.Resource):
         self._json = kwargs.get('raw_backend_service')
 
     @classmethod
-    def from_dict(cls, backend_service, project_id=None):
+    def from_dict(cls, full_name, backend_service, project_id=None):
         """Creates a BackendService from dict.
 
         Args:
+            full_name (str): The full resource name and ancestory.
             backend_service (dict): A backend service resource dict.
             project_id (str): A project id for the resource.
 
@@ -72,6 +74,7 @@ class BackendService(resource.Resource):
         """
         kwargs = {'project_id': project_id,
                   'id': backend_service.get('id'),
+                  'full_name': full_name,
                   'creation_timestamp': backend_service.get(
                       'creationTimestamp'),
                   'name': backend_service.get('name'),
@@ -97,10 +100,11 @@ class BackendService(resource.Resource):
         return cls(**kwargs)
 
     @staticmethod
-    def from_json(json_string, project_id=None):
+    def from_json(full_name, json_string, project_id=None):
         """Creates a BackendService from a backend service JSON string.
 
         Args:
+            full_name (str): The full resource name and ancestory.
             json_string (str): A json string representing the backend service.
             project_id (str): A project id for the resource.
 
@@ -108,7 +112,7 @@ class BackendService(resource.Resource):
             BackendService: A new BackendService object.
         """
         backend_service = json.loads(json_string)
-        return BackendService.from_dict(backend_service, project_id)
+        return BackendService.from_dict(full_name, backend_service, project_id)
 
     def _create_json_str(self):
         """Creates a json string based on the object attributes.
@@ -118,6 +122,7 @@ class BackendService(resource.Resource):
         """
         resource_dict = {
             'id': self.id,
+            'full_name': self.full_name,
             'creationTimestamp': self.creation_timestamp,
             'name': self.name,
             'description': self.description,

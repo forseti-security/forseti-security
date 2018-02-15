@@ -146,6 +146,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                           rules=set([rule]),
                                           applies_to='self_and_children')
         service = backend_service.BackendService(
+            full_name='fake_full_name111',
             project_id=self.project1.id,
             name='bs1')
         iap_resource = iap_scanner.IapResource(
@@ -161,12 +162,14 @@ class IapRulesEngineTest(ForsetiTestCase):
                 resource_type='backend_service',
                 resource_name='bs1',
                 resource_id=service.resource_id,
+                full_name='fake_full_name111',
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 violation_type='IAP_VIOLATION',
                 alternate_services_violations=[],
                 direct_access_sources_violations=[],
-                iap_enabled_violation=True),
+                iap_enabled_violation=True,
+                inventory_data='{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}'),
         ]
         self.assertEquals(expected_violations, results)
 
@@ -176,6 +179,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                           rules=set([rule]),
                                           applies_to='self_and_children')
         service = backend_service.BackendService(
+            full_name='fake_full_name111',
             project_id=self.project1.id,
             name='bs1')
         alternate_service = backend_service.Key.from_args(
@@ -194,12 +198,14 @@ class IapRulesEngineTest(ForsetiTestCase):
                 resource_type='backend_service',
                 resource_name='bs1',
                 resource_id=service.resource_id,
+                full_name='fake_full_name111',
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 violation_type='IAP_VIOLATION',
                 alternate_services_violations=[alternate_service],
                 direct_access_sources_violations=[],
-                iap_enabled_violation=False),
+                iap_enabled_violation=False,
+                inventory_data='{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}'),
         ]
         self.assertEquals(expected_violations, results)
 
@@ -210,6 +216,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                           applies_to='self_and_children')
         direct_source = 'some-tag'
         service = backend_service.BackendService(
+            full_name='fake_full_name111',
             project_id=self.project1.id,
             name='bs1')
         iap_resource = iap_scanner.IapResource(
@@ -225,12 +232,14 @@ class IapRulesEngineTest(ForsetiTestCase):
                 resource_type='backend_service',
                 resource_name='bs1',
                 resource_id=service.resource_id,
+                full_name='fake_full_name111',
                 rule_name=rule.rule_name,
                 rule_index=rule.rule_index,
                 violation_type='IAP_VIOLATION',
                 alternate_services_violations=[],
                 direct_access_sources_violations=[direct_source],
-                iap_enabled_violation=False),
+                iap_enabled_violation=False,
+                inventory_data = '{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}')
         ]
         self.assertEquals(expected_violations, results)
 
@@ -241,6 +250,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                           rules=set([rule]),
                                           applies_to='self_and_children')
         service = backend_service.BackendService(
+            full_name='fake_full_name111',
             project_id=self.project1.id,
             name='bs1')
         alternate_service = backend_service.Key.from_args(

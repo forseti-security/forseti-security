@@ -146,6 +146,7 @@ class BucketsRuleBook(bre.BaseRuleBook):
             rule_def_resource = BucketAccessControls(
                 project_id='',
                 bucket=escape_and_globify(bucket),
+                full_name='',
                 entity=escape_and_globify(entity),
                 email=escape_and_globify(email),
                 domain=escape_and_globify(domain),
@@ -235,6 +236,7 @@ class Rule(object):
             yield self.RuleViolation(
                 resource_type='bucket',
                 resource_id=bucket_acl.bucket,
+                full_name=bucket_acl.full_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='BUCKET_VIOLATION',
@@ -243,7 +245,8 @@ class Rule(object):
                 email=bucket_acl.email,
                 domain=bucket_acl.domain,
                 bucket=bucket_acl.bucket,
-                project_id=bucket_acl.project_id)
+                project_id=bucket_acl.project_id,
+                inventory_data=bucket_acl.json)
 
     # Rule violation.
     # resource_type: string
@@ -257,7 +260,7 @@ class Rule(object):
     # domain: string
     # bucket: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type', 'role',
-                                'entity', 'email', 'domain', 'bucket',
-                                'project_id'])
+                               ['resource_type', 'resource_id', 'full_name',
+                                'rule_name', 'rule_index', 'violation_type',
+                                'role', 'entity', 'email', 'domain', 'bucket',
+                                'project_id', 'inventory_data'])

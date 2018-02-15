@@ -227,13 +227,15 @@ class Rule(object):
                 if self.is_blacklisted(ipaddr):
                     yield self.RuleViolation(
                         resource_type='instance',
+                        full_name=network_interface.full_name,
                         rule_blacklist=self.rule_blacklist,
                         rule_name=self.rule_blacklist,
                         rule_index=self.rule_index,
                         violation_type='BLACKLIST_VIOLATION',
                         project=project,
                         network=network,
-                        ip=access_config['natIP'])
+                        ip=access_config.get('natIP'),
+                        inventory_data=network_interface.as_json())
 
     # Rule violation.
     # resource_type: string
@@ -245,6 +247,7 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'rule_blacklist', 'rule_name',
+                               ['resource_type', 'full_name',
+                                'rule_blacklist', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
-                                'network', 'ip'])
+                                'network', 'ip', 'inventory_data'])

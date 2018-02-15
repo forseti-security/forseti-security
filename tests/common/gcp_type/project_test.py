@@ -47,7 +47,7 @@ class ProjectTest(ForsetiTestCase):
         my_project_id = 'my-projectid-1'
         my_project_number = 1234567890
         my_project_name = 'My project name'
-        project = Project(my_project_id, my_project_number,
+        project = Project(my_project_id, project_number=my_project_number,
                           display_name=my_project_name,
                           lifecycle_state=ProjectLifecycleState.ACTIVE)
         self.assertEqual(my_project_id, project.id)

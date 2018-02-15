@@ -98,7 +98,7 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
 
         # No authorized networks
         acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
-            'test-project', SQL_INSTANCE_JSON)
+            'test-project', 'fake_full_name', SQL_INSTANCE_JSON)
         violation = all_internet_no_ssl.find_policy_violations(acl)
         self.assertEquals(0, len(list(violation)))
         violation = all_internet_ssl.find_policy_violations(acl)
@@ -112,7 +112,7 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
         ip_configuration['authorizedNetworks'].append(network)
 
         acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
-            'test-project', json.dumps(instance_dict))
+            'test-project', 'fake_full_name', json.dumps(instance_dict))
         violation = all_internet_no_ssl.find_policy_violations(acl)
         self.assertEquals(1, len(list(violation)))
         violation = all_internet_ssl.find_policy_violations(acl)
@@ -121,7 +121,7 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
         # Exposed to everyone in the world, ssl required.
         ip_configuration['requireSsl'] = True
         acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
-            'test-project', json.dumps(instance_dict))
+            'test-project', 'fake_full_name', json.dumps(instance_dict))
         violation = all_internet_no_ssl.find_policy_violations(acl)
         self.assertEquals(0, len(list(violation)))
         violation = all_internet_ssl.find_policy_violations(acl)
