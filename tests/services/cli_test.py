@@ -110,7 +110,7 @@ class ImporterTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @test_cmds([
-        ('inventory create "bar" --background',
+        ('inventory create --background --import_as "bar"',
          CLIENT.inventory.create,
          [True, 'bar'],
          {},

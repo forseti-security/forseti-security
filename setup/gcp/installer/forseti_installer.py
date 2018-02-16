@@ -21,12 +21,7 @@ from abc import abstractmethod
 import sys
 
 from configs.config import Config
-from util.constants import (
-    FORSETI_CONF_PATH, DEPLOYMENT_TEMPLATE_OUTPUT_PATH,
-    MESSAGE_DEPLOYMENT_HAD_ISSUES, MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION,
-    MESSAGE_VIEW_DEPLOYMENT_DETAILS, MESSAGE_FORSETI_CONFIGURATION_GENERATED,
-    MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN, DEFAULT_BUCKET_FMT_V2,
-    MESSAGE_FORSETI_BRANCH_DEPLOYED, MAXIMUM_LOOP_COUNT)
+from util import constants
 from util import files
 from util import gcloud
 from util import utils
@@ -117,7 +112,7 @@ class ForsetiInstaller:
             # If deployed successfully, make sure the VM has been initialized,
             # copy configuration file, deployment template file and
             # rule files to the GCS bucket
-            conf_output_path = FORSETI_CONF_PATH.format(
+            conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
                 installer_type=self.config.installer_type)
             files.copy_file_to_destination(
@@ -125,7 +120,7 @@ class ForsetiInstaller:
                 is_directory=False, dry_run=self.config.dry_run)
 
             deployment_tpl_output_path = (
-                DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
+                constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
             files.copy_file_to_destination(
                 deployment_tpl_path, deployment_tpl_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -146,7 +141,7 @@ class ForsetiInstaller:
         # VT100 control codes, use to remove the last line
         erase_line = '\x1b[2K'
 
-        for i in range(0, MAXIMUM_LOOP_COUNT):
+        for i in range(0, constants.MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
             sys.stdout.write('\r{}Initializing VM {}'.format(erase_line, dots))
             sys.stdout.flush()
@@ -174,9 +169,10 @@ class ForsetiInstaller:
         Returns:
             str: Name of the GCS bucket
         """
-        return DEFAULT_BUCKET_FMT_V2.format(self.project_id,
-                                            self.config.installer_type,
-                                            self.config.timestamp)
+        return constants.DEFAULT_BUCKET_FMT_V2.format(
+            self.project_id,
+            self.config.installer_type,
+            self.config.timestamp)
 
     @abstractmethod
     def get_deployment_values(self):
@@ -208,14 +204,14 @@ class ForsetiInstaller:
 
         deploy_values = self.get_deployment_values()
 
-        deploy_tpl_path = files.generate_deployment_templates(
+        deployment_tpl_path = files.generate_deployment_templates(
             self.config.installer_type,
             deploy_values,
             self.config.datetimestamp)
 
         print('\nCreated a deployment template:\n    %s\n' %
-              deploy_tpl_path)
-        return deploy_tpl_path
+              deployment_tpl_path)
+        return deployment_tpl_path
 
     def generate_forseti_conf(self):
         """Generate Forseti conf file.
@@ -262,26 +258,27 @@ class ForsetiInstaller:
             print('This was a dry run, so a deployment was not attempted. '
                   'You can still create the deployment manually.\n')
         elif deploy_success:
-            print(MESSAGE_FORSETI_BRANCH_DEPLOYED.format(self.branch))
+            print(constants.MESSAGE_FORSETI_BRANCH_DEPLOYED.format(
+                self.branch))
         else:
-            print(MESSAGE_DEPLOYMENT_HAD_ISSUES)
+            print(constants.MESSAGE_DEPLOYMENT_HAD_ISSUES)
 
-        deploy_tpl_gcs_path = DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
+        deploy_tpl_gcs_path = constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
             bucket_name)
 
-        print(MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
+        print(constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
             deployment_tpl_path, deploy_tpl_gcs_path))
 
         if self.config.dry_run:
-            print(MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN.format(
-                forseti_conf_path, bucket_name))
+            print(constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN
+                  .format(forseti_conf_path, bucket_name))
         else:
-            print(MESSAGE_VIEW_DEPLOYMENT_DETAILS.format(
+            print(constants.MESSAGE_VIEW_DEPLOYMENT_DETAILS.format(
                 deployment_name,
                 self.project_id,
                 self.organization_id))
 
-            print(MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
+            print(constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
                 installer_type=self.config.installer_type,
                 datetimestamp=self.config.datetimestamp,
                 bucket_name=bucket_name))

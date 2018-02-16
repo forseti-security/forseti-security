@@ -17,9 +17,7 @@
 from __future__ import print_function
 import os
 
-from constants import (
-    ROOT_DIR_PATH, INPUT_DEPLOYMENT_TEMPLATE_FILENAME,
-    INPUT_CONFIGURATION_TEMPLATE_FILENAME)
+import constants
 import utils
 
 
@@ -40,21 +38,22 @@ def generate_deployment_templates(template_type, values, datetimestamp):
 
     template_type = template_type.lower()
 
-    if template_type not in INPUT_DEPLOYMENT_TEMPLATE_FILENAME:
+    if template_type not in constants.INPUT_DEPLOYMENT_TEMPLATE_FILENAME:
         raise KeyError # template type not found
 
-    input_template_filename = INPUT_DEPLOYMENT_TEMPLATE_FILENAME[template_type]
+    input_template_filename = (
+        constants.INPUT_DEPLOYMENT_TEMPLATE_FILENAME[template_type])
 
     # Deployment template in file
     deploy_tpl_path = os.path.abspath(
         os.path.join(
-            ROOT_DIR_PATH,
+            constants.ROOT_DIR_PATH,
             'deployment-templates',
             input_template_filename))
 
     out_tpl_path = os.path.abspath(
         os.path.join(
-            ROOT_DIR_PATH,
+            constants.ROOT_DIR_PATH,
             'deployment-templates',
             'deploy-forseti-{}-{}.yaml'.format(template_type, datetimestamp)))
 
@@ -84,17 +83,19 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
 
     template_type = template_type.lower()
 
-    if template_type not in INPUT_CONFIGURATION_TEMPLATE_FILENAME:
+    if template_type not in constants.INPUT_CONFIGURATION_TEMPLATE_FILENAME:
         raise KeyError # template type not found
 
-    input_template_name = INPUT_CONFIGURATION_TEMPLATE_FILENAME[template_type]
+    input_template_name = (
+        constants.INPUT_CONFIGURATION_TEMPLATE_FILENAME[template_type])
 
     forseti_conf_in = os.path.abspath(
         os.path.join(
-            ROOT_DIR_PATH, 'configs', template_type, input_template_name))
+            constants.ROOT_DIR_PATH,
+            'configs', template_type, input_template_name))
     forseti_conf_gen = os.path.abspath(
         os.path.join(
-            ROOT_DIR_PATH, 'configs', template_type,
+            constants.ROOT_DIR_PATH, 'configs', template_type,
             'forseti_conf_{}_{}.yaml'.format(template_type, datetimestamp)))
 
     conf_values = utils.sanitize_conf_values(vals)

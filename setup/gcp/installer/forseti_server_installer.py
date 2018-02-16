@@ -19,15 +19,7 @@ import random
 
 from configs.server_config import ServerConfig
 from forseti_installer import ForsetiInstaller
-from util.constants import (
-    MESSAGE_ENABLE_GSUITE_GROUP, QUESTION_ACCESS_TO_GRANT_ROLES,
-    RESOURCE_TYPES, MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL,
-    QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL, MESSAGE_ASK_SENDGRID_API_KEY,
-    QUESTION_SENDGRID_API_KEY, NOTIFICATION_SENDER_EMAIL, MESSAGE_SKIP_EMAIL,
-    QUESTION_NOTIFICATION_RECIPIENT_EMAIL, QUESTION_GSUITE_SUPERADMIN_EMAIL,
-    MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,
-    MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION,
-    RULES_DIR_PATH, FirewallRuleAction, FirewallRuleDirection)
+from util import constants
 from util import files
 from util import gcloud
 from util import utils
@@ -61,7 +53,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         super(ForsetiServerInstaller, self).preflight_checks()
 
-        self.determine_access_level()
+        self.determine_access_target()
         self.should_enable_write_access()
         self.format_gsuite_service_acct_id()
         self.should_grant_access()
@@ -102,7 +94,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
             # Copy the rule directory to the GCS bucket
             files.copy_file_to_destination(
-                RULES_DIR_PATH, bucket_name,
+                constants.RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
             instance_name = '{}-vm'.format(deployment_name)
@@ -112,9 +104,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             gcloud.create_firewall_rule(
                 self.format_firewall_rule_name('forseti-server-deny-all'),
                 [self.gcp_service_account],
-                FirewallRuleAction.DENY,
+                constants.FirewallRuleAction.DENY,
                 ['icmp', 'udp', 'tcp'],
-                FirewallRuleDirection.INGRESS,
+                constants.FirewallRuleDirection.INGRESS,
                 1)
 
             # Create firewall rule to open only port tcp:50051
@@ -122,9 +114,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             gcloud.create_firewall_rule(
                 self.format_firewall_rule_name('forseti-server-allow-grpc'),
                 [self.gcp_service_account],
-                FirewallRuleAction.ALLOW,
+                constants.FirewallRuleAction.ALLOW,
                 ['tcp:50051'],
-                FirewallRuleDirection.INGRESS,
+                constants.FirewallRuleDirection.INGRESS,
                 0,
                 '10.128.0.0/9')
 
@@ -150,7 +142,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             choice = 'y'
 
         while choice != 'y' and choice != 'n':
-            choice = raw_input(QUESTION_ACCESS_TO_GRANT_ROLES.format(
+            choice = raw_input(constants.QUESTION_ACCESS_TO_GRANT_ROLES.format(
                 self.resource_root_id)).strip().lower()
 
         if choice == 'y':
@@ -199,7 +191,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email
         }
 
-    def determine_access_level(self):
+    def determine_access_target(self):
         """Determine where to enable Forseti access.
 
         Either org, folder, or project level.
@@ -207,7 +199,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         utils.print_banner('Forseti access target')
 
         if not self.config.advanced_mode:
-            self.access_target = RESOURCE_TYPES[0]
+            self.access_target = constants.RESOURCE_TYPES[0]
             self.target_id = self.organization_id
 
         while not self.target_id:
@@ -217,18 +209,19 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 choice_index = 1
             else:
                 try:
-                    print(MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL)
-                    for (i, choice) in enumerate(RESOURCE_TYPES):
+                    print(constants.MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL)
+                    for (i, choice) in enumerate(constants.RESOURCE_TYPES):
                         print('[%s] %s' % (i+1, choice))
                     choice_input = raw_input(
-                        QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL).strip()
+                        constants.QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL
+                    ).strip()
                     choice_index = int(choice_input)
                 except ValueError:
                     print('Invalid choice, try again.')
                     continue
 
-            if choice_index and choice_index <= len(RESOURCE_TYPES):
-                self.access_target = RESOURCE_TYPES[choice_index-1]
+            if choice_index and choice_index <= len(constants.RESOURCE_TYPES):
+                self.access_target = constants.RESOURCE_TYPES[choice_index-1]
                 if self.access_target == 'organization':
                     self.target_id = gcloud.choose_organization()
                 elif self.access_target == 'folder':
@@ -246,22 +239,23 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Ask user for specific setup values."""
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key
-            print(MESSAGE_ASK_SENDGRID_API_KEY)
+            print(constants.MESSAGE_ASK_SENDGRID_API_KEY)
             self.config.sendgrid_api_key = raw_input(
-                QUESTION_SENDGRID_API_KEY).strip()
+                constants.QUESTION_SENDGRID_API_KEY).strip()
         if self.config.sendgrid_api_key:
-            self.config.notification_sender_email = NOTIFICATION_SENDER_EMAIL
+            self.config.notification_sender_email = (
+                constants.NOTIFICATION_SENDER_EMAIL)
 
             # Ask for notification recipient email
             if not self.config.notification_recipient_email:
                 self.config.notification_recipient_email = raw_input(
-                    QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
+                    constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
         if not self.config.gsuite_superadmin_email:
             # Ask for G Suite super admin email
-            print(MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
+            print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
             self.config.gsuite_superadmin_email = raw_input(
-                QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
+                constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
     def format_gsuite_service_acct_id(self):
         """Format the gsuite service account id"""
@@ -291,7 +285,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             choice = 'y'
 
         while choice != 'y' and choice != 'n':
-            choice = raw_input(QUESTION_ENABLE_WRITE_ACCESS).strip().lower()
+            choice = raw_input(
+                constants.QUESTION_ENABLE_WRITE_ACCESS).strip().lower()
 
         if choice == 'y':
             self.enable_write_access = True
@@ -307,15 +302,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
             deployment_tpl_path, forseti_conf_path,
             bucket_name)
         if self.has_roles_script:
-            print(MESSAGE_HAS_ROLE_SCRIPT.format(self.resource_root_id))
+            print(constants.MESSAGE_HAS_ROLE_SCRIPT.format(
+                self.resource_root_id))
 
         if not self.config.sendgrid_api_key:
-            print(MESSAGE_SKIP_EMAIL)
+            print(constants.MESSAGE_SKIP_EMAIL)
 
         if self.config.gsuite_superadmin_email:
-            print(MESSAGE_GSUITE_DATA_COLLECTION.format(
+            print(constants.MESSAGE_GSUITE_DATA_COLLECTION.format(
                 self.project_id,
                 self.organization_id,
                 self.gsuite_service_account))
         else:
-            print(MESSAGE_ENABLE_GSUITE_GROUP)
+            print(constants.MESSAGE_ENABLE_GSUITE_GROUP)

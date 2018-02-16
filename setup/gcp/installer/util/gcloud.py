@@ -19,13 +19,7 @@ import re
 import sys
 import json
 
-from constants import (
-    GCLOUD_VERSION_REGEX, GCLOUD_ALPHA_REGEX, GCLOUD_MIN_VERSION,
-    MESSAGE_GCLOUD_VERSION_MISMATCH, REQUIRED_APIS, GCP_READ_IAM_ROLES,
-    GCP_WRITE_IAM_ROLES, PROJECT_IAM_ROLES_SERVER, SVC_ACCT_ROLES,
-    MESSAGE_CREATE_ROLE_SCRIPT, QUESTION_CHOOSE_FOLDER,
-    MESSAGE_BILLING_NOT_ENABLED, MESSAGE_NO_ORGANIZATION,
-    RESOURCE_TYPE_ARGS_MAP, MESSAGE_NO_CLOUD_SHELL, PROJECT_IAM_ROLES_CLIENT)
+import constants
 import utils
 
 
@@ -74,7 +68,7 @@ def verify_gcloud_information(project_id,
     check_proper_gcloud()
     if not force_no_cloudshell:
         if not is_devshell:
-            print(MESSAGE_NO_CLOUD_SHELL)
+            print(constants.MESSAGE_NO_CLOUD_SHELL)
             sys.exit(1)
         else:
             print('Using Cloud Shell, continuing...')
@@ -97,8 +91,8 @@ def check_proper_gcloud():
     return_code, out, err = utils.run_command(
         ['gcloud', '--version'])
 
-    version_regex = re.compile(GCLOUD_VERSION_REGEX)
-    alpha_regex = re.compile(GCLOUD_ALPHA_REGEX)
+    version_regex = re.compile(constants.GCLOUD_VERSION_REGEX)
+    alpha_regex = re.compile(constants.GCLOUD_ALPHA_REGEX)
 
     version = None
     alpha_match = None
@@ -121,9 +115,10 @@ def check_proper_gcloud():
     print('Current gcloud version: {}'.format('.'.join(
         [str(d) for d in version])))
     print('Gcloud alpha components? {}'.format(alpha_match is not None))
-    if version < GCLOUD_MIN_VERSION or not alpha_match:
-        print(MESSAGE_GCLOUD_VERSION_MISMATCH
-              .format('.'.join([str(i) for i in GCLOUD_MIN_VERSION])))
+    if version < constants.GCLOUD_MIN_VERSION or not alpha_match:
+        print(constants.MESSAGE_GCLOUD_VERSION_MISMATCH
+              .format('.'.join([str(i) for i in constants.GCLOUD_MIN_VERSION]))
+             )
         sys.exit(1)
 
 
@@ -144,7 +139,7 @@ def enable_apis(dry_run=False):
         print('This is a dry run, so skipping this step.')
         return
 
-    for api in REQUIRED_APIS:
+    for api in constants.REQUIRED_APIS:
         print('Enabling the {} API...'.format(api['name']))
         return_code, _, err = utils.run_command(
             ['gcloud', 'services', 'enable', api['service'], '--async'])
@@ -175,7 +170,7 @@ def grant_client_svc_acct_roles(project_id,
     utils.print_banner('Assigning roles to the GCP service account')
 
     roles = {
-        'forseti_project': PROJECT_IAM_ROLES_CLIENT
+        'forseti_project': constants.PROJECT_IAM_ROLES_CLIENT
     }
 
     # Forseti client doesn't have write access,
@@ -221,14 +216,14 @@ def grant_server_svc_acct_roles(enable_write,
     """
 
     utils.print_banner('Assigning roles to the GCP service account')
-    access_target_roles = GCP_READ_IAM_ROLES
+    access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
-        access_target_roles.extend(GCP_WRITE_IAM_ROLES)
+        access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
 
     roles = {
         '%ss' % access_target: access_target_roles,
-        'forseti_project': PROJECT_IAM_ROLES_SERVER,
-        'service_accounts': SVC_ACCT_ROLES,
+        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER,
+        'service_accounts': constants.SVC_ACCT_ROLES,
     }
 
     return _grant_svc_acct_roles(
@@ -258,9 +253,9 @@ def _grant_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated
     """
 
-    access_target_roles = GCP_READ_IAM_ROLES
+    access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
-        access_target_roles.extend(GCP_WRITE_IAM_ROLES)
+        access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
 
     grant_roles_cmds = _grant_roles(roles, target_id, project_id,
                                     gsuite_service_account,
@@ -268,7 +263,7 @@ def _grant_svc_acct_roles(enable_write,
                                     user_can_grant_roles)
 
     if grant_roles_cmds:
-        print(MESSAGE_CREATE_ROLE_SCRIPT)
+        print(constants.MESSAGE_CREATE_ROLE_SCRIPT)
 
         with open('grant_forseti_roles.sh', 'wt') as roles_script:
             roles_script.write('#!/bin/bash\n\n')
@@ -298,7 +293,7 @@ def _grant_roles(roles_map, target_id, project_id,
     assign_roles_cmds = []
 
     for (resource_type, roles) in roles_map.iteritems():
-        resource_args = RESOURCE_TYPE_ARGS_MAP[resource_type]
+        resource_args = constants.RESOURCE_TYPE_ARGS_MAP[resource_type]
         if resource_type == 'forseti_project':
             resource_id = project_id
         elif resource_type == 'service_accounts':
@@ -411,7 +406,7 @@ def choose_folder(organization_id):
     target_id = None
     while not target_id:
         choice = raw_input(
-            QUESTION_CHOOSE_FOLDER.format(organization_id)).strip()
+            constants.QUESTION_CHOOSE_FOLDER.format(organization_id)).strip()
         try:
             # make sure that the choice is an int before converting to str
             target_id = str(int(choice))
@@ -511,7 +506,8 @@ def check_billing_enabled(project_id, organization_id):
 
     def _billing_not_enabled():
         """Print message and exit."""
-        print(MESSAGE_BILLING_NOT_ENABLED.format(project_id, organization_id))
+        print(constants.MESSAGE_BILLING_NOT_ENABLED.format(
+            project_id, organization_id))
         sys.exit(1)
     return_code, out, err = utils.run_command(
         ['gcloud', 'alpha', 'billing', 'projects', 'describe',
@@ -541,7 +537,7 @@ def lookup_organization(project_id):
 
     def _no_organization():
         """No organization, so print a message and exit."""
-        print(MESSAGE_NO_ORGANIZATION)
+        print(constants.MESSAGE_NO_ORGANIZATION)
         sys.exit(1)
 
     def _find_org_from_folder(folder_id):

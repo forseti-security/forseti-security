@@ -130,9 +130,8 @@ def define_inventory_parser(parent):
         'create',
         help='Start a new inventory')
     create_inventory_parser.add_argument(
-        'import_as',
+        '--import_as',
         metavar=('MODEL_NAME',),
-        nargs='?',
         help='Import the inventory when complete, requires a model name')
     create_inventory_parser.add_argument(
         '--background',

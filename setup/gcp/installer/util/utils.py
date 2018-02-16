@@ -23,9 +23,7 @@ import subprocess
 import re
 import os
 
-from constants import (
-    VERSIONFILE_REGEX, FORSETI_SRC_PATH, SERVICE_ACCT_EMAIL_FMT,
-    SERVICE_ACCT_FMT)
+import constants
 
 
 def id_from_name(name):
@@ -63,9 +61,9 @@ def get_forseti_version():
         str: The version.
     """
     version = None
-    version_re = re.compile(VERSIONFILE_REGEX)
+    version_re = re.compile(constants.VERSIONFILE_REGEX)
     version_file = os.path.join(
-        FORSETI_SRC_PATH, '__init__.py')
+        constants.FORSETI_SRC_PATH, '__init__.py')
     with open(version_file, 'rt') as vfile:
         for line in vfile:
             version_match = version_re.match(line)
@@ -130,7 +128,8 @@ def full_service_acct_email(account_id, project_id):
     Returns:
         str: The full service account email.
     """
-    return SERVICE_ACCT_EMAIL_FMT.format(account_id, project_id)
+    return constants.SERVICE_ACCT_EMAIL_FMT.format(
+        account_id, project_id)
 
 
 def format_resource_id(resource_type, resource_id):
@@ -160,7 +159,8 @@ def format_service_acct_id(prefix, modifier, timestamp, project_id):
     """
 
     return full_service_acct_email(
-        SERVICE_ACCT_FMT.format(prefix, modifier, timestamp), project_id)
+        constants.SERVICE_ACCT_FMT.format(
+            prefix, modifier, timestamp), project_id)
 
 
 def infer_version(advanced_mode):

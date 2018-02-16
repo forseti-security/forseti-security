@@ -17,10 +17,7 @@
 from forseti_installer import ForsetiInstaller
 
 from configs.client_config import ClientConfig
-from util.gcloud import (get_forseti_server_info,
-                         grant_client_svc_acct_roles,
-                         enable_os_login)
-
+from util import gcloud
 
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
@@ -34,7 +31,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
         super(ForsetiClientInstaller, self).__init__()
         self.config = ClientConfig(**kwargs)
         (self.server_ip, self.server_zone,
-         self.server_name) = get_forseti_server_info()
+         self.server_name) = gcloud.get_forseti_server_info()
 
     def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template.
@@ -54,13 +51,13 @@ class ForsetiClientInstaller(ForsetiInstaller):
             deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
-            grant_client_svc_acct_roles(
+            gcloud.grant_client_svc_acct_roles(
                 self.project_id,
                 self.gcp_service_account,
                 self.user_can_grant_roles)
             instance_name = '{}-vm'.format(deployment_name)
             zone = '{}-c'.format(self.config.bucket_location)
-            enable_os_login(instance_name, zone)
+            gcloud.enable_os_login(instance_name, zone)
             self.wait_until_vm_initialized(instance_name)
         return success, deployment_name
 
