@@ -13,13 +13,13 @@ Learn the core concepts and get an overview of each Forseti Security module.
 
 Setup and install Forseti.
 
-**[Using]({% link _docs/use/index.md %})**
-
-Using Forseti.
-
 **[Configure]({% link _docs/configure/index.md %})**
 
 Get started with Forseti Security and modules in a few minutes.
+
+**[Using]({% link _docs/use/index.md %})**
+
+Using Forseti.
 
 **[Develop]({% link _docs/develop/index.md %})**
 

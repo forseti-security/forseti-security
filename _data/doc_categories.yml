@@ -4,10 +4,10 @@
   href: docs/concepts/
 - title: Setup
   href: docs/setup/
-- title: Use
-  href: docs/use/
 - title: Configure
   href: docs/configure/
+- title: Use
+  href: docs/use/
 - title: Develop
   href: docs/develop/
 - title: FAQ
