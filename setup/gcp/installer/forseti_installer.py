@@ -27,7 +27,7 @@ from util.constants import (
     FORSETI_CONF_PATH, DEPLOYMENT_TEMPLATE_OUTPUT_PATH,
     MESSAGE_DEPLOYMENT_HAD_ISSUES, MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION,
     MESSAGE_VIEW_DEPLOYMENT_DETAILS, MESSAGE_FORSETI_CONFIGURATION_GENERATED,
-    MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN, DEFAULT_BUCKET_FMT,
+    MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN, DEFAULT_BUCKET_FMT_V2,
     MESSAGE_FORSETI_BRANCH_DEPLOYED, MAXIMUM_LOOP_COUNT)
 from util.gcloud import (
     create_reuse_service_acct, check_billing_enabled, lookup_organization,
@@ -65,8 +65,7 @@ class ForsetiInstaller:
         self.preflight_checks()
 
         # Deployment
-        bucket_name = self.generate_bucket_name(self.project_id,
-                                                self.config.timestamp)
+        bucket_name = self.generate_bucket_name()
         conf_file_path = self.generate_forseti_conf()
         deployment_tpl_path = self.generate_deployment_templates()
 
@@ -174,18 +173,15 @@ class ForsetiInstaller:
                                                           self.config.timestamp,
                                                           self.project_id)
 
-    @staticmethod
-    def generate_bucket_name(project_id, timestamp):
+    def generate_bucket_name(self):
         """Generate GCS bucket name.
-
-        Args:
-            project_id (str): Project Id
-            timestamp (str): Timestamp
 
         Returns:
             str: Name of the GCS bucket
         """
-        return DEFAULT_BUCKET_FMT.format(project_id, timestamp)
+        return DEFAULT_BUCKET_FMT_V2.format(self.project_id,
+                                            self.config.template_type,
+                                            self.config.timestamp)
 
     @abstractmethod
     def get_deployment_values(self):

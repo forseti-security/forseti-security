@@ -86,8 +86,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti deployment template
         """
-        bucket_name = self.generate_bucket_name(self.project_id,
-                                                self.config.timestamp)
+        bucket_name = self.generate_bucket_name()
         return {
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,

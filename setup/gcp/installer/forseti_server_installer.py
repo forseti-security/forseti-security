@@ -186,8 +186,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti deployment template
         """
-        bucket_name = self.generate_bucket_name(self.project_id,
-                                                self.config.timestamp)
+        bucket_name = self.generate_bucket_name()
         return {
             'CLOUDSQL_REGION': self.config.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
@@ -208,8 +207,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             dict: A dictionary of values needed to generate
                 the forseti configuration file
         """
-        bucket_name = self.generate_bucket_name(self.project_id,
-                                                self.config.timestamp)
+        bucket_name = self.generate_bucket_name()
         return {
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,

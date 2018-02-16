@@ -32,7 +32,8 @@ class FirewallRuleDirection(Enum):
 
 MAXIMUM_LOOP_COUNT = 600
 
-DEFAULT_BUCKET_FMT = 'gs://{}-data-{}'
+DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
+DEFAULT_BUCKET_FMT_V2 = 'gs://{}-{}-data-{}'
 
 GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
