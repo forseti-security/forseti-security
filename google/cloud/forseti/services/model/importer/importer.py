@@ -593,9 +593,10 @@ class InventoryImporter(object):
         Args:
             service_config (dict): A Service Config resource to store.
         """
-        sc_type_name = to_type_name(service_config.get_type_class(),
-                                    service_config.get_key())
         parent, full_res_name = self._get_parent(service_config)
+        sc_type_name = to_type_name(
+            service_config.get_type_class(),
+            parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -632,9 +633,10 @@ class InventoryImporter(object):
         """
         # TODO: Dataset policies should be integrated in the model, not stored
         # as a resource.
-        policy_type_name = to_type_name(dataset_policy.get_type_class(),
-                                        dataset_policy.get_key())
         parent, full_res_name = self._get_parent(dataset_policy)
+        policy_type_name = to_type_name(
+            dataset_policy.get_type_class(),
+            parent.type_name)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
