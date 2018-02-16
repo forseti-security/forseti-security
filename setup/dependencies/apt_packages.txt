@@ -4,6 +4,7 @@ git
 libffi-dev
 libssl-dev
 libmysqlclient-dev
+libpython-dev
 python-pip
 python-dev
 unzip
