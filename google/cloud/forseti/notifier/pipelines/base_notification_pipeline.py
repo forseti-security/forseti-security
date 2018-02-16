@@ -16,8 +16,6 @@
 
 import abc
 
-from google.cloud.forseti.common.data_access import dao
-from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -50,32 +48,8 @@ class BaseNotificationPipeline(object):
         # TODO: import api_client
         # self.api_client = api_client
 
-        # Initializing DAOs
-        self.dao = None
-        self.project_dao = None
-
         # Get violations
         self.violations = violations
-
-    def _get_dao(self):
-        """Init or get dao.
-
-        Returns:
-            dao: Dao instance
-        """
-        if not self.dao:
-            self.dao = dao.Dao(self.global_configs)
-        return self.dao
-
-    def _get_project_dao(self):
-        """Init or get project_dao.
-
-        Returns:
-            project_dao: ProjectDao instance
-        """
-        if not self.project_dao:
-            self.project_dao = project_dao.ProjectDao(self.global_configs)
-        return self.project_dao
 
     @abc.abstractmethod
     def run(self):
