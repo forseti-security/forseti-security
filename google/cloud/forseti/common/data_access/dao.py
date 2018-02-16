@@ -68,28 +68,6 @@ class Dao(_db_connector.DbConnector):
         """
         return resource_name + '_' + timestamp
 
-    def _get_snapshot_table(self, resource_name, timestamp):
-        """Returns a snapshot table name.
-
-        Args:
-            resource_name (str): String of the resource name.
-            timestamp (str): String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            str: String of the created snapshot table.
-        """
-        try:
-            snapshot_table_name = self.create_snapshot_table(
-                resource_name, timestamp)
-        except OperationalError:
-            # TODO: find a better way to handle this. I want this method
-            # to be resilient when the table has already been created
-            # so that it can support inserting new data. This will catch
-            # a sql 'table already exist' error and alter the flow.
-            snapshot_table_name = self._create_snapshot_table_name(
-                resource_name, timestamp)
-        return snapshot_table_name
-
     def load_data(self, resource_name, timestamp, data):
         """Load data into a snapshot table.
 
