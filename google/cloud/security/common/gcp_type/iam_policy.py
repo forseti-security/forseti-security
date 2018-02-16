@@ -288,6 +288,28 @@ class IamPolicyMember(object):
             member_name = identity_parts[1]
         return cls(identity_parts[0], member_name=member_name)
 
+    def _is_matching_domain(self, other):
+        """Determine whether IAM policy member belongs to domain.
+
+        This applies to a situation where a rule has a `domain` style `members`
+        specification and the policy to check specifies users.
+
+        Args:
+            other (IamPolicyMember): The policy binding member to check.
+
+        Returns:
+            bool: True if `other` is a member of the domain, False otherwise.
+        """
+        if self.type != 'domain' or other.type != 'user':
+            return False
+
+        try:
+            _, domain = other.name.rsplit('@', 1)
+        except ValueError:
+            return False
+
+        return self.name == domain
+
     def matches(self, other):
         """Determine if another member matches.
 
@@ -308,4 +330,5 @@ class IamPolicyMember(object):
         # {member_type}:{member_name} .
         return ((self.type == self.ALL_USERS) or
                 (self.type == other_member.type and
-                 self.name_pattern.match(other_member.name)))
+                 self.name_pattern.match(other_member.name)) or
+                self._is_matching_domain(other_member))
