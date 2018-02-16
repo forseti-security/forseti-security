@@ -21,7 +21,6 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
-# pylint: disable=too-many-instance-attributes
 class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
 
