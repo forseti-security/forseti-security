@@ -143,8 +143,7 @@ class ForsetiInstaller:
         Args:
             vm_name (str): Name of the VM instance.
         """
-        installer_type = self.config.template_type
-        installer_type.capitalize()
+        installer_type = self.config.template_type.capitalize()
         print_banner('{} VM Initialization'.format(installer_type))
         print ('This may take a few minutes.\n')
         _, zone, name = get_vm_instance_info(vm_name)
