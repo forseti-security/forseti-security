@@ -29,23 +29,6 @@ versions of this file to support multiple configurations of Forseti.
 -   `forseti_server_conf_staging.yaml`
 
 
-### Configuring Inventory
-
-Forseti Inventory runs in batch mode, executing each inventory
-pipeline serially for each run. To specify which pipelines to run:
-
-1.  Open `forseti-security/configs/forseti_conf.yaml`.
-1.  Navigate to the `inventory` > `pipelines` section.
-1.  Edit the `enabled` property for the appropriate pipelines.
-    `true` enables the pipeline, and `false` disables the pipeline.
-
-When you're finished making changes, run the following command with your
-updated configuration:
-
-```
-forseti_inventory --forseti_config path/to/forseti_conf.yaml
-```
-
 ### Move Configuration to GCS
 
 If you are running Forseti on GCP, you should copy your edited forseti_conf.yaml to
