@@ -95,7 +95,7 @@ class GcloudModuleTest(ForsetiTestCase):
         utils.run_command = mock.MagicMock()
         self.gcloud_min_ver_formatted = '.'.join([str(d) for d in GCLOUD_MIN_VERSION])
 
-    @mock.patch('setup.gcp.installer.util.gcloud.GCLOUD_MIN_VERSION', GCLOUD_MIN_VERSION)
+    @mock.patch('setup.gcp.installer.util.gcloud.constants.GCLOUD_MIN_VERSION', GCLOUD_MIN_VERSION)
     @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
     def test_check_proper_gcloud(self, test_patch):
         """Test check_proper_gcloud() works with proper version/alpha."""
