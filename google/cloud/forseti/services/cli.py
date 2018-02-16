@@ -35,11 +35,11 @@ class DefaultParser(ArgumentParser):
     """Default parser, when error is triggered, instead of printing
     error message, it will print the help message (-h).
     """
-    def error(self, message):
+    def error(self, _):
         """This method will be triggered when error occurred.
 
         Args:
-            message (str): Error message.
+            _ (str): Error message.
         """
         self.print_usage()
         sys.exit(2)
@@ -1036,7 +1036,7 @@ class DefaultConfig(dict):
                 self[key] = value
 
     def get_default_endpoint(self):
-        """Get server address from the forseti_client_conf.yaml file
+        """Get server address.
 
         Returns:
             str: Forseti server endpoint

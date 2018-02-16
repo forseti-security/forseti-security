@@ -18,20 +18,20 @@
 def GenerateConfig(context):
     """Generate configuration."""
 
-    USE_BRANCH = context.properties.get('branch-name')
+    BRANCH_NAME = context.properties.get('branch-name')
     FORSETI_HOME = '$USER_HOME/forseti-security'
 
-    if USE_BRANCH:
-        DOWNLOAD_FORSETI = """
-git clone {src_path}.git --branch {branch_name} --single-branch forseti-security
-        """.format(
+    if BRANCH_NAME:
+        DOWNLOAD_FORSETI = (
+            "git clone {src_path}.git "
+            "--branch {branch_name} "
+            "--single-branch forseti-security").format(
             src_path=context.properties['src-path'],
             branch_name=context.properties['branch-name'])
     else:
-        DOWNLOAD_FORSETI = """
-wget -qO- {src_path}/archive/v{release_version}.tar.gz | tar xvz
-mv forseti-security-{release_version} forseti-security
-        """.format(
+        DOWNLOAD_FORSETI = (
+            "wget -qO- {src_path}/archive/v{release_version}.tar.gz | tar xvz"
+            "\nmv forseti-security-{release_version} forseti-security").format(
             src_path=context.properties['src-path'],
             release_version=context.properties['release-version'])
 
@@ -40,7 +40,7 @@ mv forseti-security-{release_version} forseti-security
         bucket_name=context.properties['gcs-bucket'])
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     PERSIST_FORSETI_VARS = (
-        '\nexport FORSETI_HOME={forseti_home}\n'
+        'export FORSETI_HOME={forseti_home}\n'
         'export FORSETI_CLIENT_CONFIG={forseti_client_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_client_conf=FORSETI_CLIENT_CONF)

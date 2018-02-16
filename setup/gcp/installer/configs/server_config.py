@@ -20,15 +20,6 @@ from config import Config
 class ServerConfig(Config):
     """Forseti installer server config object."""
 
-    # Class variable initialization
-    template_type = None
-    cloudsql_instance = None
-    cloudsql_region = None
-    sendgrid_api_key = None
-    notification_sender_email = None
-    notification_recipient_email = None
-    gsuite_superadmin_email = None
-
     def __init__(self, **kwargs):
         """Initialize.
 
@@ -36,11 +27,11 @@ class ServerConfig(Config):
             kwargs (dict): The kwargs.
         """
         super(ServerConfig, self).__init__(**kwargs)
-        self.template_type = 'server'
+        self.installer_type = 'server'
         self.cloudsql_instance = '{}-{}'.format(
             'forseti-security',
             self.datetimestamp)
-        self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
+        self.cloudsql_region = kwargs.get('cloudsql_region', 'us-central1')
 
         # forseti_conf_server.yaml.in properties
         self.sendgrid_api_key = kwargs.get('sendgrid_api_key')

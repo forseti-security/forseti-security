@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""util folder."""
+"""Util package."""
 try:
     __import__('pkg_resources').declare_namespace(__name__)
 except ImportError:

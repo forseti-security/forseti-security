@@ -40,7 +40,7 @@ resources:
     instance-type: n1-standard-2
     zone: {FORSETI_SERVER_ZONE}
 
-    service-account: {SERVICE_ACCOUNT_GCP}
+    service-account: {GCP_CLIENT_SERVICE_ACCOUNT}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
     gcs-bucket: {SCANNER_BUCKET}

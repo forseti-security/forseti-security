@@ -1,10 +1,19 @@
-"""def generate_deployment_templates(template_type, values, datetimestamp):
-def generate_forseti_conf(template_type, vals, datetimestamp):
-def copy_file_to_destination(file_path, output_path,
-                             is_directory, dry_run):
-def generate_file_from_template(template_path, output_path, template_values):
-def sanitize_conf_values(conf_values):
-"""
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Tests for setup/gcp/installer/util/files.py."""
+
 import unittest
 import tempfile
 import filecmp

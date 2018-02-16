@@ -22,9 +22,9 @@ class ClientConfig(Config):
 
     def __init__(self, **kwargs):
         """Initialize.
-s
+
         Args:
             kwargs (dict): The kwargs.
         """
         super(ClientConfig, self).__init__(**kwargs)
-        self.template_type = 'client'
+        self.installer_type = 'client'

@@ -219,7 +219,7 @@ def get_zone_from_bucket_location(bucket_location):
 
 
 def get_choice_id(choices, print_function):
-    """Get choice id from user
+    """Get choice id from user.
 
     Args:
         choices (list): A list of choices

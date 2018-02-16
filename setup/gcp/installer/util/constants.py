@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Constants used for the setup of Forseti."""
+"""Constants used for the setup of Forseti."""
 
 import os
 from enum import Enum
@@ -135,8 +135,8 @@ RULES_DIR_PATH = os.path.abspath(
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
 
-FORSETI_CONF_PATH = ('{bucket_name}/configs/{template_type}/'
-                     'forseti_conf_{template_type}.yaml')
+FORSETI_CONF_PATH = ('{bucket_name}/configs/{installer_type}/'
+                     'forseti_conf_{installer_type}.yaml')
 
 DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'
 
@@ -209,10 +209,6 @@ MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL = (
     'Forseti can be configured to access an '
     'organization, folder, or project.')
 
-MESSAGE_SETUP_IAM_EXPLAIN = (
-    'IAM Explain requires granting Forseti access on the '
-    'organization-level IAM.\n')
-
 MESSAGE_NO_CLOUD_SHELL = (
     'Forseti highly recommends running this setup within '
     'Cloud Shell. If you would like to run the setup '
@@ -228,8 +224,8 @@ MESSAGE_NO_CLOUD_SHELL = (
     'i.e.\n\n    python setup_forseti.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
-    'A Forseti configuration file (configs/{template_type}/'
-    'forseti_conf_{template_type}_{datetimestamp}.yaml) '
+    'A Forseti configuration file (configs/{installer_type}/'
+    'forseti_conf_{installer_type}_{datetimestamp}.yaml) '
     'has been generated. If you wish to change your '
     'Forseti configuration or rules, e.g. enabling G Suite '
     'Groups collection, either download the conf file in '
@@ -318,9 +314,6 @@ QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL = (
 QUESTION_ACCESS_TO_GRANT_ROLES = (
     'Do you have access to grant Forseti IAM '
     'roles on the target {}? (y/n) ')
-
-QUESTION_ENABLE_IAM_EXPLAIN = (
-    'Do you want to enable IAM Explain? (y/n) ')
 
 QUESTION_CHOOSE_FOLDER = (
     'To find the folder, go to Cloud Console:\n\n'

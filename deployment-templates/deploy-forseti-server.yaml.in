@@ -53,10 +53,10 @@ resources:
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
-    service-account: {SERVICE_ACCOUNT_GCP}
+    service-account: {GCP_SERVER_SERVICE_ACCOUNT}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    service-account-gsuite: {SERVICE_ACCOUNT_GSUITE}
+    service-account-gsuite: {GSUITE_SERVICE_ACCOUNT}
     gsuite-admin-email: {GSUITE_ADMIN_EMAIL}
 
     scanner-bucket: {SCANNER_BUCKET}

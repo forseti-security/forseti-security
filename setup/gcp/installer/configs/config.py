@@ -19,16 +19,8 @@ import datetime
 
 class Config(object):
     """Forseti installer config object."""
-
-    # Class variables initialization
-    datetimestamp = None
-    timestamp = None
-    force_no_cloudshell = None
-    config_filename = 'forseti-setup-{}.cfg'
-    advanced_mode = None
-    dry_run = None
-    bucket_location = None
-    template_type = None
+    # pylint: disable=too-many-instance-attributes
+    # Having eight variables is reasonable in this case.
 
     def __init__(self, **kwargs):
         """Initialize.
@@ -41,8 +33,9 @@ class Config(object):
         self.timestamp = self.datetimestamp[8:]
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.config_filename = (kwargs.get('config') or
-                                self.config_filename.format(
+                                'forseti-setup-{}.cfg'.format(
                                     self.datetimestamp))
         self.advanced_mode = bool(kwargs.get('advanced'))
         self.dry_run = bool(kwargs.get('dry_run'))
         self.bucket_location = kwargs.get('gcs_location') or 'us-central1'
+        self.installer_type = None

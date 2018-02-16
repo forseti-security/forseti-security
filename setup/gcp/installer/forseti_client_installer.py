@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti CLI installer"""
+"""Forseti CLI installer."""
 
 from forseti_installer import ForsetiInstaller
 
@@ -25,11 +25,6 @@ from util.gcloud import (get_forseti_server_info,
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
 
-    # Class variables initialization
-    server_ip = ''
-    server_zone = ''
-    server_name = ''
-
     def __init__(self, **kwargs):
         """Init
 
@@ -41,12 +36,13 @@ class ForsetiClientInstaller(ForsetiInstaller):
         (self.server_ip, self.server_zone,
          self.server_name) = get_forseti_server_info()
 
-    def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
+    def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template.
+
         Grant access to service account.
 
         Args:
-            deploy_tpl_path (str): Deployment template path
+            deployment_tpl_path (str): Deployment template path
             conf_file_path (str): Configuration file path
             bucket_name (str): Name of the GCS bucket
 
@@ -55,7 +51,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
             str: Deployment name
         """
         success, deployment_name = super(ForsetiClientInstaller, self).deploy(
-            deploy_tpl_path, conf_file_path, bucket_name)
+            deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
             grant_client_svc_acct_roles(
@@ -90,7 +86,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
         return {
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
-            'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
+            'GCP_CLIENT_SERVICE_ACCOUNT': self.gcp_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'FORSETI_SERVER_ZONE': self.server_zone
         }

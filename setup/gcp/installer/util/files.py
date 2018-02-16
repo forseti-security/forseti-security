@@ -20,7 +20,7 @@ import os
 from constants import (
     ROOT_DIR_PATH, INPUT_DEPLOYMENT_TEMPLATE_FILENAME,
     INPUT_CONFIGURATION_TEMPLATE_FILENAME)
-from utils import print_banner, run_command, sanitize_conf_values
+import utils
 
 
 def generate_deployment_templates(template_type, values, datetimestamp):
@@ -97,7 +97,7 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
             ROOT_DIR_PATH, 'configs', template_type,
             'forseti_conf_{}_{}.yaml'.format(template_type, datetimestamp)))
 
-    conf_values = sanitize_conf_values(vals)
+    conf_values = utils.sanitize_conf_values(vals)
 
     if generate_file_from_template(forseti_conf_in,
                                    forseti_conf_gen,
@@ -146,7 +146,7 @@ def copy_file_to_destination(file_path, output_path,
         bool: True if copy file succeeded, otherwise False.
     """
 
-    print_banner('Copying {} to {}'.format(file_path, output_path))
+    utils.print_banner('Copying {} to {}'.format(file_path, output_path))
 
     if dry_run:
         print('This is a dry run, so skipping this step.')
@@ -157,7 +157,7 @@ def copy_file_to_destination(file_path, output_path,
     else:
         args = ['gsutil', 'cp', file_path, output_path]
 
-    return_code, out, err = run_command(args)
+    return_code, out, err = utils.run_command(args)
     if return_code:
         print(err)
     else:

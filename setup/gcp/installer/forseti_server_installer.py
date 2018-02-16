@@ -12,17 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Server installer"""
+"""Forseti Server installer."""
 
 from __future__ import print_function
 import random
 
+from configs.server_config import ServerConfig
 from forseti_installer import ForsetiInstaller
-from util.utils import (
-    print_banner, format_resource_id, format_service_acct_id)
 from util.constants import (
-    MESSAGE_ENABLE_GSUITE_GROUP, MESSAGE_SETUP_IAM_EXPLAIN,
-    QUESTION_ENABLE_IAM_EXPLAIN, QUESTION_ACCESS_TO_GRANT_ROLES,
+    MESSAGE_ENABLE_GSUITE_GROUP, QUESTION_ACCESS_TO_GRANT_ROLES,
     RESOURCE_TYPES, MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL,
     QUESTION_FORSETI_CONFIGURATION_ACCESS_LEVEL, MESSAGE_ASK_SENDGRID_API_KEY,
     QUESTION_SENDGRID_API_KEY, NOTIFICATION_SENDER_EMAIL, MESSAGE_SKIP_EMAIL,
@@ -30,12 +28,9 @@ from util.constants import (
     MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL, QUESTION_ENABLE_WRITE_ACCESS,
     MESSAGE_HAS_ROLE_SCRIPT, MESSAGE_GSUITE_DATA_COLLECTION,
     RULES_DIR_PATH, FirewallRuleAction, FirewallRuleDirection)
-from util.gcloud import (
-    enable_apis, create_reuse_service_acct, choose_organization,
-    choose_folder, choose_project, grant_server_svc_acct_roles,
-    create_firewall_rule)
-from util.files import copy_file_to_destination
-from configs.server_config import ServerConfig
+from util import files
+from util import gcloud
+from util import utils
 
 
 class ForsetiServerInstaller(ForsetiInstaller):
@@ -66,26 +61,25 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         super(ForsetiServerInstaller, self).preflight_checks()
 
-        self.should_setup_explain()
-        self.determine_access_target()
+        self.determine_access_level()
         self.should_enable_write_access()
         self.format_gsuite_service_acct_id()
-        self.inform_access_on_target()
+        self.should_grant_access()
 
-        enable_apis(self.config.dry_run)
-        self.gsuite_service_account = create_reuse_service_acct(
+        gcloud.enable_apis(self.config.dry_run)
+        self.gsuite_service_account = gcloud.create_or_reuse_service_acct(
             'gsuite_service_account',
             self.gsuite_service_account,
             self.config.advanced_mode,
             self.config.dry_run)
         self.get_email_settings()
 
-    def deploy(self, deploy_tpl_path, conf_file_path, bucket_name):
+    def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template.
         Grant access to service account.
 
         Args:
-            deploy_tpl_path (str): Deployment template path
+            deployment_tpl_path (str): Deployment template path
             conf_file_path (str): Configuration file path
             bucket_name (str): Name of the GCS bucket
 
@@ -94,10 +88,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
             str: Deployment name
         """
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
-            deploy_tpl_path, conf_file_path, bucket_name)
+            deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
-            self.has_roles_script = grant_server_svc_acct_roles(
+            self.has_roles_script = gcloud.grant_server_svc_acct_roles(
                 self.enable_write_access,
                 self.access_target,
                 self.target_id,
@@ -107,7 +101,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.user_can_grant_roles)
 
             # Copy the rule directory to the GCS bucket
-            copy_file_to_destination(
+            files.copy_file_to_destination(
                 RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
@@ -115,7 +109,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.wait_until_vm_initialized(instance_name)
 
             # Create firewall rule to block out all the ingress traffic
-            create_firewall_rule(
+            gcloud.create_firewall_rule(
                 self.format_firewall_rule_name('forseti-server-deny-all'),
                 [self.gcp_service_account],
                 FirewallRuleAction.DENY,
@@ -123,14 +117,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 FirewallRuleDirection.INGRESS,
                 1)
 
-            # Create firewall rule to allow only port tcp:50051
-            create_firewall_rule(
+            # Create firewall rule to open only port tcp:50051
+            # within the internal network (ip-ranges - 10.128.0.0/9)
+            gcloud.create_firewall_rule(
                 self.format_firewall_rule_name('forseti-server-allow-grpc'),
                 [self.gcp_service_account],
                 FirewallRuleAction.ALLOW,
                 ['tcp:50051'],
                 FirewallRuleDirection.INGRESS,
-                0)
+                0,
+                '10.128.0.0/9')
 
         return success, deployment_name
 
@@ -145,22 +141,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         return '{}-{}'.format(rule_name, self.config.datetimestamp)
 
-    def should_setup_explain(self):
-        """Ask user if they want to configure setup for Explain."""
-        print_banner('Enable IAM Explain')
-        print(MESSAGE_SETUP_IAM_EXPLAIN)
-        choice = None
-        if not self.config.advanced_mode:
-            choice = 'y'
-            print('Automatically enabling IAM Explain (basic setup mode).')
-
-        while not choice:
-            choice = raw_input(QUESTION_ENABLE_IAM_EXPLAIN).strip()
-        self.setup_explain = choice == 'y'
-
-    def inform_access_on_target(self):
+    def should_grant_access(self):
         """Inform user that they need IAM access to grant Forseti access."""
-        print_banner('Current IAM access')
+        utils.print_banner('Current IAM access')
         choice = None
 
         if not self.config.advanced_mode:
@@ -192,8 +175,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
-            'SERVICE_ACCOUNT_GCP': self.gcp_service_account,
-            'SERVICE_ACCOUNT_GSUITE': self.gsuite_service_account,
+            'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_account,
+            'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'GSUITE_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
@@ -213,16 +196,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
-            'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
-            'ENABLE_GROUP_SCANNER': 'true',
+            'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email
         }
 
-    def determine_access_target(self):
+    def determine_access_level(self):
         """Determine where to enable Forseti access.
 
         Either org, folder, or project level.
         """
-        print_banner('Forseti access target')
+        utils.print_banner('Forseti access target')
 
         if not self.config.advanced_mode:
             self.access_target = RESOURCE_TYPES[0]
@@ -248,13 +230,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
             if choice_index and choice_index <= len(RESOURCE_TYPES):
                 self.access_target = RESOURCE_TYPES[choice_index-1]
                 if self.access_target == 'organization':
-                    self.target_id = choose_organization()
+                    self.target_id = gcloud.choose_organization()
                 elif self.access_target == 'folder':
-                    self.target_id = choose_folder(self.organization_id)
+                    self.target_id = gcloud.choose_folder(self.organization_id)
                 else:
-                    self.target_id = choose_project()
+                    self.target_id = gcloud.choose_project()
 
-        self.resource_root_id = format_resource_id(
+        self.resource_root_id = utils.format_resource_id(
             '%ss' % self.access_target, self.target_id)
 
         print('Forseti will be granted access to: %s' %
@@ -283,7 +265,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def format_gsuite_service_acct_id(self):
         """Format the gsuite service account id"""
-        self.gsuite_service_account = format_service_acct_id(
+        self.gsuite_service_account = utils.format_service_acct_id(
             'gsuite',
             'reader',
             self.config.timestamp,
@@ -295,7 +277,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if self.enable_write_access:
             modifier = 'readwrite'
 
-        self.gcp_service_account = format_service_acct_id(
+        self.gcp_service_account = utils.format_service_acct_id(
             'gcp',
             modifier,
             self.config.timestamp,
@@ -303,7 +285,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def should_enable_write_access(self):
         """Ask if user wants to enable write access for Forseti."""
-        print_banner('Enable Forseti write access')
+        utils.print_banner('Enable Forseti write access')
         choice = None
         if not self.config.advanced_mode:
             choice = 'y'
@@ -317,13 +299,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
                   self.resource_root_id)
 
     def post_install_instructions(self, deploy_success, deployment_name,
-                                  deploy_tpl_path, forseti_conf_path,
+                                  deployment_tpl_path, forseti_conf_path,
                                   bucket_name):
 
-        super(ForsetiServerInstaller, self) \
-            .post_install_instructions(deploy_success, deployment_name,
-                                       deploy_tpl_path, forseti_conf_path,
-                                       bucket_name)
+        super(ForsetiServerInstaller, self).post_install_instructions(
+            deploy_success, deployment_name,
+            deployment_tpl_path, forseti_conf_path,
+            bucket_name)
         if self.has_roles_script:
             print(MESSAGE_HAS_ROLE_SCRIPT.format(self.resource_root_id))
 
