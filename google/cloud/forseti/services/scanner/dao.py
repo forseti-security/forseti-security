@@ -15,7 +15,6 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
-
 import json
 
 from sqlalchemy import Column
