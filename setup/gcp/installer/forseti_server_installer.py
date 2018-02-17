@@ -23,13 +23,13 @@ from util import constants
 from util import files
 from util import gcloud
 from util import utils
+from util import v1_upgrader
 
 
 class ForsetiServerInstaller(ForsetiInstaller):
     """Forseti server installer"""
 
     # pylint: disable=too-many-instance-attributes
-    # Having ten variables is reasonable in this case.
 
     gsuite_service_account = None
     has_roles_script = False
@@ -38,6 +38,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     resource_root_id = None
     access_target = None
     target_id = None
+    migrate_from_v1 = False
 
     def __init__(self, **kwargs):
         """Init
@@ -47,12 +48,20 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         super(ForsetiServerInstaller, self).__init__()
         self.config = ServerConfig(**kwargs)
+        ip, zone, name = gcloud.get_forseti_v1_info()
+        self.v1_config = v1_upgrader.ForsetiV1Configuration(self.project_id,
+                                                            ip,
+                                                            zone,
+                                                            name)
 
     def preflight_checks(self):
         """Pre-flight checks for server instance"""
 
         super(ForsetiServerInstaller, self).preflight_checks()
-
+        if self.v1_config is not None:
+            self.should_migrate_v1_configurations()
+        if self.migrate_from_v1:
+            self.retrieve_v1_configurations()
         self.determine_access_target()
         self.should_enable_write_access()
         self.format_gsuite_service_acct_id()
@@ -65,6 +74,19 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.advanced_mode,
             self.config.dry_run)
         self.get_email_settings()
+
+    def should_migrate_v1_configurations(self):
+        """Ask the user if they want to migrate conf/rule files
+        from v1 to v2."""
+        while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
+            self.migrate_from_v1 = raw_input(
+                "Forseti v1 detected, would you like to migrate the "
+                "existing configurations to v2? (y/n)").lower()
+
+    def retrieve_v1_configurations(self):
+        """Retrieve the v1 configuration object."""
+        self.v1_config.config = ''
+
 
     def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template.
@@ -97,30 +119,68 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 constants.RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
+            # Waiting for VM to be initialized
             instance_name = '{}-vm'.format(deployment_name)
             self.wait_until_vm_initialized(instance_name)
 
-            # Create firewall rule to block out all the ingress traffic
-            gcloud.create_firewall_rule(
-                self.format_firewall_rule_name('forseti-server-deny-all'),
-                [self.gcp_service_account],
-                constants.FirewallRuleAction.DENY,
-                ['icmp', 'udp', 'tcp'],
-                constants.FirewallRuleDirection.INGRESS,
-                1)
-
-            # Create firewall rule to open only port tcp:50051
-            # within the internal network (ip-ranges - 10.128.0.0/9)
-            gcloud.create_firewall_rule(
-                self.format_firewall_rule_name('forseti-server-allow-grpc'),
-                [self.gcp_service_account],
-                constants.FirewallRuleAction.ALLOW,
-                ['tcp:50051'],
-                constants.FirewallRuleDirection.INGRESS,
-                0,
-                '10.128.0.0/9')
+            # Create firewall rules
+            self.create_firewall_rules()
 
         return success, deployment_name
+
+    def create_firewall_rules(self):
+        """Create firewall rules for Forseti server instance."""
+        # Rule to block out all the ingress traffic
+        gcloud.create_firewall_rule(
+            self.format_firewall_rule_name('forseti-server-deny-all'),
+            [self.gcp_service_account],
+            constants.FirewallRuleAction.DENY,
+            ['icmp', 'udp', 'tcp'],
+            constants.FirewallRuleDirection.INGRESS,
+            1)
+
+        # Rule to open only port tcp:50051
+        # within the internal network (ip-ranges - 10.128.0.0/9)
+        gcloud.create_firewall_rule(
+            self.format_firewall_rule_name('forseti-server-allow-grpc'),
+            [self.gcp_service_account],
+            constants.FirewallRuleAction.ALLOW,
+            ['tcp:50051'],
+            constants.FirewallRuleDirection.INGRESS,
+            0,
+            '10.128.0.0/9')
+
+    def generate_forseti_conf(self):
+        """Generate Forseti conf file.
+
+        if self.migrate_from_v1 is True, pull the v1 configuration
+        file and merge it with v2 template
+
+        Returns:
+            str: Forseti configuration file path
+        """
+
+        if self.migrate_from_v1:
+            # Create a forseti_conf_{INSTALLER_TYPE}_$TIMESTAMP.yaml config file
+            # with values filled in.
+            print('\nGenerate forseti_conf_{}_{}.yaml...'
+                  .format(self.config.installer_type, self.config.datetimestamp))
+
+            conf_values = self.get_configuration_values()
+
+            forseti_conf_path = files.generate_forseti_conf(
+                self.config.installer_type,
+                conf_values,
+                self.config.datetimestamp)
+
+            print('\nCreated forseti_conf_{}_{}.yaml config file:\n    {}\n'.
+                  format(self.config.installer_type,
+                         self.config.datetimestamp,
+                         forseti_conf_path))
+            return forseti_conf_path
+
+        else:
+            return super(ForsetiServerInstaller, self).generate_forseti_conf()
 
     def format_firewall_rule_name(self, rule_name):
         """Format firewall rule name.

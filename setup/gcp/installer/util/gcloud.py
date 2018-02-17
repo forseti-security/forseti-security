@@ -608,9 +608,29 @@ def get_forseti_server_info():
     ip_addr, zone, name = get_vm_instance_info('forseti-security-server',
                                                try_match=True)
 
-    return ('', 'us-central1-c', '') if ip_addr is None else (ip_addr,
-                                                              zone,
-                                                              name)
+    if ip_addr is None:
+        print('No forseti server detected, you will need to install'
+              ' forseti server before installing the client, exiting...')
+        sys.exit(1)
+
+    return ip_addr, zone, name
+
+
+def get_forseti_v1_info():
+    """ Get forseti v1 information if exists.
+
+    Example of v1 instance name: forseti-security-20180217081245-vm
+
+    Regex to match: ^forseti-security-/d+-vm$
+
+    Returns:
+        str: IP address of the forseti server application
+        str: Zone of the forseti server application, default to 'us-central1-c'
+        str: Name of the forseti server instance
+    """
+
+    return get_vm_instance_info('^forseti-security-\d+-vm$',
+                                try_match=True)
 
 
 def get_vm_instance_info(instance_name, try_match=False):
@@ -636,7 +656,7 @@ def get_vm_instance_info(instance_name, try_match=False):
         instances = json.loads(out)
         for instance in instances:
             cur_instance_name = instance.get('name')
-            match = (try_match and instance_name in cur_instance_name or
+            match = (try_match and re.match(instance_name, cur_instance_name) or
                      (not try_match and instance_name == cur_instance_name))
             if match:
                 # found forseti server vm instance
@@ -645,9 +665,6 @@ def get_vm_instance_info(instance_name, try_match=False):
                 internal_ip = network_interfaces[0].get('networkIP')
                 name = instance.get('name')
                 return internal_ip, zone, name
-        print('No forseti server detected, you will need to install'
-              ' forseti server before installing the client, exiting...')
-        sys.exit(1)
     except ValueError:
         print('Error retrieving forseti server ip address, '
               'will leave the server ip empty for now.')

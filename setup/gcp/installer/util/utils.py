@@ -298,3 +298,15 @@ def sanitize_conf_values(conf_values):
         if not conf_values[key]:
             conf_values[key] = '""'
     return conf_values
+
+
+def merge_dict(base_dict, target_dict):
+    """Merge target_dict into base_dict.
+
+    Note: base_dict will be modified during the merge process.
+
+    Args:
+        base_dict (dict): Base dictionary.
+        target_dict (dict): Target dictionary.
+    """
+    return

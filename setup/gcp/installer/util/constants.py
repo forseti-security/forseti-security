@@ -35,6 +35,12 @@ MAXIMUM_LOOP_COUNT = 600
 DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
 DEFAULT_BUCKET_FMT_V2 = 'gs://{}-{}-data-{}'
 
+FORSETI_V1_RULE_FILES = [
+    'bigquery_rules.yaml', 'blacklist_rules.yaml', 'bucket_rules.yaml',
+    'cloudsql_rules.yaml', 'firewall_rules.yaml', 'forwarding_rules.yaml',
+    'group_rules.yaml', 'iam_rules.yaml', 'iap_rules.yaml', 'ke_rules.yaml',
+    'instance_network_interface_rules.yaml']
+
 GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
