@@ -48,6 +48,7 @@ def parse_member_info(member):
 
     return member_type, member_name, member_domain
 
+
 def format_timestamp(timestamp_str, datetime_formatter):
     """Parse and stringify a timestamp to a specified format.
 
@@ -59,13 +60,18 @@ def format_timestamp(timestamp_str, datetime_formatter):
         str: The formatted, stringified timestamp.
     """
     try:
+        if '"' in timestamp_str or "'" in timestamp_str:
+            # Make sure the timestamp is not surrounded by any quotes
+            timestamp_str = timestamp_str.replace("'")
+            timestamp_str = timestamp_str.replace('"')
         formatted_timestamp = (
             dateutil_parser
             .parse(timestamp_str)
             .strftime(datetime_formatter))
     except (TypeError, ValueError) as e:
-        LOGGER.warn('Unable to parse/format timestamp: %s\n%s',
-                    timestamp_str, e)
+        LOGGER.warn('Unable to parse/format timestamp: %s\n, '
+                    'datetime_formatter: %s\n%s',
+                    timestamp_str, datetime_formatter, e)
         formatted_timestamp = None
     return formatted_timestamp
 

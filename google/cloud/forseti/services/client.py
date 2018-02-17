@@ -30,7 +30,6 @@ from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-
 from google.cloud.forseti.services.utils import oneof
 
 

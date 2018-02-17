@@ -19,7 +19,8 @@ This has been tested with python 2.7.
 
 import argparse
 
-from environment import gcloud_env
+from installer.forseti_server_installer import ForsetiServerInstaller
+from installer.forseti_client_installer import ForsetiClientInstaller
 
 
 def run():
@@ -34,12 +35,15 @@ def run():
     parser.add_argument('--advanced',
                         action='store_true',
                         help='Advanced setup mode (more options)')
-
     parser.add_argument('--dry-run',
                         action='store_true',
                         help=('Generate config files but do not modify '
                               'GCP infrastructure (i.e. do not actually '
                               'set up Forseti)'))
+    parser.add_argument('--type',
+                        choices=['client', 'server'],
+                        help='Type of the installation, '
+                             'either client or server')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
@@ -54,9 +58,19 @@ def run():
                               help='Notification recipient email')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
-
     args = vars(parser.parse_args())
-    forseti_setup = gcloud_env.ForsetiGcpSetup(**args)
+
+    if not args.get('type'):
+        # If the user didn't specify a type, install both server and client
+        ForsetiServerInstaller(**args).run_setup()
+        ForsetiClientInstaller(**args).run_setup()
+        return
+
+    if args.get('type') == 'server':
+        forseti_setup = ForsetiServerInstaller(**args)
+    else:
+        forseti_setup = ForsetiClientInstaller(**args)
+
     forseti_setup.run_setup()
 
 
