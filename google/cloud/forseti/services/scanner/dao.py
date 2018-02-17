@@ -62,7 +62,7 @@ def define_violation(dbengine):
         rule_index = Column(Integer, default=0)
         violation_type = Column(String(256), nullable=False)
         violation_data = Column(Text)
-        inventory_data = Column(Text)
+        inventory_data = Column(Text(16777215))
 
         def __repr__(self):
             """String representation.
