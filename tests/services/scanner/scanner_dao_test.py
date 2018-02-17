@@ -21,7 +21,6 @@ import unittest
 
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.unittest_utils import ForsetiTestCase
-from tests.common.data_access.test_data import fake_violation_dao_data as fake_data
 from tests.services.util.db import create_test_engine
 
 
@@ -129,20 +128,6 @@ class ScannerDaoTest(ForsetiTestCase):
 
         self.assertEquals(expected_violations_as_dict,
                           converted_violations_as_dict)
-
-    def test_map_by_type(self):
-        """Test violation_dao.map_by_resource() util method."""
-        actual = scanner_dao.map_by_resource(
-            fake_data.ROWS_MAP_BY_RESOURCE_1)
-
-        self.assertEqual(
-            fake_data.EXPECTED_MAP_BY_RESOURCE_1, actual)
-
-        violation_data = (
-            actual.get('policy_violations')[0].get('violation_data'))
-        self.assertTrue(
-            type(violation_data) is dict,
-            'violation_data must be dict type to be compatible with slack')
 
 
 if __name__ == '__main__':

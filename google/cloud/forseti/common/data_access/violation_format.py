@@ -29,7 +29,7 @@ def format_violation(violation):
 
     Args:
         violation (namedtuple): The Policy RuleViolation. This is a named
-            tuple (see the ViolationDao class in violation_dao.py).
+            tuple.
 
     Yields:
         tuple: A tuple of the rule violation properties.

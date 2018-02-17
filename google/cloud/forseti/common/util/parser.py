@@ -18,7 +18,6 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-from google.cloud.forseti.common.data_access import errors as da_errors
 from google.cloud.forseti.common.util import logger
 
 
@@ -84,11 +83,8 @@ def json_stringify(obj_to_jsonify):
     Returns:
         str: The json-stringified dict.
     """
-    try:
-        json_str = json.dumps(obj_to_jsonify)
-    except da_errors.Error:
-        json_str = None
-    return json_str
+    # TODO: We should probably try and catch something here.
+    return json.dumps(obj_to_jsonify)
 
 
 def json_unstringify(json_to_objify, default=None):

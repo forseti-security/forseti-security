@@ -22,8 +22,6 @@ Usage:
 import gflags as flags
 
 from google.apputils import app
-from google.cloud.forseti.common.data_access import dao
-from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
@@ -42,25 +40,6 @@ LOGGER = logger.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
-
-def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
-    """Get latest snapshot timestamp.
-
-    Args:
-        global_configs (dict): Global configurations.
-        statuses (tuple): The snapshot statuses to search for latest timestamp.
-
-    Returns:
-        str: The latest snapshot timestamp.
-    """
-    latest_timestamp = None
-    try:
-        latest_timestamp = (
-            dao.Dao(global_configs).get_latest_snapshot_timestamp(statuses))
-    except db_errors.MySQLError as err:
-        LOGGER.error('Error getting latest snapshot timestamp: %s', err)
-
-    return latest_timestamp
 
 def run(model_name=None, service_config=None):
     """Run the scanners.
