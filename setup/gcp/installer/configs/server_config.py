@@ -31,7 +31,7 @@ class ServerConfig(Config):
         self.cloudsql_instance = '{}-{}'.format(
             'forseti-security',
             self.datetimestamp)
-        self.cloudsql_region = kwargs.get('cloudsql_region', 'us-central1')
+        self.cloudsql_region = kwargs.get('cloudsql_region') or 'us-central1'
 
         # forseti_conf_server.yaml.in properties
         self.sendgrid_api_key = kwargs.get('sendgrid_api_key')
