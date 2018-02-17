@@ -44,7 +44,7 @@ from google.cloud.forseti.enforcer import enforcer_log_pb2
 try:
     flags.DEFINE_string(
         'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
+        '/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml',
         'Fully qualified path and filename of the Forseti config file.')
 except flags.DuplicateFlagError:
     pass

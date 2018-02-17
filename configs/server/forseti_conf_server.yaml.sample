@@ -1,17 +1,3 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#        http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 global:
 
     # database
@@ -42,57 +28,6 @@ global:
     max_iam_api_calls_per_second: 20
     max_results_admin_api: 500
     max_sqladmin_api_calls_per_100_seconds: 100
-
-##############################################################################
-
-inventory:
-
-    # Valid values are: debug, info, warning, error
-    loglevel: info
-
-    pipelines:
-        - resource: appengine
-          enabled: true
-        - resource: backend_services
-          enabled: true
-        - resource: bigquery_datasets
-          enabled: true
-        - resource: buckets
-          enabled: true
-        - resource: buckets_acls
-          enabled: true
-        - resource: cloudsql
-          enabled: true
-        - resource: firewall_rules
-          enabled: true
-        - resource: folder_iam_policies
-          enabled: true
-        - resource: folders
-          enabled: true
-        - resource: forwarding_rules
-          enabled: true
-        - resource: group_members
-          enabled: true
-        - resource: groups
-          enabled: true
-        - resource: instance_group_managers
-          enabled: true
-        - resource: instance_groups
-          enabled: true
-        - resource: instance_templates
-          enabled: true
-        - resource: instances
-          enabled: true
-        - resource: org_iam_policies
-          enabled: true
-        - resource: organizations
-          enabled: true
-        - resource: projects
-          enabled: true
-        - resource: projects_iam_policies
-          enabled: true
-        - resource: service_accounts
-          enabled: true
 
 ##############################################################################
 

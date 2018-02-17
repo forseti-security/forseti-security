@@ -1,0 +1,244 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This is an input file that is used by the Forseti prerequisites setup
+# wizard to generate an actual forseti_conf.yaml. It's better to work off
+# the forseti_conf.yaml.sample than this one if you are editing the config
+# by hand.
+
+global:
+
+    # database
+    db_host: 127.0.0.1
+    db_user: root
+    db_name: forseti_security
+
+    # gsuite
+    groups_service_account_key_file: /home/ubuntu/gsuite_key.json
+    domain_super_admin_email: test@forseti_test_gmail.com
+
+    # notification
+    # Remove or comment out the email properties if you do not want Forseti to
+    # send email notifications.
+    email_recipient: rec@forseti_test_gmail.com
+    email_sender: send@forseti_test_gmail.com
+    sendgrid_api_key: TESTING_API_KEY
+
+    # quota
+    # The pre-populated values are the defaults from GCP.
+    max_admin_api_calls_per_100_seconds: 1500
+    max_appengine_api_calls_per_second: 20
+    max_bigquery_api_calls_per_100_seconds: 17000
+    max_cloudbilling_api_calls_per_60_seconds: 300
+    max_compute_api_calls_per_second: 20
+    max_container_api_calls_per_100_seconds: 1000
+    max_crm_api_calls_per_100_seconds: 400
+    max_iam_api_calls_per_second: 20
+    max_results_admin_api: 500
+    max_sqladmin_api_calls_per_100_seconds: 100
+
+##############################################################################
+
+inventory:
+
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
+    pipelines:
+        - resource: appengine
+          enabled: true
+        - resource: backend_services
+          enabled: true
+        - resource: bigquery_datasets
+          enabled: true
+        - resource: buckets
+          enabled: true
+        - resource: buckets_acls
+          enabled: true
+        - resource: cloudsql
+          enabled: true
+        - resource: firewall_rules
+          enabled: true
+        - resource: folder_iam_policies
+          enabled: true
+        - resource: folders
+          enabled: true
+        - resource: forwarding_rules
+          enabled: true
+        - resource: group_members
+          enabled: true
+        - resource: groups
+          enabled: true
+        - resource: instance_group_managers
+          enabled: true
+        - resource: instance_groups
+          enabled: true
+        - resource: instance_templates
+          enabled: true
+        - resource: instances
+          enabled: true
+        - resource: org_iam_policies
+          enabled: true
+        - resource: organizations
+          enabled: true
+        - resource: projects
+          enabled: true
+        - resource: projects_iam_policies
+          enabled: true
+        - resource: service_accounts
+          enabled: true
+
+##############################################################################
+
+scanner:
+
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
+    # Output path (do not include filename).
+    # If GCS location, the format of the path should be:
+    # gs://bucket-name/path/for/output
+    output_path: gs://TESTING_BUCKET/scanner_violations
+
+    # Rules path (do not include filename).
+    # If GCS location, the format of the path should be:
+    # gs://bucket-name/path/for/rules_path
+    # if no rules_path is specified, rules are
+    # searched in /path/to/forseti_security/rules/
+    rules_path: /home/ubuntu/forseti-security/rules
+
+    # Enable the scanners as default to true when integrated for Forseti 2.0.
+
+    scanners:
+        - name: bigquery
+          enabled: true
+        - name: bucket_acl
+          enabled: true
+        - name: cloudsql_acl
+          enabled: true
+        - name: firewall_rule
+          enabled: true
+        - name: forwarding_rule
+          enabled: true
+        - name: ke_version_scanner
+          enabled: true
+        - name: group
+          enabled: true
+        - name: iam_policy
+          enabled: true
+        - name: iap
+          enabled: true
+        - name: instance_network_interface
+          enabled: true
+
+##############################################################################
+
+notifier:
+
+    # For every resource type you can set up a notification pipeline
+    # to send alerts for every violation found
+    resources:
+        - resource: policy_violations
+          should_notify: false
+          pipelines:
+            # Email violations
+            - name: email_violations_pipeline
+              configuration:
+                sendgrid_api_key: TESTING_API_KEY
+                sender: send@forseti_test_gmail.com
+                recipient: rec@forseti_test_gmail.com
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+            # Slack webhook pipeline.
+            # Create an incoming webhook in your organization's Slack setting, located at:
+            # https://[your_org].slack.com/apps/manage/custom-integrations
+            # Add the provided URL in the configuration below in `webhook_url`.
+            - name: slack_webhook_pipeline
+              configuration:
+                webhook_url: ''
+
+        - resource: bigquery_acl_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: buckets_acl_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: cloudsql_acl_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: firewall_rule_violations
+          should_notify: false
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: forwarding_rule_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: ke_version_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: groups_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations
+
+        - resource: instance_network_interface_violations
+          should_notify: true
+          pipelines:
+            # Upload violations to GCS.
+            - name: gcs_violations_pipeline
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://TESTING_BUCKET/scanner_violations

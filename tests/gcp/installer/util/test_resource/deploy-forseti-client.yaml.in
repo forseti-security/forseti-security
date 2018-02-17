@@ -1,0 +1,65 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This is a template file that gets read into the Forseti Prereqs Wizard,
+# so don't use this directly for your deployment template unless you know
+# what you're doing.
+
+imports:
+- path: compute-engine/client/forseti-instance-client.py
+  name: forseti-instance-client.py
+- path: storage/bucket.py
+  name: bucket.py
+
+resources:
+
+# Cloud Storage
+- name: {SCANNER_BUCKET}
+  type: bucket.py
+  properties:
+    location: {BUCKET_LOCATION}
+
+# Compute Engine
+- name: forseti-instance-client
+  type: forseti-instance-client.py
+  properties:
+    # GCE instance properties
+    image-project: ubuntu-os-cloud
+    image-family: ubuntu-1604-lts
+    instance-type: n1-standard-2
+    zone: {FORSETI_SERVER_ZONE}
+
+    service-account: {SERVICE_ACCOUNT_GCP}
+    service-account-scopes:
+      - https://www.googleapis.com/auth/cloud-platform
+    gcs-bucket: {SCANNER_BUCKET}
+
+    # --- Forseti version
+    # Use either branch-name or release-version, but NOT both.
+    #
+    # "release-version": A Forseti release.
+    # See https://github.com/GoogleCloudPlatform/forseti-security/releases
+    #
+    # "branch-name": A git branch of Forseti.
+    #
+    # e.g. "I want to deploy Forseti Security's master branch"
+    #    branch-name: "master"
+    #    # release-version: ... <-- COMMENT OUT
+    #
+    # e.g. "I want to deploy release 1.0"
+    #    # branch-name: "master" <-- COMMENT OUT
+    #    release-version: "1.0"
+    {BRANCH_OR_RELEASE}
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security
+    # --- end Forseti version

@@ -42,13 +42,14 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 # Setup flags
 FLAGS = flags.FLAGS
 
+
 flags.DEFINE_string(
     'inventory_index_id',
     '-1',
     'Inventory index id')
 
-
 LOGGER = logger.get_logger(__name__)
+
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 # pylint: disable=inconsistent-return-statements

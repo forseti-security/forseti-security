@@ -12,9 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Forseti Security Setup."""
+"""Forseti installer CLI config object."""
 
-try:
-    __import__('pkg_resources').declare_namespace(__name__)
-except ImportError:
-    __path__ = __import__('pkgutil').extend_path(__path__, __name__)
+from config import Config
+
+
+class ClientConfig(Config):
+    """Forseti installer CLI config object."""
+
+    def __init__(self, **kwargs):
+        """Initialize.
+
+        Args:
+            kwargs (dict): The kwargs.
+        """
+        super(ClientConfig, self).__init__(**kwargs)
+        self.installer_type = 'client'

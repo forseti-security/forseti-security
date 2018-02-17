@@ -44,7 +44,7 @@ mv forseti-security-{release_version} forseti-security
     SCANNER_BUCKET = context.properties['scanner-bucket']
     FORSETI_DB_NAME = context.properties['database-name']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_CONF = '%s/configs/forseti_conf.yaml' % FORSETI_HOME
+    FORSETI_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
     GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
     GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
@@ -67,7 +67,7 @@ mv forseti-security-{release_version} forseti-security
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
-        'export FORSETI_CONF={forseti_conf}\n'
+        'export FORSETI_SERVER_CONF={forseti_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_conf=FORSETI_CONF)
 
@@ -176,6 +176,9 @@ python setup.py install
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
 
+# Set ownership of the project to $USER
+chown -R $USER {forseti_home}
+
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server
 sudo su $USER -c "python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
@@ -197,7 +200,7 @@ export PATH=$PATH:/usr/local/bin
 
 # Forseti environment variables
 export FORSETI_HOME=/home/ubuntu/forseti-security
-export FORSETI_CONF=$FORSETI_HOME/configs/forseti_conf.yaml
+export FORSETI_CONF=$FORSETI_HOME/configs/server/forseti_conf_server.yaml
 export SCANNER_BUCKET={scanner_bucket}
 EOF
 )"
