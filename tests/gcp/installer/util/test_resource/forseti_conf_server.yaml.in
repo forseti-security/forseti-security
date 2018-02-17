@@ -119,12 +119,9 @@ scanner:
     rules_path: /home/ubuntu/forseti-security/rules
 
     # Enable the scanners as default to true when integrated for Forseti 2.0.
-    # group scanner needs {ENABLE_GROUP_SCANNER} placeholder
 
     scanners:
         - name: bigquery
-          enabled: true
-        - name: blacklist
           enabled: true
         - name: bucket_acl
           enabled: true
@@ -137,7 +134,7 @@ scanner:
         - name: ke_version_scanner
           enabled: true
         - name: group
-          enabled: true
+          enabled: {ENABLE_GROUP_SCANNER}
         - name: iam_policy
           enabled: true
         - name: iap
@@ -173,15 +170,6 @@ notifier:
             - name: slack_webhook_pipeline
               configuration:
                 webhook_url: ''
-
-        - resource: blacklist_violations
-          should_notify: true
-          pipelines:
-            # Upload violations to GCS.
-            - name: gcs_violations_pipeline
-              configuration:
-                # gcs_path should begin with "gs://"
-                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
         - resource: bigquery_acl_violations
           should_notify: true

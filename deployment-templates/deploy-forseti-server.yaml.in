@@ -12,22 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The toplevel deployment script for Forseti Security.
-# Be sure to edit this file and its templates to suit your environment.
-# At the minimum, you should edit the following variables:
-#  - CLOUDSQL_INSTANCE_NAME (if creating a new deployment, make sure to
-#    change this variable to something else because Cloud SQL instance
-#    names cannot be used after deletion for up to 7 days)
-#  - SCANNER_BUCKET (Cloud Storage section)
-#  - SCANNER_BUCKET (Compute Engine section)
+# This is a template file that gets read into the Forseti Prereqs Wizard,
+# so don't use this directly for your deployment template unless you know
+# what you're doing.
 
 imports:
 - path: cloudsql/cloudsql-instance.py
   name: cloudsql-instance.py
 - path: cloudsql/cloudsql-database.py
   name: cloudsql-database.py
-- path: compute-engine/forseti-instance.py
-  name: forseti-instance.py
+- path: compute-engine/server/forseti-instance-server.py
+  name: forseti-instance-server.py
 - path: storage/bucket.py
   name: bucket.py
 
@@ -37,20 +32,20 @@ resources:
 - name: cloudsql-instance
   type: cloudsql-instance.py
   properties:
-    region: us-central1
-    instance-name: CLOUDSQL_INSTANCE_NAME
+    region: {CLOUDSQL_REGION}
+    instance-name: {CLOUDSQL_INSTANCE_NAME}
 - name: forseti_security
   type: cloudsql-database.py
 
 # Cloud Storage
-- name: SCANNER_BUCKET
+- name: {SCANNER_BUCKET}
   type: bucket.py
   properties:
-    location: us
+    location: {BUCKET_LOCATION}
 
 # Compute Engine
-- name: forseti-instance
-  type: forseti-instance.py
+- name: forseti-instance-server
+  type: forseti-instance-server.py
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
@@ -58,15 +53,15 @@ resources:
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
-    service-account: SERVICE_ACCOUNT_GCP
+    service-account: {GCP_SERVER_SERVICE_ACCOUNT}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    service-account-gsuite: SERVICE_ACCOUNT_GSUITE
-    gsuite-admin-email: GSUITE_ADMIN_EMAIL
+    service-account-gsuite: {GSUITE_SERVICE_ACCOUNT}
+    gsuite-admin-email: {GSUITE_ADMIN_EMAIL}
 
-    scanner-bucket: SCANNER_BUCKET
+    scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
-    root-resource-id: ROOT_RESOURCE_ID
+    root-resource-id: {ROOT_RESOURCE_ID}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
@@ -83,8 +78,7 @@ resources:
     # e.g. "I want to deploy release 1.0"
     #    # branch-name: "master" <-- COMMENT OUT
     #    release-version: "1.0"
-    branch-name: "master"
-    #release-version: RELEASE_VERSION
+    {BRANCH_OR_RELEASE}
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
@@ -96,5 +90,5 @@ resources:
     # WARNING: only change if you know exactly what you're doing!
     # This is the Forseti crontab schedule.
     # The default is "run at some random minute 0-59 (configured in
-    # forseti-instance.py), every other hour".
+    # forseti-instance-server.py), every other hour".
     run-frequency: "{rand_minute} */2 * * *"

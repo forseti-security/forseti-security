@@ -36,6 +36,7 @@ FLAGS = flags.FLAGS
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 
 LOGGER = logger.get_logger(__name__)
+
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
@@ -56,9 +57,10 @@ def run(model_name=None, service_config=None):
     try:
         configs = file_loader.read_and_parse_file(
             service_config.forseti_config_file_path)
-    except IOError:
+    except (AttributeError, IOError) as err:
         LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try again.')
+                     'Please check your path and filename and try '
+                     'again. Error: %s', err)
         return 1
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')

@@ -52,7 +52,6 @@ def get_logger(module_name):
     syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
-    logger_instance.addHandler(console_handler)
     logger_instance.addHandler(syslog_handler)
     logger_instance.setLevel(LOGLEVEL)
     LOGGERS[module_name] = logger_instance
