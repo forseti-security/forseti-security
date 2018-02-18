@@ -300,13 +300,103 @@ def sanitize_conf_values(conf_values):
     return conf_values
 
 
-def merge_dict(base_dict, target_dict):
+def merge_dict(base_dict, target_dict,
+               fields_to_ignore=None, field_identifiers=None):
     """Merge target_dict into base_dict.
 
-    Note: base_dict will be modified during the merge process.
+    Note: base_dict will be modified during the merge process
 
     Args:
         base_dict (dict): Base dictionary.
         target_dict (dict): Target dictionary.
+        fields_to_ignore (list): Fields to ignore (keep in base_dict)
+        field_identifiers (dict): Identifiers for fields
     """
-    return
+    # Init default values for fields_to_ignore and field_identifiers
+    # if they don't already exists
+    if fields_to_ignore is None:
+        fields_to_ignore = []
+    if field_identifiers is None:
+        field_identifiers = {}
+
+    for key, val in base_dict.iteritems():
+        if key in target_dict:
+            # If target_dict has the same key, we check if the value is
+            # an instance of dictionary. If it is we merge recursively and
+            # if it's not, we do a simple replace if the key is not in
+            # fields_to_ignore
+            if key in fields_to_ignore:
+                continue
+            if isinstance(val, dict):
+                merge_dict(val, target_dict.get(key),
+                           fields_to_ignore, field_identifiers)
+            elif isinstance(val, list) and val:
+                # If the list has at least one item, we check for the type
+                # of the first item, if it's a dictionary, we invoke
+                # merge_dict_list, otherwise we will do a simple merge of
+                # 2 lists
+                if isinstance(val[0], dict):
+                    identifier = field_identifiers.get(key)
+                    merge_dict_list(val, target_dict.get(key), identifier,
+                                    fields_to_ignore, field_identifiers)
+                else:
+                    # Cast the merged list to a set to remove duplicate
+                    # and cast it back to a list afterward
+                    base_dict[key] = list(set(val + target_dict.get(key)))
+            else:
+                base_dict[key] = target_dict.get(key)
+
+    for key, val in target_dict.iteritems():
+        if key not in base_dict and key not in fields_to_ignore:
+            # If this is a key we have only in target but not in base, we add
+            # it to the base_dict
+            base_dict[key] = val
+
+
+def merge_dict_list(base_dict_list, target_dict_list, identifier,
+                    fields_to_ignore, field_identifiers):
+    """Merge target_dict_list into base_dict_list.
+
+    Note: base_dict_list will be modified during the merge process.
+
+    Args:
+        base_dict_list (list): Base dictionary.
+        target_dict_list (list): Target dictionary.
+        identifier (str): Current field identifier.
+        fields_to_ignore (list): Fields to ignore (keep in base_dict).
+        field_identifiers (dict): Identifiers for fields.
+    """
+
+    # Sort both base_dict_list and target_dict_list by the identifier
+    base_dict_list.sort(key=lambda k: k[identifier])
+    target_dict_list.sort(key=lambda k: k[identifier])
+
+    # Merge them
+    base_counter = 0
+    target_counter = 0
+    max_items = max(len(base_dict_list), len(target_dict_list))
+    for _ in range(0, max_items):
+        cur_base_dict = (None if len(base_dict_list) <= base_counter
+                         else base_dict_list[base_counter])
+        cur_taget_dict = (None if len(target_dict_list) <= target_counter
+                          else target_dict_list[target_counter])
+
+        if target_counter >= len(target_dict_list):
+            break
+        elif (base_counter >= len(base_dict_list) or
+              cur_base_dict[identifier] > cur_taget_dict[identifier]):
+            # cur_target_object only exists in target_dict_list,
+            # add it to base_dict_list, increment target_counter
+            base_dict_list.append(cur_taget_dict)
+            target_counter += 1
+        elif cur_base_dict[identifier] < cur_taget_dict[identifier]:
+            # cur_base_dict object only exists in base_dict_list,
+            # increment base_counter
+            base_counter += 1
+        else:
+            # They have the same identifier, merge them,
+            # increment both counters
+            merge_dict(cur_base_dict, cur_taget_dict,
+                       fields_to_ignore, field_identifiers)
+            base_counter += 1
+            target_counter += 1
