@@ -48,9 +48,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         super(ForsetiServerInstaller, self).__init__()
         self.config = ServerConfig(**kwargs)
-        ip, zone, name = gcloud.get_forseti_v1_info()
+        ip_addr, zone, name = gcloud.get_forseti_v1_info()
         self.v1_config = v1_upgrader.ForsetiV1Configuration(self.project_id,
-                                                            ip,
+                                                            ip_addr,
                                                             zone,
                                                             name)
 
@@ -59,9 +59,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         super(ForsetiServerInstaller, self).preflight_checks()
         if self.v1_config is not None:
-            self.should_migrate_v1_configurations()
+            self.should_migrate_v1_configs()
         if self.migrate_from_v1:
-            self.retrieve_v1_configurations()
+            self.v1_config.fetch_information_from_gcs()
+            self.populate_info_from_v1()
         self.determine_access_target()
         self.should_enable_write_access()
         self.format_gsuite_service_acct_id()
@@ -75,7 +76,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.dry_run)
         self.get_email_settings()
 
-    def should_migrate_v1_configurations(self):
+    def should_migrate_v1_configs(self):
         """Ask the user if they want to migrate conf/rule files
         from v1 to v2."""
         while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
@@ -83,10 +84,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 "Forseti v1 detected, would you like to migrate the "
                 "existing configurations to v2? (y/n)").lower()
 
-    def retrieve_v1_configurations(self):
+    def populate_info_from_v1(self):
         """Retrieve the v1 configuration object."""
-        self.v1_config.config = ''
-
+        self.config.sendgrid_api_key = self.v1_config.config.get(
+            'sendgrid_api_key')
+        self.config.gsuite_superadmin_email = self.v1_config.config.get(
+            'domain_super_admin_email')
+        self.config.notification_recipient_email = self.v1_config.config.get(
+            'email_recipient')
+        self.config.notification_sender_email = self.v1_config.config.get(
+            'email_sender')
 
     def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
         """Deploy Forseti using the deployment template.
@@ -159,28 +166,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             str: Forseti configuration file path
         """
+        forseti_conf_path = super(ForsetiServerInstaller,
+                                  self).generate_forseti_conf()
 
         if self.migrate_from_v1:
-            # Create a forseti_conf_{INSTALLER_TYPE}_$TIMESTAMP.yaml config file
-            # with values filled in.
-            print('\nGenerate forseti_conf_{}_{}.yaml...'
-                  .format(self.config.installer_type, self.config.datetimestamp))
+            new_conf = files.read_yaml_file_from_local(forseti_conf_path)
+            merged = utils.merge_dict(new_conf, self.v1_config.config)
+            files.write_data_to_yaml_file(merged, forseti_conf_path)
 
-            conf_values = self.get_configuration_values()
-
-            forseti_conf_path = files.generate_forseti_conf(
-                self.config.installer_type,
-                conf_values,
-                self.config.datetimestamp)
-
-            print('\nCreated forseti_conf_{}_{}.yaml config file:\n    {}\n'.
-                  format(self.config.installer_type,
-                         self.config.datetimestamp,
-                         forseti_conf_path))
-            return forseti_conf_path
-
-        else:
-            return super(ForsetiServerInstaller, self).generate_forseti_conf()
+        return forseti_conf_path
 
     def format_firewall_rule_name(self, rule_name):
         """Format firewall rule name.
@@ -303,8 +297,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.sendgrid_api_key = raw_input(
                 constants.QUESTION_SENDGRID_API_KEY).strip()
         if self.config.sendgrid_api_key:
-            self.config.notification_sender_email = (
-                constants.NOTIFICATION_SENDER_EMAIL)
+            if not self.config.notification_sender_email:
+                self.config.notification_sender_email = (
+                    constants.NOTIFICATION_SENDER_EMAIL)
 
             # Ask for notification recipient email
             if not self.config.notification_recipient_email:

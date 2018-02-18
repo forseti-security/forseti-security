@@ -159,7 +159,7 @@ def copy_file_to_destination(file_path, output_path,
     else:
         args = ['gsutil', 'cp', file_path, output_path]
 
-    return_code, out, err = utils.run_command(args)
+    return_code, _, _ = utils.run_command(args)
     if return_code:
         return False
     return True
