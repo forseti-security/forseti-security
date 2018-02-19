@@ -368,10 +368,13 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
         field_identifiers (dict): Identifiers for fields.
     """
 
-    if not identifier:
-        # Doesn't have an identifier, append all the items from
-        # target_dict_list to base_dict_list
-        base_dict_list.extend(target_dict_list)
+    if not identifier or identifier not in base_dict_list:
+        # Doesn't have an identifier, append all the dictionary objects from
+        # target_dict_list to base_dict_list if base_dict_list doesn't have
+        # them already
+        for target_dict in target_dict_list:
+            if target_dict not in base_dict_list:
+                base_dict_list.append(target_dict)
         return
 
     # Sort both base_dict_list and target_dict_list by the identifier
