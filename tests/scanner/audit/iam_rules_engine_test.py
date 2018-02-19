@@ -1460,19 +1460,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy violations found.
         """
-        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
-            side_effect=[self.org789])
-
-        # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES11, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
-            find_ancestor_mock)
 
         policy = {
             'bindings': [{
@@ -1481,8 +1472,9 @@ class IamRulesEngineTest(ForsetiTestCase):
             }]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(policy)
         actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+            self.project1, self.mock_project1_policy_resource))
 
         expected_violations = set()
 
@@ -1502,19 +1494,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy violations found.
         """
-        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
-            side_effect=[self.org789])
-
-        # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES12, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
-            find_ancestor_mock)
 
         policy = {
             'bindings': [{
@@ -1523,8 +1506,9 @@ class IamRulesEngineTest(ForsetiTestCase):
             }]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(policy)
         actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+            self.project1, self.mock_project1_policy_resource))
 
         expected_violations = set()
 
@@ -1541,19 +1525,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             The user belongs to the wrong domain and this violation is detected.
         """
-        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
-            side_effect=[self.org789])
-
-        # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES11, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
-            find_ancestor_mock)
 
         policy = {
             'bindings': [{
@@ -1562,8 +1537,9 @@ class IamRulesEngineTest(ForsetiTestCase):
             }]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(policy)
         actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+            self.project1, self.mock_project1_policy_resource))
 
         expected_outstanding = {
             'roles/owner': [
@@ -1577,9 +1553,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name=test_rules.RULES11['rules'][0]['name'],
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='REMOVED',
                 role='roles/owner',
-                members=tuple(expected_outstanding['roles/owner'])),
+                members=tuple(expected_outstanding['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertEqual(expected_violations, actual_violations)
@@ -1599,19 +1577,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             The user belongs to the wrong domain and this violation is detected.
         """
-        self.mock_org_rel_dao.find_ancestors = mock.MagicMock(
-            side_effect=[self.org789])
-
-        # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES12, self.fake_timestamp)
-        rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
-        find_ancestor_mock = mock.MagicMock(
-            side_effect=[[self.org789]])
-        rules_engine.rule_book.org_res_rel_dao.find_ancestors = (
-            find_ancestor_mock)
 
         policy = {
             'bindings': [{
@@ -1620,8 +1589,9 @@ class IamRulesEngineTest(ForsetiTestCase):
             }]
         }
 
+        self.mock_project1_policy_resource.data = json.dumps(policy)
         actual_violations = set(rules_engine.find_policy_violations(
-            self.project1, policy))
+            self.project1, self.mock_project1_policy_resource))
 
         expected_outstanding = {
             'roles/owner': [
@@ -1635,9 +1605,11 @@ class IamRulesEngineTest(ForsetiTestCase):
                 rule_name=test_rules.RULES12['rules'][0]['name'],
                 resource_id=self.project1.id,
                 resource_type=self.project1.type,
+                full_name=self.project1.full_name,
                 violation_type='REMOVED',
                 role='roles/owner',
-                members=tuple(expected_outstanding['roles/owner'])),
+                members=tuple(expected_outstanding['roles/owner']),
+                inventory_data=self.project1.data),
         ])
 
         self.assertEqual(expected_violations, actual_violations)
