@@ -88,13 +88,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def populate_info_from_v1(self):
         """Retrieve the v1 configuration object."""
-        self.config.sendgrid_api_key = self.v1_config.config.get(
-            'sendgrid_api_key')
-        self.config.gsuite_superadmin_email = self.v1_config.config.get(
+        v1_conf_global = self.v1_config.config.get('global')
+        self.config.sendgrid_api_key = v1_conf_global.get('sendgrid_api_key')
+        self.config.gsuite_superadmin_email = v1_conf_global.get(
             'domain_super_admin_email')
-        self.config.notification_recipient_email = self.v1_config.config.get(
+        self.config.notification_recipient_email = v1_conf_global.get(
             'email_recipient')
-        self.config.notification_sender_email = self.v1_config.config.get(
+        self.config.notification_sender_email = v1_conf_global.get(
             'email_sender')
 
     def deploy(self, deployment_tpl_path, conf_file_path, bucket_name):
@@ -190,7 +190,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if self.migrate_from_v1:
             new_conf = files.read_yaml_file_from_local(forseti_conf_path)
-            utils.merge_dict(new_conf, self.v1_config.config)
+            fields_to_ignore = ['db_host', 'db_user', 'db_name',
+                                'inventory', 'output_path', 'gcs_path']
+            fields_identifier = {'scanners' : 'name', 'resources': 'resource'}
+            utils.merge_dict(new_conf, self.v1_config.config,
+                             fields_to_ignore, fields_identifier)
             files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 
         return forseti_conf_path
