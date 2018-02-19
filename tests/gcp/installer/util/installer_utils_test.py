@@ -66,49 +66,49 @@ class UtilsModuleTest(ForsetiTestCase):
         self.assertEquals(
             utils.sanitize_conf_values(input_conf), expected_conf)
 
-    def test_merge_dict_flat(self):
+    def test_merge_object_flat(self):
         """Test merge flat dictionary."""
         input_dict = {'a': 'aval', 'b': 'bval', 'c': 'cval'}
         target_dict = {'a': 'aval2', 'c': 'cval2'}
         expected_dict = {'a': 'aval2', 'b': 'bval', 'c': 'cval2'}
 
-        utils.merge_dict(input_dict, target_dict)
+        utils.merge_object(input_dict, target_dict)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_flat_target_with_extra_vals(self):
+    def test_merge_object_flat_target_with_extra_vals(self):
         """Test merge flat dictionary."""
         input_dict = {'a': 'aval', 'b': 'bval', 'c': 'cval'}
         target_dict = {'a': 'aval2', 'c': 'cval2', 'd': 'dval2'}
         expected_dict = {'a': 'aval2', 'b': 'bval', 'c': 'cval2', 'd': 'dval2'}
 
-        utils.merge_dict(input_dict, target_dict)
+        utils.merge_object(input_dict, target_dict)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_flat_with_fields_to_ignore(self):
+    def test_merge_object_flat_with_fields_to_ignore(self):
         """Test merge flat dictionary."""
         input_dict = {'a': 'aval', 'b': 'bval', 'c': 'cval'}
         target_dict = {'a': 'aval2', 'b': 'bval2', 'c': 'cval2'}
         expected_dict = {'a': 'aval', 'b': 'bval2', 'c': 'cval'}
         fields_to_ignore = ['a', 'c']
 
-        utils.merge_dict(input_dict, target_dict, fields_to_ignore)
+        utils.merge_object(input_dict, target_dict, fields_to_ignore)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_flat_with_fields_to_ignore_target_with_extra_vals(self):
+    def test_merge_object_flat_with_fields_to_ignore_target_with_extra_vals(self):
         """Test merge flat dictionary."""
         input_dict = {'a': 'aval', 'b': 'bval', 'c': 'cval'}
         target_dict = {'a': 'aval2', 'b': 'bval2', 'c': 'cval2', 'd': 'dval2'}
         expected_dict = {'a': 'aval', 'b': 'bval2', 'c': 'cval', 'd': 'dval2'}
         fields_to_ignore = ['a', 'c']
 
-        utils.merge_dict(input_dict, target_dict, fields_to_ignore)
+        utils.merge_object(input_dict, target_dict, fields_to_ignore)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_nested(self):
+    def test_merge_object_nested(self):
         """Test merge flat dictionary."""
         input_dict = {'a0': {'a1': {'a2': 'aval'}},
                       'b0': {'b1': {'b2': 'bval'}},
@@ -120,11 +120,11 @@ class UtilsModuleTest(ForsetiTestCase):
                          'b0': {'b1': {'b2': 'bval'}},
                          'c0': {'c1': {'c2': 'cval2'}}}
 
-        utils.merge_dict(input_dict, target_dict)
+        utils.merge_object(input_dict, target_dict)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_nested_target_with_extra_vals(self):
+    def test_merge_object_nested_target_with_extra_vals(self):
         """Test merge flat dictionary."""
         input_dict = {'a0': {'a1': {'a2': 'aval'}},
                       'b0': {'b1': {'b2': 'bval'}},
@@ -138,11 +138,11 @@ class UtilsModuleTest(ForsetiTestCase):
                          'c0': {'c1': {'c2': 'cval2'}},
                          'd0': {'d1': 'dval2'}}
 
-        utils.merge_dict(input_dict, target_dict)
+        utils.merge_object(input_dict, target_dict)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_nested_target_with_extra_vals_nested(self):
+    def test_merge_object_nested_target_with_extra_vals_nested(self):
         """Test merge flat dictionary."""
         input_dict = {'a0': {'a1': {'a2': 'aval'}},
                       'b0': {'b1': {'b2': 'bval'}},
@@ -156,11 +156,11 @@ class UtilsModuleTest(ForsetiTestCase):
                          'c0': {'c1': {'c2': 'cval2'},
                                 'c12': 'cval12'}}
 
-        utils.merge_dict(input_dict, target_dict)
+        utils.merge_object(input_dict, target_dict)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_nested_fields_to_ignore(self):
+    def test_merge_object_nested_fields_to_ignore(self):
         """Test merge flat dictionary."""
         input_dict = {'a0': {'a1': {'a2': 'aval'}},
                       'b0': {'b1': {'b2': 'bval'}},
@@ -175,11 +175,11 @@ class UtilsModuleTest(ForsetiTestCase):
                          'b0': {'b1': {'b2': 'bval'}},
                          'c0': {'c1': {'c2': 'cval2'}}}
 
-        utils.merge_dict(input_dict, target_dict, fields_to_ignore)
+        utils.merge_object(input_dict, target_dict, fields_to_ignore)
 
         self.assertEqual(expected_dict, input_dict)
 
-    def test_merge_dict_nested_list_with_field_identifiers(self):
+    def test_merge_object_nested_list_with_field_identifiers(self):
         """Test merge flat dictionary."""
         input_dict = {'a0': {'a1': [
             {'name': 'a21', 'val': 'a21_val'},
@@ -198,7 +198,7 @@ class UtilsModuleTest(ForsetiTestCase):
         fields_to_ignore = []
         field_identifiers = {'a1': 'name'}
 
-        utils.merge_dict(input_dict, target_dict,
+        utils.merge_object(input_dict, target_dict,
                          fields_to_ignore, field_identifiers)
 
         self.assertEqual(expected_dict, input_dict)
