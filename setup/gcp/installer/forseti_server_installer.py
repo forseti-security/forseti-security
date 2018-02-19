@@ -15,6 +15,7 @@
 """Forseti Server installer."""
 
 from __future__ import print_function
+import os
 import random
 
 from configs.server_config import ServerConfig
@@ -48,11 +49,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         super(ForsetiServerInstaller, self).__init__()
         self.config = ServerConfig(**kwargs)
-        ip_addr, zone, name = gcloud.get_forseti_v1_info()
+        _, zone, name = gcloud.get_forseti_v1_info()
         self.v1_config = v1_upgrader.ForsetiV1Configuration(self.project_id,
-                                                            ip_addr,
-                                                            zone,
-                                                            name)
+                                                            name,
+                                                            zone)
 
     def preflight_checks(self):
         """Pre-flight checks for server instance"""
@@ -121,6 +121,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
+            # Merge all the old rules if necessary
+            if self.migrate_from_v1:
+                self.merge_old_rules()
+
             # Copy the rule directory to the GCS bucket
             files.copy_file_to_destination(
                 constants.RULES_DIR_PATH, bucket_name,
@@ -134,6 +138,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.create_firewall_rules()
 
         return success, deployment_name
+
+    def merge_old_rules(self):
+        """Merge old rules to new rules."""
+        for v1_rule in self.v1_config.rules:
+            new_rule_path = os.path.join(constants.RULES_DIR_PATH,
+                                         v1_rule.name)
+            new_rule = files.read_yaml_file_from_local(new_rule_path)
+            utils.merge_dict(new_rule, v1_rule.data)
+            files.write_data_to_yaml_file(new_rule)
 
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
