@@ -115,17 +115,37 @@ class ForsetiInstaller(object):
             conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
                 installer_type=self.config.installer_type)
+
+            self.print_copy_statement(conf_file_path, conf_output_path)
+
             files.copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
 
             deployment_tpl_output_path = (
                 constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
+
+            self.print_copy_statement(deployment_tpl_path,
+                                      deployment_tpl_output_path)
+
             files.copy_file_to_destination(
                 deployment_tpl_path, deployment_tpl_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
 
         return deployment_completed, deployment_name
+
+    def print_copy_statement(self, input_file, output_file):
+        """Print copy statement.
+
+        Args:
+            input_file (str): Input file.
+            output_file (str): Output file.
+        """
+        utils.print_banner('Copying {} to {}'.format(input_file,
+                                                     output_file))
+
+        if self.config.dry_run:
+            print('This is a dry run, so skipping this step.')
 
     def wait_until_vm_initialized(self, vm_name):
         """Check vm init status.

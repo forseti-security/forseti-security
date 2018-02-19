@@ -148,10 +148,7 @@ def copy_file_to_destination(file_path, output_path,
         bool: True if copy file succeeded, otherwise False.
     """
 
-    utils.print_banner('Copying {} to {}'.format(file_path, output_path))
-
     if dry_run:
-        print('This is a dry run, so skipping this step.')
         return False
 
     if is_directory:

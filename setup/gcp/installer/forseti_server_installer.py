@@ -49,18 +49,20 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         super(ForsetiServerInstaller, self).__init__()
         self.config = ServerConfig(**kwargs)
-        _, zone, name = gcloud.get_forseti_v1_info()
-        self.v1_config = v1_upgrader.ForsetiV1Configuration(self.project_id,
-                                                            name,
-                                                            zone)
+        self.v1_config = None
 
     def preflight_checks(self):
         """Pre-flight checks for server instance"""
 
         super(ForsetiServerInstaller, self).preflight_checks()
-        if self.v1_config is not None:
+        _, zone, name = gcloud.get_forseti_v1_info()
+        if name is not None:
+            # v1 instance exists, ask if the user wants to port
+            # the conf/rules settings from v1.
             self.should_migrate_v1_configs()
         if self.migrate_from_v1:
+            self.v1_config = v1_upgrader.ForsetiV1Configuration(
+                self.project_id, name, zone)
             self.v1_config.fetch_information_from_gcs()
             self.populate_info_from_v1()
         self.determine_access_target()
@@ -129,6 +131,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             files.copy_file_to_destination(
                 constants.RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
+
+            self.print_copy_statement(constants.RULES_DIR_PATH, bucket_name)
 
             # Waiting for VM to be initialized
             instance_name = '{}-vm'.format(deployment_name)

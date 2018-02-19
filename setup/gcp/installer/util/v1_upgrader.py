@@ -100,7 +100,7 @@ class ForsetiV1Configuration(object):
             if not success:
                 rules_to_remove.append(rule)
                 continue
-            local_file_path = os.path.join(tempdir, rule.name)
+            local_file_path = os.path.join(tempdir, rule.file_name)
             self._rules.append(
                 files.read_yaml_file_from_local(local_file_path))
             os.unlink(local_file_path)
