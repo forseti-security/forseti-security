@@ -300,6 +300,42 @@ def sanitize_conf_values(conf_values):
     return conf_values
 
 
+def merge_object(base_obj, target_obj,
+                 fields_to_ignore=None, field_identifiers=None):
+    """Merge objects.
+
+    Args:
+        base_obj (object): Base dictionary.
+        target_obj (object): Target dictionary.
+        fields_to_ignore (list): Fields to ignore (keep in base_dict)
+        field_identifiers (dict): Identifiers for fields
+
+    Raises:
+          FormatNotSupported: Format not supported.
+    """
+    class FormatNotSupported(Exception):
+        """Format not supported exception."""
+        pass
+
+    # Init default values for fields_to_ignore and field_identifiers
+    # if they don't already exists
+    if fields_to_ignore is None:
+        fields_to_ignore = []
+    if field_identifiers is None:
+        field_identifiers = {}
+
+    if isinstance(base_obj, list) and isinstance(target_obj, list):
+        identifier = field_identifiers.get('default_identifier')
+        merge_dict_list(base_obj, target_obj, identifier,
+                        fields_to_ignore, field_identifiers)
+    elif isinstance(base_obj, dict) and isinstance(target_obj, dict):
+        merge_dict(base_obj, target_obj, fields_to_ignore, field_identifiers)
+    else:
+        raise FormatNotSupported(
+            'Merging {} and {} is not supported'.format(
+                type(base_obj), type(target_obj)))
+
+
 def merge_dict(base_dict, target_dict,
                fields_to_ignore=None, field_identifiers=None):
     """Merge target_dict into base_dict.
@@ -312,12 +348,6 @@ def merge_dict(base_dict, target_dict,
         fields_to_ignore (list): Fields to ignore (keep in base_dict)
         field_identifiers (dict): Identifiers for fields
     """
-    # Init default values for fields_to_ignore and field_identifiers
-    # if they don't already exists
-    if fields_to_ignore is None:
-        fields_to_ignore = []
-    if field_identifiers is None:
-        field_identifiers = {}
 
     for key, val in base_dict.iteritems():
         # print (key + "      ///////        " + str(val))
@@ -368,7 +398,19 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
         field_identifiers (dict): Identifiers for fields.
     """
 
-    if not identifier or identifier not in base_dict_list:
+    contains_identifier = False
+
+    if base_dict_list:
+        # If base_dict_list is not empty, check if the dictionary object
+        # inside contains the identifier
+        contains_identifier = identifier in base_dict_list[0]
+    if target_dict_list:
+        # If target_dict_list is not empty, check if the dictionary object
+        # inside contains the identifier
+        contains_identifier = contains_identifier and (
+            identifier in target_dict_list[0])
+
+    if not identifier or not contains_identifier:
         # Doesn't have an identifier, append all the dictionary objects from
         # target_dict_list to base_dict_list if base_dict_list doesn't have
         # them already

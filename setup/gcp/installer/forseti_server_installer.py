@@ -149,9 +149,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_rule_path = os.path.join(constants.RULES_DIR_PATH,
                                          v1_rule.file_name)
             new_rule = files.read_yaml_file_from_local(new_rule_path)
-            field_identifiers = {'rules': 'name'}
-            utils.merge_dict(new_rule, v1_rule.data, fields_to_ignore=[],
-                             field_identifiers=field_identifiers)
+            field_identifiers = {'rules': 'name', 'default_identifier': 'name'}
+            utils.merge_object(new_rule, v1_rule.data, fields_to_ignore=[],
+                               field_identifiers=field_identifiers)
             files.write_data_to_yaml_file(new_rule, new_rule_path)
 
     def create_firewall_rules(self):
@@ -193,8 +193,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             fields_to_ignore = ['db_host', 'db_user', 'db_name',
                                 'inventory', 'output_path', 'gcs_path']
             field_identifiers = {'scanners' : 'name', 'resources': 'resource'}
-            utils.merge_dict(new_conf, self.v1_config.config,
-                             fields_to_ignore, field_identifiers)
+            utils.merge_object(new_conf, self.v1_config.config,
+                               fields_to_ignore, field_identifiers)
             files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 
         return forseti_conf_path

@@ -62,11 +62,9 @@ class FilesModuleTest(ForsetiTestCase):
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merged_forseti_conf_server.yaml')
 
-        base_dict = files.read_yaml_file_from_local(base_path)
-        target_dict = files.read_yaml_file_from_local(target_path)
-        merged_dict = files.read_yaml_file_from_local(merged_path)
-
-        output_path = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
+        base_obj = files.read_yaml_file_from_local(base_path)
+        target_obj = files.read_yaml_file_from_local(target_path)
+        merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
         fields_to_ignore = ['gcs_path', 'output_path']
@@ -74,12 +72,66 @@ class FilesModuleTest(ForsetiTestCase):
                              'resources': 'resource',
                              'pipelines': 'name'}
 
-        utils.merge_dict(base_dict, target_dict, fields_to_ignore, field_identifiers)
+        utils.merge_object(base_obj, target_obj,
+                           fields_to_ignore, field_identifiers)
 
-        base_dict = self.deep_sort(base_dict)
-        merged_dict = self.deep_sort(merged_dict)
+        base_obj = self.deep_sort(base_obj)
+        merged_obj = self.deep_sort(merged_obj)
 
-        self.assertDictEqual(base_dict, merged_dict)
+        self.assertEqual(base_obj, merged_obj)
+
+    def test_merge_bucket_rule_yaml_files(self):
+        """Merge 2 conf yaml files."""
+        self.maxDiff = None
+        # Load yaml files
+        base_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                 'base_bucket_rules.yaml')
+        target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'target_bucket_rules.yaml')
+        merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'merged_bucket_rules.yaml')
+
+        base_obj = files.read_yaml_file_from_local(base_path)
+        target_obj = files.read_yaml_file_from_local(target_path)
+        merged_obj = files.read_yaml_file_from_local(merged_path)
+
+        # Merge target into base, ignore gcs_path and output_path
+        fields_to_ignore = []
+        field_identifiers = {'rules': 'name'}
+
+        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+
+        base_obj = self.deep_sort(base_obj)
+        merged_obj = self.deep_sort(merged_obj)
+
+        self.assertEqual(base_obj, merged_obj)
+
+    def test_merge_group_rule_yaml_files(self):
+        """Merge 2 conf yaml files."""
+        self.maxDiff = None
+        # Load yaml files
+        base_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                 'base_group_rules.yaml')
+        target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'target_group_rules.yaml')
+        merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'merged_group_rules.yaml')
+
+        base_obj = files.read_yaml_file_from_local(base_path)
+        target_obj = files.read_yaml_file_from_local(target_path)
+        merged_obj = files.read_yaml_file_from_local(merged_path)
+
+        # Merge target into base, ignore gcs_path and output_path
+        fields_to_ignore = []
+        field_identifiers = {'default_identifier': 'name'}
+
+        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+
+        base_obj = self.deep_sort(base_obj)
+        merged_obj = self.deep_sort(merged_obj)
+
+        self.assertEqual(base_obj, merged_obj)
+
 
 if __name__ == '__main__':
     unittest.main()
