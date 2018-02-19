@@ -368,6 +368,12 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
         field_identifiers (dict): Identifiers for fields.
     """
 
+    if not identifier:
+        # Doesn't have an identifier, append all the items from
+        # target_dict_list to base_dict_list
+        base_dict_list.extend(target_dict_list)
+        return
+
     # Sort both base_dict_list and target_dict_list by the identifier
     base_dict_list.sort(key=lambda k: k[identifier])
     target_dict_list.sort(key=lambda k: k[identifier])
@@ -375,7 +381,7 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
     # Merge them
     base_counter = 0
     target_counter = 0
-    max_items = max(len(base_dict_list), len(target_dict_list))
+    max_items = len(base_dict_list) + len(target_dict_list)
     for _ in range(0, max_items):
         cur_base_dict = (None if len(base_dict_list) <= base_counter
                          else base_dict_list[base_counter])

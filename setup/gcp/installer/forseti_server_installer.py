@@ -145,7 +145,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_rule_path = os.path.join(constants.RULES_DIR_PATH,
                                          v1_rule.name)
             new_rule = files.read_yaml_file_from_local(new_rule_path)
-            utils.merge_dict(new_rule, v1_rule.data)
+            field_identifiers = {'rules': 'name'}
+            utils.merge_dict(new_rule, v1_rule.data, fields_to_ignore=[],
+                             field_identifiers=field_identifiers)
             files.write_data_to_yaml_file(new_rule, new_rule_path)
 
     def create_firewall_rules(self):
