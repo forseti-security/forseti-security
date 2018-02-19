@@ -57,6 +57,7 @@ REQUIRED_PACKAGES = [
     'mock>=2.0.0',
     'parameterized>=0.6.1',
     'simple-crypt>=4.1.7',
+    'ruamel.yaml'
 ]
 
 if sys.version_info < (2, 7):
