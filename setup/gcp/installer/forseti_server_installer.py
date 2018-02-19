@@ -147,7 +147,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Merge old rules to new rules."""
         for v1_rule in self.v1_config.rules:
             new_rule_path = os.path.join(constants.RULES_DIR_PATH,
-                                         v1_rule.name)
+                                         v1_rule.file_name)
             new_rule = files.read_yaml_file_from_local(new_rule_path)
             field_identifiers = {'rules': 'name'}
             utils.merge_dict(new_rule, v1_rule.data, fields_to_ignore=[],
@@ -192,9 +192,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_conf = files.read_yaml_file_from_local(forseti_conf_path)
             fields_to_ignore = ['db_host', 'db_user', 'db_name',
                                 'inventory', 'output_path', 'gcs_path']
-            fields_identifier = {'scanners' : 'name', 'resources': 'resource'}
+            field_identifiers = {'scanners' : 'name', 'resources': 'resource'}
             utils.merge_dict(new_conf, self.v1_config.config,
-                             fields_to_ignore, fields_identifier)
+                             fields_to_ignore, field_identifiers)
             files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 
         return forseti_conf_path
