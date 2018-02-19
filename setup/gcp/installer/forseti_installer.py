@@ -27,7 +27,7 @@ from util import gcloud
 from util import utils
 
 
-class ForsetiInstaller:
+class ForsetiInstaller(object):
     """Forseti installer base class (abstract)"""
     __metaclass__ = ABCMeta
 

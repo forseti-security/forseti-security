@@ -16,7 +16,7 @@
 
 from __future__ import print_function
 import os
-import yaml
+import ruamel.yaml
 
 import constants
 import utils
@@ -188,21 +188,21 @@ def read_yaml_file_from_local(file_path):
             YAMLError: If there was an error parsing the stream.
         """
         try:
-            return yaml.safe_load(data)
-        except yaml.YAMLError as yaml_error:
+            return ruamel.yaml.load(data, Loader=ruamel.yaml.RoundTripLoader)
+        except ruamel.yaml.YAMLError as yaml_error:
             raise yaml_error
 
-    with open(os.path.abspath(file_path), 'r') as file:
-        return _parse_yaml(file)
+    with open(os.path.abspath(file_path), 'r') as f:
+        return _parse_yaml(f)
 
 
 def write_data_to_yaml_file(data, output_file_path):
     """Write data to yaml file.
 
     Args:
-        data (stream): A yaml data stream to parse.
+        data (dict): A yaml data stream to parse.
         output_file_path (str): Output file path.
     """
 
     with open(output_file_path, 'w') as outfile:
-        yaml.dump(data, outfile, default_flow_style=False)
+        ruamel.yaml.dump(data, outfile, Dumper=ruamel.yaml.RoundTripDumper)

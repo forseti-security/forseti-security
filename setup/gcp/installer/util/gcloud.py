@@ -629,7 +629,7 @@ def get_forseti_v1_info():
         str: Name of the forseti server instance
     """
 
-    return get_vm_instance_info('^forseti-security-\d+-vm$',
+    return get_vm_instance_info(r'^forseti-security-\d+-vm$',
                                 try_match=True)
 
 

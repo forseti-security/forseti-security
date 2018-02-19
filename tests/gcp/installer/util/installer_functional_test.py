@@ -66,8 +66,7 @@ class FilesModuleTest(ForsetiTestCase):
         target_dict = files.read_yaml_file_from_local(target_path)
         merged_dict = files.read_yaml_file_from_local(merged_path)
 
-        base_dict = self.deep_sort(base_dict)
-        merged_dict = self.deep_sort(merged_dict)
+        output_path = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
 
         # Merge target into base, ignore gcs_path and output_path
         fields_to_ignore = ['gcs_path', 'output_path']
@@ -77,8 +76,8 @@ class FilesModuleTest(ForsetiTestCase):
 
         utils.merge_dict(base_dict, target_dict, fields_to_ignore, field_identifiers)
 
-        output_path = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
-        files.write_data_to_yaml_file(base_dict, output_path)
+        base_dict = self.deep_sort(base_dict)
+        merged_dict = self.deep_sort(merged_dict)
 
         self.assertDictEqual(base_dict, merged_dict)
 

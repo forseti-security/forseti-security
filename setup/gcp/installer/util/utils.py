@@ -320,6 +320,7 @@ def merge_dict(base_dict, target_dict,
         field_identifiers = {}
 
     for key, val in base_dict.iteritems():
+        # print (key + "      ///////        " + str(val))
         if key in target_dict:
             # If target_dict has the same key, we check if the value is
             # an instance of dictionary. If it is we merge recursively and

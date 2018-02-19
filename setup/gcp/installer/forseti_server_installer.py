@@ -146,7 +146,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                                          v1_rule.name)
             new_rule = files.read_yaml_file_from_local(new_rule_path)
             utils.merge_dict(new_rule, v1_rule.data)
-            files.write_data_to_yaml_file(new_rule)
+            files.write_data_to_yaml_file(new_rule, new_rule_path)
 
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
@@ -184,8 +184,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if self.migrate_from_v1:
             new_conf = files.read_yaml_file_from_local(forseti_conf_path)
-            merged = utils.merge_dict(new_conf, self.v1_config.config)
-            files.write_data_to_yaml_file(merged, forseti_conf_path)
+            utils.merge_dict(new_conf, self.v1_config.config)
+            files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 
         return forseti_conf_path
 
