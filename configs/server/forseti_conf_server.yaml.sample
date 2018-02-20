@@ -1,10 +1,5 @@
 global:
 
-    # database
-    db_host: DB_HOST
-    db_user: DB_USER
-    db_name: DB_NAME
-
     # gsuite
     groups_service_account_key_file: GROUPS_SERVICE_ACCOUNT_KEY_FILE
     domain_super_admin_email: DOMAIN_SUPER_ADMIN_EMAIL

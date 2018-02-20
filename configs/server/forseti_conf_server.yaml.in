@@ -1,10 +1,5 @@
 global:
 
-    # database
-    db_host: 127.0.0.1
-    db_user: root
-    db_name: forseti_security
-
     # gsuite
     groups_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
