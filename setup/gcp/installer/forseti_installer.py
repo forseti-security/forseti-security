@@ -178,6 +178,7 @@ class ForsetiInstaller(object):
     def format_gcp_service_acct_id(self):
         """Format the service account ids."""
         self.gcp_service_account = utils.format_service_acct_id(
+            self.config.installer_type,
             'gcp',
             'reader',
             self.config.timestamp,

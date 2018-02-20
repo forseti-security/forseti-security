@@ -145,22 +145,24 @@ def format_resource_id(resource_type, resource_id):
     return '%s/%s' % (resource_type, resource_id)
 
 
-def format_service_acct_id(prefix, modifier, timestamp, project_id):
+def format_service_acct_id(installer_type, prefix,
+                           modifier, timestamp, project_id):
     """Format the service account ids.
 
     Args:
-        prefix (str): The prefix of the account id
-        modifier (str): Access level of the account
-        timestamp (str): Timestamp of the class
-        project_id (str): Id of the project on GCP
+        installer_type (str): Installer type.
+        prefix (str): The prefix of the account id.
+        modifier (str): Access level of the account.
+        timestamp (str): Timestamp of the class.
+        project_id (str): Id of the project on GCP.
 
     Returns:
-        str: Service account id
+        str: Service account id.
     """
 
     return full_service_acct_email(
         constants.SERVICE_ACCT_FMT.format(
-            prefix, modifier, timestamp), project_id)
+            installer_type, prefix, modifier, timestamp), project_id)
 
 
 def infer_version(advanced_mode):

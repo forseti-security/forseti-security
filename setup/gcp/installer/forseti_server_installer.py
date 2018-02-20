@@ -341,6 +341,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def format_gsuite_service_acct_id(self):
         """Format the gsuite service account id"""
         self.gsuite_service_account = utils.format_service_acct_id(
+            self.config.installer_type,
             'gsuite',
             'reader',
             self.config.timestamp,
@@ -353,6 +354,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             modifier = 'readwrite'
 
         self.gcp_service_account = utils.format_service_acct_id(
+            self.config.installer_type,
             'gcp',
             modifier,
             self.config.timestamp,
