@@ -21,14 +21,14 @@ import grpc
 from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.playground import playground_pb2_grpc
 from google.cloud.forseti.services.playground import playgrounder
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=no-self-use
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):

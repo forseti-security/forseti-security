@@ -20,17 +20,17 @@ from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
 # pylint: disable=missing-param-doc,missing-yield-doc
 # pylint: disable=missing-yield-type-doc,no-member
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
-    """IAM Explain gRPC implementation."""
+    """Explain gRPC implementation."""
 
     HANDLE_KEY = "handle"
 
@@ -249,7 +249,7 @@ class GrpcExplainerFactory(object):
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the IAM Explain service."""
+        """Create and register the Explain service."""
         service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
         LOGGER.info("service %s created and registered", service)

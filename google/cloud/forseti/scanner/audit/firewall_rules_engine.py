@@ -21,13 +21,13 @@ from collections import namedtuple
 from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.util import relationship_util
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class Error(Exception):
@@ -301,7 +301,7 @@ class RuleBook(bre.BaseRuleBook):
         violations = itertools.chain()
 
         resource_ancestors = (
-            relationship_util.find_ancestors(resource, policies[0].full_name))
+            relationship.find_ancestors(resource, policies[0].full_name))
 
         for curr_resource in resource_ancestors:
             if curr_resource in self.org_policy_rules_map:
@@ -577,13 +577,18 @@ class Rule(object):
         """
         if not policies:
             raise ValueError('No policies in violation')
+        inventory_data = []
+        for policy in policies:
+            inventory_data.append(policy.as_json())
         return RuleViolation(
             resource_type='firewall_rule',
             resource_id=policies[0].project_id,
+            full_name=policies[0].full_name,
             rule_id=self.id,
             violation_type=violation_type,
             policy_names=[p.name for p in policies],
             recommended_actions=recommended_actions,
+            inventory_data=inventory_data
         )
 
 # Rule violation.
@@ -594,9 +599,9 @@ class Rule(object):
 # policy_names: string
 # recommeded_action: string
 RuleViolation = namedtuple('RuleViolation',
-                           ['resource_type', 'resource_id', 'rule_id',
-                            'violation_type', 'policy_names',
-                            'recommended_actions'])
+                           ['resource_type', 'resource_id', 'full_name',
+                            'rule_id', 'violation_type', 'policy_names',
+                            'recommended_actions', 'inventory_data'])
 
 def is_whitelist_violation(rules, policy):
     """Checks if the policy is not a subset of those allowed by the rules.

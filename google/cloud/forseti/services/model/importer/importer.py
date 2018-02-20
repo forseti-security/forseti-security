@@ -15,7 +15,7 @@
 """ Importer implementations. """
 
 # pylint: disable=unused-argument,too-many-instance-attributes
-# pylint: disable=no-self-use,not-callable,too-many-lines
+# pylint: disable=no-self-use,not-callable,too-many-lines,too-many-locals
 
 from StringIO import StringIO
 import traceback
@@ -167,14 +167,17 @@ class InventoryImporter(object):
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_id, True) as inventory:
-
+                root = inventory.get_root()
                 self.model.add_description(json.dumps({
-                    "source":"inventory",
-                    "source_info":str(inventory.index),
-                    "pristine":True
+                    'source': 'inventory',
+                    'source_info': {'inventory_index_id': inventory.index.id},
+                    "source_root":self._type_name(root),
+                    'pristine': True,
+                    "gsuite_enabled":inventory.type_exists(
+                        ["gsuite_group", "gsuite_user"])
                     }))
 
-                for resource in inventory.iter(['organization']):
+                if root.get_type() in ['organization']:
                     self.found_root = True
                 if not self.found_root:
                     raise Exception(
@@ -590,9 +593,10 @@ class InventoryImporter(object):
         Args:
             service_config (dict): A Service Config resource to store.
         """
-        sc_type_name = to_type_name(service_config.get_type_class(),
-                                    service_config.get_key())
         parent, full_res_name = self._get_parent(service_config)
+        sc_type_name = to_type_name(
+            service_config.get_type_class(),
+            parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -629,9 +633,10 @@ class InventoryImporter(object):
         """
         # TODO: Dataset policies should be integrated in the model, not stored
         # as a resource.
-        policy_type_name = to_type_name(dataset_policy.get_type_class(),
-                                        dataset_policy.get_key())
         parent, full_res_name = self._get_parent(dataset_policy)
+        policy_type_name = to_type_name(
+            dataset_policy.get_type_class(),
+            parent.type_name)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -667,10 +672,10 @@ class InventoryImporter(object):
         Args:
             iam_policy (object): IAM policy to store.
         """
+        parent, full_res_name = self._get_parent(iam_policy)
         iam_policy_type_name = to_type_name(
             iam_policy.get_type_class(),
-            iam_policy.get_key())
-        parent, full_res_name = self._get_parent(iam_policy)
+            parent.type_name)
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
             iam_policy_type_name)

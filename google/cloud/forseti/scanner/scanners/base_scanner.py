@@ -19,10 +19,10 @@ import os
 import shutil
 
 from google.cloud.forseti.common.gcp_api import storage
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class BaseScanner(object):
@@ -65,13 +65,18 @@ class BaseScanner(object):
         Returns:
             list: Violations that encountered an error during insert.
         """
+        model_description = (
+            self.service_config.model_manager.get_description(self.model_name))
+        inventory_index_id = (
+            model_description.get('source_info').get('inventory_index_id'))
+
         # TODO: Capture violations errors with the new violation_access.
         # Add a unit test for the errors.
         (inserted_row_count, violation_errors) = (0, [])
 
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
-        violation_access.create(violations, self.model_name)
+        violation_access.create(violations, inventory_index_id)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))

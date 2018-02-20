@@ -19,9 +19,9 @@ import functools
 import os
 import pickle
 from googleapiclient import errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 RECORD_ENVIRONMENT_VAR = 'FORSETI_RECORD_FILE'
 REPLAY_ENVIRONMENT_VAR = 'FORSETI_REPLAY_FILE'
 

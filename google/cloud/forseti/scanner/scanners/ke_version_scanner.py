@@ -15,11 +15,11 @@
 """Scanner for the KE version rules engine."""
 
 from google.cloud.forseti.common.gcp_type.ke_cluster import KeCluster
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import ke_version_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class KeVersionScanner(base_scanner.BaseScanner):
@@ -65,15 +65,18 @@ class KeVersionScanner(base_scanner.BaseScanner):
                 'violation_reason': violation.violation_reason,
                 'project_id': violation.project_id,
                 'cluster_name': violation.cluster_name,
+                'full_name': violation.full_name,
                 'node_pool_name': violation.node_pool_name
             }
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):

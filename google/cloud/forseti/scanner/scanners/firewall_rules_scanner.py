@@ -18,7 +18,7 @@ from datetime import datetime
 import json
 import os
 
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier import notifier
 
 from google.cloud.forseti.common.data_access import csv_writer
@@ -28,7 +28,7 @@ from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.audit import firewall_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class FirewallPolicyScanner(base_scanner.BaseScanner):
@@ -81,10 +81,12 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             violation_dict = {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_name': violation.rule_id,
                 'rule_index': rule_indices.get(violation.rule_id, 0),
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
             sorted(violation_dict)
             yield violation_dict

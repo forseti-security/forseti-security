@@ -19,14 +19,14 @@ from datetime import datetime
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
-from google.cloud.forseti.common.util.email_util import EmailUtil
+from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
@@ -109,7 +109,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                 the provided variables.
         """
         timestamp = datetime.strptime(
-            self.cycle_timestamp, '%Y%m%dT%H%M%SZ')
+            self.cycle_timestamp, '%Y-%m-%dT%H:%M:%S.%f')
         pretty_timestamp = timestamp.strftime("%d %B %Y - %H:%M:%S")
         email_content = self.mail_util.render_from_template(
             'notification_summary.jinja', {

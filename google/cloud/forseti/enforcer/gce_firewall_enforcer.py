@@ -28,7 +28,7 @@ from googleapiclient import errors
 import httplib2
 from retrying import retry
 from google.apputils import datelib
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
@@ -46,7 +46,7 @@ API_VERSION = 'beta'
 # The compute engine scope.
 SCOPE = 'https://www.googleapis.com/auth/compute'
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # What transient exceptions should be retried.
 RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,

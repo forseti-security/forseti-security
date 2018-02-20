@@ -16,23 +16,23 @@
 from collections import namedtuple
 
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
     """Rules engine for forwarding rules"""
 
     RuleViolation = namedtuple('RuleViolation',
-                               [
-                                   'violation_type', 'target', 'rule_index',
-                                   'load_balancing_scheme', 'port_range',
-                                   'resource_type', 'port', 'ip_protocol',
-                                   'ip_address', 'resource_id'])
+                               ['violation_type', 'target', 'rule_index',
+                                'load_balancing_scheme', 'port_range',
+                                'resource_type', 'port', 'ip_protocol',
+                                'ip_address', 'resource_id', 'full_name',
+                                'inventory_data'])
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -82,16 +82,18 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
 
         return self.RuleViolation(
             violation_type='FORWARDING_RULE_VIOLATION',
-            load_balancing_scheme=forwarding_rule. \
-                load_balancing_scheme,
+            load_balancing_scheme=(
+                forwarding_rule.load_balancing_scheme),
             target=forwarding_rule.target,
             port_range=forwarding_rule.port_range,
             port=forwarding_rule.ports,
             ip_protocol=forwarding_rule.ip_protocol,
             ip_address=forwarding_rule.ip_address,
             resource_id=forwarding_rule.resource_id,
+            full_name=forwarding_rule.full_name,
             rule_index=len(resource_rules),
-            resource_type=ResourceType.FORWARDING_RULE)
+            resource_type=ResourceType.FORWARDING_RULE,
+            inventory_data=str(forwarding_rule))
 
     def add_rules(self, rules):
         """Add rules to the rule book.
@@ -159,7 +161,8 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
                              'port_range': port_range,
                              'ip_address': ip_address,
                              'ip_protocol': ip_protocol,
-                             'port': port, }
+                             'port': port,
+                             'full_name': ''}
 
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,

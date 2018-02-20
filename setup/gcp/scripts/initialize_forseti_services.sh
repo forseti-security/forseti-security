@@ -40,8 +40,7 @@ fi
 
 
 SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
-FORSETI_SERVICES="playground explain inventory model scanner"
-
+FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
 FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
@@ -49,7 +48,7 @@ FORSETI_COMMAND+=" --gsuite_private_keyfile ${GSUITE_ADMIN_CREDENTIAL_PATH}"
 FORSETI_COMMAND+=" --gsuite_admin_email ${GSUITE_ADMIN_EMAIL}"
 FORSETI_COMMAND+=" --root_resource_id ${ROOT_RESOURCE_ID}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
-
+FORSETI_COMMAND+=" --forseti_config_file ${FORSETI_SERVER_CONF}"
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"

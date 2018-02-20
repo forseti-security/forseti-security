@@ -84,20 +84,31 @@ class ImporterTest(ForsetiTestCase):
                 self.service_config,
                 inventory_id=FAKE_TIMESTAMP)
             import_runner.run()
-            with Inventory(session, FAKE_TIMESTAMP, True) as inventory:
-                inventory_info = str(inventory.index)
 
         model = self.model_manager.model(self.model_name)
-        print model
+        model_description = self.model_manager.get_description(self.model_name)
+
         self.assertIn(model.state,
                       ['SUCCESS', 'PARTIAL_SUCCESS'],
                       'Model state should be success or partial success: %s' %
                       model.message)
-        self.assertEquals(json.loads(model.description),
-                          {'pristine': True,
-                           'source': 'inventory',
-                           'source_info': inventory_info})
-
+        self.assertEquals(
+            {'pristine': True,
+             'source': 'inventory',
+             'source_info': {'inventory_index_id': FAKE_TIMESTAMP},
+             'source_root': 'organization/111222333',
+             'gsuite_enabled': True
+             },
+            model_description)
+        #{
+        #    "pristine": true,
+        #    "source": "inventory",
+        #    "source_info": {
+        #        "inventory_index_id": "2018-02-02T01:47:39.16075"
+        #    },
+        #    "source_root": "organization/111222333",
+        #    "gsuite_enabled": True
+        #}
 
 if __name__ == '__main__':
     unittest.main()

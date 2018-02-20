@@ -14,12 +14,12 @@
 
 """Scanner for the Forwarding Rules rules engine."""
 from google.cloud.forseti.common.gcp_type.forwarding_rule import ForwardingRule
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import forwarding_rule_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class ForwardingRuleScanner(base_scanner.BaseScanner):
@@ -63,21 +63,24 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         """
         for violation in violations:
             violation_data = {}
+            violation_data['full_name'] = violation.full_name
             violation_data['violation_type'] = violation.violation_type
             violation_data['target'] = violation.target
-            violation_data['load_balancing_scheme'] = \
-                violation.load_balancing_scheme
+            violation_data['load_balancing_scheme'] = (
+                violation.load_balancing_scheme)
             violation_data['port'] = violation.port
             violation_data['port_range'] = violation.port_range
             violation_data['ip_protocol'] = violation.ip_protocol
             violation_data['ip_address'] = violation.ip_address
             yield {
                 'resource_id': violation.resource_id,
+                'full_name': violation.full_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.violation_type,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -102,9 +105,10 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             for forwarding_rule in data_access.scanner_iter(
                     session, 'forwardingrule'):
                 project_id = forwarding_rule.parent.name
-                forwarding_rule_data = forwarding_rule.data
                 forwarding_rules.append(
-                    ForwardingRule.from_json(project_id, forwarding_rule_data))
+                    ForwardingRule.from_json(
+                        project_id, forwarding_rule.full_name,
+                        forwarding_rule.data))
 
         return forwarding_rules
 

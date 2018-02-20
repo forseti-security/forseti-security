@@ -29,27 +29,27 @@ import gflags as flags
 
 # pylint: disable=line-too-long
 from google.apputils import app
-from google.cloud.forseti.common.data_access import dao
-from google.cloud.forseti.common.data_access import errors as db_errors
-from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
+from google.cloud.forseti.services.inventory.storage import DataAccess
+from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
 
 # Setup flags
 FLAGS = flags.FLAGS
 
+
 flags.DEFINE_string(
     'inventory_index_id',
     '-1',
     'Inventory index id')
 
+LOGGER = logger.get_logger(__name__)
 
-LOGGER = log_util.get_logger(__name__)
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 # pylint: disable=inconsistent-return-statements
@@ -77,25 +77,6 @@ def find_pipelines(pipeline_name):
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
-def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
-    """Get latest snapshot timestamp.
-
-    Args:
-        global_configs (dict): Global configurations.
-        statuses (tuple): Snapshot statues.
-
-    Returns:
-        string: The latest snapshot timestamp.
-    """
-
-    latest_timestamp = None
-    try:
-        current_dao = dao.Dao(global_configs)
-        latest_timestamp = current_dao.get_latest_snapshot_timestamp(statuses)
-    except db_errors.MySQLError as err:
-        LOGGER.error('Error getting latest snapshot timestamp: %s', err)
-
-    return latest_timestamp
 
 def process(message):
     """Process messages about what notifications to send.
@@ -139,14 +120,14 @@ def process(message):
             payload.get('email_description'))
         return
 
-# pylint: disable=unused-argument
-def run(inventory_id, service_config=None):
+# pylint: disable=too-many-locals
+def run(inventory_index_id, service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
-        inventory_id (str): Inventory index id.
+        inventory_index_id (str): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs
 
     Returns:
@@ -162,21 +143,24 @@ def run(inventory_id, service_config=None):
     global_configs = configs.get('global')
     notifier_configs = configs.get('notifier')
 
-    timestamp = notifier_configs.get('timestamp')
-    if timestamp is None:
-        timestamp = _get_timestamp(global_configs)
+    if not inventory_index_id:
+        with service_config.scoped_session() as session:
+            inventory_index_id = (
+                DataAccess.get_latest_inventory_index_id(session))
 
     # get violations
-    v_dao = violation_dao.ViolationDao(global_configs)
-    violations = {}
-    try:
-        violations = violation_dao.map_by_resource(
-            v_dao.get_all_violations(timestamp))
-    except db_errors.MySQLError, e:
-        # even if an error is raised we still want to continue execution
-        # this is because if we don't have violations the Mysql table
-        # is not present and an error is thrown
-        LOGGER.error('get_all_violations error: %s', e.message)
+    violation_access_cls = scanner_dao.define_violation(
+        service_config.engine)
+    violation_access = violation_access_cls(service_config.engine)
+    service_config.violation_access = violation_access
+    violations = violation_access.list(inventory_index_id)
+
+    violations_as_dict = []
+    for violation in violations:
+        violations_as_dict.append(
+            scanner_dao.convert_sqlalchemy_object_to_dict(violation))
+
+    violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
         LOGGER.info('retrieved %d violations for resource \'%s\'',
@@ -199,7 +183,7 @@ def run(inventory_id, service_config=None):
                         pipeline['name'], resource['resource'])
             chosen_pipeline = find_pipelines(pipeline['name'])
             pipelines.append(chosen_pipeline(resource['resource'],
-                                             timestamp,
+                                             inventory_index_id,
                                              violations[resource['resource']],
                                              global_configs,
                                              notifier_configs,

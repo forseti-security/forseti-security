@@ -16,12 +16,12 @@
 
 from google.cloud.forseti.common.gcp_type.cloudsql_access_controls import (
     CloudSqlAccessControl)
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import cloudsql_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class CloudSqlAclScanner(base_scanner.BaseScanner):
@@ -64,6 +64,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         for violation in violations:
             violation_data = {}
             violation_data['instance_name'] = violation.instance_name
+            violation_data['full_name'] = violation.full_name
             violation_data['authorized_networks'] = (
                 violation.authorized_networks)
             violation_data['require_ssl'] = violation.require_ssl
@@ -71,10 +72,12 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -122,6 +125,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
                 cloudsql_acls.append(
                     CloudSqlAccessControl.from_json(
                         project_id=project_id,
+                        full_name=instance.full_name,
                         instance_data=instance.data))
 
         return cloudsql_acls

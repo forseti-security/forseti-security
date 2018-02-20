@@ -30,6 +30,8 @@ run_client.sh
 # User-edited configs
 deployment-templates/*.yaml
 configs/*.yaml
+configs/server/*.yaml
+configs/client/*.yaml
 
 # Build/dist
 .eggs/
