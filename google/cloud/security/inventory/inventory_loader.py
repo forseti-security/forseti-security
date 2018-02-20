@@ -49,6 +49,7 @@ from google.cloud.security.common.data_access import organization_dao
 from google.cloud.security.common.data_access import project_dao
 from google.cloud.security.common.data_access import service_account_dao
 from google.cloud.security.common.data_access.sql_queries import snapshot_cycles_sql
+from google.cloud.security.common.data_access.sql_queries import cleanup_tables_sql
 from google.cloud.security.common.gcp_api import errors as api_errors
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
@@ -282,6 +283,39 @@ def _create_dao_map(global_configs):
         LOGGER.error('Error to creating DAO map.\n%s', e)
         sys.exit()
 
+def _cleanup_inventory(inventory_dao, retention_days):
+    """Clean up old inventory tables based on their age
+
+    Will detect tables based on snapshot end time in snapshot table,
+    and drop tables older than retention_days specified.
+
+    Args:
+        inventory_dao (data_access.Dao): Data access object.
+        retention_days (int): Days of inventory tables to retain.
+    """
+
+    try:
+        sql = cleanup_tables_sql.SELECT_SNAPSHOT_TABLES_OLDER_THAN
+        result = inventory_dao.execute_sql_with_fetch(
+            cleanup_tables_sql.RESOURCE_NAME,
+            sql,
+            [retention_days])
+        LOGGER.info(
+            'Found %s tables to clean up that are older than %s days',
+            len(result),
+            retention_days)
+
+        for row in result:
+            LOGGER.debug('Dropping table: %s', row['table'])
+            inventory_dao.execute_sql_with_commit(
+                cleanup_tables_sql.RESOURCE_NAME,
+                cleanup_tables_sql.DROP_TABLE.format(row['table']),
+                None)
+
+    except data_access_errors.MySQLError as e:
+        LOGGER.error('Error in attempt to cleanup inventory: %s', e)
+        sys.exit()
+
 def main(_):
     """Runs the Inventory Loader.
 
@@ -334,6 +368,13 @@ def main(_):
 
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
+
+
+    retention_days = max(0, inventory_configs.get('retention_days', 0))
+    LOGGER.info('Retention period: %s days', retention_days)
+    if retention_days:
+        _cleanup_inventory(dao_map.get('dao'), retention_days)
+
 
     if global_configs.get('email_recipient') is not None:
         payload = {

@@ -55,6 +55,9 @@ inventory:
     # Valid values are: debug, info, warning, error
     loglevel: info
 
+    # Number of days to retain inventory data, 0 to keep forever
+    retention_days: 30
+
     pipelines:
         - resource: appengine
           enabled: true
