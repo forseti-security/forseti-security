@@ -23,7 +23,7 @@
   {% endcomment %}
 
   <ul class="links">
-    {% assign last_level = 3 %}
+    {% assign last_level = 4 %}
     {% for doc in ordered_docs %}
       {% assign path_parts = doc.path | split:"/" %}
       {% assign current_level = path_parts | size %}
@@ -31,8 +31,8 @@
 
       {% if filename == "index" %}
         {% assign current_level = current_level | minus:1 %}
-        {% if current_level < 3 %}
-          {% assign current_level = 3 %}
+        {% if current_level < 4 %}
+          {% assign current_level = 4 %}
         {% endif %}
       {% endif %}
 

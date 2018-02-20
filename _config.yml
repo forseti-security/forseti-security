@@ -46,32 +46,61 @@ collections:
 # The order of document categories is defined in _data/doc_categories.yml.
 defaults:
   - scope:
-      path: _docs
+      path: _docs/latest
     values:
       category: Overview
       layout: docs
   - scope:
-      path: _docs/concepts
+      path: _docs/latest/concepts
     values:
       category: Concepts
   - scope:
-      path: _docs/setup
+      path: _docs/latest/setup
     values:
       category: Setup
   - scope:
-      path: _docs/use
+      path: _docs/latest/use
     values:
       category: Use
   - scope:
-      path: _docs/configure
+      path: _docs/latest/configure
     values:
       category: Configure
   - scope:
-      path: _docs/develop
+      path: _docs/latest/develop
     values:
       category: Develop
   - scope:
-      path: _docs/faq
+      path: _docs/latest/faq
+    values:
+      category: FAQ
+  - scope:
+      path: _docs/v1.0
+    values:
+      category: Overview
+      layout: docs
+  - scope:
+      path: _docs/v1.0/concepts
+    values:
+      category: Concepts
+  - scope:
+      path: _docs/v1.0/setup
+    values:
+      category: Setup
+  - scope:
+      path: _docs/v1.0/use
+    values:
+      category: Use
+  - scope:
+      path: _docs/v1.0/configure
+    values:
+      category: Configure
+  - scope:
+      path: _docs/v1.0/develop
+    values:
+      category: Develop
+  - scope:
+      path: _docs/v1.0/faq
     values:
       category: FAQ
 # The order of faq categories is defined in _data/faq_categories.yml

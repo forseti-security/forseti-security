@@ -13,7 +13,7 @@ provide their respective features, and provide a foundation that addons can
 build upon.
 
 Get started with
-[Forseti Security]({% link _docs/setup/gcp-deployment.md %}).
+[Forseti Security]({% link _docs/latest/setup/gcp-deployment.md %}).
 
 ## When to use Forseti Security
 
@@ -30,7 +30,7 @@ Security modules. The core Forseti Security modules work together to take a
 snapshot of your GCP resources, monitor those resources, and notify you of
 access policy changes.
 
-### [Inventory]({% link _docs/configure/inventory/index.md %})
+### [Inventory]({% link _docs/latest/configure/inventory/index.md %})
 
 Inventory saves an hourly snapshot of your GCP resources to Cloud SQL, so you
 have a historical record of what was in your cloud. Using Inventory, you can
@@ -39,7 +39,7 @@ resources, reduce cost, and minimize security exposure. When configured,
 Inventory can run on a custom basis and send email notifications when it updates
 your resource snapshot.
 
-### [Scanner]({% link _docs/configure/scanner/index.md %})
+### [Scanner]({% link _docs/latest/configure/scanner/index.md %})
 
 Scanner uses the information collected by Forseti Inventory to regularly compare
 role-based access policies for your GCP resources. Scanner applies rules to
@@ -58,7 +58,7 @@ it saves those rule violations to Cloud SQL or, when configured, to a Google
 Cloud Storage bucket. This helps protect you against unsafe or unintentional
 changes. When configured, Scanner can send email notifications when it runs.
 
-### [Enforcer]({% link _docs/configure/enforcer/index.md %})
+### [Enforcer]({% link _docs/latest/configure/enforcer/index.md %})
 
 Enforcer uses policies you create to compare the current state of your Compute
 Engine firewall to the desired state. Policies can apply to individual projects
@@ -70,7 +70,7 @@ uses Google Cloud APIs to make changes and displays output of the results.
 Following are some ways you might want to use Enforcer:
 Helps you monitor inventoried GCP resources like Cloud IAM,
 BigQuery datasets, Cloud Storage bucket ACLs, and
-[more]({% link _docs/concepts/resources.md %})
+[more]({% link _docs/latest/concepts/resources.md %})
 to ensure that role-based access controls are set as you intended, by
 notifying you when specific policies change unexpectedly.
 
@@ -78,7 +78,7 @@ notifying you when specific policies change unexpectedly.
   * Alert on changes to your expected firewall policy.
   * Roll back firewall policies if there's a problem.
 
-### [Explain]({% link _docs/configure/explain/index.md %})
+### [Explain]({% link _docs/latest/configure/explain/index.md %})
 
 Use an addon module like Explain to understand your Cloud Identity and
 Access Management (Cloud IAM) access policies in context of your groups and
@@ -89,7 +89,7 @@ resource. Why a principal has permission on a resource, or why they don't have a
 permission and how to fix it. What roles grant a permission and which roles
 aren't in sync with recent changes.
 
-### [Email Notifications]({% link _docs/configure/email-notification.md %})
+### [Email Notifications]({% link _docs/latest/configure/email-notification.md %})
 
 When configured, Forseti Security can send email notifications for Inventory and
 Scanner using the SendGrid API. SendGrid is currently the only supported email
