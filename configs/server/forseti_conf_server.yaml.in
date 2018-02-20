@@ -63,8 +63,6 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: true
-        - name: ke_version_scanner
-          enabled: true
         - name: group
           enabled: true
         - name: iam_policy
@@ -72,6 +70,8 @@ scanner:
         - name: iap
           enabled: true
         - name: instance_network_interface
+          enabled: true
+        - name: ke_version_scanner
           enabled: true
 
 ##############################################################################

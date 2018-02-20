@@ -447,6 +447,7 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
     choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
 
     if not advanced_mode:
+        print ('Creating {}'.format(acct_type))
         choice_index = 1
     else:
         print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))

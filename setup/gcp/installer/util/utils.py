@@ -337,7 +337,7 @@ def merge_object(base_obj, target_obj,
 
 
 def merge_dict(base_dict, target_dict,
-               fields_to_ignore=None, field_identifiers=None):
+               fields_to_ignore, field_identifiers):
     """Merge target_dict into base_dict.
 
     Note: base_dict will be modified during the merge process
@@ -350,7 +350,6 @@ def merge_dict(base_dict, target_dict,
     """
 
     for key, val in base_dict.iteritems():
-        # print (key + "      ///////        " + str(val))
         if key in target_dict:
             # If target_dict has the same key, we check if the value is
             # an instance of dictionary. If it is we merge recursively and
@@ -361,19 +360,15 @@ def merge_dict(base_dict, target_dict,
             if isinstance(val, dict):
                 merge_dict(val, target_dict.get(key),
                            fields_to_ignore, field_identifiers)
-            elif isinstance(val, list) and val:
+            elif isinstance(val, list) and val and isinstance(val[0], dict):
                 # If the list has at least one item, we check for the type
                 # of the first item, if it's a dictionary, we invoke
-                # merge_dict_list, otherwise we will do a simple merge of
-                # 2 lists
-                if isinstance(val[0], dict):
-                    identifier = field_identifiers.get(key)
-                    merge_dict_list(val, target_dict.get(key), identifier,
-                                    fields_to_ignore, field_identifiers)
-                else:
-                    # Cast the merged list to a set to remove duplicate
-                    # and cast it back to a list afterward
-                    base_dict[key] = list(set(val + target_dict.get(key)))
+                # merge_dict_list.
+                identifier = field_identifiers.get(key)
+                if isinstance(identifier, list):
+                    identifier = _select_identifier(identifier, val[0])
+                merge_dict_list(val, target_dict.get(key), identifier,
+                                fields_to_ignore, field_identifiers)
             else:
                 base_dict[key] = target_dict.get(key)
 
@@ -382,6 +377,23 @@ def merge_dict(base_dict, target_dict,
             # If this is a key we have only in target but not in base, we add
             # it to the base_dict
             base_dict[key] = val
+
+
+def _select_identifier(identifiers, dict_to_identify):
+    """Select the right field identifier.
+
+    Args:
+        identifiers (list): List of identifiers.
+        dict_to_identify (dict): Dictionary to identify.
+
+    Returns:
+        str: Identifier.
+    """
+
+    for identifier in identifiers:
+        if identifier in dict_to_identify:
+            return identifier
+    return ''
 
 
 def merge_dict_list(base_dict_list, target_dict_list, identifier,
@@ -423,6 +435,9 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
     base_dict_list.sort(key=lambda k: k[identifier])
     target_dict_list.sort(key=lambda k: k[identifier])
 
+    print (base_dict_list[-1])
+    print (target_dict_list[-1])
+
     # Merge them
     base_counter = 0
     target_counter = 0
@@ -432,7 +447,6 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
                          else base_dict_list[base_counter])
         cur_taget_dict = (None if len(target_dict_list) <= target_counter
                           else target_dict_list[target_counter])
-
         if target_counter >= len(target_dict_list):
             break
         elif (base_counter >= len(base_dict_list) or

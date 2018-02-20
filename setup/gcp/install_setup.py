@@ -18,6 +18,8 @@ This has been tested with python 2.7.
 """
 
 import argparse
+import getpass
+import pip
 
 from installer.forseti_server_installer import ForsetiServerInstaller
 from installer.forseti_client_installer import ForsetiClientInstaller
@@ -63,6 +65,7 @@ def run():
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
         ForsetiServerInstaller(**args).run_setup()
+        raw_input("Press enter to continue the setup process....")
         ForsetiClientInstaller(**args).run_setup()
         return
 
@@ -73,6 +76,10 @@ def run():
 
     forseti_setup.run_setup()
 
+
+def install(package_name):
+    user = getpass.getuser()
+    pip.main('install', package_name, '--user', user)
 
 if __name__ == '__main__':
     run()

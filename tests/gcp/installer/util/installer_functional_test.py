@@ -67,7 +67,8 @@ class FilesModuleTest(ForsetiTestCase):
         merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
-        fields_to_ignore = ['gcs_path', 'output_path']
+        fields_to_ignore = ['db_host', 'db_user', 'db_name',
+                            'inventory', 'output_path', 'gcs_path']
         field_identifiers = {'scanners': 'name',
                              'resources': 'resource',
                              'pipelines': 'name'}
@@ -132,6 +133,67 @@ class FilesModuleTest(ForsetiTestCase):
 
         self.assertEqual(base_obj, merged_obj)
 
+    def test_merge_iam_rule_yaml_files(self):
+        """Merge 2 conf yaml files."""
+        self.maxDiff = None
+        # Load yaml files
+        base_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                 'base_iam_rules.yaml')
+        target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'target_iam_rules.yaml')
+        merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'merged_iam_rules.yaml')
+
+        base_obj = files.read_yaml_file_from_local(base_path)
+        target_obj = files.read_yaml_file_from_local(target_path)
+        merged_obj = files.read_yaml_file_from_local(merged_path)
+
+        # Merge target into base, ignore gcs_path and output_path
+        fields_to_ignore = []
+        field_identifiers = {'rules': 'name', 'bindings': 'role', 'default_identifier': 'name'}
+
+        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+
+
+        output_file = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
+        files.write_data_to_yaml_file(base_obj, output_file)
+
+        base_obj = self.deep_sort(base_obj)
+        merged_obj = self.deep_sort(merged_obj)
+
+        self.assertEqual(base_obj, merged_obj)
+
+
+    def test_merge_firewall_rule_yaml_files(self):
+        """Merge 2 conf yaml files."""
+        self.maxDiff = None
+        # Load yaml files
+        base_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                 'base_firewall_rules.yaml')
+        target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'target_firewall_rules.yaml')
+        merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'merged_firewall_rules.yaml')
+
+        base_obj = files.read_yaml_file_from_local(base_path)
+        target_obj = files.read_yaml_file_from_local(target_path)
+        merged_obj = files.read_yaml_file_from_local(merged_path)
+
+        # Merge target into base, ignore gcs_path and output_path
+        fields_to_ignore = []
+        field_identifiers = {'rules': ['name', 'rule_id'],
+                             'rule_groups': 'group_id', 'resources': 'type'}
+
+        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+
+
+        output_file = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
+        files.write_data_to_yaml_file(base_obj, output_file)
+
+        base_obj = self.deep_sort(base_obj)
+        merged_obj = self.deep_sort(merged_obj)
+
+        self.assertEqual(base_obj, merged_obj)
 
 if __name__ == '__main__':
     unittest.main()

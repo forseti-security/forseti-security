@@ -84,7 +84,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
             self.migrate_from_v1 = raw_input(
                 "Forseti v1 detected, would you like to migrate the "
-                "existing configurations to v2? (y/n)").lower()
+                "existing configurations to v2? (y/n): ").lower()
 
     def populate_info_from_v1(self):
         """Retrieve the v1 configuration object."""
@@ -149,7 +149,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_rule_path = os.path.join(constants.RULES_DIR_PATH,
                                          v1_rule.file_name)
             new_rule = files.read_yaml_file_from_local(new_rule_path)
-            field_identifiers = {'rules': 'name', 'default_identifier': 'name'}
+            field_identifiers = {'rules': ['name', 'rule_id'], 'default_identifier': 'name',
+                                 'resource': 'type', 'bindings': 'role',
+                                 'rule_groups': 'group_id'}
             utils.merge_object(new_rule, v1_rule.data, fields_to_ignore=[],
                                field_identifiers=field_identifiers)
             files.write_data_to_yaml_file(new_rule, new_rule_path)
@@ -329,8 +331,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.config.notification_recipient_email = raw_input(
                     constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
-        if not self.config.gsuite_superadmin_email:
-            # Ask for G Suite super admin email
+        while not self.config.gsuite_superadmin_email:
+            # User has to enter a G Suite super admin email
             print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
             self.config.gsuite_superadmin_email = raw_input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
