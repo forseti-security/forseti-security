@@ -15,6 +15,7 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
+import hashlib
 import json
 
 from sqlalchemy import Column
@@ -28,6 +29,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 
 
+FALLBACK_HASH_ALGORITHM = 'SHA512'
 LOGGER = logger.get_logger(__name__)
 
 
@@ -53,16 +55,17 @@ def define_violation(dbengine):
 
         __tablename__ = violations_tablename
 
+        full_name = Column(String(1024))
         id = Column(Integer, primary_key=True)
+        inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
-        full_name = Column(String(1024))
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
-        violation_type = Column(String(256), nullable=False)
         violation_data = Column(Text)
-        inventory_data = Column(Text(16777215))
+        violation_type = Column(String(256), nullable=False)
+        violation_hash = Column(String(256))
 
         def __repr__(self):
             """String representation.
@@ -101,6 +104,38 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
+        def _create_violation_hash(self, violation, inventory_index_id,
+                                   algorithm='SHA512'):
+            """Create a hash of violation data using the requested algorithm.
+
+            Args:
+                violation (dict): A violation.
+                inventory_index_id (str): Id of the inventory index.
+                algorithm (str): The algorithm used to create the hash.
+
+            Returns:
+                violation_hash (str): The resulting hex digest or '' if we
+                can't successfully create a hash.
+            """
+            try:
+                violation_hash = hashlib.new(algorithm)
+            except ValueError as e:
+                LOGGER.error('Unable to use the specified hash algorithm: %s',
+                             algorithm)
+                LOGGER.info('Using the fallback hash algorithm: %s',
+                            FALLBACK_HASH_ALGORITHM)
+                violation_hash = hashlib.new(FALLBACK_HASH_ALGORITHM)
+
+            try:
+                violation_hash.update(json.dumps(violation))
+                violation_hash.update(inventory_index_id)
+            except TypeError as e:
+                LOGGER.error('Cannot create hash for a violation: %s\n %s',
+                             e, violation)
+                return ''
+
+            return violation_hash.hexdigest()
+
         def create(self, violations, inventory_index_id):
             """Save violations to the db table.
 
@@ -110,6 +145,10 @@ def define_violation(dbengine):
             """
             with self.violationmaker() as session:
                 for violation in violations:
+
+                    violation_hash = self._create_violation_hash(
+                        violation, inventory_index_id)
+
                     violation = self.TBL_VIOLATIONS(
                         inventory_index_id=inventory_index_id,
                         resource_id=violation.get('resource_id'),
@@ -120,8 +159,10 @@ def define_violation(dbengine):
                         violation_type=violation.get('violation_type'),
                         violation_data=json.dumps(
                             violation.get('violation_data')),
-                        inventory_data=violation.get('inventory_data')
+                        inventory_data=violation.get('inventory_data'),
+                        violation_hash=violation_hash
                     )
+
                     session.add(violation)
 
         def list(self, inventory_index_id=None):

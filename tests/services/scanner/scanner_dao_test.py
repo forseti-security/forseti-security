@@ -66,9 +66,15 @@ class ScannerDaoTest(ForsetiTestCase):
         """Tear down method."""
         ForsetiTestCase.tearDown(self)
 
-    def test_save_violations(self):
+    #@mock.patch.object(scanner_dao.define_violation.ViolationAccess,
+    #                   '_create_violation_hash')
+    @mock.patch('google.cloud.forseti.services.scanner.dao'
+                '.define_violation.ViolationAccess._create_violation_hash',
+                spec=scanner_dao)
+    def test_save_violations(self, mock_violation_access):
         """Test violations can be saved."""
 
+        mock_violation_access
         engine = create_test_engine()
         violation_access_cls = scanner_dao.define_violation(engine)
         violation_access = violation_access_cls(engine)
@@ -78,7 +84,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
-                'violation_data', 'inventory_data']
+                'violation_data', 'violation_hash', 'inventory_data']
         for fake, saved in izip(FAKE_VIOLATIONS, saved_violations):
             for key in keys:
                 if key != 'violation_data':
@@ -114,7 +120,8 @@ class ScannerDaoTest(ForsetiTestCase):
              'rule_index': 111,
              'rule_name': u'disallow_all_ports_111',
              'violation_data': u'{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}',
-             'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_111'},
+             'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_111',
+             'violation_hash': u'11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111'},
             {'full_name': u'full_name_222',
              'id': 2,
              'inventory_data': u'inventory_data_222',
@@ -124,7 +131,8 @@ class ScannerDaoTest(ForsetiTestCase):
              'rule_index': 222,
              'rule_name': u'disallow_all_ports_222',
              'violation_data': u'{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}',
-            'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222'}]
+             'violation_hash': u'11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111',
+             'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222'}]
 
         self.assertEquals(expected_violations_as_dict,
                           converted_violations_as_dict)
