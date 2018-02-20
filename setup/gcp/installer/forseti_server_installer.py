@@ -149,7 +149,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_rule_path = os.path.join(constants.RULES_DIR_PATH,
                                          v1_rule.file_name)
             new_rule = files.read_yaml_file_from_local(new_rule_path)
-            field_identifiers = {'rules': ['name', 'rule_id'], 'default_identifier': 'name',
+            field_identifiers = {'rules': ['name', 'rule_id'],
+                                 'default_identifier': 'name',
                                  'resource': 'type', 'bindings': 'role',
                                  'rule_groups': 'group_id'}
             utils.merge_object(new_rule, v1_rule.data, fields_to_ignore=[],

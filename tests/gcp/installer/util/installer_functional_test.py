@@ -154,10 +154,6 @@ class FilesModuleTest(ForsetiTestCase):
 
         utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
 
-
-        output_file = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
-        files.write_data_to_yaml_file(base_obj, output_file)
-
         base_obj = self.deep_sort(base_obj)
         merged_obj = self.deep_sort(merged_obj)
 
@@ -185,10 +181,6 @@ class FilesModuleTest(ForsetiTestCase):
                              'rule_groups': 'group_id', 'resources': 'type'}
 
         utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
-
-
-        output_file = os.path.join(TEST_RESOURCE_DIR_PATH, 'test.yaml')
-        files.write_data_to_yaml_file(base_obj, output_file)
 
         base_obj = self.deep_sort(base_obj)
         merged_obj = self.deep_sort(merged_obj)

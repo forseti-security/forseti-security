@@ -435,9 +435,6 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
     base_dict_list.sort(key=lambda k: k[identifier])
     target_dict_list.sort(key=lambda k: k[identifier])
 
-    print (base_dict_list[-1])
-    print (target_dict_list[-1])
-
     # Merge them
     base_counter = 0
     target_counter = 0

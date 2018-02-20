@@ -24,9 +24,17 @@ import pip
 from installer.forseti_server_installer import ForsetiServerInstaller
 from installer.forseti_client_installer import ForsetiClientInstaller
 
+INSTALLER_REQUIRED_PACKAGES = [
+    'ruamel.yaml'
+]
+
 
 def run():
     """Run the steps for the gcloud setup."""
+
+    # Install all the required packages
+    install_required_packages()
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cloudshell',
                         action='store_true',
@@ -78,8 +86,20 @@ def run():
 
 
 def install(package_name):
+    """Install package.
+
+    Args:
+        package_name (str): Name of the package to install.
+    """
     user = getpass.getuser()
-    pip.main('install', package_name, '--user', user)
+    pip.main(['install', package_name, '--user', user])
+
+
+def install_required_packages():
+    """Install required packages."""
+    for package in INSTALLER_REQUIRED_PACKAGES:
+        install(package)
+
 
 if __name__ == '__main__':
     run()
