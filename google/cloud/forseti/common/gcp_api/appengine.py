@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Wrapper for AppEngine API client."""
+import json
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -23,6 +24,28 @@ from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import log_util
 
 LOGGER = log_util.get_logger(__name__)
+
+
+def _is_status_not_found(error):
+    """Decodes the error from the API to check if status is NOT_FOUND.
+
+    Args:
+        error (errors.HttpError): The error response from the API.
+
+    Returns:
+        bool: True if the error is application not found, else False.
+    """
+    if isinstance(error, errors.HttpError) and error.resp.status == 404:
+        if error.resp.get('content-type', '').startswith(
+                'application/json'):
+            error_details = json.loads(error.content.decode('utf-8'))
+            # If a project does not have the AppEngine API enabled,
+            # then it will return response status NOT_FOUND. This
+            # is an expected result for most projects.
+            if error_details.get('error', {}).get('status', '') == 'NOT_FOUND':
+                LOGGER.debug(error)
+                return True
+    return False
 
 
 class AppEngineRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -256,10 +279,7 @@ class AppEngineClient(object):
                          "project_id = %s, result = %s", project_id, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                # TODO: handle error more gracefully
-                # application not found
-                LOGGER.warn(e)
+            if _is_status_not_found(e):
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -282,8 +302,7 @@ class AppEngineClient(object):
                          project_id, service_id, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                LOGGER.warn(e)
+            if _is_status_not_found(e):
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -305,8 +324,7 @@ class AppEngineClient(object):
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                LOGGER.warn(e)
+            if _is_status_not_found(e):
                 return []
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -331,8 +349,7 @@ class AppEngineClient(object):
                          project_id, service_id, version_id, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                LOGGER.warn(e)
+            if _is_status_not_found(e):
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -356,8 +373,7 @@ class AppEngineClient(object):
                          project_id, service_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                LOGGER.warn(e)
+            if _is_status_not_found(e):
                 return []
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -385,8 +401,7 @@ class AppEngineClient(object):
                          results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.warn(e)
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
+            if _is_status_not_found(e):
                 return {}
             raise api_errors.ApiExecutionError(project_id, e)
 
@@ -412,7 +427,6 @@ class AppEngineClient(object):
                          project_id, service_id, version_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if isinstance(e, errors.HttpError) and e.resp.status == 404:
-                LOGGER.warn(e)
+            if _is_status_not_found(e):
                 return []
             raise api_errors.ApiExecutionError(project_id, e)

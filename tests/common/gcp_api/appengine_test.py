@@ -14,7 +14,9 @@
 
 """Tests the AppEngine client."""
 import unittest
+from googleapiclient import errors
 import mock
+import httplib2
 from oauth2client import client
 
 from tests import unittest_utils
@@ -41,6 +43,22 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
         """Verify no rate limiter is used if the configuration is missing."""
         ae_api_client = ae.AppEngineClient(global_configs={})
         self.assertEqual(None, ae_api_client.repository._rate_limiter)
+
+    def test__is_status_not_found_404(self):
+        response = httplib2.Response({
+            'status': '404',
+            'content-type': 'application/json'})
+        response.reason = 'Not Found'
+        error = errors.HttpError(response, fae.APP_NOT_FOUND, '')
+        self.assertTrue(ae._is_status_not_found(error))
+
+    def test__is_status_not_found_404(self):
+        response = httplib2.Response({
+            'status': '403',
+            'content-type': 'application/json'})
+        response.reason = 'Permission Denied'
+        error = errors.HttpError(response, fae.PERMISSION_DENIED, '')
+        self.assertFalse(ae._is_status_not_found(error))
 
     def test_get_app(self):
         http_mocks.mock_http_response(fae.FAKE_APP_GET_RESPONSE)
