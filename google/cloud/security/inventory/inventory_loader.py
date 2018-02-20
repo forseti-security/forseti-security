@@ -39,6 +39,7 @@ from google.cloud.security.common.data_access import db_schema_version
 from google.cloud.security.common.data_access import errors as data_access_errors
 from google.cloud.security.common.data_access import firewall_rule_dao
 from google.cloud.security.common.data_access import folder_dao
+from google.cloud.security.common.data_access import forseti_system_dao
 from google.cloud.security.common.data_access import forwarding_rules_dao
 from google.cloud.security.common.data_access import instance_dao
 from google.cloud.security.common.data_access import instance_group_dao
@@ -261,6 +262,8 @@ def _create_dao_map(global_configs):
             'firewall_rule_dao':
                 firewall_rule_dao.FirewallRuleDao(global_configs),
             'folder_dao': folder_dao.FolderDao(global_configs),
+            'forseti_system_dao':
+                forseti_system_dao.ForsetiSystemDao(global_configs),
             'forwarding_rules_dao':
                 forwarding_rules_dao.ForwardingRulesDao(global_configs),
             'ke_dao': ke_dao.KeDao(global_configs),
@@ -281,6 +284,21 @@ def _create_dao_map(global_configs):
     except data_access_errors.MySQLError as e:
         LOGGER.error('Error to creating DAO map.\n%s', e)
         sys.exit()
+
+def _cleanup_tables(inventory_configs, dao_map):
+    """Clean up old inventory tables
+
+    Args:
+        inventory_configs (dict): Inventory configuration
+        dao_map (dict): Lookup dict for DAO objects
+    """
+
+    retention_days = max(0, inventory_configs.get('retention_days', 0))
+    LOGGER.info('Retention period: %s days', retention_days)
+    if retention_days:
+        system_dao = dao_map.get('forseti_system_dao')
+        system_dao.cleanup_inventory_tables(retention_days)
+
 
 def main(_):
     """Runs the Inventory Loader.
@@ -334,6 +352,8 @@ def main(_):
 
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
+
+    _cleanup_tables(inventory_configs, dao_map)
 
     if global_configs.get('email_recipient') is not None:
         payload = {
