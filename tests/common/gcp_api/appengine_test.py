@@ -52,7 +52,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
         error = errors.HttpError(response, fae.APP_NOT_FOUND, '')
         self.assertTrue(ae._is_status_not_found(error))
 
-    def test__is_status_not_found_404(self):
+    def test__is_status_not_found_403(self):
         response = httplib2.Response({
             'status': '403',
             'content-type': 'application/json'})
