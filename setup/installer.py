@@ -17,7 +17,35 @@
 A stub to call gcp/run_forseti_installer.py which installs into GCP.
 """
 
-from gcp import run_forseti_installer
+import getpass
+import pip
+
+INSTALLER_REQUIRED_PACKAGES = [
+    'ruamel.yaml'
+]
+
+def install(package_name):
+    """Install package.
+
+    Args:
+        package_name (str): Name of the package to install.
+    """
+    user = getpass.getuser()
+    pip.main(['install', package_name, '--user', user])
+
+
+def install_required_packages():
+    """Install required packages."""
+    for package in INSTALLER_REQUIRED_PACKAGES:
+        install(package)
+
 
 if __name__ == '__main__':
+    # We need to install all the required packages before importing our modules
+
+    # Installing required packages
+    install_required_packages()
+
+    # Importing our own modules
+    from gcp import run_forseti_installer
     run_forseti_installer.run()
