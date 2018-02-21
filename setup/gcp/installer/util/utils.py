@@ -306,6 +306,83 @@ def merge_object(base_obj, target_obj,
                  fields_to_ignore=None, field_identifiers=None):
     """Merge objects.
 
+    Note: base_obj will be modified during the merge process.
+
+    High level overview:
+    If you have 2 dictionaries, A and B.
+    A = {a: a_val, a1: a1_val}, B = {a: a_val_prime, a2: a2_val}
+    And by doing merge_object(A, B)
+    You will get A = {a: a_va1_prime, a1: a1_val, a2: a2_val}
+    You are able to selectively ignore some of the fields,
+    e.g. merge_object(A, B, fields_to_ignore=['a', 'a2'])
+    This will prevent field 'a' from getting modified during the merge
+    process and will also prevent field 'a2' from merging into the
+    base_obect (A). The result of this would be A = {a: a_val, a1: a1_val}
+    Note that B, the target object will not be modified.
+
+    If you have 2 lists of dictionaries, A and B
+    A = [{id: a0, val: a0_val}, {id: a1, val: a1_val}]
+    B = [{id: a0, val: a0_val_prime}, {id: b, val: b_val}]
+    And by doing merge_object(A, B)
+    You will get
+    A = [{id: a0, val: a0_val}, {id: a1, val: a1_val},
+    {id: a0, val: a0_val_prime}, {id: b, val: b_val}]
+    It didn't merge based on 'id' as you expect it to do because
+    we haven't specified an identifier for the list of dictionaries yet so
+    the function is not able to identify them based on the field 'id'.
+    We can do so by passing in field_identifiers,
+    e.g. merge(A, B, field_identifiers={'default_identifier': 'id'})
+    and by doing so, you will get A = [{id: a0, val: a0_val_prime},
+    {id: a1, val: a1_val}, {id: b, val: b_val}] as expected.
+
+    You are able to merge nested lists/dictionaries, the way can you define
+    field_identifiers to handle this situation is to utilize the key of
+    the key, value pairs inside the dictionary.
+    E.g. if you have two dictionaries that look like the following:
+
+    {
+        rules:
+            - id: 'rule_id'
+              description: 'rule_description'
+            - id: 'rule_id1'
+              description: 'rule_description1'
+            - id: 'rule_id2'
+              description: 'rule_description2'
+    }
+
+    {
+        rules:
+            - id: 'rule_id1'
+              description: 'rule_description1_prime'
+            - id: 'rule_id2'
+              description: 'rule_description2_prime'
+            - id: 'rule_id3'
+              description: 'rule_description3_prime'
+    }
+
+    And you would like the field 'id' to act as the identifier during the
+    merge process, you need to define the field_identifiers like this
+    field_identifiers=['rules': 'id'], which is same as saying 'rules' is a
+    list of dictionaries, and the identifier of those dictionaries is 'id'.
+
+    You can also define multiple identifiers for one field, the function
+    will look for the one that is inside the dictionary object and use that
+    as the identifier.
+
+    E.g.
+    field_identifiers=['rules': ['id', 'name']] works for both
+    {
+        rules:
+            - id: 'rule_id1'
+              description: 'rule_description1_prime'
+    }
+    and
+    {
+        rules:
+            - name: 'rule_id1'
+              description: 'rule_description1_prime'
+    }
+
     Args:
         base_obj (object): Base dictionary.
         target_obj (object): Target dictionary.

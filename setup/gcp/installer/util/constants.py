@@ -36,10 +36,17 @@ DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
 DEFAULT_BUCKET_FMT_V2 = 'gs://{}-{}-data-{}'
 
 FORSETI_V1_RULE_FILES = [
-    'bigquery_rules.yaml', 'blacklist_rules.yaml', 'bucket_rules.yaml',
-    'cloudsql_rules.yaml', 'firewall_rules.yaml', 'forwarding_rules.yaml',
-    'group_rules.yaml', 'iam_rules.yaml', 'iap_rules.yaml', 'ke_rules.yaml',
-    'instance_network_interface_rules.yaml']
+    'bigquery_rules.yaml',
+    'blacklist_rules.yaml',
+    'bucket_rules.yaml',
+    'cloudsql_rules.yaml',
+    'firewall_rules.yaml',
+    'forwarding_rules.yaml',
+    'group_rules.yaml',
+    'iam_rules.yaml',
+    'iap_rules.yaml',
+    'instance_network_interface_rules.yaml',
+    'ke_rules.yaml']
 
 GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
@@ -201,9 +208,9 @@ MESSAGE_ENABLE_GSUITE_GROUP = (
     'gsuite-group-collection\n\n')
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
-    '\nTo read G Suite Groups data, for example, if you want to '
-    'use IAM Explain, please provide a G Suite super admin '
-    'email address. '
+    '\nTo read G Suite Groups and Users data, '
+    'please provide a G Suite super admin, '
+    'please provide a G Suite super admin email address. '
     'This step is NOT optional.')
 
 MESSAGE_ASK_SENDGRID_API_KEY = (

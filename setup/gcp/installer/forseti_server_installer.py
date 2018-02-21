@@ -55,16 +55,17 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Pre-flight checks for server instance"""
 
         super(ForsetiServerInstaller, self).preflight_checks()
-        _, zone, name = gcloud.get_forseti_v1_info()
-        if name is not None:
+        _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
+            r'^forseti-security-\d+-vm$', try_match=True)
+        if forseti_v1_name is not None:
             # v1 instance exists, ask if the user wants to port
             # the conf/rules settings from v1.
-            self.should_migrate_v1_configs()
+            self.prompt_v1_configs_migration()
         if self.migrate_from_v1:
             self.v1_config = v1_upgrader.ForsetiV1Configuration(
-                self.project_id, name, zone)
+                self.project_id, forseti_v1_name, zone)
             self.v1_config.fetch_information_from_gcs()
-            self.populate_info_from_v1()
+            self.populate_config_info_from_v1()
         self.determine_access_target()
         self.should_enable_write_access()
         self.format_gsuite_service_acct_id()
@@ -78,7 +79,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.dry_run)
         self.get_email_settings()
 
-    def should_migrate_v1_configs(self):
+    def prompt_v1_configs_migration(self):
         """Ask the user if they want to migrate conf/rule files
         from v1 to v2."""
         while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
@@ -86,7 +87,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 "Forseti v1 detected, would you like to migrate the "
                 "existing configurations to v2? (y/n): ").lower()
 
-    def populate_info_from_v1(self):
+    def populate_config_info_from_v1(self):
         """Retrieve the v1 configuration object."""
         v1_conf_global = self.v1_config.config.get('global')
         self.config.sendgrid_api_key = v1_conf_global.get('sendgrid_api_key')
@@ -151,7 +152,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_rule = files.read_yaml_file_from_local(new_rule_path)
             field_identifiers = {'rules': ['name', 'rule_id'],
                                  'default_identifier': 'name',
-                                 'resource': 'type', 'bindings': 'role',
+                                 'resource': 'type',
+                                 'bindings': 'role',
                                  'rule_groups': 'group_id'}
             utils.merge_object(new_rule, v1_rule.data, fields_to_ignore=[],
                                field_identifiers=field_identifiers)

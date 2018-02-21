@@ -617,23 +617,6 @@ def get_forseti_server_info():
     return ip_addr, zone, name
 
 
-def get_forseti_v1_info():
-    """ Get forseti v1 information if exists.
-
-    Example of v1 instance name: forseti-security-20180217081245-vm
-
-    Regex to match: ^forseti-security-/d+-vm$
-
-    Returns:
-        str: IP address of the forseti server application
-        str: Zone of the forseti server application, default to 'us-central1-c'
-        str: Name of the forseti server instance
-    """
-
-    return get_vm_instance_info(r'^forseti-security-\d+-vm$',
-                                try_match=True)
-
-
 def get_vm_instance_info(instance_name, try_match=False):
     """Get forseti server ip and zone information if exists, exit if not.
 
