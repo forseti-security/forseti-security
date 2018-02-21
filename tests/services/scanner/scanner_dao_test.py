@@ -25,8 +25,11 @@ from tests.services.util.db import create_test_engine
 
 
 FAKE_INVENTORY_INDEX_ID = 'aaa'
+FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
+                        '111111111111111111111111111111111111111111111111111111'
+                        '11111111111111111111')
 
-FAKE_VIOLATIONS = [
+FAKE_EXPECTED_VIOLATIONS = [
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_111',
      'full_name': 'full_name_111',
@@ -38,8 +41,8 @@ FAKE_VIOLATIONS = [
               {'DELETE_FIREWALL_RULES': ['fw-tag-match_111']}},
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
      'resource_type': 'firewall_rule',
-     'inventory_data': 'inventory_data_111'},
-
+     'inventory_data': 'inventory_data_111',
+     'violation_hash': FAKE_VIOLATION_HASH},
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_222',
      'full_name': 'full_name_222',
@@ -51,8 +54,10 @@ FAKE_VIOLATIONS = [
               {'DELETE_FIREWALL_RULES': ['fw-tag-match_222']}},
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
-     'inventory_data': 'inventory_data_222'},
+     'inventory_data': 'inventory_data_222',
+     'violation_hash': FAKE_VIOLATION_HASH},
 ]
+
 
 
 class ScannerDaoTest(ForsetiTestCase):
@@ -66,43 +71,45 @@ class ScannerDaoTest(ForsetiTestCase):
         """Tear down method."""
         ForsetiTestCase.tearDown(self)
 
-    #@mock.patch.object(scanner_dao.define_violation.ViolationAccess,
-    #                   '_create_violation_hash')
-    @mock.patch('google.cloud.forseti.services.scanner.dao'
-                '.define_violation.ViolationAccess._create_violation_hash',
-                spec=scanner_dao)
-    def test_save_violations(self, mock_violation_access):
+    def test_save_violations(self):
         """Test violations can be saved."""
-
-        mock_violation_access
         engine = create_test_engine()
         violation_access_cls = scanner_dao.define_violation(engine)
         violation_access = violation_access_cls(engine)
 
-        violation_access.create(FAKE_VIOLATIONS, FAKE_INVENTORY_INDEX_ID)
+        violation_access.create(FAKE_EXPECTED_VIOLATIONS,
+                                FAKE_INVENTORY_INDEX_ID)
         saved_violations = violation_access.list()
 
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
                 'violation_data', 'violation_hash', 'inventory_data']
-        for fake, saved in izip(FAKE_VIOLATIONS, saved_violations):
+        for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
             for key in keys:
                 if key != 'violation_data':
                     self.assertEquals(
                         fake.get(key), getattr(saved, key),
-                        'key %s differs' % key)
+                        'The key value of "%s" differs:\nExpected: %s'
+                        '\nFound: %s' % (key, fake.get(key),
+                                         getattr(saved, key))
+                    )
                 else:
                     self.assertEquals(
                         fake.get(key), json.loads(getattr(saved,
                                                           'violation_data')),
                         'key %s differs' % key)
 
-    def test_convert_sqlalchemy_object_to_dict(self):
+
+    @mock.patch.object(scanner_dao,'_create_violation_hash')
+    def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
+        mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
+                                           FAKE_VIOLATION_HASH]
         engine = create_test_engine()
         violation_access_cls = scanner_dao.define_violation(engine)
         violation_access = violation_access_cls(engine)
 
-        violation_access.create(FAKE_VIOLATIONS, FAKE_INVENTORY_INDEX_ID)
+        violation_access.create(FAKE_EXPECTED_VIOLATIONS,
+                                FAKE_INVENTORY_INDEX_ID)
         saved_violations = violation_access.list()
 
         converted_violations_as_dict = []
@@ -136,6 +143,9 @@ class ScannerDaoTest(ForsetiTestCase):
 
         self.assertEquals(expected_violations_as_dict,
                           converted_violations_as_dict)
+
+        self.assertEquals(mock_violation_hash.call_count,
+                          len(FAKE_EXPECTED_VIOLATIONS))
 
 
 if __name__ == '__main__':

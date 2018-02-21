@@ -104,38 +104,6 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def _create_violation_hash(self, violation, inventory_index_id,
-                                   algorithm='SHA512'):
-            """Create a hash of violation data using the requested algorithm.
-
-            Args:
-                violation (dict): A violation.
-                inventory_index_id (str): Id of the inventory index.
-                algorithm (str): The algorithm used to create the hash.
-
-            Returns:
-                violation_hash (str): The resulting hex digest or '' if we
-                can't successfully create a hash.
-            """
-            try:
-                violation_hash = hashlib.new(algorithm)
-            except ValueError as e:
-                LOGGER.error('Unable to use the specified hash algorithm: %s',
-                             algorithm)
-                LOGGER.info('Using the fallback hash algorithm: %s',
-                            FALLBACK_HASH_ALGORITHM)
-                violation_hash = hashlib.new(FALLBACK_HASH_ALGORITHM)
-
-            try:
-                violation_hash.update(json.dumps(violation))
-                violation_hash.update(inventory_index_id)
-            except TypeError as e:
-                LOGGER.error('Cannot create hash for a violation: %s\n %s',
-                             e, violation)
-                return ''
-
-            return violation_hash.hexdigest()
-
         def create(self, violations, inventory_index_id):
             """Save violations to the db table.
 
@@ -146,8 +114,8 @@ def define_violation(dbengine):
             with self.violationmaker() as session:
                 for violation in violations:
 
-                    violation_hash = self._create_violation_hash(
-                        violation, inventory_index_id)
+                    violation_hash = _create_violation_hash(violation,
+                                                            inventory_index_id)
 
                     violation = self.TBL_VIOLATIONS(
                         inventory_index_id=inventory_index_id,
@@ -231,3 +199,35 @@ def map_by_resource(violation_rows):
             v_by_type[v_resource].append(v_data)
 
     return dict(v_by_type)
+
+def _create_violation_hash(violation, inventory_index_id,
+                           algorithm='SHA512'):
+    """Create a hash of violation data using the requested algorithm.
+
+    Args:
+        violation (dict): A violation.
+        inventory_index_id (str): Id of the inventory index.
+        algorithm (str): The algorithm used to create the hash.
+
+    Returns:
+        str: The resulting hex digest or '' if we can't successfully create
+        a hash.
+    """
+    try:
+        violation_hash = hashlib.new(algorithm)
+    except ValueError as e:
+        LOGGER.error('Unable to use the specified hash algorithm: %s',
+                     algorithm)
+        LOGGER.info('Using the fallback hash algorithm: %s',
+                    FALLBACK_HASH_ALGORITHM)
+        violation_hash = hashlib.new(FALLBACK_HASH_ALGORITHM)
+
+    try:
+        violation_hash.update(json.dumps(violation))
+        violation_hash.update(inventory_index_id)
+    except TypeError as e:
+        LOGGER.error('Cannot create hash for a violation: %s\n %s',
+                     e, violation)
+        return ''
+
+    return violation_hash.hexdigest()
