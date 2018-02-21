@@ -18,7 +18,6 @@ from __future__ import print_function
 import json
 import re
 import sys
-import time
 
 import constants
 import utils
@@ -148,9 +147,7 @@ def enable_apis(dry_run=False):
             print(err)
         else:
             print('Done.\n')
-    print ('Waiting for all the APIs to be enabled.\n')
-    time.sleep(10)
-    print ('Done.\n')
+    utils.show_loading(80, 'Waiting for all the APIs to be enabled.')
 
 
 def grant_client_svc_acct_roles(project_id,
