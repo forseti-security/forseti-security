@@ -15,9 +15,10 @@
 """Gcloud utility functions."""
 
 from __future__ import print_function
+import json
 import re
 import sys
-import json
+import time
 
 import constants
 import utils
@@ -147,6 +148,7 @@ def enable_apis(dry_run=False):
             print(err)
         else:
             print('Done.')
+    time.sleep(10)
 
 
 def grant_client_svc_acct_roles(project_id,
