@@ -148,7 +148,9 @@ def enable_apis(dry_run=False):
             print(err)
         else:
             print('Done.')
-    time.sleep(10)
+    print ('Waiting for all the APIs to be enabled.\n')
+    time.sleep(20)
+    print ('Done.\n')
 
 
 def grant_client_svc_acct_roles(project_id,
