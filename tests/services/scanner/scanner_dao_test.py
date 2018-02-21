@@ -14,6 +14,8 @@
 
 """ Unit Tests for Scanner DAO. """
 
+import hashlib
+
 from itertools import izip
 import json
 import mock
@@ -55,7 +57,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_222',
-     'violation_hash': FAKE_VIOLATION_HASH},
+     'violation_hash': FAKE_VIOLATION_HASH}
 ]
 
 
@@ -128,7 +130,8 @@ class ScannerDaoTest(ForsetiTestCase):
              'rule_name': u'disallow_all_ports_111',
              'violation_data': u'{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}',
              'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_111',
-             'violation_hash': u'11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111'},
+             'violation_hash': FAKE_VIOLATION_HASH,
+            },
             {'full_name': u'full_name_222',
              'id': 2,
              'inventory_data': u'inventory_data_222',
@@ -138,14 +141,61 @@ class ScannerDaoTest(ForsetiTestCase):
              'rule_index': 222,
              'rule_name': u'disallow_all_ports_222',
              'violation_data': u'{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}',
-             'violation_hash': u'11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111',
-             'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222'}]
+             'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222',
+             'violation_hash': FAKE_VIOLATION_HASH,
+            }
+        ]
 
         self.assertEquals(expected_violations_as_dict,
                           converted_violations_as_dict)
 
-        self.assertEquals(mock_violation_hash.call_count,
+        self.assertEqual(mock_violation_hash.call_count,
                           len(FAKE_EXPECTED_VIOLATIONS))
+
+    def test_create_violation_hash_with_default_algorithm(self):
+        """ Test _create_violation_hash. """
+        test_violation = {}
+        test_inventory_index_id= '1'
+        test_hash = hashlib.new(scanner_dao.FALLBACK_HASH_ALGORITHM)
+        test_hash.update(json.dumps(test_violation) + test_inventory_index_id)
+        expected_hash = test_hash.hexdigest()
+
+        returned_hash = scanner_dao._create_violation_hash(
+            test_violation,
+            test_inventory_index_id)
+
+        self.assertEqual(expected_hash, returned_hash)
+
+    def test_create_violation_hash_with_invalid_algorithm(self):
+        """ Test _create_violation_hash with an invalid algorithm. """
+        test_violation = {}
+        test_inventory_index_id= '1'
+        test_hash = hashlib.new(scanner_dao.FALLBACK_HASH_ALGORITHM)
+        test_hash.update(json.dumps(test_violation) + test_inventory_index_id)
+        expected_hash = test_hash.hexdigest()
+
+        returned_hash = scanner_dao._create_violation_hash(
+            test_violation,
+            test_inventory_index_id,
+            algorithm='bad')
+
+        self.assertEqual(expected_hash, returned_hash)
+
+    @mock.patch.object(json, 'dumps')
+    def test_create_violation_hash_invalid_violation_data(self, mock_json):
+        """ Test _create_violation_hash returns '' when it can't hash. """
+
+        test_violation =  {}
+        test_inventory_index_id= '1'
+        expected_hash = ''
+
+        mock_json.side_efect = TypeError()
+
+        returned_hash = scanner_dao._create_violation_hash(
+            test_violation,
+            test_inventory_index_id)
+
+        self.assertEqual(expected_hash, returned_hash)
 
 
 if __name__ == '__main__':

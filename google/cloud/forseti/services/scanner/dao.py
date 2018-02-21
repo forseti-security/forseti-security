@@ -201,7 +201,7 @@ def map_by_resource(violation_rows):
     return dict(v_by_type)
 
 def _create_violation_hash(violation, inventory_index_id,
-                           algorithm='SHA512'):
+                           algorithm=FALLBACK_HASH_ALGORITHM):
     """Create a hash of violation data using the requested algorithm.
 
     Args:
