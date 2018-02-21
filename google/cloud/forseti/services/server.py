@@ -382,7 +382,7 @@ def serve(endpoint,
         forseti_inventory_config.get('root_resource_id', ''),
         forseti_inventory_config.get('groups_service_account_key_file', ''),
         forseti_inventory_config.get('domain_super_admin_email', ''),
-        forseti_inventory_config.get('api_quota', ''))
+        forseti_inventory_config.get('api_quota', {}))
 
     # TODO: Create Config classes to store scanner and notifier configs.
     forseti_scanner_config = forseti_config.get('scanner', {})
