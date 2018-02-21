@@ -46,24 +46,14 @@ mv forseti-security-{release_version} forseti-security
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     FORSETI_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
-    GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
-    GSUITE_ADMIN_EMAIL = context.properties['gsuite-admin-email']
-    ROOT_RESOURCE_ID = context.properties['root-resource-id']
-
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
         'export SQL_INSTANCE_CONN_STRING="{1}"\n'
-        'export FORSETI_DB_NAME="{2}"\n'
-        'export GSUITE_ADMIN_EMAIL="{3}"\n'
-        'export GSUITE_ADMIN_CREDENTIAL_PATH="{4}"\n'
-        'export ROOT_RESOURCE_ID="{5}"\n')
+        'export FORSETI_DB_NAME="{2}"\n')
     EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
         context.properties['db-port'],
         CLOUDSQL_CONN_STRING,
-        FORSETI_DB_NAME,
-        GSUITE_ADMIN_EMAIL,
-        GSUITE_ADMIN_CREDENTIAL_PATH,
-        ROOT_RESOURCE_ID)
+        FORSETI_DB_NAME)
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
