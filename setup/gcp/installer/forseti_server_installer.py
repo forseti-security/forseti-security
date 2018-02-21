@@ -112,13 +112,26 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # Create firewall rule to open only port tcp:50051
             # within the internal network (ip-ranges - 10.128.0.0/9)
             gcloud.create_firewall_rule(
-                self.format_firewall_rule_name('forseti-server-allow-grpc'),
+                self.format_firewall_rule_name(
+                    'forseti-server-allow-grpc-internal'),
                 [self.gcp_service_account],
                 constants.FirewallRuleAction.ALLOW,
                 ['tcp:50051'],
                 constants.FirewallRuleDirection.INGRESS,
                 0,
                 '10.128.0.0/9')
+
+            # Create firewall rule to open only port tcp:22 (ssh)
+            # to all the external traffics from the internet
+            gcloud.create_firewall_rule(
+                self.format_firewall_rule_name(
+                    'forseti-server-allow-ssh-external'),
+                [self.gcp_service_account],
+                constants.FirewallRuleAction.ALLOW,
+                ['tcp:22'],
+                constants.FirewallRuleDirection.INGRESS,
+                0,
+                '0.0.0.0/0')
 
         return success, deployment_name
 
