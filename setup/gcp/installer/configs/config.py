@@ -37,5 +37,5 @@ class Config(object):
                                     self.datetimestamp))
         self.advanced_mode = bool(kwargs.get('advanced'))
         self.dry_run = bool(kwargs.get('dry_run'))
-        self.bucket_location = kwargs.get('gcs_location') or 'us-central1'
+        self.bucket_location = kwargs.get('gcs_location')
         self.installer_type = None
