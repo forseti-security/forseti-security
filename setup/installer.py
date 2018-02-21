@@ -17,7 +17,6 @@
 A stub to call gcp/run_forseti_installer.py which installs into GCP.
 """
 
-import getpass
 import pip
 
 INSTALLER_REQUIRED_PACKAGES = [
@@ -30,14 +29,15 @@ def install(package_name):
     Args:
         package_name (str): Name of the package to install.
     """
-    user = getpass.getuser()
-    pip.main(['install', package_name, '--user', user])
+    pip.main(['install', package_name, '--user'])
 
 
 def install_required_packages():
     """Install required packages."""
+    installed_pkgs = [pkg.key for pkg in pip.get_installed_distributions()]
     for package in INSTALLER_REQUIRED_PACKAGES:
-        install(package)
+        if package not in installed_pkgs:
+            install(package)
 
 
 if __name__ == '__main__':

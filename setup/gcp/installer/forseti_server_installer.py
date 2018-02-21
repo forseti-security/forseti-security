@@ -55,9 +55,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Pre-flight checks for server instance"""
 
         super(ForsetiServerInstaller, self).preflight_checks()
-        _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
-            r'^forseti-security-\d+-vm$', try_match=True)
-        if forseti_v1_name is not None:
+        gcloud.enable_apis(self.config.dry_run)
+        forseti_v1_name = None
+        if not self.config.dry_run:
+            _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
+                r'^forseti-security-\d+-vm$', try_match=True)
+        if forseti_v1_name:
             utils.print_banner('Import configuration and rules from v1')
             # v1 instance exists, ask if the user wants to port
             # the conf/rules settings from v1.
@@ -72,7 +75,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.format_gsuite_service_acct_id()
         self.should_grant_access()
 
-        gcloud.enable_apis(self.config.dry_run)
         self.gsuite_service_account = gcloud.create_or_reuse_service_acct(
             'gsuite_service_account',
             self.gsuite_service_account,
