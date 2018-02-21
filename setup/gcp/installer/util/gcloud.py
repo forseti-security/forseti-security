@@ -147,9 +147,9 @@ def enable_apis(dry_run=False):
         if return_code:
             print(err)
         else:
-            print('Done.')
+            print('Done.\n')
     print ('Waiting for all the APIs to be enabled.\n')
-    time.sleep(20)
+    time.sleep(10)
     print ('Done.\n')
 
 
@@ -634,6 +634,14 @@ def get_vm_instance_info(instance_name, try_match=False):
         str: Zone of the forseti server application, default to 'us-central1-c'
         str: Name of the forseti server instance
     """
+    def _ping_compute_instance():
+        """Check compute instance status.
+        """
+        utils.run_command(
+            ['gcloud', 'compute', 'instances', 'list', '--format=json'])
+
+    _ping_compute_instance()
+
     return_code, out, err = utils.run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
