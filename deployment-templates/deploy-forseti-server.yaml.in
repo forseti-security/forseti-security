@@ -57,7 +57,6 @@ resources:
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
     service-account-gsuite: {GSUITE_SERVICE_ACCOUNT}
-    gsuite-admin-email: {GSUITE_ADMIN_EMAIL}
 
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
