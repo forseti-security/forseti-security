@@ -17,13 +17,13 @@
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type.instance import Instance
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.audit import instance_network_interface_rules_engine
 # pylint: enable=line-too-long
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
@@ -68,16 +68,19 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         for violation in violations:
             violation_data = {}
             violation_data['project'] = violation.project
+            violation_data['full_name'] = violation.full_name
             violation_data['network'] = violation.network
             violation_data['ip'] = violation.ip
-            violation_data['raw_data'] = violation.raw_data
+            violation_data['inventory_data'] = violation.inventory_data
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -139,6 +142,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             for instance_from_data_model in data_access.scanner_iter(
                     session, "instance"):
                 instance = Instance.from_json(
+                    instance_from_data_model.full_name,
                     instance_from_data_model.data,
                     instance_from_data_model.parent.name)
                 network_interfaces.append(instance.create_network_interfaces())

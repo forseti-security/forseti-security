@@ -25,9 +25,25 @@ import sys
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.util import logger
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
+
+
+class DefaultParser(ArgumentParser):
+    """Default parser, when error is triggered, instead of printing
+    error message, it will print the help message (-h).
+    """
+    def error(self, _):
+        """This method will be triggered when error occurred.
+
+        Args:
+            _ (str): Error message.
+        """
+        self.print_usage()
+        sys.exit(2)
+
 
 def define_playground_parser(parent):
     """Define the playground service parser.
@@ -114,15 +130,15 @@ def define_inventory_parser(parent):
         'create',
         help='Start a new inventory')
     create_inventory_parser.add_argument(
+        '--import_as',
+        metavar=('MODEL_NAME',),
+        help='Import the inventory when complete, requires a model name')
+    create_inventory_parser.add_argument(
         '--background',
         '-b',
         action='store_true',
         help='Execute inventory in background',
         )
-    create_inventory_parser.add_argument(
-        '--import_as',
-        metavar=('MODEL_NAME',),
-        help='Import the inventory when complete, requres a model name')
 
     delete_inventory_parser = action_subparser.add_parser(
         'delete',
@@ -275,13 +291,9 @@ def define_scanner_parser(parent):
         title='action',
         dest='action')
 
-    create_scanner_parser = action_subparser.add_parser(
+    action_subparser.add_parser(
         'run',
         help='Run the scanner')
-
-    create_scanner_parser.add_argument(
-        'config_file',
-        help='Scanner config file')
 
 
 def define_notifier_parser(parent):
@@ -302,10 +314,12 @@ def define_notifier_parser(parent):
         help='Run the notifier')
 
     create_notifier_parser.add_argument(
-        '--inventory_id',
-        default=-1,
-        help='Id of the inventory index to send violation notifications'
-        )
+        '--inventory_index_id',
+        default=None,
+        help=('Id of the inventory index to send violation notifications. '
+              'If this is not specified, then the last inventory index id '
+              'will be used.'
+             ))
 
 def define_explainer_parser(parent):
     """Define the explainer service parser.
@@ -659,7 +673,7 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
-        result = client.run(config.config_file)
+        result = client.run()
         output.write(result)
 
     actions = {
@@ -681,7 +695,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        result = client.run(config.inventory_id)
+        result = client.run(config.inventory_index_id)
         output.write(result)
 
     actions = {
@@ -996,8 +1010,10 @@ class DefaultConfigParser(object):
 class DefaultConfig(dict):
     """Represents the configuration."""
 
+    DEFAULT_ENDPOINT = 'localhost:50051'
+
     DEFAULT = {
-        'endpoint': 'localhost:50051',
+        'endpoint': '',
         'model': '',
         'format': 'text',
         }
@@ -1011,10 +1027,29 @@ class DefaultConfig(dict):
         """
         super(DefaultConfig, self).__init__(*args, **kwargs)
 
+        self.DEFAULT['endpoint'] = self.get_default_endpoint()
+
         # Initialize default values
         for key, value in self.DEFAULT.iteritems():
             if key not in self:
                 self[key] = value
+
+    def get_default_endpoint(self):
+        """Get server address.
+
+        Returns:
+            str: Forseti server endpoint
+        """
+        try:
+            conf_path = os.environ['FORSETI_CLIENT_CONFIG']
+            configs = file_loader.read_and_parse_file(conf_path)
+            server_ip = configs.get('server_ip')
+            if server_ip:
+                return '{}:50051'.format(server_ip)
+        except (KeyError, IOError) as err:
+            LOGGER.warn(err)
+
+        return self.DEFAULT_ENDPOINT
 
     def __getitem__(self, key):
         """Get item by key.
@@ -1076,7 +1111,7 @@ def main(args,
          config_env,
          client=None,
          outputs=None,
-         parser_cls=ArgumentParser,
+         parser_cls=DefaultParser,
          services=None):
     """Main function.
     Args:
@@ -1090,7 +1125,6 @@ def main(args,
     Returns:
         object: Environment configuration.
     """
-
     parser = create_parser(parser_cls, config_env)
     config = parser.parse_args(args)
     if not client:
@@ -1114,7 +1148,7 @@ def get_config_path():
     """
 
     default_path = os.path.join(os.getenv('HOME'), '.forseti')
-    config_path = read_env('FORSETI_CLIENT_CONFIG', default_path)
+    config_path = read_env('FORSETI_SERVER_CONFIG', default_path)
     return config_path
 
 

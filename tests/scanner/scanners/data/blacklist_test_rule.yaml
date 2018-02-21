@@ -1,0 +1,5 @@
+rules:
+    - blacklist: ET
+      url: http://threatintel.localdomain/verybadips.txt
+    - blacklist: Spam
+      url: http://spam.localdomain/badips.txt

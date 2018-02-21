@@ -23,7 +23,7 @@ import concurrent.futures
 from google.apputils import datelib
 
 from google.cloud.forseti.common.gcp_api import compute
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import project_enforcer
 
@@ -32,7 +32,7 @@ STATUS_ERROR = enforcer_log_pb2.ERROR
 STATUS_SKIPPED = enforcer_log_pb2.SKIPPED
 STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 # Per thread storage.
 LOCAL_THREAD = threading.local()

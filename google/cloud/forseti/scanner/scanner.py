@@ -22,10 +22,8 @@ Usage:
 import gflags as flags
 
 from google.apputils import app
-from google.cloud.forseti.common.data_access import dao
-from google.cloud.forseti.common.data_access import errors as db_errors
 from google.cloud.forseti.common.util import file_loader
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 
@@ -33,55 +31,22 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 # Setup flags
 FLAGS = flags.FLAGS
 
-
 # Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
 # Example:
 # https://github.com/google/python-gflags/blob/master/examples/validator.py
 
-# Hack to make the test pass due to duplicate flag error here
-# and inventory_loader.
-# TODO: Find a way to remove this try/except, possibly dividing the tests
-# into different test suites.
-try:
-    flags.DEFINE_string(
-        'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf.yaml',
-        'Fully qualified path and filename of the Forseti config file.')
-except flags.DuplicateFlagError:
-    pass
+LOGGER = logger.get_logger(__name__)
 
-
-LOGGER = log_util.get_logger(__name__)
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
-def _get_timestamp(global_configs, statuses=('SUCCESS', 'PARTIAL_SUCCESS')):
-    """Get latest snapshot timestamp.
-
-    Args:
-        global_configs (dict): Global configurations.
-        statuses (tuple): The snapshot statuses to search for latest timestamp.
-
-    Returns:
-        str: The latest snapshot timestamp.
-    """
-    latest_timestamp = None
-    try:
-        latest_timestamp = (
-            dao.Dao(global_configs).get_latest_snapshot_timestamp(statuses))
-    except db_errors.MySQLError as err:
-        LOGGER.error('Error getting latest snapshot timestamp: %s', err)
-
-    return latest_timestamp
-
-def run(forseti_config, model_name=None, service_config=None):
+def run(model_name=None, service_config=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
 
     Args:
-        forseti_config (dict): Forseti 1.0 config
         model_name (str): name of the data model
         service_config (ServiceConfig): Forseti 2.0 service configs
 
@@ -89,20 +54,18 @@ def run(forseti_config, model_name=None, service_config=None):
         int: Status code.
     """
 
-    if forseti_config is None:
-        LOGGER.error('Path to Forseti Security config needs to be specified.')
-        return 1
-
     try:
-        configs = file_loader.read_and_parse_file(forseti_config)
-    except IOError:
+        configs = file_loader.read_and_parse_file(
+            service_config.forseti_config_file_path)
+    except (AttributeError, IOError) as err:
         LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try again.')
+                     'Please check your path and filename and try '
+                     'again. Error: %s', err)
         return 1
     global_configs = configs.get('global')
     scanner_configs = configs.get('scanner')
 
-    log_util.set_logger_level_from_config(scanner_configs.get('loglevel'))
+    logger.set_logger_level_from_config(scanner_configs.get('loglevel'))
 
     # TODO: Figure out if we still need to get the latest model here,
     # or should it be set in the server context before calling the scanner.
@@ -141,7 +104,7 @@ def main(_):
         int: Status code.
     """
 
-    run(FLAGS.forseti_config)
+    run()
     return 0
 
 

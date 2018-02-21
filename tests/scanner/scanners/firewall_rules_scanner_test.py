@@ -154,24 +154,29 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p1',
+                full_name='fake_full_name111',
                 rule_id='rule1',
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
+                inventory_data='fake_inventory_data111'
             ),
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p2',
+                full_name='fake_full_name222',
                 rule_id='rule2',
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
+                inventory_data='fake_inventory_data222'
             ),
         ]
         flattened_violations = [
             {
                 'resource_id': v.resource_id,
                 'resource_type': v.resource_type,
+                'full_name': v.full_name,
                 'rule_name': v.rule_id,
                 'rule_index': i+1,
                 'violation_type': v.violation_type,
@@ -179,6 +184,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
+                'inventory_data': v.inventory_data
             } for i, v in enumerate(violations)]
 
         self.scanner._output_results(violations, '88888')
@@ -235,18 +241,22 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p1',
+                full_name='fake_full_name111',
                 rule_id='rule1',
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
+                inventory_data='fake_inventory_data111'
             ),
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id='p2',
+                full_name='fake_full_name222',
                 rule_id='rule2',
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
+                inventory_data='fake_inventory_data222'
             ),
         ]
         rule_indices = {
@@ -260,6 +270,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             {
                 'resource_id': v.resource_id,
                 'resource_type': v.resource_type,
+                'full_name': v.full_name,
                 'rule_name': v.rule_id,
                 'rule_index': i+1,
                 'violation_type': v.violation_type,
@@ -267,6 +278,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
+                'inventory_data': v.inventory_data
             } for i, v in enumerate(violations)]
 
         mock_output_results_to_db.assert_called_once_with(
@@ -308,7 +320,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             'test_project',
             {
                 'name': 'policy1',
-                'full_name': '',
+                'full_name': 'fake_full_name000',
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
@@ -319,12 +331,14 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 {
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
+                    'full_name': 'fake_full_name000',
                     'rule_id': 'no_rdp_to_linux',
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
+                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
                 }
             ],
         ),
@@ -343,12 +357,14 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 {
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
+                    'full_name': 'organization/1/folder/test_instances/project/project1/firewall/policy1/',
                     'rule_id': 'test_instances_rule',
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
+                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
                 }
             ],
         ),
@@ -390,7 +406,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         policy_dicts = [
             {
                 'name': 'policy1',
-                'full_name': '',
+                'full_name': 'fake_full_name111',
                 'direction': 'ingress',
                 'targetTags': ['internal'],
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -399,7 +415,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             {
                 'name': 'deleteme',
-                'full_name': '',
+                'full_name': 'fake_full_name222',
                 'direction': 'ingress',
                 'targetTags': ['tag'],
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['23']}],
@@ -426,6 +442,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 {
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
+                    'full_name': 'fake_full_name111',
                     'rule_id': 'golden_policy',
                     'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                     'policy_names': ['policy1', 'deleteme'],
@@ -434,6 +451,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                         'UPDATE_FIREWALL_RULES': [],
                         'INSERT_FIREWALL_RULES': ['golden_policy: rule 1'],
                     },
+                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "n1", "sourceRanges": ["10.0.0.0/8"], "targetTags": ["internal"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["23"]}], "direction": "INGRESS", "name": "deleteme", "network": "n3", "sourceRanges": ["11.0.0.0/8"], "targetTags": ["tag"]}']
                 }
         ]
         expected_violations = [

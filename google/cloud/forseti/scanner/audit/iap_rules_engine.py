@@ -19,13 +19,13 @@ import threading
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import log_util
-from google.cloud.forseti.common.util import regex_util
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import regular_exp
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 # TODO: This duplicates a lot of resource-handling code from the IAM
@@ -140,16 +140,16 @@ class IapRuleBook(bre.BaseRuleBook):
                         'Missing resource ids in rule {}'.format(rule_index))
 
                 allowed_alternate_services = [
-                    regex_util.escape_and_globify(glob)
+                    regular_exp.escape_and_globify(glob)
                     for glob in rule_def.get(
                         'allowed_alternate_services', '').split(',')
                     if glob]
                 allowed_direct_access_sources = [
-                    regex_util.escape_and_globify(glob)
+                    regular_exp.escape_and_globify(glob)
                     for glob in rule_def.get(
                         'allowed_direct_access_sources', '').split(',')
                     if glob]
-                allowed_iap_enabled = regex_util.escape_and_globify(
+                allowed_iap_enabled = regular_exp.escape_and_globify(
                     rule_def.get('allowed_iap_enabled', '*'))
 
                 # For each resource id associated with the rule, create a
@@ -462,13 +462,15 @@ class Rule(object):
                 resource_type=resource_mod.ResourceType.BACKEND_SERVICE,
                 resource_name=resource.name,
                 resource_id=resource.resource_id,
+                full_name=resource.full_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
                 violation_type='IAP_VIOLATION',
                 alternate_services_violations=alternate_services_violations,
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
-                    direct_sources_violations))
+                    direct_sources_violations),
+                inventory_data=resource.json)
         return None
 
     def __repr__(self):
@@ -532,7 +534,7 @@ class Rule(object):
 
 RuleViolation = namedtuple(
     'RuleViolation',
-    ['resource_type', 'resource_id', 'resource_name', 'rule_name',
-     'rule_index', 'violation_type',
-     'alternate_services_violations',
-     'iap_enabled_violation', 'direct_access_sources_violations'])
+    ['resource_type', 'resource_id', 'full_name', 'resource_name', 'rule_name',
+     'rule_index', 'violation_type', 'alternate_services_violations',
+     'iap_enabled_violation', 'direct_access_sources_violations',
+     'inventory_data'])

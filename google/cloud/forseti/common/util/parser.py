@@ -18,11 +18,10 @@ import json
 
 from dateutil import parser as dateutil_parser
 
-from google.cloud.forseti.common.data_access import errors as da_errors
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 def parse_member_info(member):
@@ -48,6 +47,7 @@ def parse_member_info(member):
 
     return member_type, member_name, member_domain
 
+
 def format_timestamp(timestamp_str, datetime_formatter):
     """Parse and stringify a timestamp to a specified format.
 
@@ -59,13 +59,18 @@ def format_timestamp(timestamp_str, datetime_formatter):
         str: The formatted, stringified timestamp.
     """
     try:
+        if '"' in timestamp_str or "'" in timestamp_str:
+            # Make sure the timestamp is not surrounded by any quotes
+            timestamp_str = timestamp_str.replace("'")
+            timestamp_str = timestamp_str.replace('"')
         formatted_timestamp = (
             dateutil_parser
             .parse(timestamp_str)
             .strftime(datetime_formatter))
     except (TypeError, ValueError) as e:
-        LOGGER.warn('Unable to parse/format timestamp: %s\n%s',
-                    timestamp_str, e)
+        LOGGER.warn('Unable to parse/format timestamp: %s\n, '
+                    'datetime_formatter: %s\n%s',
+                    timestamp_str, datetime_formatter, e)
         formatted_timestamp = None
     return formatted_timestamp
 
@@ -78,11 +83,8 @@ def json_stringify(obj_to_jsonify):
     Returns:
         str: The json-stringified dict.
     """
-    try:
-        json_str = json.dumps(obj_to_jsonify)
-    except da_errors.Error:
-        json_str = None
-    return json_str
+    # TODO: We should probably try and catch something here.
+    return json.dumps(obj_to_jsonify)
 
 
 def json_unstringify(json_to_objify, default=None):

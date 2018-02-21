@@ -25,7 +25,7 @@ from tests.unittest_utils import get_datafile_path
 
 
 class RuleTest(ForsetiTestCase):
-
+    
     @parameterized.parameterized.expand([
         (
             {},
@@ -467,6 +467,7 @@ class RuleTest(ForsetiTestCase):
           [{
               'project_id': 'p1',
               'firewall_rule_name': '0.0.0.0/0',
+              'firewall_rule_network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
               'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
               'firewall_rule_direction': 'ingress',
               'firewall_rule_allowed': json.dumps(
@@ -476,6 +477,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
+                  'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
@@ -484,6 +486,7 @@ class RuleTest(ForsetiTestCase):
                           '0.0.0.0/0'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
               },
           ],
       ),
@@ -504,6 +507,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p1',
                   'firewall_rule_name': '0.0.0.0/0',
+                  'firewall_rule_network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'firewall_rule_source_ranges': json.dumps(['0.0.0.0/0']),
                   'firewall_rule_direction': 'ingress',
                   'firewall_rule_allowed': json.dumps(
@@ -512,6 +516,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p2',
                   'firewall_rule_name': '0.0.0.0/0 2',
+                  'firewall_rule_network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'firewall_rule_source_ranges': json.dumps(
                       ['1.1.1.1', '0.0.0.0/0']),
                   'firewall_rule_direction': 'ingress',
@@ -523,6 +528,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
+                  'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0'],
@@ -531,10 +537,12 @@ class RuleTest(ForsetiTestCase):
                           '0.0.0.0/0'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
               },
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p2',
+                  'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                   'policy_names': ['0.0.0.0/0 2'],
@@ -543,6 +551,7 @@ class RuleTest(ForsetiTestCase):
                           '0.0.0.0/0 2'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "all"}], "direction": "INGRESS", "name": "0.0.0.0/0 2", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0", "1.1.1.1"]}']
               },
           ],
       ),
@@ -596,6 +605,7 @@ class RuleTest(ForsetiTestCase):
           [{
               'project_id': 'p1',
               'name': 'Any to 443 on https-server',
+              'network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
               'sourceRanges': ['0.0.0.0/0'],
               'direction': 'ingress',
               'sourceTags': ['https-server', 'tag2'],
@@ -605,6 +615,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
+                  'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
@@ -613,6 +624,7 @@ class RuleTest(ForsetiTestCase):
                           'Any to 443 on https-server'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["https-server", "tag2"]}']
               },
           ],
       ),
@@ -633,6 +645,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p1',
                   'name': 'Any to 443 on https-server',
+                  'network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'sourceRanges': ['0.0.0.0/0'],
                   'direction': 'ingress',
                   'sourceTags': ['tag1', 'tag2'],
@@ -641,6 +654,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p2',
                   'name': 'Any to 443 on https-server',
+                  'network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'sourceRanges': ['0.0.0.0/0'],
                   'direction': 'ingress',
                   'sourceTags': ['https-server'],
@@ -649,6 +663,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p3',
                   'name': 'Any to 80/443 to https-server and tag3',
+                  'network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'sourceRanges': ['0.0.0.0/0'],
                   'direction': 'ingress',
                   'sourceTags': ['https-server', 'tag3'],
@@ -659,6 +674,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
+                  'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 443 on https-server'],
@@ -667,10 +683,12 @@ class RuleTest(ForsetiTestCase):
                           'Any to 443 on https-server'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["tag1", "tag2"]}']
               },
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p3',
+                  'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                   'policy_names': ['Any to 80/443 to https-server and tag3'],
@@ -679,6 +697,7 @@ class RuleTest(ForsetiTestCase):
                           'Any to 80/443 to https-server and tag3'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["80", "443"]}], "direction": "INGRESS", "name": "Any to 80/443 to https-server and tag3", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["https-server", "tag3"]}']
               },
           ],
       ),
@@ -744,6 +763,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p1',
                   'name': 'Any to 443',
+                  'network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'sourceRanges': ['0.0.0.0/0'],
                   'direction': 'ingress',
                   'allowed': [{'IPProtocol': 'tcp', 'ports': ['443']}],
@@ -751,6 +771,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'project_id': 'p1',
                   'name': 'Allow 22 from 1.1.1.1',
+                  'network': 'https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default',
                   'sourceRanges': ['1.1.1.2'],
                   'direction': 'ingress',
                   'allowed': [
@@ -761,6 +782,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
+                  'full_name': None,
                   'rule_id': 'Allow SSH to tag from 1.1.1.1',
                   'violation_type': 'FIREWALL_REQUIRED_VIOLATION',
                   'policy_names': ['Any to 443', 'Allow 22 from 1.1.1.1'],
@@ -769,6 +791,7 @@ class RuleTest(ForsetiTestCase):
                           'Allow SSH to tag from 1.1.1.1: rule 0'
                       ]
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "Allow 22 from 1.1.1.1", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["1.1.1.2"]}']
               },
           ],
       ),
@@ -896,6 +919,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
+                  'full_name': None,
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': [
                       'SSH from 1.1.1.1', '443 from 10.0.0.0/8',
@@ -908,6 +932,7 @@ class RuleTest(ForsetiTestCase):
                       ],
                       'UPDATE_FIREWALL_RULES': [],
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "SSH from 1.1.1.1", "network": "network", "sourceRanges": ["1.1.1.1"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "443 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["80"]}], "direction": "INGRESS", "name": "80 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}']
               },
           ],
       ),
@@ -964,6 +989,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_type': 'firewall_rule',
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
+                  'full_name': None,
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
                   'policy_names': ['SSH from 1.1.1.1', '80 from 10.0.0.0/8'],
                   'recommended_actions': {
@@ -975,6 +1001,7 @@ class RuleTest(ForsetiTestCase):
                       ],
                       'UPDATE_FIREWALL_RULES': [],
                   },
+                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "SSH from 1.1.1.1", "network": "network", "sourceRanges": ["1.1.1.1"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["80"]}], "direction": "INGRESS", "name": "80 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}']
               },
           ],
       ),
@@ -1423,36 +1450,43 @@ class RuleBookTest(ForsetiTestCase):
             fre.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id=None,
+                full_name='organization/org/folder/folder1/project/project0/firewall/policy1/',
                 rule_id='rule1',
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
                 policy_names=['policy1'],
-                recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
+                recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']},
+                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
             )
         ]
         project1_violations = [
             fre.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id=None,
+                full_name='organization/org/folder/folder2/project/project1/firewall/policy1/',
                 rule_id='rule2',
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
                 policy_names=['policy1'],
-                recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']}
+                recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']},
+                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
             )
         ]
         project2_violations = [
             fre.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id=None,
+                full_name='organization/org/folder/folder3/folder/folder4/project/project2/firewall/policy1/',
                 rule_id='rule3',
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
                 policy_names=['policy1'],
-                recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']}
+                recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']},
+                inventory_data=['{"denied": [{"IPProtocol": "tcp", "ports": ["22"]}], "destinationRanges": ["11.0.0.1"], "direction": "EGRESS", "name": "policy1", "network": "network1"}']
             )
         ]
         project3_violations = [
             fre.RuleViolation(
                 resource_type='firewall_rule',
                 resource_id=None,
+                full_name='organization/org/folder/folder3/project/project3/firewall/policy1/',
                 rule_id='rule4',
                 violation_type='FIREWALL_MATCHES_VIOLATION',
                 policy_names=['policy1'],
@@ -1460,8 +1494,9 @@ class RuleBookTest(ForsetiTestCase):
                     'DELETE_FIREWALL_RULES': ['policy1'],
                     'UPDATE_FIREWALL_RULES': [],
                     'INSERT_FIREWALL_RULES': ['rule4: rule 0']
-                }
-            )
+                },
+                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/1"]}']
+           )
         ]
         resources_and_policies = (
             (project0, policy_violates_rule_1, project0_violations),
@@ -1470,6 +1505,9 @@ class RuleBookTest(ForsetiTestCase):
             (project3, policy_violates_rule_4, project3_violations),
             (exception, policy_violates_rule_1, []),
         )
+
+        self.maxDiff=None
+
         for resource, policy, expected_violation in resources_and_policies:
             violations = rule_book.find_violations(resource, [policy])
             self.assert_rule_violation_lists_equal(
@@ -1533,7 +1571,7 @@ class RuleEngineTest(ForsetiTestCase):
             {
                 'name': 'policy1',
                 'full_name': ('organization/org/folder/folder1/'
-                                      'project/project0/firewall/policy1/'),
+                              'project/project0/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],
@@ -1544,12 +1582,15 @@ class RuleEngineTest(ForsetiTestCase):
                 {
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
+                    'full_name': ('organization/org/folder/folder1/'
+                                  'project/project0/firewall/policy1/'),
                     'rule_id': 'no_rdp_to_linux',
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
+                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
                 }
             ],
         ),
@@ -1558,7 +1599,7 @@ class RuleEngineTest(ForsetiTestCase):
             {
                 'name': 'policy1',
                 'full_name': ('organization/org/folder/test_instances/'
-                                      'project/project1/firewall/policy1/'),
+                              'project/project1/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['22']}],
@@ -1569,12 +1610,15 @@ class RuleEngineTest(ForsetiTestCase):
                 {
                     'resource_type': 'firewall_rule',
                     'resource_id': None,
+                    'full_name': ('organization/org/folder/test_instances/'
+                                  'project/project1/firewall/policy1/'),
                     'rule_id': 'test_instances_rule',
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
                     'policy_names': ['policy1'],
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
+                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
                 }
             ],
         ),
@@ -1583,7 +1627,7 @@ class RuleEngineTest(ForsetiTestCase):
             {
                 'name': 'policy1',
                 'full_name': ('organization/org/folder/folder1/'
-                                      'project/project0/firewall/policy1/'),
+                              'project/project0/firewall/policy1/'),
                 'network': 'network1',
                 'direction': 'ingress',
                 'allowed': [{'IPProtocol': 'tcp', 'ports': ['1', '3389']}],

@@ -23,6 +23,8 @@ import os
 import tempfile
 import unittest
 import socket
+from google.cloud.forseti.common.util import logger
+
 
 def get_available_port():
     """Get a port that is available to use"""
@@ -50,7 +52,7 @@ class ForsetiTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(ForsetiTestCase, self,).__init__(*args, **kwargs)
-        logging.getLogger().setLevel(logging.DEBUG)
+        logger.set_logger_level(logging.WARNING)
 
     def assertStartsWith(self, actual, expected_start):
         """Assert that actual.startswith(expected_start) is True.

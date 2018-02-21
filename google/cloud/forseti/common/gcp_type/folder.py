@@ -30,6 +30,8 @@ class Folder(resource.Resource):
     def __init__(
             self,
             folder_id,
+            full_name=None,
+            data=None,
             name=None,
             display_name=None,
             parent=None,
@@ -38,6 +40,8 @@ class Folder(resource.Resource):
 
         Args:
             folder_id (str): The folder id number.
+            full_name (str): The full resource name and ancestory.
+            data (str): Resource representation of the folder.
             name (str): The folder unique GCP name, i.e. "folders/{id}".
             display_name (str): The folder display name.
             parent (Resource): The parent Resource.
@@ -50,3 +54,5 @@ class Folder(resource.Resource):
             display_name=display_name,
             parent=parent,
             lifecycle_state=lifecycle_state)
+        self.full_name = full_name
+        self.data = data

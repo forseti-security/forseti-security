@@ -18,12 +18,12 @@ import json
 
 from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
     BucketAccessControls)
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import buckets_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class BucketsAclScanner(base_scanner.BaseScanner):
@@ -70,14 +70,17 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             violation_data['email'] = violation.email
             violation_data['domain'] = violation.domain
             violation_data['bucket'] = violation.bucket
+            violation_data['full_name'] = violation.full_name
             violation_data['project_id'] = violation.project_id
             yield {
                 'resource_id': violation.resource_id,
+                'full_name': violation.full_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations):
@@ -125,6 +128,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
                 bucket_acls.extend(
                     BucketAccessControls.from_list(
                         project_id=project_id,
+                        full_name=bucket.full_name,
                         acls=bucket_data.get('acl', [])))
 
         return bucket_acls

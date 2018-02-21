@@ -18,7 +18,7 @@ import unittest
 import mock
 
 from tests import unittest_utils
-from tests.services.utils.db import create_test_engine
+from tests.services.util.db import create_test_engine
 from google.cloud.forseti.scanner.scanners import ke_version_scanner
 from google.cloud.forseti.services.dao import ModelManager
 
@@ -159,6 +159,8 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
         expected_violations = [
             {'resource_id': u'node-version-not-allowed',
              'rule_name': 'Disallowed node pool version',
+             'inventory_data': '{"nodePools": [{"version": "1.7.10-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.7.11-gke.1", "initialClusterVersion": "1.7.10-gke.1", "name": "node-version-not-allowed", "currentNodeVersion": "1.7.10-gke.1"}',
+            'full_name': u'organization/12345/project/foo/',             'rule_index': 2,
              'rule_index': 2,
              'violation_data': {
                  'violation_reason': (
@@ -167,11 +169,14 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                      "'>= 1.9.*'])."),
                  'cluster_name': u'node-version-not-allowed',
                  'project_id': u'foo',
+                 'full_name': u'organization/12345/project/foo/',
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': 'ke'},
             {'resource_id': u'master-version-invalid',
              'rule_name': 'Unsupported master version',
+             'inventory_data': '{"nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1"}',
+             'full_name': u'organization/12345/project/foo/',
              'rule_index': 1,
              'violation_data': {
                  'violation_reason': (
@@ -179,11 +184,14 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                      "([u'1.7.11-gke.1', u'1.8.6-gke.0'])."),
                  'cluster_name': u'master-version-invalid',
                  'project_id': u'foo',
+                 'full_name': u'organization/12345/project/foo/',
                  'node_pool_name': ''},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': 'ke'},
             {'resource_id': u'node-version-invalid',
              'rule_name': 'Unsupported node pool version',
+             'inventory_data': '{"nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1"}',
+             'full_name': u'organization/12345/project/foo/',
              'rule_index': 0,
              'violation_data': {
                  'violation_reason': (
@@ -192,6 +200,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                      "u'1.8.6-gke.0'])."),
                  'cluster_name': u'node-version-invalid',
                  'project_id': u'foo',
+                 'full_name': u'organization/12345/project/foo/',
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': 'ke'}]

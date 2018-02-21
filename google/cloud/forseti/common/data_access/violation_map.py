@@ -28,6 +28,7 @@ VIOLATION_RESOURCES = {
     'ADDED': 'policy_violations',
     'REMOVED': 'policy_violations',
     'BIGQUERY_VIOLATION': 'bigquery_acl_violations',
+    'BLACKLIST_VIOLATION': 'blacklist_violations',
     'BUCKET_VIOLATION': 'buckets_acl_violations',
     'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
     'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',

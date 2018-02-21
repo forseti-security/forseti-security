@@ -31,12 +31,12 @@ from google.cloud.forseti.common.gcp_type import (
     instance_template as instance_template_type)
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iap_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 IapResource = collections.namedtuple(
     'IapResource',
     ['project_full_name',
@@ -413,10 +413,12 @@ class IapScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data
+                'violation_data': violation_data,
+                'inventory_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations, resource_counts):
@@ -499,6 +501,7 @@ class IapScanner(base_scanner.BaseScanner):
                     parent_type_name=parent_type_name):
                 backend_services.append(
                     backend_service_type.BackendService.from_json(
+                        full_name=backend_service.full_name,
                         project_id=backend_service.parent.name,
                         json_string=backend_service.data))
         return backend_services
@@ -537,6 +540,7 @@ class IapScanner(base_scanner.BaseScanner):
                     session, 'instance', parent_type_name=parent_type_name):
                 instances.append(
                     instance_type.Instance.from_json(
+                        full_name='',
                         project_id=instance.parent.name,
                         json_string=instance.data))
         return instances

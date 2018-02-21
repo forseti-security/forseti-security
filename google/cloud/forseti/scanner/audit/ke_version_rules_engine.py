@@ -21,12 +21,12 @@ from pkg_resources import parse_version
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import log_util
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
-LOGGER = log_util.get_logger(__name__)
+LOGGER = logger.get_logger(__name__)
 
 
 class KeVersionRulesEngine(bre.BaseRulesEngine):
@@ -412,13 +412,15 @@ class Rule(object):
         return RuleViolation(
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
             resource_id=ke_cluster.name,
+            full_name=ke_cluster.resource_full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type='KE_VERSION_VIOLATION',
             violation_reason=violation_reason,
             project_id=ke_cluster.project_id,
             cluster_name=ke_cluster.name,
-            node_pool_name=node_pool_name)
+            node_pool_name=node_pool_name,
+            inventory_data=str(ke_cluster))
 
     def _node_versions_valid(self, ke_cluster):
         """Check the node pool versions against the supported version list.
@@ -548,7 +550,8 @@ class Rule(object):
 # cluster_name: string
 # node_pool_name: string
 RuleViolation = namedtuple('RuleViolation',
-                           ['resource_type', 'resource_id', 'rule_name',
-                            'rule_index', 'violation_type',
+                           ['resource_type', 'resource_id', 'full_name',
+                            'rule_name', 'rule_index', 'violation_type',
                             'violation_reason', 'project_id',
-                            'cluster_name', 'node_pool_name'])
+                            'cluster_name', 'node_pool_name',
+                            'inventory_data'])
