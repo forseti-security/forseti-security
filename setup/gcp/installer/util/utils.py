@@ -559,7 +559,7 @@ def show_loading(loading_time, message='', max_number_of_dots=15):
 
     for i in range(0, loading_time*2):
         dots = '.' * (i % max_number_of_dots)
-        sys.stdout.write('\r{} {} {}'.format(erase_line, message, dots))
+        sys.stdout.write('\r{}{}{}'.format(erase_line, message, dots))
         sys.stdout.flush()
         time.sleep(0.5)
     print ('\n\nDone.')
