@@ -58,6 +58,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
             r'^forseti-security-\d+-vm$', try_match=True)
         if forseti_v1_name is not None:
+            utils.print_banner('Import configuration and rules from v1')
             # v1 instance exists, ask if the user wants to port
             # the conf/rules settings from v1.
             self.prompt_v1_configs_migration()
