@@ -35,6 +35,8 @@ MAXIMUM_LOOP_COUNT = 600
 DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
 DEFAULT_BUCKET_FMT_V2 = 'gs://{}-{}-data-{}'
 
+REGEX_MATCH_FORSETI_V1_INSTANCE_NAME = r'^forseti-security-\d+-vm$'
+
 FORSETI_V1_RULE_FILES = [
     'bigquery_rules.yaml',
     'blacklist_rules.yaml',

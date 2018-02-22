@@ -28,7 +28,7 @@ from util import v1_upgrader
 
 
 class ForsetiServerInstaller(ForsetiInstaller):
-    """Forseti server installer"""
+    """Forseti server installer."""
 
     # pylint: disable=too-many-instance-attributes
 
@@ -42,7 +42,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     migrate_from_v1 = False
 
     def __init__(self, **kwargs):
-        """Init
+        """Init.
 
         Args:
             kwargs (dict): The kwargs.
@@ -52,16 +52,17 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.v1_config = None
 
     def preflight_checks(self):
-        """Pre-flight checks for server instance"""
+        """Pre-flight checks for server instance."""
 
         super(ForsetiServerInstaller, self).preflight_checks()
         gcloud.enable_apis(self.config.dry_run)
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
-                r'^forseti-security-\d+-vm$', try_match=True)
+                constants.REGEX_MATCH_FORSETI_V1_INSTANCE_NAME, try_match=True)
         if forseti_v1_name:
-            utils.print_banner('Import configuration and rules from v1')
+            utils.print_banner('Found a v1 installation:'
+                               ' importing configuration and rules.')
             # v1 instance exists, ask if the user wants to port
             # the conf/rules settings from v1.
             self.prompt_v1_configs_migration()
@@ -106,13 +107,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Grant access to service account.
 
         Args:
-            deployment_tpl_path (str): Deployment template path
-            conf_file_path (str): Configuration file path
-            bucket_name (str): Name of the GCS bucket
+            deployment_tpl_path (str): Deployment template path.
+            conf_file_path (str): Configuration file path.
+            bucket_name (str): Name of the GCS bucket.
 
         Returns:
-            bool: Whether or not the deployment was successful
-            str: Deployment name
+            bool: Whether or not the deployment was successful.
+            str: Deployment name.
         """
         success, deployment_name = super(ForsetiServerInstaller, self).deploy(
             deployment_tpl_path, conf_file_path, bucket_name)
@@ -127,22 +128,22 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
-            # Merge all the old rules if necessary
+            # Merge all the old rules if necessary.
             if self.migrate_from_v1:
                 self.merge_old_rules()
 
-            # Copy the rule directory to the GCS bucket
+            # Copy the rule directory to the GCS bucket.
             files.copy_file_to_destination(
                 constants.RULES_DIR_PATH, bucket_name,
                 is_directory=True, dry_run=self.config.dry_run)
 
             self.print_copy_statement(constants.RULES_DIR_PATH, bucket_name)
 
-            # Waiting for VM to be initialized
+            # Waiting for VM to be initialized.
             instance_name = '{}-vm'.format(deployment_name)
             self.wait_until_vm_initialized(instance_name)
 
-            # Create firewall rules
+            # Create firewall rules.
             self.create_firewall_rules()
 
         return success, deployment_name
@@ -164,7 +165,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
-        # Rule to block out all the ingress traffic
+        # Rule to block out all the ingress traffic.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_account],
@@ -173,8 +174,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleDirection.INGRESS,
             1)
 
-        # Rule to open only port tcp:50051
-        # within the internal network (ip-ranges - 10.128.0.0/9)
+        # Rule to open only port tcp:50051 within the
+        # internal network (ip-ranges - 10.128.0.0/9).
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-allow-grpc'),
             [self.gcp_service_account],
