@@ -15,9 +15,10 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
+from datetime import datetime
 import json
 
-from sqlalchemy import Column
+from sqlalchemy import Column, DateTime
 from sqlalchemy import String, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import inspect
@@ -54,6 +55,7 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
+        created_at = Column(DateTime)
         inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
@@ -120,7 +122,8 @@ def define_violation(dbengine):
                         violation_type=violation.get('violation_type'),
                         violation_data=json.dumps(
                             violation.get('violation_data')),
-                        inventory_data=violation.get('inventory_data')
+                        inventory_data=violation.get('inventory_data'),
+                        created_at=datetime.utcnow()
                     )
                     session.add(violation)
 
