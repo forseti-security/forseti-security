@@ -55,7 +55,7 @@ class ForsetiInstaller(object):
         # Create/Reuse service account(s).
         self.create_or_reuse_service_accts()
 
-        # Create configuration file and deployment template
+        # Create configuration file and deployment template.
         (conf_file_path,
          deployment_tpl_path) = self.create_conf_file_dpl_template()
 
