@@ -19,8 +19,11 @@ from datetime import datetime
 import hashlib
 import json
 
-from sqlalchemy import Column, DateTime
-from sqlalchemy import String, Integer, Text
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import String
+from sqlalchemy import Integer
+from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import inspect
 from sqlalchemy.orm import sessionmaker
@@ -56,7 +59,7 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
-        created_at = Column(DateTime)
+        created_at = Column(DateTime())
         full_name = Column(String(1024))
         inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))

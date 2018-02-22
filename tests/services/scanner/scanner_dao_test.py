@@ -14,6 +14,8 @@
 
 """ Unit Tests for Scanner DAO. """
 
+from datetime import datetime
+
 import hashlib
 
 from itertools import izip
@@ -98,7 +100,8 @@ class ScannerDaoTest(ForsetiTestCase):
 
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
-                'violation_data', 'violation_hash', 'inventory_data']
+                'violation_data', 'violation_hash', 'inventory_data',
+                'created_at']
 
         for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
             for key in keys:
@@ -118,6 +121,13 @@ class ScannerDaoTest(ForsetiTestCase):
                         'The key value of "%s" differs:\nExpected one of: %s'
                         '\nFound: %s' % (key, ',\n'.join(expected_hash_values),
                                          saved_key_value)
+                    )
+                elif key == 'created_at':
+                    self.assertIsInstance(
+                       saved_key_value, datetime,
+                        'The key value of "%s" differs:\n Expected type: %s'
+                        '\nFound type: %s' % (key, type(datetime),
+                                              type(saved_key_value))
                     )
                 else:
                     self.assertEquals(
@@ -170,6 +180,11 @@ class ScannerDaoTest(ForsetiTestCase):
              'violation_hash': FAKE_VIOLATION_HASH,
             }
         ]
+
+        # It's useless testing 'created_at' as we can't mock datetime and we
+        # only care about it's type and not it's value.
+        for violation in converted_violations_as_dict:
+            del violation['created_at']
 
         self.assertEqual(expected_violations_as_dict,
                          converted_violations_as_dict)
