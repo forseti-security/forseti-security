@@ -142,13 +142,13 @@ def enable_apis(dry_run=False):
     for api in constants.REQUIRED_APIS:
         print('Requesting the enablement of {} API...'.format(api['name']),
               end='')
+        sys.stdout.flush()
         return_code, _, err = utils.run_command(
             ['gcloud', 'services', 'enable', api['service'], '--async'])
         if return_code:
             print(err)
         else:
-            print('Requested.', end='')
-    utils.show_loading(100, 'Waiting for all the APIs to be enabled.')
+            print('Requested.')
 
 
 def grant_client_svc_acct_roles(project_id,
