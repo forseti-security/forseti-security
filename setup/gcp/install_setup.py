@@ -47,9 +47,11 @@ def run():
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
-                       help='The GCS bucket location')
+                       help='The GCS bucket location',
+                       default='us-central1')
     group.add_argument('--cloudsql-region',
-                       help='The Cloud SQL region')
+                       help='The Cloud SQL region',
+                       default='us-central1')
 
     email_params = parser.add_argument_group(title='email')
     email_params.add_argument('--sendgrid-api-key',
