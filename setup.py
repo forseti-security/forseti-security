@@ -56,6 +56,7 @@ REQUIRED_PACKAGES = [
     'python-gflags>=3.1.1',
     'mock>=2.0.0',
     'parameterized>=0.6.1',
+    'ruamel.yaml>=0.15.35',
     'simple-crypt>=4.1.7'
 ]
 
