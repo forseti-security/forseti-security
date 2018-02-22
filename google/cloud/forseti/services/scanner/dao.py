@@ -65,7 +65,7 @@ def define_violation(dbengine):
         rule_index = Column(Integer, default=0)
         violation_data = Column(Text)
         violation_type = Column(String(256), nullable=False)
-        violation_hash = Column(String(256), unique=True)
+        violation_hash = Column(String(256))
 
         def __repr__(self):
             """String representation.
