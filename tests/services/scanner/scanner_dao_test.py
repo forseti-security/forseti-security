@@ -179,7 +179,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_create_violation_hash_with_default_algorithm(self):
         """ Test _create_violation_hash. """
-        test_hash = hashlib.new(scanner_dao.FALLBACK_HASH_ALGORITHM)
+        test_hash = hashlib.new(scanner_dao.HASH_ALGORITHM)
         test_hash.update(
             self.test_violation_full_name +
             self.test_inventory_data +
@@ -196,7 +196,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_create_violation_hash_with_invalid_algorithm(self):
         """ Test _create_violation_hash with an invalid algorithm. """
-        test_hash = hashlib.new(scanner_dao.FALLBACK_HASH_ALGORITHM)
+        test_hash = hashlib.new(scanner_dao.HASH_ALGORITHM)
         test_hash.update(
             self.test_violation_full_name +
             self.test_inventory_data +

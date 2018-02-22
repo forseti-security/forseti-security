@@ -29,7 +29,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 
 
-FALLBACK_HASH_ALGORITHM = 'SHA512'
 LOGGER = logger.get_logger(__name__)
 
 
@@ -115,9 +114,9 @@ def define_violation(dbengine):
                 for violation in violations:
 
                     violation_hash = _create_violation_hash(
-                        violation.get('full_name'),
-                        violation.get('inventory_data'),
-                        violation.get('violation_data'),
+                        violation.get('full_name', ''),
+                        violation.get('inventory_data', ''),
+                        violation.get('violation_data', ''),
                     )
 
                     violation = self.TBL_VIOLATIONS(
@@ -203,37 +202,38 @@ def map_by_resource(violation_rows):
 
     return dict(v_by_type)
 
-def _create_violation_hash(violation_full_name, inventory_data, violation_data,
-                           algorithm=FALLBACK_HASH_ALGORITHM):
+def _create_violation_hash(violation_full_name, inventory_data, violation_data):
     """Create a hash of violation data using the requested algorithm.
 
     Args:
         violation_full_name (str): The full name of the violation.
         inventory_data (str): The inventory data.
         violation_data (dict): A violation.
-        algorithm (str): The algorithm used to create the hash.
 
     Returns:
         str: The resulting hex digest or '' if we can't successfully create
         a hash.
     """
+
+    # TODO: Intelligently choose from hashlib.algorithms_guaranteed if our
+    # desired one is not available.
+    algorithm = 'sha512'
+
     try:
         violation_hash = hashlib.new(algorithm)
     except ValueError as e:
-        LOGGER.error('Unable to use the specified hash algorithm: %s',
-                     algorithm)
-        LOGGER.info('Using the fallback hash algorithm: %s',
-                    FALLBACK_HASH_ALGORITHM)
-        violation_hash = hashlib.new(FALLBACK_HASH_ALGORITHM)
+        LOGGER.error('Cannot create hash for a violation with algorithm: '
+                     '%s\n%s', algorithm, e)
+        return ''
 
     try:
         violation_hash.update(
             violation_full_name +
             inventory_data +
-            json.dumps(violation_data)
+            json.dumps(violation_data, sort_keys=True)
         )
     except TypeError as e:
-        LOGGER.error('Cannot create hash for a violation: %s\n %s',
+        LOGGER.error('Cannot create hash for a violation: %s\n%s',
                      violation_full_name, e)
         return ''
 
