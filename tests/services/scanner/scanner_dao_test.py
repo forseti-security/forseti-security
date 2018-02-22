@@ -44,7 +44,8 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_111',
-     'violation_hash': FAKE_VIOLATION_HASH},
+     'violation_hash': '',
+    },
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_222',
      'full_name': 'full_name_222',
@@ -57,7 +58,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_222',
-     'violation_hash': FAKE_VIOLATION_HASH}
+     }
 ]
 
 
@@ -68,6 +69,7 @@ class ScannerDaoTest(ForsetiTestCase):
     def setUp(self):
         """Setup method."""
         ForsetiTestCase.setUp(self)
+        self.maxDiff = None
 
     def tearDown(self):
         """Tear down method."""
@@ -83,24 +85,43 @@ class ScannerDaoTest(ForsetiTestCase):
                                 FAKE_INVENTORY_INDEX_ID)
         saved_violations = violation_access.list()
 
+        expected_hash_values = [
+          (u'9376e8fc2cc094af6594f74b56bae3ef4f420dc953d959d44454ad508cece2315'
+            '39557ff1d71e003a2a6c7c8d93d6043c540628592adce3ead204eeafd397f4a'),
+          (u'24caf5b4852475f1538d77ca69c9c8def24f2673aaac1f687217f0367eb0b3165'
+            'feb844db08ce8518d0f08df1129a0cbbdeaea91dc265a58041d353fb9402975'),
+        ]
+
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
                 'violation_data', 'violation_hash', 'inventory_data']
+
         for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
             for key in keys:
-                if key != 'violation_data':
+                expected_key_value = fake.get(key)
+                saved_key_value = getattr(saved, key)
+                if key == 'violation_data':
                     self.assertEquals(
-                        fake.get(key), getattr(saved, key),
-                        'The key value of "%s" differs:\nExpected: %s'
-                        '\nFound: %s' % (key, fake.get(key),
-                                         getattr(saved, key))
+                        expected_key_value,
+                        json.loads(saved_key_value),
+                        'The key value of "%s" differs:\nExpected %s'
+                        '\nFound: %s' % (key, expected_key_value,
+                                         saved_key_value)
+                    )
+                elif key == 'violation_hash':
+                    self.assertIn(
+                        saved_key_value, expected_hash_values,
+                        'The key value of "%s" differs:\nExpected one of: %s'
+                        '\nFound: %s' % (key, ',\n'.join(expected_hash_values),
+                                         saved_key_value)
                     )
                 else:
                     self.assertEquals(
-                        fake.get(key), json.loads(getattr(saved,
-                                                          'violation_data')),
-                        'key %s differs' % key)
-
+                        expected_key_value, saved_key_value,
+                        'The key value of "%s" differs:\nExpected: %s'
+                        '\nFound: %s' % (key, expected_key_value,
+                                         saved_key_value)
+                    )
 
     @mock.patch.object(scanner_dao,'_create_violation_hash')
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
@@ -146,8 +167,8 @@ class ScannerDaoTest(ForsetiTestCase):
             }
         ]
 
-        self.assertEquals(expected_violations_as_dict,
-                          converted_violations_as_dict)
+        self.assertEqual(expected_violations_as_dict,
+                         converted_violations_as_dict)
 
         self.assertEqual(mock_violation_hash.call_count,
                           len(FAKE_EXPECTED_VIOLATIONS))
@@ -185,11 +206,11 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_create_violation_hash_invalid_violation_data(self, mock_json):
         """ Test _create_violation_hash returns '' when it can't hash. """
 
-        test_violation =  {}
+        test_violation = {}
         test_inventory_index_id= '1'
         expected_hash = ''
 
-        mock_json.side_efect = TypeError()
+        mock_json.side_effect = TypeError()
 
         returned_hash = scanner_dao._create_violation_hash(
             test_violation,

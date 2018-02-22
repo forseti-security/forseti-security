@@ -223,11 +223,10 @@ def _create_violation_hash(violation, inventory_index_id,
         violation_hash = hashlib.new(FALLBACK_HASH_ALGORITHM)
 
     try:
-        violation_hash.update(json.dumps(violation))
-        violation_hash.update(inventory_index_id)
+        violation_hash.update(json.dumps(violation) + inventory_index_id)
     except TypeError as e:
         LOGGER.error('Cannot create hash for a violation: %s\n %s',
-                     e, violation)
+                     violation, e)
         return ''
 
     return violation_hash.hexdigest()
