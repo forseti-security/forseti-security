@@ -15,11 +15,11 @@ inventory:
     root_resource_id: {ROOT_RESOURCE_ID}
 
     # gsuite access
-    groups_service_account_key_file: /home/ubuntu/gsuite_key.json
+    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     api_quota:
-    # The pre-populated values are the defaults from GCP.
+        # The pre-populated values are the defaults from GCP.
         max_admin_api_calls_per_100_seconds: 1500
         max_appengine_api_calls_per_second: 20
         max_bigquery_api_calls_per_100_seconds: 17000
