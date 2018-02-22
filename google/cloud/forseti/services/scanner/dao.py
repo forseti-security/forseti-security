@@ -203,7 +203,7 @@ def map_by_resource(violation_rows):
     return dict(v_by_type)
 
 def _create_violation_hash(violation_full_name, inventory_data, violation_data):
-    """Create a hash of violation data using the requested algorithm.
+    """Create a hash of violation data.
 
     Args:
         violation_full_name (str): The full name of the violation.
