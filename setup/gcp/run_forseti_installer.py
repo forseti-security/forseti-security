@@ -66,7 +66,8 @@ def run():
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
         ForsetiServerInstaller(**args).run_setup()
-        raw_input("Press enter to continue the setup process....")
+        raw_input("Press enter to install the Forseti client "
+                  "and continue the setup process.....")
         ForsetiClientInstaller(**args).run_setup()
         return
 

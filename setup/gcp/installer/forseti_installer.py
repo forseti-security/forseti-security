@@ -45,14 +45,17 @@ class ForsetiInstaller(object):
         pass
 
     def run_setup(self):
-        """Run the setup steps"""
+        """Run the setup steps."""
         utils.print_banner('Installing Forseti {} v{}'.format(
             self.config.installer_type, utils.get_forseti_version()))
 
-        # Preflight checks
+        # Preflight checks.
         self.preflight_checks()
 
-        # Deployment
+        # Create/Reuse service account(s).
+        self.create_or_reuse_service_accounts()
+
+        # Deployment.
         bucket_name = self.generate_bucket_name()
         conf_file_path = self.generate_forseti_conf()
         deployment_tpl_path = self.generate_deployment_templates()
@@ -61,7 +64,7 @@ class ForsetiInstaller(object):
                                                       conf_file_path,
                                                       bucket_name)
 
-        # After deployment
+        # After deployment.
         self.post_install_instructions(deploy_success,
                                        deployment_name,
                                        deployment_tpl_path,
@@ -79,6 +82,10 @@ class ForsetiInstaller(object):
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
+
+    def create_or_reuse_service_accounts(self):
+        """Create or reuse service accounts."""
+        utils.print_banner('Create/Reuse service account(s)')
         self.format_gcp_service_acct_id()
         self.gcp_service_account = gcloud.create_or_reuse_service_acct(
             'gcp_service_account',
@@ -112,11 +119,18 @@ class ForsetiInstaller(object):
             # If deployed successfully, make sure the VM has been initialized,
             # copy configuration file, deployment template file and
             # rule files to the GCS bucket
+
+            if self.config.dry_run:
+                print('This is a dry run, will not copy any files.')
+
+            utils.print_banner('Copying configuration file/deployment'
+                               ' template to GCS')
+
             conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
                 installer_type=self.config.installer_type)
 
-            self.print_copy_statement(conf_file_path, conf_output_path)
+            print('Copying {} to {}'.format(conf_file_path, conf_output_path))
 
             files.copy_file_to_destination(
                 conf_file_path, conf_output_path,
@@ -125,8 +139,8 @@ class ForsetiInstaller(object):
             deployment_tpl_output_path = (
                 constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
 
-            self.print_copy_statement(deployment_tpl_path,
-                                      deployment_tpl_output_path)
+            print('Copying {} to {}'.format(deployment_tpl_path,
+                                            deployment_tpl_output_path))
 
             files.copy_file_to_destination(
                 deployment_tpl_path, deployment_tpl_output_path,
@@ -134,28 +148,14 @@ class ForsetiInstaller(object):
 
         return deployment_completed, deployment_name
 
-    def print_copy_statement(self, input_file, output_file):
-        """Print copy statement.
-
-        Args:
-            input_file (str): Input file.
-            output_file (str): Output file.
-        """
-        utils.print_banner('Copying {} to {}'.format(input_file,
-                                                     output_file))
-
-        if self.config.dry_run:
-            print('This is a dry run, so skipping this step.')
-
     def wait_until_vm_initialized(self, vm_name):
         """Check vm init status.
 
         Args:
             vm_name (str): Name of the VM instance.
         """
-        installer_type = self.config.installer_type.capitalize()
-        utils.print_banner('{} VM Initialization'.format(installer_type))
-        print ('This may take a few minutes.\n')
+        utils.print_banner('Forseti {} VM initialization'.format(
+            self.config.installer_type))
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
         # VT100 control codes, use to remove the last line
@@ -163,12 +163,14 @@ class ForsetiInstaller(object):
 
         for i in range(0, constants.MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
-            sys.stdout.write('\r{}Initializing VM {}'.format(erase_line, dots))
+            sys.stdout.write('\r{}This may take a few minutes. '
+                             'Waiting for Forseti server to start{}'
+                             .format(erase_line, dots))
             sys.stdout.flush()
             if gcloud.check_vm_init_status(name, zone):
                 break
         # print new line
-        print ('\n\nDone.')
+        print ('Done.\n')
 
     def check_run_properties(self):
         """Check script run properties."""
@@ -272,7 +274,8 @@ class ForsetiInstaller(object):
             forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
         """
-        utils.print_banner('Post-setup instructions')
+        utils.print_banner('Forseti {} post-setup instructions'
+                           .format(self.config.installer_type))
 
         if self.config.dry_run:
             print('This was a dry run, so a deployment was not attempted. '

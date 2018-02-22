@@ -76,12 +76,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.format_gsuite_service_acct_id()
         self.should_grant_access()
 
+        self.get_email_settings()
+
+    def create_or_reuse_service_accounts(self):
+        """Create or reuse service accounts."""
+        super(ForsetiServerInstaller, self).create_or_reuse_service_accounts()
         self.gsuite_service_account = gcloud.create_or_reuse_service_acct(
             'gsuite_service_account',
             self.gsuite_service_account,
             self.config.advanced_mode,
             self.config.dry_run)
-        self.get_email_settings()
 
     def prompt_v1_configs_migration(self):
         """Ask the user if they want to migrate conf/rule files
@@ -119,6 +123,18 @@ class ForsetiServerInstaller(ForsetiInstaller):
             deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
+            # Merge all the old rules if necessary.
+            if self.migrate_from_v1:
+                self.merge_old_rules()
+
+            print('Copying {} to {}'.format(constants.RULES_DIR_PATH,
+                                            bucket_name))
+
+            # Copy the rule directory to the GCS bucket.
+            files.copy_file_to_destination(
+                constants.RULES_DIR_PATH, bucket_name,
+                is_directory=True, dry_run=self.config.dry_run)
+
             self.has_roles_script = gcloud.grant_server_svc_acct_roles(
                 self.enable_write_access,
                 self.access_target,
@@ -128,21 +144,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
-            # Merge all the old rules if necessary.
-            if self.migrate_from_v1:
-                self.merge_old_rules()
-
-            # Copy the rule directory to the GCS bucket.
-            files.copy_file_to_destination(
-                constants.RULES_DIR_PATH, bucket_name,
-                is_directory=True, dry_run=self.config.dry_run)
-
-            self.print_copy_statement(constants.RULES_DIR_PATH, bucket_name)
-
             # Waiting for VM to be initialized.
             instance_name = '{}-vm'.format(deployment_name)
             self.wait_until_vm_initialized(instance_name)
-
 
             # Create firewall rules.
             self.create_firewall_rules()
@@ -234,7 +238,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def should_grant_access(self):
         """Inform user that they need IAM access to grant Forseti access."""
-        utils.print_banner('Current IAM access')
         choice = None
 
         if not self.config.advanced_mode:
@@ -246,11 +249,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if choice == 'y':
             self.user_can_grant_roles = True
-            print('Will attempt to grant roles on the target %s.' %
+            print('Forseit will grant required roles on the target: %s.' %
                   self.resource_root_id)
         else:
             self.user_can_grant_roles = False
-            print('Will NOT attempt to grant roles on the target %s.' %
+            print('Forseit will NOT grant required roles on the target: %s.' %
                   self.resource_root_id)
 
     def get_deployment_values(self):
@@ -296,7 +299,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Allow only org level access since IAM explain
         requires org level access.
         """
-        utils.print_banner('Forseti access target')
+        utils.print_banner('Forseti installation configuration')
 
         if not self.config.advanced_mode:
             self.access_target = constants.RESOURCE_TYPES[0]
@@ -332,11 +335,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.resource_root_id = utils.format_resource_id(
             '%ss' % self.access_target, self.target_id)
 
-        print('Forseti will be granted access to: %s' %
+        print('Forseti will be granted access on the target: %s' %
               self.resource_root_id)
 
     def get_email_settings(self):
         """Ask user for specific setup values."""
+        utils.print_banner('Configuring email settings')
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key.
             print(constants.MESSAGE_ASK_SENDGRID_API_KEY)
@@ -352,6 +356,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.config.notification_recipient_email = raw_input(
                     constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
+        utils.print_banner('Configuring GSuite admin information')
         while not self.config.gsuite_superadmin_email:
             # User has to enter a G Suite super admin email.
             print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
@@ -380,7 +385,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def should_enable_write_access(self):
         """Ask if user wants to enable write access for Forseti."""
-        utils.print_banner('Enable Forseti write access')
         choice = None
         if not self.config.advanced_mode:
             choice = 'y'
@@ -391,7 +395,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if choice == 'y':
             self.enable_write_access = True
-            print('Forseti will have write access on %s.' %
+            print('Forseti will have write access on the target: %s' %
                   self.resource_root_id)
 
     def post_install_instructions(self, deploy_success, deployment_name,

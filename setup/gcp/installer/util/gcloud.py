@@ -140,13 +140,14 @@ def enable_apis(dry_run=False):
         return
 
     for api in constants.REQUIRED_APIS:
-        print('Enabling the {} API...'.format(api['name']))
+        print('Requesting the enablement of {} API...'.format(api['name']),
+              end='')
         return_code, _, err = utils.run_command(
             ['gcloud', 'services', 'enable', api['service'], '--async'])
         if return_code:
             print(err)
         else:
-            print('Done.\n')
+            print('Requested.', end='')
     utils.show_loading(100, 'Waiting for all the APIs to be enabled.')
 
 
@@ -434,21 +435,22 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
     """Create or reuse service account.
 
     Args:
-        acct_type (str): The account type
-        acct_id (str): Account id
-        advanced_mode (bool): Whether or not the installer is in advanced mode
-        dry_run (bool): Whether or not the installer is in dry run mode
+        acct_type (str): The account type.
+        acct_id (str): Account id.
+        advanced_mode (bool): Whether or not the installer is in advanced mode.
+        dry_run (bool): Whether or not the installer is in dry run mode.
 
     Returns:
         str: The final account id that we will be using throughout
-                the installation
+             the installation.
     """
-    utils.print_banner('Create/Reuse {}'.format(acct_type))
 
-    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
+    account = acct_type.replace('_', ' ')
+
+    choices = ['Create {}'.format(account), 'Reuse {}'.format(account)]
 
     if not advanced_mode:
-        print ('Creating {}\n'.format(acct_type))
+        print ('Creating {}\n'.format(account))
         choice_index = 1
     else:
         print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
@@ -760,7 +762,7 @@ def create_deployment(project_id,
     deployment_name = 'forseti-security-{}-{}'.format(installation_type,
                                                       datetimestamp)
     print('Deployment name: {}'.format(deployment_name))
-    print('Deployment Manager Dashboard: '
+    print('Monitor the deployment progress here: '
           'https://console.cloud.google.com/deployments/details/'
           '{}?project={}&organizationId={}\n'.format(
               deployment_name, project_id, organization_id))
