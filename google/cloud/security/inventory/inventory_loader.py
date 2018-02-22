@@ -355,8 +355,6 @@ def main(_):
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
 
-    _cleanup_tables(inventory_configs, dao_map)
-
     if global_configs.get('email_recipient') is not None:
         payload = {
             'email_sender': global_configs.get('email_sender'),

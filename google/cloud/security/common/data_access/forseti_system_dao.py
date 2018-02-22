@@ -25,7 +25,8 @@ LOGGER = log_util.get_logger(__name__)
 
 class ForsetiSystemDao(dao.Dao):
     """Data access object (DAO) for Forseti system management.
-        Args:
+
+    Args:
             global_configs (dict): Global config - used to lookup db_name
     """
     def __init__(self, global_configs=None):
@@ -35,7 +36,7 @@ class ForsetiSystemDao(dao.Dao):
     def cleanup_inventory_tables(self, retention_days):
         """Clean up old inventory tables based on their age
 
-        Will detect tables based on snapshot end time in snapshot table,
+        Will detect tables based on snapshot start time in snapshot table,
         and drop tables older than retention_days specified.
 
         Args:
