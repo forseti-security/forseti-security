@@ -21,8 +21,9 @@ SELECT_SNAPSHOT_TABLES_OLDER_THAN = """
     SELECT tables.TABLE_NAME 'table'
     from information_schema.tables as tables
     inner join snapshot_cycles as snap
-    ON snap.complete_time < DATE_SUB(NOW(), INTERVAL %s DAY)
-    AND tables.TABLE_NAME LIKE CONCAT('%%', snap.cycle_timestamp);
+    ON snap.start_time < DATE_SUB(NOW(), INTERVAL %s DAY)
+    AND tables.TABLE_NAME LIKE CONCAT('%%', snap.cycle_timestamp)
+    WHERE tables.TABLE_SCHEMA = %s;
 """
 
 DROP_TABLE = "DROP TABLE {0}"

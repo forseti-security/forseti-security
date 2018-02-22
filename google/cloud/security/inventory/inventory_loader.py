@@ -293,9 +293,9 @@ def _cleanup_tables(inventory_configs, dao_map):
         dao_map (dict): Lookup dict for DAO objects
     """
 
-    retention_days = max(0, inventory_configs.get('retention_days', 0))
+    retention_days = max(-1, inventory_configs.get('retention_days', -1))
     LOGGER.info('Retention period: %s days', retention_days)
-    if retention_days:
+    if retention_days > -1:
         system_dao = dao_map.get('forseti_system_dao')
         system_dao.cleanup_inventory_tables(retention_days)
 
@@ -331,6 +331,8 @@ def main(_):
 
     dao_map = _create_dao_map(global_configs)
 
+    _cleanup_tables(inventory_configs, dao_map)
+
     cycle_time, cycle_timestamp = _start_snapshot_cycle(dao_map.get('dao'))
 
     pipeline_builder = builder.PipelineBuilder(
@@ -352,8 +354,6 @@ def main(_):
 
     _complete_snapshot_cycle(dao_map.get('dao'), cycle_timestamp,
                              snapshot_cycle_status)
-
-    _cleanup_tables(inventory_configs, dao_map)
 
     if global_configs.get('email_recipient') is not None:
         payload = {

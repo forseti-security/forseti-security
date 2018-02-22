@@ -24,7 +24,13 @@ LOGGER = log_util.get_logger(__name__)
 
 
 class ForsetiSystemDao(dao.Dao):
-    """Data access object (DAO) for Forseti system management."""
+    """Data access object (DAO) for Forseti system management.
+        Args:
+            global_configs (dict): Global config - used to lookup db_name
+    """
+    def __init__(self, global_configs=None):
+        dao.Dao.__init__(self, global_configs)
+        self.db_name = global_configs['db_name']
 
     def cleanup_inventory_tables(self, retention_days):
         """Clean up old inventory tables based on their age
@@ -39,7 +45,7 @@ class ForsetiSystemDao(dao.Dao):
         result = self.execute_sql_with_fetch(
             cleanup_tables_sql.RESOURCE_NAME,
             sql,
-            [retention_days])
+            [retention_days, self.db_name])
         LOGGER.info(
             'Found %s tables to clean up that are older than %s days',
             len(result),

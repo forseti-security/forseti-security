@@ -34,7 +34,8 @@ class ForsetiSystemDaoTest(ForsetiTestCase):
     @mock.patch.object(_db_connector.DbConnector, '__init__', autospec=True)
     def setUp(self, mock_db_connector):
         mock_db_connector.return_value = None
-        self.system_dao = forseti_system_dao.ForsetiSystemDao()
+        self.system_dao = forseti_system_dao.ForsetiSystemDao(
+            global_configs={'db_name': 'forseti_security'})
         self.fetch_mock = mock.MagicMock()
         self.commit_mock = mock.MagicMock()
         self.system_dao.execute_sql_with_fetch = self.fetch_mock
@@ -48,7 +49,7 @@ class ForsetiSystemDaoTest(ForsetiTestCase):
         self.fetch_mock.assert_called_once_with(
             cleanup_tables_sql.RESOURCE_NAME,
             cleanup_tables_sql.SELECT_SNAPSHOT_TABLES_OLDER_THAN,
-            [7])
+            [7, 'forseti_security'])
 
         calls = [mock.call(
             cleanup_tables_sql.RESOURCE_NAME,
