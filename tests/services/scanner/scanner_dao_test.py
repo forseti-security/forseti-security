@@ -179,7 +179,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_create_violation_hash_with_default_algorithm(self):
         """ Test _create_violation_hash. """
-        test_hash = hashlib.new(scanner_dao.HASH_ALGORITHM)
+        test_hash = hashlib.new('sha512')
         test_hash.update(
             self.test_violation_full_name +
             self.test_inventory_data +
@@ -194,23 +194,17 @@ class ScannerDaoTest(ForsetiTestCase):
 
         self.assertEqual(expected_hash, returned_hash)
 
-    def test_create_violation_hash_with_invalid_algorithm(self):
+    @mock.patch.object(hashlib, 'new')
+    def test_create_violation_hash_with_invalid_algorithm(self, mock_hashlib):
         """ Test _create_violation_hash with an invalid algorithm. """
-        test_hash = hashlib.new(scanner_dao.HASH_ALGORITHM)
-        test_hash.update(
-            self.test_violation_full_name +
-            self.test_inventory_data +
-            json.dumps(self.test_violation_data)
-        )
-        expected_hash = test_hash.hexdigest()
+        mock_hashlib.side_effect = ValueError
 
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             self.test_inventory_data,
-            self.test_violation_data,
-            algorithm='bad')
+            self.test_violation_data)
 
-        self.assertEqual(expected_hash, returned_hash)
+        self.assertEqual('', returned_hash)
 
     @mock.patch.object(json, 'dumps')
     def test_create_violation_hash_invalid_violation_data(self, mock_json):
