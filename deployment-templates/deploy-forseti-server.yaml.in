@@ -60,7 +60,6 @@ resources:
 
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
-    root-resource-id: {ROOT_RESOURCE_ID}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
