@@ -46,6 +46,8 @@ mv forseti-security-{release_version} forseti-security
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     FORSETI_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
+    GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
+
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
         'export SQL_INSTANCE_CONN_STRING="{1}"\n'

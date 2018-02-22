@@ -30,6 +30,7 @@ set -o nounset
 # script will fail immediately rather than partially succeeding.
 echo "Cloud SQL Instance Connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "SQL port: ${SQL_PORT}"
+echo "Forseti DB name: ${FORSETI_DB_NAME}"
 if ! [[ -f $GSUITE_ADMIN_CREDENTIAL_PATH ]]; then
     echo "Could not find gsuite admin credentials." >&2
     exit 1
