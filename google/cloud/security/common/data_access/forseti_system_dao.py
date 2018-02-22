@@ -45,11 +45,8 @@ class ForsetiSystemDao(dao.Dao):
         result = self.execute_sql_with_fetch(
             cleanup_tables_sql.RESOURCE_NAME,
             sql,
-<<<<<<< HEAD
             [retention_days, self.db_name])
-=======
-            [retention_days])
->>>>>>> c39d48d5fa3e289c328afdc372e965111502f67c
+
         LOGGER.info(
             'Found %s tables to clean up that are older than %s days',
             len(result),
