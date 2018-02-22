@@ -17,8 +17,10 @@
 A stub to call gcp/run_forseti_installer.py which installs into GCP.
 """
 
-import pip
 import site
+
+import pip
+
 
 
 INSTALLER_REQUIRED_PACKAGES = [
@@ -34,20 +36,21 @@ def install(package_name):
     pip.main(['install', package_name, '--user'])
 
 
-def install_and_load_required_packages():
+def install_required_packages():
     """Install required packages."""
     installed_pkgs = [pkg.key for pkg in pip.get_installed_distributions()]
     for package in INSTALLER_REQUIRED_PACKAGES:
         if package not in installed_pkgs:
             install(package)
-    site.main() # Load up the package
+
 
 
 if __name__ == '__main__':
     # We need to install all the required packages before importing our modules
 
     # Installing required packages
-    install_and_load_required_packages()
+    install_required_packages()
+    site.main() # Load up the package
 
     # Importing our own modules
     from gcp import run_forseti_installer

@@ -53,7 +53,7 @@ class ForsetiInstaller(object):
         self.preflight_checks()
 
         # Create/Reuse service account(s).
-        self.create_or_reuse_service_accounts()
+        self.create_or_reuse_service_accts()
 
         # Deployment.
         bucket_name = self.generate_bucket_name()
@@ -83,7 +83,7 @@ class ForsetiInstaller(object):
         self.organization_id = gcloud.lookup_organization(self.project_id)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
 
-    def create_or_reuse_service_accounts(self):
+    def create_or_reuse_service_accts(self):
         """Create or reuse service accounts."""
         utils.print_banner('Create/Reuse service account(s)')
         self.format_gcp_service_acct_id()

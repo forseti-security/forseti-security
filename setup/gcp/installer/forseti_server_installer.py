@@ -78,9 +78,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         self.get_email_settings()
 
-    def create_or_reuse_service_accounts(self):
+    def create_or_reuse_service_accts(self):
         """Create or reuse service accounts."""
-        super(ForsetiServerInstaller, self).create_or_reuse_service_accounts()
+        super(ForsetiServerInstaller, self).create_or_reuse_service_accts()
         self.gsuite_service_account = gcloud.create_or_reuse_service_acct(
             'gsuite_service_account',
             self.gsuite_service_account,
