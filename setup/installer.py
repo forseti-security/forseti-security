@@ -22,7 +22,6 @@ import site
 import pip
 
 
-
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'
 ]

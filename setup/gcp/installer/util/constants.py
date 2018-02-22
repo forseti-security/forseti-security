@@ -183,7 +183,7 @@ MESSAGE_GSUITE_DATA_COLLECTION = (
     '        https://www.googleapis.com/auth/admin.directory.'
     'user.readonly\n\n'
     '    8. Click Authorize\n\n'
-    'or refer to the guides:'
+    'or refer to the guides: '
     'http://forsetisecurity.org/docs/howto/configure/'
     'gsuite-group-collection\n\n')
 
@@ -210,7 +210,7 @@ MESSAGE_ENABLE_GSUITE_GROUP = (
     'gsuite-group-collection\n\n')
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
-    '\nTo read G Suite Groups and Users data, '
+    'To read G Suite Groups and Users data, '
     'please provide a G Suite super admin, '
     'please provide a G Suite super admin email address. '
     'This step is NOT optional.')

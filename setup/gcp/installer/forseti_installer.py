@@ -55,11 +55,12 @@ class ForsetiInstaller(object):
         # Create/Reuse service account(s).
         self.create_or_reuse_service_accts()
 
+        # Create configuration file and deployment template
+        (conf_file_path,
+         deployment_tpl_path) = self.create_conf_file_dpl_template()
+
         # Deployment.
         bucket_name = self.generate_bucket_name()
-        conf_file_path = self.generate_forseti_conf()
-        deployment_tpl_path = self.generate_deployment_templates()
-
         deploy_success, deployment_name = self.deploy(deployment_tpl_path,
                                                       conf_file_path,
                                                       bucket_name)
@@ -70,6 +71,15 @@ class ForsetiInstaller(object):
                                        deployment_tpl_path,
                                        conf_file_path,
                                        bucket_name)
+
+    def create_conf_file_dpl_template(self):
+        """Create configuration file and deployment template."""
+        utils.print_banner('Creating configuration file and'
+                           ' deployment template')
+        conf_file_path = self.generate_forseti_conf()
+        deployment_tpl_path = self.generate_deployment_templates()
+
+        return conf_file_path, deployment_tpl_path
 
     def preflight_checks(self):
         """Pre-flight checks"""

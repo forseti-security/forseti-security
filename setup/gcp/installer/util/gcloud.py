@@ -756,10 +756,11 @@ def create_deployment(project_id,
         print('This is a dry run, so skipping this step.')
         return 0
 
-    print ('This may take a few minutes.')
-    _ping_deployment_manager() # Make sure deployment-manager is ready
     utils.print_banner('Create Forseti {} deployment'.format(
         installation_type))
+
+    print ('This may take a few minutes.')
+    _ping_deployment_manager() # Make sure deployment-manager is ready
     deployment_name = 'forseti-security-{}-{}'.format(installation_type,
                                                       datetimestamp)
     print('Deployment name: {}'.format(deployment_name))
