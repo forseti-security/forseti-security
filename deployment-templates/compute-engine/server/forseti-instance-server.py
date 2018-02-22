@@ -49,11 +49,13 @@ mv forseti-security-{release_version} forseti-security
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
         'export SQL_INSTANCE_CONN_STRING="{1}"\n'
-        'export FORSETI_DB_NAME="{2}"\n')
+        'export FORSETI_DB_NAME="{2}"\n'
+        'export GSUITE_ADMIN_CREDENTIAL_PATH="{3}"\n')
     EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
         context.properties['db-port'],
         CLOUDSQL_CONN_STRING,
-        FORSETI_DB_NAME)
+        FORSETI_DB_NAME,
+        GSUITE_ADMIN_CREDENTIAL_PATH)
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
