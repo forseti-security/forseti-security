@@ -723,18 +723,18 @@ def enable_os_login(instance_name, zone):
 def create_deployment(project_id,
                       organization_id,
                       deploy_tpl_path,
-                      installer_type,
+                      installation_type,
                       datetimestamp,
                       dry_run):
     """Create the GCP deployment.
 
     Args:
-        project_id (str): GCP project id
-        organization_id (str): GCP organization id
-        deploy_tpl_path (str): Path of deployment template
-        installer_type (str): Type of the installation (client/server)
-        datetimestamp (str): Timestamp
-        dry_run (bool): Whether the installer is in dry run mode
+        project_id (str): GCP project id.
+        organization_id (str): GCP organization id.
+        deploy_tpl_path (str): Path of deployment template.
+        installation_type (str): Type of the installation (client/server).
+        datetimestamp (str): Timestamp.
+        dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
         str: Name of the deployment
@@ -755,8 +755,9 @@ def create_deployment(project_id,
 
     print ('This may take a few minutes.')
     _ping_deployment_manager() # Make sure deployment-manager is ready
-    utils.print_banner('Create Forseti {} deployment'.format(installer_type))
-    deployment_name = 'forseti-security-{}-{}'.format(installer_type,
+    utils.print_banner('Create Forseti {} deployment'.format(
+        installation_type))
+    deployment_name = 'forseti-security-{}-{}'.format(installation_type,
                                                       datetimestamp)
     print('Deployment name: {}'.format(deployment_name))
     print('Deployment Manager Dashboard: '
