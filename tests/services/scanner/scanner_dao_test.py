@@ -182,7 +182,7 @@ class ScannerDaoTest(ForsetiTestCase):
         ]
 
         # It's useless testing 'created_at' as we can't mock datetime and we
-        # only care about it's type and not it's value.
+        # only care about its type and not its value.
         for violation in converted_violations_as_dict:
             del violation['created_at']
 
