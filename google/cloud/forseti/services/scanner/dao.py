@@ -203,7 +203,8 @@ def map_by_resource(violation_rows):
 
     return dict(v_by_type)
 
-def _create_violation_hash(violation_full_name, inventory_data, violation_data, algorithm=FALLBACK_HASH_ALGORITHM):
+def _create_violation_hash(violation_full_name, inventory_data, violation_data,
+                           algorithm=FALLBACK_HASH_ALGORITHM):
     """Create a hash of violation data using the requested algorithm.
 
     Args:
@@ -227,8 +228,8 @@ def _create_violation_hash(violation_full_name, inventory_data, violation_data, 
 
     try:
         violation_hash.update(
-            violation_full_name,
-            inventory_data,
+            violation_full_name +
+            inventory_data +
             json.dumps(violation_data)
         )
     except TypeError as e:
