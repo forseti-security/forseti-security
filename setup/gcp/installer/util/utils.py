@@ -542,3 +542,26 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
                        fields_to_ignore, field_identifiers)
             base_counter += 1
             target_counter += 1
+
+
+def show_loading(loading_time, message='', max_number_of_dots=15):
+    """Show loading message, append dots to the end of the message up to
+    a certain number of dots and repeat.
+
+    Args:
+        loading_time (int): Loading time in seconds.
+        message (str): Message to print to stdout.
+        max_number_of_dots (int): Maximum number of dots on the line.
+    """
+
+    # VT100 control codes, use to remove the last line.
+    erase_line = '\x1b[2K'
+
+    for i in range(0, loading_time*2):
+        # Sleep for 0.5 second so that the dots can appear more quickly
+        # to be more user friendly.
+        time.sleep(0.5)
+        dots = '.' * (i % max_number_of_dots)
+        sys.stdout.write('\r{}{}{}'.format(erase_line, message, dots))
+        sys.stdout.flush()
+    print ('Done.\n')

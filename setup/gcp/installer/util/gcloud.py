@@ -149,6 +149,7 @@ def enable_apis(dry_run=False):
             print(err)
         else:
             print('Requested.')
+    utils.show_loading(100, 'Waiting for all the APIs to be enabled.')
 
 
 def grant_client_svc_acct_roles(project_id,
