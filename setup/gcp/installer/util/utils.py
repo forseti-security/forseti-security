@@ -301,6 +301,7 @@ def sanitize_conf_values(conf_values):
             conf_values[key] = '""'
     return conf_values
 
+
 def show_loading(loading_time, message='', max_number_of_dots=15):
     """Show loading message, append dots to the end of the message up to
     a certain number of dots and repeat.
@@ -315,8 +316,10 @@ def show_loading(loading_time, message='', max_number_of_dots=15):
     erase_line = '\x1b[2K'
 
     for i in range(0, loading_time*2):
+        # Sleep for 0.5 second so that the dots can appear more quickly
+        # to be more user friendly.
+        time.sleep(0.5)
         dots = '.' * (i % max_number_of_dots)
         sys.stdout.write('\r{}{}{}'.format(erase_line, message, dots))
         sys.stdout.flush()
-        time.sleep(0.5)
     print ('Done.\n')
