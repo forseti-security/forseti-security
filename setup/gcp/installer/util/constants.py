@@ -311,8 +311,7 @@ QUESTION_ENABLE_WRITE_ACCESS = (
     '(e.g. for Enforcer) (y/n) ')
 
 QUESTION_GSUITE_SUPERADMIN_EMAIL = (
-    'What is your organization\'s G Suite super admin email? '
-    '(press [enter] to skip) ')
+    'What is your organization\'s G Suite super admin email? ')
 
 QUESTION_SENDGRID_API_KEY = (
     'What is your SendGrid API key? '
