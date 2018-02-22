@@ -622,18 +622,17 @@ def get_vm_instance_info(instance_name, try_match=False):
     """Get forseti server ip and zone information if exists, exit if not.
 
     Args:
-        instance_name (str): Name of the vm instance
-        try_match (bool): Match instance that contains instance_name
-                          inside their name
+        instance_name (str): Name of the vm instance.
+        try_match (bool): Match instance that contains instance_name.
+                          inside their name.
 
     Returns:
-        str: IP address of the forseti server application
-        str: Zone of the forseti server application, default to 'us-central1-c'
-        str: Name of the forseti server instance
+        str: IP address of the forseti server application.
+        str: Zone of the forseti server application, default to 'us-central1-c'.
+        str: Name of the forseti server instance.
     """
     def _ping_compute_instance():
-        """Check compute instance status.
-        """
+        """Check compute instance status."""
         utils.run_command(
             ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 

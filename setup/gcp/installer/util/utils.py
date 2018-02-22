@@ -386,8 +386,8 @@ def merge_object(base_obj, target_obj,
     Args:
         base_obj (object): Base dictionary.
         target_obj (object): Target dictionary.
-        fields_to_ignore (list): Fields to ignore (keep in base_dict)
-        field_identifiers (dict): Identifiers for fields
+        fields_to_ignore (list): Fields to ignore (keep in base_dict).
+        field_identifiers (dict): Identifiers for fields.
 
     Raises:
           FormatNotSupported: Format not supported.
@@ -397,7 +397,7 @@ def merge_object(base_obj, target_obj,
         pass
 
     # Init default values for fields_to_ignore and field_identifiers
-    # if they don't already exists
+    # if they don't already exists.
     if fields_to_ignore is None:
         fields_to_ignore = []
     if field_identifiers is None:
@@ -419,13 +419,13 @@ def merge_dict(base_dict, target_dict,
                fields_to_ignore, field_identifiers):
     """Merge target_dict into base_dict.
 
-    Note: base_dict will be modified during the merge process
+    Note: base_dict will be modified during the merge process.
 
     Args:
         base_dict (dict): Base dictionary.
         target_dict (dict): Target dictionary.
-        fields_to_ignore (list): Fields to ignore (keep in base_dict)
-        field_identifiers (dict): Identifiers for fields
+        fields_to_ignore (list): Fields to ignore (keep in base_dict).
+        field_identifiers (dict): Identifiers for fields.
     """
 
     for key, val in base_dict.iteritems():
@@ -433,7 +433,7 @@ def merge_dict(base_dict, target_dict,
             # If target_dict has the same key, we check if the value is
             # an instance of dictionary. If it is we merge recursively and
             # if it's not, we do a simple replace if the key is not in
-            # fields_to_ignore
+            # fields_to_ignore.
             if key in fields_to_ignore:
                 continue
             if isinstance(val, dict):
@@ -454,7 +454,7 @@ def merge_dict(base_dict, target_dict,
     for key, val in target_dict.iteritems():
         if key not in base_dict and key not in fields_to_ignore:
             # If this is a key we have only in target but not in base, we add
-            # it to the base_dict
+            # it to the base_dict.
             base_dict[key] = val
 
 
@@ -493,28 +493,28 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
 
     if base_dict_list:
         # If base_dict_list is not empty, check if the dictionary object
-        # inside contains the identifier
+        # inside contains the identifier.
         contains_identifier = identifier in base_dict_list[0]
     if target_dict_list:
         # If target_dict_list is not empty, check if the dictionary object
-        # inside contains the identifier
+        # inside contains the identifier.
         contains_identifier = contains_identifier and (
             identifier in target_dict_list[0])
 
     if not identifier or not contains_identifier:
         # Doesn't have an identifier, append all the dictionary objects from
         # target_dict_list to base_dict_list if base_dict_list doesn't have
-        # them already
+        # them already.
         for target_dict in target_dict_list:
             if target_dict not in base_dict_list:
                 base_dict_list.append(target_dict)
         return
 
-    # Sort both base_dict_list and target_dict_list by the identifier
+    # Sort both base_dict_list and target_dict_list by the identifier.
     base_dict_list.sort(key=lambda k: k[identifier])
     target_dict_list.sort(key=lambda k: k[identifier])
 
-    # Merge them
+    # Merge them.
     base_counter = 0
     target_counter = 0
     max_items = len(base_dict_list) + len(target_dict_list)
@@ -528,16 +528,16 @@ def merge_dict_list(base_dict_list, target_dict_list, identifier,
         elif (base_counter >= len(base_dict_list) or
               cur_base_dict[identifier] > cur_taget_dict[identifier]):
             # cur_target_object only exists in target_dict_list,
-            # add it to base_dict_list, increment target_counter
+            # add it to base_dict_list, increment target_counter.
             base_dict_list.append(cur_taget_dict)
             target_counter += 1
         elif cur_base_dict[identifier] < cur_taget_dict[identifier]:
             # cur_base_dict object only exists in base_dict_list,
-            # increment base_counter
+            # increment base_counter.
             base_counter += 1
         else:
             # They have the same identifier, merge them,
-            # increment both counters
+            # increment both counters.
             merge_dict(cur_base_dict, cur_taget_dict,
                        fields_to_ignore, field_identifiers)
             base_counter += 1
@@ -554,7 +554,7 @@ def show_loading(loading_time, message='', max_number_of_dots=15):
         max_number_of_dots (int): Maximum number of dots on the line.
     """
 
-    # VT100 control codes, use to remove the last line
+    # VT100 control codes, use to remove the last line.
     erase_line = '\x1b[2K'
 
     for i in range(0, loading_time*2):

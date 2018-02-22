@@ -15,6 +15,12 @@
 
 source /home/ubuntu/forseti_env.sh
 
+
+# set -x enables a mode of the shell where all executed commands are printed to the terminal.
+# With this  enabled, we should not put anything private/secret in the commands called because
+# they will be logged.
+set -x
+
 # Put the config files in place.
 gsutil cp gs://${SCANNER_BUCKET}/configs/server/forseti_conf_server.yaml ${FORSETI_CONF}
 gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
@@ -24,22 +30,28 @@ if [ ! -f "${FORSETI_CONF}" ]; then
     exit 1
 fi
 
-# inventory command
+# Run inventory command
 MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
-echo "Run inventory creation"
+echo "Running Forseti inventory."
 forseti inventory create --import_as ${MODEL_ID}
+echo "Finished running Forseti inventory."
 sleep 10s
+
+# Run model command
+echo "Using model ${MODEL_ID} to run scanner"
 forseti model use ${MODEL_ID}
 # Sometimes there's a lag between when the model
 # successfully saves to the database.
 sleep 10s
-echo "Created inventory and using model ${MODEL_ID}"
 echo "Forseti config: $(forseti config show)"
 
-# scanner command TBD
-echo "Run scanner with ${FORSETI_CONF}"
-forseti scanner run ${FORSETI_CONF}
-echo "Ran scanner"
+# Run scanner command
+echo "Running Forseti scanner."
+forseti scanner run
+echo "Finished running Forseti scanner."
+sleep 10s
 
-# Inventory cleanup TBD
-# ...
+# Run notifier command
+echo "Running Forseti notifier."
+forseti notifier run
+echo "Finished running Forseti notifier."

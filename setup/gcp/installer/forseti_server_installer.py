@@ -143,6 +143,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             instance_name = '{}-vm'.format(deployment_name)
             self.wait_until_vm_initialized(instance_name)
 
+
             # Create firewall rules.
             self.create_firewall_rules()
 
@@ -185,17 +186,29 @@ class ForsetiServerInstaller(ForsetiInstaller):
             0,
             '10.128.0.0/9')
 
+        # Create firewall rule to open only port tcp:22 (ssh)
+        # to all the external traffics from the internet.
+        gcloud.create_firewall_rule(
+            self.format_firewall_rule_name(
+                'forseti-server-allow-ssh-external'),
+            [self.gcp_service_account],
+            constants.FirewallRuleAction.ALLOW,
+            ['tcp:22'],
+            constants.FirewallRuleDirection.INGRESS,
+            0,
+            '0.0.0.0/0')
+
     def generate_forseti_conf(self):
         """Generate Forseti conf file.
 
-        if self.migrate_from_v1 is True, pull the v1 configuration
-        file and merge it with v2 template
+        If self.migrate_from_v1 is True, pull the v1 configuration
+        file and merge it with v2 template.
 
         Returns:
-            str: Forseti configuration file path
+            str: Forseti configuration file path.
         """
-        forseti_conf_path = super(ForsetiServerInstaller,
-                                  self).generate_forseti_conf()
+        forseti_conf_path = super(
+            ForsetiServerInstaller, self).generate_forseti_conf()
 
         if self.migrate_from_v1:
             new_conf = files.read_yaml_file_from_local(forseti_conf_path)
@@ -212,10 +225,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Format firewall rule name.
 
         Args:
-            rule_name (str): Name of the firewall rule
+            rule_name (str): Name of the firewall rule.
 
         Returns:
-            str: Firewall rule name
+            str: Firewall rule name.
         """
         return '{}-{}'.format(rule_name, self.config.datetimestamp)
 
@@ -241,11 +254,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
                   self.resource_root_id)
 
     def get_deployment_values(self):
-        """Get deployment values
+        """Get deployment values.
 
         Returns:
-            dict: A dictionary of values needed to generate
-                the forseti deployment template
+            dict: A dictionary of values needed to generate.
+                the forseti deployment template.
         """
         bucket_name = self.generate_bucket_name()
         return {
@@ -262,11 +275,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
         }
 
     def get_configuration_values(self):
-        """Get configuration values
+        """Get configuration values.
 
         Returns:
-            dict: A dictionary of values needed to generate
-                the forseti configuration file
+            dict: A dictionary of values needed to generate.
+                the forseti configuration file.
         """
         bucket_name = self.generate_bucket_name()
         return {
@@ -280,7 +293,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def determine_access_target(self):
         """Determine where to enable Forseti access.
 
-        Either org, folder, or project level.
+        Allow only org level access since IAM explain
+        requires org level access.
         """
         utils.print_banner('Forseti access target')
 
@@ -324,7 +338,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def get_email_settings(self):
         """Ask user for specific setup values."""
         if not self.config.sendgrid_api_key:
-            # Ask for SendGrid API Key
+            # Ask for SendGrid API Key.
             print(constants.MESSAGE_ASK_SENDGRID_API_KEY)
             self.config.sendgrid_api_key = raw_input(
                 constants.QUESTION_SENDGRID_API_KEY).strip()
@@ -333,19 +347,19 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.config.notification_sender_email = (
                     constants.NOTIFICATION_SENDER_EMAIL)
 
-            # Ask for notification recipient email
+            # Ask for notification recipient email.
             if not self.config.notification_recipient_email:
                 self.config.notification_recipient_email = raw_input(
                     constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
         while not self.config.gsuite_superadmin_email:
-            # User has to enter a G Suite super admin email
+            # User has to enter a G Suite super admin email.
             print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
             self.config.gsuite_superadmin_email = raw_input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
     def format_gsuite_service_acct_id(self):
-        """Format the gsuite service account id"""
+        """Format the gsuite service account id."""
         self.gsuite_service_account = utils.format_service_acct_id(
             'gsuite',
             'reader',
