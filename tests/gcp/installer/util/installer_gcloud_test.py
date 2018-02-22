@@ -288,18 +288,6 @@ class GcloudModuleTest(ForsetiTestCase):
             self.assertEqual(output_head, output)
 
     @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
-    def test_enable_apis(self, test_patch):
-        """Test enable_apis()."""
-        test_patch.return_value = (0, '', None)
-        output_tail = 'Done.'
-        with captured_output() as (out, err):
-            gcloud.enable_apis()
-            # collect all the output, the last line (excluding blank line)
-            all_output = [s for s in out.getvalue().split('\n') if len(s)]
-            output = all_output[-1][:len(output_tail)]
-            self.assertEqual(output_tail, output)
-
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
     def test_choose_organization_no_org(self, test_patch):
         """Test choose_organization()."""
         # No orgs
