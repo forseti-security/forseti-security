@@ -11,29 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""GCP Resource scanner.
+"""GCP Resource scanner."""
 
-Usage:
-
-  Run scanner:
-  $ forseti_scanner --forseti_config
-"""
-
-import gflags as flags
-
-from google.apputils import app
-from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-
-
-# Setup flags
-FLAGS = flags.FLAGS
-
-# Format: flags.DEFINE_<type>(flag_name, default_value, help_text)
-# Example:
-# https://github.com/google/python-gflags/blob/master/examples/validator.py
 
 LOGGER = logger.get_logger(__name__)
 
@@ -54,18 +36,8 @@ def run(model_name=None, service_config=None):
         int: Status code.
     """
 
-    try:
-        configs = file_loader.read_and_parse_file(
-            service_config.forseti_config_file_path)
-    except (AttributeError, IOError) as err:
-        LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try '
-                     'again. Error: %s', err)
-        return 1
-    global_configs = configs.get('global')
-    scanner_configs = configs.get('scanner')
-
-    logger.set_logger_level_from_config(scanner_configs.get('loglevel'))
+    global_configs = service_config.get_global_config()
+    scanner_configs = service_config.get_scanner_config()
 
     # TODO: Figure out if we still need to get the latest model here,
     # or should it be set in the server context before calling the scanner.
@@ -92,21 +64,3 @@ def run(model_name=None, service_config=None):
 
     LOGGER.info('Scan complete!')
     return 0
-
-
-def main(_):
-    """Entry point when the scanner is run as an executable.
-
-    Args:
-        _ (list): args that aren't used
-
-    Returns:
-        int: Status code.
-    """
-
-    run()
-    return 0
-
-
-if __name__ == '__main__':
-    app.run()
