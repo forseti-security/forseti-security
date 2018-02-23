@@ -140,13 +140,15 @@ def enable_apis(dry_run=False):
         return
 
     for api in constants.REQUIRED_APIS:
-        print('Enabling the {} API...'.format(api['name']))
+        print('Enabling the {} API...'.format(api['name']),
+              end='')
+        sys.stdout.flush()
         return_code, _, err = utils.run_command(
-            ['gcloud', 'services', 'enable', api['service'], '--async'])
+            ['gcloud', 'services', 'enable', api['service']])
         if return_code:
             print(err)
         else:
-            print('Done.')
+            print('Enabled.')
 
 
 def grant_client_svc_acct_roles(project_id,
