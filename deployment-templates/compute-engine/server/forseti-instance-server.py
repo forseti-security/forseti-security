@@ -178,7 +178,7 @@ chown -R $USER {forseti_home}
 sudo su $USER -c "python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
 
 # Download server configuration from GCS
-sudo su $USER -c "gsutil cp gs://${SCANNER_BUCKET}/configs/server/forseti_conf_server.yaml ${FORSETI_SERVER_CONF}"
+sudo su $USER -c "gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_conf}"
 
 # Start Forseti service depends on vars defined above.
 bash ./setup/gcp/scripts/initialize_forseti_services.sh
