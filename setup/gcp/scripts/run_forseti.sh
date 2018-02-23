@@ -34,7 +34,7 @@ fi
 sudo systemctl restart forseti.service
 
 # Run inventory command
-MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)qq
+MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."
 forseti inventory create --import_as ${MODEL_ID}
 echo "Finished running Forseti inventory."
