@@ -790,3 +790,22 @@ def check_vm_init_status(vm_name, zone):
         return True
 
     return False
+
+
+def get_domain_from_organization_id(organization_id):
+    """Get domain from organization id.
+
+    Args:
+        organization_id (str): Id of the organization.
+
+    Returns:
+        str: Domain of the org.
+    """
+
+    _, out, _ = utils.run_command(
+        ['gcloud', 'organizations', 'describe', organization_id,
+         '--format=json'])
+
+    org_info = json.loads(out)
+
+    return org_info.get('display_name', '')

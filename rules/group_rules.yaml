@@ -16,8 +16,8 @@
   group_email: my_customer
   mode: whitelist
   conditions:
-    - member_email: '@domain.tld'
-    - member_email: '@gmail.com'
+    - member_email: @{DOMAIN}
+    - member_email: @gmail.com
 
 #- name: Allow mypartner users to be in a group.
 #  group_email: <FOO_GROUP>@<MY_COMPANY DOMAIN>

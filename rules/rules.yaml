@@ -1,0 +1,79 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Sample rules for Auditor
+
+rules:
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
+    description: Instance statuses
+    name: rules.instance.status.1
+    configuration:
+      variables:
+        - status
+      resources:
+        - type: instance
+          variables:
+            status: status
+      condition: status != 'RUNNING'
+
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
+    description: Cloud SQL rules
+    name: rules.cloudsql.status.1
+    configuration:
+      resources:
+        - type: cloudsqlinstance
+        - variables:
+            authorized_networks: authorizedNetworks
+            ssl_enabled: requireSsl
+            instance_name: name
+      conditions:
+        - instance_name matches 'REGEX'
+        - instance_name equals 'APPLE'
+        - not instance_name equalsIgnoreCase 'ORANGE'
+        - not instance_name matchesIgnoreCase 'REGEX'
+        - authorized_networks matches '0.0.0.0/0'
+        - ssl_enabled equals 'False'
+        - instance_name matches '*'
+
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
+    description: Big Query rules
+    name: rules.bigquery.status.1
+    configuration:
+      resources:
+        - type: cloudsqlinstance
+        - variables:
+            authorized_networks: authorizedNetworks
+            ssl_enabled: requireSsl
+            instance_name: name
+      conditions:
+        - instance_name matches 'REGEX' or instance_name matches 'FRUIT'
+        - instance_name equals 'APPLE'
+        - not instance_name equalsIgnoreCase 'ORANGE'
+        - not instance_name matchesIgnoreCase 'REGEX'
+        - authorized_networks matches '0.0.0.0/0'
+        - ssl_enabled equals 'False'
+        - instance_name matches '*'
+
+  - type: google.cloud.forseti.auditor.rules.rule.Rule
+    description: Test rule for project id
+    name: rules.project.id.1
+    configuration:
+      variables:
+        - resource_id
+      resources:
+        - type: project
+          variables:
+            resource_id: name
+      condition: resource_id != "proj1"
+-
