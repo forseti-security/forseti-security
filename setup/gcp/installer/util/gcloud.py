@@ -808,4 +808,4 @@ def get_domain_from_organization_id(organization_id):
 
     org_info = json.loads(out)
 
-    return org_info.get('display_name', '')
+    return org_info.get('displayName', '')

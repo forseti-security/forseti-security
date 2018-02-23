@@ -109,7 +109,7 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
     return None
 
 
-def update_rule_files_default_values(values, rule_dir_path):
+def update_rule_files(values, rule_dir_path):
     """Update rule files default values.
 
     Args:
