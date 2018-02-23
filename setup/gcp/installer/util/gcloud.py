@@ -339,7 +339,8 @@ def _grant_role(role, resource_args, resource_id,
         '--role={}'.format(role),
     ])
     if user_can_grant_roles:
-        print('Assigning {} on {}...'.format(role, resource_id))
+        print('Assigning {} on {}...'.format(role, resource_id), end='')
+        sys.stdout.flush()
         return_code, _, err = utils.run_command(iam_role_cmd)
         if return_code:
             print(err)
