@@ -34,6 +34,7 @@ class Instance(object):
             **kwargs (dict): The object's attributes.
         """
         self.id = kwargs.get('id')
+        self.full_name = kwargs.get('full_name')
         self.can_ip_forward = kwargs.get('can_ip_forward')
         self.cpu_platform = kwargs.get('cpu_platform')
         self.creation_timestamp = kwargs.get('creation_timestamp')
@@ -54,10 +55,11 @@ class Instance(object):
         self._json = kwargs.get('raw_instance')
 
     @classmethod
-    def from_dict(cls, instance, project_id=None):
+    def from_dict(cls, full_name, instance, project_id=None):
         """Creates an Instance from an instance dict.
 
         Args:
+            full_name (str): The full resource name and ancestory.
             instance (dict): An instance resource dict.
             project_id (str): A project id for the resource.
 
@@ -66,6 +68,7 @@ class Instance(object):
         """
         kwargs = {'project_id': project_id,
                   'id': instance.get('id'),
+                  'full_name': full_name,
                   'creation_timestamp': instance.get('creationTimestamp'),
                   'name': instance.get('name'),
                   'description': instance.get('description'),
@@ -85,10 +88,11 @@ class Instance(object):
         return cls(**kwargs)
 
     @staticmethod
-    def from_json(json_string, project_id=None):
+    def from_json(full_name, json_string, project_id=None):
         """Creates an Instance from an instance JSON string.
 
         Args:
+            full_name (str): The full resource name and ancestory.
             json_string (str): A json string representing the instance.
             project_id (str): A project id for the resource.
 
@@ -96,7 +100,7 @@ class Instance(object):
             Instance: A new Instance object.
         """
         instance = json.loads(json_string)
-        return Instance.from_dict(instance, project_id)
+        return Instance.from_dict(full_name, instance, project_id)
 
     def _create_json_str(self):
         """Creates a json string based on the object attributes.
@@ -106,6 +110,7 @@ class Instance(object):
         """
         resource_dict = {
             'id': self.id,
+            'full_name': self.full_name,
             'creationTimestamp': self.creation_timestamp,
             'name': self.name,
             'description': self.description,
@@ -120,7 +125,8 @@ class Instance(object):
             'status': self.status,
             'statusMessage': self.status_message,
             'tags': self.tags,
-            'zone': self.zone}
+            'zone': self.zone,
+            'inventory_data': self._json}
 
         # Strip out empty values
         resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
@@ -153,9 +159,12 @@ class Instance(object):
         Returns:
             List: list of InstanceNetworkInterface objects
         """
-        return [InstanceNetworkInterface(**ni)
-                for ni in self.network_interfaces]
-
+        instance_network_interfaces = []
+        for nic in self.network_interfaces:
+            nic['full_name'] = self.full_name
+            instance_network_interface = InstanceNetworkInterface(**nic)
+            instance_network_interfaces.append(instance_network_interface)
+        return instance_network_interfaces
 
 KEY_OBJECT_KIND = 'Instance'
 
@@ -241,6 +250,7 @@ class InstanceNetworkInterface(object):
         Args:
             kwargs: json from a single instance on the network_interfaces
         """
+        self.full_name = kwargs.get('full_name')
         self.kind = kwargs.get('kind')
         self.network = kwargs.get('network')
         self.subnetwork = kwargs.get('subnetwork')

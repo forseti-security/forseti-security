@@ -34,6 +34,8 @@ class Project(resource.Resource):
     def __init__(
             self,
             project_id,
+            full_name=None,
+            data=None,
             project_number=None,
             name=None,
             display_name=None,
@@ -43,6 +45,8 @@ class Project(resource.Resource):
 
         Args:
             project_id (str): The project "named" id.
+            full_name (str): The full resource name and ancestory.
+            data (str): Resource representation of the project.
             project_number (int): The project number.
             name (str): The full unique GCP name, with the format
                 "projects/{projectId}".
@@ -58,9 +62,12 @@ class Project(resource.Resource):
             parent=parent,
             lifecycle_state=lifecycle_state)
         self.project_number = project_number
+        self.full_name = full_name
+        self.data = data
 
     def get_project_number(self):
         """Returns the project number.
+            full_name (str)
 
         Returns:
             int: The project number.

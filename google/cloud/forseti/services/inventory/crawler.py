@@ -293,20 +293,10 @@ def run_crawler(storage,
         QueueProgresser: The progresser implemented in inventory
     """
 
-    client_config = {
-        'groups_service_account_key_file': config.get_gsuite_sa_path(),
-        'domain_super_admin_email': config.get_gsuite_admin_email(),
-        'max_admin_api_calls_per_100_seconds': 1500,
-        'max_appengine_api_calls_per_second': 20,
-        'max_bigquery_api_calls_per_100_seconds': 17000,
-        'max_cloudbilling_api_calls_per_60_seconds': 300,
-        'max_crm_api_calls_per_100_seconds': 400,
-        'max_sqladmin_api_calls_per_100_seconds': 100,
-        'max_servicemanagement_api_calls_per_100_seconds': 200,
-        'max_compute_api_calls_per_second': 20,
-        'max_iam_api_calls_per_second': 20,
-        'max_container_api_calls_per_100_seconds': 1000,
-        }
+    client_config = config.get_api_quota_configs()
+    client_config['groups_service_account_key_file'] = (
+        config.get_gsuite_sa_path())
+    client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
     root_id = config.get_root_resource_id()
     client = gcp.ApiClientImpl(client_config)

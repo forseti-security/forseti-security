@@ -16,15 +16,11 @@
 
 import abc
 
-from google.cloud.forseti.common.data_access import dao
-from google.cloud.forseti.common.data_access import project_dao
-from google.cloud.forseti.common.data_access import violation_dao
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
 
-# pylint: disable=too-many-instance-attributes
 class BaseNotificationPipeline(object):
     """Base pipeline to perform notifications"""
 
@@ -51,62 +47,8 @@ class BaseNotificationPipeline(object):
         # TODO: import api_client
         # self.api_client = api_client
 
-        # Initializing DAOs
-        self.dao = None
-        self.project_dao = None
-        self.violation_dao = None
-
         # Get violations
         self.violations = violations
-
-    def _get_dao(self):
-        """Init or get dao.
-
-        Returns:
-            dao: Dao instance
-        """
-        if not self.dao:
-            self.dao = dao.Dao(self.global_configs)
-        return self.dao
-
-    def _get_project_dao(self):
-        """Init or get project_dao.
-
-        Returns:
-            project_dao: ProjectDao instance
-        """
-        if not self.project_dao:
-            self.project_dao = project_dao.ProjectDao(self.global_configs)
-        return self.project_dao
-
-    def _get_violation_dao(self):
-        """Init or get violation dao.
-
-        Returns:
-            violation_dao: ViolationDao instance
-        """
-        if not self.violation_dao:
-            self.violation_dao = violation_dao.ViolationDao(self.global_configs)
-        return self.violation_dao
-
-    def _get_violations(self, timestamp):
-        """Get all violtions.
-
-        Args:
-            timestamp (str): String of timestamp, formatted as YYYYMMDDTHHMMSSZ.
-
-        Returns:
-            dict: Violations organized per resource type.
-        """
-        vdao = self._get_violation_dao()
-        violations = {
-            'violations': vdao.get_all_violations(
-                timestamp, 'violations'),
-            'bucket_acl_violations': vdao.get_all_violations(
-                timestamp, 'buckets_acl_violations')
-        }
-
-        return violations
 
     @abc.abstractmethod
     def run(self):

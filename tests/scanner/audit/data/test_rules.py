@@ -411,3 +411,49 @@ RULES10 = {
         },
     ]
 }
+
+# Requiring projects to have owners from a specific domain, for context see
+# also https://github.com/GoogleCloudPlatform/forseti-security/issues/799
+RULES11 = {
+    'rules': [
+        {
+            'name': (
+                'this rule uses domain in member of the IAM policy to '
+                'stipulate that all owners must belong to my domain'),
+            'mode': 'required',
+            'resource': [{
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': ['*']
+                }],
+            'inherit_from_parents': True,
+            'bindings': [{
+                    'role': 'roles/owner',
+                    'members': ['domain:xyz.edu']
+                }]
+        },
+    ]
+}
+
+# Requiring projects to have owners from a specific domain, expressed as a
+# wildcard user
+RULES12 = {
+    'rules': [
+        {
+            'name': (
+                'this rule uses a wildcard user in member of the IAM policy '
+                'to stipulate that all owners must belong to my domain'),
+            'mode': 'required',
+            'resource': [{
+                    'type': 'project',
+                    'applies_to': 'self',
+                    'resource_ids': ['*']
+                }],
+            'inherit_from_parents': True,
+            'bindings': [{
+                    'role': 'roles/owner',
+                    'members': ['user:*@xyz.edu']
+                }]
+        },
+    ]
+}

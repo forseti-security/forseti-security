@@ -31,25 +31,22 @@ set -o nounset
 echo "Cloud SQL Instance Connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "SQL port: ${SQL_PORT}"
 echo "Forseti DB name: ${FORSETI_DB_NAME}"
-echo "G Suite admin email: ${GSUITE_ADMIN_EMAIL}"
-echo "Root resource ID: ${ROOT_RESOURCE_ID}"
 if ! [[ -f $GSUITE_ADMIN_CREDENTIAL_PATH ]]; then
     echo "Could not find gsuite admin credentials." >&2
     exit 1
 fi
-
+if ! [[ -f $FORSETI_SERVER_CONF ]]; then
+    echo "Could not find the configuration file: ${FORSETI_SERVER_CONF}." >&2
+    exit 1
+fi
 
 SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
-FORSETI_SERVICES="playground explain inventory model scanner"
-
+FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
 FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
-FORSETI_COMMAND+=" --gsuite_private_keyfile ${GSUITE_ADMIN_CREDENTIAL_PATH}"
-FORSETI_COMMAND+=" --gsuite_admin_email ${GSUITE_ADMIN_EMAIL}"
-FORSETI_COMMAND+=" --root_resource_id ${ROOT_RESOURCE_ID}"
+FORSETI_COMMAND+=" --forseti_config_file ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
-
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
