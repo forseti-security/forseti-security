@@ -1639,7 +1639,7 @@ class ModelManager(object):
         if model_name in self.sessionmakers:
             del self.sessionmakers[model_name]
         with self.modelmaker() as session:
-            session.query(Model).filter(Model.handle == model_name).delete()
+            session.query(Model).filter(Model.name == model_name).delete()
         data_access.delete_all(self.engine)
 
     def _models(self, expunge=False):

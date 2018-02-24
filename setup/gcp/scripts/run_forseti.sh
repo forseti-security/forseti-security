@@ -58,7 +58,5 @@ echo "Finished running Forseti notifier."
 sleep 10s
 
 # Clean up the model tables
-# Get model_id
-MODEL_ID=$(forseti model get ${MODEL_NAME} | python model_reader.py)
 echo "Cleaning up model tables"
-forseti model delete ${MODEL_ID}
+forseti model delete ${MODEL_NAME}
