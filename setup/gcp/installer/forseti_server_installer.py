@@ -92,6 +92,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
+            # Update rule files with default values
+            rule_vals = self.get_rule_default_values()
+            files.update_rule_files(rule_vals, constants.RULES_DIR_PATH)
+
             # Copy the rule directory to the GCS bucket
             files.copy_file_to_destination(
                 constants.RULES_DIR_PATH, bucket_name,
@@ -211,7 +215,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         organization_id = self.resource_root_id.split('/')[-1]
         domain = gcloud.get_domain_from_organization_id(organization_id)
-        print (organization_id, domain)
         return {
             'ORGANIZATION_ID': organization_id,
             'DOMAIN': domain
