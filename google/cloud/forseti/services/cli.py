@@ -252,7 +252,7 @@ def define_model_parser(parent):
         help='Deletes an entire model')
     delete_model_parser.add_argument(
         'model',
-        help='Model to delete')
+        help='Model to delete, either hash or name')
 
     create_model_parser = action_subparser.add_parser(
         'create',
@@ -727,7 +727,8 @@ def run_model(client, config, output, config_env):
 
     def do_delete_model():
         """Delete a model."""
-        result = client.delete_model(config.model)
+        model = client.get_model(config.model)
+        result = client.delete_model(model.handle)
         output.write(result)
 
     def do_create_model():
