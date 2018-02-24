@@ -177,6 +177,7 @@ class InventoryConfig(AbstractInventoryConfig):
             root_resource_id (str): Root resource to start crawling from
             gsuite_sa_path (str): Path to G Suite service account private keyfile
             gsuite_admin_email (str): G Suite admin email
+            api_quota_configs (dict): API quota configs
             args: args when creating InventoryConfig
             kwargs: kwargs when creating InventoryConfig
         """
@@ -258,8 +259,10 @@ class ServiceConfig(AbstractServiceConfig):
 
         Args:
             inventory_config (InventoryConfig): the inventory_config
+            scanner_config (dict): Scanner configurations
+            notifier_config (dict): Notifier configurations
+            global_config (dict): Global configurations
             forseti_db_connect_string (str): Forseti database string
-            forseti_config_file_path (str): Path to Forseti configuration file.
             endpoint (str): server endpoint
         """
 
@@ -375,9 +378,6 @@ def serve(endpoint,
         services (list): services to register on the server
         forseti_db_connect_string (str): Forseti database string
         forseti_config_file_path (str): Path to Forseti configuration file.
-        gsuite_sa_path (str): Path to G Suite service account private keyfile
-        gsuite_admin_email (str): G Suite admin email
-        root_resource_id (str): Root resource to start crawling from
         log_level (str): Sets the threshold for Forseti's logger.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
