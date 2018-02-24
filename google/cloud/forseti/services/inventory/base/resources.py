@@ -177,7 +177,12 @@ class Resource(object):
             raise KeyError('key: {}, data: {}'.format(key, self._data))
 
     def __setitem__(self, key, value):
-        """set the value of an item"""
+        """set the value of an item
+
+        Args:
+            key (str): key of this resource
+            value (str): value to set on this resource
+        """
         self._data[key] = value
 
     def type(self):
@@ -1164,8 +1169,7 @@ class CuratedRole(Resource):
     def parent(self):
         """Get parent of this resource
 
-        Returns:
-            None: curated role doesn't have parent
+        curated role doesn't have parent
         """
         # Curated roles have no parent.
         return None

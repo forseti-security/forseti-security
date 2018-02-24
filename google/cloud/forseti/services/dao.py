@@ -294,7 +294,7 @@ def define_model(model_name, dbengine, model_seed):
 
         def __repr__(self):
             """String representation.
- 
+
             Returns:
                 str: Resource represented as
                     (full_name='{}', name='{}' type='{}')
@@ -331,7 +331,7 @@ def define_model(model_name, dbengine, model_seed):
 
         def __repr__(self):
             """String representation.
- 
+
             Returns:
                 str: Member represented as (name='{}', type='{}')
             """

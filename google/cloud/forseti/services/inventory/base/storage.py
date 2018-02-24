@@ -185,7 +185,13 @@ class Memory(Storage):
         return self
 
     def __exit__(self, type_p, value, tb):
-        """To support with statement for auto closing."""
+        """To support with statement for auto closing.
+
+        Args:
+            type_p (object): Unused.
+            value (object): Unused.
+            tb (object): Unused.
+        """
         self.close()
 
     def commit(self):

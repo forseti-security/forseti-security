@@ -191,7 +191,7 @@ class ApiClientImpl(ApiClient):
     def _create_bq(self):
         """Create bigquery API client
         Returns:
- 
+
             object: Client
         """
         return bigquery.BigQueryClient(self.config)

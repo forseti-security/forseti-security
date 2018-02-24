@@ -103,7 +103,7 @@ class ScannerClient(ForsetiClient):
 
     def __init__(self, config):
         """Initialize
- 
+
         Args:
             config (ClientConfig): the client config object
         """
