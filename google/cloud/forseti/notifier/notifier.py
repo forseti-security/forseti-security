@@ -184,7 +184,8 @@ def run(inventory_index_id, service_config=None):
 
     if notifier_configs.get('findings').get('should_notify'):
         findings_pipeline.FindingsPipeline().run(
-            violations_as_dict)
+            violations_as_dict,
+            notifier_configs.get('findings').get('gcs_path'))
 
     LOGGER.info('Notification complete!')
     return 0
