@@ -81,7 +81,5 @@ class FindingsPipelineTest(ForsetiTestCase):
         findings = (
             findings_pipeline.FindingsPipeline()
             ._transform_to_findings(violations_as_dict))
-        
-        print findings
 
         self.assertEquals(expected_findings, findings)
