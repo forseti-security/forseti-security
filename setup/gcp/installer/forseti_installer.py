@@ -47,7 +47,7 @@ class ForsetiInstaller:
     def run_setup(self):
         """Run the setup steps"""
         utils.print_banner('Installing Forseti {} v{}'.format(
-            self.config.installer_type, utils.get_forseti_version()))
+            self.config.installation_type, utils.get_forseti_version()))
 
         # Preflight checks
         self.preflight_checks()
@@ -102,7 +102,7 @@ class ForsetiInstaller:
             self.project_id,
             self.organization_id,
             deployment_tpl_path,
-            self.config.installer_type,
+            self.config.installation_type,
             self.config.datetimestamp,
             self.config.dry_run)
 
@@ -114,7 +114,7 @@ class ForsetiInstaller:
             # rule files to the GCS bucket
             conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
-                installer_type=self.config.installer_type)
+                installation_type=self.config.installation_type)
             files.copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -133,8 +133,8 @@ class ForsetiInstaller:
         Args:
             vm_name (str): Name of the VM instance.
         """
-        installer_type = self.config.installer_type.capitalize()
-        utils.print_banner('{} VM Initialization'.format(installer_type))
+        installation_type = self.config.installation_type.capitalize()
+        utils.print_banner('{} VM Initialization'.format(installation_type))
         print ('This may take a few minutes.\n')
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
@@ -160,7 +160,7 @@ class ForsetiInstaller:
         self.gcp_service_account = utils.format_service_acct_id(
             'gcp',
             'reader',
-            self.config.timestamp,
+            self.config.installation_type,
             self.project_id)
 
     def generate_bucket_name(self):
@@ -171,7 +171,7 @@ class ForsetiInstaller:
         """
         return constants.DEFAULT_BUCKET_FMT_V2.format(
             self.project_id,
-            self.config.installer_type,
+            self.config.installation_type,
             self.config.timestamp)
 
     @abstractmethod
@@ -205,7 +205,7 @@ class ForsetiInstaller:
         deploy_values = self.get_deployment_values()
 
         deployment_tpl_path = files.generate_deployment_templates(
-            self.config.installer_type,
+            self.config.installation_type,
             deploy_values,
             self.config.datetimestamp)
 
@@ -219,20 +219,20 @@ class ForsetiInstaller:
         Returns:
             str: Forseti configuration file path
         """
-        # Create a forseti_conf_{INSTALLER_TYPE}_$TIMESTAMP.yaml config file
+        # Create a forseti_conf_{INSTALLATION_TYPE}_$TIMESTAMP.yaml config file
         # with values filled in.
         print('\nGenerate forseti_conf_{}_{}.yaml...'
-              .format(self.config.installer_type, self.config.datetimestamp))
+              .format(self.config.installation_type, self.config.datetimestamp))
 
         conf_values = self.get_configuration_values()
 
         forseti_conf_path = files.generate_forseti_conf(
-            self.config.installer_type,
+            self.config.installation_type,
             conf_values,
             self.config.datetimestamp)
 
         print('\nCreated forseti_conf_{}_{}.yaml config file:\n    {}\n'.
-              format(self.config.installer_type,
+              format(self.config.installation_type,
                      self.config.datetimestamp,
                      forseti_conf_path))
         return forseti_conf_path
@@ -279,6 +279,6 @@ class ForsetiInstaller:
                 self.organization_id))
 
             print(constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
-                installer_type=self.config.installer_type,
+                installation_type=self.config.installation_type,
                 datetimestamp=self.config.datetimestamp,
                 bucket_name=bucket_name))

@@ -274,7 +274,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.gsuite_service_account = utils.format_service_acct_id(
             'gsuite',
             'reader',
-            self.config.timestamp,
+            self.config.installation_type,
             self.project_id)
 
     def format_gcp_service_acct_id(self):
