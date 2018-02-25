@@ -73,7 +73,12 @@ class ForsetiInstaller(object):
                                        bucket_name)
 
     def create_conf_file_dpl_template(self):
-        """Create configuration file and deployment template."""
+        """Create configuration file and deployment template.
+
+        Returns:
+            str: Configuration file path.
+            ]str: Deployment template path.
+        """
         utils.print_banner('Creating configuration file and'
                            ' deployment template')
         conf_file_path = self.generate_forseti_conf()
