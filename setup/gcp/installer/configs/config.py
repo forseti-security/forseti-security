@@ -26,7 +26,6 @@ class Config(object):
         """Initialize.
 
         Args:
-            datetimestamp (str): Date timestamp.
             kwargs (dict): The kwargs.
         """
 
