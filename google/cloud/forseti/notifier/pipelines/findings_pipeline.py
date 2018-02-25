@@ -18,12 +18,9 @@ import tempfile
 
 from datetime import datetime
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
 
 
 LOGGER = logger.get_logger(__name__)
@@ -32,7 +29,7 @@ OUTPUT_FILENAME = 'forseti_findings_{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
-class FindingsPipeline(bnp.BaseNotificationPipeline):
+class FindingsPipeline(object):
     """Upload violations to GCS bucket findings."""
 
     def _transform_to_findings(self, violations):
@@ -76,11 +73,12 @@ class FindingsPipeline(bnp.BaseNotificationPipeline):
         output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
         return OUTPUT_FILENAME.format(output_timestamp)
 
-    def run(self, violations):
+    def run(self, violations, gcs_path):
         """Generate the temporary json file and upload to GCS.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
+            gcs_path (str): The GCS bucket to upload the findings.
         """
         findings = self._transform_to_findings(violations)
 
@@ -89,7 +87,7 @@ class FindingsPipeline(bnp.BaseNotificationPipeline):
             tmp_violations.flush()
 
             gcs_upload_path = '{}/{}'.format(
-                self.pipeline_config['gcs_path'],
+                gcs_path,
                 self._get_output_filename())
 
             if gcs_upload_path.startswith('gs://'):
