@@ -94,7 +94,8 @@ class CrawlerTest(ForsetiTestCase):
         config = InventoryConfig(
             gcp_api_mocks.ORGANIZATION_ID,
             '',
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -151,7 +152,8 @@ class CrawlerTest(ForsetiTestCase):
         config = InventoryConfig(
             'folders/1032',
             '',
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -187,7 +189,8 @@ class CrawlerTest(ForsetiTestCase):
         config = InventoryConfig(
             'projects/1041',
             '',
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
