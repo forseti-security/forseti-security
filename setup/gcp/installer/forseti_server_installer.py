@@ -75,7 +75,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.should_enable_write_access()
         self.format_gsuite_service_acct_id()
         self.should_grant_access()
-
         self.get_email_settings()
 
     def create_or_reuse_service_accts(self):
@@ -211,16 +210,61 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             str: Forseti configuration file path.
         """
+        def config_swap_fields(new_config, old_config):
+            """Swapping fields.
+
+            Note: new_config will get modified.
+
+            Args:
+                new_config (dict): New configuration.
+                old_config (dict): Old configuration.
+            """
+            global_to_inventory = [
+                'gsuite_service_account_key_file',
+                'domain_super_admin_email'
+            ]
+            global_to_api_quota = [
+                'max_admin_api_calls_per_100_seconds',
+                'max_appengine_api_calls_per_second',
+                'max_bigquery_api_calls_per_100_seconds',
+                'max_cloudbilling_api_calls_per_60_seconds',
+                'max_compute_api_calls_per_second',
+                'max_container_api_calls_per_100_seconds',
+                'max_crm_api_calls_per_100_seconds',
+                'max_iam_api_calls_per_second',
+                'max_servicemanagement_api_calls_per_100_seconds',
+                'max_sqladmin_api_calls_per_100_seconds'
+            ]
+
+            new_conf_inventory = new_config['inventory']
+            new_conf_api_quota = new_conf_inventory['api_quota']
+            old_config_global = old_config['global']
+
+            for field in global_to_inventory:
+                if field in old_config_global:
+                    new_conf_inventory[field] = old_config_global[field]
+
+            for field in global_to_api_quota:
+                if field in old_config_global:
+                    new_conf_api_quota[field] = old_config_global[field]
+
         forseti_conf_path = super(
             ForsetiServerInstaller, self).generate_forseti_conf()
 
         if self.migrate_from_v1:
             new_conf = files.read_yaml_file_from_local(forseti_conf_path)
             fields_to_ignore = ['db_host', 'db_user', 'db_name',
-                                'inventory', 'output_path', 'gcs_path']
+                                'inventory', 'output_path', 'gcs_path',
+                                'gsuite_service_account_key_file',
+                                'domain_super_admin_email']
             field_identifiers = {'scanners' : 'name', 'resources': 'resource'}
             utils.merge_object(new_conf, self.v1_config.config,
                                fields_to_ignore, field_identifiers)
+
+            # Fields that have changed categories cannot be merged,
+            # swap them here instead.
+            config_swap_fields(new_conf, self.v1_config.config)
+
             files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 
         return forseti_conf_path
