@@ -252,7 +252,7 @@ def define_model_parser(parent):
         help='Deletes an entire model')
     delete_model_parser.add_argument(
         'model',
-        help='Model to delete, either hash or name')
+        help='Model to delete, either handle or name')
 
     create_model_parser = action_subparser.add_parser(
         'create',
