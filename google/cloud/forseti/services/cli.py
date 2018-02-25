@@ -233,7 +233,7 @@ def define_model_parser(parent):
         help='Context switch into the model.')
     use_model_parser.add_argument(
         'model',
-        help='Model to switch to, either hash or name'
+        help='Model to switch to, either handle or name'
         )
 
     _ = action_subparser.add_parser(
