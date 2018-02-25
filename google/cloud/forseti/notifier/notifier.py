@@ -18,6 +18,7 @@ import inspect
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.notifier.pipelines import findings_pipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
@@ -146,6 +147,7 @@ def run(inventory_index_id, service_config=None):
             LOGGER.debug('No violations for: %s', resource['resource'])
             continue
         if not resource['should_notify']:
+            LOGGER.debug('Not notifying for: %s', resource['resource'])
             continue
         for pipeline in resource['pipelines']:
             LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',
@@ -161,6 +163,10 @@ def run(inventory_index_id, service_config=None):
     # run the pipelines
     for pipeline in pipelines:
         pipeline.run()
+
+    if notifier_configs.get('findings').get('should_notify'):
+        findings_pipeline.FindingsPipeline().run(
+            violations_as_dict)
 
     LOGGER.info('Notification complete!')
     return 0
