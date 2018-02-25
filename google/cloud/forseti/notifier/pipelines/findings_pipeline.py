@@ -21,35 +21,34 @@ from datetime import datetime
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.common.util import string_formats
 
 
 LOGGER = logger.get_logger(__name__)
 
 OUTPUT_FILENAME = 'forseti_findings_{}.json'
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 class FindingsPipeline(object):
-    """Upload violations to GCS bucket findings."""
+    """Upload violations to GCS bucket as findings."""
 
-    def _transform_to_findings(self, violations):
+    @staticmethod
+    def _transform_to_findings(violations):
         """Transform forseti violations to findings format.
-
         Args:
             violations (dict): Violations to be uploaded as findings.
-
         Returns:
-            list: violations in findings format.
+            list: violations in findings format; each violation is a dict.
         """
         findings = []
         for violation in violations:
             finding = {
-                'finding_id': 'violation_hash',
+                'finding_id': violation.get('violation_hash'),
                 'finding_summary': violation.get('rule_name'),
                 'finding_source_id': 'FORSETI',
                 'finding_category': violation.get('violation_type'),
                 'finding_asset_ids': violation.get('full_name'),
-                'finding_time_event': 'violation_timestamp',
+                'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
                     'violation_data': violation.get('violation_data'),
@@ -60,26 +59,27 @@ class FindingsPipeline(object):
                     'inventory_data': violation.get('inventory_data')
                 }
             }
-            findings.append(finding)    
+            findings.append(finding)
         return findings
 
-    def _get_output_filename(self):
+    @staticmethod
+    def _get_output_filename():
         """Create the output filename.
-
         Returns:
             str: The output filename for the violations json.
         """
         now_utc = datetime.utcnow()
-        output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
+        output_timestamp = now_utc.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_NAME)
         return OUTPUT_FILENAME.format(output_timestamp)
 
     def run(self, violations, gcs_path):
         """Generate the temporary json file and upload to GCS.
-
         Args:
             violations (dict): Violations to be uploaded as findings.
             gcs_path (str): The GCS bucket to upload the findings.
         """
+        LOGGER.info('Running findings notification.')
         findings = self._transform_to_findings(violations)
 
         with tempfile.NamedTemporaryFile() as tmp_violations:
