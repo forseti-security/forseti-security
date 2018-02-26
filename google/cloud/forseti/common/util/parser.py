@@ -59,10 +59,10 @@ def format_timestamp(timestamp_str, datetime_formatter):
         str: The formatted, stringified timestamp.
     """
     try:
-        if '\'' in timestamp_str or '\'' in timestamp_str:
+        if '"' in timestamp_str or '\'' in timestamp_str:
             # Make sure the timestamp is not surrounded by any quotes
-            timestamp_str = timestamp_str.replace('\'')
-            timestamp_str = timestamp_str.replace('\'')
+            timestamp_str = timestamp_str.replace('"', '')
+            timestamp_str = timestamp_str.replace('\'', '')
         formatted_timestamp = (
             dateutil_parser
             .parse(timestamp_str)
