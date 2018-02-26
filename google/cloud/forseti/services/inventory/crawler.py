@@ -235,30 +235,20 @@ def run_crawler(storage,
         parallel (bool): If true, use the parallel crawler implementation.
     """
 
-    client_config = {
-        'groups_service_account_key_file': config.get_gsuite_sa_path(),
-        'domain_super_admin_email': config.get_gsuite_admin_email(),
-        'max_admin_api_calls_per_100_seconds': 1500,
-        'max_appengine_api_calls_per_second': 20,
-        'max_bigquery_api_calls_per_100_seconds': 17000,
-        'max_cloudbilling_api_calls_per_60_seconds': 300,
-        'max_crm_api_calls_per_100_seconds': 400,
-        'max_sqladmin_api_calls_per_100_seconds': 100,
-        'max_servicemanagement_api_calls_per_100_seconds': 200,
-        'max_compute_api_calls_per_second': 20,
-        'max_iam_api_calls_per_second': 20,
-        'max_container_api_calls_per_100_seconds': 1000,
-        }
+    client_config = config.get_api_quota_configs()
+    client_config['groups_service_account_key_file'] = (
+        config.get_gsuite_sa_path())
+    client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
     root_id = config.get_root_resource_id()
     client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
-        config = ParallelCrawlerConfig(storage, progresser, client)
-        crawler_impl = ParallelCrawler(config)
+        crawler_config = ParallelCrawlerConfig(storage, progresser, client)
+        crawler_impl = ParallelCrawler(crawler_config)
     else:
-        config = CrawlerConfig(storage, progresser, client)
-        crawler_impl = Crawler(config)
+        crawler_config = CrawlerConfig(storage, progresser, client)
+        crawler_impl = Crawler(crawler_config)
 
     progresser = crawler_impl.run(resource)
     return progresser.get_summary()
