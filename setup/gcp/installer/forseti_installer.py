@@ -163,7 +163,7 @@ class ForsetiInstaller:
             str: GCP service account id.
             str: GCP service account name.
         """
-        account_id , account_name = (
+        account_id, account_name = (
             utils.generate_service_acct_info(
                 'gcp',
                 'reader',
