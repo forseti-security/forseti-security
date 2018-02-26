@@ -30,6 +30,12 @@ if [ ! -f "${FORSETI_CONF}" ]; then
     exit 1
 fi
 
+# Restart the service to pull in the latest conf settings
+sudo systemctl restart forseti.service
+
+# Wait until the service is started
+sleep 10s
+
 # Run inventory command
 MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."

@@ -183,8 +183,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_account,
             'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_account,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
-            'GSUITE_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
-            'ROOT_RESOURCE_ID': self.resource_root_id,
             'rand_minute': random.randint(0, 59)
         }
 
@@ -201,7 +199,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
-            'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email
+            'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
+            'ROOT_RESOURCE_ID': self.resource_root_id,
         }
 
     def determine_access_target(self):

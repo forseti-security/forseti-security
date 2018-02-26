@@ -65,6 +65,7 @@ def define_violation(dbengine):
         inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
+        full_name = Column(String(1024))
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
         violation_data = Column(Text)
