@@ -18,6 +18,7 @@ This has been tested with python 2.7.
 """
 
 import argparse
+import datetime
 
 from installer.forseti_server_installer import ForsetiServerInstaller
 from installer.forseti_client_installer import ForsetiClientInstaller
@@ -62,6 +63,9 @@ def run():
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
     args = vars(parser.parse_args())
+
+    # Set the current date time stamp
+    args['datetimestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
