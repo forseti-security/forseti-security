@@ -42,28 +42,15 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
      Getting `2.0-dev-rc1` branch will install Forseti v2.0 Release Candidate 1.
 
       ```bash
-      git clone -b 2.0-dev-rc1 --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
+      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Navigate to the installer directory:
 
-      ```bash
-      cd forseti-security/setup/
-      ```
-
-  1. Run the installer:
+  1. Running the installer:
 
      To install both client and server:
      ```bash 
-     python installer.py
-     ```
-     To install server only:
-     ```bash 
-     python installer.py --type=server
-     ```
-     To install client only (Will required a Forseti server to install):
-     ```bash 
-     python installer.py --type=client
+     python setup/installer.py
      ```
 
       To see additional configurations for the setup:
@@ -83,7 +70,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
        to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
        [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
-       and is necessary for running [Explain]({% link _docs/configure/explain/index.md %}).
+       and is necessary.
        Ask your G Suite Admin if you don't know what the super admin email is.
 
   1. By installing the server, There is a cron job scheduled on the server to run every other
@@ -101,8 +88,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 ## What's next
 
   - Customize [Inventory]({% link _docs/configure/inventory/index.md %}),
-  [Scanner]({% link _docs/configure/scanner/index.md %}),
-  and [Enforcer]({% link _docs/configure/enforcer/index.md %}).
+  [Scanner]({% link _docs/configure/scanner/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/configure/email-notification.md %}).
   - Enable [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
   for processing by Forseti.
