@@ -25,8 +25,8 @@ rules:
     bindings:
       - role: roles/resourcemanager.organizationAdmin
         members:
-          - user:*@YOURDOMAIN
-          - group:*@YOURDOMAIN
+          - user:*@{DOMAIN}
+          - group:*@{DOMAIN}
 
   # custom rules
   - name: Allow only service accounts to have access
@@ -53,4 +53,4 @@ rules:
     bindings:
       - role: roles/owner
         members:
-          - user:*@YOURDOMAIN
+          - user:*@{DOMAIN}

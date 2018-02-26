@@ -49,7 +49,7 @@ org_policy:
   resources:
     - type: organization
       resource_ids:
-        - YOUR_ORG_ID
+        - {ORGANIZATION_ID}
       rules:
         group_ids:
           - 'default_rules'
