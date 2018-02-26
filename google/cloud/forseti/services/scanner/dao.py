@@ -15,6 +15,7 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
+import hashlib
 import json
 
 from sqlalchemy import Column
@@ -54,15 +55,16 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
+        full_name = Column(String(1024))
+        inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
-        full_name = Column(String(1024))
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
-        violation_type = Column(String(256), nullable=False)
         violation_data = Column(Text)
-        inventory_data = Column(Text(16777215))
+        violation_type = Column(String(256), nullable=False)
+        violation_hash = Column(String(256))
 
         def __repr__(self):
             """String representation.
@@ -110,6 +112,13 @@ def define_violation(dbengine):
             """
             with self.violationmaker() as session:
                 for violation in violations:
+
+                    violation_hash = _create_violation_hash(
+                        violation.get('full_name', ''),
+                        violation.get('inventory_data', ''),
+                        violation.get('violation_data', ''),
+                    )
+
                     violation = self.TBL_VIOLATIONS(
                         inventory_index_id=inventory_index_id,
                         resource_id=violation.get('resource_id'),
@@ -120,8 +129,10 @@ def define_violation(dbengine):
                         violation_type=violation.get('violation_type'),
                         violation_data=json.dumps(
                             violation.get('violation_data')),
-                        inventory_data=violation.get('inventory_data')
+                        inventory_data=violation.get('inventory_data'),
+                        violation_hash=violation_hash
                     )
+
                     session.add(violation)
 
         def list(self, inventory_index_id=None):
@@ -190,3 +201,40 @@ def map_by_resource(violation_rows):
             v_by_type[v_resource].append(v_data)
 
     return dict(v_by_type)
+
+def _create_violation_hash(violation_full_name, inventory_data, violation_data):
+    """Create a hash of violation data.
+
+    Args:
+        violation_full_name (str): The full name of the violation.
+        inventory_data (str): The inventory data.
+        violation_data (dict): A violation.
+
+    Returns:
+        str: The resulting hex digest or '' if we can't successfully create
+        a hash.
+    """
+
+    # TODO: Intelligently choose from hashlib.algorithms_guaranteed if our
+    # desired one is not available.
+    algorithm = 'sha512'
+
+    try:
+        violation_hash = hashlib.new(algorithm)
+    except ValueError as e:
+        LOGGER.error('Cannot create hash for a violation with algorithm: '
+                     '%s\n%s', algorithm, e)
+        return ''
+
+    try:
+        violation_hash.update(
+            violation_full_name +
+            inventory_data +
+            json.dumps(violation_data, sort_keys=True)
+        )
+    except TypeError as e:
+        LOGGER.error('Cannot create hash for a violation: %s\n%s',
+                     violation_full_name, e)
+        return ''
+
+    return violation_hash.hexdigest()
