@@ -70,8 +70,8 @@ def define_violation(dbengine):
             Returns:
                 str: string representation of the Violation row entry.
             """
-            string = ("<Violation(violation_type='{}', resource_type='{}' "
-                      "rule_name='{}')>")
+            string = ('<Violation(violation_type={}, resource_type={} '
+                      'rule_name={})>')
             return string.format(
                 self.violation_type, self.resource_type, self.rule_name)
 

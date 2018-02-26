@@ -36,7 +36,7 @@ def parse_member_info(member):
         str: The name portion of the member.
         str: The domain of the member.
     """
-    member_type, email = member.split(":", 1)
+    member_type, email = member.split(':', 1)
 
     if '@' in email:
         member_name, member_domain = email.split('@', 1)
@@ -59,17 +59,17 @@ def format_timestamp(timestamp_str, datetime_formatter):
         str: The formatted, stringified timestamp.
     """
     try:
-        if '"' in timestamp_str or "'" in timestamp_str:
+        if '\'' in timestamp_str or '\'' in timestamp_str:
             # Make sure the timestamp is not surrounded by any quotes
-            timestamp_str = timestamp_str.replace("'")
-            timestamp_str = timestamp_str.replace('"')
+            timestamp_str = timestamp_str.replace('\'')
+            timestamp_str = timestamp_str.replace('\'')
         formatted_timestamp = (
             dateutil_parser
             .parse(timestamp_str)
             .strftime(datetime_formatter))
     except (TypeError, ValueError) as e:
-        LOGGER.warn('Unable to parse/format timestamp: %s\n, '
-                    'datetime_formatter: %s\n%s',
+        LOGGER.warn('Unable to parse/format timestamp: %s\n,'
+                    ' datetime_formatter: %s\n%s',
                     timestamp_str, datetime_formatter, e)
         formatted_timestamp = None
     return formatted_timestamp
