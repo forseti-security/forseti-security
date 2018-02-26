@@ -18,7 +18,7 @@ import unittest
 import os
 
 import setup.gcp.installer.util.files as files
-import setup.gcp.installer.util.utils as utils
+import setup.gcp.installer.util.merge_engine as merge_engine
 
 from tests.unittest_utils import ForsetiTestCase
 
@@ -62,8 +62,8 @@ class FilesModuleTest(ForsetiTestCase):
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merged_forseti_conf_server.yaml')
 
-        base_obj = files.read_yaml_file_from_local(base_path)
-        target_obj = files.read_yaml_file_from_local(target_path)
+        merge_to = files.read_yaml_file_from_local(base_path)
+        merge_from = files.read_yaml_file_from_local(target_path)
         merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
@@ -73,13 +73,13 @@ class FilesModuleTest(ForsetiTestCase):
                              'resources': 'resource',
                              'pipelines': 'name'}
 
-        utils.merge_object(base_obj, target_obj,
-                           fields_to_ignore, field_identifiers)
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
 
-        base_obj = self.deep_sort(base_obj)
+        merge_to = self.deep_sort(merge_to)
         merged_obj = self.deep_sort(merged_obj)
 
-        self.assertEqual(base_obj, merged_obj)
+        self.assertEqual(merge_to, merged_obj)
 
     def test_merge_bucket_rule_yaml_files(self):
         """Merge 2 conf yaml files."""
@@ -92,20 +92,21 @@ class FilesModuleTest(ForsetiTestCase):
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merged_bucket_rules.yaml')
 
-        base_obj = files.read_yaml_file_from_local(base_path)
-        target_obj = files.read_yaml_file_from_local(target_path)
+        merge_to = files.read_yaml_file_from_local(base_path)
+        merge_from = files.read_yaml_file_from_local(target_path)
         merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
         fields_to_ignore = []
         field_identifiers = {'rules': 'name'}
 
-        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
 
-        base_obj = self.deep_sort(base_obj)
+        merge_to = self.deep_sort(merge_to)
         merged_obj = self.deep_sort(merged_obj)
 
-        self.assertEqual(base_obj, merged_obj)
+        self.assertEqual(merge_to, merged_obj)
 
     def test_merge_group_rule_yaml_files(self):
         """Merge 2 conf yaml files."""
@@ -118,20 +119,21 @@ class FilesModuleTest(ForsetiTestCase):
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merged_group_rules.yaml')
 
-        base_obj = files.read_yaml_file_from_local(base_path)
-        target_obj = files.read_yaml_file_from_local(target_path)
+        merge_to = files.read_yaml_file_from_local(base_path)
+        merge_from = files.read_yaml_file_from_local(target_path)
         merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
         fields_to_ignore = []
         field_identifiers = {'default_identifier': 'name'}
 
-        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
 
-        base_obj = self.deep_sort(base_obj)
+        merge_to = self.deep_sort(merge_to)
         merged_obj = self.deep_sort(merged_obj)
 
-        self.assertEqual(base_obj, merged_obj)
+        self.assertEqual(merge_to, merged_obj)
 
     def test_merge_iam_rule_yaml_files(self):
         """Merge 2 conf yaml files."""
@@ -144,20 +146,21 @@ class FilesModuleTest(ForsetiTestCase):
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merged_iam_rules.yaml')
 
-        base_obj = files.read_yaml_file_from_local(base_path)
-        target_obj = files.read_yaml_file_from_local(target_path)
+        merge_to = files.read_yaml_file_from_local(base_path)
+        merge_from = files.read_yaml_file_from_local(target_path)
         merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
         fields_to_ignore = []
         field_identifiers = {'rules': 'name', 'bindings': 'role', 'default_identifier': 'name'}
 
-        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
 
-        base_obj = self.deep_sort(base_obj)
+        merge_to = self.deep_sort(merge_to)
         merged_obj = self.deep_sort(merged_obj)
 
-        self.assertEqual(base_obj, merged_obj)
+        self.assertEqual(merge_to, merged_obj)
 
 
     def test_merge_firewall_rule_yaml_files(self):
@@ -171,8 +174,8 @@ class FilesModuleTest(ForsetiTestCase):
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merged_firewall_rules.yaml')
 
-        base_obj = files.read_yaml_file_from_local(base_path)
-        target_obj = files.read_yaml_file_from_local(target_path)
+        merge_to = files.read_yaml_file_from_local(base_path)
+        merge_from = files.read_yaml_file_from_local(target_path)
         merged_obj = files.read_yaml_file_from_local(merged_path)
 
         # Merge target into base, ignore gcs_path and output_path
@@ -180,12 +183,13 @@ class FilesModuleTest(ForsetiTestCase):
         field_identifiers = {'rules': ['name', 'rule_id'],
                              'rule_groups': 'group_id', 'resources': 'type'}
 
-        utils.merge_object(base_obj, target_obj, fields_to_ignore, field_identifiers)
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
 
-        base_obj = self.deep_sort(base_obj)
+        merge_to = self.deep_sort(merge_to)
         merged_obj = self.deep_sort(merged_obj)
 
-        self.assertEqual(base_obj, merged_obj)
+        self.assertEqual(merge_to, merged_obj)
 
 if __name__ == '__main__':
     unittest.main()

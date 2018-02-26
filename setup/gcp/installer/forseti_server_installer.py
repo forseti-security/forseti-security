@@ -23,6 +23,7 @@ from forseti_installer import ForsetiInstaller
 from util import constants
 from util import files
 from util import gcloud
+from util import merge_engine
 from util import utils
 from util import v1_upgrader
 
@@ -163,8 +164,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                                  'resource': 'type',
                                  'bindings': 'role',
                                  'rule_groups': 'group_id'}
-            utils.merge_object(new_rule, v1_rule.data, fields_to_ignore=[],
-                               field_identifiers=field_identifiers)
+            merge_engine.merge_object(merge_from=v1_rule.data,
+                                      merge_to=new_rule,
+                                      fields_to_ignore=[],
+                                      field_identifiers=field_identifiers)
             files.write_data_to_yaml_file(new_rule, new_rule_path)
 
     def create_firewall_rules(self):
@@ -258,8 +261,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                                 'gsuite_service_account_key_file',
                                 'domain_super_admin_email']
             field_identifiers = {'scanners' : 'name', 'resources': 'resource'}
-            utils.merge_object(new_conf, self.v1_config.config,
-                               fields_to_ignore, field_identifiers)
+            merge_engine.merge_object(merge_from=self.v1_config.config,
+                                      merge_to=new_conf,
+                                      fields_to_ignore=fields_to_ignore,
+                                      field_identifiers=field_identifiers)
 
             # Fields that have changed categories cannot be merged,
             # swap them here instead.
