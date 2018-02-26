@@ -53,7 +53,6 @@ REQUIRED_PACKAGES = [
     'google-apputils>=0.4.2',
     'grpcio',
     'grpcio-tools',
-    'python-gflags>=3.1.1',
     'mock>=2.0.0',
     'parameterized>=0.6.1',
     'simple-crypt>=4.1.7',

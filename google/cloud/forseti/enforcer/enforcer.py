@@ -25,10 +25,10 @@ Usage for enforcing a single project's firewall:
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-raises-doc
 # pylint: disable=missing-param-doc
 
+import argparse
 import sys
 import threading
 
-import gflags as flags
 from google.apputils import app
 
 from google.cloud.forseti.common.util import file_loader
@@ -37,57 +37,44 @@ from google.cloud.forseti.enforcer import batch_enforcer
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 
 
-# Hack to make the test pass due to duplicate flag error here
-# and inventory_loader.
-# TODO: Find a way to remove this try/except, possibly dividing the tests
-# into different test suites.
-try:
-    flags.DEFINE_string(
-        'forseti_config',
-        '/home/ubuntu/forseti-security/configs/forseti_conf_server.yaml',
-        'Fully qualified path and filename of the Forseti config file.')
-except flags.DuplicateFlagError:
-    pass
+parser = argparse.ArgumentParser()
 
-flags.DEFINE_string('enforce_project', None,
-                    'A single projectId to enforce the firewall on. Must be '
-                    'used with the policy_file flag.')
+parser.add_argument('--enforce_project', default=None,
+                    help='A single projectId to enforce the firewall on.'
+                         ' Must be used with the policy_file flag.')
 
-flags.DEFINE_string('policy_file', None,
-                    'A json encoded policy file to enforce, must contain a '
-                    'list of Firewall resources to apply to the project. '
-                    'If in a GCS bucket, include full path, e.g. '
-                    '"gs://<bucketname>/path/to/file".')
+parser.add_argument('--policy_file', default=None,
+                    help='A json encoded policy file to enforce,'
+                         ' must contain a list of Firewall resources to apply'
+                         ' to the project. If in a GCS bucket, include full'
+                         ' path, e.g. "gs://<bucketname>/path/to/file".')
 
-flags.DEFINE_boolean('dry_run', False,
-                     'If True will simulate the changes and not change any '
-                     'policies.')
+parser.add_argument('--dry_run', default=False,
+                    help='If True will simulate the changes and not change any '
+                         'policies.')
 
-flags.DEFINE_integer('concurrent_threads', 10,
-                     'The number concurrent worker threads to use.',
-                     lower_bound=1, upper_bound=50)
+parser.add_argument('--concurrent_threads', default=10,
+                    help='The number concurrent worker threads to use.')
 
-flags.DEFINE_integer('maximum_firewall_write_operations', 10,
-                     'The maximum number of in flight write operations on '
-                     'project firewalls. Each running thread is allowed up to '
-                     'this many running operations, so to limit the over all '
-                     'number of operations, limit the number of write threads '
-                     'using the maximum_project_writer_threads flag.',
-                     lower_bound=0, upper_bound=50)
+parser.add_argument('--maximum_firewall_write_operations', default=10,
+                    help='The maximum number of in flight write operations on'
+                          ' project firewalls. Each running thread is allowed'
+                          ' up to this many running operations, so to limit'
+                          ' the over all number of operations, limit the number'
+                          ' of write threads using the'
+                          ' maximum_project_writer_threads flag.')
 
-flags.DEFINE_integer('maximum_project_writer_threads', 1,
-                     'The maximum number of projects with active write '
-                     'operations on project firewalls.',
-                     lower_bound=0, upper_bound=50)
+parser.add_argument('--maximum_project_writer_threads', default=1,
+                    help='The maximum number of projects with active write '
+                         'operations on project firewalls.')
 
-# Setup flags
-FLAGS = flags.FLAGS
-
+FLAGS = vars(parser.parse_args())
 LOGGER = logger.get_logger(__name__)
 
 
 class Error(Exception):
     """Base error class for the module."""
+
 
 class InvalidParsedPolicyFileError(Error):
     """An invalid policy file was parsed."""
@@ -161,7 +148,7 @@ def main(argv):
 
     del argv
 
-    forseti_config = FLAGS.forseti_config
+    forseti_config = FLAGS['forseti_config']
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
@@ -175,14 +162,16 @@ def main(argv):
     global_configs = configs.get('global')
 
     enforcer = initialize_batch_enforcer(
-        global_configs, FLAGS.concurrent_threads,
-        FLAGS.maximum_project_writer_threads,
-        FLAGS.maximum_firewall_write_operations, FLAGS.dry_run)
+        global_configs, FLAGS['concurrent_threads'],
+        FLAGS['maximum_project_writer_threads'],
+        FLAGS['maximum_firewall_write_operations'],
+        FLAGS['dry_run']
+    )
 
-    if FLAGS.enforce_project and FLAGS.policy_file:
+    if FLAGS['enforce_project'] and FLAGS['policy_file']:
         enforcer_results = enforce_single_project(enforcer,
-                                                  FLAGS.enforce_project,
-                                                  FLAGS.policy_file)
+                                                  FLAGS['enforce_project'],
+                                                  FLAGS['policy_file'])
 
         print enforcer_results
 
