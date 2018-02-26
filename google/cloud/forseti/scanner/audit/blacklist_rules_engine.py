@@ -184,9 +184,9 @@ class Rule(object):
         Returns:
             bool: True if ipaddr in net
         """
-        ipaddrb = struct.unpack("!I", socket.inet_aton(ipaddr))[0]
+        ipaddrb = struct.unpack('!I', socket.inet_aton(ipaddr))[0]
         netstr, bits = net.split('/')
-        netaddr = struct.unpack("!I", socket.inet_aton(netstr))[0]
+        netaddr = struct.unpack('!I', socket.inet_aton(netstr))[0]
         mask = (0xffffffff << (32 - int(bits))) & 0xffffffff
         return (ipaddrb & mask) == (netaddr & mask)
 

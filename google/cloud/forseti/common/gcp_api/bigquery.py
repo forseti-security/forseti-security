@@ -141,8 +141,8 @@ class BigQueryClient(object):
                 fields='nextPageToken,projects/id')
             flattened_results = api_helpers.flatten_list_results(
                 results, 'projects')
-            LOGGER.debug("Request and page through bigquery "
-                         "projectids, flattened_results = %s",
+            LOGGER.debug('Request and page through bigquery '
+                         ' projectids, flattened_results = %s',
                          flattened_results)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('bigquery', e)
@@ -169,8 +169,8 @@ class BigQueryClient(object):
                 resource=project_id, all=True)
             flattened_results = api_helpers.flatten_list_results(
                 results, 'datasets')
-            LOGGER.debug("Getting bigquery datasets for a given project,"
-                         " project_id = %s, flattened_results = %s",
+            LOGGER.debug('Getting bigquery datasets for a given project,'
+                         ' project_id = %s, flattened_results = %s',
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -195,9 +195,9 @@ class BigQueryClient(object):
                                                    target=dataset_id,
                                                    fields='access')
             access = results.get('access', [])
-            LOGGER.debug("Geting the access portion of the dataset "
-                         "resource object, project_id = %s, dataset_id = %s,"
-                         " results = %s", project_id, dataset_id, access)
+            LOGGER.debug('Geting the access portion of the dataset'
+                         ' resource object, project_id = %s, dataset_id = %s,'
+                         ' results = %s', project_id, dataset_id, access)
             return access
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
