@@ -28,7 +28,8 @@ import grpc
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services import db
-from google.cloud.forseti.services.dao import ModelManager, create_engine
+from google.cloud.forseti.services.dao import ModelManager
+from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.inventory.storage import Storage
@@ -363,7 +364,7 @@ def serve(endpoint,
         factories.append(STATIC_SERVICE_MAPPING[service])
 
     if not factories:
-        raise Exception("No services to start")
+        raise Exception('No services to start.')
 
     try:
         forseti_config = file_loader.read_and_parse_file(
@@ -436,14 +437,14 @@ def main():
         '--log_level',
         default='info',
         choices=['debug', 'info', 'warning', 'error'],
-        help="Sets the threshold for Forseti's logger."
-             " Logging messages which are less severe"
-             " than the level you set will be ignored.")
+        help='Sets the threshold for Forseti\'s logger.'
+             ' Logging messages which are less severe'
+             ' than the level you set will be ignored.')
     args = vars(parser.parse_args())
 
     serve(args['endpoint'], args['services'], args['forseti_db'],
           args['forseti_config_file_path'], args['log_level'])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

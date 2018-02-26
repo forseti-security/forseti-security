@@ -603,7 +603,7 @@ class Storage(BaseStorage):
         rows = qry.all()
 
         if not rows:
-            raise Exception("resource {} not found in the table".format(key))
+            raise Exception('Resource {} not found in the table'.format(key))
         else:
             return rows
 

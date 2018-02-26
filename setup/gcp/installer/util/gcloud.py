@@ -642,7 +642,7 @@ def get_vm_instance_info(instance_name, try_match=False):
                      (not try_match and instance_name == cur_instance_name))
             if match:
                 # found forseti server vm instance
-                zone = instance.get('zone').split("/zones/")[1]
+                zone = instance.get('zone').split('/zones/')[1]
                 network_interfaces = instance.get('networkInterfaces')
                 internal_ip = network_interfaces[0].get('networkIP')
                 name = instance.get('name')

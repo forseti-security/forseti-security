@@ -275,8 +275,8 @@ class AppEngineClient(object):
         """
         try:
             results = self.repository.apps.get(project_id)
-            LOGGER.debug("Getting information about an application, "
-                         "project_id = %s, result = %s", project_id, results)
+            LOGGER.debug('Getting information about an application,'
+                         ' project_id = %s, result = %s', project_id, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
             if _is_status_not_found(e):
@@ -297,8 +297,8 @@ class AppEngineClient(object):
         try:
             results = self.repository.app_services.get(
                 project_id, target=service_id)
-            LOGGER.debug("Getting information about a specific service, "
-                         "project_id = %s, service_id = %s, results = %s",
+            LOGGER.debug('Getting information about a specific service,'
+                         ' project_id = %s, service_id = %s, results = %s',
                          project_id, service_id, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -319,8 +319,8 @@ class AppEngineClient(object):
             paged_results = self.repository.app_services.list(project_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'services')
-            LOGGER.debug("Listing services of a project, project_id = %s, "
-                         "flattened_results = %s",
+            LOGGER.debug('Listing services of a project, project_id = %s,'
+                         ' flattened_results = %s',
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -343,9 +343,9 @@ class AppEngineClient(object):
         try:
             results = self.repository.service_versions.get(
                 project_id, target=version_id, services_id=service_id)
-            LOGGER.debug("Getting information about a specific version "
-                         "of a service, project_id = %s, service_id = %s, "
-                         "version_id = %s, results = %s",
+            LOGGER.debug('Getting information about a specific version'
+                         ' of a service, project_id = %s, service_id = %s,'
+                         ' version_id = %s, results = %s',
                          project_id, service_id, version_id, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -368,8 +368,8 @@ class AppEngineClient(object):
                 project_id, services_id=service_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'versions')
-            LOGGER.debug("Listing versions of a given service, project_id = "
-                         "%s, service_id = %s, flattened_results = %s",
+            LOGGER.debug('Listing versions of a given service, project_id ='
+                         ' %s, service_id = %s, flattened_results = %s',
                          project_id, service_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -394,9 +394,9 @@ class AppEngineClient(object):
             results = self.repository.version_instances.get(
                 project_id, target=instances_id, services_id=service_id,
                 versions_id=version_id)
-            LOGGER.debug("Getting information about a specific instance of"
-                         " a service, project_id = %s, service_id = %s, "
-                         "version_id = %s, instance_id = %s, results = %s",
+            LOGGER.debug('Getting information about a specific instance of'
+                         ' a service, project_id = %s, service_id = %s,'
+                         ' version_id = %s, instance_id = %s, results = %s',
                          project_id, service_id, version_id, instances_id,
                          results)
             return results
@@ -421,9 +421,9 @@ class AppEngineClient(object):
                 project_id, services_id=service_id, versions_id=version_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'instances')
-            LOGGER.debug("Listing instances of a given service and version,"
-                         " project_id = %s, service_id = %s, version_id = %s,"
-                         " flattened_results = %s",
+            LOGGER.debug('Listing instances of a given service and version,'
+                         ' project_id = %s, service_id = %s, version_id = %s,'
+                         ' flattened_results = %s',
                          project_id, service_id, version_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:

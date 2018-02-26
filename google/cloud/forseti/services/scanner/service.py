@@ -29,7 +29,7 @@ LOGGER = logger.get_logger(__name__)
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     """IAM Scanner gRPC implementation."""
 
-    HANDLE_KEY = "handle"
+    HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
         """Return the handle associated with the gRPC call."""
@@ -74,5 +74,5 @@ class GrpcScannerFactory(object):
         service = GrpcScanner(scanner_api=scanner,
                               service_config=self.config)
         scanner_pb2_grpc.add_ScannerServicer_to_server(service, server)
-        LOGGER.info("service %s created and registered", service)
+        LOGGER.info('Service %s created and registered.', service)
         return service
