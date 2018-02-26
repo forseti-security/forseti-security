@@ -92,9 +92,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
-            # Update rule files with default values
-            rule_vals = self.get_rule_default_values()
-            files.update_rule_files(rule_vals, constants.RULES_DIR_PATH)
+            default_rule_values = self.get_rule_default_values()
+            files.update_rule_files(default_rule_values,
+                                    constants.RULES_DIR_PATH)
 
             # Copy the rule directory to the GCS bucket
             files.copy_file_to_destination(
