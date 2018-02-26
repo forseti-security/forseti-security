@@ -431,18 +431,23 @@ def choose_project():
     return target_id
 
 
-def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
+def create_or_reuse_service_acct(acct_type,
+                                 acct_name,
+                                 acct_id,
+                                 advanced_mode,
+                                 dry_run):
     """Create or reuse service account.
 
     Args:
-        acct_type (str): The account type
-        acct_id (str): Account id
-        advanced_mode (bool): Whether or not the installer is in advanced mode
-        dry_run (bool): Whether or not the installer is in dry run mode
+        acct_type (str): The account type.
+        acct_name (str): The account name.
+        acct_id (str): Account id.
+        advanced_mode (bool): Whether or not the installer is in advanced mode.
+        dry_run (bool): Whether or not the installer is in dry run mode.
 
     Returns:
         str: The final account id that we will be using throughout
-                the installation
+            the installation.
     """
     utils.print_banner('Create/Reuse {}'.format(acct_type))
 
@@ -466,7 +471,7 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
         return_code, out, err = utils.run_command(
             ['gcloud', 'iam', 'service-accounts', 'create',
              acct_id[:acct_id.index('@')], '--display-name',
-             acct_id[:acct_id.index('@')]])
+             acct_name])
         if return_code:
             print(err)
             print('Could not create the service account. Terminating '
