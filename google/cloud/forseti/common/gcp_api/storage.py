@@ -345,8 +345,8 @@ class StorageClient(object):
 
         with open(local_file_path, 'rb') as f:
             results = self.repository.objects.upload(bucket, object_name, f)
-            LOGGER.debug("Putting a text object into a bucket, local_file_path"
-                         " = %s, full_bucket_path = %s, results = %s",
+            LOGGER.debug('Putting a text object into a bucket, local_file_path'
+                         ' = %s, full_bucket_path = %s, results = %s',
                          local_file_path, full_bucket_path, results)
             return results
 
@@ -366,8 +366,8 @@ class StorageClient(object):
         bucket, object_name = get_bucket_and_path_from(full_bucket_path)
         try:
             results = self.repository.objects.download(bucket, object_name)
-            LOGGER.debug("Getting a text file object as a string, "
-                         "full_bucket_path = %s, results = %s",
+            LOGGER.debug('Getting a text file object as a string,'
+                         ' full_bucket_path = %s, results = %s',
                          full_bucket_path, results)
             return results
         except errors.HttpError as e:
@@ -393,8 +393,8 @@ class StorageClient(object):
                                                          projection='full')
             flattened_results = api_helpers.flatten_list_results(paged_results,
                                                                  'items')
-            LOGGER.debug("Getting all GCS buckets for a project, project_id ="
-                         " %s, flattened_results = %s",
+            LOGGER.debug('Getting all GCS buckets for a project, project_id ='
+                         ' %s, flattened_results = %s',
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -420,8 +420,8 @@ class StorageClient(object):
             results = self.repository.bucket_acls.list(resource=bucket)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'items')
-            LOGGER.debug("Getting acls for a GCS Bucket, bucket = %s,"
-                         " flattened_results = %s",
+            LOGGER.debug('Getting acls for a GCS Bucket, bucket = %s,'
+                         ' flattened_results = %s',
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -445,8 +445,8 @@ class StorageClient(object):
         """
         try:
             results = self.repository.buckets.get_iam_policy(bucket)
-            LOGGER.debug("Getting the IAM policy for a bucket, bucket = %s,"
-                         " results = %s", bucket, results)
+            LOGGER.debug('Getting the IAM policy for a bucket, bucket = %s,'
+                         ' results = %s', bucket, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
@@ -471,8 +471,8 @@ class StorageClient(object):
             results = self.repository.default_object_acls.list(resource=bucket)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'items')
-            LOGGER.debug("Getting default object acls for GCS bucket, bucket"
-                         " = %s, flattened_results = %s",
+            LOGGER.debug('Getting default object acls for GCS bucket, bucket'
+                         ' = %s, flattened_results = %s',
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -500,8 +500,8 @@ class StorageClient(object):
                                                          projection='full')
             flattened_results = api_helpers.flatten_list_results(paged_results,
                                                                  'items')
-            LOGGER.debug("Getting all the objects in a bucket, bucket = %s,"
-                         " flattened_results = %s",
+            LOGGER.debug('Getting all the objects in a bucket, bucket = %s,'
+                         ' flattened_results = %s',
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -529,8 +529,8 @@ class StorageClient(object):
                                                        object=object_name)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'items')
-            LOGGER.debug("Getting acls for GCS object, bucket = %s, "
-                         "object_name = %s, flattened_results = %s",
+            LOGGER.debug('Getting acls for GCS object, bucket = %s,'
+                         ' object_name = %s, flattened_results = %s',
                          bucket, object_name, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -556,8 +556,8 @@ class StorageClient(object):
         try:
             results = self.repository.objects.get_iam_policy(bucket,
                                                              object_name)
-            LOGGER.debug("Getting the IAM policy for an object, bucket = %s,"
-                         " object_name = %s, results = %s",
+            LOGGER.debug('Getting the IAM policy for an object, bucket = %s,'
+                         ' object_name = %s, results = %s',
                          bucket, object_name, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:

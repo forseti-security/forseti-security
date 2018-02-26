@@ -188,7 +188,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         with scoped_session as session:
 
             for cnt, i in enumerate(data_access.scanner_iter(
-                    session, "firewall")):
+                    session, 'firewall')):
                 count = cnt
                 firewall_data_for_scanner = json.loads(i.data)
                 firewall_data_for_scanner['project_id'] = i.parent.name

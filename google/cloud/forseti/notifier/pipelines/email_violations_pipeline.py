@@ -110,7 +110,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         """
         timestamp = datetime.strptime(
             self.cycle_timestamp, '%Y-%m-%dT%H:%M:%S.%f')
-        pretty_timestamp = timestamp.strftime("%d %B %Y - %H:%M:%S")
+        pretty_timestamp = timestamp.strftime('%d %B %Y - %H:%M:%S')
         email_content = self.mail_util.render_from_template(
             'notification_summary.jinja', {
                 'scan_date':  pretty_timestamp,

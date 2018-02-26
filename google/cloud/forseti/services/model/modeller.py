@@ -42,7 +42,7 @@ class Modeller(object):
             object: the created data model
         """
 
-        LOGGER.info("Creating model: %s, inventory_id = %s",
+        LOGGER.info('Creating model: %s, inventory_id = %s',
                     name, inventory_id)
 
         model_manager = self.config.model_manager
@@ -82,6 +82,6 @@ class Modeller(object):
     def delete_model(self, model_name):
         """Deletes a model."""
 
-        LOGGER.info("Deleting model: %s", model_name)
+        LOGGER.info('Deleting model: %s', model_name)
         model_manager = self.config.model_manager
         model_manager.delete(model_name)
