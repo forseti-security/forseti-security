@@ -441,9 +441,9 @@ class IAMClient(object):
                 name, **kwargs)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'keys')
-            LOGGER.debug("Getting the keys associated with the given service"
-                         " account, name = %s, key_type = %s, "
-                         "flattened_results = %s",
+            LOGGER.debug('Getting the keys associated with the given service'
+                         ' account, name = %s, key_type = %s,'
+                         ' flattened_results = %s',
                          name, key_type, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:

@@ -34,7 +34,7 @@ LOGGER = logger.get_logger(__name__)
 class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
     """Playground gRPC handler."""
 
-    HANDLE_KEY = "handle"
+    HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
         """Extract the model handle from the gRPC context."""
@@ -50,7 +50,7 @@ class GrpcPlaygrounder(playground_pb2_grpc.PlaygroundServicer):
 
     def Ping(self, request, _):
         """Ping implemented to check service availability."""
-        LOGGER.debug("request.data = %s", request.data)
+        LOGGER.debug('request.data = %s', request.data)
         return playground_pb2.PingReply(data=request.data)
 
     def SetIamPolicy(self, request, context):
@@ -112,7 +112,7 @@ class GrpcPlaygrounderFactory(object):
             playgrounder_api=playgrounder.Playgrounder(
                 self.config))
         playground_pb2_grpc.add_PlaygroundServicer_to_server(service, server)
-        LOGGER.info("service %s created and registered", service)
+        LOGGER.info('Service %s created and registered', service)
         return service
 
 
@@ -126,13 +126,13 @@ def serve(endpoint, config, max_workers=10, wait_shutdown_secs=3):
     while True:
         try:
             time.sleep(1)
-            print "Looping\n"
+            print 'Looping\n'
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     class DummyConfig(object):
         """Dummy configuration for testing."""
 

@@ -29,7 +29,7 @@ LOGGER = logger.get_logger(__name__)
 class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
     """Notifier gRPC implementation."""
 
-    HANDLE_KEY = "handle"
+    HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
         """Return the handle associated with the gRPC call."""
@@ -75,5 +75,5 @@ class GrpcNotifierFactory(object):
         service = GrpcNotifier(notifier_api=notifier,
                                service_config=self.config)
         notifier_pb2_grpc.add_NotifierServicer_to_server(service, server)
-        LOGGER.info("service %s created and registered", service)
+        LOGGER.info('Service %s created and registered', service)
         return service
