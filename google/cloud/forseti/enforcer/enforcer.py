@@ -21,10 +21,6 @@ Usage for enforcing a single project's firewall:
 
 """
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-raises-doc
-# pylint: disable=missing-param-doc
-
 import argparse
 import sys
 import threading
@@ -37,38 +33,39 @@ from google.cloud.forseti.enforcer import batch_enforcer
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 
 
-parser = argparse.ArgumentParser()
+ARG_PARSER = argparse.ArgumentParser()
 
-parser.add_argument('--enforce_project', default=None,
-                    help='A single projectId to enforce the firewall on.'
-                         ' Must be used with the policy_file flag.')
+ARG_PARSER.add_argument('--enforce_project', default=None,
+                        help='A single projectId to enforce the firewall on.'
+                             ' Must be used with the policy_file flag.')
 
-parser.add_argument('--policy_file', default=None,
-                    help='A json encoded policy file to enforce,'
-                         ' must contain a list of Firewall resources to apply'
-                         ' to the project. If in a GCS bucket, include full'
-                         ' path, e.g. "gs://<bucketname>/path/to/file".')
+ARG_PARSER.add_argument('--policy_file', default=None,
+                        help='A json encoded policy file to enforce,'
+                             ' must contain a list of Firewall resources to'
+                             'apply to the project. If in a GCS bucket, '
+                             'include full path, e.g. '
+                             '"gs://<bucketname>/path/to/file".')
 
-parser.add_argument('--dry_run', default=False,
-                    help='If True will simulate the changes and not change any '
-                         'policies.')
+ARG_PARSER.add_argument('--dry_run', default=False,
+                        help='If True will simulate the changes and not change'
+                             'any policies.')
 
-parser.add_argument('--concurrent_threads', default=10,
-                    help='The number concurrent worker threads to use.')
+ARG_PARSER.add_argument('--concurrent_threads', default=10,
+                        help='The number concurrent worker threads to use.')
 
-parser.add_argument('--maximum_firewall_write_operations', default=10,
-                    help='The maximum number of in flight write operations on'
-                          ' project firewalls. Each running thread is allowed'
-                          ' up to this many running operations, so to limit'
-                          ' the over all number of operations, limit the number'
-                          ' of write threads using the'
-                          ' maximum_project_writer_threads flag.')
+ARG_PARSER.add_argument('--maximum_firewall_write_operations', default=10,
+                        help='The maximum number of in flight write operations'
+                             'on project firewalls. Each running thread is '
+                             'allowed up to this many running operations, '
+                             'so to limit the over all number of operations, '
+                             'limit the number of write threads using the'
+                             ' maximum_project_writer_threads flag.')
 
-parser.add_argument('--maximum_project_writer_threads', default=1,
-                    help='The maximum number of projects with active write '
-                         'operations on project firewalls.')
+ARG_PARSER.add_argument('--maximum_project_writer_threads', default=1,
+                        help='The maximum number of projects with active write '
+                             'operations on project firewalls.')
 
-FLAGS = vars(parser.parse_args())
+FLAGS = vars(ARG_PARSER.parse_args())
 LOGGER = logger.get_logger(__name__)
 
 
@@ -86,17 +83,18 @@ def initialize_batch_enforcer(global_configs, concurrent_threads,
     """Initialize and return a BatchFirewallEnforcer object.
 
     Args:
-      global_configs (dict): Global configurations.
-      concurrent_threads: The number of parallel enforcement threads to execute.
-      max_write_threads: The maximum number of enforcement threads that can be
-          actively updating project firewalls.
-      max_running_operations: The maximum number of write operations per
-          enforcement thread.
-      dry_run: If True, will simply log what action would have been taken
-          without actually applying any modifications.
+        global_configs (dict): Global configurations.
+        concurrent_threads (str): The number of parallel enforcement threads to
+            execute.
+        max_write_threads (str): The maximum number of enforcement threads that
+            can be actively updating project firewalls.
+        max_running_operations (str): The maximum number of write operations per
+            enforcement thread.
+        dry_run (boolean): If True, will simply log what action would have been
+            taken without actually applying any modifications.
 
     Returns:
-      A BatchFirewallEnforcer instance.
+        BatchFirewallEnforcer:w
     """
     if max_write_threads:
         project_sema = threading.BoundedSemaphore(value=max_write_threads)
@@ -117,13 +115,17 @@ def enforce_single_project(enforcer, project_id, policy_filename):
     """Runs the enforcer on a single project.
 
     Args:
-      enforcer: An instance of the batch_enforcer.BatchFirewallEnforcer class.
-      project_id: The project to enforce.
-      policy_filename: The json encoded file to read the firewall policy from.
+        enforcer (BatchFirewallEnforcer): An instance of the
+            batch_enforcer.BatchFirewallEnforcer class.
+        project_id (str): The project to enforce.
+        policy_filename (str): The json encoded file to read the firewall policy
+            from.
+
+    Raises:
+        InvalidParsedPolicyFileError: When the policy file can't be parsed.
 
     Returns:
-      The EnforcerLog proto for the last run, including individual results for
-      the enforced project, and a summary of the run.
+        EnforcerLogProto: A instance of the proto.
     """
     policy = file_loader.read_and_parse_file(policy_filename)
 
@@ -144,8 +146,11 @@ def enforce_single_project(enforcer, project_id, policy_filename):
 
 
 def main(argv):
-    """The main entry point for Forseti Security Enforcer runner."""
+    """The main entry point for Forseti Security Enforcer runner.
 
+        Args:
+              argv (dict): Unused.
+    """
     del argv
 
     forseti_config = FLAGS['forseti_config']
