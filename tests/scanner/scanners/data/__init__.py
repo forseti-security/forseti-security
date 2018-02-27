@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """Test data for scanner/scanners tests."""
+
+__import__('pkg_resources').declare_namespace(__name__)

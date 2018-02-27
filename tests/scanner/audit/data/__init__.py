@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """Data for scanner unit tests."""
+
+__import__('pkg_resources').declare_namespace(__name__)

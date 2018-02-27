@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """Forseti Common Google Cloud Platform type definitions."""
+
+__import__('pkg_resources').declare_namespace(__name__)

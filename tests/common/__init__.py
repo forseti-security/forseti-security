@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """Common utilities usable by all tests."""
+
+__import__('pkg_resources').declare_namespace(__name__)

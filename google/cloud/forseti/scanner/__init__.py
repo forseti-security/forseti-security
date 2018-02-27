@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """Forseti Scanner."""
+
+__import__('pkg_resources').declare_namespace(__name__)

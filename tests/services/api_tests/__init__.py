@@ -13,3 +13,5 @@
 # limitations under the License.
 
 """API Tests for Forseti services."""
+
+__import__('pkg_resources').declare_namespace(__name__)

@@ -12,4 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Notifier Pipelines."""
+"""Forseti Notifier Pipeline Tests."""
+
+__import__('pkg_resources').declare_namespace(__name__)
