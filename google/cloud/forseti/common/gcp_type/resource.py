@@ -63,6 +63,7 @@ class ResourceType(object):
         ORGANIZATION,
         FOLDER,
         PROJECT,
+        BUCKET,
         GROUP,
         FORWARDING_RULE,
     ])
