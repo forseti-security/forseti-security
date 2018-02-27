@@ -35,7 +35,7 @@ class ForsetiInstaller:
     branch = None
     project_id = None
     organization_id = None
-    gcp_service_account = None
+    gcp_service_acct_email = None
     user_can_grant_roles = True
     config = Config()
 
@@ -79,11 +79,12 @@ class ForsetiInstaller:
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
-        gcp_acct_email, gcp_acct_name = self.format_gcp_service_acct_id()
-        self.gcp_service_account = gcloud.create_or_reuse_service_acct(
+        gcp_service_acct_email, gcp_service_acct_name = (
+            self.format_gcp_service_acct_id())
+        self.gcp_service_acct_email = gcloud.create_or_reuse_service_acct(
             'gcp_service_account',
-            gcp_acct_name,
-            gcp_acct_email,
+            gcp_service_acct_name,
+            gcp_service_acct_email,
             self.config.advanced_mode,
             self.config.dry_run)
 
