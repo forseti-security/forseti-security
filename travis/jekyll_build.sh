@@ -5,7 +5,7 @@ if  [ -z ${JGT+x} ]; then
     bundle exec jekyll build
 else:
     # We do have access to the encrypted vars.
-    JEKYLL_GITHUB_TOKEN=$JGTbundle exec jekyll build
+    JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
 fi
 
 bundle exec htmlproofer --check-img-http --check-opengraph --check-html \
