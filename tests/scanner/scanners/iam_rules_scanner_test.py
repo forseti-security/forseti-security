@@ -49,7 +49,7 @@ class IamRulesScannerTest(ForsetiTestCase):
             self.scanner.OUTPUT_TIMESTAMP_FMT)
 
         expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
-        actual = self.scanner._get_output_filename(self.fake_utcnow)
+        actual = self.scanner._get_output_filename()
         self.assertEquals(expected, actual)
 
     @mock.patch(

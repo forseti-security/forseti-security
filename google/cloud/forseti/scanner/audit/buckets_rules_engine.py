@@ -32,14 +32,11 @@ LOGGER = logger.get_logger(__name__)
 class BucketsRulesEngine(bre.BaseRulesEngine):
     """Rules engine for bucket acls."""
 
-    def __init__(self, rules_file_path, snapshot_timestamp=None):
+    def __init__(self, rules_file_path):
         """Initialize.
 
         Args:
             rules_file_path (str): file location of rules
-            snapshot_timestamp (str): snapshot timestamp. Defaults to None.
-                If set, this will be the snapshot timestamp
-                used in the engine.
         """
         super(BucketsRulesEngine,
               self).__init__(rules_file_path=rules_file_path)

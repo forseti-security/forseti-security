@@ -37,7 +37,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, rules):
         """Initialization.
 
         Args:
@@ -45,7 +45,6 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
 
@@ -54,11 +53,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            snapshot_timestamp,
             rules)
         self.rules_engine = firewall_rules_engine.FirewallRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
+            rules_file_path=self.rules)
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
@@ -141,7 +138,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                         'sendgrid_api_key':
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
-                        'output_filename': self._get_output_filename(now_utc),
+                        'output_filename': self._get_output_filename(),
                         'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,

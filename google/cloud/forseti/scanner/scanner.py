@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """GCP Resource scanner."""
+
+import datetime
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
@@ -39,19 +42,13 @@ def run(model_name=None, service_config=None):
     global_configs = service_config.get_global_config()
     scanner_configs = service_config.get_scanner_config()
 
-    # TODO: Figure out if we still need to get the latest model here,
-    # or should it be set in the server context before calling the scanner.
-    #snapshot_timestamp = _get_timestamp(global_configs)
-    #if not snapshot_timestamp:
-    #    LOGGER.warn('No snapshot timestamp found. Exiting.')
-    #    sys.exit()
-
     violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
+    invocation_id = datetime.utcnow()
 
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
-        None).build()
+        None, invocation_id).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:

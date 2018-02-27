@@ -65,16 +65,14 @@ class InvalidOrgDefinition(Error):
 class FirewallRulesEngine(bre.BaseRulesEngine):
     """Rules engine for firewall resources."""
 
-    def __init__(self, rules_file_path, snapshot_timestamp=None):
+    def __init__(self, rules_file_path):
         """Initialize.
 
         Args:
           rules_file_path (str): File location of rules.
-          snapshot_timestamp (str): The snapshot to work with.
         """
         super(FirewallRulesEngine, self).__init__(
-            rules_file_path=rules_file_path,
-            snapshot_timestamp=snapshot_timestamp)
+            rules_file_path=rules_file_path)
         self._repository_lock = threading.RLock()
         self.rule_book = None
 

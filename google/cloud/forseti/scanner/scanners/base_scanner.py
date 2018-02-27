@@ -15,6 +15,7 @@
 """Base scanner."""
 
 import abc
+import datetime
 import os
 import shutil
 
@@ -33,22 +34,22 @@ class BaseScanner(object):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, snapshot_timestamp, invocation_id, rules):
         """Constructor for the base pipeline.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
-            model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            model_name (str): name of the data model.
+            invocation_id (str): The id of a given scanner run (timestamp).
             rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
         self.service_config = service_config
         self.model_name = model_name
-        self.snapshot_timestamp = snapshot_timestamp
+        self.invocation_id = invocation_id
         self.rules = rules
 
     @abc.abstractmethod
@@ -76,25 +77,23 @@ class BaseScanner(object):
 
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
-        violation_access.create(violations, inventory_index_id)
+        violation_access.create(violations, inventory_index_id,
+                                self.invocation_id)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
 
         return violation_errors
 
-    def _get_output_filename(self, now_utc):
+    def _get_output_filename(self):
         """Create the output filename.
-
-        Args:
-            now_utc (datetime): The datetime now in UTC. Generated at the top
-                level to be consistent across the scan.
 
         Returns:
             str: The output filename for the csv, formatted with the
                 now_utc timestamp.
         """
-        output_timestamp = now_utc.strftime(self.OUTPUT_TIMESTAMP_FMT)
+        output_timestamp = self.invocation_id.strftime(
+            self.OUTPUT_TIMESTAMP_FMT)
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
         return output_filename
 
@@ -103,10 +102,9 @@ class BaseScanner(object):
 
         Args:
             output_path (str): The output path for the csv.
-            now_utc (datetime): The UTC timestamp of "now".
             csv_name (str): The csv_name.
         """
-        output_filename = self._get_output_filename(now_utc)
+        output_filename = self._get_output_filename()
 
         # If output path was specified, copy the csv temp file either to
         # a local file or upload it to Google Cloud Storage.

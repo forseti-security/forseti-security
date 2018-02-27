@@ -98,7 +98,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             self.scanner.OUTPUT_TIMESTAMP_FMT)
 
         expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
-        actual = self.scanner._get_output_filename(self.fake_utcnow)
+        actual = self.scanner._get_output_filename()
         self.assertEquals(expected, actual)
 
     @mock.patch(
@@ -304,8 +304,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'sendgrid_api_key':
                 self.scanner.global_configs.get('sendgrid_api_key'),
                 'output_csv_name': fake_csv_name,
-                'output_filename': self.scanner._get_output_filename(
-                    self.fake_utcnow),
+                'output_filename': self.scanner._get_output_filename(),
                 'now_utc': self.fake_utcnow,
                 'all_violations': flattened_violations,
                 'resource_counts': '88888',

@@ -473,7 +473,7 @@ class IapScanner(base_scanner.BaseScanner):
                         'sendgrid_api_key':
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
-                        'output_filename': self._get_output_filename(now_utc),
+                        'output_filename': self._get_output_filename(),
                         'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,

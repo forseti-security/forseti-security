@@ -20,8 +20,8 @@ ADD . /forseti-security/
 WORKDIR /forseti-security/
 
 # Install Forseti Security dependencies.
-# This should stay in sync with the deployment script used on the host machine in
-#   deployment-templates/compute-engine/forseti-instance.py
+# This should stay in sync with the deployment script used on the host machine
+# in deployment-templates/compute-engine/forseti-instance.py
 RUN pip install -q --upgrade setuptools pip wheel 1> /dev/null
 RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
 
@@ -29,4 +29,7 @@ RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
 RUN python setup.py install
 
 # Test to see Forseti Security was installed.
+# The tests here should match what is created as an entry point in setup.py
 RUN yes | which forseti_server
+RUN yes | which forseti
+RUN yes | which forseti_enforcer

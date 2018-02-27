@@ -30,22 +30,17 @@ LOGGER = logger.get_logger(__name__)
 class BaseRulesEngine(object):
     """The base class for the rules engine."""
 
-    def __init__(self,
-                 rules_file_path=None,
-                 snapshot_timestamp=None):
+    def __init__(self, rules_file_path=None):
         """Initialize.
 
         Args:
             rules_file_path (str): The path of the rules file, either
                 local or GCS.
-            snapshot_timestamp (str): The snapshot to associate any
-                data lookups.
         """
         if not rules_file_path:
             raise audit_errors.InvalidRuleDefinitionError(
                 'File path: {}'.format(rules_file_path))
         self.full_rules_path = rules_file_path.strip()
-        self.snapshot_timestamp = snapshot_timestamp
 
     def build_rule_book(self, global_configs):
         """Build RuleBook from the rules definition file.
