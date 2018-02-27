@@ -79,11 +79,11 @@ class ForsetiInstaller:
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
-        gcp_acct_id, gcp_acct_name = self.format_gcp_service_acct_id()
+        gcp_acct_email, gcp_acct_name = self.format_gcp_service_acct_id()
         self.gcp_service_account = gcloud.create_or_reuse_service_acct(
             'gcp_service_account',
             gcp_acct_name,
-            gcp_acct_id,
+            gcp_acct_email,
             self.config.advanced_mode,
             self.config.dry_run)
 
@@ -160,17 +160,17 @@ class ForsetiInstaller:
         """Format the service account ids.
 
         Returns:
-            str: GCP service account id.
+            str: GCP service account email.
             str: GCP service account name.
         """
-        account_id, account_name = (
+        service_account_email, service_account_name = (
             utils.generate_service_acct_info(
                 'gcp',
                 'reader',
                 self.config.installation_type,
                 self.config.timestamp,
                 self.project_id))
-        return account_id, account_name
+        return service_account_email, service_account_name
 
     def generate_bucket_name(self):
         """Generate GCS bucket name.

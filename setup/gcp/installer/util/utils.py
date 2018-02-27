@@ -149,10 +149,7 @@ def format_resource_id(resource_type, resource_id):
 
 def generate_service_acct_info(prefix, modifier, installation_type,
                                timestamp, project_id):
-    """Format the service account id and name.
-
-    Id will contain the timestamp due to the uniqueness requirement
-    and name will contain installation type for clarity purpose.
+    """Format the service account email and name.
 
     Args:
         prefix (str): The prefix of the account id and account name.
@@ -162,18 +159,21 @@ def generate_service_acct_info(prefix, modifier, installation_type,
         project_id (str): Id of the project on GCP.
 
     Returns:
-        str: Service account id.
+        str: Service account email.
         str: Service account name.
     """
 
-    account_id = full_service_acct_email(
-        constants.SERVICE_ACCT_FMT.format(
+    # Service account email should contains timestamp due to the
+    # uniqueness requirement
+    service_account_email = full_service_acct_email(
+        constants.SERVICE_ACCT_NAME_FMT.format(
             prefix, modifier, timestamp), project_id)
 
-    account_name = constants.SERVICE_ACCT_FMT.format(
+    # Service account name should use installation type for clarity purpose
+    service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
         prefix, modifier, installation_type)
 
-    return account_id, account_name
+    return service_account_email, service_account_name
 
 
 def infer_version(advanced_mode):

@@ -58,11 +58,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.should_grant_access()
 
         gcloud.enable_apis(self.config.dry_run)
-        gsuite_acct_id, gsuite_acct_name = self.format_gsuite_service_acct_id()
+        gsuite_acct_email, gsuite_acct_name = (
+            self.format_gsuite_service_acct_id())
         self.gsuite_service_account = gcloud.create_or_reuse_service_acct(
             'gsuite_service_account',
             gsuite_acct_name,
-            gsuite_acct_id,
+            gsuite_acct_email,
             self.config.advanced_mode,
             self.config.dry_run)
         self.get_email_settings()
@@ -274,37 +275,39 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Format the gsuite service account id.
 
         Returns:
-            str: GSuite service account id.
+            str: GSuite service account email.
             str: GSuite service account name.
         """
-        account_id, account_name = utils.generate_service_acct_info(
-            'gsuite',
-            'reader',
-            self.config.installation_type,
-            self.config.timestamp,
-            self.project_id)
+        service_account_email, service_account_name = (
+            utils.generate_service_acct_info(
+                'gsuite',
+                'reader',
+                self.config.installation_type,
+                self.config.timestamp,
+                self.project_id))
 
-        return account_id, account_name
+        return service_account_email, service_account_name
 
     def format_gcp_service_acct_id(self):
         """Format the service account ids.
 
         Returns:
-            str: GCP service account id.
+            str: GCP service account email.
             str: GCP service account name.
         """
         modifier = 'reader'
         if self.enable_write_access:
             modifier = 'readwrite'
 
-        account_id, account_name = utils.generate_service_acct_info(
-            'gcp',
-            modifier,
-            self.config.installation_type,
-            self.config.timestamp,
-            self.project_id)
+        service_account_email, service_account_name = (
+            utils.generate_service_acct_info(
+                'gcp',
+                modifier,
+                self.config.installation_type,
+                self.config.timestamp,
+                self.project_id))
 
-        return account_id, account_name
+        return service_account_email, service_account_name
 
     def should_enable_write_access(self):
         """Ask if user wants to enable write access for Forseti."""
