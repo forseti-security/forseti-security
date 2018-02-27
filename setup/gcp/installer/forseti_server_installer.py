@@ -92,6 +92,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
+            default_rule_values = self.get_rule_default_values()
+            files.update_rule_files(default_rule_values,
+                                    constants.RULES_DIR_PATH)
+
             # Copy the rule directory to the GCS bucket
             files.copy_file_to_destination(
                 constants.RULES_DIR_PATH, bucket_name,
@@ -139,10 +143,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Format firewall rule name.
 
         Args:
-            rule_name (str): Name of the firewall rule
+            rule_name (str): Name of the firewall rule.
 
         Returns:
-            str: Firewall rule name
+            str: Firewall rule name.
         """
         return '{}-{}'.format(rule_name, self.config.datetimestamp)
 
@@ -168,11 +172,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
                   self.resource_root_id)
 
     def get_deployment_values(self):
-        """Get deployment values
+        """Get deployment values.
 
         Returns:
             dict: A dictionary of values needed to generate
-                the forseti deployment template
+                the forseti deployment template.
         """
         bucket_name = self.generate_bucket_name()
         return {
@@ -187,11 +191,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
         }
 
     def get_configuration_values(self):
-        """Get configuration values
+        """Get configuration values.
 
         Returns:
             dict: A dictionary of values needed to generate
-                the forseti configuration file
+                the forseti configuration file.
         """
         bucket_name = self.generate_bucket_name()
         return {
@@ -201,6 +205,19 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
+        }
+
+    def get_rule_default_values(self):
+        """Get rule default values.
+
+        Returns:
+            dict: A dictionary of default values.
+        """
+        organization_id = self.resource_root_id.split('/')[-1]
+        domain = gcloud.get_domain_from_organization_id(organization_id)
+        return {
+            'ORGANIZATION_ID': organization_id,
+            'DOMAIN': domain
         }
 
     def determine_access_target(self):
