@@ -57,7 +57,7 @@ class ForsetiInstaller(object):
 
         # Create configuration file and deployment template.
         (conf_file_path,
-         deployment_tpl_path) = self.create_conf_file_dpl_template()
+         deployment_tpl_path) = self.create_conf_file_and_dpl_tpl()
 
         # Deployment.
         bucket_name = self.generate_bucket_name()
