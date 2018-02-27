@@ -65,7 +65,6 @@ def define_violation(dbengine):
         inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
-        full_name = Column(String(1024))
         rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
         violation_data = Column(Text)
@@ -117,6 +116,7 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
+                created_at = datetime.utcnow()
                 for violation in violations:
 
                     violation_hash = _create_violation_hash(
@@ -137,7 +137,7 @@ def define_violation(dbengine):
                             violation.get('violation_data')),
                         inventory_data=violation.get('inventory_data'),
                         violation_hash=violation_hash,
-                        created_at=datetime.utcnow()
+                        created_at=created_at
                     )
 
                     session.add(violation)
