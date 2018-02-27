@@ -77,7 +77,7 @@ class ForsetiInstaller(object):
 
         Returns:
             str: Configuration file path.
-            ]str: Deployment template path.
+            str: Deployment template path.
         """
         utils.print_banner('Creating configuration file and'
                            ' deployment template')

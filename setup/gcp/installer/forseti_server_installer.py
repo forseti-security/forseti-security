@@ -213,43 +213,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             str: Forseti configuration file path.
         """
-        def config_swap_fields(new_config, old_config):
-            """Swapping fields.
-
-            Note: new_config will get modified.
-
-            Args:
-                new_config (dict): New configuration.
-                old_config (dict): Old configuration.
-            """
-            global_to_inventory = [
-                'gsuite_service_account_key_file',
-                'domain_super_admin_email'
-            ]
-            global_to_api_quota = [
-                'max_admin_api_calls_per_100_seconds',
-                'max_appengine_api_calls_per_second',
-                'max_bigquery_api_calls_per_100_seconds',
-                'max_cloudbilling_api_calls_per_60_seconds',
-                'max_compute_api_calls_per_second',
-                'max_container_api_calls_per_100_seconds',
-                'max_crm_api_calls_per_100_seconds',
-                'max_iam_api_calls_per_second',
-                'max_servicemanagement_api_calls_per_100_seconds',
-                'max_sqladmin_api_calls_per_100_seconds'
-            ]
-
-            new_conf_inventory = new_config['inventory']
-            new_conf_api_quota = new_conf_inventory['api_quota']
-            old_config_global = old_config['global']
-
-            for field in global_to_inventory:
-                if field in old_config_global:
-                    new_conf_inventory[field] = old_config_global[field]
-
-            for field in global_to_api_quota:
-                if field in old_config_global:
-                    new_conf_api_quota[field] = old_config_global[field]
 
         forseti_conf_path = super(
             ForsetiServerInstaller, self).generate_forseti_conf()
@@ -268,7 +231,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
             # Fields that have changed categories cannot be merged,
             # swap them here instead.
-            config_swap_fields(new_conf, self.v1_config.config)
+            self._swap_config_fields(new_conf, self.v1_config.config)
 
             files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 
@@ -468,3 +431,46 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gsuite_service_account))
         else:
             print(constants.MESSAGE_ENABLE_GSUITE_GROUP)
+
+    @staticmethod
+    def _swap_config_fields(self, new_config, old_config):
+        """Swapping fields. This will work for all v1 migrating to v2.
+
+        Note: new_config will get modified.
+
+        Args:
+            new_config (dict): New configuration.
+            old_config (dict): Old configuration.
+        """
+        global_to_inventory = [
+            'gsuite_service_account_key_file',
+            'domain_super_admin_email'
+        ]
+        global_to_api_quota = [
+            'max_admin_api_calls_per_100_seconds',
+            'max_appengine_api_calls_per_second',
+            'max_bigquery_api_calls_per_100_seconds',
+            'max_cloudbilling_api_calls_per_60_seconds',
+            'max_compute_api_calls_per_second',
+            'max_container_api_calls_per_100_seconds',
+            'max_crm_api_calls_per_100_seconds',
+            'max_iam_api_calls_per_second',
+            'max_servicemanagement_api_calls_per_100_seconds',
+            'max_sqladmin_api_calls_per_100_seconds'
+        ]
+
+        new_conf_inventory = new_config['inventory']
+        new_conf_api_quota = new_conf_inventory['api_quota']
+
+        old_config_global = ({} if 'global' not in old_config
+                             else old_config['global'])
+
+        for field in global_to_inventory:
+            if field in old_config_global:
+                new_conf_inventory[field] = (new_conf_inventory[field]
+                                             or old_config_global[field])
+
+        for field in global_to_api_quota:
+            if field in old_config_global:
+                new_conf_api_quota[field] = (new_conf_api_quota[field] or
+                                             old_config_global[field])

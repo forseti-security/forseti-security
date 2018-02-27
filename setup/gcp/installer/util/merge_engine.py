@@ -188,15 +188,15 @@ def _select_identifier(identifiers, dict_to_identify):
     return ''
 
 
-def merge_dict_list(merge_from_dict_list, merge_to_dict_list, identifier,
+def merge_dict_list(merge_from_dicts, merge_to_dicts, identifier,
                     fields_to_ignore, field_identifiers):
     """Merge target_dict_list into base_dict_list.
 
     Note: merge_to_dict_list will be modified during the merge process.
 
     Args:
-        merge_from_dict_list (list): Base dictionary.
-        merge_to_dict_list (list): Target dictionary.
+        merge_from_dicts (list): Base dictionary.
+        merge_to_dicts (list): Target dictionary.
         identifier (str): Current field identifier.
         fields_to_ignore (list): Fields to ignore (keep in base_dict).
         field_identifiers (dict): Identifiers for fields.
@@ -204,47 +204,47 @@ def merge_dict_list(merge_from_dict_list, merge_to_dict_list, identifier,
 
     contains_identifier = False
 
-    if merge_to_dict_list:
+    if merge_to_dicts:
         # If merge_to_dict_list is not empty, check if the dictionary object
         # inside contains the identifier.
-        contains_identifier = identifier in merge_to_dict_list[0]
-    if merge_from_dict_list:
+        contains_identifier = identifier in merge_to_dicts[0]
+    if merge_from_dicts:
         # If merge_from_dict_list is not empty, check if the dictionary object
         # inside contains the identifier.
         contains_identifier = contains_identifier and (
-            identifier in merge_from_dict_list[0])
+            identifier in merge_from_dicts[0])
 
     if not identifier or not contains_identifier:
         # Doesn't have an identifier, append all the dictionary objects from
         # target_dict_list to base_dict_list if base_dict_list doesn't have
         # them already.
-        for target_dict in merge_from_dict_list:
-            if target_dict not in merge_to_dict_list:
-                merge_to_dict_list.append(target_dict)
+        for target_dict in merge_from_dicts:
+            if target_dict not in merge_to_dicts:
+                merge_to_dicts.append(target_dict)
         return
 
     # Sort both merge_from_dict_list and merge_to_dict_list by the identifier.
-    merge_to_dict_list.sort(key=lambda k: k[identifier])
-    merge_from_dict_list.sort(key=lambda k: k[identifier])
+    merge_to_dicts.sort(key=lambda k: k[identifier])
+    merge_from_dicts.sort(key=lambda k: k[identifier])
 
     # Merge them.
     merge_to_counter = 0
     merge_from_counter = 0
-    max_items = len(merge_to_dict_list) + len(merge_from_dict_list)
+    max_items = len(merge_to_dicts) + len(merge_from_dicts)
     for _ in range(0, max_items):
         cur_merge_to_dict = (
-            None if len(merge_to_dict_list) <= merge_to_counter
-            else merge_to_dict_list[merge_to_counter])
+            None if len(merge_to_dicts) <= merge_to_counter
+            else merge_to_dicts[merge_to_counter])
         cur_merge_from_dict = (
-            None if len(merge_from_dict_list) <= merge_from_counter
-            else merge_from_dict_list[merge_from_counter])
-        if merge_from_counter >= len(merge_from_dict_list):
+            None if len(merge_from_dicts) <= merge_from_counter
+            else merge_from_dicts[merge_from_counter])
+        if merge_from_counter >= len(merge_from_dicts):
             break
-        elif (merge_to_counter >= len(merge_to_dict_list) or
+        elif (merge_to_counter >= len(merge_to_dicts) or
               cur_merge_to_dict[identifier] > cur_merge_from_dict[identifier]):
             # cur_target_object only exists in merge_from_dict_list,
             # add it to merge_to_dict_list, increment target_counter.
-            merge_to_dict_list.append(cur_merge_from_dict)
+            merge_to_dicts.append(cur_merge_from_dict)
             merge_from_counter += 1
         elif cur_merge_to_dict[identifier] < cur_merge_from_dict[identifier]:
             # cur_base_dict object only exists in merge_to_dict_list,
