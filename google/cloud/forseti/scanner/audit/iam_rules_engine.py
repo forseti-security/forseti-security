@@ -145,7 +145,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        policy_bindings = filter(None, [
+        policy_bindings = filter(None, [    # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in json.loads(policy.data).get('bindings', [])])
         violations = self.rule_book.find_violations(
@@ -336,7 +336,7 @@ class IamRuleBook(bre.BaseRuleBook):
                         resource_id=resource_id,
                         resource_type=resource_type)
 
-                    rule_bindings = filter(None, [
+                    rule_bindings = filter(None, [ # pylint: disable=bad-builtin
                         iam_policy.IamPolicyBinding.create_from(b)
                         for b in rule_def.get('bindings')])
                     rule = scanner_rules.Rule(rule_name=rule_def.get('name'),

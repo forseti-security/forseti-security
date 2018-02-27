@@ -186,7 +186,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
             policy_data = []
             supported_iam_types = [
-                    'organization', 'folder', 'project', 'bucket']
+                'organization', 'folder', 'project', 'bucket']
             org_iam_policy_counter = 0
             folder_iam_policy_counter = 0
             project_iam_policy_counter = 0
@@ -200,8 +200,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     bucket_iam_policy_counter += 1
                     policy_data.append(
                         (Bucket(policy.parent.name,
-                                 policy.full_name,
-                                 policy.data),
+                                policy.full_name,
+                                policy.data),
                          policy))
                 if policy.parent.type == 'project':
                     project_iam_policy_counter += 1
