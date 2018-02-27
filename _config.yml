@@ -48,61 +48,61 @@ defaults:
   - scope:
       path: _docs/latest
     values:
-      category: Overview
+      category: Overview (latest)
       layout: docs
   - scope:
       path: _docs/latest/concepts
     values:
-      category: Concepts
+      category: Concepts (latest)
   - scope:
       path: _docs/latest/setup
     values:
-      category: Setup
+      category: Setup (latest)
   - scope:
       path: _docs/latest/use
     values:
-      category: Use
+      category: Use (latest)
   - scope:
       path: _docs/latest/configure
     values:
-      category: Configure
+      category: Configure (latest)
   - scope:
       path: _docs/latest/develop
     values:
-      category: Develop
+      category: Develop (latest)
   - scope:
       path: _docs/latest/faq
     values:
-      category: FAQ
+      category: FAQ (latest)
   - scope:
       path: _docs/v1.0
     values:
-      category: Overview
+      category: Overview (v1.0)
       layout: docs
   - scope:
       path: _docs/v1.0/concepts
     values:
-      category: Concepts
+      category: Concepts (v1.0)
   - scope:
       path: _docs/v1.0/setup
     values:
-      category: Setup
+      category: Setup (v1.0)
   - scope:
       path: _docs/v1.0/use
     values:
-      category: Use
+      category: Use (v1.0)
   - scope:
       path: _docs/v1.0/configure
     values:
-      category: Configure
+      category: Configure (v1.0)
   - scope:
       path: _docs/v1.0/develop
     values:
-      category: Develop
+      category: Develop (v1.0)
   - scope:
       path: _docs/v1.0/faq
     values:
-      category: FAQ
+      category: FAQ (v1.0)
 # The order of faq categories is defined in _data/faq_categories.yml
   - scope:
       path: _faq/general

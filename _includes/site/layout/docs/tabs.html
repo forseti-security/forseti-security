@@ -1,9 +1,12 @@
 <div class="row docs-nav">
   <div class="col-md-9">
     <ul class="nav nav-tabs visible-md-block visible-lg-block">
+      {% assign release_version = page.path | split:"/" | slice:1 | first %}
       {% for tab in site.data.doc_categories %}
-        <li {% if page.category == tab.title %}class="active"{% endif %}>
-          <a href="{{ site.baseurl }}/{{ tab.href }}">
+        <!-- <li {% if page.category == tab.title %}class="active"{% endif %}> -->
+          {% assign tab_title_with_version = tab.title | append:" (" | append:release_version | append:")" %}
+          <li {% if page.category == tab_title_with_version %}class="active"{% endif %}>
+          <a href="{{ site.baseurl }}/{{ tab.href | replace:'$$VERSION$$',release_version }}">
             {{ tab.title }}
           </a>
         </li>

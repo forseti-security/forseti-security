@@ -4,8 +4,6 @@
   {% assign ordered_docs = category_docs | sort:"order" %}
   {% assign category_root_url = ordered_docs[0].url %}
 
-  <h4><a href="{{ category_root_url }}">{{ page.category }}</a></h4>
-
   {% comment %}
     Assume that nested subcategories are ordered continguously. with index files
     sorted first.

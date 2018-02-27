@@ -1,14 +1,14 @@
 # The order of the categories in this file (first-to-last) determines their
 # order in the UI (left-to-right)
 - title: Concepts
-  href: docs/latest/concepts/
+  href: docs/$$VERSION$$/concepts/
 - title: Setup
-  href: docs/latest/setup/
+  href: docs/$$VERSION$$/setup/
 - title: Configure
-  href: docs/latest/configure/
+  href: docs/$$VERSION$$/configure/
 - title: Use
-  href: docs/latest/use/
+  href: docs/$$VERSION$$/use/
 - title: Develop
-  href: docs/latest/develop/
+  href: docs/$$VERSION$$/develop/
 - title: FAQ
-  href: docs/latest/faq/
+  href: docs/$$VERSION$$/faq/
