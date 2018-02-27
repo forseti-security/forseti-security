@@ -746,7 +746,7 @@ def run_model(client, config, output, config_env):
             Warning: When the specified model is not usable or not existed
         """
         model = client.get_model(config.model)
-        if model and model.status in ["SUCCESS", "PARTIAL_SUCCESS"]:
+        if model and model.status in ['SUCCESS', 'PARTIAL_SUCCESS']:
             config_env['model'] = model.handle
         else:
             raise Warning('use_model failed, the specified model is '

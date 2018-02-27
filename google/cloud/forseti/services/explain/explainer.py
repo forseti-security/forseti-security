@@ -32,8 +32,8 @@ class Explainer(object):
     def list_resources(self, model_name, full_resource_name_prefix):
         """Lists resources by resource name prefix."""
 
-        LOGGER.debug("Listing resources, model_name = %s,"
-                     " full_resource_name_prefix = %s",
+        LOGGER.debug('Listing resources, model_name = %s,'
+                     ' full_resource_name_prefix = %s',
                      model_name, full_resource_name_prefix)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -44,8 +44,8 @@ class Explainer(object):
     def list_group_members(self, model_name, member_name_prefix):
         """Lists a member from the model."""
 
-        LOGGER.debug("Listing Group members, model_name = %s, "
-                     "member_name_prefix = %s", model_name, member_name_prefix)
+        LOGGER.debug('Listing Group members, model_name = %s,'
+                     ' member_name_prefix = %s', model_name, member_name_prefix)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -54,8 +54,8 @@ class Explainer(object):
     def list_roles(self, model_name, role_name_prefix):
         """Lists the role in the model matching the prefix."""
 
-        LOGGER.info("Listing roles, model_name = %s,"
-                    " role_name_prefix = %s", model_name, role_name_prefix)
+        LOGGER.info('Listing roles, model_name = %s,'
+                    ' role_name_prefix = %s', model_name, role_name_prefix)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
@@ -64,7 +64,7 @@ class Explainer(object):
     def get_iam_policy(self, model_name, resource):
         """Gets the IAM policy for the resource."""
 
-        LOGGER.debug("Retrieving IAM policy, model_name = %s, resource = %s",
+        LOGGER.debug('Retrieving IAM policy, model_name = %s, resource = %s',
                      model_name, resource)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -74,8 +74,8 @@ class Explainer(object):
     def check_iam_policy(self, model_name, resource, permission, identity):
         """Checks access according to IAM policy for the resource."""
 
-        LOGGER.debug("Checking IAM policy, model_name = %s, resource = %s,"
-                     " permission = %s, identity = %s",
+        LOGGER.debug('Checking IAM policy, model_name = %s, resource = %s,'
+                     ' permission = %s, identity = %s',
                      model_name, resource, permission, identity)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -86,9 +86,9 @@ class Explainer(object):
     def explain_denied(self, model_name, member, resources, permissions, roles):
         """Provides information on granting a member access to a resource."""
 
-        LOGGER.debug("Explaining how to grant access to a member, "
-                     "model_name = %s, member = %s, resources = %s,"
-                     " permissions = %s, roles = %s",
+        LOGGER.debug('Explaining how to grant access to a member,'
+                     ' model_name = %s, member = %s, resources = %s,'
+                     ' permissions = %s, roles = %s',
                      model_name, member, resources, permissions, roles)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -103,9 +103,9 @@ class Explainer(object):
     def explain_granted(self, model_name, member, resource, role, permission):
         """Provides information on why a member has access to a resource."""
 
-        LOGGER.debug("Explaining why the member has access to a resource, "
-                     "model_name = %s, member = %s, resource = %s,"
-                     " permission = %s, role = %s",
+        LOGGER.debug('Explaining why the member has access to a resource,'
+                     ' model_name = %s, member = %s, resource = %s,'
+                     ' permission = %s, role = %s',
                      model_name, member, resource, permission, role)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -121,9 +121,9 @@ class Explainer(object):
                                 permission_names, expand_groups):
         """Returns members who have access to the given resource."""
 
-        LOGGER.debug("Retrieving members that have access to the resource, "
-                     "model_name = %s, resource_name = %s,"
-                     " permission_names = %s, expand_groups = %s",
+        LOGGER.debug('Retrieving members that have access to the resource,'
+                     ' model_name = %s, resource_name = %s,'
+                     ' permission_names = %s, expand_groups = %s',
                      model_name, resource_name,
                      permission_names, expand_groups)
         model_manager = self.config.model_manager
@@ -150,10 +150,10 @@ class Explainer(object):
             Generator for access tuples.
         """
 
-        LOGGER.debug("Retrieving access tuples that satisfy the role or"
-                     " permission: model_name = %s, role_name = %s, "
-                     "permission_name = %s, expand_groups = %s, "
-                     "expand_resources = %s", model_name, role_name,
+        LOGGER.debug('Retrieving access tuples that satisfy the role or'
+                     ' permission: model_name = %s, role_name = %s,'
+                     ' permission_name = %s, expand_groups = %s,'
+                     ' expand_resources = %s', model_name, role_name,
                      permission_name, expand_groups, expand_resources)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -170,9 +170,9 @@ class Explainer(object):
                               expand_resources):
         """Returns access to resources for the provided member."""
 
-        LOGGER.debug("Retrieving access to resources for a given member, "
-                     "model_name = %s, member_name = %s, "
-                     "permission_names = %s, expand_resources = %s",
+        LOGGER.debug('Retrieving access to resources for a given member,'
+                     ' model_name = %s, member_name = %s,'
+                     ' permission_names = %s, expand_resources = %s',
                      model_name, member_name,
                      permission_names, expand_resources)
         model_manager = self.config.model_manager
@@ -185,9 +185,9 @@ class Explainer(object):
     def get_permissions_by_roles(self, model_name, role_names, role_prefixes):
         """Returns the permissions associated with the specified roles."""
 
-        LOGGER.debug("Retrieving the permissions associated with the "
-                     "specified roles, model_name = %s, role_names = %s, "
-                     "role_prefixes = %s",
+        LOGGER.debug('Retrieving the permissions associated with the'
+                     ' specified roles, model_name = %s, role_names = %s,'
+                     ' role_prefixes = %s',
                      model_name, role_names, role_prefixes)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
@@ -199,7 +199,7 @@ class Explainer(object):
     def denormalize(self, model_name):
         """Denormalizes a model."""
 
-        LOGGER.debug("De-normalizing a model, model_name = %s", model_name)
+        LOGGER.debug('De-normalizing a model, model_name = %s', model_name)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
