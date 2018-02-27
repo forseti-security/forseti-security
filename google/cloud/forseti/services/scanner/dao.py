@@ -15,11 +15,15 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
+from datetime import datetime
 import hashlib
 import json
 
 from sqlalchemy import Column
-from sqlalchemy import String, Integer, Text
+from sqlalchemy import DateTime
+from sqlalchemy import String
+from sqlalchemy import Integer
+from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import inspect
 from sqlalchemy.orm import sessionmaker
@@ -55,6 +59,7 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
+        created_at = Column(DateTime())
         full_name = Column(String(1024))
         inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
@@ -111,6 +116,7 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
+                created_at = datetime.utcnow()
                 for violation in violations:
 
                     violation_hash = _create_violation_hash(
@@ -130,7 +136,8 @@ def define_violation(dbengine):
                         violation_data=json.dumps(
                             violation.get('violation_data')),
                         inventory_data=violation.get('inventory_data'),
-                        violation_hash=violation_hash
+                        violation_hash=violation_hash,
+                        created_at=created_at
                     )
 
                     session.add(violation)

@@ -167,7 +167,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('model delete foo',
          CLIENT.model.delete_model,
-         ["foo"],
+         ['da39a3ee5e6b4b0d3255bfef95601890afd80709'],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
