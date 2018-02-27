@@ -19,6 +19,7 @@ import os
 import sys
 
 from google.cloud.forseti.common.data_access import csv_writer
+from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
@@ -184,15 +185,24 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         with scoped_session as session:
 
             policy_data = []
-            supported_iam_types = ['organization', 'folder', 'project']
+            supported_iam_types = [
+                    'organization', 'folder', 'project', 'bucket']
             org_iam_policy_counter = 0
             folder_iam_policy_counter = 0
             project_iam_policy_counter = 0
+            bucket_iam_policy_counter = 0
 
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 if policy.parent.type not in supported_iam_types:
                     continue
 
+                if policy.parent.type == 'bucket':
+                    bucket_iam_policy_counter += 1
+                    policy_data.append(
+                        (Bucket(policy.parent.name,
+                                 policy.full_name,
+                                 policy.data),
+                         policy))
                 if policy.parent.type == 'project':
                     project_iam_policy_counter += 1
                     policy_data.append(
@@ -225,6 +235,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             ResourceType.ORGANIZATION: org_iam_policy_counter,
             ResourceType.FOLDER: folder_iam_policy_counter,
             ResourceType.PROJECT: project_iam_policy_counter,
+            ResourceType.BUCKET: bucket_iam_policy_counter,
         }
 
         return policy_data, resource_counts

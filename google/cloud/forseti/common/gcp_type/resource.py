@@ -51,6 +51,7 @@ class ResourceType(object):
     BIGQUERY_ACL = 'bigquery_datasets'
     BUCKETS_ACL = 'buckets_acl'
     CLOUDSQL_ACL = 'cloudsql_instances'
+    BUCKET = 'bucket'
 
     # AppEngine
     APPENGINE = 'appengine'
