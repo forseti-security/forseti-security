@@ -37,13 +37,6 @@ def RunForsetiEnforcer():
     import google.cloud.forseti.enforcer.enforcer as forseti_enforcer
     run_script_module.RunScriptModule(forseti_enforcer)
 
-
-def RunForsetiNotifier():
-    """Run Forseti Notifier module."""
-    import google.cloud.forseti.notifier.notifier as forseti_notifier
-    run_script_module.RunScriptModule(forseti_notifier)
-
-
 def RunForsetiServer():
     """Run Forseti API server."""
     import google.cloud.forseti.services.server as forseti_server
