@@ -642,7 +642,7 @@ def get_vm_instance_info(instance_name, try_match=False):
                      (not try_match and instance_name == cur_instance_name))
             if match:
                 # found forseti server vm instance
-                zone = instance.get('zone').split("/zones/")[1]
+                zone = instance.get('zone').split('/zones/')[1]
                 network_interfaces = instance.get('networkInterfaces')
                 internal_ip = network_interfaces[0].get('networkIP')
                 name = instance.get('name')
@@ -790,3 +790,22 @@ def check_vm_init_status(vm_name, zone):
         return True
 
     return False
+
+
+def get_domain_from_organization_id(organization_id):
+    """Get domain from organization id.
+
+    Args:
+        organization_id (str): Id of the organization.
+
+    Returns:
+        str: Domain of the org.
+    """
+
+    _, out, _ = utils.run_command(
+        ['gcloud', 'organizations', 'describe', organization_id,
+         '--format=json'])
+
+    org_info = json.loads(out)
+
+    return org_info.get('displayName', '')

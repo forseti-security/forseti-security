@@ -120,8 +120,8 @@ class CloudsqlClient(object):
             paged_results = self.repository.instances.list(project_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'items')
-            LOGGER.debug("Getting all the cloudsql instances of a project, "
-                         "project_id = %s, flattened_results = %s",
+            LOGGER.debug('Getting all the cloudsql instances of a project,'
+                         ' project_id = %s, flattened_results = %s',
                          project_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:

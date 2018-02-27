@@ -68,10 +68,11 @@ class EmptyImporter(object):
         """Runs the import."""
 
         self.session.add(self.model)
-        self.model.add_description(json.dumps({
-            "source":"empty",
-            "pristine":True
-            }))
+        self.model.add_description(
+            json.dumps(
+                {'source':'empty', 'pristine':True}
+            )
+        )
         self.model.set_done()
         self.session.commit()
 
@@ -171,10 +172,10 @@ class InventoryImporter(object):
                 self.model.add_description(json.dumps({
                     'source': 'inventory',
                     'source_info': {'inventory_index_id': inventory.index.id},
-                    "source_root":self._type_name(root),
+                    'source_root': self._type_name(root),
                     'pristine': True,
-                    "gsuite_enabled":inventory.type_exists(
-                        ["gsuite_group", "gsuite_user"])
+                    'gsuite_enabled': inventory.type_exists(
+                        ['gsuite_group', 'gsuite_user'])
                     }))
 
                 if root.get_type() in ['organization']:
@@ -1070,7 +1071,7 @@ class InventoryImporter(object):
         data = organization.get_data()
         type_name = self._type_name(organization)
         org = self.dao.TBL_RESOURCE(
-            full_name=to_full_resource_name("", type_name),
+            full_name=to_full_resource_name('', type_name),
             type_name=type_name,
             name=organization.get_key(),
             type=organization.get_type(),
