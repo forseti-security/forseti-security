@@ -187,7 +187,10 @@ class IamPolicyBinding(object):
         """
         if isinstance(binding, type(cls)):
             return binding
-        return cls(binding.get('role'), binding.get('members'))
+        try:
+            return cls(binding.get('role'), binding.get('members'))
+        except errors.InvalidIamPolicyMemberError:
+            return None
 
 
 class IamPolicyMember(object):
