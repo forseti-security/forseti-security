@@ -26,8 +26,6 @@ from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
-from google.cloud.forseti.services.playground import playground_pb2_grpc
-from google.cloud.forseti.services.playground import playground_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 from google.cloud.forseti.services.utils import oneof
@@ -388,100 +386,6 @@ class ExplainClient(ForsetiClient):
         return self.stub.GetPermissionsByRoles(
             request, metadata=self.metadata())
 
-    @require_model
-    def denormalize(self):
-        """Denormalize the entire model into access triples."""
-
-        return self.stub.Denormalize(
-            explain_pb2.DenormalizeRequest(),
-            metadata=self.metadata())
-
-
-class PlaygroundClient(ForsetiClient):
-    """Provides an interface to add entities into the IAM model.
-
-        It allows the modification of:
-           - Roles & Permissions
-           - Membership relations
-           - Resource hierarchy
-           - Get/Set policies
-           - Perform access checks
-        This allows a client to perform simulations based on imported
-        or empty models.
-    """
-
-    def __init__(self, config):
-        super(PlaygroundClient, self).__init__(config)
-        self.stub = playground_pb2_grpc.PlaygroundStub(config['channel'])
-
-    def is_available(self):
-        """Check if the Playground service is available."""
-
-        data = binascii.hexlify(os.urandom(16))
-        return self.stub.Ping(
-            playground_pb2.PingRequest(
-                data=data)).data == data
-
-    @require_model
-    def add_role(self, role_name, permissions):
-        """Add a role associated with a list of permissions to the model."""
-
-        return self.stub.AddRole(
-            playground_pb2.AddRoleRequest(
-                role_name=role_name,
-                permissions=permissions),
-            metadata=self.metadata())
-
-    @require_model
-    def delete_role(self, role_name):
-        """Delete a role from the model."""
-
-        return self.stub.DeleteRole(
-            playground_pb2.DeleteRoleRequest(
-                role_name=role_name),
-            metadata=self.metadata())
-
-    @require_model
-    def add_member(self, member_type_name, parent_type_names=None):
-        """Add a member to the member relationship."""
-
-        if parent_type_names is None:
-            parent_type_names = []
-        return self.stub.AddGroupMember(
-            playground_pb2.AddGroupMemberRequest(
-                member_type_name=member_type_name,
-                parent_type_names=parent_type_names),
-            metadata=self.metadata())
-
-    @require_model
-    def delete_member(self, member_name, parent_name='',
-                      only_delete_relationship=False):
-        """Delete a member from the member relationship."""
-
-        return self.stub.DeleteGroupMember(
-            playground_pb2.DeleteGroupMemberRequest(
-                member_name=member_name,
-                parent_name=parent_name,
-                only_delete_relationship=only_delete_relationship),
-            metadata=self.metadata())
-
-    @require_model
-    def set_iam_policy(self, full_resource_name, policy):
-        """Set the IAM policy on the resource."""
-
-        bindingspb = []
-        for binding in policy['bindings']:
-            bindingspb.append(playground_pb2.Binding(
-                role=binding['role'],
-                members=binding['members']))
-        policypb = playground_pb2.Policy(
-            bindings=bindingspb, etag=policy['etag'])
-        return self.stub.SetIamPolicy(
-            playground_pb2.SetIamPolicyRequest(
-                resource=full_resource_name,
-                policy=policypb),
-            metadata=self.metadata())
-
 
 class ClientComposition(object):
     """Client composition class.
@@ -497,14 +401,12 @@ class ClientComposition(object):
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)
-        self.playground = PlaygroundClient(self.config)
         self.inventory = InventoryClient(self.config)
         self.scanner = ScannerClient(self.config)
         self.notifier = NotifierClient(self.config)
         self.model = ModelClient(self.config)
 
         self.clients = [self.explain,
-                        self.playground,
                         self.inventory,
                         self.scanner,
                         self.notifier,

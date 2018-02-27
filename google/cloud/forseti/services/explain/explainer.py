@@ -195,14 +195,3 @@ class Explainer(object):
             for result in data_access.query_permissions_by_roles(
                     session, role_names, role_prefixes):
                 yield result
-
-    def denormalize(self, model_name):
-        """Denormalizes a model."""
-
-        LOGGER.debug('De-normalizing a model, model_name = %s', model_name)
-        model_manager = self.config.model_manager
-        scoped_session, data_access = model_manager.get(model_name)
-        with scoped_session as session:
-            for tpl in data_access.denormalize(session):
-                permission, resource, member = tpl
-                yield permission, resource, member
