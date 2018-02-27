@@ -144,6 +144,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gcp_service_account,
                 self.user_can_grant_roles)
 
+            default_rule_values = self.get_rule_default_values()
+            files.update_rule_files(default_rule_values,
+                                    constants.RULES_DIR_PATH)
+
+            # Copy the rule directory to the GCS bucket
+            files.copy_file_to_destination(
+                constants.RULES_DIR_PATH, bucket_name,
+                is_directory=True, dry_run=self.config.dry_run)
+
             # Waiting for VM to be initialized.
             instance_name = '{}-vm'.format(deployment_name)
             self.wait_until_vm_initialized(instance_name)
@@ -272,7 +281,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Get deployment values.
 
         Returns:
-            dict: A dictionary of values needed to generate.
+            dict: A dictionary of values needed to generate
                 the forseti deployment template.
         """
         bucket_name = self.generate_bucket_name()
@@ -291,7 +300,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Get configuration values.
 
         Returns:
-            dict: A dictionary of values needed to generate.
+            dict: A dictionary of values needed to generate
                 the forseti configuration file.
         """
         bucket_name = self.generate_bucket_name()
@@ -302,6 +311,19 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
+        }
+
+    def get_rule_default_values(self):
+        """Get rule default values.
+
+        Returns:
+            dict: A dictionary of default values.
+        """
+        organization_id = self.resource_root_id.split('/')[-1]
+        domain = gcloud.get_domain_from_organization_id(organization_id)
+        return {
+            'ORGANIZATION_ID': organization_id,
+            'DOMAIN': domain
         }
 
     def determine_access_target(self):

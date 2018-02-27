@@ -35,6 +35,7 @@ NAMESPACE_PACKAGES = [
 ]
 
 REQUIRED_PACKAGES = [
+    # Installation related.
     'anytree>=2.1.4',
     'futures>=3.0.5',
     'google-api-python-client>=1.6.1',
@@ -46,18 +47,22 @@ REQUIRED_PACKAGES = [
     'retrying>=1.3.3',
     'requests[security]>=2.18.4',
     'sendgrid>=3.6.3',
-    'SQLAlchemy>=1.1.9',
-    'protobuf>=3.2.0',
     'pygraph>=0.2.1',
     'unicodecsv>=0.14.1',
+    'simple-crypt>=4.1.7',
+    # Setup related.
     'google-apputils>=0.4.2',
+    'python-gflags>=3.1.1',
     'grpcio',
     'grpcio-tools',
-    'python-gflags>=3.1.1',
+    'protobuf>=3.2.0',
+    # Testing related.
     'mock>=2.0.0',
     'parameterized>=0.6.1',
     'ruamel.yaml>=0.15.35',
-    'simple-crypt>=4.1.7'
+    'pylint',
+    'pylint-quotes',
+    'SQLAlchemy>=1.1.9',
 ]
 
 if sys.version_info < (2, 7):

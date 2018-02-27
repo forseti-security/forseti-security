@@ -111,6 +111,27 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
     return None
 
 
+def update_rule_files(values, rule_dir_path):
+    """Update rule files default values.
+
+    Args:
+        rule_dir_path (str): Rule directory path.
+        values (dict): Values needed for deployment
+
+    Raises:
+        KeyError: KeyError
+    """
+
+    files_and_dirs = os.listdir(rule_dir_path)
+
+    full_paths = [os.path.join(rule_dir_path, f) for f in files_and_dirs]
+
+    file_paths = [path for path in full_paths if os.path.isfile(path)]
+
+    for file_path in file_paths:
+        generate_file_from_template(file_path, file_path, values)
+
+
 def generate_file_from_template(template_path, output_path, template_values):
     """Write to file.
 
@@ -127,9 +148,9 @@ def generate_file_from_template(template_path, output_path, template_values):
         with open(template_path, 'r') as in_tmpl:
             tmpl_contents = in_tmpl.read()
             out_contents = tmpl_contents.format(**template_values)
-            with open(output_path, 'w') as out_file:
-                out_file.write(out_contents)
-                return True
+        with open(output_path, 'w') as out_file:
+            out_file.write(out_contents)
+            return True
     except EnvironmentError:
         pass
     return False
