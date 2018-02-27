@@ -16,31 +16,38 @@
 # wizard to generate an actual forseti_conf.yaml. It's better to work off
 # the forseti_conf.yaml.sample than this one if you are editing the config
 # by hand.
-
 global:
-    # gsuite
-    groups_service_account_key_file:
-    domain_super_admin_email: 
 
-    # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
-    email_recipient:
-    email_sender:
-    sendgrid_api_key:
+    email_recipient: rec@forseti_test_gmail.com
+    email_sender: send@forseti_test_gmail.com
+    sendgrid_api_key: TESTING_API_KEY
 
-    # quota
-    # The pre-populated values are the defaults from GCP.
-    max_admin_api_calls_per_100_seconds: 1500
-    max_appengine_api_calls_per_second: 20
-    max_bigquery_api_calls_per_100_seconds: 17000
-    max_cloudbilling_api_calls_per_60_seconds: 300
-    max_compute_api_calls_per_second: 20
-    max_container_api_calls_per_100_seconds: 1000
-    max_crm_api_calls_per_100_seconds: 400
-    max_iam_api_calls_per_second: 20
-    max_results_admin_api: 500
-    max_sqladmin_api_calls_per_100_seconds: 100
+##############################################################################
+
+inventory:
+
+    # Root resource to start crawling from, formatted as
+    # <resource_type>/<resource_id>, (e.g. "organizations/12345677890")
+    root_resource_id:
+
+    # gsuite access
+    gsuite_service_account_key_file:
+    domain_super_admin_email:
+
+    api_quota:
+        # The pre-populated values are the defaults from GCP.
+        max_admin_api_calls_per_100_seconds: 1500
+        max_appengine_api_calls_per_second: 20
+        max_bigquery_api_calls_per_100_seconds: 17000
+        max_cloudbilling_api_calls_per_60_seconds: 300
+        max_compute_api_calls_per_second: 20
+        max_container_api_calls_per_100_seconds: 1000
+        max_crm_api_calls_per_100_seconds: 400
+        max_iam_api_calls_per_second: 20
+        max_servicemanagement_api_calls_per_100_seconds: 200
+        max_sqladmin_api_calls_per_100_seconds: 100
 
 ##############################################################################
 
@@ -65,25 +72,28 @@ scanner:
 
     scanners:
         - name: bigquery
+          enabled: false
+        - name: blacklist
           enabled: true
         - name: bucket_acl
-          enabled: true
+          enabled: false
         - name: cloudsql_acl
-          enabled: true
+          enabled: false
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
           enabled: true
-        - name: group
+        - name: ke_version_scanner
           enabled: true
+        - name: group
+          enabled: false
         - name: iam_policy
           enabled: true
         - name: iap
           enabled: true
         - name: instance_network_interface
           enabled: true
-        - name: ke_version_scanner
-          enabled: true
+
 
 ##############################################################################
 
@@ -169,7 +179,7 @@ notifier:
                 gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: groups_violations
-          should_notify: true
+          should_notify: false
           pipelines:
             # Upload violations to GCS.
             - name: gcs_violations_pipeline
@@ -178,7 +188,7 @@ notifier:
                 gcs_path: gs://TESTING_BUCKET/scanner_violations
 
         - resource: instance_network_interface_violations
-          should_notify: true
+          should_notify: false
           pipelines:
             # Upload violations to GCS.
             - name: gcs_violations_pipeline

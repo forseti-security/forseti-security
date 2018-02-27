@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""V1 upgrader."""
+"""Upgradeable resources. Resources that can be ported to a newer version."""
 
 import os
 import tempfile
@@ -77,14 +77,18 @@ class ForsetiV1Configuration(object):
         # Copy file from GCS to the temp directory
         config_path = '{}/configs/forseti_conf.yaml'.format(
             self.gcs_location)
-        files.copy_file_to_destination(config_path, tempdir)
+        success = files.copy_file_to_destination(config_path, tempdir)
 
-        # Load the file into dictionary
-        local_file_path = os.path.join(tempdir, 'forseti_conf.yaml')
-        self._config = files.read_yaml_file_from_local(local_file_path)
+        if not success:
+            self._config = {}
+        else:
+            # Load the file into dictionary
+            local_file_path = os.path.join(tempdir, 'forseti_conf.yaml')
+            self._config = files.read_yaml_file_from_local(local_file_path)
 
-        # Remove the saved file and the temp directory
-        os.unlink(local_file_path)
+            # Remove the saved file
+            os.unlink(local_file_path)
+        # Remove the temp directory
         os.rmdir(tempdir)
 
     def _fetch_rules_from_gcs(self):

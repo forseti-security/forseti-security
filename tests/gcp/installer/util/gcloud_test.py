@@ -87,7 +87,7 @@ def captured_output():
         sys.stdout, sys.stderr = old_out, old_err
 
 
-class GcloudModuleTest(ForsetiTestCase):
+class GcloudTest(ForsetiTestCase):
     """Test the install_forseti."""
 
     def setUp(self):

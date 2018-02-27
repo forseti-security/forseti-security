@@ -33,6 +33,73 @@ global:
     # The pre-populated values are the defaults from GCP.
     max_admin_api_calls_per_100_seconds: 8888
     max_appengine_api_calls_per_second: 88
+    max_bigquery_api_calls_per_100_seconds: 0
+    max_cloudbilling_api_calls_per_60_seconds: 1
+    max_compute_api_calls_per_second: 2
+    max_container_api_calls_per_100_seconds: 3
+    max_crm_api_calls_per_100_seconds: 4
+    max_iam_api_calls_per_second: 5
+    max_results_admin_api: 6
+    max_sqladmin_api_calls_per_100_seconds: 7
+
+##############################################################################
+
+inventory:
+
+    # Valid values are: debug, info, warning, error
+    loglevel: info
+
+    # Number of days to retain inventory data:
+    #  -1 : (default) keep all previous data forever
+    #   0 : delete all previous inventory data before running
+    retention_days: -1
+
+    pipelines:
+        - resource: appengine
+          enabled: true
+        - resource: backend_services
+          enabled: true
+        - resource: bigquery_datasets
+          enabled: true
+        - resource: buckets
+          enabled: true
+        - resource: buckets_acls
+          enabled: true
+        - resource: cloudsql
+          enabled: true
+        - resource: firewall_rules
+          enabled: true
+        - resource: folder_iam_policies
+          enabled: true
+        - resource: folders
+          enabled: true
+        - resource: forwarding_rules
+          enabled: true
+        - resource: ke
+          enabled: true
+        - resource: group_members
+          enabled: true
+        - resource: groups
+          enabled: true
+        - resource: instance_group_managers
+          enabled: true
+        - resource: instance_groups
+          enabled: true
+        - resource: instance_templates
+          enabled: true
+        - resource: instances
+          enabled: true
+        - resource: org_iam_policies
+          enabled: true
+        - resource: organizations
+          enabled: true
+        - resource: projects
+          enabled: true
+        - resource: projects_iam_policies
+          enabled: true
+        - resource: service_accounts
+          enabled: true
+
 
 ##############################################################################
 
@@ -58,10 +125,26 @@ scanner:
     scanners:
         - name: bigquery
           enabled: false
+        - name: blacklist
+          enabled: true
         - name: bucket_acl
           enabled: false
         - name: cloudsql_acl
           enabled: false
+        - name: firewall_rule
+          enabled: true
+        - name: forwarding_rule
+          enabled: true
+        - name: ke_version_scanner
+          enabled: true
+        - name: group
+          enabled: false
+        - name: iam_policy
+          enabled: true
+        - name: iap
+          enabled: true
+        - name: instance_network_interface
+          enabled: true
 
 ##############################################################################
 

@@ -21,7 +21,7 @@ import setup.gcp.installer.util.merge_engine as merge_engine
 from tests.unittest_utils import ForsetiTestCase
 
 
-class MergeEngineModuleTest(ForsetiTestCase):
+class MergeEngineTest(ForsetiTestCase):
 
     def test_merge_object_flat(self):
         """Test merge flat dictionary."""

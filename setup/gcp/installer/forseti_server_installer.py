@@ -25,7 +25,7 @@ from util import files
 from util import gcloud
 from util import merge_engine
 from util import utils
-from util import v1_upgrader
+from util import upgradeable_resources
 
 
 class ForsetiServerInstaller(ForsetiInstaller):
@@ -68,7 +68,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # the conf/rules settings from v1.
             self.prompt_v1_configs_migration()
         if self.migrate_from_v1:
-            self.v1_config = v1_upgrader.ForsetiV1Configuration(
+            self.v1_config = upgradeable_resources.ForsetiV1Configuration(
                 self.project_id, forseti_v1_name, zone)
             self.v1_config.fetch_information_from_gcs()
             self.populate_config_info_from_v1()
@@ -228,11 +228,24 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if self.migrate_from_v1:
             new_conf = files.read_yaml_file_from_local(forseti_conf_path)
-            fields_to_ignore = ['db_host', 'db_user', 'db_name',
-                                'inventory', 'output_path', 'gcs_path',
-                                'gsuite_service_account_key_file',
-                                'domain_super_admin_email']
-            field_identifiers = {'scanners' : 'name', 'resources': 'resource'}
+            fields_to_ignore = [
+                'db_host', 'db_user', 'db_name',
+                'inventory', 'output_path', 'gcs_path',
+                'groups_service_account_key_file',
+                'domain_super_admin_email',
+                'max_admin_api_calls_per_100_seconds',
+                'max_appengine_api_calls_per_second',
+                'max_bigquery_api_calls_per_100_seconds',
+                'max_cloudbilling_api_calls_per_60_seconds',
+                'max_compute_api_calls_per_second',
+                'max_container_api_calls_per_100_seconds',
+                'max_crm_api_calls_per_100_seconds',
+                'max_iam_api_calls_per_second',
+                'max_results_admin_api',
+                'max_sqladmin_api_calls_per_100_seconds']
+            field_identifiers = {'scanners': 'name',
+                                 'resources': 'resource',
+                                 'pipelines': 'name'}
             merge_engine.merge_object(merge_from=self.v1_config.config,
                                       merge_to=new_conf,
                                       fields_to_ignore=fields_to_ignore,
@@ -464,6 +477,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
             new_config (dict): New configuration.
             old_config (dict): Old configuration.
         """
+
+        # Some fields have been renamed from v1 to v2
+        # This is a map to map names from v2 back to v1
+        field_names_mapping = {
+            'gsuite_service_account_key_file':
+                'groups_service_account_key_file'}
+
         global_to_inventory = [
             'gsuite_service_account_key_file',
             'domain_super_admin_email'
@@ -488,11 +508,13 @@ class ForsetiServerInstaller(ForsetiInstaller):
                              else old_config['global'])
 
         for field in global_to_inventory:
-            if field in old_config_global:
+            v1_field = field_names_mapping.get(field, field)
+            if v1_field in old_config_global:
                 new_conf_inventory[field] = (new_conf_inventory[field]
-                                             or old_config_global[field])
+                                             or old_config_global[v1_field])
 
         for field in global_to_api_quota:
-            if field in old_config_global:
+            v1_field = field_names_mapping.get(field, field)
+            if v1_field in old_config_global:
                 new_conf_api_quota[field] = (new_conf_api_quota[field] or
-                                             old_config_global[field])
+                                             old_config_global[v1_field])

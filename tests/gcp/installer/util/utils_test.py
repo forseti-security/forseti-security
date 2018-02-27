@@ -21,7 +21,7 @@ import setup.gcp.installer.util.utils as utils
 from tests.unittest_utils import ForsetiTestCase
 
 
-class UtilsModuleTest(ForsetiTestCase):
+class UtilsTest(ForsetiTestCase):
 
     def test_id_from_name_normal(self):
         """The name of the resource, formatted as
