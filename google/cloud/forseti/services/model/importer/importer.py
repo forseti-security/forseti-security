@@ -414,7 +414,7 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource object to convert from.
-            last_res_type (str): Previsouly processed resource type used to
+            last_res_type (str): Previously processed resource type used to
                 spot transition between types to execute pre/handler/post
                 accordingly.
 

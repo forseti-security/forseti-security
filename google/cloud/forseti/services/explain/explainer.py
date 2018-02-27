@@ -33,12 +33,12 @@ class Explainer(object):
     def list_resources(self, model_name, full_resource_name_prefix):
         """Lists resources by resource name prefix.
 
-            Args:
-                model_name (str): Model to operate on.
-                full_resource_name_prefix (ste): the prefix of the resource name
+        Args:
+            model_name (str): Model to operate on.
+            full_resource_name_prefix (ste): the prefix of the resource name
 
-            Returns:
-                list: list of Resources match the query
+        Returns:
+            list: list of Resources match the query
         """
 
         LOGGER.debug('Listing resources, model_name = %s,'
@@ -53,12 +53,12 @@ class Explainer(object):
     def list_group_members(self, model_name, member_name_prefix):
         """Lists a member from the model.
 
-            Args:
-                model_name (str): Model to operate on.
-                member_name_prefix (str): the prefix of the member_name
+        Args:
+            model_name (str): Model to operate on.
+            member_name_prefix (str): the prefix of the member_name
 
-            Returns:
-                list: list of Members that match the query
+        Returns:
+            list: list of Members that match the query
             """
 
         LOGGER.debug('Listing Group members, model_name = %s,'
@@ -71,13 +71,13 @@ class Explainer(object):
     def list_roles(self, model_name, role_name_prefix):
         """Lists the role in the model matching the prefix.
 
-            Args:
-                model_name (str): Model to operate on.
-                role_name_prefix (str): prefix of the role_name
+        Args:
+            model_name (str): Model to operate on.
+            role_name_prefix (str): prefix of the role_name
 
-            Returns:
-                list: list of role_names that match the query
-            """
+        Returns:
+            list: list of role_names that match the query
+        """
 
         LOGGER.info('Listing roles, model_name = %s,'
                     ' role_name_prefix = %s', model_name, role_name_prefix)
@@ -89,12 +89,12 @@ class Explainer(object):
     def get_iam_policy(self, model_name, resource):
         """Gets the IAM policy for the resource.
 
-            Args:
-                model_name (str): Model to operate on.
-                resource (str): Resource to query
+        Args:
+            model_name (str): Model to operate on.
+            resource (str): Resource to query
 
-            Returns:
-                dict: the IAM policy
+        Returns:
+            dict: the IAM policy
         """
 
         LOGGER.debug('Retrieving IAM policy, model_name = %s, resource = %s',
@@ -107,14 +107,14 @@ class Explainer(object):
     def check_iam_policy(self, model_name, resource, permission, identity):
         """Checks access according to IAM policy for the resource.
 
-            Args:
-                model_name (str): Model to operate on.
-                resource (str): Resource to check
-                permission (str): Permission to check
-                identity (str): Member to check
+        Args:
+            model_name (str): Model to operate on.
+            resource (str): Resource to check
+            permission (str): Permission to check
+            identity (str): Member to check
 
-            Returns:
-                bool: whether such access is allowed
+        Returns:
+            bool: whether such access is allowed
         """
 
         LOGGER.debug('Checking IAM policy, model_name = %s, resource = %s,'
@@ -295,7 +295,10 @@ class Explainer(object):
                 yield result
 
     def denormalize(self, model_name):
-        """Denormalizes a model.
+        """Denormalizes a model
+
+        Denormalizes a model into access triples (permission, resource, member)
+        Which can be huge size, and can crash GCP's web ssh
 
         Args:
             model_name (str): Model to operate on.

@@ -156,7 +156,7 @@ class Memory(Storage):
         return self.mem[key]
 
     def error(self, message):
-        """Ingore the error message
+        """Ignore the error message
 
         Args:
             message (str): Error message describing the problem.
@@ -164,7 +164,7 @@ class Memory(Storage):
         pass
 
     def warning(self, message):
-        """Ingore the warning message
+        """Ignore the warning message
 
         Args:
             message (str): Warning message describing the problem.

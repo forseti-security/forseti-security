@@ -810,8 +810,7 @@ class KubernetesCluster(Resource):
             return ''
 
 class DataSet(Resource):
-    """The Resource implementation for DataSet
-    """
+    """The Resource implementation for DataSet"""
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset
@@ -844,8 +843,7 @@ class DataSet(Resource):
 
 
 class AppEngineApp(Resource):
-    """The Resource implementation for AppEngineApp
-    """
+    """The Resource implementation for AppEngineApp"""
     def key(self):
         """Get key of this resource
 
@@ -865,8 +863,7 @@ class AppEngineApp(Resource):
 
 
 class AppEngineService(Resource):
-    """The Resource implementation for AppEngineService
-    """
+    """The Resource implementation for AppEngineService"""
     def key(self):
         """Get key of this resource
 
@@ -886,8 +883,7 @@ class AppEngineService(Resource):
 
 
 class AppEngineVersion(Resource):
-    """The Resource implementation for AppEngineVersion
-    """
+    """The Resource implementation for AppEngineVersion"""
     def key(self):
         """Get key of this resource
 
@@ -907,8 +903,7 @@ class AppEngineVersion(Resource):
 
 
 class AppEngineInstance(Resource):
-    """The Resource implementation for AppEngineInstance
-    """
+    """The Resource implementation for AppEngineInstance"""
     def key(self):
         """Get key of this resource
 
@@ -928,8 +923,7 @@ class AppEngineInstance(Resource):
 
 
 class ComputeProject(Resource):
-    """The Resource implementation for ComputeProject
-    """
+    """The Resource implementation for ComputeProject"""
     def key(self):
         """Get key of this resource
 
@@ -948,8 +942,7 @@ class ComputeProject(Resource):
 
 
 class Instance(Resource):
-    """The Resource implementation for Instance
-    """
+    """The Resource implementation for Instance"""
     def key(self):
         """Get key of this resource
 
@@ -968,8 +961,7 @@ class Instance(Resource):
 
 
 class Firewall(Resource):
-    """The Resource implementation for Firewall
-    """
+    """The Resource implementation for Firewall"""
     def key(self):
         """Get key of this resource
 
@@ -988,8 +980,7 @@ class Firewall(Resource):
 
 
 class Image(Resource):
-    """The Resource implementation for Image
-    """
+    """The Resource implementation for Image"""
     def key(self):
         """Get key of this resource
 
@@ -1008,8 +999,7 @@ class Image(Resource):
 
 
 class InstanceGroup(Resource):
-    """The Resource implementation for InstanceGroup
-    """
+    """The Resource implementation for InstanceGroup"""
     def key(self):
         """Get key of this resource
 
@@ -1028,8 +1018,7 @@ class InstanceGroup(Resource):
 
 
 class InstanceGroupManager(Resource):
-    """The Resource implementation for InstanceGroupManager
-    """
+    """The Resource implementation for InstanceGroupManager"""
     def key(self):
         """Get key of this resource
 
@@ -1048,8 +1037,7 @@ class InstanceGroupManager(Resource):
 
 
 class InstanceTemplate(Resource):
-    """The Resource implementation for InstanceTemplate
-    """
+    """The Resource implementation for InstanceTemplate"""
     def key(self):
         """Get key of this resource
 
@@ -1068,8 +1056,7 @@ class InstanceTemplate(Resource):
 
 
 class Network(Resource):
-    """The Resource implementation for Network
-    """
+    """The Resource implementation for Network"""
     def key(self):
         """Get key of this resource
 
@@ -1088,8 +1075,7 @@ class Network(Resource):
 
 
 class Subnetwork(Resource):
-    """The Resource implementation for Subnetwork
-    """
+    """The Resource implementation for Subnetwork"""
     def key(self):
         """Get key of this resource
 
@@ -1108,8 +1094,7 @@ class Subnetwork(Resource):
 
 
 class BackendService(Resource):
-    """The Resource implementation for BackendService
-    """
+    """The Resource implementation for BackendService"""
     def key(self):
         """Get key of this resource
 
@@ -1128,8 +1113,7 @@ class BackendService(Resource):
 
 
 class ForwardingRule(Resource):
-    """The Resource implementation for ForwardingRule
-    """
+    """The Resource implementation for ForwardingRule"""
     def key(self):
         """Get key of this resource
 
@@ -1148,8 +1132,7 @@ class ForwardingRule(Resource):
 
 
 class CuratedRole(Resource):
-    """The Resource implementation for CuratedRole
-    """
+    """The Resource implementation for CuratedRole"""
     def key(self):
         """Get key of this resource
 
@@ -1176,8 +1159,7 @@ class CuratedRole(Resource):
 
 
 class Role(Resource):
-    """The Resource implementation for role
-    """
+    """The Resource implementation for role"""
     def key(self):
         """Get key of this resource
 
@@ -1196,8 +1178,7 @@ class Role(Resource):
 
 
 class CloudSqlInstance(Resource):
-    """The Resource implementation for cloudsqlinstance
-    """
+    """The Resource implementation for cloudsqlinstance"""
     def key(self):
         """Get key of this resource
 
@@ -1216,8 +1197,7 @@ class CloudSqlInstance(Resource):
 
 
 class ServiceAccount(Resource):
-    """The Resource implementation for serviceaccount
-    """
+    """The Resource implementation for serviceaccount"""
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Service Account IAM policy for this service account
@@ -1248,8 +1228,7 @@ class ServiceAccount(Resource):
 
 
 class ServiceAccountKey(Resource):
-    """The Resource implementation for serviceaccount_key
-    """
+    """The Resource implementation for serviceaccount_key"""
     def key(self):
         """Get key of this resource
 
@@ -1270,8 +1249,7 @@ class ServiceAccountKey(Resource):
 
 
 class GsuiteUser(Resource):
-    """The Resource implementation for gsuite_user
-    """
+    """The Resource implementation for gsuite_user"""
     def key(self):
         """Get key of this resource
 
@@ -1290,8 +1268,7 @@ class GsuiteUser(Resource):
 
 
 class GsuiteGroup(Resource):
-    """The Resource implementation for gsuite_group
-    """
+    """The Resource implementation for gsuite_group"""
     def key(self):
         """Get key of this resource
 
@@ -1310,8 +1287,7 @@ class GsuiteGroup(Resource):
 
 
 class GsuiteUserMember(Resource):
-    """The Resource implementation for gsuite_user_member
-    """
+    """The Resource implementation for gsuite_user_member"""
     def key(self):
         """Get key of this resource
 
@@ -1330,8 +1306,7 @@ class GsuiteUserMember(Resource):
 
 
 class GsuiteGroupMember(Resource):
-    """The Resource implementation for gsuite_group_member
-    """
+    """The Resource implementation for gsuite_group_member"""
     def key(self):
         """Get key of this resource
 
@@ -1350,8 +1325,7 @@ class GsuiteGroupMember(Resource):
 
 
 class ResourceIterator(object):
-    """The Resource iterator template
-    """
+    """The Resource iterator template"""
     def __init__(self, resource, client):
         """Initialize
 
@@ -1370,8 +1344,7 @@ class ResourceIterator(object):
 
 
 class FolderIterator(ResourceIterator):
-    """The Resource iterator implementation for Folder
-    """
+    """The Resource iterator implementation for Folder"""
     def iter(self):
         """Yields:
             Resource: Folder created
@@ -1382,8 +1355,7 @@ class FolderIterator(ResourceIterator):
 
 
 class FolderFolderIterator(ResourceIterator):
-    """The Resource iterator implementation for Folder
-    """
+    """The Resource iterator implementation for Folder"""
     def iter(self):
         """Yields:
             Resource: Folder created
@@ -1394,8 +1366,7 @@ class FolderFolderIterator(ResourceIterator):
 
 
 class ProjectIterator(ResourceIterator):
-    """The Resource iterator implementation for Project
-    """
+    """The Resource iterator implementation for Project"""
     def iter(self):
         """Yields:
             Resource: Project created
@@ -1408,8 +1379,7 @@ class ProjectIterator(ResourceIterator):
 
 
 class FolderProjectIterator(ResourceIterator):
-    """The Resource iterator implementation for Project
-    """
+    """The Resource iterator implementation for Project"""
     def iter(self):
         """Yields:
             Resource: Project created
@@ -1422,8 +1392,7 @@ class FolderProjectIterator(ResourceIterator):
 
 
 class BucketIterator(ResourceIterator):
-    """The Resource iterator implementation for GcsBucket
-    """
+    """The Resource iterator implementation for GcsBucket"""
     def iter(self):
         """Yields:
             Resource: GcsBucket created
@@ -1436,8 +1405,7 @@ class BucketIterator(ResourceIterator):
 
 
 class ObjectIterator(ResourceIterator):
-    """The Resource iterator implementation for GcsObject
-    """
+    """The Resource iterator implementation for GcsObject"""
     def iter(self):
         """Yields:
             Resource: GcsObject created
@@ -1448,8 +1416,7 @@ class ObjectIterator(ResourceIterator):
 
 
 class DataSetIterator(ResourceIterator):
-    """The Resource iterator implementation for Dataset
-    """
+    """The Resource iterator implementation for Dataset"""
     def iter(self):
         """Yields:
             Resource: Dataset created
@@ -1462,8 +1429,7 @@ class DataSetIterator(ResourceIterator):
 
 
 class AppEngineAppIterator(ResourceIterator):
-    """The Resource iterator implementation for AppEngineApp
-    """
+    """The Resource iterator implementation for AppEngineApp"""
     def iter(self):
         """Yields:
             Resource: AppEngineApp created
@@ -1476,8 +1442,7 @@ class AppEngineAppIterator(ResourceIterator):
 
 
 class AppEngineServiceIterator(ResourceIterator):
-    """The Resource iterator implementation for AppEngineService
-    """
+    """The Resource iterator implementation for AppEngineService"""
     def iter(self):
         """Yields:
             Resource: AppEngineService created
@@ -1488,8 +1453,7 @@ class AppEngineServiceIterator(ResourceIterator):
 
 
 class AppEngineVersionIterator(ResourceIterator):
-    """The Resource iterator implementation for AppEngineVersion
-    """
+    """The Resource iterator implementation for AppEngineVersion"""
     def iter(self):
         """Yields:
             Resource: AppEngineVersion created
@@ -1502,8 +1466,7 @@ class AppEngineVersionIterator(ResourceIterator):
 
 
 class AppEngineInstanceIterator(ResourceIterator):
-    """The Resource iterator implementation for AppEngineInstance
-    """
+    """The Resource iterator implementation for AppEngineInstance"""
     def iter(self):
         """Yields:
             Resource: AppEngineInstance created
@@ -1516,8 +1479,7 @@ class AppEngineInstanceIterator(ResourceIterator):
             yield FACTORIES['appengine_instance'].create_new(data)
 
 class KubernetesClusterIterator(ResourceIterator):
-    """The Resource iterator implementation for KubernetesCluster
-    """
+    """The Resource iterator implementation for KubernetesCluster"""
     def iter(self):
         """Yields:
             Resource: KubernetesCluster created
@@ -1529,8 +1491,7 @@ class KubernetesClusterIterator(ResourceIterator):
                 yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 class ComputeIterator(ResourceIterator):
-    """The Resource iterator implementation for ComputeProject
-    """
+    """The Resource iterator implementation for ComputeProject"""
     def iter(self):
         """Yields:
             Resource: ComputeProject created
@@ -1543,8 +1504,7 @@ class ComputeIterator(ResourceIterator):
 
 
 class InstanceIterator(ResourceIterator):
-    """The Resource iterator implementation for Instance
-    """
+    """The Resource iterator implementation for Instance"""
     def iter(self):
         """Yields:
             Resource: Instance created
@@ -1557,8 +1517,7 @@ class InstanceIterator(ResourceIterator):
 
 
 class FirewallIterator(ResourceIterator):
-    """The Resource iterator implementation for Firewall
-    """
+    """The Resource iterator implementation for Firewall"""
     def iter(self):
         """Yields:
             Resource: Firewall created
@@ -1571,8 +1530,7 @@ class FirewallIterator(ResourceIterator):
 
 
 class ImageIterator(ResourceIterator):
-    """The Resource iterator implementation for Image
-    """
+    """The Resource iterator implementation for Image"""
     def iter(self):
         """Yields:
             Resource: Image created
@@ -1585,8 +1543,7 @@ class ImageIterator(ResourceIterator):
 
 
 class InstanceGroupIterator(ResourceIterator):
-    """The Resource iterator implementation for InstanceGroup
-    """
+    """The Resource iterator implementation for InstanceGroup"""
     def iter(self):
         """Yields:
             Resource: InstanceGroup created
@@ -1599,8 +1556,7 @@ class InstanceGroupIterator(ResourceIterator):
 
 
 class InstanceGroupManagerIterator(ResourceIterator):
-    """The Resource iterator implementation for InstanceGroupManager
-    """
+    """The Resource iterator implementation for InstanceGroupManager"""
     def iter(self):
         """Yields:
             Resource: InstanceGroupManager created
@@ -1613,8 +1569,7 @@ class InstanceGroupManagerIterator(ResourceIterator):
 
 
 class InstanceTemplateIterator(ResourceIterator):
-    """The Resource iterator implementation for InstanceTemplate
-    """
+    """The Resource iterator implementation for InstanceTemplate"""
     def iter(self):
         """Yields:
             Resource: InstanceTemplate created
@@ -1627,8 +1582,7 @@ class InstanceTemplateIterator(ResourceIterator):
 
 
 class NetworkIterator(ResourceIterator):
-    """The Resource iterator implementation for Network
-    """
+    """The Resource iterator implementation for Network"""
     def iter(self):
         """Yields:
             Resource: Network created
@@ -1641,8 +1595,7 @@ class NetworkIterator(ResourceIterator):
 
 
 class SubnetworkIterator(ResourceIterator):
-    """The Resource iterator implementation for Subnetwork
-    """
+    """The Resource iterator implementation for Subnetwork"""
     def iter(self):
         """Yields:
             Resource: Subnetwork created
@@ -1655,8 +1608,7 @@ class SubnetworkIterator(ResourceIterator):
 
 
 class BackendServiceIterator(ResourceIterator):
-    """The Resource iterator implementation for BackendService
-    """
+    """The Resource iterator implementation for BackendService"""
     def iter(self):
         """Yields:
             Resource: BackendService created
@@ -1669,8 +1621,7 @@ class BackendServiceIterator(ResourceIterator):
 
 
 class ForwardingRuleIterator(ResourceIterator):
-    """The Resource iterator implementation for ForwardingRule
-    """
+    """The Resource iterator implementation for ForwardingRule"""
     def iter(self):
         """Yields:
             Resource: ForwardingRule created
@@ -1683,8 +1634,7 @@ class ForwardingRuleIterator(ResourceIterator):
 
 
 class CloudSqlIterator(ResourceIterator):
-    """The Resource iterator implementation for CloudSqlInstance
-    """
+    """The Resource iterator implementation for CloudSqlInstance"""
     def iter(self):
         """Yields:
             Resource: CloudSqlInstance created
@@ -1697,8 +1647,7 @@ class CloudSqlIterator(ResourceIterator):
 
 
 class ServiceAccountIterator(ResourceIterator):
-    """The Resource iterator implementation for ServiceAccount
-    """
+    """The Resource iterator implementation for ServiceAccount"""
     def iter(self):
         """Yields:
             Resource: ServiceAccount created
@@ -1711,8 +1660,7 @@ class ServiceAccountIterator(ResourceIterator):
 
 
 class ServiceAccountKeyIterator(ResourceIterator):
-    """The Resource iterator implementation for ServiceAccountKey
-    """
+    """The Resource iterator implementation for ServiceAccountKey"""
     def iter(self):
         """Yields:
             Resource: ServiceAccountKey created
@@ -1724,8 +1672,7 @@ class ServiceAccountKeyIterator(ResourceIterator):
 
 
 class ProjectRoleIterator(ResourceIterator):
-    """The Resource iterator implementation for Project Role
-    """
+    """The Resource iterator implementation for Project Role"""
     def iter(self):
         """Yields:
             Resource: Role created
@@ -1738,8 +1685,7 @@ class ProjectRoleIterator(ResourceIterator):
 
 
 class OrganizationRoleIterator(ResourceIterator):
-    """The Resource iterator implementation for Organization Role
-    """
+    """The Resource iterator implementation for Organization Role"""
     def iter(self):
         """Yields:
             Resource: Role created
@@ -1751,8 +1697,7 @@ class OrganizationRoleIterator(ResourceIterator):
 
 
 class OrganizationCuratedRoleIterator(ResourceIterator):
-    """The Resource iterator implementation for OrganizationCuratedRole
-    """
+    """The Resource iterator implementation for OrganizationCuratedRole"""
     def iter(self):
         """Yields:
             Resource: CuratedRole created
@@ -1763,8 +1708,7 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
 
 
 class GsuiteGroupIterator(ResourceIterator):
-    """The Resource iterator implementation for GsuiteGroup
-    """
+    """The Resource iterator implementation for GsuiteGroup"""
     def iter(self):
         """Yields:
             Resource: GsuiteGroup created
@@ -1776,8 +1720,7 @@ class GsuiteGroupIterator(ResourceIterator):
 
 
 class GsuiteUserIterator(ResourceIterator):
-    """The Resource iterator implementation for GsuiteUser
-    """
+    """The Resource iterator implementation for GsuiteUser"""
     def iter(self):
         """Yields:
             Resource: GsuiteUser created
@@ -1789,8 +1732,7 @@ class GsuiteUserIterator(ResourceIterator):
 
 
 class GsuiteMemberIterator(ResourceIterator):
-    """The Resource iterator implementation for GsuiteMember
-    """
+    """The Resource iterator implementation for GsuiteMember"""
     def iter(self):
         """Yields:
             Resource: GsuiteUserMember or GsuiteGroupMember created

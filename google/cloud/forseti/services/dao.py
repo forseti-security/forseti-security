@@ -997,9 +997,11 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def denormalize(cls, session):
-            """Denormalize the model into access triples.
+            """Denormalize the model
 
-            Which can be huge size
+            Denormalizes a model into access triples
+            (permission, resource, member)
+            Which can be huge size, and can crash GCP's web ssh
 
             Args:
                 session (object): db session
@@ -1668,6 +1670,9 @@ def define_model(model_name, dbengine, model_seed):
                                    request_graph=False):
             """Expand members to their groups.
 
+            List all groups that contains these members. Also return
+            the graph if requested.
+
             Args:
                 session (object): db session
                 member_names (list): list of members to expand
@@ -1732,6 +1737,9 @@ def define_model(model_name, dbengine, model_seed):
 
             def separate_groups(member_names):
                 """Separate groups and other members in two lists.
+
+                This is a helper function. groups are needed to query on
+                group_in_group table
 
                 Args:
                     member_names (list): list of members to be separated

@@ -113,7 +113,7 @@ class QueueProgresser(Progress):
 class FirstMessageQueueProgresser(QueueProgresser):
     """Queue base progresser
 
-    only delivers first message. Then throws away all subsequent messages.
+    Only delivers first message. Then throws away all subsequent messages.
     This is used to make sure that we're not creating an internal buffer of
     infinite size as we're crawling in background without a queue consumer.
     """
