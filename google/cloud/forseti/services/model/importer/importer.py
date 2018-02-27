@@ -369,7 +369,10 @@ class InventoryImporter(object):
                 msg = 'Role reference in iam policy not found: {}'.format(role)
                 self.model.add_warning(msg)
                 continue
-            for member in binding['members']:
+
+            #binding['members'] can have duplicate ids
+            members = set(binding['members'])
+            for member in members:
                 member = member.replace(':', '/', 1)
 
                 # We still might hit external users or groups
@@ -391,7 +394,7 @@ class InventoryImporter(object):
             # Get all the member objects to reference
             # in the binding row
             db_members = []
-            for member in binding['members']:
+            for member in members:
                 member = member.replace(':', '/', 1)
                 if member not in self.member_cache:
                     if member not in self.member_cache_policies:
