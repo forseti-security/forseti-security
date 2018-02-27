@@ -94,7 +94,7 @@ class Playgrounder(object):
                 json.dumps({'pristine':False}),
                 session
             )
-            return data_access.delete_group_member(
+            data_access.delete_group_member(
                 session,
                 member_name,
                 parent_name,
