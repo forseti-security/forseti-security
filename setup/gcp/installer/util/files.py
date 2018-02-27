@@ -224,4 +224,6 @@ def write_data_to_yaml_file(data, output_file_path):
     """
 
     with open(output_file_path, 'w') as outfile:
-        ruamel.yaml.dump(data, outfile, Dumper=ruamel.yaml.RoundTripDumper)
+        ruamel.yaml.dump(data, outfile,
+                         Dumper=ruamel.yaml.RoundTripDumper,
+                         indent=4)

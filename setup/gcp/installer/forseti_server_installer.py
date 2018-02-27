@@ -468,14 +468,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
             print(constants.MESSAGE_ENABLE_GSUITE_GROUP)
 
     @staticmethod
-    def _swap_config_fields(new_config, old_config):
+    def _swap_config_fields(old_config, new_config):
         """Swapping fields. This will work for all v1 migrating to v2.
 
         Note: new_config will get modified.
 
         Args:
-            new_config (dict): New configuration.
             old_config (dict): Old configuration.
+            new_config (dict): New configuration.
         """
 
         # Some fields have been renamed from v1 to v2
@@ -510,11 +510,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
         for field in global_to_inventory:
             v1_field = field_names_mapping.get(field, field)
             if v1_field in old_config_global:
-                new_conf_inventory[field] = (new_conf_inventory[field]
-                                             or old_config_global[v1_field])
+                new_conf_inventory[field] = (old_config_global[v1_field]
+                                             or new_conf_inventory[field])
 
         for field in global_to_api_quota:
             v1_field = field_names_mapping.get(field, field)
             if v1_field in old_config_global:
-                new_conf_api_quota[field] = (new_conf_api_quota[field] or
-                                             old_config_global[v1_field])
+                new_conf_api_quota[field] = (old_config_global[v1_field]
+                                             or new_conf_api_quota[field])

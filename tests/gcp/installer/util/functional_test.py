@@ -19,6 +19,7 @@ import os
 
 import setup.gcp.installer.util.files as files
 import setup.gcp.installer.util.merge_engine as merge_engine
+import setup.gcp.installer.forseti_server_installer as forseti_server_installer
 
 from tests.unittest_utils import ForsetiTestCase
 
@@ -51,16 +52,16 @@ class FunctionalTest(ForsetiTestCase):
 
         return _sorted
 
-    def test_merge_conf_yaml_files(self):
+    def test_merge_conf_yaml_files_1_1_10(self):
         """Merge 2 conf yaml files."""
         self.maxDiff = None
         # Load yaml files
         merge_to_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                  'merge_to_forseti_conf_server.yaml')
         merge_from_path = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                   'merge_from_forseti_conf.yaml')
+                                   'merge_from_forseti_conf_1.1.10.yaml')
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                   'merged_forseti_conf_server.yaml')
+                                   'expected_merged_forseti_conf_server_from_1.1.10.yaml')
 
         merge_to = files.read_yaml_file_from_local(merge_to_path)
         merge_from = files.read_yaml_file_from_local(merge_from_path)
@@ -90,6 +91,103 @@ class FunctionalTest(ForsetiTestCase):
         merge_engine.merge_object(merge_from, merge_to,
                                   fields_to_ignore, field_identifiers)
 
+        forseti_server_installer.ForsetiServerInstaller._swap_config_fields(
+            merge_from, merge_to)
+
+        merge_to = self.deep_sort(merge_to)
+        expected_merged_obj = self.deep_sort(expected_merged_obj)
+
+        self.assertEqual(expected_merged_obj, merge_to)
+
+    def test_merge_conf_yaml_files_1_1_9(self):
+        """Merge 2 conf yaml files."""
+        self.maxDiff = None
+        # Load yaml files
+        merge_to_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                 'merge_to_forseti_conf_server.yaml')
+        merge_from_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'merge_from_forseti_conf_1.1.9.yaml')
+        merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'expected_merged_forseti_conf_server_from_1.1.9.yaml')
+
+        merge_to = files.read_yaml_file_from_local(merge_to_path)
+        merge_from = files.read_yaml_file_from_local(merge_from_path)
+        expected_merged_obj = files.read_yaml_file_from_local(merged_path)
+
+        # Merge target into base, ignore gcs_path and output_path
+        fields_to_ignore = [
+            'db_host', 'db_user', 'db_name',
+            'inventory', 'output_path', 'gcs_path',
+            'groups_service_account_key_file',
+            'domain_super_admin_email',
+            'max_admin_api_calls_per_100_seconds',
+            'max_appengine_api_calls_per_second',
+            'max_bigquery_api_calls_per_100_seconds',
+            'max_cloudbilling_api_calls_per_60_seconds',
+            'max_compute_api_calls_per_second',
+            'max_container_api_calls_per_100_seconds',
+            'max_crm_api_calls_per_100_seconds',
+            'max_iam_api_calls_per_second',
+            'max_servicemanagement_api_calls_per_100_seconds',
+            'max_sqladmin_api_calls_per_100_seconds',
+            'max_results_admin_api']
+        field_identifiers = {'scanners': 'name',
+                             'resources': 'resource',
+                             'pipelines': 'name'}
+
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
+
+        forseti_server_installer.ForsetiServerInstaller._swap_config_fields(
+            merge_from, merge_to)
+
+        merge_to = self.deep_sort(merge_to)
+        expected_merged_obj = self.deep_sort(expected_merged_obj)
+
+        self.assertEqual(expected_merged_obj, merge_to)
+
+    def test_merge_conf_yaml_files_1_1_6(self):
+        """Merge 2 conf yaml files."""
+        self.maxDiff = None
+        # Load yaml files
+        merge_to_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                 'merge_to_forseti_conf_server.yaml')
+        merge_from_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'merge_from_forseti_conf_1.1.6.yaml')
+        merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
+                                   'expected_merged_forseti_conf_server_from_1.1.6.yaml')
+
+        merge_to = files.read_yaml_file_from_local(merge_to_path)
+        merge_from = files.read_yaml_file_from_local(merge_from_path)
+        expected_merged_obj = files.read_yaml_file_from_local(merged_path)
+
+        # Merge target into base, ignore gcs_path and output_path
+        fields_to_ignore = [
+            'db_host', 'db_user', 'db_name',
+            'inventory', 'output_path', 'gcs_path',
+            'groups_service_account_key_file',
+            'domain_super_admin_email',
+            'max_admin_api_calls_per_100_seconds',
+            'max_appengine_api_calls_per_second',
+            'max_bigquery_api_calls_per_100_seconds',
+            'max_cloudbilling_api_calls_per_60_seconds',
+            'max_compute_api_calls_per_second',
+            'max_container_api_calls_per_100_seconds',
+            'max_crm_api_calls_per_100_seconds',
+            'max_iam_api_calls_per_second',
+            'max_servicemanagement_api_calls_per_100_seconds',
+            'max_sqladmin_api_calls_per_100_seconds',
+            'max_results_admin_api']
+        field_identifiers = {'scanners': 'name',
+                             'resources': 'resource',
+                             'pipelines': 'name'}
+
+        merge_engine.merge_object(merge_from, merge_to,
+                                  fields_to_ignore, field_identifiers)
+
+        forseti_server_installer.ForsetiServerInstaller._swap_config_fields(
+            merge_from, merge_to)
+
         merge_to = self.deep_sort(merge_to)
         expected_merged_obj = self.deep_sort(expected_merged_obj)
 
@@ -104,7 +202,7 @@ class FunctionalTest(ForsetiTestCase):
         target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merge_from_bucket_rules.yaml')
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                   'merged_bucket_rules.yaml')
+                                   'expected_merged_bucket_rules.yaml')
 
         merge_to = files.read_yaml_file_from_local(base_path)
         merge_from = files.read_yaml_file_from_local(target_path)
@@ -131,7 +229,7 @@ class FunctionalTest(ForsetiTestCase):
         target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merge_from_group_rules.yaml')
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                   'merged_group_rules.yaml')
+                                   'expected_merged_group_rules.yaml')
 
         merge_to = files.read_yaml_file_from_local(base_path)
         merge_from = files.read_yaml_file_from_local(target_path)
@@ -158,7 +256,7 @@ class FunctionalTest(ForsetiTestCase):
         target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merge_from_iam_rules.yaml')
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                   'merged_iam_rules.yaml')
+                                   'expected_merged_iam_rules.yaml')
 
         merge_to = files.read_yaml_file_from_local(base_path)
         merge_from = files.read_yaml_file_from_local(target_path)
@@ -186,7 +284,7 @@ class FunctionalTest(ForsetiTestCase):
         target_path = os.path.join(TEST_RESOURCE_DIR_PATH,
                                    'merge_from_firewall_rules.yaml')
         merged_path = os.path.join(TEST_RESOURCE_DIR_PATH,
-                                   'merged_firewall_rules.yaml')
+                                   'expected_merged_firewall_rules.yaml')
 
         merge_to = files.read_yaml_file_from_local(base_path)
         merge_from = files.read_yaml_file_from_local(target_path)
