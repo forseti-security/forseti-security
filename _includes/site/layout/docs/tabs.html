@@ -1,5 +1,5 @@
 <div class="row docs-nav">
-  <div class="col-md-9">
+  <div class="col-md-8">
     <ul class="nav nav-tabs visible-md-block visible-lg-block">
       {% assign release_version = page.path | split:"/" | slice:1 | first %}
       {% for tab in site.data.doc_categories %}
@@ -17,10 +17,22 @@
       <li class="active">{{ page.category }}</li>
     </ol>
   </div>
-  <div class="col-md-3 edit-on-github visible-md-block visible-lg-block text-right">
-    {% assign filename = page.path | split:"/" | last | downcase %}
-    <a class="icon github" href="{{ site.github.repository_url }}/edit/forsetisecurity.org/{{ page.path }}">
-      Edit this page
-    </a>
+  <div class="col-md-4 text-right">
+    <div class="btn-group" id="version-dropdown" style="margin-top: 1px; margin-bottom: 0; margin-right: 30px">
+      <a href="#" data-target="#version-dropdown" class="btn btn-raised dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        latest (v1.1)
+        <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu">
+        <li><a href="javascript:void(0)">latest</a></li>
+        <li><a href="javascript:void(0)">v1.0</a></li>
+      </ul>
+    </div>
+    <div class="edit-on-github visible-lg-inline-block visible-md-inline-block">
+      {% assign filename = page.path | split:"/" | last | downcase %}
+      <a class="icon github" href="{{ site.github.repository_url }}/edit/forsetisecurity.org/{{ page.path }}">
+        Edit this page
+      </a>
+    </div>
   </div>
 </div>
