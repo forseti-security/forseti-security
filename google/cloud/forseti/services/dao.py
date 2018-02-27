@@ -15,6 +15,7 @@
 """Database abstraction objects for Forseti Server."""
 
 # pylint: disable=too-many-lines,singleton-comparison
+# pylint: disable=too-many-branches
 
 import binascii
 import collections
@@ -53,24 +54,28 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.common.util import logger
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,too-many-branches
-
 LOGGER = logger.get_logger(__name__)
+
 POOL_RECYCLE_SECONDS = 300
 PER_YIELD = 1024
 
 
 def generate_model_handle():
-    """Generate random model handle."""
+    """Generate random model handle.
+
+    Returns:
+        str: random bytes for handle
+    """
 
     return binascii.hexlify(os.urandom(16))
 
 
 def generate_model_seed():
-    """Generate random model seed."""
+    """Generate random model seed.
+
+    Returns:
+        str: random bytes
+    """
 
     return binascii.hexlify(os.urandom(16))
 
@@ -93,6 +98,12 @@ class Model(MODEL_BASE):
     warnings = Column(Text(16777215))
 
     def __init__(self, *args, **kwargs):
+        """Initialize
+
+        Args:
+            *args (list): Arguments.
+            **kwargs (dict): Arguments.
+        """
         super(Model, self).__init__(*args, **kwargs)
         # Non-SQL attributes
         self.warning_store = list()
@@ -117,7 +128,11 @@ class Model(MODEL_BASE):
             self.warning_store.append(warning)
 
     def get_warnings(self):
-        """Returns any stored warnings."""
+        """Returns any stored warnings.
+
+        Returns:
+            str: warning message
+        """
         if self.warning_store:
             return '\n'.join(self.warning_store)
         return ''
@@ -158,7 +173,11 @@ class Model(MODEL_BASE):
         self.message = message
 
     def set_error(self, message):
-        """Indicate a broken import."""
+        """Indicate a broken import.
+
+        Args:
+            message (str): error message
+        """
 
         self.state = 'BROKEN'
         self.warnings = self.get_warnings()
@@ -167,7 +186,12 @@ class Model(MODEL_BASE):
                      self.warnings, self.message)
 
     def __repr__(self):
-        """String representation."""
+        """String representation.
+
+        Returns:
+            str: Model represented as
+                (name='{}', handle='{}' state='{}')
+        """
 
         return '<Model(name={}, handle={} state={})>'.format(
             self.name, self.handle, self.state)
@@ -183,6 +207,14 @@ def define_model(model_name, dbengine, model_seed):
         Models are name spaced via a random model seed such that multiple
         models can exist within the same database. In order to implement
         the name spacing in an abstract way.
+
+    Args:
+        model_name (str): model handle
+        dbengine (object): db engine
+        model_seed (str): seed to get etag
+
+    Returns:
+        tuple: (sessionmaker, ModelAccess)
     """
 
     base = declarative_base()
@@ -245,18 +277,28 @@ def define_model(model_name, dbengine, model_seed):
         bindings = relationship('Binding', back_populates='resource')
 
         def increment_update_counter(self):
-            """Increments counter for this object's db updates."""
+            """Increments counter for this object's db updates.
+            """
             self.policy_update_counter += 1
 
         def get_etag(self):
-            """Return the etag for this resource."""
+            """Return the etag for this resource.
+
+            Returns:
+                str: etag to avoid race condition when set policy
+            """
             serialized_ctr = struct.pack('>I', self.policy_update_counter)
             msg = binascii.hexlify(serialized_ctr)
             msg += self.full_name
             return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
 
         def __repr__(self):
-            """String representation."""
+            """String representation.
+
+            Returns:
+                str: Resource represented as
+                    (full_name='{}', name='{}' type='{}')
+            """
             return '<Resource(full_name={}, name={} type={})>'.format(
                 self.full_name, self.name, self.type)
 
@@ -288,7 +330,11 @@ def define_model(model_name, dbengine, model_seed):
                                 back_populates='members')
 
         def __repr__(self):
-            """String representation."""
+            """String representation.
+
+            Returns:
+                str: Member represented as (name='{}', type='{}')
+            """
             return '<Member(name={}, type={})>'.format(
                 self.name, self.type)
 
@@ -300,7 +346,11 @@ def define_model(model_name, dbengine, model_seed):
         member = Column(String(256), primary_key=True)
 
         def __repr__(self):
-            """String representation."""
+            """String representation.
+
+            Returns:
+                str: GroupInGroup represented as (parent='{}', member='{}')
+            """
             return '<GroupInGroup(parent={}, member={})>'.format(
                 self.parent,
                 self.member)
@@ -325,6 +375,12 @@ def define_model(model_name, dbengine, model_seed):
                                back_populates='bindings')
 
         def __repr__(self):
+            """String Representation
+
+            Returns:
+                str: Binding represented as
+                    (id='{}', role='{}', resource='{}' members='{}')
+            """
             fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
             return fmt_s.format(
                 self.id,
@@ -346,6 +402,11 @@ def define_model(model_name, dbengine, model_seed):
                                    back_populates='roles')
 
         def __repr__(self):
+            """String Representation
+
+            Returns:
+                str: Role represented by name
+            """
             return '<Role(name=%s)>' % (self.name)
 
     class Permission(base):
@@ -358,6 +419,11 @@ def define_model(model_name, dbengine, model_seed):
                              back_populates='permissions')
 
         def __repr__(self):
+            """String Representation
+
+            Returns:
+                str: Permission represented by name
+            """
             return '<Permission(name=%s)>' % (self.name)
 
     # pylint: disable=too-many-public-methods
@@ -374,7 +440,11 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def delete_all(cls, engine):
-            """Delete all data from the model."""
+            """Delete all data from the model.
+
+            Args:
+                engine (object): database engine
+            """
 
             LOGGER.info('Deleting all data from the model.')
             role_permissions.drop(engine)
@@ -393,10 +463,19 @@ def define_model(model_name, dbengine, model_seed):
         def denorm_group_in_group(cls, session):
             """Denormalize group-in-group relation.
 
+            This method will fill the GroupInGroup table with
+            (parent, member) if parent is an ancestor of member,
+            whenever adding or removing a new group or group-group
+            relationship, this method should be called to re-denormalize
+
             Args:
                 session (object): Database session to use.
+
             Returns:
                 int: Number of iterations.
+
+            Raises:
+                Exception: dernomalize fail
             """
 
             tbl1 = aliased(GroupInGroup.__table__, name='alias1')
@@ -488,7 +567,32 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def explain_granted(cls, session, member_name, resource_type_name,
                             role, permission):
-            """Provide info about how the member has access to the resource."""
+            """Provide info about how the member has access to the resource.
+
+            For example, member m1 can access resource r1 with permission p
+            it might be granted by binding (r2, rol, g1),
+            r1 is a child resource in a project or folder r2,
+            role rol contains permission p,
+            m1 is a member in group g1.
+            This method list bindings that grant the access, member relation
+            and resource hierarchy
+
+            Args:
+                session (object): Database session.
+                member_name (str): name of the member
+                resource_type_name (str): type_name of the resource
+                role (str): role to query
+                permission (str): permission to query
+
+            Returns:
+                tuples: (bindings, member_graph, resource_type_names) bindings,
+                    the bindings to grant the access member_graph, the graph to
+                    have member included in the binding esource_type_names, the
+                    resource tree
+
+            Raises:
+                Exception: not granted
+            """
             members, member_graph = cls.reverse_expand_members(
                 session, [member_name], request_graph=True)
             member_names = [m.name for m in members]
@@ -529,7 +633,16 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def scanner_iter(cls, session, resource_type,
                          parent_type_name=None):
-            """Iterate over all resources with the specified type."""
+            """Iterate over all resources with the specified type.
+
+            Args:
+                session (object): Database session.
+                resource_type (str): type of the resource to scan
+                parent_type_name (str): type_name of the parent resource
+
+            Yields:
+                Resource: resource that match the query
+            """
 
             qry = (
                 session.query(Resource)
@@ -544,7 +657,31 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def explain_denied(cls, session, member_name, resource_type_names,
                            permission_names, role_names):
-            """Provide information how to grant access to a member."""
+            """Explain why an access is denied
+
+            Provide information how to grant access to a member if such
+            access is denied with current IAM policies.
+            For example, member m1 cannot access resource r1 with permission
+            p, this method shows the bindings with rol that covered the
+            desired permission on the resource r1 and its ancestors.
+            If adding this member to any of these bindings, such access
+            can be granted. An overgranting level is also provided
+
+            Args:
+                session (object): Database session.
+                member_name (str): name of the member
+                resource_type_names (list): list of type_names of resources
+                permission_names (list): list of permissions
+                role_names (list): list of roles
+
+            Returns:
+                list: list of tuples,
+                    (overgranting,[(role_name,member_name,resource_name)])
+
+            Raises:
+                Exception: No roles covering requested permission set,
+                    Not possible
+            """
 
             if not role_names:
                 role_names = [r.name for r in
@@ -568,6 +705,13 @@ def define_model(model_name, dbengine, model_seed):
                     This is the set of nodes which grants access to
                     at least all of the resources requested.
                     There is always a chain with a single node root.
+
+                Args:
+                    resource_hierarchy (dict): graph of the resource hierarchy
+
+                Returns:
+                    list: candidates to add to bindings that potentially grant
+                        access
                 """
 
                 root = None
@@ -628,7 +772,25 @@ def define_model(model_name, dbengine, model_seed):
         def query_access_by_member(cls, session, member_name, permission_names,
                                    expand_resources=False,
                                    reverse_expand_members=True):
-            """Return the set of resources the member has access to."""
+            """Return the set of resources the member has access to.
+
+            By default, this method expand group_member relation,
+            so the result includes all resources can be accessed by the
+            groups that the member is in.
+            By default, this method does not expand resource hierarchy,
+            so the result does not include a resource if such resource does
+            not have a direct binding to allow access.
+
+            Args:
+                session (object): Database session.
+                member_name (str): name of the member
+                permission_names (list): list of names of permissions to query
+                expand_resources (bool): whether to expand resources
+                reverse_expand_members (bool): whether to expand members
+
+            Returns:
+                list: list of access tuples, ("role_name", "resource_type_name")
+            """
 
             if reverse_expand_members:
                 member_names = [m.name for m in
@@ -673,17 +835,23 @@ def define_model(model_name, dbengine, model_seed):
                                        permission_name=None,
                                        expand_groups=False,
                                        expand_resources=False):
-            """Return all the (Principal, Resource) combinations allowing
+            """Query access via the specified permission
+
+            Return all the (Principal, Resource) combinations allowing
             satisfying access via the specified permission.
+            By default, the group relation and resource hierarchy will not be
+            expanded, so the results will only contains direct bindings
+            filtered by permission. But the relations can be expanded
 
             Args:
                 session (object): Database session.
+                role_name (str): Role name to query for
                 permission_name (str): Permission name to query for.
                 expand_groups (bool): Whether or not to expand groups.
                 expand_resources (bool): Whether or not to expand resources.
 
             Yields:
-                A generator of access tuples.
+                obejct: A generator of access tuples.
 
             Raises:
                 ValueError: If neither role nor permission is set.
@@ -752,7 +920,24 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def query_access_by_resource(cls, session, resource_type_name,
                                      permission_names, expand_groups=False):
-            """Return members who have access to the given resource."""
+            """Query access by resource
+
+            Return members who have access to the given resource.
+            The resource hierarchy will always be expanded, so even if the
+            current resource does not have that binding, if its ancestors
+            have the binding, the access will be shown
+            By default, the group relationship will not be expanded
+
+            Args:
+                session (object): db session
+                resource_type_name (str): type_name of the resource to query
+                permission_names (list): list of strs, names of the permissions
+                    to query
+                expand_groups (bool): whether to expand groups
+
+            Returns:
+                dict: role_member_mapping, <"role_name", "member_names">
+            """
 
             roles = cls.get_roles_by_permission_names(
                 session, permission_names)
@@ -781,7 +966,20 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def query_permissions_by_roles(cls, session, role_names, role_prefixes,
                                        _=1024):
-            """Resolve permissions for the role."""
+            """Resolve permissions for the role.
+
+            Args:
+                session (object): db session
+                role_names (list): list of strs, names of the roles
+                role_prefixes (list): list of strs, prefixes of the roles
+                _ (int): place occupation
+
+            Returns:
+                list: list of (Role, Permission)
+
+            Raises:
+                Exception: No roles or role prefixes specified
+            """
 
             if not role_names and not role_prefixes:
                 error_message = 'No roles or role prefixes specified'
@@ -799,7 +997,20 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def set_iam_policy(cls, session, resource_type_name, policy):
-            """Sets an IAM policy for the resource."""
+            """Set IAM policy
+
+            Sets an IAM policy for the resource, check the etag when setting
+            new policy and reassign new etag.
+            Check etag to avoid race condition
+
+            Args:
+                session (object): db session
+                resource_type_name (str): type_name of the resource
+                policy (dict): the policy to set on the resource
+
+            Raises:
+                Exception: Etag doesn't match
+            """
 
             LOGGER.info('Setting IAM policy, resource_type_name = %s, policy'
                         ' = %s, session = %s',
@@ -815,12 +1026,30 @@ def define_model(model_name, dbengine, model_seed):
             policy = policy['bindings']
 
             def filter_etag(policy):
-                """Filter etag key/value out of policy map."""
+                """Filter etag key/value out of policy map.
+
+                Args:
+                    policy (dict): the policy to filter
+
+                Returns:
+                    dict: policy without etag, <"bindings":[<role, members>]>
+
+                Raises:
+                """
 
                 return {k: v for k, v in policy.iteritems() if k != 'etag'}
 
             def calculate_diff(policy, old_policy):
-                """Calculate the grant/revoke difference between policies."""
+                """Calculate the grant/revoke difference between policies.
+                   The diff = policy['bindings'] - old_policy['bindings']
+
+                Args:
+                    policy (dict): the new policy in dict format
+                    old_policy (dict): the old policy in dict format
+
+                Returns:
+                    dict: <role, members> diff of bindings
+                """
 
                 diff = collections.defaultdict(list)
                 for role, members in filter_etag(policy).iteritems():
@@ -874,7 +1103,15 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def get_iam_policy(cls, session, resource_type_name):
-            """Return the IAM policy for a resource."""
+            """Return the IAM policy for a resource.
+
+            Args:
+                session (object): db session
+                resource_type_name (str): type_name of the resource to query
+
+            Returns:
+                dict: the IAM policy
+            """
 
             resource = session.query(Resource).filter(
                 Resource.type_name == resource_type_name).one()
@@ -894,7 +1131,20 @@ def define_model(model_name, dbengine, model_seed):
         @classmethod
         def check_iam_policy(cls, session, resource_type_name, permission_name,
                              member_name):
-            """Check access according to the resource IAM policy."""
+            """Check access according to the resource IAM policy.
+
+            Args:
+                session (object): db session
+                resource_type_name (str): type_name of the resource to check
+                permission_name (str): name of the permission to check
+                member_name (str): name of the member to check
+
+            Returns:
+                bool: whether such access is allowed
+
+            Raises:
+                Exception: member or resource not found
+            """
 
             member_names = [m.name for m in
                             cls.reverse_expand_members(
@@ -924,14 +1174,28 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def list_roles_by_prefix(cls, session, role_prefix):
-            """Provides a list of roles matched via name prefix."""
+            """Provides a list of roles matched via name prefix.
+
+            Args:
+                session (object): db session
+                role_prefix (str): prefix of the role_name
+
+            Returns:
+                list: list of role_names that match the query
+            """
 
             return [r.name for r in session.query(Role)
                     .filter(Role.name.startswith(role_prefix)).all()]
 
         @classmethod
         def add_role_by_name(cls, session, role_name, permission_names):
-            """Creates a new role."""
+            """Creates a new role.
+
+            Args:
+                session (object): db session
+                role_name (str): name of the role to add
+                permission_names (list): list of permissions in the role
+            """
 
             LOGGER.info('Creating a new role, role_name = %s, permission_names'
                         ' = %s, session = %s',
@@ -959,7 +1223,15 @@ def define_model(model_name, dbengine, model_seed):
                              member_type_name,
                              parent_type_names,
                              denorm=False):
-            """Add member, optionally with parent relationship."""
+            """Add member, optionally with parent relationship.
+
+            Args:
+                session (object): db session
+                member_type_name (str): type_name of the member to add
+                parent_type_names (list): type_names of the parents
+                denorm (bool): whether to denorm the groupingroup table after
+                    addition
+            """
 
             LOGGER.info('Adding a member, member_type_name = %s,'
                         ' parent_type_names = %s, denorm = %s, session = %s',
@@ -973,14 +1245,29 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def list_group_members(cls, session, member_name_prefix):
-            """Returns members filtered by prefix."""
+            """Returns members filtered by prefix.
+
+            Args:
+                session (object): db session
+                member_name_prefix (str): the prefix of the member_name
+
+            Returns:
+                list: list of Members that match the query
+            """
 
             return [m.name for m in session.query(Member).filter(
                 Member.member_name.startswith(member_name_prefix)).all()]
 
         @classmethod
         def iter_groups(cls, session):
-            """Returns iterator of all groups in model."""
+            """Returns iterator of all groups in model.
+
+            Args:
+                session (object): db session
+
+            Yields:
+                Member: group in the model
+            """
 
             qry = session.query(Member).filter(Member.type == 'group')
             for group in qry.yield_per(1024):
@@ -993,7 +1280,22 @@ def define_model(model_name, dbengine, model_seed):
                                      type_name_prefix=None,
                                      type_prefix=None,
                                      name_prefix=None):
-            """Returns iterator to resources filtered by prefix."""
+            """Returns iterator to resources filtered by prefix.
+
+            Args:
+                session (object): db session
+                full_resource_name_prefix (str): the prefix of the
+                    full_resource_name
+                type_name_prefix (str): the prefix of the type_name
+                type_prefix (str): the prefix of the type
+                name_prefix (ste): the prefix of the name
+
+            Yields:
+                Resource: that match the query
+
+            Raises:
+                Exception: No prefix given
+            """
 
             if not any([arg is not None for arg in [full_resource_name_prefix,
                                                     type_name_prefix,
@@ -1027,7 +1329,21 @@ def define_model(model_name, dbengine, model_seed):
                                      type_name_prefix=None,
                                      type_prefix=None,
                                      name_prefix=None):
-            """Returns resources filtered by prefix."""
+            """Returns resources filtered by prefix.
+
+            Args:
+                session (object): db session
+                full_resource_name_prefix (str): the prefix of the
+                    full_resource_name
+                type_name_prefix (str): the prefix of the type_name
+                type_prefix (str): the prefix of the type
+                name_prefix (ste): the prefix of the name
+
+            Returns:
+                list: list of Resources match the query
+
+            Raises:
+            """
 
             return list(
                 cls.iter_resources_by_prefix(session,
@@ -1042,7 +1358,17 @@ def define_model(model_name, dbengine, model_seed):
                                  resource_type_name,
                                  parent_type_name,
                                  no_require_parent):
-            """Adds resource specified via full name."""
+            """Adds resource specified via full name.
+
+            Args:
+                session (object): db session
+                resource_type_name (str): name of the resource
+                parent_type_name (str): name of the parent resource
+                no_require_parent (bool): if this resource has a parent
+
+            Returns:
+                Resource: Created new resource
+            """
 
             LOGGER.info('Adding resource via full name, resource_type_name'
                         ' = %s, parent_type_name = %s, no_require_parent = %s,'
@@ -1057,7 +1383,16 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def add_resource(cls, session, resource_type_name, parent=None):
-            """Adds resource by name."""
+            """Adds resource by name.
+
+            Args:
+                session (object): db session
+                resource_type_name (str): name of the resource
+                parent (Resource): parent of the resource
+
+            Returns:
+                Resource: Created new resource
+            """
 
             LOGGER.info('Adding resource by name, resource_type_name = %s,'
                         ' session = %s', resource_type_name, session)
@@ -1079,7 +1414,16 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def add_role(cls, session, name, permissions=None):
-            """Add role by name."""
+            """Add role by name.
+
+            Args:
+                session (object): db session
+                name (str): name of the role to add
+                permissions (list): permissions to add in the role
+
+            Returns:
+                Role: The created role
+            """
 
             LOGGER.info('Adding role, name = %s, permissions = %s,'
                         ' session = %s', name, permissions, session)
@@ -1090,7 +1434,16 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def add_permission(cls, session, name, roles=None):
-            """Add permission by name."""
+            """Add permission by name.
+
+            Args:
+                session (object): db session
+                name (str): name of the permission
+                roles (list): list od roles to add the permission
+
+            Returns:
+                Permission: The created permission
+            """
 
             LOGGER.info('Adding permission, name = %s, roles = %s'
                         ' session = %s', name, roles, session)
@@ -1101,7 +1454,17 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def add_binding(cls, session, resource, role, members):
-            """Add a binding to the model."""
+            """Add a binding to the model.
+
+            Args:
+                session (object): db session
+                resource (str): Resource to be added in the binding
+                role (str): Role to be added in the binding
+                members (list): members to be added in the binding
+
+            Returns:
+                Binding: the created binding
+            """
 
             LOGGER.info('Adding a binding to the model, resource = %s,'
                         ' role = %s, members = %s, session = %s',
@@ -1116,7 +1479,20 @@ def define_model(model_name, dbengine, model_seed):
                        type_name,
                        parent_type_names=None,
                        denorm=False):
-            """Add a member to the model."""
+            """Add a member to the model.
+
+            Args:
+                session (object): db session
+                type_name (str): type_name of the resource to add
+                parent_type_names (list): list of parent names to add
+                denorm (bool): whether to denormalize the GroupInGroup relation
+
+            Returns:
+                Member: the created member
+
+            Raises:
+                Exception: parent not found
+            """
 
             LOGGER.info('Adding a member to the model, type_name = %s,'
                         ' parent_type_names = %s, denorm = %s, session = %s',
@@ -1147,7 +1523,13 @@ def define_model(model_name, dbengine, model_seed):
         def expand_resources_by_type_names(cls, session, res_type_names):
             """Expand resources by type/name format.
 
-                Returns: {res_type_name: Expansion(res_type_name), ... }
+            Args:
+                session (object): db session
+                res_type_names (list): list of resources in type_names
+
+            Returns:
+                dict: mapping in the form:
+                      {res_type_name: Expansion(res_type_name), ... }
             """
 
             res_key = aliased(Resource, name='res_key')
@@ -1170,53 +1552,21 @@ def define_model(model_name, dbengine, model_seed):
             return mapping
 
         @classmethod
-        def expand_resources_by_names(cls, session, res_type_names):
-            """Expand resources by type/name format."""
-
-            qry = (
-                session.query(Resource)
-                .filter(Resource.type_name.in_(res_type_names))
-                )
-
-            full_resource_names = [r.full_name for r in qry.all()]
-            return cls.expand_resources(session, full_resource_names)
-
-        @classmethod
-        def expand_resources(cls, session, full_resource_names):
-            """Expand resources towards the bottom."""
-
-            if (not isinstance(full_resource_names, list) and
-                    not isinstance(full_resource_names, set)):
-                error_message = 'full_resource_names must be list or set'
-                LOGGER.error(error_message)
-                raise TypeError(error_message)
-
-            resources = session.query(Resource).filter(
-                Resource.full_name.in_(full_resource_names)).all()
-
-            new_resource_set = set(resources)
-            resource_set = set(resources)
-
-            def add_to_sets(resources):
-                """Adds resources to the sets."""
-
-                for resource in resources:
-                    if resource not in resource_set:
-                        new_resource_set.add(resource)
-                        resource_set.add(resource)
-
-            while new_resource_set:
-                resources_to_walk = new_resource_set
-                new_resource_set = set()
-                for resource in resources_to_walk:
-                    add_to_sets(resource.children)
-
-            return [r.full_name for r in resource_set]
-
-        @classmethod
         def reverse_expand_members(cls, session, member_names,
                                    request_graph=False):
-            """Expand members to their groups."""
+            """Expand members to their groups.
+
+            List all groups that contains these members. Also return
+            the graph if requested.
+
+            Args:
+                session (object): db session
+                member_names (list): list of members to expand
+                request_graph (bool): wether the parent-child graph is provided
+
+            Returns:
+                object: set if graph not requested, set and graph if requested
+            """
 
             members = session.query(Member).filter(
                 Member.name.in_(member_names)).all()
@@ -1225,7 +1575,12 @@ def define_model(model_name, dbengine, model_seed):
             new_member_set = set()
 
             def add_to_sets(members, child):
-                """Adds the members & children to the sets."""
+                """Adds the members & children to the sets.
+
+                Args:
+                    members (list): list of Members to be added
+                    child (Member): child to be added
+                """
 
                 for member in members:
                     if request_graph and child:
@@ -1257,16 +1612,27 @@ def define_model(model_name, dbengine, model_seed):
             """Expand group membership keyed by member.
 
             Args:
+                session (object): db session
                 member_names (set): Member names to expand
                 show_group_members (bool): Whether to include subgroups
                 member_contain_self (bool): Whether to include a parent
-                                            as its own member
+                    as its own member
             Returns:
-                dict: <Member, set(Children).
+                dict: <Member, set(Children)>
             """
 
             def separate_groups(member_names):
-                """Separate groups and other members in two lists."""
+                """Separate groups and other members in two lists.
+
+                This is a helper function. groups are needed to query on
+                group_in_group table
+
+                Args:
+                    member_names (list): list of members to be separated
+
+                Returns:
+                    tuples: two lists of strs containing groups and others
+                """
                 groups = []
                 others = []
                 for name in member_names:
@@ -1333,13 +1699,28 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def expand_members(cls, session, member_names):
-            """Expand group membership towards the members."""
+            """Expand group membership towards the members.
+
+            Args:
+                session (object): db session
+                member_names (list): list of strs of member names
+
+            Returns:
+                set: expanded group members
+            """
 
             members = session.query(Member).filter(
                 Member.name.in_(member_names)).all()
 
             def is_group(member):
-                """Returns true iff the member is a group."""
+                """Returns true iff the member is a group.
+
+                Args:
+                    member (Member): member to check
+
+                Returns:
+                    bool: whether the member is a group
+                """
                 return member.type == 'group'
 
             group_set = set()
@@ -1347,7 +1728,11 @@ def define_model(model_name, dbengine, model_seed):
             new_group_set = set()
 
             def add_to_sets(members):
-                """Adds new members to the sets."""
+                """Adds new members to the sets.
+
+                Args:
+                    members (list): members to be added
+                """
                 for member in members:
                     if is_group(member):
                         if member not in group_set:
@@ -1368,7 +1753,19 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def resource_ancestors(cls, session, resource_type_names):
-            """Resolve the transitive ancestors by type/name format."""
+            """Resolve the transitive ancestors by type/name format.
+
+            Given a group of resource and find out all their parents.
+            Then this method group the pairs with parent. Used to determine
+            resource candidates to grant access in explain denied.
+
+            Args:
+                session (object): db session
+                resource_type_names (list): list of strs, resources to query
+
+            Returns:
+                dict: <parent, childs> graph of the resource hierarchy
+            """
 
             resource_names = resource_type_names
             resource_graph = collections.defaultdict(set)
@@ -1403,7 +1800,18 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def find_resource_path(cls, session, resource_type_name):
-            """Find resource ancestors by type/name format."""
+            """Find resource ancestors by type/name format.
+
+            Find all ancestors of a resource and return them in order
+
+            Args:
+                session (object): db session
+                resource_type_name (str): resource to query
+
+            Returns:
+                list: list of Resources, transitive ancestors for the given
+                    resource
+            """
 
             qry = (
                 session.query(Resource)
@@ -1414,7 +1822,16 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def _find_resource_path(cls, _, resources):
-            """Find the list of transitive ancestors for the given resource."""
+            """Find the list of transitive ancestors for the given resource.
+
+            Args:
+                _ (object): position holder
+                resources (list): list of the resources to query
+
+            Returns:
+                list: list of Resources, transitive ancestors for the given
+                    resource
+            """
 
             if not resources:
                 return []
@@ -1431,7 +1848,15 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def get_roles_by_permission_names(cls, session, permission_names):
-            """Return the list of roles covering the specified permissions."""
+            """Return the list of roles covering the specified permissions.
+
+            Args:
+                session (object): db session
+                permission_names (list): permissions to be covered by.
+
+            Returns:
+                set: roles set that cover the permissions
+            """
 
             permission_set = set(permission_names)
             qry = session.query(Permission)
@@ -1455,7 +1880,15 @@ def define_model(model_name, dbengine, model_seed):
 
         @classmethod
         def get_member(cls, session, name):
-            """Get member by name."""
+            """Get member by name.
+
+            Args:
+                session (object): db session
+                name (str): the name the member to query
+
+            Returns:
+                list: Members from the query
+            """
 
             return session.query(Member).filter(Member.name == name).all()
 
@@ -1464,7 +1897,12 @@ def define_model(model_name, dbengine, model_seed):
 
 
 def undefine_model(session_maker, data_access):
-    """Deletes an entire model and the corresponding data in the database."""
+    """Deletes an entire model and the corresponding data in the database.
+
+    Args:
+        session_maker (func): session_maker function
+        data_access (ModelAccess): data access layer
+    """
 
     session = session_maker()
     data_access.delete_all(session)
@@ -1480,12 +1918,21 @@ class ModelManager(object):
     """
 
     def __init__(self, dbengine):
+        """Initialization
+
+        Args:
+            dbengine (object): Database engine
+        """
         self.engine = dbengine
         self.modelmaker = self._create_model_session()
         self.sessionmakers = {}
 
     def _create_model_session(self):
-        """Create a session to read from the models table."""
+        """Create a session to read from the models table.
+
+        Returns:
+            object: db session created
+        """
 
         MODEL_BASE.metadata.create_all(self.engine)
         return db.ScopedSessionMaker(
@@ -1495,7 +1942,14 @@ class ModelManager(object):
 
     @mutual_exclusive(LOCK)
     def create(self, name):
-        """Create a new model entry in the database."""
+        """Create a new model entry in the database.
+
+        Args:
+            name (str): model name
+
+        Returns:
+            str: the handle of the model
+        """
 
         LOGGER.info('Creating a new model entry in the database,'
                     ' name = %s', name)
@@ -1516,13 +1970,30 @@ class ModelManager(object):
             return handle
 
     def get(self, model):
-        """Get model data by name."""
+        """Get model data by handle.
+
+        Args:
+            model (str): model handle
+
+        Returns:
+            tuple: session and ModelAccess object
+        """
 
         session_maker, data_access = self._get(model)
         return db.ScopedSession(session_maker()), data_access
 
     def _get(self, handle):
-        """Get model data by name internal."""
+        """Get model data by name internal.
+
+        Args:
+            handle (str): the model handle
+
+        Returns:
+            Model: the model in the session maker
+
+        Raises:
+            KeyError: model handle not available
+        """
 
         if handle not in [m.handle for m in self.models()]:
             error_message = 'handle={}, available={}'\
@@ -1544,7 +2015,11 @@ class ModelManager(object):
 
     @mutual_exclusive(LOCK)
     def delete(self, model_name):
-        """Delete a model entry in the database by name."""
+        """Delete a model entry in the database by name.
+
+        Args:
+            model_name (str): the name of the model to be deleted
+        """
 
         LOGGER.info('Deleting model by name, model_name = %s', model_name)
         _, data_access = self._get(model_name)
@@ -1555,7 +2030,15 @@ class ModelManager(object):
         data_access.delete_all(self.engine)
 
     def _models(self, expunge=False):
-        """Return the list of models from the database."""
+        """Return the list of models from the database.
+
+        Args:
+            expunge (bool): Whether or not to detach the object from
+                the session for use in another session.
+
+        Returns:
+            list: list of Models in the db
+        """
 
         with self.modelmaker() as session:
             items = session.query(Model).all()
@@ -1564,11 +2047,25 @@ class ModelManager(object):
             return items
 
     def models(self):
-        """Expunging wrapper for _models."""
+        """Expunging wrapper for _models.
+
+        Returns:
+            list: list of Models in the db
+        """
         return self._models(expunge=True)
 
     def model(self, model_name, expunge=True, session=None):
-        """Get model from database by name."""
+        """Get model from database by name.
+
+        Args:
+            model_name (str): Model name or handle
+            expunge (bool): Whether or not to detach the object from
+                the session for use in another session.
+            session (object): Database session.
+
+        Returns:
+            Model: the dbo of the queried model
+        """
 
         def instantiate_model(session, model_name, expunge):
             """Creates a model object by querying the database.
@@ -1577,7 +2074,10 @@ class ModelManager(object):
                 session (object): Database session.
                 model_name (str): Model name to instantiate.
                 expunge (bool): Whether or not to detach the object from
-                                the session for use in another session.
+                    the session for use in another session.
+
+            Returns:
+                Model: the dbo of the queried model
             """
 
             item = session.query(Model).filter(
@@ -1593,7 +2093,17 @@ class ModelManager(object):
             return instantiate_model(session, model_name, expunge)
 
     def get_model(self, model, expunge=True, session=None):
-        """Get model from database by name or handle."""
+        """Get model from database by name or handle.
+
+        Args:
+            model (str): Model name or handle
+            expunge (bool): Whether or not to detach the object from
+                the session for use in another session.
+            session (object): Database session.
+
+        Returns:
+            Model: the dbo of the queried model
+        """
 
         def query_model(session, model, expunge):
             """Get a model object by querying the database.
@@ -1602,7 +2112,10 @@ class ModelManager(object):
                 session (object): Database session.
                 model (str): Model name or handle.
                 expunge (bool): Whether or not to detach the object from
-                                the session for use in another session.
+                    the session for use in another session.
+
+            Returns:
+                Model: the dbo of the queried model
             """
 
             item = session.query(Model).filter(or_(
@@ -1623,7 +2136,7 @@ class ModelManager(object):
 
         Args:
             model_name (str): Model name
-            new_description(str): The description in json format.
+            new_description (str): The description in json format.
             session (object): Database session.
         """
 
@@ -1644,7 +2157,7 @@ class ModelManager(object):
             session (object): Database session.
 
         Returns:
-            Dictionary of the model description.
+            json: Dictionary of the model description.
         """
         if not session:
             with self.modelmaker() as scoped_session:
@@ -1708,7 +2221,17 @@ def create_engine(*args, **kwargs):
 
 
 def session_creator(model_name, filename=None, seed=None, echo=False):
-    """Create a session maker for the model and db file."""
+    """Create a session maker for the model and db file.
+
+    Args:
+        model_name (str): the model name
+        filename (str): the db file to load the sqlite database
+        seed (str): the unique model handle
+        echo (bool): whether to echo all the statements
+
+    Returns:
+        tuple: session_maker and the ModelAccess object
+    """
     LOGGER.info('Creating session maker, model_name = %s, filename = %s',
                 model_name, filename)
     if filename:

@@ -14,8 +14,7 @@
 
 """Forseti Server program."""
 
-# pylint: disable=missing-type-doc,missing-param-doc
-# pylint: disable=line-too-long,useless-suppression
+# pylint: disable=line-too-long
 
 import argparse
 
@@ -171,6 +170,16 @@ class InventoryConfig(AbstractInventoryConfig):
                  api_quota_configs,
                  *args,
                  **kwargs):
+        """Initialize
+
+        Args:
+            root_resource_id (str): Root resource to start crawling from
+            gsuite_sa_path (str): Path to G Suite service account private keyfile
+            gsuite_admin_email (str): G Suite admin email
+            api_quota_configs (dict): API quota configs
+            args: args when creating InventoryConfig
+            kwargs: kwargs when creating InventoryConfig
+        """
 
         super(InventoryConfig, self).__init__(*args, **kwargs)
         self.service_config = None
@@ -245,6 +254,16 @@ class ServiceConfig(AbstractServiceConfig):
                  global_config,
                  forseti_db_connect_string,
                  endpoint):
+        """Initialize
+
+        Args:
+            inventory_config (InventoryConfig): the inventory_config
+            scanner_config (dict): Scanner configurations
+            notifier_config (dict): Notifier configurations
+            global_config (dict): Global configurations
+            forseti_db_connect_string (str): Forseti database string
+            endpoint (str): server endpoint
+        """
 
         super(ServiceConfig, self).__init__()
         self.thread_pool = ThreadPool()
@@ -352,6 +371,15 @@ def serve(endpoint,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
+
+    Args:
+        endpoint (str): the server channel endpoint
+        services (list): services to register on the server
+        forseti_db_connect_string (str): Forseti database string
+        forseti_config_file_path (str): Path to Forseti configuration file.
+        log_level (str): Sets the threshold for Forseti's logger.
+        max_workers (int): maximum number of workers for the crawler
+        wait_shutdown_secs (int): seconds to wait before shutdown
 
     Raises:
         Exception: No services to start
