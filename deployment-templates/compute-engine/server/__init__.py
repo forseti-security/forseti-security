@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Security Deployment Templates Compute Engine Server."""
+"""Forseti Deployment Templates Compute Engine Server."""

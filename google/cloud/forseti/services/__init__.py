@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""gRPC services for Forseti Server."""
+"""Forseti Server gRPC services."""
 
 __import__('pkg_resources').declare_namespace(__name__)
