@@ -72,7 +72,7 @@ class ForsetiInstaller(object):
                                        conf_file_path,
                                        bucket_name)
 
-    def create_conf_file_dpl_template(self):
+    def create_conf_file_and_dpl_tpl(self):
         """Create configuration file and deployment template.
 
         Returns:

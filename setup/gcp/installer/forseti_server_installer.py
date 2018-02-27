@@ -92,8 +92,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
         from v1 to v2."""
         while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
             self.migrate_from_v1 = raw_input(
-                "Forseti v1 detected, would you like to migrate the "
-                "existing configurations to v2? (y/n): ").lower()
+                'Forseti v1 detected, would you like to migrate the '
+                'existing configurations to v2? (y/n): ').lower()
 
     def populate_config_info_from_v1(self):
         """Retrieve the v1 configuration object."""
@@ -455,7 +455,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             print(constants.MESSAGE_ENABLE_GSUITE_GROUP)
 
     @staticmethod
-    def _swap_config_fields(self, new_config, old_config):
+    def _swap_config_fields(new_config, old_config):
         """Swapping fields. This will work for all v1 migrating to v2.
 
         Note: new_config will get modified.
