@@ -20,52 +20,15 @@ Usage for enforcing a single project's firewall:
       --policy_file <policy file path>
 
 """
-
 import argparse
 import sys
 import threading
-
-from google.apputils import app
 
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import batch_enforcer
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 
-
-ARG_PARSER = argparse.ArgumentParser()
-
-ARG_PARSER.add_argument('--enforce_project', default=None,
-                        help='A single projectId to enforce the firewall on.'
-                             ' Must be used with the policy_file flag.')
-
-ARG_PARSER.add_argument('--policy_file', default=None,
-                        help='A json encoded policy file to enforce,'
-                             ' must contain a list of Firewall resources to'
-                             'apply to the project. If in a GCS bucket, '
-                             'include full path, e.g. '
-                             '"gs://<bucketname>/path/to/file".')
-
-ARG_PARSER.add_argument('--dry_run', default=False,
-                        help='If True will simulate the changes and not change'
-                             'any policies.')
-
-ARG_PARSER.add_argument('--concurrent_threads', default=10,
-                        help='The number concurrent worker threads to use.')
-
-ARG_PARSER.add_argument('--maximum_firewall_write_operations', default=10,
-                        help='The maximum number of in flight write operations'
-                             'on project firewalls. Each running thread is '
-                             'allowed up to this many running operations, '
-                             'so to limit the over all number of operations, '
-                             'limit the number of write threads using the'
-                             ' maximum_project_writer_threads flag.')
-
-ARG_PARSER.add_argument('--maximum_project_writer_threads', default=1,
-                        help='The maximum number of projects with active write '
-                             'operations on project firewalls.')
-
-FLAGS = vars(ARG_PARSER.parse_args())
 LOGGER = logger.get_logger(__name__)
 
 
@@ -145,15 +108,57 @@ def enforce_single_project(enforcer, project_id, policy_filename):
     return enforcer_results
 
 
-def main(argv):
-    """The main entry point for Forseti Security Enforcer runner.
+def run():
+    """The main entry point for Forseti Security Enforcer runner."""
 
-        Args:
-              argv (dict): Unused.
-    """
-    del argv
+    arg_parser = argparse.ArgumentParser()
 
-    forseti_config = FLAGS['forseti_config']
+    arg_parser.add_argument(
+        'forseti_config',
+        default='/home/ubuntu/forseti-security/configs/'
+                'forseti_conf_server.yaml',
+        help='Fully qualified path and filename of the Forseti config file.')
+
+    arg_parser.add_argument(
+        'enforce_project', default=None,
+        help='A single projectId to enforce the firewall on.'
+             ' Must be used with the policy_file flag.')
+
+    arg_parser.add_argument(
+        'policy_file', default=None,
+        help='A json encoded policy file to enforce,'
+             ' must contain a list of Firewall resources to'
+             'apply to the project. If in a GCS bucket, '
+             'include full path, e.g. '
+             '"gs://<bucketname>/path/to/file".')
+
+    arg_parser.add_argument(
+        'dry_run', default=False,
+        help='If True will simulate the changes and not change'
+             'any policies.')
+
+    arg_parser.add_argument(
+        'concurrent_threads', default=10,
+        help='The number concurrent worker threads to use.')
+
+    arg_parser.add_argument(
+        'maximum_firewall_write_operations', default=10,
+        help='The maximum number of in flight write operations'
+             'on project firewalls. Each running thread is '
+             'allowed up to this many running operations, '
+             'so to limit the over all number of operations, '
+             'limit the number of write threads using the'
+             ' maximum_project_writer_threads flag.')
+
+    arg_parser.add_argument(
+        'maximum_project_writer_threads', default=1,
+        help='The maximum number of projects with active write '
+             'operations on project firewalls.')
+
+    flags = arg_parser.parse_args()
+
+    forseti_config = flags['forseti_config']
+
     if forseti_config is None:
         LOGGER.error('Path to Forseti Security config needs to be specified.')
         sys.exit()
@@ -167,16 +172,16 @@ def main(argv):
     global_configs = configs.get('global')
 
     enforcer = initialize_batch_enforcer(
-        global_configs, FLAGS['concurrent_threads'],
-        FLAGS['maximum_project_writer_threads'],
-        FLAGS['maximum_firewall_write_operations'],
-        FLAGS['dry_run']
+        global_configs, flags['concurrent_threads'],
+        flags['maximum_project_writer_threads'],
+        flags['maximum_firewall_write_operations'],
+        flags['dry_run']
     )
 
-    if FLAGS['enforce_project'] and FLAGS['policy_file']:
+    if flags['enforce_project'] and flags['policy_file']:
         enforcer_results = enforce_single_project(enforcer,
-                                                  FLAGS['enforce_project'],
-                                                  FLAGS['policy_file'])
+                                                  flags['enforce_project'],
+                                                  flags['policy_file'])
 
         print enforcer_results
 
@@ -185,4 +190,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    app.run()
+    run()
