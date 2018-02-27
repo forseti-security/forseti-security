@@ -29,7 +29,4 @@ RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
 RUN python setup.py install
 
 # Test to see Forseti Security was installed.
-# The tests here should match the entry points in setup.py
 RUN yes | which forseti_server
-RUN yes | which forseti_enforcer
-RUN yes | which forseti
