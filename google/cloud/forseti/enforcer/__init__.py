@@ -14,3 +14,19 @@
 # limitations under the License.
 
 """Service for enforcing settings on Google Cloud Platform resources."""
+
+# Set default logging handler to avoid "No handler found" warnings.
+import logging
+
+try:  # Python 2.7+
+    from logging import NullHandler
+except ImportError:
+
+    class NullHandler(logging.Handler):
+        """Helper class for handling logging."""
+
+        def emit(self, record):
+            pass
+
+
+logging.getLogger(__name__).addHandler(NullHandler())
