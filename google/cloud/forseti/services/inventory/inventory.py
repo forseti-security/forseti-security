@@ -26,7 +26,7 @@ from google.cloud.forseti.services.inventory.crawler import run_crawler
 class Progress(object):
     """Progress state."""
 
-    def __init__(self, final_message=False, step="", inventory_id=""):
+    def __init__(self, final_message=False, step='', inventory_id=''):
         """Initialize
 
         Args:
@@ -39,8 +39,8 @@ class Progress(object):
         self.step = step
         self.warnings = 0
         self.errors = 0
-        self.last_warning = ""
-        self.last_error = ""
+        self.last_warning = ''
+        self.last_error = ''
 
 
 class QueueProgresser(Progress):

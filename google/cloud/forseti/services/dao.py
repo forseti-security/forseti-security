@@ -134,8 +134,8 @@ class Model(MODEL_BASE):
             str: warning message
         """
         if self.warning_store:
-            return "\n".join(self.warning_store)
-        return ""
+            return '\n'.join(self.warning_store)
+        return ''
 
     def set_inprogress(self):
         """Set state to 'in progress'."""
@@ -193,7 +193,7 @@ class Model(MODEL_BASE):
                 (name='{}', handle='{}' state='{}')
         """
 
-        return "<Model(name='{}', handle='{}' state='{}')>".format(
+        return '<Model(name={}, handle={} state={})>'.format(
             self.name, self.handle, self.state)
 
 
@@ -299,11 +299,11 @@ def define_model(model_name, dbengine, model_seed):
                 str: Resource represented as
                     (full_name='{}', name='{}' type='{}')
             """
-            return "<Resource(full_name='{}', name='{}' type='{}')>".format(
+            return '<Resource(full_name={}, name={} type={})>'.format(
                 self.full_name, self.name, self.type)
 
     Resource.children = relationship(
-        "Resource", order_by=Resource.full_name, back_populates="parent")
+        'Resource', order_by=Resource.full_name, back_populates='parent')
 
     class Member(base):
         """Row entry for a policy member."""
@@ -335,7 +335,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 str: Member represented as (name='{}', type='{}')
             """
-            return "<Member(name='{}', type='{}')>".format(
+            return '<Member(name={}, type={})>'.format(
                 self.name, self.type)
 
     class GroupInGroup(base):
@@ -351,7 +351,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 str: GroupInGroup represented as (parent='{}', member='{}')
             """
-            return "<GroupInGroup(parent='{}', member='{}')>".format(
+            return '<GroupInGroup(parent={}, member={})>'.format(
                 self.parent,
                 self.member)
 
@@ -381,7 +381,7 @@ def define_model(model_name, dbengine, model_seed):
                 str: Binding represented as
                     (id='{}', role='{}', resource='{}' members='{}')
             """
-            fmt_s = "<Binding(id='{}', role='{}', resource='{}' members='{}')>"
+            fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
             return fmt_s.format(
                 self.id,
                 self.role_name,
@@ -407,7 +407,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 str: Role represented by name
             """
-            return "<Role(name='%s')>" % (self.name)
+            return '<Role(name=%s)>' % (self.name)
 
     class Permission(base):
         """Row entry for an IAM permission."""
@@ -424,7 +424,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 str: Permission represented by name
             """
-            return "<Permission(name='%s')>" % (self.name)
+            return '<Permission(name=%s)>' % (self.name)
 
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):
@@ -446,8 +446,7 @@ def define_model(model_name, dbengine, model_seed):
                 engine (object): database engine
             """
 
-            LOGGER.info("deleting all data "
-                        "from the model")
+            LOGGER.info('Deleting all data from the model.')
             role_permissions.drop(engine)
             binding_members.drop(engine)
             group_members.drop(engine)
@@ -1069,8 +1068,8 @@ def define_model(model_name, dbengine, model_seed):
                 Exception: Etag doesn't match
             """
 
-            LOGGER.info("Setting IAM policy, resource_type_name = %s, policy"
-                        " = %s, session = %s",
+            LOGGER.info('Setting IAM policy, resource_type_name = %s, policy'
+                        ' = %s, session = %s',
                         resource_type_name, policy, session)
             old_policy = cls.get_iam_policy(session, resource_type_name)
             if policy['etag'] != old_policy['etag']:
@@ -1216,8 +1215,8 @@ def define_model(model_name, dbengine, model_seed):
                 LOGGER.error(error_message)
                 raise Exception(error_message)
             if not resource_type_names:
-                error_message = 'Resource not found: {}'\
-                    .format(resource_type_name)
+                error_message = 'Resource not found: {}'.format(
+                    resource_type_name)
                 LOGGER.error(error_message)
                 raise Exception(error_message)
 
@@ -1254,8 +1253,8 @@ def define_model(model_name, dbengine, model_seed):
                 permission_names (list): list of permissions in the role
             """
 
-            LOGGER.info("Creating a new role, role_name = %s, permission_names"
-                        " = %s, session = %s",
+            LOGGER.info('Creating a new role, role_name = %s, permission_names'
+                        ' = %s, session = %s',
                         role_name, permission_names, session)
             permission_names = set(permission_names)
             existing_permissions = session.query(Permission).filter(
@@ -1264,7 +1263,7 @@ def define_model(model_name, dbengine, model_seed):
                 try:
                     permission_names.remove(existing_permission.name)
                 except KeyError:
-                    LOGGER.warn("existing_permissions.name = %s, KeyError",
+                    LOGGER.warn('existing_permissions.name = %s, KeyError',
                                 existing_permission.name)
 
             new_permissions = [Permission(name=n) for n in permission_names]
@@ -1282,8 +1281,8 @@ def define_model(model_name, dbengine, model_seed):
                 session (object): db session
                 role_name (str): name of the role to be deleted
             """
-            LOGGER.info("Deleting an existing role, role_name = %s,"
-                        " session = %s", role_name, session)
+            LOGGER.info('Deleting an existing role, role_name = %s,'
+                        ' session = %s', role_name, session)
             bindings_to_be_delete = [binding for binding in
                                      session.query(Binding)
                                      .filter(Binding.role_name == role_name)
@@ -1311,8 +1310,8 @@ def define_model(model_name, dbengine, model_seed):
                     addition
             """
 
-            LOGGER.info("Adding a member, member_type_name = %s, "
-                        "parent_type_names = %s, denorm = %s, session = %s",
+            LOGGER.info('Adding a member, member_type_name = %s,'
+                        ' parent_type_names = %s, denorm = %s, session = %s',
                         member_type_name, parent_type_names, denorm, session)
 
             cls.add_member(session,
@@ -1338,9 +1337,9 @@ def define_model(model_name, dbengine, model_seed):
                     deletion
             """
 
-            LOGGER.info("Deleting a member, member_type_name = %s, "
-                        "parent_type_name = %s, only_delete_relationship = %s,"
-                        " denorm = %s, session = %s", member_type_name,
+            LOGGER.info('Deleting a member, member_type_name = %s,'
+                        ' parent_type_name = %s, only_delete_relationship = %s,'
+                        ' denorm = %s, session = %s', member_type_name,
                         parent_type_name, only_delete_relationship,
                         denorm, session)
             if only_delete_relationship:
@@ -1483,9 +1482,9 @@ def define_model(model_name, dbengine, model_seed):
                 Resource: Created new resource
             """
 
-            LOGGER.info("Adding resource via full name, resource_type_name"
-                        " = %s, parent_type_name = %s, no_require_parent = %s,"
-                        " session = %s", resource_type_name,
+            LOGGER.info('Adding resource via full name, resource_type_name'
+                        ' = %s, parent_type_name = %s, no_require_parent = %s,'
+                        ' session = %s', resource_type_name,
                         parent_type_name, no_require_parent, session)
             if not no_require_parent:
                 parent = session.query(Resource).filter(
@@ -1507,8 +1506,8 @@ def define_model(model_name, dbengine, model_seed):
                 Resource: Created new resource
             """
 
-            LOGGER.info("Adding resource by name, resource_type_name = %s,"
-                        " session = %s", resource_type_name, session)
+            LOGGER.info('Adding resource by name, resource_type_name = %s,'
+                        ' session = %s', resource_type_name, session)
             res_type, res_name = resource_type_name.split('/')
             parent_full_resource_name = (
                 '' if parent is None else parent.full_name)
@@ -1538,8 +1537,8 @@ def define_model(model_name, dbengine, model_seed):
                 Role: The created role
             """
 
-            LOGGER.info("Adding role, name = %s, permissions = %s, "
-                        "session = %s", name, permissions, session)
+            LOGGER.info('Adding role, name = %s, permissions = %s,'
+                        ' session = %s', name, permissions, session)
             permissions = [] if permissions is None else permissions
             role = Role(name=name, permissions=permissions)
             session.add(role)
@@ -1558,8 +1557,8 @@ def define_model(model_name, dbengine, model_seed):
                 Permission: The created permission
             """
 
-            LOGGER.info("Adding permission, name = %s, roles = %s"
-                        " session = %s", name, roles, session)
+            LOGGER.info('Adding permission, name = %s, roles = %s'
+                        ' session = %s', name, roles, session)
             roles = [] if roles is None else roles
             permission = Permission(name=name, roles=roles)
             session.add(permission)
@@ -1579,8 +1578,8 @@ def define_model(model_name, dbengine, model_seed):
                 Binding: the created binding
             """
 
-            LOGGER.info("Adding a binding to the model, resource = %s, "
-                        "role = %s, members = %s, session = %s",
+            LOGGER.info('Adding a binding to the model, resource = %s,'
+                        ' role = %s, members = %s, session = %s',
                         resource, role, members, session)
             binding = Binding(resource=resource, role=role, members=members)
             session.add(binding)
@@ -1607,8 +1606,8 @@ def define_model(model_name, dbengine, model_seed):
                 Exception: parent not found
             """
 
-            LOGGER.info("Adding a member to the model, type_name = %s, "
-                        "parent_type_names = %s, denorm = %s, session = %s",
+            LOGGER.info('Adding a member to the model, type_name = %s,'
+                        ' parent_type_names = %s, denorm = %s, session = %s',
                         type_name, parent_type_names, denorm, session)
             if not parent_type_names:
                 parent_type_names = []
@@ -1616,7 +1615,7 @@ def define_model(model_name, dbengine, model_seed):
             parents = session.query(Member).filter(
                 Member.name.in_(parent_type_names)).all()
             if len(parents) != len(parent_type_names):
-                msg = 'parents: {}, expected: {}'.format(
+                msg = 'Parents: {}, expected: {}'.format(
                     parents, parent_type_names)
                 error_message = 'Parent not found, {}'.format(msg)
                 LOGGER.error(error_message)
@@ -2058,18 +2057,18 @@ class ModelManager(object):
             str: the handle of the model
         """
 
-        LOGGER.info("Creating a new model entry in the database, "
-                    "name = %s", name)
+        LOGGER.info('Creating a new model entry in the database,'
+                    ' name = %s', name)
         handle = generate_model_handle()
         with self.modelmaker() as session:
             model = Model(
                 handle=handle,
                 name=name,
-                state="CREATED",
+                state='CREATED',
                 created_at=datetime.datetime.utcnow(),
                 watchdog_timer=datetime.datetime.utcnow(),
                 etag_seed=generate_model_seed(),
-                description="{}"
+                description='{}'
                 )
             session.add(model)
             self.sessionmakers[model.handle] = define_model(
@@ -2110,12 +2109,12 @@ class ModelManager(object):
         try:
             return self.sessionmakers[handle]
         except KeyError:
-            LOGGER.warn("sessionmakers doesn't contain handle,"
-                        " handle = %s", handle)
+            LOGGER.warn('Sessionmakers doesn\'t contain handle,'
+                        ' handle = %s', handle)
             with self.modelmaker() as session:
-                model = (session.query(Model)
-                         .filter(Model.handle == handle)
-                         .one())
+                model = (
+                    session.query(Model).filter(Model.handle == handle).one()
+                )
                 self.sessionmakers[model.handle] = define_model(
                     model.handle, self.engine, model.etag_seed)
                 return self.sessionmakers[model.handle]
@@ -2128,7 +2127,7 @@ class ModelManager(object):
             model_name (str): the name of the model to be deleted
         """
 
-        LOGGER.info("Deleting model by name, model_name = %s", model_name)
+        LOGGER.info('Deleting model by name, model_name = %s', model_name)
         _, data_access = self._get(model_name)
         if model_name in self.sessionmakers:
             del self.sessionmakers[model_name]
@@ -2296,7 +2295,7 @@ def create_engine(*args, **kwargs):
     engine = sqlalchemy_create_engine(*args, **forward_kwargs)
     dialect = engine.dialect.name
     if dialect == 'sqlite':
-        @event.listens_for(engine, "connect")
+        @event.listens_for(engine, 'connect')
         def do_connect(dbapi_connection, _):
             """Hooking database connect.
 
@@ -2310,7 +2309,7 @@ def create_engine(*args, **kwargs):
                 # Enable foreign key constraints
                 dbapi_connection.execute('pragma foreign_keys=ON')
 
-        @event.listens_for(engine, "begin")
+        @event.listens_for(engine, 'begin')
         def do_begin(conn):
             """Hooking database transaction begin.
 
@@ -2318,9 +2317,11 @@ def create_engine(*args, **kwargs):
                 conn (object): Database connection.
             """
             # Fix for nested transaction problems
-            conn.execute("BEGIN")
+            conn.execute('BEGIN')
 
-        engine.__explain_hooks = [do_connect, do_begin] # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        engine.__explain_hooks = [do_connect, do_begin]
+        # pylint: enable=protected-access
 
     return engine
 
@@ -2337,7 +2338,7 @@ def session_creator(model_name, filename=None, seed=None, echo=False):
     Returns:
         tuple: session_maker and the ModelAccess object
     """
-    LOGGER.info("Creating session maker, model_name = %s, filename = %s",
+    LOGGER.info('Creating session maker, model_name = %s, filename = %s',
                 model_name, filename)
     if filename:
         engine = create_engine('sqlite:///{}'.format(filename),

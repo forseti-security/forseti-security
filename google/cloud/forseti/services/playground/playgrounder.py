@@ -41,13 +41,13 @@ class Playgrounder(object):
             policy (json): the policy to set
         """
 
-        LOGGER.info("Setting IAM policy, resource = %s, policy = %s,"
-                    " model_name = %s", resource, policy, model_name)
+        LOGGER.info('Setting IAM policy, resource = %s, policy = %s,'
+                    ' model_name = %s', resource, policy, model_name)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "pristine":False
+                'pristine':False
                 }), session)
             data_access.set_iam_policy(session, resource, policy)
 
@@ -60,14 +60,14 @@ class Playgrounder(object):
             parent_type_names (list): parents of the member
         """
 
-        LOGGER.info("Adding group member to model, model_name = %s,"
-                    " member_type_name = %s, parent_type_names = %s",
+        LOGGER.info('Adding group member to model, model_name = %s,'
+                    ' member_type_name = %s, parent_type_names = %s',
                     model_name, member_type_name, parent_type_names)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "pristine":False
+                'pristine':False
                 }), session)
             data_access.add_group_member(
                 session, member_type_name, parent_type_names, denorm=True)
@@ -83,16 +83,18 @@ class Playgrounder(object):
             only_delete_relationship (bool): if only delete relationship
         """
 
-        LOGGER.info("Deleting group member from model, member_name = %s,"
-                    " model_name = %s, parent_name = %s",
+        LOGGER.info('Deleting group member from model, member_name = %s,'
+                    ' model_name = %s, parent_name = %s',
                     member_name, model_name, parent_name)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
-            model_manager.add_description(model_name, json.dumps({
-                "pristine":False
-                }), session)
-            data_access.delete_group_member(
+            model_manager.add_description(
+                model_name,
+                json.dumps({'pristine':False}),
+                session
+            )
+            return data_access.delete_group_member(
                 session,
                 member_name,
                 parent_name,
@@ -106,13 +108,13 @@ class Playgrounder(object):
             role_name (str): name of the role to delete
         """
 
-        LOGGER.info("Deleting role from model, model_name = %s,"
-                    " role_name = %s", model_name, role_name)
+        LOGGER.info('Deleting role from model, model_name = %s,'
+                    ' role_name = %s', model_name, role_name)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "pristine":False
+                'pristine':False
                 }), session)
             data_access.delete_role_by_name(session, role_name)
             session.commit()
@@ -126,20 +128,20 @@ class Playgrounder(object):
             permission_names (list): list of permissions to be added to the role
         """
 
-        LOGGER.info("Adding role to model, model_name = %s, "
-                    "role_name = %s, permission_names = %s",
+        LOGGER.info('Adding role to model, model_name = %s, '
+                    'role_name = %s, permission_names = %s',
                     model_name, role_name, permission_names)
         model_manager = self.config.model_manager
         scoped_session, data_access = model_manager.get(model_name)
         with scoped_session as session:
             model_manager.add_description(model_name, json.dumps({
-                "pristine":False
+                'pristine':False
                 }), session)
             data_access.add_role_by_name(session, role_name, permission_names)
             session.commit()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     class DummyConfig(object):
         """Dummy configuration for testing."""
 

@@ -61,7 +61,7 @@ def require_model(f):
         """
         if args[0].config.handle():
             return f(*args, **kwargs)
-        raise Exception("API requires model to be set")
+        raise Exception('API requires model to be set.')
     return wrapper
 
 
@@ -200,7 +200,7 @@ class ModelClient(ForsetiClient):
         echo = self.stub.Ping(model_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def new_model(self, source, name, inventory_id="", background=True):
+    def new_model(self, source, name, inventory_id='', background=True):
         """Creates a new model, reply contains the handle.
 
         Args:
@@ -798,7 +798,7 @@ class ClientComposition(object):
             if not all([c.is_available() for c in self.clients]):
                 raise Exception('gRPC connected but services not registered')
 
-    def new_model(self, source, name, inventory_id="", background=False):
+    def new_model(self, source, name, inventory_id='', background=False):
         """Create a new model from the specified source.
 
         Args:

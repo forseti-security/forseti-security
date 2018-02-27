@@ -25,7 +25,7 @@ LOGGER = logger.get_logger(__name__)
 class GrpcModeller(model_pb2_grpc.ModellerServicer):
     """Modeller gRPC implementation."""
 
-    HANDLE_KEY = "handle"
+    HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
         """Return the handle associated with the gRPC call.
@@ -167,5 +167,5 @@ class GrpcModellerFactory(object):
 
         service = GrpcModeller(modeller_api=modeller.Modeller(self.config))
         model_pb2_grpc.add_ModellerServicer_to_server(service, server)
-        LOGGER.info("service %s created and registered", service)
+        LOGGER.info('Service %s created and registered', service)
         return service

@@ -184,8 +184,8 @@ class AdminDirectoryClient(object):
         try:
             paged_results = self.repository.members.list(group_key)
             result = api_helpers.flatten_list_results(paged_results, 'members')
-            LOGGER.debug("Getting all the members for group_key = %s, "
-                         "result = %s", group_key, result)
+            LOGGER.debug('Getting all the members for group_key = %s,'
+                         ' result = %s', group_key, result)
             return result
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(group_key, e)
@@ -211,8 +211,8 @@ class AdminDirectoryClient(object):
             paged_results = self.repository.groups.list(customer=customer_id)
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'groups')
-            LOGGER.debug("Getting all the groups for customer_id = %s,"
-                         " flattened_results = %s",
+            LOGGER.debug('Getting all the groups for customer_id = %s,'
+                         ' flattened_results = %s',
                          customer_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
@@ -240,8 +240,8 @@ class AdminDirectoryClient(object):
                                                        viewType='admin_view')
             flattened_results = api_helpers.flatten_list_results(
                 paged_results, 'users')
-            LOGGER.debug("Getting all the users for customer_id = %s,"
-                         " flattened_results = %s",
+            LOGGER.debug('Getting all the users for customer_id = %s,'
+                         ' flattened_results = %s',
                          customer_id, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
