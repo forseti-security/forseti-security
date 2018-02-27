@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
