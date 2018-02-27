@@ -25,10 +25,24 @@ https://github.com/google/google-apputils/blob/master/google/apputils/run_script
 
 from google.apputils import run_script_module
 
+
+def RunForsetiScanner():
+    """Run Forseti Scanner module."""
+    import google.cloud.forseti.scanner.scanner as forseti_scanner
+    run_script_module.RunScriptModule(forseti_scanner)
+
+
 def RunForsetiEnforcer():
     """Run Forseti Enforcer module."""
     import google.cloud.forseti.enforcer.enforcer as forseti_enforcer
     run_script_module.RunScriptModule(forseti_enforcer)
+
+
+def RunForsetiNotifier():
+    """Run Forseti Notifier module."""
+    import google.cloud.forseti.notifier.notifier as forseti_notifier
+    run_script_module.RunScriptModule(forseti_notifier)
+
 
 def RunForsetiServer():
     """Run Forseti API server."""
