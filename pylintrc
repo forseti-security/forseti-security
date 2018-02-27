@@ -39,7 +39,7 @@ persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
 # usually to register additional checkers.
-load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle,pylint.extensions.emptystring,pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type,pylint.extensions.docparams
+load-plugins=pylint.extensions.check_elif,pylint.extensions.comparetozero,pylint.extensions.bad_builtin,pylint.extensions.docstyle,pylint.extensions.emptystring,pylint.extensions.overlapping_exceptions,pylint.extensions.redefined_variable_type,pylint.extensions.docparams,pylint_quotes
 
 # Plug-in options
 #
@@ -48,6 +48,11 @@ accept-no-param-doc=no
 accept-no-raise-doc=no
 accept-no-return-doc=no
 accept-no-yields-doc=no
+
+# plugin: pylint_quotes
+string-quote=single
+triple-quote=double
+docstring-quote=double
 
 [MESSAGES CONTROL]
 

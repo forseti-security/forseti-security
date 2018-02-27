@@ -212,7 +212,7 @@ class Inventory(BASE):
                 type_class=InventoryTypeClass.RESOURCE,
                 key=resource.key(),
                 type=resource.type(),
-                data=json.dumps(resource.data()),
+                data=json.dumps(resource.data(), sort_keys=True),
                 parent_key=None if not parent else parent.key(),
                 parent_type=None if not parent else parent.type(),
                 other=other,
@@ -225,7 +225,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.IAM_POLICY,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(iam_policy),
+                    data=json.dumps(iam_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -238,7 +238,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.GCS_POLICY,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(gcs_policy),
+                    data=json.dumps(gcs_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -251,7 +251,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.DATASET_POLICY,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(dataset_policy),
+                    data=json.dumps(dataset_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -264,7 +264,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.BILLING_INFO,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(billing_info),
+                    data=json.dumps(billing_info, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -277,7 +277,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.ENABLED_APIS,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(enabled_apis),
+                    data=json.dumps(enabled_apis, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -290,7 +290,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.SERVICE_CONFIG,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(service_config),
+                    data=json.dumps(service_config, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -603,7 +603,7 @@ class Storage(BaseStorage):
         rows = qry.all()
 
         if not rows:
-            raise Exception("resource {} not found in the table".format(key))
+            raise Exception('Resource {} not found in the table'.format(key))
         else:
             return rows
 

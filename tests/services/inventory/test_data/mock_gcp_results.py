@@ -409,6 +409,29 @@ CRM_PROJECT_IAM_POLICY_TEMPLATE = """
 }}
 """
 
+CRM_PROJECT_IAM_POLICY_DUP_MEMBER = """
+{{
+ "version": 1,
+ "bindings": [
+  {{
+   "role": "roles/editor",
+   "members": [
+    "serviceAccount:{id}@cloudservices.gserviceaccount.com",
+    "serviceAccount:{id}-compute@developer.gserviceaccount.com",
+    "serviceAccount:{id}@cloudservices.gserviceaccount.com"
+   ]
+  }},
+  {{
+   "role": "roles/owner",
+   "members": [
+    "group:c_grp@forseti.test",
+    "user:a_user@forseti.test"
+   ]
+  }}
+ ]
+}}
+"""
+
 CRM_FOLDER_IAM_POLICY = """
 {
  "version": 1,
@@ -445,7 +468,7 @@ CRM_GET_IAM_POLICIES = {
     "project1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
     "project2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
     "project3": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=3)),
-    "project4": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=4)),
+    "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
 }
 
 # Fields: name, project, ip

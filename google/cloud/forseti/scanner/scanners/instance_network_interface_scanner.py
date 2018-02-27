@@ -140,7 +140,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             network_interfaces = []
 
             for instance_from_data_model in data_access.scanner_iter(
-                    session, "instance"):
+                    session, 'instance'):
                 instance = Instance.from_json(
                     instance_from_data_model.full_name,
                     instance_from_data_model.data,

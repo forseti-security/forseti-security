@@ -32,7 +32,7 @@ LOGGER = logger.get_logger(__name__)
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     """Explain gRPC implementation."""
 
-    HANDLE_KEY = "handle"
+    HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
         """Return the handle associated with the gRPC call."""
@@ -252,5 +252,5 @@ class GrpcExplainerFactory(object):
         """Create and register the Explain service."""
         service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
-        LOGGER.info("service %s created and registered", service)
+        LOGGER.info('Service %s created and registered.', service)
         return service
