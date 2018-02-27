@@ -14,10 +14,9 @@
 
 """ Crawler implementation. """
 
+import datetime
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc, invalid-name
+# pylint: disable=invalid-name
 
 
 class Storage(object):
@@ -25,6 +24,10 @@ class Storage(object):
 
     def open(self, handle=None):
         """Not Implemented.
+
+        Args:
+            handle (str): If None, create a new index instead
+                of opening an existing one.
 
         Raises:
             NotImplementedError: Because not implemented.
@@ -34,6 +37,9 @@ class Storage(object):
     def write(self, resource):
         """Not Implemented.
 
+        Args:
+            resource (object): the resource object to write
+
         Raises:
             NotImplementedError: Because not implemented.
         """
@@ -41,6 +47,9 @@ class Storage(object):
 
     def update(self, resource):
         """Not Implemented.
+
+        Args:
+            resource (object): the resource object to update
 
         Raises:
             NotImplementedError: Because not implemented.
@@ -50,6 +59,9 @@ class Storage(object):
     def error(self, message):
         """Not Implemented.
 
+        Args:
+            message (str): Error message describing the problem.
+
         Raises:
             NotImplementedError: Because not implemented.
         """
@@ -57,6 +69,9 @@ class Storage(object):
 
     def warning(self, message):
         """Not Implemented.
+
+        Args:
+            message (str): Warning message describing the problem.
 
         Raises:
             NotImplementedError: Because not implemented.
@@ -90,36 +105,70 @@ class Storage(object):
 
 class Memory(Storage):
     """The storage in memory"""
-    HANDLE = 0
 
     def __init__(self):
+        """Initialize"""
         super(Memory, self).__init__()
         self.mem = {}
 
     def open(self, handle=None):
-        """Open the memory storage"""
-        handle = self.HANDLE if handle is None else handle
-        self.HANDLE += 1
+        """Open the memory storage
+
+        Args:
+            handle (str): If None, create a new index instead
+                of opening an existing one.
+
+        Returns:
+            str: inventory index
+        """
+        if handle:
+            handle = handle
+        else:
+            handle = datetime.datetime.utcnow().strftime(
+                '%Y-%m-%dT%H:%M:%S.%f')[:-1]
         return handle
 
     def write(self, resource):
-        """Write a resource object into storage"""
+        """Write a resource object into storage
+
+        Args:
+            resource (object): the resource object to write
+        """
         self.mem[resource.key()] = resource
 
     def update(self, resource):
-        """Update a existing resource object in memory"""
+        """Update a existing resource object in memory
+
+        Args:
+            resource (object): the resource object to update
+        """
         pass
 
     def read(self, key):
-        """Read a resource object from storage"""
+        """Read a resource object from storage
+
+        Args:
+            key (str): key of the resource object
+
+        Returns:
+            object: the resource object being read
+        """
         return self.mem[key]
 
     def error(self, message):
-        """Ingore the error message"""
+        """Ignore the error message
+
+        Args:
+            message (str): Error message describing the problem.
+        """
         pass
 
     def warning(self, message):
-        """Ingore the warning message"""
+        """Ignore the warning message
+
+        Args:
+            message (str): Warning message describing the problem.
+        """
         pass
 
     def close(self):
@@ -127,10 +176,22 @@ class Memory(Storage):
         pass
 
     def __enter__(self):
+        """To support with statement for auto closing.
+
+        Returns:
+            Storage: The memory storage object
+        """
         self.open()
         return self
 
     def __exit__(self, type_p, value, tb):
+        """To support with statement for auto closing.
+
+        Args:
+            type_p (object): Unused.
+            value (object): Unused.
+            tb (object): Unused.
+        """
         self.close()
 
     def commit(self):
