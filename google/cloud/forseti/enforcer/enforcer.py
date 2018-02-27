@@ -94,7 +94,7 @@ def initialize_batch_enforcer(global_configs, concurrent_threads,
             taken without actually applying any modifications.
 
     Returns:
-        class: BatchFirewallEnforcer
+        BatchFirewallEnforcer: A BatchFirewallEnforcer instance.
     """
     if max_write_threads:
         project_sema = threading.BoundedSemaphore(value=max_write_threads)
