@@ -132,7 +132,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
             # Replace new rules if necessary.
             if self.migrate_from_v1:
-                self.replace_new_rules()
+                self.replace_with_old_rules()
 
             print('Copying {} to {}'.format(constants.RULES_DIR_PATH,
                                             bucket_name))
