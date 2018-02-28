@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common utilities usable by all tests."""
+"""Common GCP API Tests."""
