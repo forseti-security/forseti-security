@@ -27,7 +27,7 @@ class ServerConfig(Config):
             kwargs (dict): The kwargs.
         """
         super(ServerConfig, self).__init__(**kwargs)
-        self.installer_type = 'server'
+        self.installation_type = 'server'
         self.cloudsql_instance = '{}-{}'.format(
             'forseti-security',
             self.datetimestamp)

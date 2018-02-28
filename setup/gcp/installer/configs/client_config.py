@@ -27,4 +27,4 @@ class ClientConfig(Config):
             kwargs (dict): The kwargs.
         """
         super(ClientConfig, self).__init__(**kwargs)
-        self.installer_type = 'client'
+        self.installation_type = 'client'
