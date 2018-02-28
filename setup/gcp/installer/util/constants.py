@@ -55,6 +55,7 @@ GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
 
 SERVICE_ACCT_NAME_FMT = 'forseti-{}-{}-{}-{}'
+SERVICE_ACCT_ID_FMT = 'forseti-{}-{}-{}'
 SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
 INPUT_DEPLOYMENT_TEMPLATE_FILENAME = {

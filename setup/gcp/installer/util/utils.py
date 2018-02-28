@@ -166,8 +166,12 @@ def generate_service_acct_info(prefix, modifier, installation_type,
     service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
         installation_type, prefix, modifier, timestamp)
 
+    # Service account email will not contain the modifier due
+    # to character limits (max 30 characters)
     service_account_email = full_service_acct_email(
-        service_account_name, project_id)
+        constants.SERVICE_ACCT_ID_FMT.format(prefix,
+                                             installation_type,
+                                             timestamp), project_id)
 
     return service_account_email, service_account_name
 
