@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner service."""
-
-__import__('pkg_resources').declare_namespace(__name__)
+"""Forseti Scanner Service."""
