@@ -115,8 +115,8 @@ def update_rule_files(values, rule_dir_path):
     """Update rule files default values.
 
     Args:
+        values (dict): Default values needed for deployment.
         rule_dir_path (str): Rule directory path.
-        values (dict): Values needed for deployment
 
     Raises:
         KeyError: KeyError

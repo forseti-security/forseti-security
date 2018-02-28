@@ -80,7 +80,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def create_or_reuse_service_accts(self):
         """Create or reuse service accounts."""
         super(ForsetiServerInstaller, self).create_or_reuse_service_accts()
-        gcloud.enable_apis(self.config.dry_run)
         gsuite_service_acct_email, gsuite_service_acct_name = (
             self.format_gsuite_service_acct_id())
         self.gsuite_service_acct_email = gcloud.create_or_reuse_service_acct(
@@ -126,9 +125,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
             deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
+            # Fill in the default values for all the rule files
+            default_rule_values = self.get_rule_default_values()
+            files.update_rule_files(default_rule_values,
+                                    constants.RULES_DIR_PATH)
+
             # Merge all the old rules if necessary.
             if self.migrate_from_v1:
-                self.merge_old_rules()
+                self.replace_new_rules()
 
             print('Copying {} to {}'.format(constants.RULES_DIR_PATH,
                                             bucket_name))
@@ -146,15 +150,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.gsuite_service_acct_email,
                 self.gcp_service_acct_email,
                 self.user_can_grant_roles)
-
-            default_rule_values = self.get_rule_default_values()
-            files.update_rule_files(default_rule_values,
-                                    constants.RULES_DIR_PATH)
-
-            # Copy the rule directory to the GCS bucket
-            files.copy_file_to_destination(
-                constants.RULES_DIR_PATH, bucket_name,
-                is_directory=True, dry_run=self.config.dry_run)
 
             # Waiting for VM to be initialized.
             instance_name = '{}-vm'.format(deployment_name)
@@ -180,6 +175,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
                                       merge_to=new_rule,
                                       fields_to_ignore=[],
                                       field_identifiers=field_identifiers)
+            files.write_data_to_yaml_file(new_rule, new_rule_path)
+
+    def replace_new_rules(self):
+        """Replace new rules with old rules if exists."""
+        for v1_rule in self.v1_config.rules:
+            new_rule_path = os.path.join(constants.RULES_DIR_PATH,
+                                         v1_rule.file_name)
+            new_rule = files.read_yaml_file_from_local(new_rule_path)
             files.write_data_to_yaml_file(new_rule, new_rule_path)
 
     def create_firewall_rules(self):

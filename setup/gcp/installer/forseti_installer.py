@@ -182,8 +182,8 @@ class ForsetiInstaller(object):
         for i in range(0, constants.MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
             sys.stdout.write('\r{}This may take a few minutes. '
-                             'Waiting for Forseti server to start{}'
-                             .format(erase_line, dots))
+                             'Waiting for Forseti {} to start{}'
+                             .format(erase_line, installation_type, dots))
             sys.stdout.flush()
             if gcloud.check_vm_init_status(name, zone):
                 break
