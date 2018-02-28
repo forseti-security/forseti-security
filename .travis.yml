@@ -26,6 +26,9 @@ before_install:
   # Build the Forseti image and start the container.
   - ./setup/scripts/build_docker.sh
 
+install:
+  -
+
 script:
   # Run pylint and unittests on our previously built Docker container.
   - ./setup/scripts/install_forseti_docker.sh
