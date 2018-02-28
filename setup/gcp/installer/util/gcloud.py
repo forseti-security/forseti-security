@@ -140,7 +140,7 @@ def enable_apis(dry_run=False):
         return
 
     for api in constants.REQUIRED_APIS:
-        print('Enabling the {} API...'.format(api['name']),
+        print('Enabling the {} API... '.format(api['name']),
               end='')
         sys.stdout.flush()
         return_code, _, err = utils.run_command(
@@ -148,7 +148,7 @@ def enable_apis(dry_run=False):
         if return_code:
             print(err)
         else:
-            print('Enabled.')
+            print('enabled')
 
 
 def grant_client_svc_acct_roles(project_id,
@@ -169,7 +169,8 @@ def grant_client_svc_acct_roles(project_id,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account')
+    utils.print_banner('Assigning roles to the GCP service '
+                       'account\nAccount id: {}'.format(gcp_service_account))
 
     roles = {
         'forseti_project': constants.PROJECT_IAM_ROLES_CLIENT
@@ -217,7 +218,8 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account')
+    utils.print_banner('Assigning roles to the GCP service accounts'
+                       '\n{}Account id: '.format(gcp_service_account))
     access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
@@ -338,13 +340,13 @@ def _grant_role(role, resource_args, resource_id,
         '--role={}'.format(role),
     ])
     if user_can_grant_roles:
-        print('Assigning {} on {}...'.format(role, resource_id), end='')
+        print('Assigning {} on {}... '.format(role, resource_id), end='')
         sys.stdout.flush()
         return_code, _, err = utils.run_command(iam_role_cmd)
         if return_code:
             print(err)
         else:
-            print('Done.')
+            print('assigned')
             return None
 
     return iam_role_cmd
@@ -456,7 +458,8 @@ def create_or_reuse_service_acct(acct_type,
     choices = ['Create {}'.format(account), 'Reuse {}'.format(account)]
 
     if not advanced_mode:
-        print ('Creating {}\n'.format(account))
+        print ('Creating {}... '.format(account), end='')
+        sys.stdout.flush()
         choice_index = 1
     else:
         print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
@@ -480,6 +483,7 @@ def create_or_reuse_service_acct(acct_type,
             print('Could not create the service account. Terminating '
                   'because this is an unexpected error.')
             sys.exit(1)
+        print ('created')
     else:
         return_code, out, err = utils.run_command(
             ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
@@ -502,7 +506,7 @@ def create_or_reuse_service_acct(acct_type,
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
         acct_email = svc_accts[acct_idx - 1]['email']
-
+    print ('Service account id: {}'.format(acct_email))
     return acct_email
 
 
@@ -732,7 +736,7 @@ def create_deployment(project_id,
                       organization_id,
                       deploy_tpl_path,
                       installation_type,
-                      datetimestamp,
+                      timestamp,
                       dry_run):
     """Create the GCP deployment.
 
@@ -741,7 +745,7 @@ def create_deployment(project_id,
         organization_id (str): GCP organization id.
         deploy_tpl_path (str): Path of deployment template.
         installation_type (str): Type of the installation (client/server).
-        datetimestamp (str): Timestamp.
+        timestamp (str): Timestamp.
         dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
@@ -766,8 +770,8 @@ def create_deployment(project_id,
 
     print ('This may take a few minutes.')
     _ping_deployment_manager() # Make sure deployment-manager is ready
-    deployment_name = 'forseti-security-{}-{}'.format(installation_type,
-                                                      datetimestamp)
+    deployment_name = 'forseti-{}-{}'.format(installation_type,
+                                             timestamp)
     print('Deployment name: {}'.format(deployment_name))
     print('Monitor the deployment progress here: '
           'https://console.cloud.google.com/deployments/details/'

@@ -57,7 +57,7 @@ class ForsetiInstaller(object):
 
         # Create configuration file and deployment template.
         (conf_file_path,
-         deployment_tpl_path) = self.create_conf_file_and_dpl_tpl()
+         deployment_tpl_path) = self.create_resource_files()
 
         # Deployment.
         bucket_name = self.generate_bucket_name()
@@ -72,7 +72,7 @@ class ForsetiInstaller(object):
                                        conf_file_path,
                                        bucket_name)
 
-    def create_conf_file_and_dpl_tpl(self):
+    def create_resource_files(self):
         """Create configuration file and deployment template.
 
         Returns:
@@ -100,7 +100,7 @@ class ForsetiInstaller(object):
 
     def create_or_reuse_service_accts(self):
         """Create or reuse service accounts."""
-        utils.print_banner('Create/Reuse service account(s)')
+        utils.print_banner('Creating/Reusing service account(s)')
         gcp_service_acct_email, gcp_service_acct_name = (
             self.format_gcp_service_acct_id())
         self.gcp_service_acct_email = gcloud.create_or_reuse_service_acct(
@@ -218,7 +218,6 @@ class ForsetiInstaller(object):
             str: Name of the GCS bucket
         """
         return constants.DEFAULT_BUCKET_FMT_V2.format(
-            self.project_id,
             self.config.installation_type,
             self.config.timestamp)
 
@@ -226,7 +225,7 @@ class ForsetiInstaller(object):
     def get_deployment_values(self):
         """Get deployment values
 
-        Returns:
+        Returns:789
             dict: A dictionary of values needed to generate
                 the forseti deployment template
         """
@@ -248,16 +247,14 @@ class ForsetiInstaller(object):
         Returns:
             str: Deployment template path
         """
-        print('Generate Deployment Manager templates...')
-
         deploy_values = self.get_deployment_values()
 
         deployment_tpl_path = files.generate_deployment_templates(
             self.config.installation_type,
             deploy_values,
-            self.config.datetimestamp)
+            self.config.timestamp)
 
-        print('\nCreated a deployment template:\n    %s\n' %
+        print('\nCreated deployment template:\n    %s\n' %
               deployment_tpl_path)
         return deployment_tpl_path
 
@@ -269,8 +266,6 @@ class ForsetiInstaller(object):
         """
         # Create a forseti_conf_{INSTALLATION_TYPE}_$TIMESTAMP.yaml config file
         # with values filled in.
-        print('\nGenerate forseti_conf_{}_{}.yaml...'
-              .format(self.config.installation_type, self.config.datetimestamp))
 
         conf_values = self.get_configuration_values()
 
@@ -279,9 +274,8 @@ class ForsetiInstaller(object):
             conf_values,
             self.config.datetimestamp)
 
-        print('\nCreated forseti_conf_{}_{}.yaml config file:\n    {}\n'.
+        print('\nCreated Forseti {} configuration file:\n    {}\n'.
               format(self.config.installation_type,
-                     self.config.datetimestamp,
                      forseti_conf_path))
         return forseti_conf_path
 

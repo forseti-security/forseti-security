@@ -171,7 +171,7 @@ def generate_service_acct_info(prefix, modifier, installation_type,
 
     # Service account name should use installation type for clarity purpose
     service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
-        prefix, modifier, installation_type)
+        installation_type, prefix, modifier, timestamp)
 
     return service_account_email, service_account_name
 
@@ -313,12 +313,15 @@ def sanitize_conf_values(conf_values):
     return conf_values
 
 
-def show_loading(loading_time, message='', max_number_of_dots=15):
+def show_loading(max_loading_time, exit_condition=None,
+                 message='', max_number_of_dots=15):
     """Show loading message, append dots to the end of the message up to
     a certain number of dots and repeat.
 
     Args:
-        loading_time (int): Loading time in seconds.
+        max_loading_time (int): Loading time in seconds.
+        exit_condition (func): Exit condition, a function that returns
+         boolean, will be called every second to check for the return result.
         message (str): Message to print to stdout.
         max_number_of_dots (int): Maximum number of dots on the line.
     """
@@ -326,7 +329,9 @@ def show_loading(loading_time, message='', max_number_of_dots=15):
     # VT100 control codes, use to remove the last line.
     erase_line = '\x1b[2K'
 
-    for i in range(0, loading_time*2):
+    for i in range(0, max_loading_time*2):
+        if exit_condition and exit_condition():
+            break
         # Sleep for 0.5 second so that the dots can appear more quickly
         # to be more user friendly.
         time.sleep(0.5)

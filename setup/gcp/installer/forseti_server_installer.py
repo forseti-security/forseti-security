@@ -94,8 +94,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         from v1 to v2."""
         while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
             self.migrate_from_v1 = raw_input(
-                'Forseti v1 detected, would you like to migrate the '
-                'existing configurations to v2? (y/n): ').lower()
+                constants.QUESTION_SHOULD_MIGRATE_FROM_V1).lower()
 
     def populate_config_info_from_v1(self):
         """Retrieve the v1 configuration object."""
@@ -275,11 +274,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if choice == 'y':
             self.user_can_grant_roles = True
-            print('Forseit will grant required roles on the target: %s.' %
+            print('Forseit will grant required roles on the target: %s' %
                   self.resource_root_id)
         else:
             self.user_can_grant_roles = False
-            print('Forseit will NOT grant required roles on the target: %s.' %
+            print('Forseit will NOT grant required roles on the target: %s' %
                   self.resource_root_id)
 
     def get_deployment_values(self):
