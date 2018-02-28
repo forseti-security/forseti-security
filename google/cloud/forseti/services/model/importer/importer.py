@@ -674,8 +674,7 @@ class InventoryImporter(object):
         """
         parent, full_res_name = self._get_parent(iam_policy)
         iam_policy_type_name = to_type_name(
-            iam_policy.get_type_class(),
-            parent.type_name)
+            iam_policy.get_type_class(), parent.name)
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
             iam_policy_type_name)
