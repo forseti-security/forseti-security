@@ -31,7 +31,7 @@ inventory:
 
     # Root resource to start crawling from, formatted as
     # <resource_type>/<resource_id>, (e.g. "organizations/12345677890")
-    root_resource_id: ROOT_ID
+    root_resource_id: organizations/12345677890
 
     # gsuite access
     gsuite_service_account_key_file:

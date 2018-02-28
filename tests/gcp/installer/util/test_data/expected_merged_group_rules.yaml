@@ -17,7 +17,6 @@
   mode: whitelist
   conditions:
     - member_email: '@domain.tld'
-    - member_email: '@gmail.com'
     - member_email: '@forseti_testing.com'
 
 #- name: Allow mypartner users to be in a group.

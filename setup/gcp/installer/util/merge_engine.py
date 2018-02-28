@@ -215,12 +215,9 @@ def merge_dict_list(merge_from_dicts, merge_to_dicts, identifier,
             identifier in merge_from_dicts[0])
 
     if not identifier or not contains_identifier:
-        # Doesn't have an identifier, append all the dictionary objects from
-        # target_dict_list to base_dict_list if base_dict_list doesn't have
-        # them already.
-        for target_dict in merge_from_dicts:
-            if target_dict not in merge_to_dicts:
-                merge_to_dicts.append(target_dict)
+        # Doesn't have an identifier, replace the new list with the old list.
+        del merge_to_dicts[:]
+        merge_to_dicts.extend(merge_from_dicts)
         return
 
     # Sort both merge_from_dict_list and merge_to_dict_list by the identifier.

@@ -194,25 +194,11 @@ def read_yaml_file_from_local(file_path):
         dict: The parsed dict from the loaded file.
     """
 
-    def _parse_yaml(data):
-        """Parse yaml data.
-
-        Args:
-            data (stream): A yaml data stream to parse.
-
-        Returns:
-            dict: The stream successfully parsed into a dict.
-
-        Raises:
-            YAMLError: If there was an error parsing the stream.
-        """
+    with open(os.path.abspath(file_path), 'r') as f:
         try:
-            return ruamel.yaml.load(data, Loader=ruamel.yaml.RoundTripLoader)
+            return ruamel.yaml.load(f, Loader=ruamel.yaml.RoundTripLoader)
         except ruamel.yaml.YAMLError as yaml_error:
             raise yaml_error
-
-    with open(os.path.abspath(file_path), 'r') as f:
-        return _parse_yaml(f)
 
 
 def write_data_to_yaml_file(data, output_file_path):

@@ -21,8 +21,6 @@ rules:
         allowed: ['*']
     verify_policies:
       - allowed:
-        - IPProtocol: 'all'
-      - allowed:
         - IPProtocol: 'TESTING_ALL'
 
   - rule_id: 'disallow_all_ports'

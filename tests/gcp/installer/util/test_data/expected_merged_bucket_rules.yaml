@@ -22,8 +22,6 @@ rules:
   resource:
   - resource_ids:
     - OLD_RESOURCE_ID_1
-  - resource_ids:
-    - NEW_RESOURCE_ID_2
 - name: sample bucket acls rule to search for public buckets
   bucket: '*'
   entity: allUsers
