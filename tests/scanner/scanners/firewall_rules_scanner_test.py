@@ -110,9 +110,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.datetime',
-        autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.csv_writer,
         'write_csv', autospec=True)
@@ -121,14 +118,13 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         '_output_results_to_db', autospec=True)
     def test_output_results_local_no_email(
         self, mock_output_results_to_db,
-        mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
+        mock_write_csv, mock_os, mock_upload_csv, mock_notifier):
         """Test output results for local output, and don't send email.
 
         Setup:
             * Create fake csv filename.
             * Create fake file path.
             * Mock the csv file name within the context manager.
-            * Mock the timestamp for the email.
             * Mock the file path.
 
         Expect:
@@ -136,8 +132,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         """
         mock_os.path.abspath.return_value = (
             self.fake_scanner_configs.get('output_path'))
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
 
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
@@ -198,7 +192,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow,
             fake_csv_name)
         self.assertEquals(0, mock_notifier.process.call_count)
 
@@ -211,9 +204,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.datetime',
-        autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.csv_writer,
         'write_csv', autospec=True)
@@ -222,12 +212,10 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         '_output_results_to_db', autospec=True)
     def test_output_results_gcs_email(
         self, mock_output_results_to_db,
-        mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
+        mock_write_csv, mock_os, mock_upload_csv, mock_notifier):
 
         mock_os.path.abspath.return_value = (
             self.fake_scanner_configs.get('output_path'))
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
 
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
@@ -290,7 +278,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow,
             fake_csv_name)
         self.assertEquals(1, mock_notifier.process.call_count)
         expected_message = {
@@ -305,7 +292,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 self.scanner.global_configs.get('sendgrid_api_key'),
                 'output_csv_name': fake_csv_name,
                 'output_filename': self.scanner._get_output_filename(),
-                'now_utc': self.fake_utcnow,
                 'all_violations': flattened_violations,
                 'resource_counts': '88888',
                 'violation_errors': mock_output_results_to_db(

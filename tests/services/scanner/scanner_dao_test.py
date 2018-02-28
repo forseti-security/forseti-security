@@ -33,6 +33,8 @@ FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
                         '111111111111111111111111111111111111111111111111111111'
                         '11111111111111111111')
 
+FAKE_INVOCATION_ID = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+
 FAKE_EXPECTED_VIOLATIONS = [
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_111',
@@ -46,7 +48,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_111',
-     'invocation_id': datetime.utcnow()
+     'invocation_id': FAKE_INVOCATION_ID
     },
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_222',
@@ -60,10 +62,9 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_222',
-     'invocation_id': datetime.utcnow()
+     'invocation_id': FAKE_INVOCATION_ID
      }
 ]
-
 
 
 class ScannerDaoTest(ForsetiTestCase):
