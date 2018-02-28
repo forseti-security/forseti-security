@@ -549,7 +549,7 @@ class IapScannerTest(ForsetiTestCase):
         self.assertEquals(1, mock_output_results.call_count)
         mock_upload_csv.assert_called_once_with(
             self.scanner, self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow, fake_csv_name)
+            fake_csv_name)
         mock_csv_writer.assert_called_once_with(
             data=[{
                 'resource_id': u'None',

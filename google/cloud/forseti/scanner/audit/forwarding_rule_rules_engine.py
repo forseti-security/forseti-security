@@ -44,8 +44,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
                 used in the engine.
         """
         super(ForwardingRuleRulesEngine, self).__init__(
-            rules_file_path=rules_file_path,
-            snapshot_timestamp=snapshot_timestamp)
+            rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):

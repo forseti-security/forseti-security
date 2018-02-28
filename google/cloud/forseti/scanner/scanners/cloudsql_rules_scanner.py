@@ -34,7 +34,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            invocation_id (str): The id of a given scanner run (timestamp).
+            invocation_id (datetime): The id of a given scanner run.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
             rules (str): Fully-qualified path and filename of the rules file.

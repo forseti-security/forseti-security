@@ -519,7 +519,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         """
         # actual
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
-        rules_engine = ire.IamRulesEngine(rules_local_path, self.fake_timestamp)
+        rules_engine = ire.IamRulesEngine(rules_local_path)
         # TODO: mock the rules local path to return RULES2
         rules_engine.rule_book = ire.IamRuleBook(
             {}, test_rules.RULES2, self.fake_timestamp)

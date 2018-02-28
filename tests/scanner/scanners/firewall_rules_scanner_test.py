@@ -47,7 +47,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         rules_local_path = unittest_utils.get_datafile_path(os.path.join(
             os.path.dirname( __file__), 'audit'), 'firewall_test_rules.yaml')
         self.scanner = firewall_rules_scanner.FirewallPolicyScanner(
-            {}, {}, mock.MagicMock(), '', '', rules_local_path)
+            {}, {}, mock.MagicMock(), '', self.fake_utcnow, rules_local_path)
         self.mock_rules_engine = mre
         self.project0 = fre.resource_util.create_resource(
             resource_id='test_project', resource_type='project')
@@ -507,39 +507,36 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             fake_firewall_rules.append((resource, policy))
         rules_local_path = os.path.join(os.path.dirname(
             os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
-		
-        mock_resource1 = mock.MagicMock()		
-        mock_resource1.full_name = ('organization/org/folder/folder1/'		
-                                    'project/project0/firewall/policy1/')		
-        mock_resource1.type_name = 'firewall/policy1'		
-        mock_resource1.name = 'policy1'		
-        mock_resource1.type = 'firewall'		
-        mock_resource1.data = json.dumps(		
-            fake_data.FAKE_FIREWALL_RULE_FOR_TEST_PROJECT)		
-		
-        mock_resource2 = mock.MagicMock()		
-        mock_resource2.full_name = ('organization/org/folder/test_instances/'		
-                                    'project/project1/firewall/policy1/')		
-        mock_resource2.type_name = 'firewall/policy1'		
-        mock_resource2.name = 'policy1'		
-        mock_resource2.type = 'firewall'		
-        mock_resource2.data = json.dumps(		
-            fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1)		
-		
-        mock_data_access = mock.MagicMock()		
-        mock_data_access.scanner_iter.return_value = [mock_resource1,		
-                                                      mock_resource2]		
-        mock_service_config = mock.MagicMock()		
-        mock_service_config.model_manager = mock.MagicMock()		
-        mock_service_config.model_manager.get.return_value = mock.MagicMock(), mock_data_access		
+        mock_resource1 = mock.MagicMock()
+        mock_resource1.full_name = ('organization/org/folder/folder1/'
+                                    'project/project0/firewall/policy1/')
+        mock_resource1.type_name = 'firewall/policy1'
+        mock_resource1.name = 'policy1'
+        mock_resource1.type = 'firewall'
+        mock_resource1.data = json.dumps(
+            fake_data.FAKE_FIREWALL_RULE_FOR_TEST_PROJECT)
+        mock_resource2 = mock.MagicMock()
+        mock_resource2.full_name = ('organization/org/folder/test_instances/'
+                                    'project/project1/firewall/policy1/')
+        mock_resource2.type_name = 'firewall/policy1'
+        mock_resource2.name = 'policy1'
+        mock_resource2.type = 'firewall'
+        mock_resource2.data = json.dumps(
+            fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1)
+        mock_data_access = mock.MagicMock()
+        mock_data_access.scanner_iter.return_value = [mock_resource1,
+                                                      mock_resource2]
+        mock_service_config = mock.MagicMock()
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = mock.MagicMock(), mock_data_access
 
         scanner = firewall_rules_scanner.FirewallPolicyScanner(
             {}, {}, mock_service_config, '', '', rules_local_path)
         results = scanner._retrieve()
-	self.assertEqual({'firewall_rule': 2}, results[1])
 
-	_, expected_firewall1 = resource_and_policies[0]
-        _, expected_firewall2 = resource_and_policies[1]		
+        self.assertEqual({'firewall_rule': 2}, results[1])
+        _, expected_firewall1 = resource_and_policies[0]
+        _, expected_firewall2 = resource_and_policies[1]
         expected_names = [
             expected_firewall1.get('full_name'),
             expected_firewall2.get('full_name')
@@ -600,20 +597,19 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             fake_firewall_rules.append(policy)
         rules_local_path = os.path.join(os.path.dirname(
             os.path.dirname( __file__)), 'audit/data/firewall_test_rules.yaml')
-        mock_resource1 = mock.MagicMock()		
-        mock_resource1.full_name = ('organization/org/folder/test_instances/'		
-                                    'project/project1/firewall/policy1/')		
-        mock_resource1.type_name = 'firewall/policy888'		
-        mock_resource1.name = 'policy1'		
-        mock_resource1.type = 'firewall'		
-        mock_resource1.data = json.dumps(		
-            fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1)		
-		
-        mock_data_access = mock.MagicMock()		
-        mock_data_access.scanner_iter.return_value = [mock_resource1]		
-        mock_service_config = mock.MagicMock()		
-        mock_service_config.model_manager = mock.MagicMock()		
-        mock_service_config.model_manager.get.return_value = (		
+        mock_resource1 = mock.MagicMock()
+        mock_resource1.full_name = ('organization/org/folder/test_instances/'
+                                    'project/project1/firewall/policy1/')
+        mock_resource1.type_name = 'firewall/policy888'
+        mock_resource1.name = 'policy1'
+        mock_resource1.type = 'firewall'
+        mock_resource1.data = json.dumps(
+            fake_data.FAKE_FIREWALL_RULE_FOR_PROJECT1)
+        mock_data_access = mock.MagicMock()
+        mock_data_access.scanner_iter.return_value = [mock_resource1]
+        mock_service_config = mock.MagicMock()
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = (
             mock.MagicMock(), mock_data_access)
 
 

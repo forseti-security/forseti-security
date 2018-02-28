@@ -29,7 +29,7 @@ class GroupsScanner(base_scanner.BaseScanner):
     """Scanner for group members data."""
 
     @staticmethod
-    def _flatten_violations(violations):
+    def _flatten_violations(self, violations):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:

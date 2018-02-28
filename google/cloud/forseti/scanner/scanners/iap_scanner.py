@@ -366,7 +366,7 @@ class IapScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            invocation_id (str): The id of a given scanner run (timestamp).
+            invocation_id (datetime): The id of a given scanner run.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IapScanner, self).__init__(

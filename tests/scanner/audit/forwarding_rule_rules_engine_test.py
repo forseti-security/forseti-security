@@ -25,16 +25,16 @@ class FowardingRulesEngineTest(ForsetiTestCase):
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
-        rules_local_path = get_datafile_path(__file__,
-        	'fwd_test_rules_1.yaml')
-        rules_engine = fre.ForwardingRuleRulesEngine(rules_file_path=rules_local_path)
+        rules_local_path = get_datafile_path(__file__, 'fwd_test_rules_1.yaml')
+        rules_engine = fre.ForwardingRuleRulesEngine(
+            rules_file_path=rules_local_path)
         rules_engine.build_rule_book()
         self.assertEqual(4, len(rules_engine.rule_book.resource_rules_map))
 
     def test_build_rule_book_no_protocol_fails(self):
         """Test that a rule without a protocol cannot be created."""
-        rules_local_path = get_datafile_path(__file__,
-        	'fwd_test_rules_2.yaml')
-        rules_engine = fre.ForwardingRuleRulesEngine(rules_file_path=rules_local_path)
+        rules_local_path = get_datafile_path(__file__, 'fwd_test_rules_2.yaml')
+        rules_engine = fre.ForwardingRuleRulesEngine(
+            rules_file_path=rules_local_path)
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()

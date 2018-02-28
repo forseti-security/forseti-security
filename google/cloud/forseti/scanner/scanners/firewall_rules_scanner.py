@@ -36,7 +36,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_firewall.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, rules):
+                 model_name, invocation_id, rules):
         """Initialization.
 
         Args:
@@ -44,6 +44,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
+            invocation_id (datetime): The id of a given scanner run.
             rules (str): Fully-qualified path and filename of the rules file.
         """
 
@@ -52,6 +53,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
+            invocation_id,
             rules)
         self.rules_engine = firewall_rules_engine.FirewallRulesEngine(
             rules_file_path=self.rules)
