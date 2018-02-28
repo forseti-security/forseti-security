@@ -185,14 +185,14 @@ MESSAGE_GSUITE_DATA_COLLECTION = (
     '    8. Click Authorize\n\n'
     'or refer to the guides: '
     'http://forsetisecurity.org/docs/howto/configure/'
-    'gsuite-group-collection\n\n')
+    'gsuite-group-collection.html\n\n')
 
 MESSAGE_SKIP_EMAIL = (
     'If you would like to enable email notifications via '
     'SendGrid, please refer to:\n\n'
     '    '
     'http://forsetisecurity.org/docs/howto/configure/'
-    'email-notification\n\n')
+    'email-notification.html\n\n')
 
 MESSAGE_HAS_ROLE_SCRIPT = (
     'Some roles could not be assigned to {} where you want '
@@ -207,7 +207,7 @@ MESSAGE_ENABLE_GSUITE_GROUP = (
     ' the steps in the guide below:\n\n'
     '    '
     'http://forsetisecurity.org/docs/howto/configure/'
-    'gsuite-group-collection\n\n')
+    'gsuite-group-collection.html\n\n')
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'To read G Suite Groups and Users data, '

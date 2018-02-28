@@ -174,7 +174,6 @@ class ForsetiInstaller(object):
 
         installation_type = self.config.installation_type.capitalize()
         utils.print_banner('{} VM Initialization'.format(installation_type))
-        print ('This may take a few minutes.\n')
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
         # VT100 control codes, use to remove the last line
