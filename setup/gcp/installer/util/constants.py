@@ -35,6 +35,21 @@ MAXIMUM_LOOP_COUNT = 600
 DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
 DEFAULT_BUCKET_FMT_V2 = 'gs://{}-{}-data-{}'
 
+REGEX_MATCH_FORSETI_V1_INSTANCE_NAME = r'^forseti-security-\d+-vm$'
+
+FORSETI_V1_RULE_FILES = [
+    'bigquery_rules.yaml',
+    'blacklist_rules.yaml',
+    'bucket_rules.yaml',
+    'cloudsql_rules.yaml',
+    'firewall_rules.yaml',
+    'forwarding_rules.yaml',
+    'group_rules.yaml',
+    'iam_rules.yaml',
+    'iap_rules.yaml',
+    'instance_network_interface_rules.yaml',
+    'ke_rules.yaml']
+
 GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
@@ -168,16 +183,16 @@ MESSAGE_GSUITE_DATA_COLLECTION = (
     '        https://www.googleapis.com/auth/admin.directory.'
     'user.readonly\n\n'
     '    8. Click Authorize\n\n'
-    'or refer to the guides:'
+    'or refer to the guides: '
     'http://forsetisecurity.org/docs/howto/configure/'
-    'gsuite-group-collection\n\n')
+    'gsuite-group-collection.html\n\n')
 
 MESSAGE_SKIP_EMAIL = (
     'If you would like to enable email notifications via '
     'SendGrid, please refer to:\n\n'
     '    '
     'http://forsetisecurity.org/docs/howto/configure/'
-    'email-notification\n\n')
+    'email-notification.html\n\n')
 
 MESSAGE_HAS_ROLE_SCRIPT = (
     'Some roles could not be assigned to {} where you want '
@@ -192,13 +207,13 @@ MESSAGE_ENABLE_GSUITE_GROUP = (
     ' the steps in the guide below:\n\n'
     '    '
     'http://forsetisecurity.org/docs/howto/configure/'
-    'gsuite-group-collection\n\n')
+    'gsuite-group-collection.html\n\n')
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
-    '\nTo read G Suite Groups data, for example, if you want to '
-    'use IAM Explain, please provide a G Suite super admin '
-    'email address. '
-    'This step is optional and can be configured later.')
+    'To read G Suite Groups and Users data, '
+    'please provide a G Suite super admin, '
+    'please provide a G Suite super admin email address. '
+    'This step is NOT optional.')
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
@@ -296,8 +311,7 @@ QUESTION_ENABLE_WRITE_ACCESS = (
     '(e.g. for Enforcer) (y/n) ')
 
 QUESTION_GSUITE_SUPERADMIN_EMAIL = (
-    'What is your organization\'s G Suite super admin email? '
-    '(press [enter] to skip) ')
+    'What is your organization\'s G Suite super admin email? ')
 
 QUESTION_SENDGRID_API_KEY = (
     'What is your SendGrid API key? '
