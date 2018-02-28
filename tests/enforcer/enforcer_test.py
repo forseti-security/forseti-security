@@ -15,9 +15,6 @@
 
 """Tests for google.cloud.forseti.enforcer.enforcer."""
 
-import copy
-import json
-import httplib2
 import mock
 import unittest
 

@@ -52,7 +52,6 @@ REQUIRED_PACKAGES = [
     'simple-crypt>=4.1.7',
     # Setup related.
     'google-apputils>=0.4.2',
-    'python-gflags>=3.1.1',
     'grpcio',
     'grpcio-tools',
     'protobuf>=3.2.0',
