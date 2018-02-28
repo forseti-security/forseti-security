@@ -145,7 +145,7 @@ class ForsetiInstaller(object):
 
             conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
-                installer_type=self.config.installation_type)
+                installation_type=self.config.installation_type)
 
             print('Copying {} to {}'.format(conf_file_path, conf_output_path))
 
