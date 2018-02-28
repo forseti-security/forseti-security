@@ -147,32 +147,43 @@ def format_resource_id(resource_type, resource_id):
     return '%s/%s' % (resource_type, resource_id)
 
 
-def format_service_acct_id(prefix, modifier, timestamp, project_id):
-    """Format the service account ids.
+def generate_service_acct_info(prefix, modifier, installation_type,
+                               timestamp, project_id):
+    """Format the service account email and name.
 
     Args:
-        prefix (str): The prefix of the account id.
+        prefix (str): The prefix of the account id and account name.
         modifier (str): Access level of the account.
-        timestamp (str): Timestamp of the class.
+        installation_type (str): Type of the installation (client/server).
+        timestamp (str): The timestamp.
         project_id (str): Id of the project on GCP.
 
     Returns:
-        str: Service account id.
+        str: Service account email.
+        str: Service account name.
     """
 
-    return full_service_acct_email(
-        constants.SERVICE_ACCT_FMT.format(
+    # Service account email should contains timestamp due to the
+    # uniqueness requirement
+    service_account_email = full_service_acct_email(
+        constants.SERVICE_ACCT_NAME_FMT.format(
             prefix, modifier, timestamp), project_id)
+
+    # Service account name should use installation type for clarity purpose
+    service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
+        prefix, modifier, installation_type)
+
+    return service_account_email, service_account_name
 
 
 def infer_version(advanced_mode):
     """Infer the Forseti version, or ask user to input one not listed.
 
     Args:
-        advanced_mode (bool): Whether or not the installer is in advanced mode
+        advanced_mode (bool): Whether or not the installer is in advanced mode.
 
     Returns:
-        str: Selected Forseti branch
+        str: Selected Forseti branch.
     """
     return_code, out, err = run_command(
         ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])

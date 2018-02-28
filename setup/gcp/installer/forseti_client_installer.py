@@ -53,7 +53,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
         if success:
             gcloud.grant_client_svc_acct_roles(
                 self.project_id,
-                self.gcp_service_account,
+                self.gcp_service_acct_email,
                 self.user_can_grant_roles)
             instance_name = '{}-vm'.format(deployment_name)
             zone = '{}-c'.format(self.config.bucket_location)
@@ -83,7 +83,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
         return {
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
-            'GCP_CLIENT_SERVICE_ACCOUNT': self.gcp_service_account,
+            'GCP_CLIENT_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'FORSETI_SERVER_ZONE': self.server_zone
         }

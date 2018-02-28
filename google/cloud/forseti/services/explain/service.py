@@ -22,10 +22,7 @@ from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.common.util import logger
 
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-yield-doc
-# pylint: disable=missing-yield-type-doc,no-member
+# pylint: disable=no-member
 
 LOGGER = logger.get_logger(__name__)
 
@@ -35,7 +32,14 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
-        """Return the handle associated with the gRPC call."""
+        """Return the handle associated with the gRPC call.
+
+        Args:
+            context (object): gRPC context
+
+        Returns:
+            str: handle of the GRPC call
+        """
         metadata = context.invocation_metadata()
         metadata_dict = {}
         for key, value in metadata:
@@ -43,16 +47,37 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, explainer_api):
+        """Initialize
+
+        Args:
+            explainer_api (object): explainer library
+        """
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer_api
 
     def Ping(self, request, _):
-        """Provides the capability to check for service availability."""
+        """Provides the capability to check for service availability.
+
+        Args:
+            request (object): gRPC request.
+            _ (object): Not used
+
+        Returns:
+            object: proto message of ping
+        """
 
         return explain_pb2.PingReply(data=request.data)
 
     def ListResources(self, request, context):
-        """Lists resources in the model."""
+        """Lists resources in the model.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of list of resources
+        """
         handle = self._get_handle(context)
         resources = self.explainer.list_resources(handle,
                                                   request.prefix)
@@ -61,7 +86,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def ListGroupMembers(self, request, context):
-        """Lists members in the model."""
+        """Lists members in the model.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of list of members
+        """
         handle = self._get_handle(context)
         member_names = self.explainer.list_group_members(handle,
                                                          request.prefix)
@@ -70,7 +103,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def ListRoles(self, request, context):
-        """List roles from the model."""
+        """List roles from the model.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of list of roles
+        """
         handle = self._get_handle(context)
         role_names = self.explainer.list_roles(handle,
                                                request.prefix)
@@ -79,7 +120,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def GetIamPolicy(self, request, context):
-        """Gets the policy for a resource."""
+        """Gets the policy for a resource.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of IAM policy
+        """
         handle = self._get_handle(context)
         policy = self.explainer.get_iam_policy(handle,
                                                request.resource)
@@ -100,7 +149,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def CheckIamPolicy(self, request, context):
-        """Checks access according to policy to a specified resource."""
+        """Checks access according to policy to a specified resource.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of whether access granted
+        """
         handle = self._get_handle(context)
         authorized = self.explainer.check_iam_policy(handle,
                                                      request.resource,
@@ -111,7 +168,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def ExplainDenied(self, request, context):
-        """Provides information on how to grant access."""
+        """Provides information on how to grant access.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of explain denied result
+        """
         model_name = self._get_handle(context)
         binding_strategies = self.explainer.explain_denied(model_name,
                                                            request.member,
@@ -129,7 +194,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def ExplainGranted(self, request, context):
-        """Provides information on why a member has access to a resource."""
+        """Provides information on why a member has access to a resource.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of explain granted result
+        """
         model_name = self._get_handle(context)
         result = self.explainer.explain_granted(model_name,
                                                 request.member,
@@ -160,7 +233,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             context (object): grpc context.
 
         Yields:
-            Generator for access tuples.
+            object: Generator for access tuples.
         """
         model_name = self._get_handle(context)
         for role, resource, members in (
@@ -175,7 +248,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                                      resource=resource)
 
     def GetAccessByResources(self, request, context):
-        """Returns members having access to the specified resource."""
+        """Returns members having access to the specified resource.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of access tuples by resource
+        """
         model_name = self._get_handle(context)
         mapping = self.explainer.get_access_by_resources(
             model_name,
@@ -193,7 +274,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def GetAccessByMembers(self, request, context):
-        """Returns resources which can be accessed by the specified members."""
+        """Returns resources which can be accessed by the specified members.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of access tuples by members
+        """
         model_name = self._get_handle(context)
         accesses = []
         for role, resources in\
@@ -210,7 +299,15 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     def GetPermissionsByRoles(self, request, context):
-        """Returns permissions for the specified roles."""
+        """Returns permissions for the specified roles.
+
+        Args:
+            request (object): gRPC request.
+            context (object): gRPC context.
+
+        Returns:
+            object: proto message of access tuples by permission
+        """
         model_name = self._get_handle(context)
         result = self.explainer.get_permissions_by_roles(model_name,
                                                          request.role_names,
@@ -230,26 +327,27 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.permissionsbyroles.extend(permissions_by_roles_list)
         return reply
 
-    @autoclose_stream
-    def Denormalize(self, _, context):
-        """Denormalize the entire model into access triples."""
-        model_name = self._get_handle(context)
-
-        for permission, resource, member in self.explainer.denormalize(
-                model_name):
-            yield explain_pb2.AuthorizationTuple(member=member,
-                                                 permission=permission,
-                                                 resource=resource)
-
 
 class GrpcExplainerFactory(object):
     """Factory class for Explain service gRPC interface"""
 
     def __init__(self, config):
+        """Initialize
+
+        Args:
+            config (object): ServiceConfig in server
+        """
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the Explain service."""
+        """Create and register the Explain service.
+
+        Args:
+            server (object): Server to register service to.
+
+        Returns:
+            object: The instantiated gRPC service for Explainer.
+        """
         service = GrpcExplainer(explainer_api=explainer.Explainer(self.config))
         explain_pb2_grpc.add_ExplainServicer_to_server(service, server)
         LOGGER.info('Service %s created and registered.', service)

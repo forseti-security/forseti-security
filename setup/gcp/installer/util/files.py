@@ -192,6 +192,9 @@ def read_yaml_file_from_local(file_path):
 
     Returns:
         dict: The parsed dict from the loaded file.
+
+    Raises:
+        YAMLError: Yaml error.
     """
 
     with open(os.path.abspath(file_path), 'r') as f:

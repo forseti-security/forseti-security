@@ -54,7 +54,7 @@ GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
 
-SERVICE_ACCT_FMT = 'forseti-{}-{}-{}'
+SERVICE_ACCT_NAME_FMT = 'forseti-{}-{}-{}'
 SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
 INPUT_DEPLOYMENT_TEMPLATE_FILENAME = {
@@ -150,8 +150,8 @@ RULES_DIR_PATH = os.path.abspath(
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
 
-FORSETI_CONF_PATH = ('{bucket_name}/configs/{installer_type}/'
-                     'forseti_conf_{installer_type}.yaml')
+FORSETI_CONF_PATH = ('{bucket_name}/configs/{installation_type}/'
+                     'forseti_conf_{installation_type}.yaml')
 
 DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'
 
@@ -239,8 +239,8 @@ MESSAGE_NO_CLOUD_SHELL = (
     'i.e.\n\n    python setup_forseti.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
-    'A Forseti configuration file (configs/{installer_type}/'
-    'forseti_conf_{installer_type}_{datetimestamp}.yaml) '
+    'A Forseti configuration file (configs/{installation_type}/'
+    'forseti_conf_{installation_type}_{datetimestamp}.yaml) '
     'has been generated. If you wish to change your '
     'Forseti configuration or rules, e.g. enabling G Suite '
     'Groups collection, either download the conf file in '
