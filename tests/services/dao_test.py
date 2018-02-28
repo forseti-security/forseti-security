@@ -90,34 +90,6 @@ class DaoTest(ForsetiTestCase):
     res = [r.name for r in res]
     self.assertEqual(set([u'test_role']), set(res))
 
-  def test_delete_role_by_name(self):
-    """Test delete_role_by_name."""
-    session_maker, data_access = session_creator('test')
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.ROLES_PREFIX_TESTING_1, client)
-
-    # Check that initially nothing is found
-    res = data_access.list_roles_by_prefix(session, 'test')
-    self.assertEqual(set(), set(res))
-
-    # Add a new role
-    data_access.add_role_by_name(session, u'test_role', ['perm1'])
-    res = data_access.list_roles_by_prefix(session, 'test')
-    self.assertEqual(set([u'test_role']), set(res))
-
-    # Get role by permission to check it's queryable
-    res = data_access.get_roles_by_permission_names(session, ['perm1'])
-    res = [r.name for r in res]
-    self.assertEqual(set([u'test_role']), set(res))
-
-    # Delete the new role
-    data_access.delete_role_by_name(session, u'test_role')
-
-    # Get role by permission to check it's queryable
-    res = data_access.get_roles_by_permission_names(session, ['perm1'])
-    self.assertEqual(set(), set(res))
-
   def test_add_group_member(self):
     """Test add_group_member."""
     session_maker, data_access = session_creator('test')
@@ -149,50 +121,6 @@ class DaoTest(ForsetiTestCase):
       res = [m.name for m in res]
       for group in groups:
         self.assertTrue(group in res)
-
-  def test_delete_group_member(self):
-    """Test delete_group_member."""
-    session_maker, data_access = session_creator('test')
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
-
-    # Check that the ancestor relationship is existing
-    ancestors = data_access.reverse_expand_members(session, ['group/g3g2g1'])
-    ancestors = [m.name for m in ancestors]
-    for group in ['group/g3', 'group/g3g2', 'group/g2']:
-      self.assertTrue(group in ancestors)
-
-    # Delete membership with group/g3g2
-    data_access.delete_group_member(session, 'group/g3g2g1', 'group/g3g2', True)
-
-    # Check that the ancestor relationship is existing
-    ancestors = data_access.reverse_expand_members(session, ['group/g3g2g1'])
-    ancestors = [m.name for m in ancestors]
-    for group in ['group/g2']:
-      self.assertTrue(group in ancestors)
-    for group in ['group/g3', 'group/g3g2']:
-      self.assertTrue(group not in ancestors)
-
-    # Delete membership with group/g3g2
-    data_access.delete_group_member(session, 'group/g3g2g1', 'group/g2', True)
-    self.assertTrue(
-        1 == len(data_access.reverse_expand_members(session, ['group/g3g2g1'])))
-
-    # Delete the group
-    data_access.delete_group_member(session, 'group/g3g2g1', '', False)
-    self.assertTrue(
-        0 == len(data_access.reverse_expand_members(session, ['group/g3g2g1'])))
-
-    # Create a new model for immediate group deletion
-    session_maker, data_access = session_creator('test')
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.MEMBER_TESTING_2, client)
-    # Delete the group
-    data_access.delete_group_member(session, 'group/g3g2g1', '', False)
-    self.assertTrue(
-        0 == len(data_access.reverse_expand_members(session, ['group/g3g2g1'])))
 
   def test_list_group_members(self):
     """Test listing of group members."""
@@ -838,41 +766,6 @@ class DaoTest(ForsetiTestCase):
       else:
         self.assertFalse(f(session, frn, perm, member))
 
-  def test_denormalize(self):
-    """Test denormalization."""
-    session_maker, data_access = session_creator('test', None, None, False)
-    session = session_maker()
-    client = ModelCreatorClient(session, data_access)
-    _ = ModelCreator(test_models.DENORMALIZATION_TESTING_1, client)
-
-    denormalization_expected_1 = set([
-        ('a', 'r/res3', 'user/u1'),
-        ('a', 'r/res3', 'group/g2'),
-        ('a', 'r/res3', 'user/g2u1'),
-        ('a', 'r/res3', 'group/g2g1'),
-        ('a', 'r/res3', 'user/g2g1u1'),
-
-        ('a', 'r/res2', 'user/u2'),
-        ('a', 'r/res3', 'user/u2'),
-
-        ('a', 'r/res1', 'group/g1'),
-        ('a', 'r/res2', 'group/g1'),
-        ('a', 'r/res3', 'group/g1'),
-        ('a', 'r/res1', 'user/u1'),
-        ('a', 'r/res2', 'user/u1'),
-        ('a', 'r/res3', 'user/u1'),
-
-        ('b', 'r/res2', 'user/u1'),
-        ('b', 'r/res2', 'user/u2'),
-        ('b', 'r/res3', 'user/u1'),
-        ('b', 'r/res3', 'user/u2'),
-    ])
-
-    triples = set()
-    for perm, res, member in data_access.denormalize(session):
-      triples.add((perm, res, member))
-    self.assertEqual(denormalization_expected_1, triples)
-
   def test_get_roles_by_permission_names(self):
     session_maker, data_access = session_creator('test')
     session = session_maker()
@@ -1048,8 +941,8 @@ class DaoTest(ForsetiTestCase):
 
     def expand(resource):
         return [
-            '/'.join(i.split('/')[-3:-1])
-            for i in data_access.expand_resources_by_names(session, [resource])
+            '/'.join(i.full_name.split('/')[-3:-1])
+            for i in data_access.expand_resources_by_type_names(session, [resource]).values()[0]
         ]
 
     self.assertEqual(set(expand('r/res1')),
@@ -1095,8 +988,8 @@ class DaoTest(ForsetiTestCase):
 
     def expand(resource):
         return [
-            '/'.join(i.split('/')[-3:-1])
-            for i in data_access.expand_resources_by_names(session, [resource])
+            '/'.join(i.full_name.split('/')[-3:-1])
+            for i in data_access.expand_resources_by_type_names(session, [resource]).values()[0]
         ]
 
     self.assertEqual(
