@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Importer Test Data for model package."""
-
-__import__('pkg_resources').declare_namespace(__name__)
+"""Importer Test Data for Model."""

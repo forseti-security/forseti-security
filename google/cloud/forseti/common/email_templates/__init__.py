@@ -13,5 +13,3 @@
 # limitations under the License.
 
 """Forseti Common Email Templates."""
-
-__import__('pkg_resources').declare_namespace(__name__)

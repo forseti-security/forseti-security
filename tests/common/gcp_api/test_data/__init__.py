@@ -13,5 +13,3 @@
 # limitations under the License.
 
 """Test data for common/gcp_api tests."""
-
-__import__('pkg_resources').declare_namespace(__name__)

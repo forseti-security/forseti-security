@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Forseti Common Google Cloud Platform type definitions."""
-
-__import__('pkg_resources').declare_namespace(__name__)
+"""Forseti Common Google Cloud Platform Type Definitions."""

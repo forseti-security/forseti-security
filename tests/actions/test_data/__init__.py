@@ -13,5 +13,3 @@
 # limitations under the License.
 
 """Forseti Actions Tests Data."""
-
-__import__('pkg_resources').declare_namespace(__name__)

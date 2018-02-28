@@ -13,5 +13,3 @@
 # limitations under the License.
 
 """Forseti Deployment Templates Storage."""
-
-__import__('pkg_resources').declare_namespace(__name__)

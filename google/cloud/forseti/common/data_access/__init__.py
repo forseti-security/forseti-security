@@ -37,5 +37,3 @@ db_schema_version = '2.0'
 #
 # Version x.y:
 #   * ...
-
-__import__('pkg_resources').declare_namespace(__name__)

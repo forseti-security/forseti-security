@@ -12,6 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Service tests for scanner package."""
-
-__import__('pkg_resources').declare_namespace(__name__)
+"""Service Tests for Scanner."""

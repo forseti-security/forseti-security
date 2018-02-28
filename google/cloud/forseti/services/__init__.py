@@ -13,5 +13,3 @@
 # limitations under the License.
 
 """Forseti Server gRPC services."""
-
-__import__('pkg_resources').declare_namespace(__name__)
