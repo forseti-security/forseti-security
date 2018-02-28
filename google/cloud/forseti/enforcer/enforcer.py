@@ -24,8 +24,6 @@ import argparse
 import sys
 import threading
 
-from google.apputils import app
-
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import batch_enforcer
@@ -110,15 +108,12 @@ def enforce_single_project(enforcer, project_id, policy_filename):
     return enforcer_results
 
 
-def main(argv):
+def main():
     """The main entry point for Forseti Security Enforcer runner.
 
         Args:
           argv (dict): Unused.
     """
-
-    del argv
-
     arg_parser = argparse.ArgumentParser()
 
     arg_parser.add_argument(
@@ -198,4 +193,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    app.run()
+    main()
