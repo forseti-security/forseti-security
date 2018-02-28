@@ -24,11 +24,11 @@ import setup.gcp.installer.util.files as files
 from tests.unittest_utils import ForsetiTestCase
 
 TEST_RESOURCE_DIR_PATH = os.path.join(
-    os.path.dirname(__file__), 'test_resource')
+    os.path.dirname(__file__), 'test_data')
 TEST_TMP_DIR_PREFIX = 'forseti-test-'
 
 
-class FilesModuleTest(ForsetiTestCase):
+class FilesTest(ForsetiTestCase):
 
     def test_generate_file_from_template_forseti_conf_client(self):
         """Test generation of forseti_conf client template"""
