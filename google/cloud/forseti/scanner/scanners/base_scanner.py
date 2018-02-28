@@ -124,7 +124,6 @@ class BaseScanner(object):
         """Return a consistent strftime of the the invocation_id.
 
             Returns:
-                (str): A timestamp in the classes default format.
+                str: A timestamp in the classes default format.
         """
-
         return self.invocation_id.strftime(self.OUTPUT_TIMESTAMP_FMT)
