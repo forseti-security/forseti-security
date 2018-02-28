@@ -23,6 +23,7 @@ class ModelCreatorClient(object):
     def __init__(self, session, data_access):
         self.session = session
         self.data_access = data_access
+        self.playground = self
         self.explain = self
 
     def add_resource(self, resource_type_name, parent_type_name, no_parent):
@@ -71,10 +72,10 @@ class ModelCreator(object):
         client.commit()
 
     def _install_model(self, model, client):
-        self._install_resources(model['resources'], client)
-        self._install_memberships(model['memberships'], client)
-        self._install_roles(model['roles'], client)
-        self._install_bindings(model['bindings'], client)
+        self._install_resources(model['resources'], client.playground)
+        self._install_memberships(model['memberships'], client.playground)
+        self._install_roles(model['roles'], client.playground)
+        self._install_bindings(model['bindings'], client.playground)
 
     def _recursive_install_resources(self, node, model, client, parent):
         """Install resources."""

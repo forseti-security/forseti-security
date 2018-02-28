@@ -47,6 +47,7 @@ CLIENT.model.delete_model = mock.Mock(return_value='test')
 CLIENT.model.new_model = mock.Mock(return_value='test')
 
 CLIENT.explain = CLIENT
+CLIENT.explain.denormalize = mock.Mock(return_value=iter(['test']))
 CLIENT.explain.list_resources = mock.Mock(return_value='test')
 CLIENT.explain.list_members = mock.Mock(return_value='test')
 CLIENT.explain.list_roles = mock.Mock(return_value='test')
@@ -58,6 +59,13 @@ CLIENT.explain.explain_denied = mock.Mock(return_value='test')
 CLIENT.explain.query_access_by_members = mock.Mock(return_value='test')
 CLIENT.explain.query_access_by_permissions = mock.Mock(return_value=iter(['test']))
 CLIENT.explain.query_access_by_resources = mock.Mock(return_value='test')
+
+CLIENT.playground = CLIENT
+CLIENT.playground.add_role = mock.Mock(return_value='test')
+CLIENT.playground.del_role = mock.Mock(return_value='test')
+CLIENT.playground.add_member = mock.Mock(return_value='test')
+CLIENT.playground.del_member = mock.Mock(return_value='test')
+CLIENT.playground.set_iam_policy = mock.Mock(return_value='test')
 
 CLIENT.scanner = CLIENT
 CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
@@ -179,6 +187,13 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
+        ('explainer denormalize',
+         CLIENT.explain.denormalize,
+         [],
+         {},
+         '{}',
+         {}),
+
         ('explainer list_resources',
          CLIENT.explain.list_resources,
          [''],
@@ -252,6 +267,41 @@ class ImporterTest(ForsetiTestCase):
         ('explainer access_by_resource resource/foo --expand_groups True',
          CLIENT.explain.query_access_by_resources,
          ['resource/foo', [], True],
+         {},
+         '{}',
+         {}),
+
+        ('playground define_role resource/foo permission/a permission/b',
+         CLIENT.playground.add_role,
+         ['resource/foo', ['permission/a', 'permission/b']],
+         {},
+         '{}',
+         {}),
+
+        ('playground delete_role resource/foo',
+         CLIENT.playground.del_role,
+         ['resource/foo'],
+         {},
+         '{}',
+         {}),
+
+        ('playground define_member member/child member/parent',
+         CLIENT.playground.add_member,
+         ['member/child', ['member/parent']],
+         {},
+         '{}',
+         {}),
+
+        ('playground delete_member member/foo',
+         CLIENT.playground.del_member,
+         ['member/foo', '', False],
+         {},
+         '{}',
+         {}),
+
+        ('playground set_policy resource/foo {\\\"foo\\\":\\\"bar\\\"}',
+         CLIENT.playground.set_iam_policy,
+         ['resource/foo', {'foo': 'bar'}],
          {},
          '{}',
          {}),
