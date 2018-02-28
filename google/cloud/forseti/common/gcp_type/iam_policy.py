@@ -19,6 +19,10 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 import re
 
 from google.cloud.forseti.common.gcp_type import errors
+from google.cloud.forseti.common.util import logger
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 # TODO: use the regex_util
@@ -190,6 +194,8 @@ class IamPolicyBinding(object):
         try:
             return cls(binding.get('role'), binding.get('members'))
         except errors.InvalidIamPolicyMemberError:
+            LOGGER.warn(
+                'Invalid IAM policy member: %s.', binding.get('members'))
             return None
 
 
