@@ -93,7 +93,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Ask the user if they want to migrate conf/rule files
         from v1 to v2."""
         choice = ''
-        while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
+        while choice != 'y' and choice != 'n':
             choice = raw_input(
                 constants.QUESTION_SHOULD_MIGRATE_FROM_V1).lower()
         self.migrate_from_v1 = choice == 'y'
