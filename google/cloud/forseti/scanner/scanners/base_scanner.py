@@ -121,6 +121,10 @@ class BaseScanner(object):
             shutil.copy(csv_name, full_output_path)
 
     def _get_invocation_id_as_string(self):
-        """Return a consistent strftime of the the invocation_id."""
+        """Return a consistent strftime of the the invocation_id.
+
+            Returns:
+                (str): A timestamp in the classes default format.
+        """
 
         return self.invocation_id.strftime(self.OUTPUT_TIMESTAMP_FMT)

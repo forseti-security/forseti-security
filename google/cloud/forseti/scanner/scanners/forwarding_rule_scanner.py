@@ -46,8 +46,8 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             rules)
 
         self.rules_engine = (
-                forwarding_rule_rules_engine.ForwardingRuleRulesEngine(
-                    rules_file_path=self.rules)
+            forwarding_rule_rules_engine.ForwardingRuleRulesEngine(
+                rules_file_path=self.rules)
         )
 
         self.rules_engine.build_rule_book(self.global_configs)
