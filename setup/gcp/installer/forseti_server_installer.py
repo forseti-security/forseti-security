@@ -160,25 +160,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         return success, deployment_name
 
-    def merge_old_rules(self):
-        """Merge old rules to new rules."""
-        for v1_rule in self.v1_config.rules:
-            new_rule_path = os.path.join(constants.RULES_DIR_PATH,
-                                         v1_rule.file_name)
-            new_rule = files.read_yaml_file_from_local(new_rule_path)
-            field_identifiers = {'rules': ['name', 'rule_id'],
-                                 'default_identifier': 'name',
-                                 'resource': 'type',
-                                 'bindings': 'role',
-                                 'rule_groups': 'group_id'}
-            merge_engine.merge_object(merge_from=v1_rule.data,
-                                      merge_to=new_rule,
-                                      fields_to_ignore=[],
-                                      field_identifiers=field_identifiers)
-            files.write_data_to_yaml_file(new_rule, new_rule_path)
-
     def replace_new_rules(self):
-        """Replace new rules with old rules if exists."""
+        """Replace new rules with old rules if exists.
+
+        This is very specific for migration from v1 to v2 because we don't
+        want to modify the rule files that user defined in v1.
+        """
         for v1_rule in self.v1_config.rules:
             new_rule_path = os.path.join(constants.RULES_DIR_PATH,
                                          v1_rule.file_name)
