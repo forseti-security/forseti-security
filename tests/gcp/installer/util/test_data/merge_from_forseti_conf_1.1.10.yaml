@@ -55,11 +55,6 @@ inventory:
     # Valid values are: debug, info, warning, error
     loglevel: info
 
-    # Number of days to retain inventory data:
-    #  -1 : (default) keep all previous data forever
-    #   0 : delete all previous inventory data before running
-    retention_days: -1
-
     pipelines:
         - resource: appengine
           enabled: true
@@ -68,13 +63,13 @@ inventory:
         - resource: bigquery_datasets
           enabled: true
         - resource: buckets
-          enabled: true
+          enabled: false
         - resource: buckets_acls
           enabled: true
         - resource: cloudsql
           enabled: true
         - resource: firewall_rules
-          enabled: true
+          enabled: false
         - resource: folder_iam_policies
           enabled: true
         - resource: folders
@@ -86,13 +81,13 @@ inventory:
         - resource: group_members
           enabled: true
         - resource: groups
-          enabled: true
+          enabled: false
         - resource: instance_group_managers
           enabled: true
         - resource: instance_groups
           enabled: true
         - resource: instance_templates
-          enabled: true
+          enabled: false
         - resource: instances
           enabled: true
         - resource: org_iam_policies
