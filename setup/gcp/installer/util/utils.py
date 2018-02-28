@@ -163,15 +163,11 @@ def generate_service_acct_info(prefix, modifier, installation_type,
         str: Service account name.
     """
 
-    # Service account email should contains timestamp due to the
-    # uniqueness requirement
-    service_account_email = full_service_acct_email(
-        constants.SERVICE_ACCT_NAME_FMT.format(
-            prefix, modifier, timestamp), project_id)
-
-    # Service account name should use installation type for clarity purpose
     service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
         installation_type, prefix, modifier, timestamp)
+
+    service_account_email = full_service_acct_email(
+        service_account_name, project_id)
 
     return service_account_email, service_account_name
 
