@@ -121,7 +121,7 @@ class InventoryImporter(object):
 
         Raises:
             NotImplementedError: If the importer encounters an unknown
-                                 inventory type.
+                inventory type.
         """
 
         gcp_type_list = [
@@ -414,9 +414,9 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource object to convert from.
-            last_res_type (str): Previsouly processed resource type
-                                 used to spot transition between types
-                                 to execute pre/handler/post accordingly.
+            last_res_type (str): Previously processed resource type used to
+                spot transition between types to execute pre/handler/post
+                accordingly.
 
         Returns:
             str: Resource type that was processed during the execution.
@@ -653,6 +653,7 @@ class InventoryImporter(object):
 
     def _convert_computeproject(self, computeproject):
         """Convert a computeproject to a database object.
+
         Args:
             computeproject (object): computeproject to store.
         """

@@ -26,7 +26,7 @@ class ScopedSession(object):
         Args:
             session (object): Database session to use scope.
             auto_commit (bool): Set to true, of commit should automatically
-                                happen upon close.
+                happen upon close.
         """
 
         self.session = session
@@ -65,7 +65,7 @@ class ScopedSessionMaker(object):
         Args:
             session_maker (object): Session creator.
             auto_commit (bool): If set to true, generated sessions will
-                                automatically commit the transaction upon close
+                automatically commit the transaction upon close
         """
         self.sessionmaker = session_maker
         self.auto_commit = auto_commit
