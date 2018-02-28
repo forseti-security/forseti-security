@@ -431,18 +431,23 @@ def choose_project():
     return target_id
 
 
-def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
+def create_or_reuse_service_acct(acct_type,
+                                 acct_name,
+                                 acct_email,
+                                 advanced_mode,
+                                 dry_run):
     """Create or reuse service account.
 
     Args:
-        acct_type (str): The account type
-        acct_id (str): Account id
-        advanced_mode (bool): Whether or not the installer is in advanced mode
-        dry_run (bool): Whether or not the installer is in dry run mode
+        acct_type (str): The account type.
+        acct_name (str): The account name.
+        acct_email (str): Account id.
+        advanced_mode (bool): Whether or not the installer is in advanced mode.
+        dry_run (bool): Whether or not the installer is in dry run mode.
 
     Returns:
-        str: The final account id that we will be using throughout
-                the installation
+        str: The final account email that we will be using throughout
+            the installation.
     """
     utils.print_banner('Create/Reuse {}'.format(acct_type))
 
@@ -465,8 +470,8 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
     elif choice_index == 1:
         return_code, out, err = utils.run_command(
             ['gcloud', 'iam', 'service-accounts', 'create',
-             acct_id[:acct_id.index('@')], '--display-name',
-             acct_id[:acct_id.index('@')]])
+             acct_email[:acct_email.index('@')], '--display-name',
+             acct_name])
         if return_code:
             print(err)
             print('Could not create the service account. Terminating '
@@ -479,23 +484,23 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
             print(err)
             print('Could not determine the service accounts, will just '
                   'create a new service account.')
-            return acct_id
+            return acct_email
         else:
             try:
                 svc_accts = json.loads(out)
             except ValueError:
                 print('Could not determine the service accounts, will just '
                       'create a new service account.')
-                return acct_id
+                return acct_email
 
         print_fun = lambda ind, val: print('[{}] {} ({})'
                                            .format(ind+1,
                                                    val.get('displayName', ''),
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
-        acct_id = svc_accts[acct_idx - 1]['email']
+        acct_email = svc_accts[acct_idx - 1]['email']
 
-    return acct_id
+    return acct_email
 
 
 def check_billing_enabled(project_id, organization_id):
