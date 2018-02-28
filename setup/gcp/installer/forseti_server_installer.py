@@ -130,7 +130,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             files.update_rule_files(default_rule_values,
                                     constants.RULES_DIR_PATH)
 
-            # Merge all the old rules if necessary.
+            # Replace new rules if necessary.
             if self.migrate_from_v1:
                 self.replace_new_rules()
 
@@ -160,8 +160,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         return success, deployment_name
 
-    def replace_new_rules(self):
-        """Replace new rules with old rules if exists.
+    def replace_with_old_rules(self):
+        """Replace new rules with old rules.
 
         This is very specific for migration from v1 to v2 because we don't
         want to modify the rule files that user defined in v1.
