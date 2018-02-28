@@ -92,9 +92,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def prompt_v1_configs_migration(self):
         """Ask the user if they want to migrate conf/rule files
         from v1 to v2."""
+        choice = ''
         while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
-            self.migrate_from_v1 = raw_input(
+            choice = raw_input(
                 constants.QUESTION_SHOULD_MIGRATE_FROM_V1).lower()
+        self.migrate_from_v1 = choice == 'y'
 
     def populate_config_info_from_v1(self):
         """Retrieve the v1 configuration object."""

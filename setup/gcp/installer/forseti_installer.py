@@ -225,7 +225,7 @@ class ForsetiInstaller(object):
     def get_deployment_values(self):
         """Get deployment values
 
-        Returns:789
+        Returns:
             dict: A dictionary of values needed to generate
                 the forseti deployment template
         """
