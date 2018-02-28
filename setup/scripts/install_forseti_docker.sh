@@ -33,12 +33,5 @@ fi
 
 # Test to see Forseti Security was installed, these should match the entry
 # points in setup.py
-if [ -x "$(command -v forseti_server && \
-           command -v forseti_enforcer && \
-           command -v forseti)" ]; then
-    # Forseti entry points are successfully installed.
-    exit 0
-else
-    # Forseti installation was not succesful.
-    exit 1
-fi
+[ docker -l error exec -it build /bin/bash -c "hash forseti_server || exit 1" ]
+#docker -l error exec -it build /bin/bash -c "hash forseti_enforcer || exit 1"
