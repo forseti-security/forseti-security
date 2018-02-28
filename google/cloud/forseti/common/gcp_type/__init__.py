@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Common Google Cloud Platform type definitions."""
+"""Forseti Common Google Cloud Platform Type Definitions."""

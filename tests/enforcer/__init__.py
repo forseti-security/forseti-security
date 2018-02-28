@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-#
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for Enforcer service."""
+"""Tests for Enforcer Service."""
