@@ -31,7 +31,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     # pylint: disable=too-many-instance-attributes
     # Having ten variables is reasonable in this case.
 
-    gsuite_service_account = None
+    gsuite_service_acct_email = None
     has_roles_script = False
     setup_explain = True
     enable_write_access = False
@@ -55,13 +55,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         self.determine_access_target()
         self.should_enable_write_access()
-        self.format_gsuite_service_acct_id()
         self.should_grant_access()
 
         gcloud.enable_apis(self.config.dry_run)
-        self.gsuite_service_account = gcloud.create_or_reuse_service_acct(
+        gsuite_service_acct_email, gsuite_service_acct_name = (
+            self.format_gsuite_service_acct_id())
+        self.gsuite_service_acct_email = gcloud.create_or_reuse_service_acct(
             'gsuite_service_account',
-            self.gsuite_service_account,
+            gsuite_service_acct_name,
+            gsuite_service_acct_email,
             self.config.advanced_mode,
             self.config.dry_run)
         self.get_email_settings()
@@ -88,8 +90,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.access_target,
                 self.target_id,
                 self.project_id,
-                self.gsuite_service_account,
-                self.gcp_service_account,
+                self.gsuite_service_acct_email,
+                self.gcp_service_acct_email,
                 self.user_can_grant_roles)
 
             default_rule_values = self.get_rule_default_values()
@@ -107,7 +109,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # Create firewall rule to block out all the ingress traffic
             gcloud.create_firewall_rule(
                 self.format_firewall_rule_name('forseti-server-deny-all'),
-                [self.gcp_service_account],
+                [self.gcp_service_acct_email],
                 constants.FirewallRuleAction.DENY,
                 ['icmp', 'udp', 'tcp'],
                 constants.FirewallRuleDirection.INGRESS,
@@ -118,7 +120,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             gcloud.create_firewall_rule(
                 self.format_firewall_rule_name(
                     'forseti-server-allow-grpc-internal'),
-                [self.gcp_service_account],
+                [self.gcp_service_acct_email],
                 constants.FirewallRuleAction.ALLOW,
                 ['tcp:50051'],
                 constants.FirewallRuleDirection.INGRESS,
@@ -130,7 +132,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             gcloud.create_firewall_rule(
                 self.format_firewall_rule_name(
                     'forseti-server-allow-ssh-external'),
-                [self.gcp_service_account],
+                [self.gcp_service_acct_email],
                 constants.FirewallRuleAction.ALLOW,
                 ['tcp:22'],
                 constants.FirewallRuleDirection.INGRESS,
@@ -184,8 +186,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
-            'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_account,
-            'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_account,
+            'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
+            'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'rand_minute': random.randint(0, 59)
         }
@@ -287,24 +289,42 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
     def format_gsuite_service_acct_id(self):
-        """Format the gsuite service account id"""
-        self.gsuite_service_account = utils.format_service_acct_id(
-            'gsuite',
-            'reader',
-            self.config.timestamp,
-            self.project_id)
+        """Format the gsuite service account id.
+
+        Returns:
+            str: GSuite service account email.
+            str: GSuite service account name.
+        """
+        service_account_email, service_account_name = (
+            utils.generate_service_acct_info(
+                'gsuite',
+                'reader',
+                self.config.installation_type,
+                self.config.timestamp,
+                self.project_id))
+
+        return service_account_email, service_account_name
 
     def format_gcp_service_acct_id(self):
-        """Format the service account ids."""
+        """Format the service account ids.
+
+        Returns:
+            str: GCP service account email.
+            str: GCP service account name.
+        """
         modifier = 'reader'
         if self.enable_write_access:
             modifier = 'readwrite'
 
-        self.gcp_service_account = utils.format_service_acct_id(
-            'gcp',
-            modifier,
-            self.config.timestamp,
-            self.project_id)
+        service_account_email, service_account_name = (
+            utils.generate_service_acct_info(
+                'gcp',
+                modifier,
+                self.config.installation_type,
+                self.config.timestamp,
+                self.project_id))
+
+        return service_account_email, service_account_name
 
     def should_enable_write_access(self):
         """Ask if user wants to enable write access for Forseti."""
@@ -341,6 +361,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             print(constants.MESSAGE_GSUITE_DATA_COLLECTION.format(
                 self.project_id,
                 self.organization_id,
-                self.gsuite_service_account))
+                self.gsuite_service_acct_email))
         else:
             print(constants.MESSAGE_ENABLE_GSUITE_GROUP)
