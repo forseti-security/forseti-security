@@ -56,7 +56,7 @@ You must have the **super admin** role in admin.google.com to complete these ste
 1. In the **Client Name** box, paste the **Client ID** you copied above.
 1. In the **One or More API Scopes** box, paste the following scope:
     ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly
+    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
     ```
 1. Click **Authorize**.
    ![manage api client access in Google Admin Security settings](/images/docs/howto/admin-security.png)
