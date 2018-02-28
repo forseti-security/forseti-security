@@ -27,7 +27,7 @@ from util import gcloud
 from util import utils
 
 
-class ForsetiInstaller:
+class ForsetiInstaller(object):
     """Forseti installer base class (abstract)"""
     __metaclass__ = ABCMeta
 
@@ -45,28 +45,46 @@ class ForsetiInstaller:
         pass
 
     def run_setup(self):
-        """Run the setup steps"""
+        """Run the setup steps."""
         utils.print_banner('Installing Forseti {} v{}'.format(
             self.config.installation_type, utils.get_forseti_version()))
 
-        # Preflight checks
+        # Preflight checks.
         self.preflight_checks()
 
-        # Deployment
-        bucket_name = self.generate_bucket_name()
-        conf_file_path = self.generate_forseti_conf()
-        deployment_tpl_path = self.generate_deployment_templates()
+        # Create/Reuse service account(s).
+        self.create_or_reuse_service_accts()
 
+        # Create configuration file and deployment template.
+        (conf_file_path,
+         deployment_tpl_path) = self.create_conf_file_and_dpl_tpl()
+
+        # Deployment.
+        bucket_name = self.generate_bucket_name()
         deploy_success, deployment_name = self.deploy(deployment_tpl_path,
                                                       conf_file_path,
                                                       bucket_name)
 
-        # After deployment
+        # After deployment.
         self.post_install_instructions(deploy_success,
                                        deployment_name,
                                        deployment_tpl_path,
                                        conf_file_path,
                                        bucket_name)
+
+    def create_conf_file_and_dpl_tpl(self):
+        """Create configuration file and deployment template.
+
+        Returns:
+            str: Configuration file path.
+            str: Deployment template path.
+        """
+        utils.print_banner('Creating configuration file and'
+                           ' deployment template')
+        conf_file_path = self.generate_forseti_conf()
+        deployment_tpl_path = self.generate_deployment_templates()
+
+        return conf_file_path, deployment_tpl_path
 
     def preflight_checks(self):
         """Pre-flight checks"""
@@ -79,6 +97,10 @@ class ForsetiInstaller:
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
+
+    def create_or_reuse_service_accts(self):
+        """Create or reuse service accounts."""
+        utils.print_banner('Create/Reuse service account(s)')
         gcp_service_acct_email, gcp_service_acct_name = (
             self.format_gcp_service_acct_id())
         self.gcp_service_acct_email = gcloud.create_or_reuse_service_acct(
@@ -114,15 +136,29 @@ class ForsetiInstaller:
             # If deployed successfully, make sure the VM has been initialized,
             # copy configuration file, deployment template file and
             # rule files to the GCS bucket
+
+            if self.config.dry_run:
+                print('This is a dry run, will not copy any files.')
+
+            utils.print_banner('Copying configuration file/deployment'
+                               ' template to GCS')
+
             conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
                 installation_type=self.config.installation_type)
+
+            print('Copying {} to {}'.format(conf_file_path, conf_output_path))
+
             files.copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
 
             deployment_tpl_output_path = (
                 constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
+
+            print('Copying {} to {}'.format(deployment_tpl_path,
+                                            deployment_tpl_output_path))
+
             files.copy_file_to_destination(
                 deployment_tpl_path, deployment_tpl_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -135,9 +171,9 @@ class ForsetiInstaller:
         Args:
             vm_name (str): Name of the VM instance.
         """
+
         installation_type = self.config.installation_type.capitalize()
         utils.print_banner('{} VM Initialization'.format(installation_type))
-        print ('This may take a few minutes.\n')
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
         # VT100 control codes, use to remove the last line
@@ -145,12 +181,14 @@ class ForsetiInstaller:
 
         for i in range(0, constants.MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
-            sys.stdout.write('\r{}Initializing VM {}'.format(erase_line, dots))
+            sys.stdout.write('\r{}This may take a few minutes. '
+                             'Waiting for Forseti {} to start{}'
+                             .format(erase_line, installation_type, dots))
             sys.stdout.flush()
             if gcloud.check_vm_init_status(name, zone):
                 break
         # print new line
-        print ('\n\nDone.')
+        print ('Done.\n')
 
     def check_run_properties(self):
         """Check script run properties."""
@@ -262,7 +300,8 @@ class ForsetiInstaller:
             forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
         """
-        utils.print_banner('Post-setup instructions')
+        utils.print_banner('Forseti {} post-setup instructions'
+                           .format(self.config.installation_type))
 
         if self.config.dry_run:
             print('This was a dry run, so a deployment was not attempted. '
