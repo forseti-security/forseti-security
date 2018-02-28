@@ -29,7 +29,7 @@ class ScannerBuilder(object):
     """Scanner Builder."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name):
+                 model_name, snapshot_timestamp):
         """Initialize the scanner builder.
 
         Args:
@@ -37,11 +37,13 @@ class ScannerBuilder(object):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
+            snapshot_timestamp (str): The snapshot timestamp
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
         self.service_config = service_config
         self.model_name = model_name
+        self.snapshot_timestamp = snapshot_timestamp
 
     def build(self):
         """Build the enabled scanners to run.
@@ -93,6 +95,7 @@ class ScannerBuilder(object):
                                         self.scanner_configs,
                                         self.service_config,
                                         self.model_name,
+                                        self.snapshot_timestamp,
                                         rules)
                 runnable_scanners.append(scanner)
 
