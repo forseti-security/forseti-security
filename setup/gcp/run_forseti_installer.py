@@ -19,13 +19,35 @@ This has been tested with python 2.7.
 
 import argparse
 import datetime
+import site
 
-from installer.forseti_server_installer import ForsetiServerInstaller
-from installer.forseti_client_installer import ForsetiClientInstaller
+import pip
+
+INSTALLER_REQUIRED_PACKAGES = [
+    'ruamel.yaml'
+]
+
+
+def install(package_name):
+    """Install package.
+
+    Args:
+        package_name (str): Name of the package to install.
+    """
+    pip.main(['install', package_name, '--user'])
+
+
+def install_required_packages():
+    """Install required packages."""
+    installed_pkgs = [pkg.key for pkg in pip.get_installed_distributions()]
+    for package in INSTALLER_REQUIRED_PACKAGES:
+        if package not in installed_pkgs:
+            install(package)
 
 
 def run():
     """Run the steps for the gcloud setup."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cloudshell',
                         action='store_true',
@@ -66,9 +88,15 @@ def run():
     # Set the current date time stamp
     args['datetimestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
+    # import installers
+    from installer.forseti_server_installer import ForsetiServerInstaller
+    from installer.forseti_client_installer import ForsetiClientInstaller
+
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
         ForsetiServerInstaller(**args).run_setup()
+        raw_input('Press enter to install the Forseti client '
+                  'and continue the setup process.....')
         ForsetiClientInstaller(**args).run_setup()
         return
 
@@ -79,6 +107,10 @@ def run():
 
     forseti_setup.run_setup()
 
-
 if __name__ == '__main__':
+    # We need to install all the required packages before importing our modules
+
+    # Installing required packages
+    install_required_packages()
+    site.main() # Load up the package
     run()
