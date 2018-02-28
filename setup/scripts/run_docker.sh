@@ -27,4 +27,18 @@ if [ -x "$(command -v docker)" ]; then
         # We're not on Travis, run without the CI_ENV environment variable.
         docker run -it -d --name build forseti/build /bin/bash
     fi
+else
+    echo "Can\'t run docker, exiting."
+fi
+
+# Test to see Forseti Security was installed, these should match the entry
+# points in setup.py
+if [ -x "$(command -v forseti_server && \
+           command -v forseti_enforcer && \
+           command -v forseti)" ]; then
+    # Forseti entry points are successfully installed.
+    exit 0
+else
+    # Forseti installation was not succesful.
+    exit 1
 fi
