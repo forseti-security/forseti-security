@@ -109,11 +109,7 @@ def enforce_single_project(enforcer, project_id, policy_filename):
 
 
 def main():
-    """The main entry point for Forseti Security Enforcer runner.
-
-        Args:
-          argv (dict): Unused.
-    """
+    """The main entry point for Forseti Security Enforcer runner."""
     arg_parser = argparse.ArgumentParser()
 
     arg_parser.add_argument(
