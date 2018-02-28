@@ -30,6 +30,8 @@ service Explain {
   rpc GetAccessByMembers(GetAccessByMembersRequest) returns (GetAccessByMembersReply) {}
   rpc GetPermissionsByRoles(GetPermissionsByRolesRequest) returns (GetPermissionsByRolesReply) {}
 
+  rpc Denormalize(DenormalizeRequest) returns (stream AuthorizationTuple) {}
+
   rpc ExplainGranted(ExplainGrantedRequest) returns (ExplainGrantedReply) {}
   rpc ExplainDenied(ExplainDeniedRequest) returns (ExplainDeniedReply) {}
 
@@ -136,6 +138,15 @@ message ExplainDeniedRequest {
   repeated string permissions = 2;
   repeated string roles = 3;
   repeated string resources = 4;
+}
+
+message DenormalizeRequest {
+}
+
+message AuthorizationTuple {
+  string member = 1;
+  string resource = 2;
+  string permission = 3;
 }
 
 message GetPermissionsByRolesRequest {

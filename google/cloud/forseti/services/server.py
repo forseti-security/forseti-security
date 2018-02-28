@@ -34,6 +34,7 @@ from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
+from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 
 from google.cloud.forseti.common.util import logger
@@ -42,6 +43,7 @@ LOGGER = logger.get_logger(__name__)
 
 STATIC_SERVICE_MAPPING = {
     'explain': GrpcExplainerFactory,
+    'playground': GrpcPlaygrounderFactory,
     'inventory': GrpcInventoryFactory,
     'scanner': GrpcScannerFactory,
     'notifier': GrpcNotifierFactory,
