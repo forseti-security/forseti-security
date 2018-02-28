@@ -91,8 +91,7 @@ class FirewallRulesEngine(bre.BaseRulesEngine):
             self.rule_book = RuleBook(
                 rule_defs=rule_defs,
                 group_defs=group_defs,
-                org_policy=org_policy,
-                snapshot_timestamp=self.snapshot_timestamp)
+                org_policy=org_policy)
 
     def find_policy_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.

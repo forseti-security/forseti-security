@@ -36,8 +36,8 @@ class ScannerBuilder(object):
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
-            model_name (str): name of the data model.
             invocation_id (str): The id of a given scanner run (timestamp).
+            model_name (str): name of the data model.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs

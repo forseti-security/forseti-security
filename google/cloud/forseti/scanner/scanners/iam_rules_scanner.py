@@ -14,7 +14,6 @@
 
 """Scanner for the IAM rules engine."""
 
-from datetime import datetime
 import os
 import sys
 
@@ -38,7 +37,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iam.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, invocation_id, rules):
         """Initialization.
 
         Args:
@@ -46,7 +45,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            invocation_id (str): The id of a given scanner run (timestamp).
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IamPolicyScanner, self).__init__(
@@ -54,11 +53,10 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            snapshot_timestamp,
+            invocation_id,
             rules)
         self.rules_engine = iam_rules_engine.IamRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
+            rules_file_path=self.rules)
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
@@ -114,16 +112,13 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
-                # Scanner timestamp for output file and email.
-                now_utc = datetime.utcnow()
-
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
                     if not os.path.exists(
                             self.scanner_configs.get('output_path')):
                         os.makedirs(output_path)
                     output_path = os.path.abspath(output_path)
-                self._upload_csv(output_path, now_utc, output_csv_name)
+                self._upload_csv(output_path, output_csv_name)
 
                 # Send summary email.
                 # TODO: Untangle this email by looking for the csv content
@@ -139,7 +134,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
                         'output_filename': self._get_output_filename(),
-                        'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,
                         'violation_errors': violation_errors

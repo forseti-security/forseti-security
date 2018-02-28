@@ -104,16 +104,14 @@ def _check_required_members(rule_members=None, policy_members=None):
 class IamRulesEngine(bre.BaseRulesEngine):
     """Rules engine for org resources."""
 
-    def __init__(self, rules_file_path, snapshot_timestamp=None):
+    def __init__(self, rules_file_path):
         """Initialize.
 
         Args:
             rules_file_path (str): File location of rules.
-            snapshot_timestamp (str): The snapshot to work with.
         """
         super(IamRulesEngine, self).__init__(
-            rules_file_path=rules_file_path,
-            snapshot_timestamp=snapshot_timestamp)
+            rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs):
@@ -124,8 +122,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = IamRuleBook(
             global_configs,
-            self._load_rule_definitions(),
-            snapshot_timestamp=self.snapshot_timestamp)
+            self._load_rule_definitions())
 
     def find_policy_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.

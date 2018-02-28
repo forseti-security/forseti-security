@@ -14,7 +14,6 @@
 """Scanner for the firewall rule engine."""
 
 from collections import defaultdict
-from datetime import datetime
 import json
 import os
 
@@ -114,16 +113,13 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
-                # Scanner timestamp for output file and email.
-                now_utc = datetime.utcnow()
-
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
                     if not os.path.exists(
                             self.scanner_configs.get('output_path')):
                         os.makedirs(output_path)
                     output_path = os.path.abspath(output_path)
-                self._upload_csv(output_path, now_utc, output_csv_name)
+                self._upload_csv(output_path, output_csv_name)
 
                 # Send summary email.
                 # TODO: Untangle this email by looking for the csv content
@@ -139,7 +135,6 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
                         'output_filename': self._get_output_filename(),
-                        'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,
                         'violation_errors': violation_errors

@@ -29,8 +29,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
     """Scanner for BigQuery acls."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp,
-                 rules):
+                 model_name, invocation_id, rules):
         """Initialization.
 
         Args:
@@ -38,7 +37,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            invocation_id (str): The id of a given scanner run (timestamp).
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(BigqueryScanner, self).__init__(
@@ -46,11 +45,10 @@ class BigqueryScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            snapshot_timestamp,
+            invocation_id,
             rules)
         self.rules_engine = bigquery_rules_engine.BigqueryRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
+            rules_file_path=self.rules)
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod

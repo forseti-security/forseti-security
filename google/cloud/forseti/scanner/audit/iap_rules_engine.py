@@ -35,17 +35,14 @@ LOGGER = logger.get_logger(__name__)
 class IapRulesEngine(bre.BaseRulesEngine):
     """Rules engine for applying IAP policies to backend services"""
 
-    def __init__(self, rules_file_path, snapshot_timestamp=None):
+    def __init__(self, rules_file_path):
         """Initialize.
 
         Args:
             rules_file_path (str): file location of rules
-            snapshot_timestamp (int): snapshot to load
         """
         super(IapRulesEngine,
-              self).__init__(
-                  rules_file_path=rules_file_path,
-                  snapshot_timestamp=snapshot_timestamp)
+              self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs):
@@ -56,8 +53,7 @@ class IapRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = IapRuleBook(
             global_configs,
-            self._load_rule_definitions(),
-            snapshot_timestamp=self.snapshot_timestamp)
+            self._load_rule_definitions())
 
     def find_violations(self, iap_resource):
         """Determine whether IAP-related settings violate rules.

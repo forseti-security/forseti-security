@@ -15,7 +15,6 @@
 """Base scanner."""
 
 import abc
-import datetime
 import os
 import shutil
 
@@ -34,7 +33,7 @@ class BaseScanner(object):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, invocation_id, rules):
+                 model_name, invocation_id, rules):
         """Constructor for the base pipeline.
 
         Args:
@@ -97,7 +96,7 @@ class BaseScanner(object):
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
         return output_filename
 
-    def _upload_csv(self, output_path, now_utc, csv_name):
+    def _upload_csv(self, output_path, csv_name):
         """Upload CSV to Cloud Storage.
 
         Args:

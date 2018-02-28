@@ -358,7 +358,7 @@ class IapScanner(base_scanner.BaseScanner):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iap.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, invocation_id, rules):
         """Initialization.
 
         Args:
@@ -366,15 +366,14 @@ class IapScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            snapshot_timestamp (str): The snapshot timestamp.
+            invocation_id (str): The id of a given scanner run (timestamp).
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IapScanner, self).__init__(
             global_configs, scanner_configs, service_config, model_name,
-            snapshot_timestamp, rules)
+            invocation_id, rules)
         self.rules_engine = iap_rules_engine.IapRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
+            rules_file_path=self.rules)
         self.rules_engine.build_rule_book(self.global_configs)
         self.scoped_session, self.data_access = (
             service_config.model_manager.get(model_name))
@@ -458,7 +457,7 @@ class IapScanner(base_scanner.BaseScanner):
                             self.scanner_configs.get('output_path')):
                         os.makedirs(output_path)
                     output_path = os.path.abspath(output_path)
-                self._upload_csv(output_path, now_utc, output_csv_name)
+                self._upload_csv(output_path, output_csv_name)
 
                 # Send summary email.
                 # TODO: Untangle this email by looking for the csv content

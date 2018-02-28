@@ -14,7 +14,7 @@
 
 """GCP Resource scanner."""
 
-import datetime
+from datetime import datetime
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
@@ -47,8 +47,8 @@ def run(model_name=None, service_config=None):
     invocation_id = datetime.utcnow()
 
     runnable_scanners = scanner_builder.ScannerBuilder(
-        global_configs, scanner_configs, service_config, model_name,
-        None, invocation_id).build()
+        global_configs, scanner_configs,
+        service_config, model_name, invocation_id).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
