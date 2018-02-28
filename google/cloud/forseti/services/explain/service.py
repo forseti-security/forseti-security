@@ -327,25 +327,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.permissionsbyroles.extend(permissions_by_roles_list)
         return reply
 
-    @autoclose_stream
-    def Denormalize(self, _, context):
-        """Denormalize the entire model into access triples.
-
-        Args:
-            _ (object): Unused
-            context (object): gRPC context.
-
-        Yields:
-            object: proto message of access tuples
-        """
-        model_name = self._get_handle(context)
-
-        for permission, resource, member in self.explainer.denormalize(
-                model_name):
-            yield explain_pb2.AuthorizationTuple(member=member,
-                                                 permission=permission,
-                                                 resource=resource)
-
 
 class GrpcExplainerFactory(object):
     """Factory class for Explain service gRPC interface"""

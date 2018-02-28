@@ -996,64 +996,6 @@ def define_model(model_name, dbengine, model_seed):
             return qry.all()
 
         @classmethod
-        def denormalize(cls, session):
-            """Denormalize the model
-
-            Denormalizes a model into access triples
-            (permission, resource, member)
-            Which can be huge size, and can crash GCP's web ssh
-
-            Args:
-                session (object): db session
-
-            Yields:
-                tuple: (permission, resource, expanded_member)
-            """
-
-            qry = (session.query(Binding)
-                   .join(binding_members)
-                   .join(Member))
-
-            members = set()
-            for binding in qry.yield_per(PER_YIELD):
-                for member in binding.members:
-                    members.add(member.name)
-
-            expanded_members = cls.expand_members_map(session, members)
-            role_permissions_map = collections.defaultdict(set)
-
-            qry = (session.query(Role, Permission)
-                   .join(role_permissions)
-                   .filter(
-                       Role.name == role_permissions.c.roles_name)
-                   .filter(
-                       Permission.name == role_permissions.c.permissions_name))
-
-            for role, permission in qry.yield_per(PER_YIELD):
-                role_permissions_map[role.name].add(permission.name)
-
-            for binding, member in (
-                    session.query(Binding, Member)
-                    .join(binding_members)
-                    .filter(binding_members.c.bindings_id == Binding.id)
-                    .filter(binding_members.c.members_name == Member.name)
-                    .yield_per(PER_YIELD)):
-
-                resource_type_name = binding.resource_type_name
-                resource_mapping = cls.expand_resources_by_type_names(
-                    session,
-                    [resource_type_name])
-
-                resource_mapping = {k.type_name: set([m.type_name for m in v])
-                                    for k, v in resource_mapping.iteritems()}
-
-                for expanded_member in expanded_members[member.name]:
-                    for permission in role_permissions_map[binding.role_name]:
-                        for res in resource_mapping[resource_type_name]:
-                            triple = (permission, res, expanded_member)
-                            yield triple
-
-        @classmethod
         def set_iam_policy(cls, session, resource_type_name, policy):
             """Set IAM policy
 
@@ -1276,27 +1218,6 @@ def define_model(model_name, dbengine, model_seed):
             session.commit()
 
         @classmethod
-        def delete_role_by_name(cls, session, role_name):
-            """Deletes a role by name.
-
-            Args:
-                session (object): db session
-                role_name (str): name of the role to be deleted
-            """
-            LOGGER.info('Deleting an existing role, role_name = %s,'
-                        ' session = %s', role_name, session)
-            bindings_to_be_delete = [binding for binding in
-                                     session.query(Binding)
-                                     .filter(Binding.role_name == role_name)
-                                     .all()]
-            session.delete(session.query(Role)
-                           .filter(Role.name == role_name)
-                           .first())
-            for binding in bindings_to_be_delete:
-                session.delete(binding)
-            session.commit()
-
-        @classmethod
         def add_group_member(cls,
                              session,
                              member_type_name,
@@ -1321,41 +1242,6 @@ def define_model(model_name, dbengine, model_seed):
                            parent_type_names,
                            denorm)
             session.commit()
-
-        @classmethod
-        def delete_group_member(cls, session, member_type_name,
-                                parent_type_name, only_delete_relationship,
-                                denorm=False):
-            """Delete member.
-
-            Args:
-                session (object): db session
-                member_type_name (str): type_name of the member to be deleted
-                parent_type_name (str): type_name of the parent if only delete
-                    relation
-                only_delete_relationship (bool): whether to only delete the
-                    relationship
-                denorm (bool): whether to denorm the groupingroup table after
-                    deletion
-            """
-
-            LOGGER.info('Deleting a member, member_type_name = %s,'
-                        ' parent_type_name = %s, only_delete_relationship = %s,'
-                        ' denorm = %s, session = %s', member_type_name,
-                        parent_type_name, only_delete_relationship,
-                        denorm, session)
-            if only_delete_relationship:
-                group_members_delete = group_members.delete(
-                    and_(group_members.c.members_name == member_type_name,
-                         group_members.c.group_name == parent_type_name))
-                session.execute(group_members_delete)
-            else:
-                member_to_be_deleted = session.query(Member).filter(
-                    Member.name == member_type_name).first()
-                session.delete(member_to_be_deleted)
-                session.commit()
-            if denorm or member_type_name.startswith('group'):
-                cls.denorm_group_in_group(session)
 
         @classmethod
         def list_group_members(cls, session, member_name_prefix):
