@@ -24,7 +24,7 @@ if [ -x "$(command -v docker)" ]; then
         CI_ENV=`bash <(curl -s https://codecov.io/env)`
         # Start the container for testing and code verification.
         echo "Starting our container for testing and code verification... "
-        $(docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash) 2>&1 /dev/null
+        docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash 2>&1 /dev/null
     else
         # We're not on Travis, run without the CI_ENV environment variable.
         echo "Starting our container for testing and code verification... "
