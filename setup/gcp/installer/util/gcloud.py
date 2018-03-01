@@ -711,9 +711,13 @@ def create_firewall_rule(rule_name,
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
-    return_code, _, err = utils.run_command(gcloud_command_args)
+    return_code, out, err = utils.run_command(gcloud_command_args)
     if return_code:
         print (err)
+    # print the output from gcp if the rule is created, example of the output
+    # NAME   NETWORK  DIRECTION  PRIORITY  ALLOW  DENY
+    # apple  default  INGRESS    1000             tcp:23
+    print (out)
 
 
 def enable_os_login(instance_name, zone):

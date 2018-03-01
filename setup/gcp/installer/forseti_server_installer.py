@@ -175,6 +175,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
         # Rule to block out all the ingress traffic.
+        utils.print_banner('Creating firewall rules')
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_acct_email],
