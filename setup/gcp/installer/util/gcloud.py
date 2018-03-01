@@ -169,8 +169,8 @@ def grant_client_svc_acct_roles(project_id,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service '
-                       'account\nAccount id: {}'.format(gcp_service_account))
+    utils.print_banner('Assigning roles to the GCP service account',
+                       'Account id: {}'.format(gcp_service_account))
 
     roles = {
         'forseti_project': constants.PROJECT_IAM_ROLES_CLIENT
@@ -218,8 +218,8 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service accounts'
-                       '\n{}Account id: '.format(gcp_service_account))
+    utils.print_banner('Assigning roles to the GCP service account',
+                       'Account id: {}'.format(gcp_service_account))
     access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
@@ -749,17 +749,8 @@ def create_deployment(project_id,
         dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
-        str: Name of the deployment
-        int: The return code value of running `gcloud` command to create
-            the deployment.
+        str: Name of the deployment.
     """
-
-    def _ping_deployment_manager():
-        """Check deployment manager status.
-        """
-        utils.run_command(
-            ['gcloud', 'deployment-manager', 'deployments',
-             'describe', 'testing-deployment-manager-connection'])
 
     if dry_run:
         print('This is a dry run, so skipping this step.')
@@ -768,8 +759,13 @@ def create_deployment(project_id,
     utils.print_banner('Create Forseti {} deployment'.format(
         installation_type))
 
+    # Ping the deployment manager and make sure the API is ready
+    utils.run_command(
+        ['gcloud', 'deployment-manager', 'deployments',
+         'describe', 'testing-deployment-manager-connection'])
+
     print ('This may take a few minutes.')
-    _ping_deployment_manager() # Make sure deployment-manager is ready
+
     deployment_name = 'forseti-{}-{}'.format(installation_type,
                                              timestamp)
     print('Deployment name: {}'.format(deployment_name))
@@ -777,16 +773,13 @@ def create_deployment(project_id,
           'https://console.cloud.google.com/deployments/details/'
           '{}?project={}&organizationId={}\n'.format(
               deployment_name, project_id, organization_id))
-    return_code, out, err = utils.run_command(
-        ['gcloud', 'deployment-manager', 'deployments', 'create',
-         deployment_name, '--config={}'.format(deploy_tpl_path)])
-    if return_code:
-        print(err)
-    else:
-        print(out)
-        print('\nCreated deployment successfully.')
 
-    return deployment_name, return_code
+    # Start the deployment
+    utils.run_command(
+        ['gcloud', 'deployment-manager', 'deployments', 'create',
+         deployment_name, '--config={}'.format(deploy_tpl_path), '--async'])
+
+    return deployment_name
 
 
 def check_vm_init_status(vm_name, zone):
@@ -829,3 +822,25 @@ def get_domain_from_organization_id(organization_id):
     org_info = json.loads(out)
 
     return org_info.get('displayName', '')
+
+
+def check_deployment_status(deployment_name, status):
+    """Check the status of a deployment.
+
+    Args:
+        deployment_name (str): Deployment name.
+        status (DeploymentStatus): Status of the deployment.
+
+    Returns:
+        bool: Whether or not the deployment status match with the given status.
+    """
+
+    return_code, out, _ = utils.run_command(
+        ['gcloud', 'deployment-manager', 'deployments', 'describe',
+         deployment_name, '--format=json'])
+
+    deployment_info = json.loads(out)
+
+    current_status = deployment_info['deployment']['operation']['status']
+
+    return current_status == status.value

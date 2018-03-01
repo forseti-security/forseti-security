@@ -30,6 +30,12 @@ class FirewallRuleDirection(Enum):
     EGRESS = 'EGRESS'
 
 
+class DeploymentStatus(Enum):
+    """Deployment status."""
+    RUNNING = 'RUNNING'
+    DONE = 'DONE'
+
+
 MAXIMUM_LOOP_COUNT = 600
 
 DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
@@ -161,32 +167,9 @@ VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 # Message templates
 MESSAGE_GSUITE_DATA_COLLECTION = (
     'To complete setup for G Suite Groups data collection, '
-    'follow the steps below:\n\n'
-    '    1. Click on: '
-    'https://console.cloud.google.com/iam-admin/serviceaccounts/'
-    'project?project={}&organizationId={}\n\n'
-    '    2. Locate the service account to enable '
-    'G Suite Groups collection:{}\n\n'
-    '    3. Select Edit and then the Enable G Suite Domain-wide '
-    'Delegation checkbox. Save.\n\n'
-    '    4. On the service account row, click View Client ID. '
-    'On the Client ID for Service account client panel that '
-    'appears, copy the Client ID value, which will be a large '
-    'number.\n\n'
-    '    5. Click on: '
-    'https://admin.google.com/ManageOauthClients\n\n'
-    '    6. In the Client Name box, paste the Client ID you '
-    'copied above.\n\n'
-    '    7. In the One or More API Scopes box, paste the '
-    'following scope:\n\n'
-    '        https://www.googleapis.com/auth/admin.directory.'
-    'group.readonly,\n'
-    '        https://www.googleapis.com/auth/admin.directory.'
-    'user.readonly\n\n'
-    '    8. Click Authorize\n\n'
-    'or refer to the guides: '
-    'http://forsetisecurity.org/docs/howto/configure/'
-    'gsuite-group-collection.html\n\n')
+    'follow the steps here:\n\n    '
+    'https://forsetisecurity.org/docs/howto'
+    '/configure/gsuite-group-collection.html\n')
 
 MESSAGE_SKIP_EMAIL = (
     'If you would like to enable email notifications via '
@@ -212,14 +195,15 @@ MESSAGE_ENABLE_GSUITE_GROUP = (
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'To read G Suite Groups and Users data, '
-    'please provide a G Suite super admin, '
     'please provide a G Suite super admin email address. '
     'This step is NOT optional.')
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
     'via an API key. '
-    'This step is optional and can be configured later.')
+    'This step is optional and can be configured later.\n'
+    'Learn more about SendGrid here: '
+    'https://forsetisecurity.org/docs/howto/configure/email-notification.html')
 
 MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL = (
     'Forseti can be configured to access an '
@@ -263,12 +247,12 @@ MESSAGE_DEPLOYMENT_HAD_ISSUES = (
     'discuss@forsetisecurity.org.\n')
 
 MESSAGE_FORSETI_BRANCH_DEPLOYED = (
-    'Forseti Security (branch/version: {}) has been '
+    'Forseti {} (branch/version: {}) has been '
     'deployed to GCP.\n')
 
 MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION = (
     'Your generated Deployment Manager template can be '
-    'found here:\n\n    {}\n\n    {}\n\n')
+    'found here:\n\n    {}\n\n')
 
 MESSAGE_VIEW_DEPLOYMENT_DETAILS = (
     'You can view the details of your deployment in the '

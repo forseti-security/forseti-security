@@ -43,15 +43,16 @@ def id_from_name(name):
     return name[name.index('/')+1:]
 
 
-def print_banner(text):
+def print_banner(*args):
     """Print a banner.
 
     Args:
-        text (str): Text to put in the banner.
+        args (str): Text(s) to put in the banner.
     """
     print('')
     print('+-------------------------------------------------------')
-    print('|  %s' % text)
+    for text in args:
+        print('|  {}'.format(text))
     print('+-------------------------------------------------------')
     print('')
 
@@ -324,6 +325,9 @@ def show_loading(max_loading_time, exit_condition=None,
          boolean, will be called every second to check for the return result.
         message (str): Message to print to stdout.
         max_number_of_dots (int): Maximum number of dots on the line.
+
+    Returns:
+        bool: Status of the loading.
     """
 
     # VT100 control codes, use to remove the last line.
@@ -331,11 +335,14 @@ def show_loading(max_loading_time, exit_condition=None,
 
     for i in range(0, max_loading_time*2):
         if exit_condition and exit_condition():
-            break
+            print('done\n')
+            return True
         # Sleep for 0.5 second so that the dots can appear more quickly
         # to be more user friendly.
         time.sleep(0.5)
         dots = '.' * (i % max_number_of_dots)
-        sys.stdout.write('\r{}{}{}'.format(erase_line, message, dots))
+        sys.stdout.write('\r{}{}{} '.format(erase_line, message, dots))
         sys.stdout.flush()
-    print ('Done.\n')
+    print ('time limit reached')
+    return False
+

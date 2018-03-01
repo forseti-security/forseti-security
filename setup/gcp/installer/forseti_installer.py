@@ -19,6 +19,7 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
+import time
 
 from configs.config import Config
 from util import constants
@@ -122,15 +123,31 @@ class ForsetiInstaller(object):
             bool: Whether or not the deployment was successful
             str: Deployment name
         """
-        deployment_name, return_code = gcloud.create_deployment(
+        deployment_name = gcloud.create_deployment(
             self.project_id,
             self.organization_id,
             deployment_tpl_path,
             self.config.installation_type,
-            self.config.datetimestamp,
+            self.config.timestamp,
             self.config.dry_run)
 
-        deployment_completed = not return_code
+        # We are creating the deployment with async flag, wait for a few seconds
+        # to make sure the deployment is created
+        time.sleep(5)
+        # Status tracker function, will return true if the deployment is done.
+        status_tracker = (lambda: gcloud.check_deployment_status(
+            deployment_name, constants.DeploymentStatus.DONE))
+        loading_message = ('This may take a few minutes. Waiting '
+                           'for deployment to be completed')
+        deployment_completed = utils.show_loading(max_loading_time=900,
+                                                  exit_condition=status_tracker,
+                                                  message=loading_message)
+
+        if not deployment_completed:
+            # If after 15 mins and the deployment is still not completed, there
+            # is something wrong with the deployment.
+            print ('Deployment failed.')
+            sys.exit(1)
 
         if deployment_completed:
             # If deployed successfully, make sure the VM has been initialized,
@@ -172,8 +189,9 @@ class ForsetiInstaller(object):
             vm_name (str): Name of the VM instance.
         """
 
-        installation_type = self.config.installation_type.capitalize()
-        utils.print_banner('{} VM Initialization'.format(installation_type))
+        installation_type = self.config.installation_type
+        utils.print_banner('{} VM Initialization'.format(
+            installation_type.capitalize()))
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
         # VT100 control codes, use to remove the last line
@@ -182,13 +200,13 @@ class ForsetiInstaller(object):
         for i in range(0, constants.MAXIMUM_LOOP_COUNT):
             dots = '.' * (i % 10)
             sys.stdout.write('\r{}This may take a few minutes. '
-                             'Waiting for Forseti {} to start{}'
+                             'Waiting for Forseti {} to be initialized{} '
                              .format(erase_line, installation_type, dots))
             sys.stdout.flush()
             if gcloud.check_vm_init_status(name, zone):
                 break
         # print new line
-        print ('Done.\n')
+        print ('done')
 
     def check_run_properties(self):
         """Check script run properties."""
@@ -302,7 +320,7 @@ class ForsetiInstaller(object):
                   'You can still create the deployment manually.\n')
         elif deploy_success:
             print(constants.MESSAGE_FORSETI_BRANCH_DEPLOYED.format(
-                self.branch))
+                self.config.installation_type, self.branch))
         else:
             print(constants.MESSAGE_DEPLOYMENT_HAD_ISSUES)
 
@@ -310,7 +328,7 @@ class ForsetiInstaller(object):
             bucket_name)
 
         print(constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
-            deployment_tpl_path, deploy_tpl_gcs_path))
+            deploy_tpl_gcs_path))
 
         if self.config.dry_run:
             print(constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN

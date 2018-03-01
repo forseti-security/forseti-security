@@ -48,6 +48,11 @@ def install_required_packages():
 def run():
     """Run the steps for the gcloud setup."""
 
+    # We need to install all the required packages before importing our modules
+    # Installing required packages
+    install_required_packages()
+    site.main() # Load up the package
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--no-cloudshell',
                         action='store_true',
@@ -108,9 +113,4 @@ def run():
     forseti_setup.run_setup()
 
 if __name__ == '__main__':
-    # We need to install all the required packages before importing our modules
-
-    # Installing required packages
-    install_required_packages()
-    site.main() # Load up the package
     run()
