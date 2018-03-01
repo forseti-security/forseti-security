@@ -15,9 +15,9 @@
 """Gcloud utility functions."""
 
 from __future__ import print_function
+import json
 import re
 import sys
-import json
 
 import constants
 import utils
@@ -338,7 +338,8 @@ def _grant_role(role, resource_args, resource_id,
         '--role={}'.format(role),
     ])
     if user_can_grant_roles:
-        print('Assigning {} on {}...'.format(role, resource_id))
+        print('Assigning {} on {}...'.format(role, resource_id), end='')
+        sys.stdout.flush()
         return_code, _, err = utils.run_command(iam_role_cmd)
         if return_code:
             print(err)
@@ -431,24 +432,31 @@ def choose_project():
     return target_id
 
 
-def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
+def create_or_reuse_service_acct(acct_type,
+                                 acct_name,
+                                 acct_email,
+                                 advanced_mode,
+                                 dry_run):
     """Create or reuse service account.
 
     Args:
-        acct_type (str): The account type
-        acct_id (str): Account id
-        advanced_mode (bool): Whether or not the installer is in advanced mode
-        dry_run (bool): Whether or not the installer is in dry run mode
+        acct_type (str): The account type.
+        acct_name (str): The account name.
+        acct_email (str): Account id.
+        advanced_mode (bool): Whether or not the installer is in advanced mode.
+        dry_run (bool): Whether or not the installer is in dry run mode.
 
     Returns:
-        str: The final account id that we will be using throughout
-                the installation
+        str: The final account email that we will be using throughout
+            the installation.
     """
-    utils.print_banner('Create/Reuse {}'.format(acct_type))
 
-    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
+    account = acct_type.replace('_', ' ')
+
+    choices = ['Create {}'.format(account), 'Reuse {}'.format(account)]
 
     if not advanced_mode:
+        print ('Creating {}\n'.format(account))
         choice_index = 1
     else:
         print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
@@ -465,8 +473,8 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
     elif choice_index == 1:
         return_code, out, err = utils.run_command(
             ['gcloud', 'iam', 'service-accounts', 'create',
-             acct_id[:acct_id.index('@')], '--display-name',
-             acct_id[:acct_id.index('@')]])
+             acct_email[:acct_email.index('@')], '--display-name',
+             acct_name])
         if return_code:
             print(err)
             print('Could not create the service account. Terminating '
@@ -479,23 +487,23 @@ def create_or_reuse_service_acct(acct_type, acct_id, advanced_mode, dry_run):
             print(err)
             print('Could not determine the service accounts, will just '
                   'create a new service account.')
-            return acct_id
+            return acct_email
         else:
             try:
                 svc_accts = json.loads(out)
             except ValueError:
                 print('Could not determine the service accounts, will just '
                       'create a new service account.')
-                return acct_id
+                return acct_email
 
         print_fun = lambda ind, val: print('[{}] {} ({})'
                                            .format(ind+1,
                                                    val.get('displayName', ''),
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
-        acct_id = svc_accts[acct_idx - 1]['email']
+        acct_email = svc_accts[acct_idx - 1]['email']
 
-    return acct_id
+    return acct_email
 
 
 def check_billing_enabled(project_id, organization_id):
@@ -610,24 +618,34 @@ def get_forseti_server_info():
     ip_addr, zone, name = get_vm_instance_info('forseti-security-server',
                                                try_match=True)
 
-    return ('', 'us-central1-c', '') if ip_addr is None else (ip_addr,
-                                                              zone,
-                                                              name)
+    if ip_addr is None:
+        print('No forseti server detected, you will need to install'
+              ' forseti server before installing the client, exiting...')
+        sys.exit(1)
+
+    return ip_addr, zone, name
 
 
 def get_vm_instance_info(instance_name, try_match=False):
     """Get forseti server ip and zone information if exists, exit if not.
 
     Args:
-        instance_name (str): Name of the vm instance
-        try_match (bool): Match instance that contains instance_name
-                          inside their name
+        instance_name (str): Name of the vm instance.
+        try_match (bool): Match instance that contains instance_name.
+                          inside their name.
 
     Returns:
-        str: IP address of the forseti server application
-        str: Zone of the forseti server application, default to 'us-central1-c'
-        str: Name of the forseti server instance
+        str: IP address of the forseti server application.
+        str: Zone of the forseti server application, default to 'us-central1-c'.
+        str: Name of the forseti server instance.
     """
+    def _ping_compute_instance():
+        """Check compute instance status."""
+        utils.run_command(
+            ['gcloud', 'compute', 'instances', 'list', '--format=json'])
+
+    _ping_compute_instance()
+
     return_code, out, err = utils.run_command(
         ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
@@ -638,18 +656,15 @@ def get_vm_instance_info(instance_name, try_match=False):
         instances = json.loads(out)
         for instance in instances:
             cur_instance_name = instance.get('name')
-            match = (try_match and instance_name in cur_instance_name or
+            match = (try_match and re.match(instance_name, cur_instance_name) or
                      (not try_match and instance_name == cur_instance_name))
             if match:
                 # found forseti server vm instance
-                zone = instance.get('zone').split("/zones/")[1]
+                zone = instance.get('zone').split('/zones/')[1]
                 network_interfaces = instance.get('networkInterfaces')
                 internal_ip = network_interfaces[0].get('networkIP')
                 name = instance.get('name')
                 return internal_ip, zone, name
-        print('No forseti server detected, you will need to install'
-              ' forseti server before installing the client, exiting...')
-        sys.exit(1)
     except ValueError:
         print('Error retrieving forseti server ip address, '
               'will leave the server ip empty for now.')
@@ -716,18 +731,18 @@ def enable_os_login(instance_name, zone):
 def create_deployment(project_id,
                       organization_id,
                       deploy_tpl_path,
-                      template_type,
+                      installation_type,
                       datetimestamp,
                       dry_run):
     """Create the GCP deployment.
 
     Args:
-        project_id (str): GCP project id
-        organization_id (str): GCP organization id
-        deploy_tpl_path (str): Path of deployment template
-        template_type (str): Type of the template (client/server)
-        datetimestamp (str): Timestamp
-        dry_run (bool): Whether the installer is in dry run mode
+        project_id (str): GCP project id.
+        organization_id (str): GCP organization id.
+        deploy_tpl_path (str): Path of deployment template.
+        installation_type (str): Type of the installation (client/server).
+        datetimestamp (str): Timestamp.
+        dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
         str: Name of the deployment
@@ -742,18 +757,19 @@ def create_deployment(project_id,
             ['gcloud', 'deployment-manager', 'deployments',
              'describe', 'testing-deployment-manager-connection'])
 
-        utils.print_banner('Create Forseti deployment')
-
     if dry_run:
         print('This is a dry run, so skipping this step.')
         return 0
 
+    utils.print_banner('Create Forseti {} deployment'.format(
+        installation_type))
+
     print ('This may take a few minutes.')
     _ping_deployment_manager() # Make sure deployment-manager is ready
-    deployment_name = 'forseti-security-{}-{}'.format(template_type,
+    deployment_name = 'forseti-security-{}-{}'.format(installation_type,
                                                       datetimestamp)
     print('Deployment name: {}'.format(deployment_name))
-    print('Deployment Manager Dashboard: '
+    print('Monitor the deployment progress here: '
           'https://console.cloud.google.com/deployments/details/'
           '{}?project={}&organizationId={}\n'.format(
               deployment_name, project_id, organization_id))
@@ -790,3 +806,22 @@ def check_vm_init_status(vm_name, zone):
         return True
 
     return False
+
+
+def get_domain_from_organization_id(organization_id):
+    """Get domain from organization id.
+
+    Args:
+        organization_id (str): Id of the organization.
+
+    Returns:
+        str: Domain of the org.
+    """
+
+    _, out, _ = utils.run_command(
+        ['gcloud', 'organizations', 'describe', organization_id,
+         '--format=json'])
+
+    org_info = json.loads(out)
+
+    return org_info.get('displayName', '')

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""APIs and utilities for data access."""
+"""Forseti APIs and Utilities for Data Access."""
 
 # The database schema version needs to change any time the database schema
 # is extended or changed. Adding a new table, or additional fields

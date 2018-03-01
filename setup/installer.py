@@ -14,10 +14,10 @@
 
 """ Forseti Installer.
 
-A stub to call gcp/install_setup.py which installs into GCP.
+A stub to call setup/gcp/run_forseti_installer.py which installs into GCP.
 """
+from gcp import run_forseti_installer
 
-from gcp import install_setup
 
 if __name__ == '__main__':
-    install_setup.run()
+    run_forseti_installer.run()

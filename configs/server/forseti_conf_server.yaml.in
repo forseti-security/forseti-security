@@ -1,40 +1,40 @@
 global:
 
-    # database
-    db_host: 127.0.0.1
-    db_user: root
-    db_name: forseti_security
-
-    # gsuite
-    groups_service_account_key_file: /home/ubuntu/gsuite_key.json
-    domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
-
-    # notification
     # Remove or comment out the email properties if you do not want Forseti to
     # send email notifications.
     email_recipient: {EMAIL_RECIPIENT}
     email_sender: {EMAIL_SENDER}
     sendgrid_api_key: {SENDGRID_API_KEY}
 
-    # quota
-    # The pre-populated values are the defaults from GCP.
-    max_admin_api_calls_per_100_seconds: 1500
-    max_appengine_api_calls_per_second: 20
-    max_bigquery_api_calls_per_100_seconds: 17000
-    max_cloudbilling_api_calls_per_60_seconds: 300
-    max_compute_api_calls_per_second: 20
-    max_container_api_calls_per_100_seconds: 1000
-    max_crm_api_calls_per_100_seconds: 400
-    max_iam_api_calls_per_second: 20
-    max_results_admin_api: 500
-    max_sqladmin_api_calls_per_100_seconds: 100
+##############################################################################
+
+inventory:
+
+    # Root resource to start crawling from, formatted as
+    # <resource_type>/<resource_id>, (e.g. "organizations/12345677890")
+    root_resource_id: {ROOT_RESOURCE_ID}
+
+    # gsuite access
+    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
+    domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
+
+    api_quota:
+        # The pre-populated values are the defaults from GCP.
+        max_admin_api_calls_per_100_seconds: 1500
+        max_appengine_api_calls_per_second: 20
+        max_bigquery_api_calls_per_100_seconds: 17000
+        max_cloudbilling_api_calls_per_60_seconds: 300
+        max_compute_api_calls_per_second: 20
+        max_container_api_calls_per_100_seconds: 1000
+        max_crm_api_calls_per_100_seconds: 400
+        max_iam_api_calls_per_second: 20
+        max_servicemanagement_api_calls_per_100_seconds: 200
+        max_sqladmin_api_calls_per_100_seconds: 100
+
 
 ##############################################################################
 
 scanner:
-
-    # Valid values are: debug, info, warning, error
-    loglevel: info
 
     # Output path (do not include filename).
     # If GCS location, the format of the path should be:
@@ -63,8 +63,6 @@ scanner:
           enabled: true
         - name: forwarding_rule
           enabled: true
-        - name: ke_version_scanner
-          enabled: true
         - name: group
           enabled: true
         - name: iam_policy
@@ -72,6 +70,8 @@ scanner:
         - name: iap
           enabled: true
         - name: instance_network_interface
+          enabled: true
+        - name: ke_version_scanner
           enabled: true
 
 ##############################################################################

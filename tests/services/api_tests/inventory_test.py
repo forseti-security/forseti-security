@@ -28,7 +28,6 @@ from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.inventory.storage import Storage
-from google.cloud.forseti.services.playground.service import GrpcPlaygrounderFactory
 from google.cloud.forseti.services.server import InventoryConfig
 
 
@@ -42,7 +41,8 @@ class TestServiceConfig(MockServerConfig):
         self.workers = ThreadPool(10)
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
-                                                '')
+                                                '',
+                                                {})
 
     def run_in_background(self, function):
         """Stub."""
@@ -70,7 +70,6 @@ def create_tester():
     return ApiTestRunner(
         TestServiceConfig(),
         [GrpcExplainerFactory,
-         GrpcPlaygrounderFactory,
          GrpcInventoryFactory])
 
 

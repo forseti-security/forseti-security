@@ -32,14 +32,9 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base.storage import \
     Storage as BaseStorage
 
+# pylint: disable=too-many-instance-attributes
 
 LOGGER = logger.get_logger(__name__)
-
-
-# TODO: Remove this when time allows
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,too-many-instance-attributes
-
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
@@ -212,7 +207,7 @@ class Inventory(BASE):
                 type_class=InventoryTypeClass.RESOURCE,
                 key=resource.key(),
                 type=resource.type(),
-                data=json.dumps(resource.data()),
+                data=json.dumps(resource.data(), sort_keys=True),
                 parent_key=None if not parent else parent.key(),
                 parent_type=None if not parent else parent.type(),
                 other=other,
@@ -225,7 +220,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.IAM_POLICY,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(iam_policy),
+                    data=json.dumps(iam_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -238,7 +233,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.GCS_POLICY,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(gcs_policy),
+                    data=json.dumps(gcs_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -251,7 +246,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.DATASET_POLICY,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(dataset_policy),
+                    data=json.dumps(dataset_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -264,7 +259,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.BILLING_INFO,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(billing_info),
+                    data=json.dumps(billing_info, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -277,7 +272,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.ENABLED_APIS,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(enabled_apis),
+                    data=json.dumps(enabled_apis, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -290,7 +285,7 @@ class Inventory(BASE):
                     type_class=InventoryTypeClass.SERVICE_CONFIG,
                     key=resource.key(),
                     type=resource.type(),
-                    data=json.dumps(service_config),
+                    data=json.dumps(service_config, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
@@ -316,7 +311,11 @@ class Inventory(BASE):
         self.error = new_row.error
 
     def __repr__(self):
-        """String representation of the database row object."""
+        """String representation of the database row object.
+
+        Returns:
+            str: A description of inventory_index
+        """
 
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
@@ -410,6 +409,12 @@ class BufferedDbWriter(object):
     """Buffered db writing."""
 
     def __init__(self, session, max_size=1024):
+        """Initialize
+
+        Args:
+            session (object): db session
+            max_size (int): max size of buffer
+        """
         self.session = session
         self.buffer = []
         self.max_size = max_size
@@ -442,7 +447,10 @@ class DataAccess(object):
 
         Args:
             session (object): Database session.
-            inventory_id (int): Id specifying which inventory to delete.
+            inventory_id (str): Id specifying which inventory to delete.
+
+        Returns:
+            InventoryIndex: An expunged entry corresponding the inventory_id
 
         Raises:
             Exception: Reraises any exception.
@@ -481,7 +489,7 @@ class DataAccess(object):
 
         Args:
             session (object): Database session
-            inventory_id (int): Inventory id
+            inventory_id (str): Inventory id
 
         Returns:
             InventoryIndex: Entry corresponding the id
@@ -531,6 +539,13 @@ class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
     def __init__(self, session, existing_id=None, readonly=False):
+        """Initialize
+
+        Args:
+            session (object): db session
+            existing_id (str): The inventory id if wants to open an existing one
+            readonly (bool): whether to keep the inventory read-only
+        """
         self.session = session
         self.opened = False
         self.index = None
@@ -571,6 +586,9 @@ class Storage(BaseStorage):
     def _open(self, existing_id):
         """Open an existing inventory.
 
+        Args:
+            existing_id (str): the id of the inventory to open
+
         Returns:
             object: The inventory db row.
         """
@@ -603,7 +621,7 @@ class Storage(BaseStorage):
         rows = qry.all()
 
         if not rows:
-            raise Exception("resource {} not found in the table".format(key))
+            raise Exception('Resource {} not found in the table'.format(key))
         else:
             return rows
 
@@ -611,11 +629,11 @@ class Storage(BaseStorage):
         """Open the storage, potentially create a new index.
 
         Args:
-            handle (int): If None, create a new index instead
-                          of opening an existing one.
+            handle (str): If None, create a new index instead
+                of opening an existing one.
 
         Returns:
-            int: Index number of the opened or created inventory.
+            str: Index id of the opened or created inventory.
 
         Raises:
             Exception: if open was called more than once
@@ -667,8 +685,8 @@ class Storage(BaseStorage):
 
         Raises:
             Exception: If the storage was not opened before or
-                       if the storage is writeable but neither
-                       rollback nor commit has been called.
+                if the storage is writeable but neither
+                rollback nor commit has been called.
         """
 
         if not self.opened:
@@ -745,10 +763,10 @@ class Storage(BaseStorage):
         self.index.set_error(self.session, message)
 
     def warning(self, message):
-        """Store a fatal error in storage. This will help debug problems.
+        """Store a Warning message in storage. This will help debug problems.
 
         Args:
-            message (str): Error message describing the problem.
+            message (str): Warning message describing the problem.
 
         Raises:
             Exception: If the storage was opened readonly.
@@ -872,7 +890,11 @@ class Storage(BaseStorage):
             ))).scalar()
 
     def __enter__(self):
-        """To support with statement for auto closing."""
+        """To support with statement for auto closing.
+
+        Returns:
+            Storage: The inventory storage object
+        """
 
         self.open()
         return self

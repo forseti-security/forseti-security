@@ -30,16 +30,22 @@ if [ ! -f "${FORSETI_CONF}" ]; then
     exit 1
 fi
 
+# Restart the service to pull in the latest conf settings
+sudo systemctl restart forseti.service
+
+# Wait until the service is started
+sleep 10s
+
 # Run inventory command
-MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
+MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."
-forseti inventory create --import_as ${MODEL_ID}
+forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
 sleep 10s
 
 # Run model command
-echo "Using model ${MODEL_ID} to run scanner"
-forseti model use ${MODEL_ID}
+echo "Using model ${MODEL_NAME} to run scanner"
+forseti model use ${MODEL_NAME}
 # Sometimes there's a lag between when the model
 # successfully saves to the database.
 sleep 10s
@@ -55,3 +61,8 @@ sleep 10s
 echo "Running Forseti notifier."
 forseti notifier run
 echo "Finished running Forseti notifier."
+sleep 10s
+
+# Clean up the model tables
+echo "Cleaning up model tables"
+forseti model delete ${MODEL_NAME}

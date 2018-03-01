@@ -6,6 +6,7 @@ protobuf
 grpcio
 grpcio-tools
 pyYAML
+google-apputils
 
 # Needed for CI/CD and Development.
 codecov

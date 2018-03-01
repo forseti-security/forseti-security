@@ -11,46 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Notifier.
-
-Usage:
-
-  $ forseti_notifier --db_host <Cloud SQL database hostname/IP> \\
-      --db_user <Cloud SQL database user> \\
-      --db_name <Cloud SQL database name (required)> \\
-      --config <Notification configuration> \\
-      --timestamp <Snapshot timestamp to search for violations>
-"""
+"""Notifier service."""
 
 import importlib
 import inspect
-import sys
-import gflags as flags
 
 # pylint: disable=line-too-long
-from google.apputils import app
-from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
+from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
-
-# Setup flags
-FLAGS = flags.FLAGS
-
-
-flags.DEFINE_string(
-    'inventory_index_id',
-    '-1',
-    'Inventory index id')
-
 LOGGER = logger.get_logger(__name__)
 
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%SZ'
 
 # pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
@@ -77,6 +54,22 @@ def find_pipelines(pipeline_name):
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
+
+def convert_created_at_to_timestamp(violations):
+    """Convert violation created_at datetime to timestamp string.
+
+    Args:
+        violations (sqlalchemy_object): List of violations as sqlalchemy
+            row/record object with created_at as datetime.
+
+    Returns:
+        list: List of violations as sqlalchemy row/record object with created_at
+            converted to timestamp string.
+    """
+    for violation in violations:
+        violation.created_at = violation.created_at.strftime(TIMESTAMP_FMT)
+
+    return violations
 
 def process(message):
     """Process messages about what notifications to send.
@@ -120,7 +113,6 @@ def process(message):
             payload.get('email_description'))
         return
 
-# pylint: disable=too-many-locals
 def run(inventory_index_id, service_config=None):
     """Run the notifier.
 
@@ -133,15 +125,8 @@ def run(inventory_index_id, service_config=None):
     Returns:
         int: Status code.
     """
-    try:
-        configs = file_loader.read_and_parse_file(
-            service_config.forseti_config_file_path)
-    except IOError:
-        LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try again.')
-        sys.exit()
-    global_configs = configs.get('global')
-    notifier_configs = configs.get('notifier')
+    global_configs = service_config.get_global_config()
+    notifier_configs = service_config.get_notifier_config()
 
     if not inventory_index_id:
         with service_config.scoped_session() as session:
@@ -154,6 +139,8 @@ def run(inventory_index_id, service_config=None):
     violation_access = violation_access_cls(service_config.engine)
     service_config.violation_access = violation_access
     violations = violation_access.list(inventory_index_id)
+
+    violations = convert_created_at_to_timestamp(violations)
 
     violations_as_dict = []
     for violation in violations:
@@ -195,21 +182,3 @@ def run(inventory_index_id, service_config=None):
 
     LOGGER.info('Notification complete!')
     return 0
-
-
-def main(_):
-    """Entry point when the notifier is run as an executable.
-
-    Args:
-        _ (list): args that aren't used
-
-    Returns:
-        int: Status code.
-    """
-
-    run(FLAGS.inventory_index_id)
-    return 0
-
-
-if __name__ == '__main__':
-    app.run()

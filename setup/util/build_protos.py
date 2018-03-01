@@ -30,7 +30,7 @@ def is_grpc_service_dir(files):
         Returns:
            Boolean: True if '.grpc_service' is in the files, otherwise False.
     """
-    return ".grpc_service" in files
+    return '.grpc_service' in files
 
 
 def clean(path):
@@ -41,7 +41,7 @@ def clean(path):
     """
     # Start running from one directory above the directory which is found by
     # this scripts's location as __file__.
-    LOGGER.info("Cleaning out compiled protos.")
+    LOGGER.info('Cleaning out compiled protos.')
     cwd = os.path.dirname(path)
 
     # Find all the .proto files.
@@ -52,8 +52,8 @@ def clean(path):
                 root)
         for filename in files:
             full_filename = os.path.join(root, filename)
-            if full_filename.endswith("_pb2.py") or full_filename.endswith(
-                    "_pb2.pyc"):
+            if full_filename.endswith('_pb2.py') or full_filename.endswith(
+                    '_pb2.pyc'):
                 os.unlink(full_filename)
 
 
@@ -70,12 +70,12 @@ def make_proto(path):
     for (root, _, files) in os.walk(cwd):
         for filename in files:
             full_filename = os.path.join(root, filename)
-            if full_filename.endswith(".proto"):
+            if full_filename.endswith('.proto'):
                 proto_stat = os.stat(full_filename)
                 try:
                     pb2_stat = os.stat(
                         full_filename.rsplit(
-                            ".", 1)[0] + "_pb2.py")
+                            '.', 1)[0] + '_pb2.py')
                     if pb2_stat.st_mtime >= proto_stat.st_mtime:
                         continue
 
@@ -85,20 +85,20 @@ def make_proto(path):
                 protos_to_compile.append(full_filename)
 
     if not protos_to_compile:
-        LOGGER.info("No protos needed to be compiled.")
+        LOGGER.info('No protos needed to be compiled.')
     else:
         for proto in protos_to_compile:
-            LOGGER.info("Compiling %s", proto)
+            LOGGER.info('Compiling %s', proto)
             protodir, protofile = os.path.split(proto)
 
             subprocess.check_call(
                 [
-                    "python",
-                    "-m",
-                    "grpc_tools.protoc",
-                    "-I.",
-                    "--python_out=.",
-                    "--grpc_python_out=.",
+                    'python',
+                    '-m',
+                    'grpc_tools.protoc',
+                    '-I.',
+                    '--python_out=.',
+                    '--grpc_python_out=.',
                     protofile,
                 ],
                 cwd=protodir)

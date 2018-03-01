@@ -1,5 +1,3 @@
-# pylint: disable=too-many-lines
-#
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +14,6 @@
 
 """Forseti CLI."""
 
-# pylint: disable=too-many-locals
 
 from argparse import ArgumentParser
 import json
@@ -43,75 +40,6 @@ class DefaultParser(ArgumentParser):
         """
         self.print_usage()
         sys.exit(2)
-
-
-def define_playground_parser(parent):
-    """Define the playground service parser.
-
-    Args:
-        parent (argparser): Parent parser to hook into.
-    """
-
-    service_parser = parent.add_parser('playground', help='playground service')
-    action_subparser = service_parser.add_subparsers(
-        title='action',
-        dest='action')
-
-    add_role_parser = action_subparser.add_parser(
-        'define_role',
-        help='Defines a new role')
-    add_role_parser.add_argument(
-        'role',
-        help='Role name to define')
-    add_role_parser.add_argument(
-        'permissions',
-        nargs='+',
-        help='Permissions contained in the role')
-
-    delete_role_parser = action_subparser.add_parser(
-        'delete_role',
-        help='Delete a role')
-    delete_role_parser.add_argument(
-        'role',
-        help='Role name to delete')
-
-    add_member_parser = action_subparser.add_parser(
-        'define_member',
-        help='Defines a new member')
-    add_member_parser.add_argument(
-        'member',
-        help='Member type/name to define')
-    add_member_parser.add_argument(
-        'parents',
-        nargs='*',
-        default=None,
-        help='Parent type/names')
-
-    delete_member_parser = action_subparser.add_parser(
-        'delete_member',
-        help='Delete a member or relationship')
-    delete_member_parser.add_argument(
-        'member',
-        help='member to be deleted')
-    delete_member_parser.add_argument(
-        '--parent',
-        default='',
-        help='Parent type/name in case of deleting a relationship')
-    delete_member_parser.add_argument(
-        '--delete_relation_only',
-        type=bool,
-        default=False,
-        help='Delete only the relationship, not the member itself')
-
-    set_policy = action_subparser.add_parser(
-        'set_policy',
-        help='Set a new policy on a resource')
-    set_policy.add_argument(
-        'resource',
-        help='Resource to set policy on')
-    set_policy.add_argument(
-        'policy',
-        help='Policy in json format')
 
 
 def define_inventory_parser(parent):
@@ -233,7 +161,7 @@ def define_model_parser(parent):
         help='Context switch into the model.')
     use_model_parser.add_argument(
         'model',
-        help='Model to switch to, either hash or name'
+        help='Model to switch to, either handle or name'
         )
 
     _ = action_subparser.add_parser(
@@ -252,7 +180,7 @@ def define_model_parser(parent):
         help='Deletes an entire model')
     delete_model_parser.add_argument(
         'model',
-        help='Model to delete')
+        help='Model to delete, either handle or name')
 
     create_model_parser = action_subparser.add_parser(
         'create',
@@ -332,10 +260,6 @@ def define_explainer_parser(parent):
     action_subparser = service_parser.add_subparsers(
         title='action',
         dest='action')
-
-    _ = action_subparser.add_parser(
-        'denormalize',
-        help='Denormalize a model')
 
     list_resource_parser = action_subparser.add_parser(
         'list_resources',
@@ -516,6 +440,7 @@ def read_env(var_key, default):
 
 def define_parent_parser(parser_cls, config_env):
     """Define the parent parser.
+
     Args:
         parser_cls (type): Class to instantiate parser from.
         config_env (object): Configuration environment.
@@ -545,6 +470,7 @@ def define_parent_parser(parser_cls, config_env):
 
 def create_parser(parser_cls, config_env):
     """Create argument parser hierarchy.
+
     Args:
         parser_cls (cls): Class to instantiate parser from.
         config_env (object): Configuration environment
@@ -558,7 +484,6 @@ def create_parser(parser_cls, config_env):
         title='service',
         dest='service')
     define_explainer_parser(service_subparsers)
-    define_playground_parser(service_subparsers)
     define_inventory_parser(service_subparsers)
     define_config_parser(service_subparsers)
     define_model_parser(service_subparsers)
@@ -727,7 +652,8 @@ def run_model(client, config, output, config_env):
 
     def do_delete_model():
         """Delete a model."""
-        result = client.delete_model(config.model)
+        model = client.get_model(config.model)
+        result = client.delete_model(model.handle)
         output.write(result)
 
     def do_create_model():
@@ -745,7 +671,7 @@ def run_model(client, config, output, config_env):
             Warning: When the specified model is not usable or not existed
         """
         model = client.get_model(config.model)
-        if model and model.status in ["SUCCESS", "PARTIAL_SUCCESS"]:
+        if model and model.status in ['SUCCESS', 'PARTIAL_SUCCESS']:
             config_env['model'] = model.handle
         else:
             raise Warning('use_model failed, the specified model is '
@@ -813,11 +739,6 @@ def run_explainer(client, config, output, _):
     """
 
     client = client.explain
-
-    def do_denormalize():
-        """Denormalize a model."""
-        for access in client.denormalize():
-            output.write(access)
 
     def do_list_resources():
         """List resources by prefix"""
@@ -893,7 +814,6 @@ def run_explainer(client, config, output, _):
             output.write(access)
 
     actions = {
-        'denormalize': do_denormalize,
         'list_resources': do_list_resources,
         'list_members': do_list_members,
         'list_roles': do_list_roles,
@@ -909,57 +829,6 @@ def run_explainer(client, config, output, _):
     actions[config.action]()
 
 
-def run_playground(client, config, output, _):
-    """Run playground commands.
-        Args:
-            client (iam_client.ClientComposition): client to use for requests.
-            config (object): argparser namespace to use.
-            output (Output): output writer to use.
-            _ (object): Unused.
-    """
-
-    client = client.playground
-
-    def do_define_role():
-        """Define a new role"""
-        result = client.add_role(config.role,
-                                 config.permissions)
-        output.write(result)
-
-    def do_delete_role():
-        """Delete a role"""
-        result = client.del_role(config.role)
-        output.write(result)
-
-    def do_define_member():
-        """Define a new member"""
-        result = client.add_member(config.member,
-                                   config.parents)
-        output.write(result)
-
-    def do_delete_member():
-        """Delete a resource"""
-        result = client.del_member(config.member,
-                                   config.parent,
-                                   config.delete_relation_only)
-        output.write(result)
-
-    def do_set_policy():
-        """Set access"""
-        result = client.set_iam_policy(config.resource,
-                                       json.loads(config.policy))
-        output.write(result)
-
-    actions = {
-        'define_role': do_define_role,
-        'delete_role': do_delete_role,
-        'define_member': do_define_member,
-        'delete_member': do_delete_member,
-        'set_policy': do_set_policy}
-
-    actions[config.action]()
-
-
 OUTPUTS = {
     'text': TextOutput,
     'json': JsonOutput,
@@ -967,7 +836,6 @@ OUTPUTS = {
 
 SERVICES = {
     'explainer': run_explainer,
-    'playground': run_playground,
     'inventory': run_inventory,
     'config': run_config,
     'model': run_model,

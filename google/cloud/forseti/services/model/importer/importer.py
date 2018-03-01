@@ -68,10 +68,11 @@ class EmptyImporter(object):
         """Runs the import."""
 
         self.session.add(self.model)
-        self.model.add_description(json.dumps({
-            "source":"empty",
-            "pristine":True
-            }))
+        self.model.add_description(
+            json.dumps(
+                {'source':'empty', 'pristine':True}
+            )
+        )
         self.model.set_done()
         self.session.commit()
 
@@ -120,7 +121,7 @@ class InventoryImporter(object):
 
         Raises:
             NotImplementedError: If the importer encounters an unknown
-                                 inventory type.
+                inventory type.
         """
 
         gcp_type_list = [
@@ -171,10 +172,10 @@ class InventoryImporter(object):
                 self.model.add_description(json.dumps({
                     'source': 'inventory',
                     'source_info': {'inventory_index_id': inventory.index.id},
-                    "source_root":self._type_name(root),
+                    'source_root': self._type_name(root),
                     'pristine': True,
-                    "gsuite_enabled":inventory.type_exists(
-                        ["gsuite_group", "gsuite_user"])
+                    'gsuite_enabled': inventory.type_exists(
+                        ['gsuite_group', 'gsuite_user'])
                     }))
 
                 if root.get_type() in ['organization']:
@@ -368,7 +369,10 @@ class InventoryImporter(object):
                 msg = 'Role reference in iam policy not found: {}'.format(role)
                 self.model.add_warning(msg)
                 continue
-            for member in binding['members']:
+
+            #binding['members'] can have duplicate ids
+            members = set(binding['members'])
+            for member in members:
                 member = member.replace(':', '/', 1)
 
                 # We still might hit external users or groups
@@ -390,7 +394,7 @@ class InventoryImporter(object):
             # Get all the member objects to reference
             # in the binding row
             db_members = []
-            for member in binding['members']:
+            for member in members:
                 member = member.replace(':', '/', 1)
                 if member not in self.member_cache:
                     if member not in self.member_cache_policies:
@@ -410,9 +414,9 @@ class InventoryImporter(object):
 
         Args:
             resource (object): Resource object to convert from.
-            last_res_type (str): Previsouly processed resource type
-                                 used to spot transition between types
-                                 to execute pre/handler/post accordingly.
+            last_res_type (str): Previously processed resource type used to
+                spot transition between types to execute pre/handler/post
+                accordingly.
 
         Returns:
             str: Resource type that was processed during the execution.
@@ -649,6 +653,7 @@ class InventoryImporter(object):
 
     def _convert_computeproject(self, computeproject):
         """Convert a computeproject to a database object.
+
         Args:
             computeproject (object): computeproject to store.
         """
@@ -1066,7 +1071,7 @@ class InventoryImporter(object):
         data = organization.get_data()
         type_name = self._type_name(organization)
         org = self.dao.TBL_RESOURCE(
-            full_name=to_full_resource_name("", type_name),
+            full_name=to_full_resource_name('', type_name),
             type_name=type_name,
             name=organization.get_key(),
             type=organization.get_type(),
