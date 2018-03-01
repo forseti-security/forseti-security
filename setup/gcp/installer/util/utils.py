@@ -341,8 +341,7 @@ def show_loading(max_loading_time, exit_condition=None,
         # to be more user friendly.
         time.sleep(0.5)
         dots = '.' * (i % max_number_of_dots)
-        sys.stdout.write('\r{}{}..{} '.format(erase_line, message, dots))
+        sys.stdout.write('\r{}{}{} '.format(erase_line, message, dots))
         sys.stdout.flush()
     print ('time limit reached')
     return False
-

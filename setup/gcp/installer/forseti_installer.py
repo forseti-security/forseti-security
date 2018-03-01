@@ -69,7 +69,6 @@ class ForsetiInstaller(object):
         # After deployment.
         self.post_install_instructions(deploy_success,
                                        deployment_name,
-                                       deployment_tpl_path,
                                        conf_file_path,
                                        bucket_name)
 
@@ -131,14 +130,11 @@ class ForsetiInstaller(object):
             self.config.timestamp,
             self.config.dry_run)
 
-        # We are creating the deployment with async flag, wait for a few seconds
-        # to make sure the deployment is created
-        time.sleep(5)
         # Status tracker function, will return true if the deployment is done.
         status_tracker = (lambda: gcloud.check_deployment_status(
             deployment_name, constants.DeploymentStatus.DONE))
         loading_message = ('This may take a few minutes. Waiting '
-                           'for deployment to be completed')
+                           'for deployment to be completed...')
         deployment_completed = utils.show_loading(max_loading_time=900,
                                                   exit_condition=status_tracker,
                                                   message=loading_message)
@@ -298,8 +294,7 @@ class ForsetiInstaller(object):
         return forseti_conf_path
 
     def post_install_instructions(self, deploy_success, deployment_name,
-                                  deployment_tpl_path, forseti_conf_path,
-                                  bucket_name):
+                                  forseti_conf_path, bucket_name):
         """Show post-install instructions.
 
         Print link for deployment manager dashboard
@@ -308,7 +303,6 @@ class ForsetiInstaller(object):
         Args:
             deploy_success (bool): Whether deployment was successful
             deployment_name (str): Name of the deployment
-            deployment_tpl_path (str): Deployment template path
             forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
         """

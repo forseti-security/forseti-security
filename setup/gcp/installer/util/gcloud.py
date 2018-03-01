@@ -833,7 +833,7 @@ def check_deployment_status(deployment_name, status):
         bool: Whether or not the deployment status match with the given status.
     """
 
-    return_code, out, _ = utils.run_command(
+    _, out, _ = utils.run_command(
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
 

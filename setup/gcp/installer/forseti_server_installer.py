@@ -456,13 +456,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                   self.resource_root_id)
 
     def post_install_instructions(self, deploy_success, deployment_name,
-                                  deployment_tpl_path, forseti_conf_path,
-                                  bucket_name):
-
+                                  forseti_conf_path, bucket_name):
         super(ForsetiServerInstaller, self).post_install_instructions(
             deploy_success, deployment_name,
-            deployment_tpl_path, forseti_conf_path,
-            bucket_name)
+            forseti_conf_path, bucket_name)
         if self.has_roles_script:
             print(constants.MESSAGE_HAS_ROLE_SCRIPT.format(
                 self.resource_root_id))
