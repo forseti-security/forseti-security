@@ -140,7 +140,7 @@ def enable_apis(dry_run=False):
         return
 
     for api in constants.REQUIRED_APIS:
-        print('Enabling the {} API...'.format(api['name']),
+        print('Enabling the {} API... '.format(api['name']),
               end='')
         sys.stdout.flush()
         return_code, _, err = utils.run_command(
@@ -148,7 +148,7 @@ def enable_apis(dry_run=False):
         if return_code:
             print(err)
         else:
-            print('Enabled.')
+            print('enabled')
 
 
 def grant_client_svc_acct_roles(project_id,
@@ -169,7 +169,8 @@ def grant_client_svc_acct_roles(project_id,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account')
+    utils.print_banner('Assigning roles to the GCP service account',
+                       'Account id: {}'.format(gcp_service_account))
 
     roles = {
         'forseti_project': constants.PROJECT_IAM_ROLES_CLIENT
@@ -217,7 +218,8 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account')
+    utils.print_banner('Assigning roles to the GCP service account',
+                       'Account id: {}'.format(gcp_service_account))
     access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
@@ -338,13 +340,13 @@ def _grant_role(role, resource_args, resource_id,
         '--role={}'.format(role),
     ])
     if user_can_grant_roles:
-        print('Assigning {} on {}...'.format(role, resource_id), end='')
+        print('Assigning {} on {}... '.format(role, resource_id), end='')
         sys.stdout.flush()
         return_code, _, err = utils.run_command(iam_role_cmd)
         if return_code:
             print(err)
         else:
-            print('Done.')
+            print('assigned')
             return None
 
     return iam_role_cmd
@@ -456,7 +458,8 @@ def create_or_reuse_service_acct(acct_type,
     choices = ['Create {}'.format(account), 'Reuse {}'.format(account)]
 
     if not advanced_mode:
-        print ('Creating {}\n'.format(account))
+        print ('Creating {}... '.format(account), end='')
+        sys.stdout.flush()
         choice_index = 1
     else:
         print_fun = lambda ind, val: print('[{}] {}'.format(ind + 1, val))
@@ -480,6 +483,7 @@ def create_or_reuse_service_acct(acct_type,
             print('Could not create the service account. Terminating '
                   'because this is an unexpected error.')
             sys.exit(1)
+        print ('created')
     else:
         return_code, out, err = utils.run_command(
             ['gcloud', 'iam', 'service-accounts', 'list', '--format=json'])
@@ -502,7 +506,7 @@ def create_or_reuse_service_acct(acct_type,
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
         acct_email = svc_accts[acct_idx - 1]['email']
-
+    print ('Service account id: {}'.format(acct_email))
     return acct_email
 
 
@@ -615,7 +619,7 @@ def get_forseti_server_info():
         str: Zone of the forseti server application, default to 'us-central1-c'
         str: Name of the forseti server instance
     """
-    ip_addr, zone, name = get_vm_instance_info('forseti-security-server',
+    ip_addr, zone, name = get_vm_instance_info('forseti-server',
                                                try_match=True)
 
     if ip_addr is None:
@@ -707,9 +711,13 @@ def create_firewall_rule(rule_name,
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
-    return_code, _, err = utils.run_command(gcloud_command_args)
+    return_code, out, err = utils.run_command(gcloud_command_args)
     if return_code:
         print (err)
+    # print the output from gcp if the rule is created, example of the output
+    # NAME   NETWORK  DIRECTION  PRIORITY  ALLOW  DENY
+    # apple  default  INGRESS    1000             tcp:23
+    print (out)
 
 
 def enable_os_login(instance_name, zone):
@@ -732,7 +740,7 @@ def create_deployment(project_id,
                       organization_id,
                       deploy_tpl_path,
                       installation_type,
-                      datetimestamp,
+                      timestamp,
                       dry_run):
     """Create the GCP deployment.
 
@@ -741,21 +749,12 @@ def create_deployment(project_id,
         organization_id (str): GCP organization id.
         deploy_tpl_path (str): Path of deployment template.
         installation_type (str): Type of the installation (client/server).
-        datetimestamp (str): Timestamp.
+        timestamp (str): Timestamp.
         dry_run (bool): Whether the installer is in dry run mode.
 
     Returns:
-        str: Name of the deployment
-        int: The return code value of running `gcloud` command to create
-            the deployment.
+        str: Name of the deployment.
     """
-
-    def _ping_deployment_manager():
-        """Check deployment manager status.
-        """
-        utils.run_command(
-            ['gcloud', 'deployment-manager', 'deployments',
-             'describe', 'testing-deployment-manager-connection'])
 
     if dry_run:
         print('This is a dry run, so skipping this step.')
@@ -764,25 +763,25 @@ def create_deployment(project_id,
     utils.print_banner('Create Forseti {} deployment'.format(
         installation_type))
 
-    print ('This may take a few minutes.')
-    _ping_deployment_manager() # Make sure deployment-manager is ready
-    deployment_name = 'forseti-security-{}-{}'.format(installation_type,
-                                                      datetimestamp)
+    # Ping the deployment manager and make sure the API is ready
+    utils.run_command(
+        ['gcloud', 'deployment-manager', 'deployments',
+         'describe', 'testing-deployment-manager-connection'])
+
+    deployment_name = 'forseti-{}-{}'.format(installation_type,
+                                             timestamp)
     print('Deployment name: {}'.format(deployment_name))
     print('Monitor the deployment progress here: '
           'https://console.cloud.google.com/deployments/details/'
           '{}?project={}&organizationId={}\n'.format(
               deployment_name, project_id, organization_id))
-    return_code, out, err = utils.run_command(
-        ['gcloud', 'deployment-manager', 'deployments', 'create',
-         deployment_name, '--config={}'.format(deploy_tpl_path)])
-    if return_code:
-        print(err)
-    else:
-        print(out)
-        print('\nCreated deployment successfully.')
 
-    return deployment_name, return_code
+    # Start the deployment
+    utils.run_command(
+        ['gcloud', 'deployment-manager', 'deployments', 'create',
+         deployment_name, '--config={}'.format(deploy_tpl_path), '--async'])
+
+    return deployment_name
 
 
 def check_vm_init_status(vm_name, zone):
@@ -825,3 +824,25 @@ def get_domain_from_organization_id(organization_id):
     org_info = json.loads(out)
 
     return org_info.get('displayName', '')
+
+
+def check_deployment_status(deployment_name, status):
+    """Check the status of a deployment.
+
+    Args:
+        deployment_name (str): Deployment name.
+        status (DeploymentStatus): Status of the deployment.
+
+    Returns:
+        bool: Whether or not the deployment status match with the given status.
+    """
+
+    _, out, _ = utils.run_command(
+        ['gcloud', 'deployment-manager', 'deployments', 'describe',
+         deployment_name, '--format=json'])
+
+    deployment_info = json.loads(out)
+
+    current_status = deployment_info['deployment']['operation']['status']
+
+    return current_status == status.value
