@@ -23,19 +23,19 @@ import constants
 import utils
 
 
-def generate_deployment_templates(template_type, values, datetimestamp):
+def generate_deployment_templates(template_type, values, timestamp):
     """Generate deployment templates.
 
     Args:
-        template_type (str): Type of the template, either cli or server
-        values (dict): Values needed for deployment
-        datetimestamp (str): Timestamp
+        template_type (str): Type of the template, either cli or server.
+        values (dict): Values needed for deployment.
+        timestamp (str): Timestamp.
 
     Returns:
-        str: Path of the deployment template
+        str: Path of the deployment template.
 
     Raises:
-        KeyError: KeyError
+        KeyError: KeyError.
     """
 
     template_type = template_type.lower()
@@ -57,7 +57,7 @@ def generate_deployment_templates(template_type, values, datetimestamp):
         os.path.join(
             constants.ROOT_DIR_PATH,
             'deployment-templates',
-            'deploy-forseti-{}-{}.yaml'.format(template_type, datetimestamp)))
+            'deploy-forseti-{}-{}.yaml'.format(template_type, timestamp)))
 
     if generate_file_from_template(deploy_tpl_path,
                                    out_tpl_path,
@@ -68,13 +68,13 @@ def generate_deployment_templates(template_type, values, datetimestamp):
     return None
 
 
-def generate_forseti_conf(template_type, vals, datetimestamp):
+def generate_forseti_conf(template_type, vals, timestamp):
     """Generate Forseti conf file.
 
     Args:
         template_type (str): Type of the template, either cli or server
         vals (dict): Values needed for deployment
-        datetimestamp (str): Timestamp
+        timestamp (str): Timestamp
 
     Returns:
         str: Path of the deployment template
@@ -98,7 +98,7 @@ def generate_forseti_conf(template_type, vals, datetimestamp):
     forseti_conf_gen = os.path.abspath(
         os.path.join(
             constants.ROOT_DIR_PATH, 'configs', template_type,
-            'forseti_conf_{}_{}.yaml'.format(template_type, datetimestamp)))
+            'forseti_conf_{}_{}.yaml'.format(template_type, timestamp)))
 
     conf_values = utils.sanitize_conf_values(vals)
 
