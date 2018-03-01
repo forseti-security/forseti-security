@@ -85,6 +85,12 @@ class ImporterTest(ForsetiTestCase):
                 inventory_id=FAKE_TIMESTAMP)
             import_runner.run()
 
+            # make sure the 'full_name' for policies has an even number of
+            # segments
+            for policy in data_access.scanner_iter(session, 'iam_policy'):
+                self.assertFalse(
+                        len(filter(None, policy.full_name.split('/'))) % 2)
+
         model = self.model_manager.model(self.model_name)
         model_description = self.model_manager.get_description(self.model_name)
 
