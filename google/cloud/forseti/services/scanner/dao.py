@@ -139,7 +139,7 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
-                created_at_datetime =_get_utc_now()
+                created_at_datetime = _get_utc_now()
                 for violation in violations:
                     violation_hash = _create_violation_hash(
                         violation.get('full_name', ''),
