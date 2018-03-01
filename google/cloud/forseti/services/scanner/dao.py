@@ -237,9 +237,10 @@ def _create_violation_hash(violation_full_name, inventory_data, violation_data):
         return ''
 
     try:
+        # Group resources do not have full name.  Issue #1072
         violation_hash.update(
-            violation_full_name +
-            inventory_data +
+            json.dumps(violation_full_name) +
+            json.dumps(inventory_data, sort_keys=True) +
             json.dumps(violation_data, sort_keys=True)
         )
     except TypeError as e:
