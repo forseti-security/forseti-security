@@ -126,7 +126,7 @@ class ScannerDaoTest(ForsetiTestCase):
                         '\nFound: %s' % (key, ',\n'.join(expected_hash_values),
                                          saved_key_value)
                     )
-                elif key in ['created_at','audit_invocation_time']:
+                elif key in ['created_at']:
                     self.assertIsInstance(
                        saved_key_value, datetime,
                         'The key value of "%s" differs:\nExpected type: %s'

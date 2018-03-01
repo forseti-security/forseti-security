@@ -16,6 +16,8 @@
 
 import datetime
 
+from google.cloud.forseti.common.util import names
+
 # pylint: disable=invalid-name
 
 
@@ -125,7 +127,7 @@ class Memory(Storage):
             handle = handle
         else:
             handle = datetime.datetime.utcnow().strftime(
-                '%Y-%m-%dT%H:%M:%S.%f')[:-1]
+                names.INVENTORY_SERVICE_STARTTIME)[:-1]
         return handle
 
     def write(self, resource):

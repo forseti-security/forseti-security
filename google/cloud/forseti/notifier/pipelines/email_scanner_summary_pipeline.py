@@ -18,6 +18,7 @@ import collections
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import names
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
@@ -128,7 +129,7 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
                 subject of the email, e.g. 'Policy Scan'.
         """
         # Render the email template with values.
-        scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
+        scan_date = now_utc.strftime(names.EMAIL_SUMMARY_TIMESTAMP)
         email_content = EmailUtil.render_from_template(
             'scanner_summary.jinja', {
                 'scan_date':  scan_date,

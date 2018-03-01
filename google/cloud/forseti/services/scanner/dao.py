@@ -63,7 +63,7 @@ def define_violation(dbengine):
         full_name = Column(String(1024))
         inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
-        audit_invocation_time = Column(DateTime())
+        audit_invocation_time = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
         rule_name = Column(String(256))

@@ -21,10 +21,7 @@ import os
 import parameterized
 import unittest
 
-import tests.unittest_utils
-from google.cloud.forseti.common.gcp_type import folder
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.util import names
 from google.cloud.forseti.scanner.scanners import firewall_rules_scanner
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from tests import unittest_utils
@@ -95,7 +92,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             * Scanner output filename matches the format.
         """
         fake_utcnow_str = self.fake_utcnow.strftime(
-            self.scanner.OUTPUT_TIMESTAMP_FMT)
+            names.OUTPUT_TIMESTAMP_FMT)
 
         expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
         actual = self.scanner._get_output_filename()

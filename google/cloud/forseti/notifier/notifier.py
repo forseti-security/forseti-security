@@ -18,6 +18,7 @@ import inspect
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import names
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
@@ -26,8 +27,6 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
-
-TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%SZ'
 
 # pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
@@ -67,7 +66,8 @@ def convert_created_at_to_timestamp(violations):
             converted to timestamp string.
     """
     for violation in violations:
-        violation.created_at = violation.created_at.strftime(TIMESTAMP_FMT)
+        violation.created_at = violation.created_at.strftime(
+            names.TIMESTAMP_FMT)
 
     return violations
 

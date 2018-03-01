@@ -36,7 +36,7 @@ class ScannerBuilder(object):
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
-            audit_invocation_time (datetime): The time of a given invocation of
+            audit_invocation_time (str): The time of a given invocation of
                 scanner.
             model_name (str): name of the data model.
         """

@@ -23,10 +23,6 @@ from google.cloud.forseti.notifier.pipelines import base_notification_pipeline a
 
 LOGGER = logger.get_logger(__name__)
 
-TEMP_DIR = '/tmp'
-VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
-
 
 class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
     """Slack webhook pipeline to perform notifications"""

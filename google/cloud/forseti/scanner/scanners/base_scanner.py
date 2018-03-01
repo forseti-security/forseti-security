@@ -20,6 +20,7 @@ import shutil
 
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import names
 
 
 LOGGER = logger.get_logger(__name__)
@@ -29,8 +30,6 @@ class BaseScanner(object):
     """This is a base class skeleton for scanners."""
     __metaclass__ = abc.ABCMeta
 
-    OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
-    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, audit_invocation_time, rules):
@@ -41,7 +40,7 @@ class BaseScanner(object):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model.
-            audit_invocation_time (datetime): The time of a given invocation of
+            audit_invocation_time (str): The time of a given invocation of
                 scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
@@ -70,6 +69,7 @@ class BaseScanner(object):
             self.service_config.model_manager.get_description(self.model_name))
         inventory_index_id = (
             model_description.get('source_info').get('inventory_index_id'))
+        audit_invocation_time = self._get_audit_invocation_time_str()
 
         # TODO: Capture violations errors with the new violation_access.
         # Add a unit test for the errors.
@@ -78,7 +78,7 @@ class BaseScanner(object):
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
         violation_access.create(violations, inventory_index_id,
-                                self.audit_invocation_time)
+                                audit_invocation_time)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
@@ -93,7 +93,7 @@ class BaseScanner(object):
                 now_utc timestamp.
         """
         output_timestamp = self._get_audit_invocation_time_str()
-        output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
+        output_filename = names.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
 
         return output_filename
 
@@ -127,4 +127,4 @@ class BaseScanner(object):
             Returns:
                 str: A timestamp in the classes default format.
         """
-        return self.audit_invocation_time.strftime(self.OUTPUT_TIMESTAMP_FMT)
+        return self.audit_invocation_time.strftime(names.OUTPUT_TIMESTAMP_FMT)
