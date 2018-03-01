@@ -35,6 +35,44 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 LOGGER = logger.get_logger(__name__)
 
 
+def _add_bucket_ancestor_bindings(policy_data):
+    """Add bucket relevant IAM policy bindings from ancestors.
+
+    Resources can inherit policy bindings from ancestors in the resource
+    manager tree. For example: a GCS bucket inherits a 'objectViewer' role
+    from a project or folder (up in the tree).
+
+    So far the IAM rules engine only checks the set of bindings directly
+    attached to a resource (direct bindings set (DBS)). We need to add
+    relevant bindings inherited from ancestors to DBS so that these are
+    also checked for violations.
+
+    NOTA BENE: this function only handles buckets and bindings relevant to
+    these at present.
+
+    Args:
+        policy_data (list): list of (parent resource, iam_policy resource,
+            policy bindings) tuples to find violations in.
+    """
+    storage_iam_roles = frozenset([
+        'roles/storage.admin',
+        'roles/storage.objectViewer',
+        'roles/storage.objectCreator',
+        'roles/storage.objectAdmin',
+    ])
+    bucket_data = [(r, bs) for (r, _, bs) in policy_data if r.type == 'bucket']
+    for bucket, bindings in bucket_data:
+        ancestor_bindings = [
+            bs for (r, _, bs) in policy_data
+            if r.full_name != bucket.full_name
+            and not bucket.full_name.find(r.full_name)]
+        for anbs in ancestor_bindings:
+            for anb in anbs:
+                if anb.role_name not in storage_iam_roles or anb in bindings:
+                    continue
+                bindings.append(anb)
+
+
 class IamPolicyScanner(base_scanner.BaseScanner):
     """Scanner for IAM data."""
 
@@ -157,8 +195,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            policies (list): The list of (gcp_type, forseti_data_model_resource)
-                tuples to find violations in.
+            policies (list): list of (parent resource, iam_policy resource,
+                policy bindings) tuples to find violations in.
 
         Returns:
             list: A list of all violations

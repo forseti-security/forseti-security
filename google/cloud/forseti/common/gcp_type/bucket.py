@@ -36,6 +36,7 @@ class Bucket(resource.Resource):
             data=None,
             name=None,
             display_name=None,
+            parent=None,
             lifecycle_state=BucketLifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -46,6 +47,7 @@ class Bucket(resource.Resource):
             name (str): The bucket's unique GCP name, with the
                 format "buckets/{id}".
             display_name (str): The bucket's display name.
+            parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
         """
@@ -54,6 +56,7 @@ class Bucket(resource.Resource):
             resource_type=resource.ResourceType.BUCKET,
             name=name,
             display_name=display_name,
+            parent=parent,
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
