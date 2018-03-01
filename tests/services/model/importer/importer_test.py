@@ -17,12 +17,10 @@ import os
 import shutil
 import tempfile
 import unittest
-import json
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
-from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 FAKE_TIMESTAMP = '2018-01-28T10:20:30.00000'
 
 
