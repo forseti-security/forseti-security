@@ -99,41 +99,40 @@ class IamRulesScannerTest(ForsetiTestCase):
             display_name='My project 2, internal data',
             parent=self.project2,
             full_name='organization/234/project/proj-2/bucket/internal-2/',
-
             data='fake_project_data_222_bucket_1')
 
 
         self.mock_org_policy_resource = mock.MagicMock()
         self.mock_org_policy_resource.full_name = (
-            'organization/234/iam_policy/234/')
+            'organization/234/iam_policy/organization:234/')
 
         self.mock_folder1_policy_resource = mock.MagicMock()
         self.mock_folder1_policy_resource.full_name = (
-            'organization/234/folder/333/iam_policy/333/')
+            'organization/234/folder/333/iam_policy/folder:333/')
 
         self.mock_project1_policy_resource = mock.MagicMock()
         self.mock_project1_policy_resource.full_name = (
-            'organization/234/project/proj-1/iam_policy/proj-1')
+            'organization/234/project/proj-1/iam_policy/project:proj-1')
 
         self.mock_project2_policy_resource = mock.MagicMock()
         self.mock_project2_policy_resource.full_name = (
-            'organization/234/project/proj-2/iam_policy/proj-2')
+            'organization/234/project/proj-2/iam_policy/project:proj-2')
 
         self.mock_project3_policy_resource = mock.MagicMock()
         self.mock_project3_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-3/iam_policy/proj-3')
+            'organization/234/folder/333/project/proj-3/iam_policy/project:proj-3')
 
         self.mock_bucket_3_1_policy_resource = mock.MagicMock()
         self.mock_bucket_3_1_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-3/bucket/internal-3/iam_policy/internal-3')
+            'organization/234/folder/333/project/proj-3/bucket/internal-3/iam_policy/bucket:internal-3')
 
         self.mock_bucket_3_2_policy_resource = mock.MagicMock()
         self.mock_bucket_3_2_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-3/bucket/public-3/iam_policy/public-3')
+            'organization/234/folder/333/project/proj-3/bucket/public-3/iam_policy/bucket:public-3')
 
         self.mock_bucket_2_1_policy_resource = mock.MagicMock()
         self.mock_bucket_2_1_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-2/bucket/internal-2/iam_policy/internal-2')
+            'organization/234/folder/333/project/proj-2/bucket/internal-2/iam_policy/bucket:internal-2')
 
 
     def test_get_output_filename(self):
