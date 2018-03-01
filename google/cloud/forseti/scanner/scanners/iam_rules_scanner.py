@@ -45,7 +45,8 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            audit_invocation_time (datetime): The time of a given invocation of scanner.
+            audit_invocation_time (datetime): The time of a given invocation of
+                scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IamPolicyScanner, self).__init__(

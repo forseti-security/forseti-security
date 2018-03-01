@@ -41,7 +41,8 @@ class BaseScanner(object):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model.
-            audit_invocation_time (datetime): The time of a given invocation of scanner.
+            audit_invocation_time (datetime): The time of a given invocation of
+                scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
@@ -91,7 +92,7 @@ class BaseScanner(object):
             str: The output filename for the csv, formatted with the
                 now_utc timestamp.
         """
-        output_timestamp = self._get_audit_invocation_time_as_string()
+        output_timestamp = self._get_audit_invocation_time_str()
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
 
         return output_filename
@@ -120,7 +121,7 @@ class BaseScanner(object):
             # Otherwise, just copy it to the output path.
             shutil.copy(csv_name, full_output_path)
 
-    def _get_audit_invocation_time_as_string(self):
+    def _get_audit_invocation_time_str(self):
         """Return a consistent strftime of the the invocation_id.
 
             Returns:
