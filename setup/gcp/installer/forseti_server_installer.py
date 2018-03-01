@@ -92,10 +92,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def prompt_v1_configs_migration(self):
         """Ask the user if they want to migrate conf/rule files
         from v1 to v2."""
-        while self.migrate_from_v1 != 'y' and self.migrate_from_v1 != 'n':
-            self.migrate_from_v1 = raw_input(
-                'Forseti v1 detected, would you like to migrate the '
-                'existing configurations to v2? (y/n): ').lower()
+        choice = ''
+        while choice != 'y' and choice != 'n':
+            choice = raw_input(
+                constants.QUESTION_SHOULD_MIGRATE_FROM_V1).lower()
+        self.migrate_from_v1 = choice == 'y'
 
     def populate_config_info_from_v1(self):
         """Retrieve the v1 configuration object."""
@@ -174,6 +175,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
         # Rule to block out all the ingress traffic.
+        utils.print_banner('Creating firewall rules')
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_acct_email],
@@ -275,11 +277,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if choice == 'y':
             self.user_can_grant_roles = True
-            print('Forseit will grant required roles on the target: %s.' %
+            print('Forseit will grant required roles on the target: %s' %
                   self.resource_root_id)
         else:
             self.user_can_grant_roles = False
-            print('Forseit will NOT grant required roles on the target: %s.' %
+            print('Forseit will NOT grant required roles on the target: %s' %
                   self.resource_root_id)
 
     def get_deployment_values(self):
@@ -455,13 +457,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
                   self.resource_root_id)
 
     def post_install_instructions(self, deploy_success, deployment_name,
-                                  deployment_tpl_path, forseti_conf_path,
-                                  bucket_name):
-
+                                  forseti_conf_path, bucket_name):
         super(ForsetiServerInstaller, self).post_install_instructions(
             deploy_success, deployment_name,
-            deployment_tpl_path, forseti_conf_path,
-            bucket_name)
+            forseti_conf_path, bucket_name)
         if self.has_roles_script:
             print(constants.MESSAGE_HAS_ROLE_SCRIPT.format(
                 self.resource_root_id))
