@@ -23,17 +23,15 @@ services:
   - docker
 
 before_install:
-  # Build the Forseti image and start the container.
-  - ./setup/scripts/build_docker.sh
+  - ./setup/scripts/docker_setup_forseti.sh
 
 install:
   -
 
 script:
-  # Run pylint and unittests on our previously built Docker container.
-  - ./setup/scripts/install_forseti_docker.sh
-  - ./setup/scripts/test_forseti_docker.sh
-  - ./setup/scripts/lint_forseti_docker.sh
+  - ./setup/scripts/docker_install_forseti.sh
+  - ./setup/scripts/docker_unittest_forseti.sh
+  - ./setup/scripts/docker_pylint_forseti.sh
 
 after_success:
   # Collect codecov results.
