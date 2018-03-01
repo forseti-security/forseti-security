@@ -18,7 +18,7 @@ if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
     echo -n "Force removing any running containers... "
     if [ $(docker ps -a -q) ]; then
-        $(docker -l error rm -f $(docker ps -a -q)) 1> /dev/null
+        docker -l error rm -f $(docker ps -a -q) 1> /dev/null
         echo "done."
     fi
     echo "none found."
@@ -38,12 +38,12 @@ fi
 # Check to see that the docker command is available to us.
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
-    echo -n "Building our docker base image... "
-    $(docker -l error build -t forseti/base -f setup/docker/base .) 1> /dev/null
+    echo -n "Building our Docker base image... "
+    docker -l error build -t forseti/base -f setup/docker/base . 1> /dev/null
     echo "done."
-    echo -n "Building our Forseti image from the base image... "
-    $(docker -l error build -t forseti/build -f setup/docker/forseti --no-cache .) 1> /dev/null
+    echo -n "Building our Forseti image from the Docker base image... "
+    docker -l error build -t forseti/build -f setup/docker/forseti --no-cache . 1> /dev/null
     echo "done."
 else
-    echo "ERROR: Docker must be installed and it isn't, exiting." || exit 1
+    echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi

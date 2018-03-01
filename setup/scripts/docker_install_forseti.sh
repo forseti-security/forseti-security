@@ -30,7 +30,7 @@ if [ -x "$(command -v docker)" ]; then
     else
         # We're not on Travis, run without the CI_ENV environment variable.
         echo -n "Starting our container for testing and code verification... "
-        docker run -it -d --name build forseti/build /bin/bash
+        docker -l error run -it -d --name build forseti/build /bin/bash
         echo "done."
     fi
 else
@@ -43,4 +43,4 @@ echo -n "Testing the container for a succesful Forseti Security installation... 
 $(docker -l error exec -it build /bin/bash -c "hash forseti") || exit 1
 $(docker -l error exec -it build /bin/bash -c "hash forseti_enforcer") || exit 1
 $(docker -l error exec -it build /bin/bash -c "hash forseti_server") || exit 1
-echo -n "done."
+echo "done."

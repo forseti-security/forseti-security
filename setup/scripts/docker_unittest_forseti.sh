@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Running unittests."
+echo "Running unittests... "
 
 # Check to see if we're on Travis.
 if [ ${TRAVIS+x} ]; then
