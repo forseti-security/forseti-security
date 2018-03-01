@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Running pylint."
+echo -n "Running pylint."
 
 docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"
