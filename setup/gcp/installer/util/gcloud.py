@@ -619,7 +619,7 @@ def get_forseti_server_info():
         str: Zone of the forseti server application, default to 'us-central1-c'
         str: Name of the forseti server instance
     """
-    ip_addr, zone, name = get_vm_instance_info('forseti-security-server',
+    ip_addr, zone, name = get_vm_instance_info('forseti-server',
                                                try_match=True)
 
     if ip_addr is None:
@@ -763,8 +763,6 @@ def create_deployment(project_id,
     utils.run_command(
         ['gcloud', 'deployment-manager', 'deployments',
          'describe', 'testing-deployment-manager-connection'])
-
-    print ('This may take a few minutes.')
 
     deployment_name = 'forseti-{}-{}'.format(installation_type,
                                              timestamp)
