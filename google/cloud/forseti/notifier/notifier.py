@@ -66,11 +66,10 @@ def convert_created_at_to_timestamp(violations):
         list: List of violations as sqlalchemy row/record object with created_at
             converted to timestamp string.
     """
-    violations_with_converted_timestamp = []  # pylint: disable=invalid-name
     for violation in violations:
         violation.created_at = violation.created_at.strftime(TIMESTAMP_FMT)
-        violations_with_converted_timestamp.append(violation)
-    return violations_with_converted_timestamp
+
+    return violations
 
 def process(message):
     """Process messages about what notifications to send.
@@ -148,7 +147,6 @@ def run(inventory_index_id, service_config=None):
         violations_as_dict.append(
             scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
-    # pylint: disable=redefined-variable-type
     violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
