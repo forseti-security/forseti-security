@@ -236,7 +236,7 @@ def _create_violation_hash(violation_full_name, inventory_data, violation_data):
     try:
         violation_hash.update(
             violation_full_name +
-            inventory_data +
+            json.dumps(inventory_data, sort_keys=True) +
             json.dumps(violation_data, sort_keys=True)
         )
     except TypeError as e:

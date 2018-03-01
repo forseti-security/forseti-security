@@ -92,10 +92,10 @@ class ScannerDaoTest(ForsetiTestCase):
         saved_violations = violation_access.list()
 
         expected_hash_values = [
-          (u'fbe237bd0c7bdfcd14379fbe3c156fc6651166cd06639577bd7f86df4d78c9f34a'
-            '62f60e09022e34d7c9ee82ab0de1b7091a7e1d550492b6fd54d8ab1a75cd8e'),
-          (u'e40431f9617ff70f07f93cb2440121a5a3e9c39ec9bbfbaae529feb310a8acaae9'
-             '42a61443145d9d6773f72be90ff8ac2518e63b1face15ce8895a9c571cf642')
+          (u'4c473e73e0504ceadda51020486c1f1cbc7e4ad6afafc4e217d7ec6829d7622c69'
+            'b7ca4755812b74a65f220930df2031c22853a6ab02458c806f3b96d9408974'),
+          (u'79c3b44d78a5ad57e112a8ab02f5d9050058dcc7e3ce6748f453ec4e3589ddec09'
+            '22b74bad1311c6e3c2d03cba186b2a2a5d322cb76a3aeed58c47f67f18eceb')
         ]
 
         keys = ['inventory_index_id', 'resource_id', 'full_name',
@@ -197,7 +197,7 @@ class ScannerDaoTest(ForsetiTestCase):
         test_hash = hashlib.new('sha512')
         test_hash.update(
             self.test_violation_full_name +
-            self.test_inventory_data +
+            json.dumps(self.test_inventory_data) +
             json.dumps(self.test_violation_data)
         )
         expected_hash = test_hash.hexdigest()
@@ -235,6 +235,14 @@ class ScannerDaoTest(ForsetiTestCase):
             self.test_violation_data)
 
         self.assertEqual(expected_hash, returned_hash)
+
+    def test_create_violation_hash_with_inventory_data_not_string(self):
+        expected_hash = 'ae954dae15bc46b421564f24e3a612016d28b1aadbb181e3a43bb5872ba61307a85a106e6c41521fc15c98dc1edc5ac006ac8ab8e6c72bc6619d2bbd01d95277'
+        returned_hash = scanner_dao._create_violation_hash(
+            self.test_violation_full_name,
+            ['aaa', 'bbb', 'ccc'],
+            self.test_violation_data)                                                  
+        self.assertEquals(expected_hash, returned_hash)
 
 
 if __name__ == '__main__':
