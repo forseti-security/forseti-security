@@ -225,7 +225,7 @@ MESSAGE_NO_CLOUD_SHELL = (
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
     'A Forseti configuration file (configs/{installation_type}/'
-    'forseti_conf_{installation_type}_{datetimestamp}.yaml) '
+    'forseti_conf_{installation_type}_{timestamp}.yaml) '
     'has been generated. If you wish to change your '
     'Forseti configuration or rules, e.g. enabling G Suite '
     'Groups collection, either download the conf file in '
