@@ -132,8 +132,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
 
         Args:
             resource (gcp_type): The resource that the policy belongs to.
-            policy (forseti_data_model_resource): The policy to compare
-                against the rules.
+            policy (resource): The policy to compare against the rules.
                 See https://cloud.google.com/iam/reference/rest/v1/Policy.
             policy_bindings (list): list of bindings found in `policy.data`
             force_rebuild (bool): If True, rebuilds the rule book.
