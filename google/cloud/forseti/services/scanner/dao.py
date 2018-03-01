@@ -20,6 +20,7 @@ import hashlib
 import json
 
 from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy import String
 from sqlalchemy import Integer
 from sqlalchemy import Text
@@ -39,8 +40,16 @@ LOGGER = logger.get_logger(__name__)
 
 TIMESTAMP_FORMAT = string_formats.TIMESTAMP_TIMEZONE_NAME
 
-def _get_created_at_timestamp(str_format=TIMESTAMP_FORMAT):
-    """Create a string representation of a timestamp with utcnow().
+def _get_utc_now():
+    """Get a datetime object for utcnow()
+
+    Returns:
+          datetime: A datetime object representin utcnow().
+    """
+    return datetime.utcnow()
+
+def _get_utc_now_timestamp(str_format=TIMESTAMP_FORMAT):
+    """Get a str representing utcnow()
 
     Args:
         str_format (str): The requested format string.
@@ -48,7 +57,9 @@ def _get_created_at_timestamp(str_format=TIMESTAMP_FORMAT):
     Returns:
           str: A timestamp in the classes default timestamp format.
     """
-    return datetime.utcnow().strftime(str_format)
+    utc_now = _get_utc_now()
+
+    return utc_now.strftime(str_format)
 
 def define_violation(dbengine):
     """Defines table class for violations.
@@ -71,7 +82,7 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
-        created_at_timestamp = Column(String(256))
+        created_at_datetime = Column(DateTime())
         full_name = Column(String(1024))
         inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
@@ -128,9 +139,8 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
-                created_at_timestamp = self._get_created_at_timestamp()
+                created_at_datetime =_get_utc_now()
                 for violation in violations:
-
                     violation_hash = _create_violation_hash(
                         violation.get('full_name', ''),
                         violation.get('inventory_data', ''),
@@ -149,7 +159,7 @@ def define_violation(dbengine):
                             violation.get('violation_data')),
                         inventory_data=violation.get('inventory_data'),
                         violation_hash=violation_hash,
-                        created_at_timestamp=created_at_timestamp
+                        created_at_datetime=created_at_datetime
                     )
 
                     session.add(violation)

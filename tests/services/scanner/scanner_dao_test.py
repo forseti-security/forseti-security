@@ -14,6 +14,7 @@
 
 """ Unit Tests for Scanner DAO. """
 
+from datetime import datetime
 import hashlib
 
 from itertools import izip
@@ -96,7 +97,7 @@ class ScannerDaoTest(ForsetiTestCase):
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
                 'violation_data', 'violation_hash', 'inventory_data',
-                'created_at_timestamp']
+                'created_at_datetime']
 
         for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
             for key in keys:
@@ -117,11 +118,12 @@ class ScannerDaoTest(ForsetiTestCase):
                         '\nFound: %s' % (key, ',\n'.join(expected_hash_values),
                                          saved_key_value)
                     )
-                elif key == 'created_at_timestamp':
-                    # Don't check values, just its presence.
-                    self.assertIsNotNone(
-                        'The key value of "%s" is null: %s' % (
-                          key, saved_key_value)
+                elif key == 'created_at_datetime':
+                    self.assertIsInstance(
+                        saved_key_value, datetime,
+                        'The key value of "%s" differs:\n Expected type: %s'
+                        '\nFound type: %s' % (key, type(datetime),
+                                              type(saved_key_value))
                     )
                 else:
                     self.assertEquals(
@@ -175,10 +177,10 @@ class ScannerDaoTest(ForsetiTestCase):
             }
         ]
 
-        # It's useless testing 'created_at' as we can't mock datetime and we
-        # only care about its type and not its value.
+        # It's useless testing 'created_at_datetime' as we can't mock datetime
+        # and we only care about its type and not its value.
         for violation in converted_violations_as_dict:
-            del violation['created_at_timestamp']
+            del violation['created_at_datetime']
 
         self.assertEqual(expected_violations_as_dict,
                          converted_violations_as_dict)
