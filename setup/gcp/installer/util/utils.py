@@ -43,15 +43,16 @@ def id_from_name(name):
     return name[name.index('/')+1:]
 
 
-def print_banner(text):
+def print_banner(*args):
     """Print a banner.
 
     Args:
-        text (str): Text to put in the banner.
+        args (str): Text(s) to put in the banner.
     """
     print('')
     print('+-------------------------------------------------------')
-    print('|  %s' % text)
+    for text in args:
+        print('|  {}'.format(text))
     print('+-------------------------------------------------------')
     print('')
 
@@ -163,15 +164,15 @@ def generate_service_acct_info(prefix, modifier, installation_type,
         str: Service account name.
     """
 
-    # Service account email should contains timestamp due to the
-    # uniqueness requirement
-    service_account_email = full_service_acct_email(
-        constants.SERVICE_ACCT_NAME_FMT.format(
-            prefix, modifier, timestamp), project_id)
-
-    # Service account name should use installation type for clarity purpose
     service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
-        prefix, modifier, installation_type)
+        installation_type, prefix, modifier, timestamp)
+
+    # Service account email will not contain the modifier due
+    # to character limits (max 30 characters)
+    service_account_email = full_service_acct_email(
+        constants.SERVICE_ACCT_ID_FMT.format(prefix,
+                                             installation_type,
+                                             timestamp), project_id)
 
     return service_account_email, service_account_name
 
@@ -313,24 +314,35 @@ def sanitize_conf_values(conf_values):
     return conf_values
 
 
-def show_loading(loading_time, message='', max_number_of_dots=15):
-    """Show loading message, append dots to the end of the message up to
-    a certain number of dots and repeat.
+def start_loading(max_loading_time, exit_condition_checker=None,
+                  message='', max_number_of_dots=15):
+    """Start and show the loading message, append dots to the end
+    of the message up to a certain number of dots and repeat.
 
     Args:
-        loading_time (int): Loading time in seconds.
+        max_loading_time (int): Loading time in seconds.
+        exit_condition_checker (func): Exit condition checker, a function that
+         returns boolean, will be called every second to check for the return
+         result.
         message (str): Message to print to stdout.
         max_number_of_dots (int): Maximum number of dots on the line.
+
+    Returns:
+        bool: Status of the loading.
     """
 
     # VT100 control codes, use to remove the last line.
     erase_line = '\x1b[2K'
 
-    for i in range(0, loading_time*2):
+    for i in range(0, max_loading_time*2):
+        if exit_condition_checker and exit_condition_checker():
+            print('done\n')
+            return True
         # Sleep for 0.5 second so that the dots can appear more quickly
         # to be more user friendly.
         time.sleep(0.5)
         dots = '.' * (i % max_number_of_dots)
-        sys.stdout.write('\r{}{}{}'.format(erase_line, message, dots))
+        sys.stdout.write('\r{}{}{} '.format(erase_line, message, dots))
         sys.stdout.flush()
-    print ('Done.\n')
+    print ('time limit reached')
+    return False
