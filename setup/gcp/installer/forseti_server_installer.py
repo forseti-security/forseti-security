@@ -262,7 +262,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             str: Firewall rule name.
         """
-        return '{}-{}'.format(rule_name, self.config.datetimestamp)
+        return '{}-{}'.format(rule_name, self.config.timestamp)
 
     def should_grant_access(self):
         """Inform user that they need IAM access to grant Forseti access."""
