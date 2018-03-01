@@ -15,12 +15,14 @@
 """Scanner for the IAM rules engine."""
 
 from datetime import datetime
+import json
 import os
 import sys
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
+from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
@@ -163,13 +165,13 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         all_violations = []
         LOGGER.info('Finding IAM policy violations...')
-        for (resource, policy) in policies:
+        for (resource, policy, policy_bindings) in policies:
             # At this point, the variable's meanings are switched:
             # "policy" is really the resource from the data model.
             # "resource" is the generated Forseti gcp type.
             LOGGER.debug('%s => %s', resource, policy)
             violations = self.rules_engine.find_policy_violations(
-                resource, policy)
+                resource, policy, policy_bindings)
             all_violations.extend(violations)
         return all_violations
 
@@ -196,20 +198,24 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 if policy.parent.type not in supported_iam_types:
                     continue
 
+                policy_bindings = filter(None, [ # pylint: disable=bad-builtin
+                    iam_policy.IamPolicyBinding.create_from(b)
+                    for b in json.loads(policy.data).get('bindings', [])])
+
                 if policy.parent.type == 'bucket':
                     bucket_iam_policy_counter += 1
                     policy_data.append(
                         (Bucket(policy.parent.name,
                                 policy.parent.full_name,
                                 policy.data),
-                         policy))
+                         policy, policy_bindings))
                 if policy.parent.type == 'project':
                     project_iam_policy_counter += 1
                     policy_data.append(
                         (Project(policy.parent.name,
                                  policy.parent.full_name,
                                  policy.data),
-                         policy))
+                         policy, policy_bindings))
                 elif policy.parent.type == 'folder':
                     folder_iam_policy_counter += 1
                     policy_data.append(
@@ -217,7 +223,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                             policy.parent.name,
                             policy.parent.full_name,
                             policy.data),
-                         policy))
+                         policy, policy_bindings))
                 elif policy.parent.type == 'organization':
                     org_iam_policy_counter += 1
                     policy_data.append(
@@ -225,7 +231,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                             policy.parent.name,
                             policy.parent.full_name,
                             policy.data),
-                         policy))
+                         policy, policy_bindings))
 
         if not policy_data:
             LOGGER.warn('No policies found. Exiting.')
