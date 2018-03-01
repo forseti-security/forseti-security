@@ -358,7 +358,7 @@ class IapScanner(base_scanner.BaseScanner):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iap.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id, rules):
+                 model_name, audit_invocation_time, rules):
         """Initialization.
 
         Args:
@@ -366,12 +366,12 @@ class IapScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            invocation_id (datetime): The id of a given scanner run.
+            audit_invocation_time (datetime): The time of a given invocation of scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IapScanner, self).__init__(
             global_configs, scanner_configs, service_config, model_name,
-            invocation_id, rules)
+            audit_invocation_time, rules)
         self.rules_engine = iap_rules_engine.IapRulesEngine(
             rules_file_path=self.rules)
         self.rules_engine.build_rule_book(self.global_configs)

@@ -28,13 +28,13 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
     """Scanner for CloudSQL acls."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id, rules):
+                 model_name, audit_invocation_time, rules):
         """Initialization.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            invocation_id (datetime): The id of a given scanner run.
+            audit_invocation_time (datetime): The time of a given invocation of scanner.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
             rules (str): Fully-qualified path and filename of the rules file.
@@ -44,7 +44,7 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            invocation_id,
+            audit_invocation_time,
             rules)
         self.rules_engine = cloudsql_rules_engine.CloudSqlRulesEngine(
             rules_file_path=self.rules)

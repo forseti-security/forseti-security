@@ -30,7 +30,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     """Pipeline to network enforcer from DAO."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id, rules):
+                 model_name, audit_invocation_time, rules):
         """Initialization.
 
          Args:
@@ -38,7 +38,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            invocation_id (datetime): The id of a given scanner run.
+            audit_invocation_time (datetime): The time of a given invocation of scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(InstanceNetworkInterfaceScanner, self).__init__(
@@ -46,7 +46,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            invocation_id,
+            audit_invocation_time,
             rules)
         self.rules_engine = (
             instance_network_interface_rules_engine

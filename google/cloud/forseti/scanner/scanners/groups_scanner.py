@@ -69,7 +69,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of nodes that are in violation.
         """
-        invocation_id = self._get_invocation_id_as_string()
+        invocation_id = self._get_audit_invocation_time_as_string()
         all_violations = self._flatten_violations(all_violations, invocation_id)
         self._output_results_to_db(all_violations)
 

@@ -29,21 +29,21 @@ class ScannerBuilder(object):
     """Scanner Builder."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id):
+                 model_name, audit_invocation_time):
         """Initialize the scanner builder.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
-            invocation_id (datetime): The id of a given scanner run.
+            audit_invocation_time (datetime): The time of a given invocation of scanner.
             model_name (str): name of the data model.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
         self.service_config = service_config
         self.model_name = model_name
-        self.invocation_id = invocation_id
+        self.audit_invocation_time = audit_invocation_time
 
     def build(self):
         """Build the enabled scanners to run.
@@ -95,7 +95,7 @@ class ScannerBuilder(object):
                                         self.scanner_configs,
                                         self.service_config,
                                         self.model_name,
-                                        self.invocation_id,
+                                        self.audit_invocation_time,
                                         rules)
                 runnable_scanners.append(scanner)
 

@@ -33,7 +33,7 @@ FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
                         '111111111111111111111111111111111111111111111111111111'
                         '11111111111111111111')
 
-FAKE_INVOCATION_ID = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
+FAKE_AUDIT_INVOCATION_TIME = datetime.utcnow().strftime('%Y%m%dT%H%M%SZ')
 
 FAKE_EXPECTED_VIOLATIONS = [
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
@@ -48,7 +48,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_111',
-     'invocation_id': FAKE_INVOCATION_ID
+     'audit_invocation_time': FAKE_AUDIT_INVOCATION_TIME
     },
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_222',
@@ -62,7 +62,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
      'inventory_data': 'inventory_data_222',
-     'invocation_id': FAKE_INVOCATION_ID
+     'audit_invocation_time': FAKE_AUDIT_INVOCATION_TIME
      }
 ]
 
@@ -105,7 +105,7 @@ class ScannerDaoTest(ForsetiTestCase):
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
                 'violation_data', 'violation_hash', 'inventory_data',
-                'created_at', 'invocation_id']
+                'created_at', 'audit_invocation_time']
 
         for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
             for key in keys:
@@ -126,7 +126,7 @@ class ScannerDaoTest(ForsetiTestCase):
                         '\nFound: %s' % (key, ',\n'.join(expected_hash_values),
                                          saved_key_value)
                     )
-                elif key in ['created_at','invocation_id']:
+                elif key in ['created_at','invocation_audit_time']:
                     self.assertIsInstance(
                        saved_key_value, datetime,
                         'The key value of "%s" differs:\nExpected type: %s'
@@ -190,7 +190,7 @@ class ScannerDaoTest(ForsetiTestCase):
         # only care about its type and not its value.
         for violation in converted_violations_as_dict:
             del violation['created_at']
-            del violation['invocation_id']
+            del violation['audit_invocation_time']
 
         self.assertEqual(expected_violations_as_dict,
                          converted_violations_as_dict)

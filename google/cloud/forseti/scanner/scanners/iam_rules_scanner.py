@@ -37,7 +37,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_iam.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id, rules):
+                 model_name, audit_invocation_time, rules):
         """Initialization.
 
         Args:
@@ -45,7 +45,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            invocation_id (datetime): The id of a given scanner run.
+            audit_invocation_time (datetime): The time of a given invocation of scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(IamPolicyScanner, self).__init__(
@@ -53,7 +53,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            invocation_id,
+            audit_invocation_time,
             rules)
         self.rules_engine = iam_rules_engine.IamRulesEngine(
             rules_file_path=self.rules)

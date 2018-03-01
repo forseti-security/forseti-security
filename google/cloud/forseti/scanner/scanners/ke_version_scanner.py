@@ -26,23 +26,23 @@ class KeVersionScanner(base_scanner.BaseScanner):
     """Check if the version of running KE clusters and nodes are allowed."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id, rules):
-        """Initialization.
+                 model_name, audit_invocation_time, rules):
+      """Initialization.
 
-        Args:
-            global_configs (dict): Global configurations.
-            scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
-            model_name (str): name of the data model
-            invocation_id (str): The id of a given scanner run (timestamp)
-            rules (str): Fully-qualified path and filename of the rules file.
-        """
+      Args:
+          global_configs (dict): Global configurations.
+          scanner_configs (dict): Scanner configurations.
+          service_config (ServiceConfig): Forseti 2.0 service configs
+          model_name (str): name of the data model
+          audit_invocation_time (str): The id of a given scanner run (timestamp)
+          rules (str): Fully-qualified path and filename of the rules file.
+      """
         super(KeVersionScanner, self).__init__(
             global_configs,
             scanner_configs,
             service_config,
             model_name,
-            invocation_id,
+            audit_invocation_time,
             rules)
 
         self.rules_engine = ke_version_rules_engine.KeVersionRulesEngine(

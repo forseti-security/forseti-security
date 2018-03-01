@@ -44,11 +44,11 @@ def run(model_name=None, service_config=None):
 
     violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
-    invocation_id = datetime.utcnow()
+    audit_invocation_time = datetime.utcnow()
 
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs,
-        service_config, model_name, invocation_id).build()
+        service_config, model_name, audit_invocation_time).build()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:

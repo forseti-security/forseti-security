@@ -33,7 +33,7 @@ class BaseScanner(object):
     SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, invocation_id, rules):
+                 model_name, audit_invocation_time, rules):
         """Constructor for the base pipeline.
 
         Args:
@@ -41,14 +41,14 @@ class BaseScanner(object):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model.
-            invocation_id (datetime): The id of a given scanner run.
+            audit_invocation_time (datetime): The time of a given invocation of scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
         self.service_config = service_config
         self.model_name = model_name
-        self.invocation_id = invocation_id
+        self.audit_invocation_time = audit_invocation_time
         self.rules = rules
 
     @abc.abstractmethod
@@ -77,7 +77,7 @@ class BaseScanner(object):
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
         violation_access.create(violations, inventory_index_id,
-                                self.invocation_id)
+                                self.audit_invocation_time)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
@@ -91,7 +91,7 @@ class BaseScanner(object):
             str: The output filename for the csv, formatted with the
                 now_utc timestamp.
         """
-        output_timestamp = self._get_invocation_id_as_string()
+        output_timestamp = self._get_audit_invocation_time_as_string()
         output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
 
         return output_filename
@@ -120,10 +120,10 @@ class BaseScanner(object):
             # Otherwise, just copy it to the output path.
             shutil.copy(csv_name, full_output_path)
 
-    def _get_invocation_id_as_string(self):
+    def _get_audit_invocation_time_as_string(self):
         """Return a consistent strftime of the the invocation_id.
 
             Returns:
                 str: A timestamp in the classes default format.
         """
-        return self.invocation_id.strftime(self.OUTPUT_TIMESTAMP_FMT)
+        return self.audit_invocation_time.strftime(self.OUTPUT_TIMESTAMP_FMT)
