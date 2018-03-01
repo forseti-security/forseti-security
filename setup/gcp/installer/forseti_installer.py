@@ -19,7 +19,6 @@ from abc import ABCMeta
 from abc import abstractmethod
 
 import sys
-import time
 
 from configs.config import Config
 from util import constants
@@ -190,19 +189,15 @@ class ForsetiInstaller(object):
             installation_type.capitalize()))
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
-        # VT100 control codes, use to remove the last line
-        erase_line = '\x1b[2K'
+        status_tracker = lambda: gcloud.check_vm_init_status(name, zone)
 
-        for i in range(0, constants.MAXIMUM_LOOP_COUNT):
-            dots = '.' * (i % 10)
-            sys.stdout.write('\r{}This may take a few minutes. '
-                             'Waiting for Forseti {} to be initialized{} '
-                             .format(erase_line, installation_type, dots))
-            sys.stdout.flush()
-            if gcloud.check_vm_init_status(name, zone):
-                break
-        # print new line
-        print ('done')
+        loading_message = ('This may take a few minutes. Waiting '
+                           'for Forseti {} to be initialized.. '.format(
+            installation_type))
+        _ = utils.show_loading(
+            max_loading_time=constants.MAXIMUM_LOADING_TIME_IN_SECONDS,
+            exit_condition=status_tracker,
+            message=loading_message)
 
     def check_run_properties(self):
         """Check script run properties."""

@@ -36,7 +36,7 @@ class DeploymentStatus(Enum):
     DONE = 'DONE'
 
 
-MAXIMUM_LOOP_COUNT = 600
+MAXIMUM_LOADING_TIME_IN_SECONDS = 600
 
 DEFAULT_BUCKET_FMT_V1 = 'gs://{}-data-{}'
 DEFAULT_BUCKET_FMT_V2 = 'gs://forseti-{}-{}'
