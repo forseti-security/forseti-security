@@ -127,4 +127,5 @@ class BaseScanner(object):
             Returns:
                 str: A timestamp in the classes default format.
         """
-        return self.audit_invocation_time.strftime(names.OUTPUT_TIMESTAMP_FMT)
+        return self.audit_invocation_time.strftime(
+            names.INVENTORY_SERVICE_STARTTIME)[:-1]
