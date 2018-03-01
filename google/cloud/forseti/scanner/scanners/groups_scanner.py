@@ -29,11 +29,12 @@ class GroupsScanner(base_scanner.BaseScanner):
     """Scanner for group members data."""
 
     @staticmethod
-    def _flatten_violations(violations):
+    def _flatten_violations(violations, invocation_id):
         """Flatten RuleViolations into a dict for each RuleViolation member.
 
         Args:
             violations (list): The RuleViolations to flatten.
+            invocation_id (str): A timestamp in the classes default format.
 
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
@@ -58,7 +59,8 @@ class GroupsScanner(base_scanner.BaseScanner):
                 'rule_name': violation.violated_rule_names,
                 'violation_type': 'group_violation',
                 'violation_data': violation_data,
-                'inventory_data': violation.inventory_data
+                'inventory_data': violation.inventory_data,
+                'invocation_id': invocation_id
             }
 
     def _output_results(self, all_violations):
@@ -67,7 +69,8 @@ class GroupsScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of nodes that are in violation.
         """
-        all_violations = self._flatten_violations(all_violations)
+        invocation_id = self._get_audit_invocation_time_str()
+        all_violations = self._flatten_violations(all_violations, invocation_id)
         self._output_results_to_db(all_violations)
 
     # pylint: disable=too-many-branches

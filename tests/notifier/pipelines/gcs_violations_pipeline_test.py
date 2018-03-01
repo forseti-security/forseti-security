@@ -15,11 +15,11 @@
 """Tests the GCS Violations upload pipeline."""
 
 import mock
-import tempfile
 import unittest
 
 from datetime import datetime
 
+from google.cloud.forseti.common.util import names
 from google.cloud.forseti.notifier.pipelines import gcs_violations_pipeline
 from tests.unittest_utils import ForsetiTestCase
 
@@ -59,11 +59,11 @@ class GcsViolationsPipelineTest(ForsetiTestCase):
         mock_datetime.utcnow = mock.MagicMock()
         mock_datetime.utcnow.return_value = self.fake_utcnow
         output_timestamp = mock_datetime.utcnow().strftime(
-            gcs_violations_pipeline.OUTPUT_TIMESTAMP_FMT)
+            names.OUTPUT_TIMESTAMP_FMT)
 
         actual_filename = self.gvp._get_output_filename()
         self.assertEquals(
-            gcs_violations_pipeline.VIOLATIONS_JSON_FMT.format(
+            names.VIOLATIONS_JSON_FMT.format(
                 self.gvp.resource, self.gvp.cycle_timestamp, output_timestamp),
             actual_filename)
 

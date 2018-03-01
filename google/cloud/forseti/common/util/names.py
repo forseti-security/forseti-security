@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG BASE_IMAGE=forseti/base
-FROM ${BASE_IMAGE}
+"""Common naming and formatting methods."""
 
-# Expose our source so we can install Forseti Security.
-ADD . /forseti-security/
-WORKDIR /forseti-security/
-
-# Install Forseti Security dependencies.
-# This should stay in sync with the deployment script used on the host machine
-# in deployment-templates/compute-engine/forseti-instance.py
-RUN pip install -q --upgrade setuptools pip wheel 1> /dev/null
-RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
-
-# Install Forseti Security.
-RUN python setup.py install
+# TODO: Clean these up
+SCANNER_OUTPUT_CSV_FMT = 'scanner_output.{}.csv'
+OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%SZ'
+VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
+EMAIL_SUMMARY_TIMESTAMP = '%Y %b %d, %H:%M:%S (UTC)'
+EMAIL_VIOLATIONS_TIMESTAMP = '%Y-%m-%dT%H:%M:%S.%f'
+EMAIL_VIOLATIONS_PRETTY_TIMESTAMP = '%d %B %Y - %H:%M:%S'
+INVENTORY_SERVICE_STARTTIME = '%Y-%m-%dT%H:%M:%S.%f'
+INVENTORY_SERVICE_BASE_TIMESTAMP = '%Y-%m-%dT%H:%M:%S%z'

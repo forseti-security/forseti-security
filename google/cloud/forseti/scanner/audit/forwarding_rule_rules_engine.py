@@ -34,18 +34,14 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
                                 'ip_address', 'resource_id', 'full_name',
                                 'inventory_data'])
 
-    def __init__(self, rules_file_path, snapshot_timestamp=None):
+    def __init__(self, rules_file_path):
         """Initialize.
 
         Args:
             rules_file_path (str): file location of rules
-            snapshot_timestamp (str): snapshot timestamp. Defaults to None.
-                If set, this will be the snapshot timestamp
-                used in the engine.
         """
         super(ForwardingRuleRulesEngine, self).__init__(
-            rules_file_path=rules_file_path,
-            snapshot_timestamp=snapshot_timestamp)
+            rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):

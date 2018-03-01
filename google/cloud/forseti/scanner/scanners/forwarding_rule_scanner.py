@@ -26,7 +26,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
     """Pipeline for forwarding rules from dao"""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, audit_invocation_time, rules):
         """Initialization.
 
         Args:
@@ -34,7 +34,8 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            audit_invocation_time (str): The time of a given invocation of
+                scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(ForwardingRuleScanner, self).__init__(
@@ -42,13 +43,14 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            snapshot_timestamp,
+            audit_invocation_time,
             rules)
 
-        self.rules_engine = forwarding_rule_rules_engine.\
-            ForwardingRuleRulesEngine(
-                rules_file_path=self.rules,
-                snapshot_timestamp=self.snapshot_timestamp)
+        self.rules_engine = (
+            forwarding_rule_rules_engine.ForwardingRuleRulesEngine(
+                rules_file_path=self.rules)
+        )
+
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod

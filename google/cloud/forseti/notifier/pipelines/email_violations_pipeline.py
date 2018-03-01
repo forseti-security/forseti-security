@@ -20,6 +20,7 @@ from datetime import datetime
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import names
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
@@ -29,8 +30,6 @@ from google.cloud.forseti.notifier.pipelines import base_notification_pipeline a
 LOGGER = logger.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
-VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
@@ -64,10 +63,9 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             str: The output filename for the violations json.
         """
         now_utc = datetime.utcnow()
-        output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
-        output_filename = VIOLATIONS_JSON_FMT.format(self.resource,
-                                                     self.cycle_timestamp,
-                                                     output_timestamp)
+        output_timestamp = now_utc.strftime(names.OUTPUT_TIMESTAMP_FMT)
+        output_filename = names.VIOLATIONS_JSON_FMT.format(
+            self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
     def _write_temp_attachment(self):
@@ -109,8 +107,9 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
                 the provided variables.
         """
         timestamp = datetime.strptime(
-            self.cycle_timestamp, '%Y-%m-%dT%H:%M:%S.%f')
-        pretty_timestamp = timestamp.strftime('%d %B %Y - %H:%M:%S')
+            self.cycle_timestamp, names.EMAIL_VIOLATIONS_TIMESTAMP)
+        pretty_timestamp = timestamp.strftime(
+            names.EMAIL_VIOLATIONS_PRETTY_TIMESTAMP)
         email_content = self.mail_util.render_from_template(
             'notification_summary.jinja', {
                 'scan_date':  pretty_timestamp,

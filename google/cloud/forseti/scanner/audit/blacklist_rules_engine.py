@@ -33,11 +33,10 @@ LOGGER = logger.get_logger(__name__)
 class BlacklistRulesEngine(bre.BaseRulesEngine):
     """Rules engine for BlacklistRules."""
 
-    def __init__(self, rules_file_path, snapshot_timestamp=None):
+    def __init__(self, rules_file_path):
         """Initialize.
         Args:
             rules_file_path (str): file location of rules
-            snapshot_timestamp (str): timestamp for database.
         """
         super(BlacklistRulesEngine,
               self).__init__(rules_file_path=rules_file_path)

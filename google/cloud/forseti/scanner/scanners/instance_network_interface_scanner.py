@@ -15,7 +15,6 @@
 """Scanner for the Networks Enforcer acls rules engine."""
 
 # pylint: disable=line-too-long
-from google.cloud.forseti.common.data_access import project_dao
 from google.cloud.forseti.common.gcp_type.instance import Instance
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
@@ -30,7 +29,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
     """Pipeline to network enforcer from DAO."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, audit_invocation_time, rules):
         """Initialization.
 
          Args:
@@ -38,7 +37,8 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Forseti 2.0 service configs
             model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            audit_invocation_time (str): The time of a given invocation of
+                scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         super(InstanceNetworkInterfaceScanner, self).__init__(
@@ -46,13 +46,12 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             scanner_configs,
             service_config,
             model_name,
-            snapshot_timestamp,
+            audit_invocation_time,
             rules)
         self.rules_engine = (
             instance_network_interface_rules_engine
             .InstanceNetworkInterfaceRulesEngine(
-                rules_file_path=self.rules,
-                snapshot_timestamp=self.snapshot_timestamp))
+                rules_file_path=self.rules))
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod
@@ -91,21 +90,6 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         """
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
-
-    def _get_project_policies(self):
-        """Get projects from data source.
-
-        Returns:
-            dict: project policies
-        """
-        project_policies = {}
-        project_policies = (
-            project_dao
-            .ProjectDao(self.global_configs)
-            .get_project_policies('projects',
-                                  self.
-                                  snapshot_timestamp))
-        return project_policies
 
     @staticmethod
     def _get_resource_count(project_policies, instance_network_interfaces):

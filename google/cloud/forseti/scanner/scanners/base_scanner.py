@@ -20,6 +20,7 @@ import shutil
 
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import names
 
 
 LOGGER = logger.get_logger(__name__)
@@ -29,26 +30,25 @@ class BaseScanner(object):
     """This is a base class skeleton for scanners."""
     __metaclass__ = abc.ABCMeta
 
-    OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
-    SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
+                 model_name, audit_invocation_time, rules):
         """Constructor for the base pipeline.
 
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
             service_config (ServiceConfig): Service configuration.
-            model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
+            model_name (str): name of the data model.
+            audit_invocation_time (str): The time of a given invocation of
+                scanner.
             rules (str): Fully-qualified path and filename of the rules file.
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
         self.service_config = service_config
         self.model_name = model_name
-        self.snapshot_timestamp = snapshot_timestamp
+        self.audit_invocation_time = audit_invocation_time
         self.rules = rules
 
     @abc.abstractmethod
@@ -69,6 +69,7 @@ class BaseScanner(object):
             self.service_config.model_manager.get_description(self.model_name))
         inventory_index_id = (
             model_description.get('source_info').get('inventory_index_id'))
+        audit_invocation_time = self._get_audit_invocation_time_str()
 
         # TODO: Capture violations errors with the new violation_access.
         # Add a unit test for the errors.
@@ -76,37 +77,34 @@ class BaseScanner(object):
 
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
-        violation_access.create(violations, inventory_index_id)
+        violation_access.create(violations, inventory_index_id,
+                                audit_invocation_time)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
 
         return violation_errors
 
-    def _get_output_filename(self, now_utc):
+    def _get_output_filename(self):
         """Create the output filename.
-
-        Args:
-            now_utc (datetime): The datetime now in UTC. Generated at the top
-                level to be consistent across the scan.
 
         Returns:
             str: The output filename for the csv, formatted with the
                 now_utc timestamp.
         """
-        output_timestamp = now_utc.strftime(self.OUTPUT_TIMESTAMP_FMT)
-        output_filename = self.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
+        output_timestamp = self._get_audit_invocation_time_str()
+        output_filename = names.SCANNER_OUTPUT_CSV_FMT.format(output_timestamp)
+
         return output_filename
 
-    def _upload_csv(self, output_path, now_utc, csv_name):
+    def _upload_csv(self, output_path, csv_name):
         """Upload CSV to Cloud Storage.
 
         Args:
             output_path (str): The output path for the csv.
-            now_utc (datetime): The UTC timestamp of "now".
             csv_name (str): The csv_name.
         """
-        output_filename = self._get_output_filename(now_utc)
+        output_filename = self._get_output_filename()
 
         # If output path was specified, copy the csv temp file either to
         # a local file or upload it to Google Cloud Storage.
@@ -122,3 +120,12 @@ class BaseScanner(object):
         else:
             # Otherwise, just copy it to the output path.
             shutil.copy(csv_name, full_output_path)
+
+    def _get_audit_invocation_time_str(self):
+        """Return a consistent strftime of the the invocation_id.
+
+            Returns:
+                str: A timestamp in the classes default format.
+        """
+        return self.audit_invocation_time.strftime(
+            names.INVENTORY_SERVICE_STARTTIME)[:-1]
