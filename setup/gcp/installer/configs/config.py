@@ -31,7 +31,7 @@ class Config(object):
 
         self.datetimestamp = (kwargs.get('datetimestamp') or
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
-        self.timestamp = self.datetimestamp[8:]
+        self.timestamp = self.datetimestamp[-4:]
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
