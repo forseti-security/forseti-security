@@ -64,7 +64,7 @@ def convert_created_at_to_timestamp(violations):
 
     Returns:
         list: List of violations as sqlalchemy row/record object with created_at
-            converted to timestamp string..
+            converted to timestamp string.
     """
     violations_with_converted_timestamp = []  # pylint: disable=invalid-name
     for violation in violations:
