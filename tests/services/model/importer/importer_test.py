@@ -17,12 +17,10 @@ import os
 import shutil
 import tempfile
 import unittest
-import json
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
-from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 FAKE_TIMESTAMP = '2018-01-28T10:20:30.00000'
 
 
@@ -84,6 +82,12 @@ class ImporterTest(ForsetiTestCase):
                 self.service_config,
                 inventory_id=FAKE_TIMESTAMP)
             import_runner.run()
+
+            # make sure the 'full_name' for policies has an even number of
+            # segments
+            for policy in data_access.scanner_iter(session, 'iam_policy'):
+                self.assertFalse(
+                        len(filter(None, policy.full_name.split('/'))) % 2)
 
         model = self.model_manager.model(self.model_name)
         model_description = self.model_manager.get_description(self.model_name)
