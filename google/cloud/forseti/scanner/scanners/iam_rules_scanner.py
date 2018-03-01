@@ -200,14 +200,14 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     bucket_iam_policy_counter += 1
                     policy_data.append(
                         (Bucket(policy.parent.name,
-                                policy.full_name,
+                                policy.parent.full_name,
                                 policy.data),
                          policy))
                 if policy.parent.type == 'project':
                     project_iam_policy_counter += 1
                     policy_data.append(
                         (Project(policy.parent.name,
-                                 policy.full_name,
+                                 policy.parent.full_name,
                                  policy.data),
                          policy))
                 elif policy.parent.type == 'folder':
@@ -215,7 +215,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     policy_data.append(
                         (Folder(
                             policy.parent.name,
-                            policy.full_name,
+                            policy.parent.full_name,
                             policy.data),
                          policy))
                 elif policy.parent.type == 'organization':
@@ -223,7 +223,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     policy_data.append(
                         (Organization(
                             policy.parent.name,
-                            policy.full_name,
+                            policy.parent.full_name,
                             policy.data),
                          policy))
 
