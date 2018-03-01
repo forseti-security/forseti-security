@@ -30,13 +30,36 @@ from sqlalchemy.orm import sessionmaker
 
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services import db
 
 
 LOGGER = logger.get_logger(__name__)
 
-
 # pylint: disable=no-member
+
+TIMESTAMP_FORMAT = string_formats.TIMESTAMP_TIMEZONE_NAME
+
+def _get_utc_now():
+    """Get a datetime object for utcnow()
+
+    Returns:
+          datetime: A datetime object representin utcnow().
+    """
+    return datetime.utcnow()
+
+def _get_utc_now_timestamp(str_format=TIMESTAMP_FORMAT):
+    """Get a str representing utcnow()
+
+    Args:
+        str_format (str): The requested format string.
+
+    Returns:
+          str: A timestamp in the classes default timestamp format.
+    """
+    utc_now = _get_utc_now()
+
+    return utc_now.strftime(str_format)
 
 def define_violation(dbengine):
     """Defines table class for violations.
@@ -59,7 +82,7 @@ def define_violation(dbengine):
         __tablename__ = violations_tablename
 
         id = Column(Integer, primary_key=True)
-        created_at = Column(DateTime())
+        created_at_datetime = Column(DateTime())
         full_name = Column(String(1024))
         inventory_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
@@ -116,9 +139,8 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
-                created_at = datetime.utcnow()
+                created_at_datetime = _get_utc_now()
                 for violation in violations:
-
                     violation_hash = _create_violation_hash(
                         violation.get('full_name', ''),
                         violation.get('inventory_data', ''),
@@ -137,7 +159,7 @@ def define_violation(dbengine):
                             violation.get('violation_data')),
                         inventory_data=violation.get('inventory_data'),
                         violation_hash=violation_hash,
-                        created_at=created_at
+                        created_at_datetime=created_at_datetime
                     )
 
                     session.add(violation)
