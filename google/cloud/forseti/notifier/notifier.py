@@ -27,7 +27,7 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 LOGGER = logger.get_logger(__name__)
 
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
+TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%SZ'
 
 # pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
@@ -54,6 +54,23 @@ def find_pipelines(pipeline_name):
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
+
+def convert_created_at_to_timestamp(violations):
+    """Convert violation create_at datetime to timestamp string.
+
+    Args:
+        violations (sqlalchemy_object): List of violations as sqlalchemy
+            row/record object.
+
+    Returns:
+        list: List of violations as sqlalchemy row/record object with created_at
+            converted to timestamp string..
+    """
+    violations_with_converted_timestamp = []  # pylint: disable=invalid-name
+    for violation in violations:
+        violation.created_at = violation.created_at.strftime(TIMESTAMP_FMT)
+        violations_with_converted_timestamp.append(violation)
+    return violations_with_converted_timestamp
 
 def process(message):
     """Process messages about what notifications to send.
@@ -124,11 +141,14 @@ def run(inventory_index_id, service_config=None):
     service_config.violation_access = violation_access
     violations = violation_access.list(inventory_index_id)
 
+    violations = convert_created_at_to_timestamp(violations)
+
     violations_as_dict = []
     for violation in violations:
         violations_as_dict.append(
             scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
+    # pylint: disable=redefined-variable-type
     violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
