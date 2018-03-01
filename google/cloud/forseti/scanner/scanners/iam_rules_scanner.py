@@ -48,7 +48,8 @@ def _add_bucket_ancestor_bindings(policy_data):
     also checked for violations.
 
     NOTA BENE: this function only handles buckets and bindings relevant to
-    these at present.
+    these at present (but can and should be expanded to handle projects and
+    folders going forward).
 
     Args:
         policy_data (list): list of (parent resource, iam_policy resource,
