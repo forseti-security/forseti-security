@@ -314,15 +314,16 @@ def sanitize_conf_values(conf_values):
     return conf_values
 
 
-def show_loading(max_loading_time, exit_condition=None,
-                 message='', max_number_of_dots=15):
-    """Show loading message, append dots to the end of the message up to
-    a certain number of dots and repeat.
+def start_loading(max_loading_time, exit_condition_checker=None,
+                  message='', max_number_of_dots=15):
+    """Start and show the loading message, append dots to the end
+    of the message up to a certain number of dots and repeat.
 
     Args:
         max_loading_time (int): Loading time in seconds.
-        exit_condition (func): Exit condition, a function that returns
-         boolean, will be called every second to check for the return result.
+        exit_condition_checker (func): Exit condition checker, a function that
+         returns boolean, will be called every second to check for the return
+         result.
         message (str): Message to print to stdout.
         max_number_of_dots (int): Maximum number of dots on the line.
 
@@ -334,7 +335,7 @@ def show_loading(max_loading_time, exit_condition=None,
     erase_line = '\x1b[2K'
 
     for i in range(0, max_loading_time*2):
-        if exit_condition and exit_condition():
+        if exit_condition_checker and exit_condition_checker():
             print('done\n')
             return True
         # Sleep for 0.5 second so that the dots can appear more quickly

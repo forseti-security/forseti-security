@@ -129,14 +129,14 @@ class ForsetiInstaller(object):
             self.config.timestamp,
             self.config.dry_run)
 
-        # Status tracker function, will return true if the deployment is done.
-        status_tracker = (lambda: gcloud.check_deployment_status(
+        status_checker = (lambda: gcloud.check_deployment_status(
             deployment_name, constants.DeploymentStatus.DONE))
         loading_message = ('This may take a few minutes. Waiting '
                            'for deployment to be completed...')
-        deployment_completed = utils.show_loading(max_loading_time=900,
-                                                  exit_condition=status_tracker,
-                                                  message=loading_message)
+        deployment_completed = utils.start_loading(
+            max_loading_time=900,
+            exit_condition_checker=status_checker,
+            message=loading_message)
 
         if not deployment_completed:
             # If after 15 mins and the deployment is still not completed, there
@@ -189,13 +189,13 @@ class ForsetiInstaller(object):
             installation_type.capitalize()))
         _, zone, name = gcloud.get_vm_instance_info(vm_name)
 
-        status_tracker = lambda: gcloud.check_vm_init_status(name, zone)
+        status_checker = (lambda: gcloud.check_vm_init_status(name, zone))
 
         loading_message = ('This may take a few minutes. Waiting for Forseti '
                            '{} to be initialized..'.format(installation_type))
-        _ = utils.show_loading(
+        _ = utils.start_loading(
             max_loading_time=constants.MAXIMUM_LOADING_TIME_IN_SECONDS,
-            exit_condition=status_tracker,
+            exit_condition_checker=status_checker,
             message=loading_message)
 
     def check_run_properties(self):
