@@ -53,7 +53,11 @@ def get_db_file_copy(filename):
 
 
 class ImporterTest(ForsetiTestCase):
-    """Test importer based on database dump."""
+    """Test importer based on database dump.
+
+        Note: If the GCP data and/or schema changes see:
+            tests/services/model/importer/update_test_dbs.py
+    """
 
     def test_inventory_importer_basic(self):
         """Test the basic importer for the inventory."""
