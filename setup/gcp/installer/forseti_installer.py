@@ -37,26 +37,33 @@ class ForsetiInstaller(object):
     organization_id = None
     gcp_service_acct_email = None
     user_can_grant_roles = True
-    config = Config()
 
     @abstractmethod
-    def __init__(self):
-        """Initialize."""
-        pass
+    def __init__(self, config=None, previous_installer=None):
+        """Initialize.
+
+        Args:
+            config (Config): The configuration object.
+            previous_installer (ForsetiInstaller): The previous ran installer,
+                we can get the installer environment information from it.
+        """
+        self.config = config
+        if previous_installer:
+            self.populate_installer_environment(previous_installer)
 
     def run_setup(self,
                   setup_continuation=False,
-                  last_installation=True,
+                  final_setup=True,
                   previous_instructions=None):
         """Run the setup steps.
 
-        if setup_continuation is True, we don't need to run the pre-flight
+        If setup_continuation is True, we don't need to run the pre-flight
         checks any more because it has been done in the previous installation.
 
         Args:
             setup_continuation (bool): If this is a continuation of the
                 previous setup.
-            last_installation (bool): The final installation.
+            final_setup (bool): The final setup.
             previous_instructions (list): Post installation instructions
                 from previous installation.
 
@@ -92,8 +99,7 @@ class ForsetiInstaller(object):
         if previous_instructions is not None:
             instructions = previous_instructions + instructions
 
-        if last_installation:
-            # Only print the instructions if this is the final installation
+        if final_setup:
             utils.print_banner('Forseti Post-Setup Instructions')
             all_instructions = '\n'.join(instructions)
             print(all_instructions)
@@ -184,7 +190,7 @@ class ForsetiInstaller(object):
                 bucket_name=bucket_name,
                 installation_type=self.config.installation_type)
 
-            print('Copying the Forseti {} configuration file to:\n    {}'
+            print('Copying the Forseti {} configuration file to:\n\t{}'
                   .format(self.config.installation_type, conf_output_path))
 
             files.copy_file_to_destination(
@@ -194,7 +200,7 @@ class ForsetiInstaller(object):
             deployment_tpl_output_path = (
                 constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(bucket_name))
 
-            print('Copying the Forseti {} deployment template to:\n    {}'
+            print('Copying the Forseti {} deployment template to:\n\t{}'
                   .format(self.config.installation_type,
                           deployment_tpl_output_path))
 
@@ -363,3 +369,13 @@ class ForsetiInstaller(object):
                     timestamp=self.config.timestamp,
                     bucket_name=bucket_name))
         return instructions
+
+    def populate_installer_environment(self, other_installer):
+        """Populate the current installer environment from a given installer.
+
+        Args:
+            other_installer (ForsetiInstaller): The other installer.
+        """
+        self.branch = other_installer.branch
+        self.project_id = other_installer.project_id
+        self.organization_id = other_installer.organization_id

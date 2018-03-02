@@ -506,7 +506,7 @@ def create_or_reuse_service_acct(acct_type,
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
         acct_email = svc_accts[acct_idx - 1]['email']
-    print ('    Service account id: {}'.format(acct_email))
+    print ('\tService account id: {}'.format(acct_email))
     return acct_email
 
 

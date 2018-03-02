@@ -93,23 +93,27 @@ def run():
     # Set the current date time stamp
     args['datetimestamp'] = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
 
-    # import installers
+    # import installers and configs
     from installer.forseti_server_installer import ForsetiServerInstaller
     from installer.forseti_client_installer import ForsetiClientInstaller
+    from installer.configs.client_config import ClientConfig
+    from installer.configs.server_config import ServerConfig
+    client_config = ClientConfig(**args)
+    server_config = ServerConfig(**args)
 
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
-        instructions = ForsetiServerInstaller(**args).run_setup(
-            last_installation=False)
-        ForsetiClientInstaller(**args).run_setup(
+        forseti_server =  ForsetiServerInstaller(server_config)
+        instructions = forseti_server.run_setup(last_installation=False)
+        ForsetiClientInstaller(client_config, forseti_server).run_setup(
             setup_continuation=True,
             previous_instructions=instructions)
         return
 
     if args.get('type') == 'server':
-        forseti_setup = ForsetiServerInstaller(**args)
+        forseti_setup = ForsetiServerInstaller(server_config)
     else:
-        forseti_setup = ForsetiClientInstaller(**args)
+        forseti_setup = ForsetiClientInstaller(client_config)
 
     forseti_setup.run_setup()
 

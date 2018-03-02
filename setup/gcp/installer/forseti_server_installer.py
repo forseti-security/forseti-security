@@ -42,14 +42,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
     target_id = None
     migrate_from_v1 = False
 
-    def __init__(self, **kwargs):
+    def __init__(self, config, previous_installer=None):
         """Init.
 
         Args:
-            kwargs (dict): The kwargs.
+            config (ServerConfig): The configuration object.
+            previous_installer (ForsetiInstaller): The previous ran installer,
+                we can get the installer environment information from it.
         """
-        super(ForsetiServerInstaller, self).__init__()
-        self.config = ServerConfig(**kwargs)
+        super(ForsetiServerInstaller, self).__init__(config,
+                                                     previous_installer)
         self.v1_config = None
 
     def preflight_checks(self):
