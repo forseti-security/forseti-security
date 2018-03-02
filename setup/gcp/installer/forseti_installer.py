@@ -121,7 +121,6 @@ class ForsetiInstaller(object):
             self.config.installation_type.capitalize()))
 
         if not setup_continuation:
-            # Fresh installation, run pre-flight checks.
             self.preflight_checks()
 
         # Create/Reuse service account(s).
