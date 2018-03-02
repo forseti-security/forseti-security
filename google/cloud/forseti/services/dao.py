@@ -1955,12 +1955,13 @@ class ModelManager(object):
                     ' name = %s', name)
         handle = generate_model_handle()
         with self.modelmaker() as session:
+            utc_now = date_time.get_utc_now_datetime()
             model = Model(
                 handle=handle,
                 name=name,
                 state='CREATED',
-                created_at_datetime=date_time.get_utc_now_datetime(),
-                watchdog_timer_datetime=date_time.get_utc_now_datetime(),
+                created_at_datetime=utc_now,
+                watchdog_timer_datetime=utc_now,
                 etag_seed=generate_model_seed(),
                 description='{}'
                 )
