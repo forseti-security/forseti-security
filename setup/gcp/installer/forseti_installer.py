@@ -224,8 +224,8 @@ class ForsetiInstaller(object):
 
         status_checker = (lambda: gcloud.check_vm_init_status(name, zone))
 
-        loading_message = ('Waiting for Forseti {} to be initialized..'.format(
-            installation_type))
+        loading_message = ('Waiting for Forseti {} to be initialized...'
+                           .format(installation_type))
 
         _ = utils.start_loading(
             max_loading_time=constants.MAXIMUM_LOADING_TIME_IN_SECONDS,
