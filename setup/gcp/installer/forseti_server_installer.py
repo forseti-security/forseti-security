@@ -30,8 +30,6 @@ from util import upgradeable_resources
 class ForsetiServerInstaller(ForsetiInstaller):
     """Forseti server installer."""
 
-    # pylint: disable=too-many-instance-attributes
-
     gsuite_service_acct_email = None
     has_roles_script = False
     setup_explain = True
