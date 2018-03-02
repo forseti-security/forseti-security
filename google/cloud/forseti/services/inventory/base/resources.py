@@ -18,11 +18,10 @@
 # pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
-import datetime
 from functools import partial
 import json
-import pytz
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 
@@ -158,7 +157,7 @@ class Resource(object):
         Returns:
             datatime: the datetime
         """
-        return datetime.datetime.now(pytz.UTC)
+        return date_time.get_utc_now_datetime()
 
     def __getitem__(self, key):
         """Get Item

@@ -14,8 +14,7 @@
 
 """ Crawler implementation. """
 
-import datetime
-
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
 
 # pylint: disable=invalid-name
@@ -126,8 +125,9 @@ class Memory(Storage):
         if handle:
             handle = handle
         else:
-            handle = datetime.datetime.utcnow().strftime(
-                string_formats.TIMESTAMP_MICROS)
+            handle = date_time.get_utc_now_datetime().strftime(
+                string_formats.TIMESTAMP_MICROS
+            )
         return handle
 
     def write(self, resource):

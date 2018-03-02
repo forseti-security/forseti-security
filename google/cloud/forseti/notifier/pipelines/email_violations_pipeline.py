@@ -14,10 +14,10 @@
 
 """Email pipeline to perform notifications"""
 
-from datetime import datetime
 
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
@@ -41,8 +41,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
 
         Args:
             resource (str): Violation resource name.
-            cycle_timestamp (str): Snapshot timestamp,
-               formatted as YYYYMMDDTHHMMSSZ.
+            cycle_timestamp (str): Snapshot timestamp.
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
@@ -62,7 +61,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         Returns:
             str: The output filename for the violations json.
         """
-        now_utc = datetime.utcnow()
+        now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
         output_filename = string_formats.VIOLATION_JSON_FMT.format(
@@ -109,7 +108,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             unicode: Email template content rendered with
                 the provided variables.
         """
-        timestamp = datetime.strptime(
+        timestamp = date_time.get_datetime_from_string(
             self.cycle_timestamp, string_formats.TIMESTAMP_MICROS)
         pretty_timestamp = timestamp.strftime(string_formats.TIMESTAMP_READABLE)
         email_content = self.mail_util.render_from_template(

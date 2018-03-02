@@ -14,17 +14,16 @@
 """Scanner for the firewall rule engine."""
 
 from collections import defaultdict
-from datetime import datetime
 import json
 import os
-
-from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier import notifier
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_type
 from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import firewall_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
@@ -118,7 +117,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
                 # Scanner timestamp for output file and email.
-                now_utc = datetime.utcnow()
+                now_utc = date_time.get_utc_now_datetime()
 
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):

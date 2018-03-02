@@ -14,7 +14,6 @@
 
 """ Inventory storage implementation. """
 
-import datetime
 import json
 
 from sqlalchemy import Column

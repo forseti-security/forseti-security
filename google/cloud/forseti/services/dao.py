@@ -19,7 +19,6 @@
 
 import binascii
 import collections
-import datetime
 import hmac
 import json
 import os
@@ -117,7 +116,7 @@ class Model(MODEL_BASE):
     def kick_watchdog(self):
         """Used during import to notify the import is still progressing."""
 
-        self.watchdog_timer = datetime.datetime.utcnow()
+        self.watchdog_timer_datetime = date_time.get_utc_now_datetime()
 
     def add_warning(self, warning):
         """Add a warning to the model.

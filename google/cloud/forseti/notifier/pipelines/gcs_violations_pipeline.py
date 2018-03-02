@@ -16,10 +16,9 @@
 
 import tempfile
 
-from datetime import datetime
-
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
@@ -41,7 +40,7 @@ class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
         Returns:
             str: The output filename for the violations json.
         """
-        now_utc = datetime.utcnow()
+        now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
         output_filename = string_formats.VIOLATION_JSON_FMT.format(
