@@ -157,7 +157,7 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
         actual = self.scanner._get_output_filename(self.fake_utcnow)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
@@ -208,15 +208,15 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
-        self.assertEquals(1, mock_output_results_to_db.call_count)
-        self.assertEquals(1, mock_write_csv.call_count)
+        self.assertEqual(1, mock_flatten_violations.call_count)
+        self.assertEqual(1, mock_output_results_to_db.call_count)
+        self.assertEqual(1, mock_write_csv.call_count)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow,
             fake_csv_name)
-        self.assertEquals(0, mock_notifier.process.call_count)
+        self.assertEqual(0, mock_notifier.process.call_count)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
@@ -259,15 +259,15 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
-        self.assertEquals(1, mock_output_results_to_db.call_count)
-        self.assertEquals(1, mock_write_csv.call_count)
+        self.assertEqual(1, mock_flatten_violations.call_count)
+        self.assertEqual(1, mock_output_results_to_db.call_count)
+        self.assertEqual(1, mock_write_csv.call_count)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow,
             fake_csv_name)
-        self.assertEquals(1, mock_notifier.process.call_count)
+        self.assertEqual(1, mock_notifier.process.call_count)
 
     def test_add_bucket_ancestor_bindings_nothing_found(self):
         """Test bucket with an org / project ancestry w/o relevant policies.
@@ -324,7 +324,7 @@ class IamRulesScannerTest(ForsetiTestCase):
                     bucket_bindings))
 
         iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
-        self.assertEquals([], bucket_bindings)
+        self.assertEqual([], bucket_bindings)
 
     def test_add_bucket_ancestor_bindings_success(self):
         """Test bucket with an org / project ancestry with relevant policies.
@@ -413,8 +413,8 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
 
-        self.assertEquals(2, len(bucket_3_1_bindings))
-        self.assertEquals(2, len(bucket_3_2_bindings))
+        self.assertEqual(2, len(bucket_3_1_bindings))
+        self.assertEqual(2, len(bucket_3_2_bindings))
 
 
         expected_policy = {
@@ -437,8 +437,212 @@ class IamRulesScannerTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in expected_policy.get('bindings')])
 
-        self.assertEquals(expected_bindings, bucket_3_1_bindings)
-        self.assertEquals(expected_bindings, bucket_3_2_bindings)
+        self.assertEqual(expected_bindings, bucket_3_1_bindings)
+        self.assertEqual(expected_bindings, bucket_3_2_bindings)
+
+    def test_add_bucket_ancestor_bindings_same_role_different_members(self):
+        """Test bucket with an org / project ancestry with relevant policies.
+
+        Setup:
+            * Use an org -> project -> folder -> bucket resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings.
+            * both the folder and the project have a
+              'roles/storage.objectCreator' binding but different members
+            * the project has 2 buckets: bucket_3_1 and bucket_3_2 respectively
+              but we just use the former for this test
+
+        Expect:
+            * the folder's and the project's objectCreator bindings will be
+              added to the bucket's policy bindings with merged members.
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource,
+                    proj_3_bindings))
+
+        bucket_3_1_bindings = []
+        policy_data.append(
+                (self.bucket_3_1, self.bucket_3_1_policy_resource,
+                    bucket_3_1_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+
+        self.assertEqual(1, len(bucket_3_1_bindings))
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEqual(expected_bindings, bucket_3_1_bindings)
+
+    def test_add_bucket_ancestor_bindings_success_no_dups(self):
+        """Test bucket with an org / project ancestry with relevant policies.
+
+        Setup:
+            * Use an org -> project -> folder -> bucket resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings.
+            * the project has a 'roles/storage.objectViewer' binding
+            * the folder also has a 'roles/storage.objectViewer' binding
+            * the project has 2 buckets: bucket_3_1 and bucket_3_2 respectively
+              but we use just the former for this test
+
+        Expect:
+            * the objectViewer binding will be added to the bucket's policy
+              bindings (once).
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource,
+                    proj_3_bindings))
+
+        bucket_3_1_bindings = []
+        policy_data.append(
+                (self.bucket_3_1, self.bucket_3_1_policy_resource,
+                    bucket_3_1_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+
+        self.assertEqual(1, len(bucket_3_1_bindings))
+
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEqual(expected_bindings, bucket_3_1_bindings)
 
     def test_add_bucket_ancestor_bindings_with_wrong_ancestors(self):
         """Test bucket with an org / project ancestry w/o relevant policies.
@@ -450,8 +654,8 @@ class IamRulesScannerTest(ForsetiTestCase):
             * the project has a 'roles/storage.objectCreator' binding
             * the folder has a 'roles/storage.objectViewer' binding
             * the bucket added is not a descendent of the project/folder in
-              question though. It is attached to a different project that has
-              no GCS relevant policy bindings.
+              question though. It is attached to a different project ('proj_2')
+              that has no GCS relevant policy bindings.
 
         Expect:
             * the folder's objectViewer and the project's objectCreator
@@ -548,7 +752,7 @@ class IamRulesScannerTest(ForsetiTestCase):
                     bucket_bindings))
 
         iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
-        self.assertEquals([], bucket_bindings)
+        self.assertEqual([], bucket_bindings)
 
     def test_add_bucket_ancestor_bindings_with_2_ancestor_lines(self):
         """Buckets with an independent org / project ancestry.
@@ -663,9 +867,9 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
 
-        self.assertEquals(1, len(bucket_2_1_bindings))
-        self.assertEquals(2, len(bucket_3_1_bindings))
-        self.assertEquals(2, len(bucket_3_2_bindings))
+        self.assertEqual(1, len(bucket_2_1_bindings))
+        self.assertEqual(2, len(bucket_3_1_bindings))
+        self.assertEqual(2, len(bucket_3_2_bindings))
 
 
         expected_b3_policy = {
@@ -688,8 +892,8 @@ class IamRulesScannerTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in expected_b3_policy.get('bindings')])
 
-        self.assertEquals(expected_b3_bindings, bucket_3_1_bindings)
-        self.assertEquals(expected_b3_bindings, bucket_3_2_bindings)
+        self.assertEqual(expected_b3_bindings, bucket_3_1_bindings)
+        self.assertEqual(expected_b3_bindings, bucket_3_2_bindings)
 
         expected_b2_policy = {
             'bindings': [
@@ -705,7 +909,7 @@ class IamRulesScannerTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in expected_b2_policy.get('bindings')])
 
-        self.assertEquals(expected_b2_bindings, bucket_2_1_bindings)
+        self.assertEqual(expected_b2_bindings, bucket_2_1_bindings)
 
     def test_retrieve_finds_bucket_policies(self):
         """IamPolicyScanner::_retrieve() finds bucket policies.
@@ -774,13 +978,13 @@ class IamRulesScannerTest(ForsetiTestCase):
         policy_data, resource_counts = self.scanner._retrieve()
 
         # we picked up the bucket IAM policy.
-        self.assertEquals(1, resource_counts['bucket'])
+        self.assertEqual(1, resource_counts['bucket'])
         [(bucket, bucket_bindings)] = [
                 (r, bs) for (r, _, bs) in policy_data
                 if r.type == 'bucket']
 
-        self.assertEquals('789', bucket.id)
-        self.assertEquals('bucket', bucket.type)
+        self.assertEqual('789', bucket.id)
+        self.assertEqual('bucket', bucket.type)
 
         expected_policy = {
             'bindings': [
@@ -796,7 +1000,7 @@ class IamRulesScannerTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in expected_policy.get('bindings')])
 
-        self.assertEquals(expected_bindings, bucket_bindings)
+        self.assertEqual(expected_bindings, bucket_bindings)
 
 
 if __name__ == '__main__':

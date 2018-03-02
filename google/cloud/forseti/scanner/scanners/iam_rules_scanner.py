@@ -47,6 +47,9 @@ def _add_bucket_ancestor_bindings(policy_data):
     relevant bindings inherited from ancestors to DBS so that these are
     also checked for violations.
 
+    If we find one more than one binding with the same role name, we need to
+    merge the members.
+
     NOTA BENE: this function only handles buckets and bindings relevant to
     these at present (but can and should be expanded to handle projects and
     folders going forward).
@@ -71,7 +74,17 @@ def _add_bucket_ancestor_bindings(policy_data):
             for anb in anbs:
                 if anb.role_name not in storage_iam_roles or anb in bindings:
                     continue
-                bindings.append(anb)
+                # do we have a binding with the same 'role_name' already?
+                try:
+                    [same_role_binding] = [
+                        iamb for iamb in bindings
+                        if iamb.role_name == anb.role_name]
+                except ValueError:
+                    # no bindings with the same 'role_name'
+                    bindings.append(anb)
+                else:
+                    # found a binding with the same 'role_name', merge members
+                    same_role_binding.merge(anb)
 
 
 class IamPolicyScanner(base_scanner.BaseScanner):

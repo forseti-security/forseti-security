@@ -206,7 +206,7 @@ class IamPolicyBinding(object):
         """
         if not isinstance(other, type(self)):
             raise errors.InvalidIamPolicyBindingError(
-                "Cannot merge, other is not of type 'IamPolicyBinding'")
+                'Cannot merge, other is not of type \'IamPolicyBinding\'')
         if other.role_name != self.role_name:
             return
         for member in other.members:
