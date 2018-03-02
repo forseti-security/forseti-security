@@ -18,10 +18,14 @@ import shutil
 import tempfile
 import unittest
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
-FAKE_TIMESTAMP = '2018-01-28T10:20:30.00000'
+
+FAKE_TIMESTAMP = date_time.get_utc_now_datetime().strftime(
+    string_formats.TIMESTAMP_MICROS)
 
 
 class ServiceConfig(object):
