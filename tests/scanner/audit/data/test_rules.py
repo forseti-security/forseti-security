@@ -457,3 +457,26 @@ RULES12 = {
         },
     ]
 }
+
+# Requiring projects to have obejct owners from a specific domain, expressed as
+# a wildcard user
+RULES13 = {
+    'rules': [
+        {
+            'name': (
+                'this rule uses a wildcard user in member of the IAM policy '
+                'to stipulate that object viewers must belong to my domain'),
+            'mode': 'required',
+            'resource': [{
+                    'type': 'bucket',
+                    'applies_to': 'self',
+                    'resource_ids': ['*']
+                }],
+            'inherit_from_parents': True,
+            'bindings': [{
+                    'role': 'roles/objectViewer',
+                    'members': ['user:*@gcs.cloud']
+                }]
+        },
+    ]
+}

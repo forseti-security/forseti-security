@@ -101,7 +101,6 @@ class IamRulesScannerTest(ForsetiTestCase):
             full_name='organization/234/project/proj-2/bucket/internal-2/',
             data='fake_project_data_222_bucket_1')
 
-
         self.org_234_policy_resource = mock.MagicMock()
         self.org_234_policy_resource.full_name = (
             'organization/234/iam_policy/organization:234/')
