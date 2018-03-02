@@ -13,6 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Running pylint."
+echo "Running unittests... "
 
-docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"
+# Check to see if we're on Travis.
+if [ ${TRAVIS+x} ]; then
+    # We are on Travis.
+    # Run our tests with codecov
+    docker -l error exec -it build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover -s . -p '*_test.py'"
+else
+    # We are NOT on Travis.
+    docker -l error exec -it build /bin/bash -c "python -m unittest discover -s . -p '*_test.py'"
+fi

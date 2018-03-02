@@ -52,7 +52,7 @@ class ForsetiTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super(ForsetiTestCase, self,).__init__(*args, **kwargs)
-        logger.set_logger_level(logging.WARNING)
+        logger.set_logger_level(logging.ERROR)
 
     def assertStartsWith(self, actual, expected_start):
         """Assert that actual.startswith(expected_start) is True.
@@ -65,16 +65,20 @@ class ForsetiTestCase(unittest.TestCase):
 
     def assertSameStructure(self, a, b, aname='a', bname='b', msg=None):
         """Asserts that two values contain the same structural content.
+
         The two arguments should be data trees consisting of trees of dicts and
-        lists. They will be deeply compared by walking into the contents of dicts
-        and lists; other items will be compared using the == operator.
-        If the two structures differ in content, the failure message will indicate
-        the location within the structures where the first difference is found.
-        This may be helpful when comparing large structures.
+        lists. They will be deeply compared by walking into the contents of
+        dicts and lists; other items will be compared using the == operator.
+        If the two structures differ in content, the failure message will
+        indicate the location within the structures where the first
+        difference is found. This may be helpful when comparing large
+        structures.
+
         Args:
             a: The first structure to compare.
             b: The second structure to compare.
-            aname: Variable name to use for the first structure in assertion messages.
+            aname: Variable name to use for the first structure in assertion
+                messages.
             bname: Variable name to use for the second structure.
             msg: Additional text to include in the failure message.
         """
