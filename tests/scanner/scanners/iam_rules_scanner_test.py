@@ -17,9 +17,8 @@ from datetime import datetime
 import mock
 import unittest
 
-from google.cloud.forseti.common.gcp_type import folder
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners import iam_rules_scanner
 from tests.unittest_utils import ForsetiTestCase
 
@@ -46,10 +45,10 @@ class IamRulesScannerTest(ForsetiTestCase):
             * Scanner output filename matches the format.
         """
         fake_utcnow_str = self.fake_utcnow.strftime(
-            self.scanner.OUTPUT_TIMESTAMP_FMT)
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
-        actual = self.scanner._get_output_filename(self.fake_utcnow)
+        expected = string_formats.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
+        actual = base_scanner.get_output_filename(self.fake_utcnow)
         self.assertEquals(expected, actual)
 
     @mock.patch(

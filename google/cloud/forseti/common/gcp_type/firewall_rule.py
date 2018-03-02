@@ -22,6 +22,7 @@ import netaddr
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
@@ -49,8 +50,6 @@ class InvalidFirewallActionError(Error):
 
 class FirewallRule(object):
     """Represents Firewall resource."""
-
-    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def __init__(self, validate=False, **kwargs):
         """Firewall resource.
@@ -177,7 +176,7 @@ class FirewallRule(object):
                 firewall_dict.get('selfLink')),
             'firewall_rule_create_time': parser.format_timestamp(
                 parser.json_stringify(firewall_dict.get('creationTimestamp')),
-                FirewallRule.MYSQL_DATETIME_FORMAT),
+                string_formats.TIMESTAMP_MYSQL_DATETIME_FORMAT),
         }
         if project_id:
             in_dict['project_id'] = project_id

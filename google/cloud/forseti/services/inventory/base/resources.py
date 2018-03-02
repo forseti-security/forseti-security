@@ -24,6 +24,7 @@ import json
 import pytz
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
@@ -364,7 +365,7 @@ class Resource(object):
         Returns:
             str: a string timestamp when the resource object was created.
         """
-        return self._timestamp.strftime('%Y-%m-%dT%H:%M:%S%z')
+        return self._timestamp.strftime(string_formats.TIMESTAMP_UTC_OFFSET)
 
     def stack(self):
         """Get resource hierarchy stack of this resource

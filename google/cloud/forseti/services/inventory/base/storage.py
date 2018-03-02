@@ -16,6 +16,8 @@
 
 import datetime
 
+from google.cloud.forseti.common.util import string_formats
+
 # pylint: disable=invalid-name
 
 
@@ -125,7 +127,7 @@ class Memory(Storage):
             handle = handle
         else:
             handle = datetime.datetime.utcnow().strftime(
-                '%Y-%m-%dT%H:%M:%S.%f')[:-1]
+                string_formats.TIMESTAMP_MICROS)
         return handle
 
     def write(self, resource):

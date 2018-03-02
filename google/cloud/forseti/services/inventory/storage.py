@@ -29,8 +29,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services.inventory.base.storage import \
-    Storage as BaseStorage
+from google.cloud.forseti.common.util import string_formats
+# pylint: disable=line-too-long
+from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
+# pylint: enable=line-too-long
 
 # pylint: disable=too-many-instance-attributes
 
@@ -116,7 +118,7 @@ class InventoryIndex(BASE):
 
         start_time = cls._utcnow()
         return InventoryIndex(
-            id=start_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-1],
+            id=start_time.strftime(string_formats.TIMESTAMP_MICROS),
             start_time=start_time,
             complete_time=datetime.datetime.utcfromtimestamp(0),
             status=InventoryState.CREATED,

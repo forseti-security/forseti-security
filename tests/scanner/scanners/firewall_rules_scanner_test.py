@@ -21,11 +21,9 @@ import os
 import parameterized
 import unittest
 
-import tests.unittest_utils
-from google.cloud.forseti.common.gcp_type import folder
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner.scanners import firewall_rules_scanner
+from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from tests import unittest_utils
 from tests.scanner.scanners.data import fake_firewall_rules as fake_data
@@ -95,18 +93,18 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             * Scanner output filename matches the format.
         """
         fake_utcnow_str = self.fake_utcnow.strftime(
-            self.scanner.OUTPUT_TIMESTAMP_FMT)
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
-        actual = self.scanner._get_output_filename(self.fake_utcnow)
+        expected = string_formats.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
+        actual = base_scanner.get_output_filename(self.fake_utcnow)
         self.assertEquals(expected, actual)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
-        firewall_rules_scanner.FirewallPolicyScanner,
-        '_upload_csv', autospec=True)
+        base_scanner,
+        'upload_csv', autospec=True)
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
@@ -206,8 +204,8 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.notifier',
         autospec=True)
     @mock.patch.object(
-        firewall_rules_scanner.FirewallPolicyScanner,
-        '_upload_csv', autospec=True)
+        base_scanner,
+        'upload_csv', autospec=True)
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
         autospec=True)
@@ -288,7 +286,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             data=flattened_violations,
             write_header=True)
         mock_upload_csv.assert_called_once_with(
-            self.scanner,
             self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow,
             fake_csv_name)
@@ -304,7 +301,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'sendgrid_api_key':
                 self.scanner.global_configs.get('sendgrid_api_key'),
                 'output_csv_name': fake_csv_name,
-                'output_filename': self.scanner._get_output_filename(
+                'output_filename': base_scanner.get_output_filename(
                     self.fake_utcnow),
                 'now_utc': self.fake_utcnow,
                 'all_violations': flattened_violations,

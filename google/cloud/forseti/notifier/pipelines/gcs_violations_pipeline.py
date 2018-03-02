@@ -22,6 +22,7 @@ from datetime import datetime
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
@@ -29,7 +30,6 @@ from google.cloud.forseti.notifier.pipelines import base_notification_pipeline a
 LOGGER = logger.get_logger(__name__)
 
 VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
@@ -42,10 +42,10 @@ class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
             str: The output filename for the violations json.
         """
         now_utc = datetime.utcnow()
-        output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
-        output_filename = VIOLATIONS_JSON_FMT.format(self.resource,
-                                                     self.cycle_timestamp,
-                                                     output_timestamp)
+        output_timestamp = now_utc.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+        output_filename = string_formats.VIOLATION_JSON_FMT.format(
+            self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
     def run(self):
