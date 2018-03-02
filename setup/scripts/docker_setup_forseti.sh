@@ -16,27 +16,29 @@
 # Delete all running containers if we're not on Travis.
 if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
-    echo "Force removing any running containers."
-    docker -l error rm -f $(docker ps -a -q)
+    echo "Force removing any running containers... "
+    if [ $(docker ps -a -q) ]; then
+        docker -l error rm -f $(docker ps -a -q)
+    fi
 fi
 
 # Install and update docker only on Travis.
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
-    echo "Install and then update docker to the latest on Travis."
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - 1> /dev/null
+    echo "Install and then update docker to the latest on Travis... "
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    sudo apt-get update -qq 1> /dev/null
-    sudo apt-get -qq -y install docker-ce 1> /dev/null
+    sudo apt-get update -qq
+    sudo apt-get -qq -y install docker-ce
 fi
 
 # Check to see that the docker command is available to us.
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
-    echo "Building our docker base image."
+    echo "Building our Docker base image... "
     docker -l error build -t forseti/base -f setup/docker/base .
-    echo "Building our Forseti image from the base image."
+    echo "Building our Forseti image from the Docker base image... "
     docker -l error build -t forseti/build -f setup/docker/forseti --no-cache .
 else
-    echo "Docker must be installed."
+    echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi
