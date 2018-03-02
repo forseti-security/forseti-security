@@ -218,6 +218,11 @@ def map_by_resource(violation_rows):
     v_by_type = defaultdict(list)
 
     for v_data in violation_rows:
+
+        # Inventory data is allowed to be a string.
+        if isinstance(v_data['inventory_data'], str):
+            v_data['inventory_data'] = json.dumps(v_data['inventory_data'])
+
         try:
             v_data['violation_data'] = json.loads(v_data['violation_data'])
             v_data['inventory_data'] = json.loads(v_data['inventory_data'])
