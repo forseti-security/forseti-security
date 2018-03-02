@@ -17,6 +17,7 @@
 # Filename patterns.
 VIOLATION_JSON_FMT = 'violations.{}.{}.{}.json'
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
+FINDINGS_FILENAME = 'forseti_findings_{}.json'
 
 # Timestamps.
 # Example: '2018-03-01T21:31:52'

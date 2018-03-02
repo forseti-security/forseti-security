@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """Wrapper for Resource Manager API client."""
-from googleapiclient import errors
 from httplib2 import HttpLib2Error
+from googleapiclient import errors
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers

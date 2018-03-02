@@ -69,7 +69,7 @@ def convert_to_timestamp(violations):
     for violation in violations:
         violation.created_at_datetime = (
             violation.created_at_datetime.strftime(
-                string_formats.TIMESTAMP_TIMEZONE_NAME))
+                string_formats.TIMESTAMP_TIMEZONE))
 
     return violations
 
