@@ -66,7 +66,7 @@ class ForsetiInstaller(object):
         utils.print_banner('Installing Forseti {} v{}'.format(
             self.config.installation_type, utils.get_forseti_version()))
 
-        if setup_continuation:
+        if not setup_continuation:
             # Fresh installation, run pre-flight checks.
             self.preflight_checks()
 

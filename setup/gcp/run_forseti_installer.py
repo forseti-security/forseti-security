@@ -99,8 +99,11 @@ def run():
 
     if not args.get('type'):
         # If the user didn't specify a type, install both server and client
-        ForsetiServerInstaller(**args).run_setup()
-        ForsetiClientInstaller(**args).run_setup()
+        instructions = ForsetiServerInstaller(**args).run_setup(
+            last_installation=False)
+        ForsetiClientInstaller(**args).run_setup(
+            setup_continuation=True,
+            previous_instructions=instructions)
         return
 
     if args.get('type') == 'server':
