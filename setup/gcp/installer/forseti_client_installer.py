@@ -16,13 +16,12 @@
 
 from forseti_installer import ForsetiInstaller
 
-from configs.client_config import ClientConfig
 from util import gcloud
 
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
 
-    def __init__(self, config, previous_installer):
+    def __init__(self, config, previous_installer=None):
         """Init
 
         Args:

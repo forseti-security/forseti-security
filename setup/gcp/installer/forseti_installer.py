@@ -20,7 +20,6 @@ from abc import abstractmethod
 
 import sys
 
-from configs.config import Config
 from util import constants
 from util import files
 from util import gcloud

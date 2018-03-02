@@ -18,7 +18,6 @@ from __future__ import print_function
 import os
 import random
 
-from configs.server_config import ServerConfig
 from forseti_installer import ForsetiInstaller
 from util import constants
 from util import files
@@ -476,6 +475,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                     self.gsuite_service_acct_email))
         else:
             instructions.append(constants.MESSAGE_ENABLE_GSUITE_GROUP)
+        return instructions
 
     @staticmethod
     def _swap_config_fields(old_config, new_config):
