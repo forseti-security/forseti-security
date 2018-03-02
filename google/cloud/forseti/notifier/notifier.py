@@ -18,6 +18,7 @@ import inspect
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.pipelines import findings_pipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
@@ -26,9 +27,9 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
+
 LOGGER = logger.get_logger(__name__)
 
-TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%SZ'
 
 # pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
@@ -56,19 +57,21 @@ def find_pipelines(pipeline_name):
 # pylint: enable=inconsistent-return-statements
 
 
-def convert_created_at_to_timestamp(violations):
-    """Convert violation created_at datetime to timestamp string.
+def convert_to_timestamp(violations):
+    """Convert violation created_at_datetime to timestamp string.
 
     Args:
         violations (sqlalchemy_object): List of violations as sqlalchemy
-            row/record object with created_at as datetime.
+            row/record object with created_at_datetime.
 
     Returns:
-        list: List of violations as sqlalchemy row/record object with created_at
-            converted to timestamp string.
+        list: List of violations as sqlalchemy row/record object with
+            created_at_datetime converted to timestamp string.
     """
     for violation in violations:
-        violation.created_at = violation.created_at.strftime(TIMESTAMP_FMT)
+        violation.created_at_datetime = (
+            violation.created_at_datetime.strftime(
+                string_formats.TIMESTAMP_TIMEZONE_NAME))
 
     return violations
 
@@ -141,7 +144,7 @@ def run(inventory_index_id, service_config=None):
     service_config.violation_access = violation_access
     violations = violation_access.list(inventory_index_id)
 
-    violations = convert_created_at_to_timestamp(violations)
+    violations = convert_to_timestamp(violations)
 
     violations_as_dict = []
     for violation in violations:

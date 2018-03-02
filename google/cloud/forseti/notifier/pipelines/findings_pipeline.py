@@ -30,7 +30,7 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 class FindingsPipeline(object):
-    """Upload violations to GCS bucket findings."""
+    """Upload violations to GCS bucket as findings."""
 
     def _transform_to_findings(self, violations):
         """Transform forseti violations to findings format.
@@ -44,12 +44,12 @@ class FindingsPipeline(object):
         findings = []
         for violation in violations:
             finding = {
-                'finding_id': 'violation_hash',
+                'finding_id': violation.get('violation_hash'),
                 'finding_summary': violation.get('rule_name'),
                 'finding_source_id': 'FORSETI',
                 'finding_category': violation.get('violation_type'),
                 'finding_asset_ids': violation.get('full_name'),
-                'finding_time_event': 'violation_timestamp',
+                'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
                     'violation_data': violation.get('violation_data'),
