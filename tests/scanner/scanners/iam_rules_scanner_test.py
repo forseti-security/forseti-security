@@ -43,6 +43,18 @@ class IamRulesScannerTest(ForsetiTestCase):
         self._add_ancestor_bindings_test_data()
 
     def _add_ancestor_bindings_test_data(self):
+        """Establishes the hierarchy below.
+
+               +----------------------------> proj_1
+               |
+               |
+               +                                     +-------> bucket_3_1
+            org_234 +------> folder_1 +-----> proj_3 |
+                                                     +-------> bucket_3_2
+               +
+               |
+               +----------------------------> proj_2 +-------> bucket_2_1
+        """
         self.org_234 = Organization(
             '234',
             display_name='Organization 234',

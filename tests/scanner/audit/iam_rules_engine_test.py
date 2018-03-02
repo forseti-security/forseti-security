@@ -100,20 +100,11 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project3_policy_resource.full_name = (
             'organization/778899/folder/333/project/my-project-3')
 
-    def _add_ancestor_bindings_test_data(self):
         self.org_234 = Organization(
             '234',
             display_name='Organization 234',
             full_name='organization/234/',
             data='fake_org_data_234')
-
-        self.proj_1 = Project(
-            'proj-1',
-            project_number=22345,
-            display_name='My project 1',
-            parent=self.org_234,
-            full_name='organization/234/project/proj-1/',
-            data='fake_project_data_111')
 
         self.proj_2 = Project(
             'proj-2',
@@ -123,69 +114,12 @@ class IamRulesEngineTest(ForsetiTestCase):
             full_name='organization/234/project/proj-2/',
             data='fake_project_data_222')
 
-        self.folder_1 = Folder(
-            '333',
-            display_name='Folder 1',
-            parent=self.org_234,
-            full_name='organization/234/folder/333/',
-            data='fake_folder_data_111')
-
-        self.proj_3 = Project(
-            'proj-3',
-            project_number=22347,
-            display_name='My project 3',
-            parent=self.folder_1,
-            full_name='organization/234/folder/333/project/proj-3/',
-            data='fake_project_data_333')
-
-        self.bucket_3_1 = Bucket(
-            'internal-3',
-            display_name='My project 3, internal data1',
-            parent=self.proj_3,
-            full_name='organization/234/folder/333/project/proj-3/bucket/internal-3/',
-            data='fake_project_data_333_bucket_1')
-
-        self.bucket_3_2 = Bucket(
-            'public-3',
-            display_name='My project 3, public data',
-            parent=self.proj_3,
-            full_name='organization/234/folder/333/project/proj-3/bucket/public-3/',
-            data='fake_project_data_333_bucket_2')
-
         self.bucket_2_1 = Bucket(
             'internal-2',
             display_name='My project 2, internal data',
             parent=self.proj_2,
             full_name='organization/234/project/proj-2/bucket/internal-2/',
             data='fake_project_data_222_bucket_1')
-
-        self.org_234_policy_resource = mock.MagicMock()
-        self.org_234_policy_resource.full_name = (
-            'organization/234/iam_policy/organization:234/')
-
-        self.folder_1_policy_resource = mock.MagicMock()
-        self.folder_1_policy_resource.full_name = (
-            'organization/234/folder/333/iam_policy/folder:333/')
-
-        self.proj_1_policy_resource = mock.MagicMock()
-        self.proj_1_policy_resource.full_name = (
-            'organization/234/project/proj-1/iam_policy/project:proj-1')
-
-        self.proj_2_policy_resource = mock.MagicMock()
-        self.proj_2_policy_resource.full_name = (
-            'organization/234/project/proj-2/iam_policy/project:proj-2')
-
-        self.proj_3_policy_resource = mock.MagicMock()
-        self.proj_3_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-3/iam_policy/project:proj-3')
-
-        self.bucket_3_1_policy_resource = mock.MagicMock()
-        self.bucket_3_1_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-3/bucket/internal-3/iam_policy/bucket:internal-3')
-
-        self.bucket_3_2_policy_resource = mock.MagicMock()
-        self.bucket_3_2_policy_resource.full_name = (
-            'organization/234/folder/333/project/proj-3/bucket/public-3/iam_policy/bucket:public-3')
 
         self.bucket_2_1_policy_resource = mock.MagicMock()
         self.bucket_2_1_policy_resource.full_name = (
@@ -1814,7 +1748,6 @@ class IamRulesEngineTest(ForsetiTestCase):
         Expected results:
             No policy violations found.
         """
-        self._add_ancestor_bindings_test_data()
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(
@@ -1857,7 +1790,6 @@ class IamRulesEngineTest(ForsetiTestCase):
             the user in the bindings belongs to a wrong domain and a violation
             is detected
         """
-        self._add_ancestor_bindings_test_data()
         rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
         rules_engine = ire.IamRulesEngine(rules_local_path)
         rules_engine.rule_book = ire.IamRuleBook(

@@ -458,8 +458,8 @@ RULES12 = {
     ]
 }
 
-# Requiring projects to have obejct owners from a specific domain, expressed as
-# a wildcard user
+# Requiring buckets to have object owners from a specific domain, expressed as
+# a wildcard user on bucket level
 RULES13 = {
     'rules': [
         {
