@@ -105,7 +105,7 @@ notifier:
 
     violation:
       findings:
-        enabled: true
+        enabled:
         # gcs_path should begin with "gs://"
-        gcs_path: gs://{FINDINGS_BUCKETS}/
+        gcs_path:
 
