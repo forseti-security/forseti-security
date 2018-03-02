@@ -107,5 +107,5 @@ notifier:
       findings:
         enabled: true
         # gcs_path should begin with "gs://"
-        gcs_path: gs://{FINDINGS_BUCKETS}/
+        gcs_path: gs://FINDINGS_BUCKETS/
 
