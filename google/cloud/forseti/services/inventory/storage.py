@@ -75,8 +75,8 @@ class InventoryIndex(BASE):
     __tablename__ = 'inventory_index'
 
     id = Column(String(256), primary_key=True)
-    start_time_datetime = Column(DateTime())
-    complete_time_datetime = Column(DateTime())
+    start_datetime = Column(DateTime())
+    complete_datetime = Column(DateTime())
     status = Column(Text())
     schema_version = Column(Integer())
     progress = Column(Text())
@@ -106,7 +106,7 @@ class InventoryIndex(BASE):
             self.__class__.__name__,
             self.id,
             self.schema_version,
-            self.start_time_datetime)
+            self.start_datetime)
 
     @classmethod
     def create(cls):
@@ -116,11 +116,11 @@ class InventoryIndex(BASE):
             object: InventoryIndex row object.
         """
 
-        start_time_datetime = cls._utcnow()
+        start_datetime = cls._utcnow()
         return InventoryIndex(
-            id=start_time_datetime.strftime(string_formats.TIMESTAMP_MICROS),
-            start_time_datetime=start_time_datetime,
-            complete_time_datetime=date_time.get_utc_now_datetime(),
+            id=start_datetime.strftime(string_formats.TIMESTAMP_MICROS),
+            start_datetime=start_datetime,
+            complete_datetime=date_time.get_utc_now_datetime(),
             status=InventoryState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
@@ -132,7 +132,7 @@ class InventoryIndex(BASE):
             status (str): Final status.
         """
 
-        self.complete_time_datetime = InventoryIndex._utcnow()
+        self.complete_datetime = InventoryIndex._utcnow()
         self.status = status
 
     def add_warning(self, session, warning):
