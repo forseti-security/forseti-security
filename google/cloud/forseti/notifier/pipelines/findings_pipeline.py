@@ -18,6 +18,7 @@ import tempfile
 
 from datetime import datetime
 
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
@@ -94,3 +95,5 @@ class FindingsPipeline(object):
                 storage_client = storage.StorageClient()
                 storage_client.put_text_file(
                     tmp_violations.name, gcs_upload_path)
+
+        LOGGER.info('Completed findings notification.')

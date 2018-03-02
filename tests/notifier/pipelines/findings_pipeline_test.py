@@ -69,7 +69,7 @@ class FindingsPipelineTest(ForsetiTestCase):
                  'violation_data': '{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}', 'resource_type': u'firewall_rule'},
             }
         ]
-        
+
         violations = scanner_dao_test.populate_db().list()
         violations = notifier.convert_to_timestamp(violations)
 
