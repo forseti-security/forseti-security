@@ -221,17 +221,15 @@ MESSAGE_NO_CLOUD_SHELL = (
     '4) Set your project using '
     '"gcloud config project set <PROJECT_ID>".\n'
     '5) Run this setup again, with the --no-cloudshell flag, '
-    'i.e.\n\n    python setup_forseti.py --no-cloudshell\n')
+    'i.e.\n\n\tpython setup_forseti.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
-    'A Forseti configuration file (configs/{installation_type}/'
-    'forseti_conf_{installation_type}_{timestamp}.yaml) '
-    'has been generated. If you wish to change your '
-    'Forseti configuration or rules, e.g. enabling G Suite '
-    'Groups collection, either download the conf file in '
-    'your bucket `{bucket_name}` or edit your local copy, then follow '
-    'the guide below to copy the files to Cloud Storage:\n\n'
-    '    http://forsetisecurity.org/docs/howto/deploy/'
+    'Forseti configuration file(s) has been generated.\n\n'
+    '{forseti_config_file_paths}\n\n'
+    ' If you wish to change your Forseti configuration or rules,'
+    ' either download the conf file in your bucket or edit your local'
+    ' copy, then follow the guide below to copy the files to Cloud'
+    ' Storage:\n\n\thttp://forsetisecurity.org/docs/howto/deploy/'
     'gcp-deployment.html#move-configuration-to-gcs\n\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN = (
@@ -247,12 +245,11 @@ MESSAGE_DEPLOYMENT_HAD_ISSUES = (
     'discuss@forsetisecurity.org.\n')
 
 MESSAGE_FORSETI_BRANCH_DEPLOYED = (
-    'Forseti {} (branch/version: {}) has been '
-    'deployed to GCP.\n')
+    'Forseti (branch/version: {}) has been deployed to GCP.\n\n')
 
 MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION = (
-    'Your generated Deployment Manager template can be '
-    'found here:\n\n    {}\n\n')
+    'Your generated Deployment Manager template(s) can be '
+    'found here:\n\n{deployment_template_gcs_paths}\n\n')
 
 MESSAGE_VIEW_DEPLOYMENT_DETAILS = (
     'You can view the details of your deployment in the '
@@ -316,7 +313,7 @@ QUESTION_ACCESS_TO_GRANT_ROLES = (
 
 QUESTION_CHOOSE_FOLDER = (
     'To find the folder, go to Cloud Console:\n\n'
-    '    https://console.cloud.google.com/'
+    '\thttps://console.cloud.google.com/'
     'cloud-resource-manager?organizationId={}\n\n'
     'Enter the folder id where you want '
     'Forseti to crawl for data: ')

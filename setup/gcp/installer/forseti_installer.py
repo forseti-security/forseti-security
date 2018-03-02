@@ -31,9 +31,9 @@ class ForsetiInstructions(object):
 
     def __init__(self):
         """Init."""
-        self.deployed_branches = []
-        self.deployment_template_messages = []
-        self.configuration_messages = []
+        self.deployed_branch = ''
+        self.deployment_templates = []
+        self.configurations = []
         self.other_messages = []
 
     def merge_head(self, other_instruction):
@@ -43,14 +43,11 @@ class ForsetiInstructions(object):
         Args:
             other_instruction (ForsetiInstructions): The other instructions.
         """
-        self.deployed_branches = (other_instruction.deployed_branches +
-                                  self.deployed_branches)
-        self.deployment_template_messages = (
-            other_instruction.deployment_template_messages +
-            self.deployment_template_messages)
-        self.configuration_messages = (
-            other_instruction.configuration_messages +
-            self.configuration_messages)
+        self.deployed_branch = other_instruction.deployed_branch
+        self.deployment_templates = (
+            other_instruction.deployment_templates + self.deployment_templates)
+        self.configurations = (
+            other_instruction.configurations + self.configurations)
         self.other_messages = (other_instruction.other_messages +
                                self.other_messages)
 
@@ -60,10 +57,18 @@ class ForsetiInstructions(object):
         Returns:
             str: String representation of ForsetiInstructions.
         """
-        message = ''
-        message += '\n'.join(self.deployed_branches)
-        message += '\n'.join(self.deployment_template_messages)
-        message += '\n'.join(self.configuration_messages)
+        message = self.deployed_branch
+
+        deployment_template_gcs_paths = '\t' + '\t\n'.join(
+            self.deployment_templates)
+        message += constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
+            deployment_template_gcs_paths=deployment_template_gcs_paths)
+
+        configuration_paths = '\t' + '\t\n'.join(self.configurations)
+        message += constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
+            forseti_config_file_paths=configuration_paths
+        )
+
         message += '\n'.join(self.other_messages)
 
         return message
@@ -377,33 +382,31 @@ class ForsetiInstaller(object):
             message = (
                 'This was a dry run, so a deployment was not attempted. '
                 'You can still create the deployment manually.\n')
-            instructions.deployed_branches.append(message)
+            instructions.deployed_branch = message
         elif deploy_success:
-            instructions.deployed_branches.append(
-                constants.MESSAGE_FORSETI_BRANCH_DEPLOYED
-                .format(self.config.installation_type,
-                        self.branch))
+            instructions.deployed_branch = (
+                constants.MESSAGE_FORSETI_BRANCH_DEPLOYED.format(self.branch))
         else:
-            instructions.deployed_branches.append(
+            instructions.deployed_branch = (
                 constants.MESSAGE_DEPLOYMENT_HAD_ISSUES)
 
         deploy_tpl_gcs_path = constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
             bucket_name)
 
-        instructions.deployment_template_messages.append(
-            constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
-                deploy_tpl_gcs_path))
+        instructions.deployment_templates.append(deploy_tpl_gcs_path)
 
         if self.config.dry_run:
-            instructions.configuration_messages.append(
+            instructions.configurations.append(
                 constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN
                 .format(forseti_conf_path, bucket_name))
         else:
-            instructions.configuration_messages.append(
-                constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
-                    installation_type=self.config.installation_type,
-                    timestamp=self.config.timestamp,
-                    bucket_name=bucket_name))
+            forseti_gcs_path = (
+                '{gcs_bucket}/configs/{installation_type}/'
+                'forseti_conf_{installation_type}.yaml').format(
+                    gcs_bucket=bucket_name,
+                    installation_type=self.config.installation_type
+                )
+            instructions.configurations.append(forseti_gcs_path)
         return instructions
 
     def populate_installer_environment(self, other_installer):
