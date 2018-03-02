@@ -17,14 +17,17 @@ import os
 import shutil
 import tempfile
 import unittest
+
+from datetime import datetime
+
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
 
-FAKE_TIMESTAMP = date_time.get_utc_now_datetime().strftime(
+FAKE_DATETIME = datetime(2018, 1, 28, 10, 20, 30, 0)
+FAKE_DATETIME_TIMESTAMP = FAKE_DATETIME.strftime(
     string_formats.TIMESTAMP_MICROS)
 
 
@@ -57,11 +60,7 @@ def get_db_file_copy(filename):
 
 
 class ImporterTest(ForsetiTestCase):
-    """Test importer based on database dump.
-
-        Note: If the GCP data and/or schema changes see:
-            tests/services/model/importer/update_test_dbs.py
-    """
+    """Test importer based on database dump."""
 
     def test_inventory_importer_basic(self):
         """Test the basic importer for the inventory."""
@@ -88,11 +87,11 @@ class ImporterTest(ForsetiTestCase):
                                          session=session),
                 data_access,
                 self.service_config,
-                inventory_id=FAKE_TIMESTAMP)
+                inventory_id=FAKE_DATETIME_TIMESTAMP)
             import_runner.run()
 
-            # make sure the 'full_name' for policies has an even number of
-            # segments
+            # Make sure the 'full_name' for policies has an even number of
+            # segments.
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 self.assertFalse(
                         len(filter(None, policy.full_name.split('/'))) % 2)
@@ -107,11 +106,12 @@ class ImporterTest(ForsetiTestCase):
         self.assertEquals(
             {'pristine': True,
              'source': 'inventory',
-             'source_info': {'inventory_index_id': FAKE_TIMESTAMP},
+             'source_info': {'inventory_index_id': FAKE_DATETIME_TIMESTAMP},
              'source_root': 'organization/111222333',
              'gsuite_enabled': True
              },
             model_description)
+
 
 if __name__ == '__main__':
     unittest.main()

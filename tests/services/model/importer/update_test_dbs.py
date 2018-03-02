@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Update test_data databases with new resources.
 
 When the inventory mock_gcp_results.py file is updated, then this script should
@@ -21,21 +20,22 @@ From the top forseti-security dir, run:
 
 PYTHONPATH=. python tests/services/model/importer/update_test_dbs.py
 """
-import datetime
 import os
 import shutil
 import time
 import mock
+
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks
+from tests.services.model.importer import importer_test
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
+from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.server import InventoryConfig
 
@@ -89,9 +89,9 @@ def main():
                                                 import_as=''):
             continue
 
-    fake_time = datetime.datetime(2018, 1, 28, 10, 20, 30, 0)
-    fake_datetime = mock.patch.object(
-        date_time, 'get_utc_now_datetime', return_value=fake_time).start()
+    fake_time = importer_test.FAKE_DATETIME
+    _ = mock.patch.object(InventoryIndex,
+                          '_utcnow', return_value=fake_time).start()
 
     engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)
