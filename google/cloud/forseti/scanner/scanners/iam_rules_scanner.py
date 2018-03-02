@@ -71,11 +71,13 @@ def _add_bucket_ancestor_bindings(policy_data):
             # is the resource's full name a proper prefix of the bucket's full
             # name?
             if resource.full_name != bucket.full_name
+            # pylint: disable=compare-to-zero
             and bucket.full_name.find(resource.full_name) == 0]
+
         for ancestor_bindings in all_ancestor_bindings:
             for ancestor_binding in ancestor_bindings:
                 if (ancestor_binding.role_name not in storage_iam_roles
-                    or ancestor_binding in bucket_bindings):
+                        or ancestor_binding in bucket_bindings):
                     continue
                 # do we have a binding with the same 'role_name' already?
                 for bucket_binding in bucket_bindings:
