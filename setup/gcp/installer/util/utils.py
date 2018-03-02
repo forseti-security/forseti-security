@@ -70,7 +70,7 @@ def print_installation_header(*args):
     _print_banner(border_symbol='#',
                   edge_symbol='#',
                   corner_symbol='#',
-                  length=120,
+                  length=80,
                   wrap_border=True,
                   texts=texts)
 
@@ -87,8 +87,10 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
         wrap_border (bool): Whether or not we want to wrap around the border.
         texts (list): Text(s) to put in the banner.
     """
-
-    border = corner_symbol + border_symbol * (length - 2) + corner_symbol
+    if wrap_border:
+        border = corner_symbol + border_symbol * (length - 2) + corner_symbol
+    else:
+        border = corner_symbol + border_symbol * (length - 1)
 
     print('')
     print(border)
