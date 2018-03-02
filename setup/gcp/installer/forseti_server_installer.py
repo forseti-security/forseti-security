@@ -453,7 +453,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             print('Forseti will be granted write access to: %s' %
                   self.resource_root_id)
 
-    def post_install_instructions(self, deploy_success, deployment_name,
+    def post_install_instructions(self, deploy_success,
                                   forseti_conf_path, bucket_name):
         """Show post-install instructions.
 
@@ -462,33 +462,33 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         Args:
             deploy_success (bool): Whether deployment was successful
-            deployment_name (str): Name of the deployment
             forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
 
         Returns:
-            list: Post installation instructions.
+            ForsetiInstructions: Forseti instructions.
         """
         instructions = (
             super(ForsetiServerInstaller, self).post_install_instructions(
-                deploy_success, deployment_name,
-                forseti_conf_path, bucket_name))
+                deploy_success, forseti_conf_path, bucket_name))
 
         if self.has_roles_script:
-            instructions.append(constants.MESSAGE_HAS_ROLE_SCRIPT.format(
-                self.resource_root_id))
+            instructions.other_messages.append(
+                constants.MESSAGE_HAS_ROLE_SCRIPT.format(
+                    self.resource_root_id))
 
         if not self.config.sendgrid_api_key:
-            instructions.append(constants.MESSAGE_SKIP_EMAIL)
+            instructions.other_messages.append(constants.MESSAGE_SKIP_EMAIL)
 
         if self.config.gsuite_superadmin_email:
-            instructions.append(
+            instructions.other_messages.append(
                 constants.MESSAGE_GSUITE_DATA_COLLECTION.format(
                     self.project_id,
                     self.organization_id,
                     self.gsuite_service_acct_email))
         else:
-            instructions.append(constants.MESSAGE_ENABLE_GSUITE_GROUP)
+            instructions.other_messages.append(
+                constants.MESSAGE_ENABLE_GSUITE_GROUP)
         return instructions
 
     @staticmethod

@@ -46,11 +46,11 @@ class ForsetiInstructions(object):
         self.deployed_branches = (other_instruction.deployed_branches +
                                   self.deployed_branches)
         self.deployment_template_messages = (
-                other_instruction.deployment_template_messages +
-                self.deployment_template_messages)
+            other_instruction.deployment_template_messages +
+            self.deployment_template_messages)
         self.configuration_messages = (
-                other_instruction.configuration_messages +
-                self.configuration_messages)
+            other_instruction.configuration_messages +
+            self.configuration_messages)
         self.other_messages = (other_instruction.other_messages +
                                self.other_messages)
 
@@ -128,13 +128,12 @@ class ForsetiInstaller(object):
 
         # Deployment.
         bucket_name = self.generate_bucket_name()
-        deploy_success, deployment_name = self.deploy(deployment_tpl_path,
-                                                      conf_file_path,
-                                                      bucket_name)
+        deploy_success, _ = self.deploy(deployment_tpl_path,
+                                        conf_file_path,
+                                        bucket_name)
 
         # After deployment.
         instructions = self.post_install_instructions(deploy_success,
-                                                      deployment_name,
                                                       conf_file_path,
                                                       bucket_name)
 
@@ -357,7 +356,7 @@ class ForsetiInstaller(object):
 
         return forseti_conf_path
 
-    def post_install_instructions(self, deploy_success, deployment_name,
+    def post_install_instructions(self, deploy_success,
                                   forseti_conf_path, bucket_name):
         """Show post-install instructions.
 
@@ -366,7 +365,6 @@ class ForsetiInstaller(object):
 
         Args:
             deploy_success (bool): Whether deployment was successful
-            deployment_name (str): Name of the deployment
             forseti_conf_path (str): Forseti configuration file path
             bucket_name (str): Name of the GCS bucket
 
