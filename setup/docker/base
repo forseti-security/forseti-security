@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Dockerfile (experimental) for getting Forseti up and running.
-# You still need to do all the other prereq GCP setup (e.g.
-# setting up service accounts, GCP infrastructure).
-
 FROM ubuntu:16.04
 
 # Expose our source so we can read in dependencies.
@@ -24,7 +20,7 @@ WORKDIR /forseti-security/
 
 # Install host dependencies.
 RUN apt-get update -qq 1> /dev/null
-RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 2>&1 /dev/null
+RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null
 RUN rm -rf /var/lib/apt/lists/*
 
 # Install the CloudSDK for `gcloud`.
