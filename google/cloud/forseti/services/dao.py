@@ -48,6 +48,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.services.utils import mutual_exclusive
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services import db
@@ -91,8 +92,8 @@ class Model(MODEL_BASE):
     handle = Column(String(32))
     state = Column(String(32))
     description = Column(Text())
-    watchdog_timer = Column(DateTime)
-    created_at = Column(DateTime)
+    watchdog_timer_datetime = Column(DateTime())
+    created_at_datetime = Column(DateTime())
     etag_seed = Column(String(32), nullable=False)
     message = Column(Text())
     warnings = Column(Text(16777215))
@@ -1959,8 +1960,8 @@ class ModelManager(object):
                 handle=handle,
                 name=name,
                 state='CREATED',
-                created_at=datetime.datetime.utcnow(),
-                watchdog_timer=datetime.datetime.utcnow(),
+                created_at_datetime=date_time.get_utc_now_datetime(),
+                watchdog_timer_datetime=date_time.get_utc_now_datetime(),
                 etag_seed=generate_model_seed(),
                 description='{}'
                 )

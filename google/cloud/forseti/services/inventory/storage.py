@@ -28,6 +28,7 @@ from sqlalchemy import exists
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 # pylint: disable=line-too-long
@@ -74,9 +75,9 @@ class InventoryIndex(BASE):
 
     __tablename__ = 'inventory_index'
 
-    id = Column(String(32), primary_key=True)
-    start_time = Column(DateTime())
-    complete_time = Column(DateTime())
+    id = Column(String(256), primary_key=True)
+    start_time_datetime = Column(DateTime())
+    complete_time_datetime = Column(DateTime())
     status = Column(Text())
     schema_version = Column(Integer())
     progress = Column(Text())
@@ -93,7 +94,7 @@ class InventoryIndex(BASE):
             object: UTC now time object.
         """
 
-        return datetime.datetime.utcnow()
+        return date_time.get_utc_now_datetime()
 
     def __repr__(self):
         """Object string representation.
@@ -106,7 +107,7 @@ class InventoryIndex(BASE):
             self.__class__.__name__,
             self.id,
             self.schema_version,
-            self.start_time)
+            self.start_time_datetime)
 
     @classmethod
     def create(cls):
@@ -116,11 +117,11 @@ class InventoryIndex(BASE):
             object: InventoryIndex row object.
         """
 
-        start_time = cls._utcnow()
+        start_time_datetime = cls._utcnow()
         return InventoryIndex(
-            id=start_time.strftime(string_formats.TIMESTAMP_MICROS),
-            start_time=start_time,
-            complete_time=datetime.datetime.utcfromtimestamp(0),
+            id=start_time_datetime.strftime(string_formats.TIMESTAMP_MICROS),
+            start_time_datetime=start_time_datetime,
+            complete_time_datetime=date_time.get_utc_now_datetime(),
             status=InventoryState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
@@ -132,7 +133,7 @@ class InventoryIndex(BASE):
             status (str): Final status.
         """
 
-        self.complete_time = InventoryIndex._utcnow()
+        self.complete_time_datetime = InventoryIndex._utcnow()
         self.status = status
 
     def add_warning(self, session, warning):
@@ -171,7 +172,7 @@ class Inventory(BASE):
 
     # Order is used to resemble the order of insert for a given inventory
     order = Column(Integer, primary_key=True, autoincrement=True)
-    index = Column(String(32))
+    index = Column(String(256))
     type_class = Column(Text)
     key = Column(Text)
     type = Column(Text)
