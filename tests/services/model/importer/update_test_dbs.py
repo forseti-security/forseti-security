@@ -30,6 +30,7 @@ from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.client import ClientComposition
@@ -91,7 +92,7 @@ def main():
 
     fake_time = datetime.datetime(2018, 1, 28, 10, 20, 30, 0)
     fake_datetime = mock.patch.object(
-        InventoryIndex, '_utcnow', return_value=fake_time).start()
+        date_time, 'get_utc_now_datetime', return_value=fake_time).start()
 
     engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)
