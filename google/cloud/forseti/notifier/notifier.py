@@ -18,6 +18,8 @@ import inspect
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.notifier.pipelines import findings_pipeline
 from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
@@ -25,17 +27,15 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
+
 LOGGER = logger.get_logger(__name__)
 
-TIMESTAMP_FMT = '%Y-%m-%dT%H:%M:%SZ'
 
 # pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
-
     Args:
         pipeline_name (str): Name of the pipeline.
-
     Return:
         class: The class in the sub module
     """
@@ -55,30 +55,28 @@ def find_pipelines(pipeline_name):
 # pylint: enable=inconsistent-return-statements
 
 
-def convert_created_at_to_timestamp(violations):
-    """Convert violation created_at datetime to timestamp string.
-
+def convert_to_timestamp(violations):
+    """Convert violation created_at_datetime to timestamp string.
     Args:
         violations (sqlalchemy_object): List of violations as sqlalchemy
-            row/record object with created_at as datetime.
-
+            row/record object with created_at_datetime.
     Returns:
-        list: List of violations as sqlalchemy row/record object with created_at
-            converted to timestamp string.
+        list: List of violations as sqlalchemy row/record object with
+            created_at_datetime converted to timestamp string.
     """
     for violation in violations:
-        violation.created_at = violation.created_at.strftime(TIMESTAMP_FMT)
+        violation.created_at_datetime = (
+            violation.created_at_datetime.strftime(
+                string_formats.TIMESTAMP_TIMEZONE_NAME))
 
     return violations
 
 def process(message):
     """Process messages about what notifications to send.
-
     Args:
         message (dict): Message with payload in dict.
             The payload will be different depending on the sender
             of the message.
-
             Example:
                 {'status': 'foobar_done',
                  'payload': {}}
@@ -115,13 +113,10 @@ def process(message):
 
 def run(inventory_index_id, service_config=None):
     """Run the notifier.
-
     Entry point when the notifier is run as a library.
-
     Args:
         inventory_index_id (str): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs
-
     Returns:
         int: Status code.
     """
@@ -140,7 +135,7 @@ def run(inventory_index_id, service_config=None):
     service_config.violation_access = violation_access
     violations = violation_access.list(inventory_index_id)
 
-    violations = convert_created_at_to_timestamp(violations)
+    violations = convert_to_timestamp(violations)
 
     violations_as_dict = []
     for violation in violations:
@@ -164,6 +159,7 @@ def run(inventory_index_id, service_config=None):
             LOGGER.debug('No violations for: %s', resource['resource'])
             continue
         if not resource['should_notify']:
+            LOGGER.debug('Not notifying for: %s', resource['resource'])
             continue
         for pipeline in resource['pipelines']:
             LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',
@@ -179,6 +175,11 @@ def run(inventory_index_id, service_config=None):
     # run the pipelines
     for pipeline in pipelines:
         pipeline.run()
+
+    if notifier_configs.get('violation').get('findings').get('enabled'):
+        findings_pipeline.FindingsPipeline().run(
+            violations_as_dict,
+            notifier_configs.get('violation').get('findings').get('gcs_path'))
 
     LOGGER.info('Notification complete!')
     return 0

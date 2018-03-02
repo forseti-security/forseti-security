@@ -102,3 +102,10 @@ notifier:
             - name: slack_webhook_pipeline
               configuration:
                 webhook_url: ''
+
+    violation:
+      findings:
+        enabled: true
+        # gcs_path should begin with "gs://"
+        gcs_path: gs://{FINDINGS_BUCKETS}/
+
