@@ -198,13 +198,12 @@ def format_resource_id(resource_type, resource_id):
     return '%s/%s' % (resource_type, resource_id)
 
 
-def generate_service_acct_info(prefix, modifier, installation_type,
+def generate_service_acct_info(prefix, installation_type,
                                timestamp, project_id):
     """Format the service account email and name.
 
     Args:
         prefix (str): The prefix of the account id and account name.
-        modifier (str): Access level of the account.
         installation_type (str): Type of the installation (client/server).
         timestamp (str): The timestamp.
         project_id (str): Id of the project on GCP.
@@ -215,14 +214,10 @@ def generate_service_acct_info(prefix, modifier, installation_type,
     """
 
     service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
-        installation_type, prefix, modifier, timestamp)
+        installation_type, prefix, timestamp)
 
-    # Service account email will not contain the modifier due
-    # to character limits (max 30 characters)
-    service_account_email = full_service_acct_email(
-        constants.SERVICE_ACCT_ID_FMT.format(prefix,
-                                             installation_type,
-                                             timestamp), project_id)
+    service_account_email = full_service_acct_email(service_account_name,
+                                                    project_id)
 
     return service_account_email, service_account_name
 

@@ -293,7 +293,6 @@ class ForsetiInstaller(object):
         service_account_email, service_account_name = (
             utils.generate_service_acct_info(
                 'gcp',
-                'reader',
                 self.config.installation_type,
                 self.config.timestamp,
                 self.project_id))

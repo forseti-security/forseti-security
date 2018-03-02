@@ -45,7 +45,7 @@ def get_gcloud_info():
             props = config.get('properties', {})
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
-            print('Read gcloud info successfully')
+            print('Read gcloud info: Success')
         except ValueError as verr:
             print(verr)
             sys.exit(1)
@@ -66,12 +66,9 @@ def verify_gcloud_information(project_id,
     """
 
     check_proper_gcloud()
-    if not force_no_cloudshell:
-        if not is_devshell:
-            print(constants.MESSAGE_NO_CLOUD_SHELL)
-            sys.exit(1)
-        else:
-            print('Using Cloud Shell, continuing...')
+    if not force_no_cloudshell and not is_devshell:
+        print(constants.MESSAGE_NO_CLOUD_SHELL)
+        sys.exit(1)
     else:
         print('Bypass Cloud Shell check, continuing...')
     if not authed_user:
@@ -504,7 +501,7 @@ def create_or_reuse_service_acct(acct_type,
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
         acct_email = svc_accts[acct_idx - 1]['email']
-    print ('\tService account id: {}'.format(acct_email))
+    print ('\t{}'.format(acct_email))
     return acct_email
 
 

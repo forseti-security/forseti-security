@@ -71,7 +71,7 @@ mv forseti-security-{release_version} forseti-security
     resources = []
 
     resources.append({
-        'name': '{}-vm'.format(context.env['deployment']),
+        'name': context.env['deployment'],
         'type': 'compute.v1.instance',
         'properties': {
             'zone': context.properties['zone'],
