@@ -65,26 +65,27 @@ def _add_bucket_ancestor_bindings(policy_data):
         'roles/storage.objectAdmin',
     ])
     bucket_data = [(r, bs) for (r, _, bs) in policy_data if r.type == 'bucket']
-    for bucket, bindings in bucket_data:
-        ancestor_bindings = [
-            bs for (r, _, bs) in policy_data
-            if r.full_name != bucket.full_name
-            and not bucket.full_name.find(r.full_name)]
-        for anbs in ancestor_bindings:
-            for anb in anbs:
-                if anb.role_name not in storage_iam_roles or anb in bindings:
+    for bucket, bucket_bindings in bucket_data:
+        all_ancestor_bindings = [
+            bindings for (resource, _, bindings) in policy_data
+            # is the resource's full name a proper prefix of the bucket's full
+            # name?
+            if resource.full_name != bucket.full_name
+            and bucket.full_name.find(resource.full_name) == 0]
+        for ancestor_bindings in all_ancestor_bindings:
+            for ancestor_binding in ancestor_bindings:
+                if (ancestor_binding.role_name not in storage_iam_roles
+                    or ancestor_binding in bucket_bindings):
                     continue
                 # do we have a binding with the same 'role_name' already?
-                try:
-                    [same_role_binding] = [
-                        iamb for iamb in bindings
-                        if iamb.role_name == anb.role_name]
-                except ValueError:
-                    # no bindings with the same 'role_name'
-                    bindings.append(anb)
+                for bucket_binding in bucket_bindings:
+                    if bucket_binding.role_name == ancestor_binding.role_name:
+                        # yes, merge members.
+                        bucket_binding.merge(ancestor_binding)
+                        break
                 else:
-                    # found a binding with the same 'role_name', merge members
-                    same_role_binding.merge(anb)
+                    # no, add ancestor binding.
+                    bucket_bindings.append(ancestor_binding)
 
 
 class IamPolicyScanner(base_scanner.BaseScanner):
