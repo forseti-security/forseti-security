@@ -84,7 +84,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         gsuite_service_acct_email, gsuite_service_acct_name = (
             self.format_gsuite_service_acct_id())
         self.gsuite_service_acct_email = gcloud.create_or_reuse_service_acct(
-            'gsuite_service_account',
+            'GSuite Service Account',
             gsuite_service_acct_name,
             gsuite_service_acct_email,
             self.config.advanced_mode,

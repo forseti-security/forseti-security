@@ -59,12 +59,12 @@ class ForsetiInstructions(object):
         """
         message = self.deployed_branch
 
-        deployment_template_gcs_paths = '\t' + '\t\n'.join(
+        deployment_template_gcs_paths = '\t' + '\n\t'.join(
             self.deployment_templates)
         message += constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
             deployment_template_gcs_paths=deployment_template_gcs_paths)
 
-        configuration_paths = '\t' + '\t\n'.join(self.configurations)
+        configuration_paths = '\t' + '\n\t'.join(self.configurations)
         message += constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
             forseti_config_file_paths=configuration_paths
         )
@@ -117,7 +117,7 @@ class ForsetiInstaller(object):
         Returns:
             ForsetiInstructions: Forseti instructions.
         """
-        utils.print_banner('Installing Forseti {}'.format(
+        utils.print_installation_header('Installing Forseti {}'.format(
             self.config.installation_type.capitalize()))
 
         if not setup_continuation:
@@ -181,7 +181,7 @@ class ForsetiInstaller(object):
         gcp_service_acct_email, gcp_service_acct_name = (
             self.format_gcp_service_acct_id())
         self.gcp_service_acct_email = gcloud.create_or_reuse_service_acct(
-            'gcp_service_account',
+            'GCP Service Account',
             gcp_service_acct_name,
             gcp_service_acct_email,
             self.config.advanced_mode,

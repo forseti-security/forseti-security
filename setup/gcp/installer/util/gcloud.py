@@ -453,12 +453,10 @@ def create_or_reuse_service_acct(acct_type,
             the installation.
     """
 
-    account = acct_type.replace('_', ' ')
-
-    choices = ['Create {}'.format(account), 'Reuse {}'.format(account)]
+    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
 
     if not advanced_mode:
-        print ('Creating {}... '.format(account), end='')
+        print ('Creating {}... '.format(acct_type), end='')
         sys.stdout.flush()
         choice_index = 1
     else:

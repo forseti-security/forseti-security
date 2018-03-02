@@ -226,7 +226,7 @@ MESSAGE_NO_CLOUD_SHELL = (
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
     'Forseti configuration file(s) has been generated.\n\n'
     '{forseti_config_file_paths}\n\n'
-    ' If you wish to change your Forseti configuration or rules,'
+    'If you wish to change your Forseti configuration or rules,'
     ' either download the conf file in your bucket or edit your local'
     ' copy, then follow the guide below to copy the files to Cloud'
     ' Storage:\n\n\thttp://forsetisecurity.org/docs/howto/deploy/'

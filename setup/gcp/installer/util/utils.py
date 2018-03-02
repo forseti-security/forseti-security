@@ -49,12 +49,53 @@ def print_banner(*args):
     Args:
         args (str): Text(s) to put in the banner.
     """
+    _print_banner(border_symbol='-',
+                  corner_symbol='+',
+                  length=80,
+                  wrap_border=False,
+                  *args)
+
+
+def print_installation_header(*args):
+    """Print installation header.
+
+    Installation header will have a different pattern than a normal banner.
+
+    Args:
+        args (str): Text(s) to put in the banner.
+    """
+    _print_banner(border_symbol='#',
+                  corner_symbol='#',
+                  length=120,
+                  wrap_border=True,
+                  *args)
+
+
+def _print_banner(border_symbol, corner_symbol, length, wrap_border, *args):
+    """Print a banner.
+
+    Args:
+        border_symbol (str): The symbol used on the border.
+        corner_symbol (str): The symbol to put at the corners.
+        length (int): The length of the border.
+        wrap_border (bool): Whether or not we want to wrap around the border.
+        args (str): Text(s) to put in the banner.
+    """
+
+    border = corner_symbol + border_symbol * (length - 2) + corner_symbol
+
     print('')
-    print('+-------------------------------------------------------')
+    print(border)
     for text in args:
-        print('|  {}'.format(text))
-    print('+-------------------------------------------------------')
+        right_edge = border_symbol + '  '
+        if wrap_border:
+            # Pad the text with empty space
+            padded_text = text + ' ' * (length - len(text) - len(right_edge) - 1)
+            print(right_edge + text + border_symbol)
+        print(right_edge + text)
+    print(border)
     print('')
+
 
 
 def get_forseti_version():
