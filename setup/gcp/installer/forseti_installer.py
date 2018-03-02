@@ -280,7 +280,7 @@ class ForsetiInstaller(object):
         forseti_conf_path = files.generate_forseti_conf(
             self.config.installation_type,
             conf_values,
-            self.config.datetimestamp)
+            self.config.timestamp)
 
         print('\nCreated Forseti {} configuration file:\n    {}\n'.
               format(self.config.installation_type,
@@ -329,5 +329,5 @@ class ForsetiInstaller(object):
 
             print(constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
                 installation_type=self.config.installation_type,
-                datetimestamp=self.config.datetimestamp,
+                timestamp=self.config.timestamp,
                 bucket_name=bucket_name))
