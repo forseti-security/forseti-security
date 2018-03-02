@@ -707,6 +707,97 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         self.assertEquals(expected_b2_bindings, bucket_2_1_bindings)
 
+    def test_retrieve_finds_bucket_policies(self):
+        """IamPolicyScanner::_retrieve() finds bucket policies.
+
+        _retrieve() is picking up bucket IAM policies (in addition to
+        the organization, folder and project level ones).
+        """
+        policy_resources = []
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/iam_policy/organization:234/'
+        pr.type_name = 'iam_policy/organization:234'
+        pr.name = 'organization:234'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["domain:gcp.work"], "role": "roles/billing.creator"}, {"members": ["user:da@gcp.work"], "role": "roles/owner"}], "etag": "BwVmVJ0OeTs="}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'organization'
+        pr.parent.name = '234'
+        pr.parent.full_name = 'organization/234/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/folder/333/iam_policy/folder:333/'
+        pr.type_name = 'iam_policy/folder:333'
+        pr.name = 'folder:333'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["user:dd@gcp.work"], "role": "roles/resourcemanager.folderEditor"}], "etag": "BwVmQ+cRxiA="}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'folder'
+        pr.parent.name = '333'
+        pr.parent.full_name = 'organization/234/folder/333/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/project/435/iam_policy/project:435/'
+        pr.type_name = 'iam_policy/project:435'
+        pr.name = 'project:435'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["user:abc@gcp.work"], "role": "roles/owner"}], "etag": "BwVlqEvec+E=", "version": 1}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'project'
+        pr.parent.name = '435'
+        pr.parent.full_name = 'organization/234/project/435/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/project/435/bucket/789/iam_policy/bucket:789/'
+        pr.type_name = 'iam_policy/bucket:789'
+        pr.name = 'bucket:789'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["projectEditor:435", "projectOwner:435"], "role": "roles/storage.legacyBucketOwner"}, {"members": ["projectViewer:435"], "role": "roles/storage.legacyBucketReader"}, {"members": ["user:ov@gmail.com"], "role": "roles/storage.objectViewer"}], "etag": "CAI=", "kind": "storage#policy", "resourceId": "projects/_/buckets/789"}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'bucket'
+        pr.parent.name = '789'
+        pr.parent.full_name = 'organization/234/project/435/bucket/789/'
+        policy_resources.append(pr)
+
+        mock_data_access = mock.MagicMock()
+        mock_data_access.scanner_iter.return_value = policy_resources
+        mock_service_config = mock.MagicMock()
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = mock.MagicMock(), mock_data_access
+        self.scanner.service_config = mock_service_config
+
+        # call the method under test.
+        policy_data, resource_counts = self.scanner._retrieve()
+
+        # we picked up the bucket IAM policy.
+        self.assertEquals(1, resource_counts['bucket'])
+        [(bucket, bucket_bindings)] = [
+                (r, bs) for (r, _, bs) in policy_data
+                if r.type == 'bucket']
+
+        self.assertEquals('789', bucket.id)
+        self.assertEquals('bucket', bucket.type)
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:ov@gmail.com',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEquals(expected_bindings, bucket_bindings)
+
 
 if __name__ == '__main__':
     unittest.main()
