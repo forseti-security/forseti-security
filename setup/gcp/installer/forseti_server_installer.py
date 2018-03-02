@@ -56,14 +56,15 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Pre-flight checks for server instance."""
 
         super(ForsetiServerInstaller, self).preflight_checks()
+        self.get_email_settings()
         gcloud.enable_apis(self.config.dry_run)
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
                 constants.REGEX_MATCH_FORSETI_V1_INSTANCE_NAME, try_match=True)
         if forseti_v1_name:
-            utils.print_banner('Found a v1 installation:'
-                               ' importing configuration and rules.')
+            utils.print_banner('Found A V1 Installation:'
+                               ' Importing Configuration And Rules.')
             # v1 instance exists, ask if the user wants to port
             # the conf/rules settings from v1.
             self.prompt_v1_configs_migration()
@@ -75,7 +76,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.determine_access_target()
         self.should_enable_write_access()
         self.should_grant_access()
-        self.get_email_settings()
 
     def create_or_reuse_service_accts(self):
         """Create or reuse service accounts."""
@@ -338,7 +338,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Allow only org level access since IAM explain
         requires org level access.
         """
-        utils.print_banner('Forseti installation configuration')
+        utils.print_banner('Forseti Installation Configuration')
 
         if not self.config.advanced_mode:
             self.access_target = constants.RESOURCE_TYPES[0]
@@ -376,7 +376,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def get_email_settings(self):
         """Ask user for specific setup values."""
-        utils.print_banner('Configuring email settings')
+        utils.print_banner('Configuring GSuite Admin Information')
+        while not self.config.gsuite_superadmin_email:
+            # User has to enter a G Suite super admin email.
+            print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
+            self.config.gsuite_superadmin_email = raw_input(
+                constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
+
+        utils.print_banner('Configuring Email Settings')
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key.
             print(constants.MESSAGE_ASK_SENDGRID_API_KEY)
@@ -391,13 +398,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             if not self.config.notification_recipient_email:
                 self.config.notification_recipient_email = raw_input(
                     constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
-
-        utils.print_banner('Configuring GSuite admin information')
-        while not self.config.gsuite_superadmin_email:
-            # User has to enter a G Suite super admin email.
-            print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
-            self.config.gsuite_superadmin_email = raw_input(
-                constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
     def format_gsuite_service_acct_id(self):
         """Format the gsuite service account id.

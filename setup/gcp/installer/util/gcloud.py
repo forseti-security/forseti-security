@@ -134,7 +134,7 @@ def enable_apis(dry_run=False):
         dry_run (bool): Whether this is a dry run. If True, don't actually
             enable the APIs.
     """
-    utils.print_banner('Enabling required APIs')
+    utils.print_banner('Enabling Required APIs')
     if dry_run:
         print('This is a dry run, so skipping this step.')
         return
@@ -169,7 +169,7 @@ def grant_client_svc_acct_roles(project_id,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account',
+    utils.print_banner('Assigning Roles To The GCP Service Account',
                        gcp_service_account)
 
     roles = {
@@ -218,8 +218,8 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account',
-                       'Account id: {}'.format(gcp_service_account))
+    utils.print_banner('Assigning Roles To The GCP Service Account',
+                       gcp_service_account)
     access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
@@ -756,8 +756,8 @@ def create_deployment(project_id,
         print('This is a dry run, so skipping this step.')
         return 0
 
-    utils.print_banner('Creating Forseti {} deployment'.format(
-        installation_type))
+    utils.print_banner('Creating Forseti {} Deployment'.format(
+        installation_type.capitalize()))
 
     # Ping the deployment manager and make sure the API is ready
     utils.run_command(

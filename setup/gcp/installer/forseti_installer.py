@@ -63,8 +63,8 @@ class ForsetiInstaller(object):
         Returns:
             list: List of all instructions.
         """
-        utils.print_banner('Installing Forseti {} v{}'.format(
-            self.config.installation_type, utils.get_forseti_version()))
+        utils.print_banner('Installing Forseti {}'.format(
+            self.config.installation_type.capitalize()))
 
         if not setup_continuation:
             # Fresh installation, run pre-flight checks.
@@ -94,7 +94,7 @@ class ForsetiInstaller(object):
 
         if last_installation:
             # Only print the instructions if this is the final installation
-            utils.print_banner('Forseti post-setup instructions')
+            utils.print_banner('Forseti Post-Setup Instructions')
             all_instructions = '\n'.join(instructions)
             print(all_instructions)
 
@@ -126,7 +126,7 @@ class ForsetiInstaller(object):
 
     def create_or_reuse_service_accts(self):
         """Create or reuse service accounts."""
-        utils.print_banner('Creating/Reusing service account(s)')
+        utils.print_banner('Creating/Reusing Service Account(s)')
         gcp_service_acct_email, gcp_service_acct_name = (
             self.format_gcp_service_acct_id())
         self.gcp_service_acct_email = gcloud.create_or_reuse_service_acct(
@@ -178,7 +178,7 @@ class ForsetiInstaller(object):
             if self.config.dry_run:
                 print('This is a dry run, will not copy any files.')
 
-            utils.print_banner('Backing up important files to GCS')
+            utils.print_banner('Backing Up Important Files To GCS')
 
             conf_output_path = constants.FORSETI_CONF_PATH.format(
                 bucket_name=bucket_name,
