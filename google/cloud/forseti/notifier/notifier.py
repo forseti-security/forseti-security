@@ -60,6 +60,7 @@ def convert_to_timestamp(violations):
     Args:
         violations (sqlalchemy_object): List of violations as sqlalchemy
             row/record object with created_at_datetime.
+
     Returns:
         list: List of violations as sqlalchemy row/record object with
             created_at_datetime converted to timestamp string.
