@@ -175,7 +175,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
         # Rule to block out all the ingress traffic.
-        utils.print_banner('Creating firewall rules')
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_acct_email],
@@ -277,11 +276,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if choice == 'y':
             self.user_can_grant_roles = True
-            print('Forseit will grant required roles on the target: %s' %
+            print('Forseti will be granted requires roles to: %s' %
                   self.resource_root_id)
         else:
             self.user_can_grant_roles = False
-            print('Forseit will NOT grant required roles on the target: %s' %
+            print('Forseti will NOT be granted requires roles to: %s' %
                   self.resource_root_id)
 
     def get_deployment_values(self):
@@ -375,9 +374,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.resource_root_id = utils.format_resource_id(
             '%ss' % self.access_target, self.target_id)
 
-        print('Forseti will be granted access on the target: %s' %
-              self.resource_root_id)
-
     def get_email_settings(self):
         """Ask user for specific setup values."""
         utils.print_banner('Configuring email settings')
@@ -453,28 +449,31 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if choice == 'y':
             self.enable_write_access = True
-            print('Forseti will have write access on the target: %s' %
+            print('Forseti will be granted write access to: %s' %
                   self.resource_root_id)
 
     def post_install_instructions(self, deploy_success, deployment_name,
                                   forseti_conf_path, bucket_name):
-        super(ForsetiServerInstaller, self).post_install_instructions(
-            deploy_success, deployment_name,
-            forseti_conf_path, bucket_name)
+        instructions = (
+            super(ForsetiServerInstaller, self).post_install_instructions(
+                deploy_success, deployment_name,
+                forseti_conf_path, bucket_name))
+
         if self.has_roles_script:
-            print(constants.MESSAGE_HAS_ROLE_SCRIPT.format(
+            instructions.append(constants.MESSAGE_HAS_ROLE_SCRIPT.format(
                 self.resource_root_id))
 
         if not self.config.sendgrid_api_key:
-            print(constants.MESSAGE_SKIP_EMAIL)
+            instructions.append(constants.MESSAGE_SKIP_EMAIL)
 
         if self.config.gsuite_superadmin_email:
-            print(constants.MESSAGE_GSUITE_DATA_COLLECTION.format(
-                self.project_id,
-                self.organization_id,
-                self.gsuite_service_acct_email))
+            instructions.append(
+                constants.MESSAGE_GSUITE_DATA_COLLECTION.format(
+                    self.project_id,
+                    self.organization_id,
+                    self.gsuite_service_acct_email))
         else:
-            print(constants.MESSAGE_ENABLE_GSUITE_GROUP)
+            instructions.append(constants.MESSAGE_ENABLE_GSUITE_GROUP)
 
     @staticmethod
     def _swap_config_fields(old_config, new_config):
