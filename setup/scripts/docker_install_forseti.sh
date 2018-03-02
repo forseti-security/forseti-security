@@ -37,6 +37,6 @@ fi
 # Test to see Forseti Security was installed, these should match the entry
 # points in setup.py
 echo "Testing the container for a succesful Forseti Security installation... "
-$(docker -l error exec -it build /bin/bash -c "hash forseti") || exit 1
-$(docker -l error exec -it build /bin/bash -c "hash forseti_enforcer") || exit 1
-$(docker -l error exec -it build /bin/bash -c "hash forseti_server") || exit 1
+docker -l error exec -it build /bin/bash -c "hash forseti" || exit 1
+docker -l error exec -it build /bin/bash -c "hash forseti_enforcer" || exit 1
+docker -l error exec -it build /bin/bash -c "hash forseti_server" || exit 1
