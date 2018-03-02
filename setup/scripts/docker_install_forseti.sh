@@ -20,7 +20,7 @@ if [ -x "$(command -v docker)" ]; then
     if [ ${TRAVIS+x} ]; then
         # We are on Travis.
         # Required for codecov.io to export coverage within a Docker container.
-        echo "We're on Travis, setting our $CI_ENV... "
+        echo "We're on Travis, setting our CI_ENV... "
         CI_ENV=`bash <(curl -s https://codecov.io/env)`
         # Start the container for testing and code verification.
         echo "Starting our container for testing and code verification... "
@@ -36,7 +36,7 @@ fi
 
 # Test to see Forseti Security was installed, these should match the entry
 # points in setup.py
-echo "Testing the container for a succesful Forseti Security installation... "
-docker -l error exec -it build /bin/bash -c "hash forseti" || exit 1
-docker -l error exec -it build /bin/bash -c "hash forseti_enforcer" || exit 1
-docker -l error exec -it build /bin/bash -c "hash forseti_server" || exit 1
+echo "Testing the container for a successfull Forseti Security installation... "
+$(docker -l error exec -it build /bin/bash -c "hash forseti") || exit 1
+$(docker -l error exec -it build /bin/bash -c "hash forseti_enforcer") || exit 1
+$(docker -l error exec -it build /bin/bash -c "hash forseti_server") || exit 1
