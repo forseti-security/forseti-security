@@ -183,3 +183,11 @@ notifier:
               configuration:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+    violation:
+      findings:
+        enabled: true
+        # gcs_path should begin with "gs://"
+        gcs_path: gs://{FINDINGS_BUCKETS}/
+
+
