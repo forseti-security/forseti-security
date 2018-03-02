@@ -51,6 +51,7 @@ def print_banner(*args):
     """
     texts = [arg for arg in args]
     _print_banner(border_symbol='-',
+                  edge_symbol='|',
                   corner_symbol='+',
                   length=80,
                   wrap_border=False,
@@ -67,17 +68,20 @@ def print_installation_header(*args):
     """
     texts = [arg for arg in args]
     _print_banner(border_symbol='#',
+                  edge_symbol='#',
                   corner_symbol='#',
                   length=120,
                   wrap_border=True,
                   texts=texts)
 
 
-def _print_banner(border_symbol, corner_symbol, length, wrap_border, texts):
+def _print_banner(border_symbol, edge_symbol, corner_symbol,
+                  length, wrap_border, texts):
     """Print a banner.
 
     Args:
         border_symbol (str): The symbol used on the border.
+        edge_symbol (str): The symbol used on the edge.
         corner_symbol (str): The symbol to put at the corners.
         length (int): The length of the border.
         wrap_border (bool): Whether or not we want to wrap around the border.
@@ -89,13 +93,13 @@ def _print_banner(border_symbol, corner_symbol, length, wrap_border, texts):
     print('')
     print(border)
     for text in texts:
-        right_edge = border_symbol + '  '
+        text = '  ' + text
         if wrap_border:
             # Pad the text with empty space
-            padded_text = text + ' ' * (length - len(text) - len(right_edge) - 1)
-            print(right_edge + padded_text + border_symbol)
+            padded_text = text + ' ' * (length - len(text) - 2)
+            print(edge_symbol + padded_text + edge_symbol)
         else:
-            print(right_edge + text)
+            print(edge_symbol + text)
     print(border)
     print('')
 
