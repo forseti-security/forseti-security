@@ -20,7 +20,7 @@ from google.cloud.forseti.common.gcp_type import resource
 
 
 class BucketLifecycleState(resource.LifecycleState):
-    """Represents the Folder's LifecycleState."""
+    """Represents the Bucket's LifecycleState."""
     pass
 
 
