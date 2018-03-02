@@ -319,8 +319,8 @@ class ForsetiInstaller(object):
                                   forseti_conf_path, bucket_name):
         """Show post-install instructions.
 
-        Print link for deployment manager dashboard
-        Print link to go to G Suite service account and enable DWD
+        For example: link for deployment manager dashboard and
+        link to go to G Suite service account and enable DWD.
 
         Args:
             deploy_success (bool): Whether deployment was successful

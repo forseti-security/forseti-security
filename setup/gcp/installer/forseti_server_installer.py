@@ -455,6 +455,20 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def post_install_instructions(self, deploy_success, deployment_name,
                                   forseti_conf_path, bucket_name):
+        """Show post-install instructions.
+
+        For example: link for deployment manager dashboard and
+        link to go to G Suite service account and enable DWD.
+
+        Args:
+            deploy_success (bool): Whether deployment was successful
+            deployment_name (str): Name of the deployment
+            forseti_conf_path (str): Forseti configuration file path
+            bucket_name (str): Name of the GCS bucket
+
+        Returns:
+            list: Post installation instructions.
+        """
         instructions = (
             super(ForsetiServerInstaller, self).post_install_instructions(
                 deploy_success, deployment_name,
