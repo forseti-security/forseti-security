@@ -219,7 +219,6 @@ def map_by_resource(violation_rows):
 
     for v_data in violation_rows:
 
-
         try:
             v_data['violation_data'] = json.loads(v_data['violation_data'])
         except ValueError:
