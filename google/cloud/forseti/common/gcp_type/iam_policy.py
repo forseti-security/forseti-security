@@ -201,6 +201,9 @@ class IamPolicyBinding(object):
     def merge(self, other):
         """Add `other` members to mine if the role names are the same.
 
+        Use case: merging members from ancestor bindings with the same role
+        name.
+
         Args:
             other (IamPolicyBinding): the other IAM policy binding
         """
