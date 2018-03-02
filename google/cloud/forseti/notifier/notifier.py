@@ -57,6 +57,7 @@ def find_pipelines(pipeline_name):
 
 def convert_to_timestamp(violations):
     """Convert violation created_at_datetime to timestamp string.
+
     Args:
         violations (sqlalchemy_object): List of violations as sqlalchemy
             row/record object with created_at_datetime.

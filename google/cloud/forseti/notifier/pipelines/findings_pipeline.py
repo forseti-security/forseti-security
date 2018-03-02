@@ -18,7 +18,6 @@ import tempfile
 
 from datetime import datetime
 
-from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
@@ -36,8 +35,10 @@ class FindingsPipeline(object):
     @staticmethod
     def _transform_to_findings(violations):
         """Transform forseti violations to findings format.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
+
         Returns:
             list: violations in findings format; each violation is a dict.
         """
@@ -66,6 +67,7 @@ class FindingsPipeline(object):
     @staticmethod
     def _get_output_filename():
         """Create the output filename.
+
         Returns:
             str: The output filename for the violations json.
         """
@@ -76,6 +78,7 @@ class FindingsPipeline(object):
 
     def run(self, violations, gcs_path):
         """Generate the temporary json file and upload to GCS.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
             gcs_path (str): The GCS bucket to upload the findings.
@@ -95,5 +98,3 @@ class FindingsPipeline(object):
                 storage_client = storage.StorageClient()
                 storage_client.put_text_file(
                     tmp_violations.name, gcs_upload_path)
-
-        LOGGER.info('Completed findings notification.')
