@@ -60,6 +60,14 @@ FAKE_EXPECTED_VIOLATIONS = [
      }
 ]
 
+def populate_db():
+    """Populate the db with violations."""
+    engine = create_test_engine()
+    violation_access_cls = scanner_dao.define_violation(engine)
+    violation_access = violation_access_cls(engine)
+    violation_access.create(FAKE_EXPECTED_VIOLATIONS,
+                            FAKE_INVENTORY_INDEX_ID)
+    return violation_access 
 
 class ScannerDaoTest(ForsetiTestCase):
     """Test scanner data access."""
@@ -80,12 +88,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        engine = create_test_engine()
-        violation_access_cls = scanner_dao.define_violation(engine)
-        violation_access = violation_access_cls(engine)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS,
-                                FAKE_INVENTORY_INDEX_ID)
-        saved_violations = violation_access.list()
+        saved_violations = populate_db().list()
 
         expected_hash_values = [
           (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
@@ -137,13 +140,8 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        engine = create_test_engine()
-        violation_access_cls = scanner_dao.define_violation(engine)
-        violation_access = violation_access_cls(engine)
+        saved_violations = populate_db().list()
 
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS,
-                                FAKE_INVENTORY_INDEX_ID)
-        saved_violations = violation_access.list()
 
         converted_violations_as_dict = []
         for violation in saved_violations:

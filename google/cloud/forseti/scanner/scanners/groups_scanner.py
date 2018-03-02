@@ -56,7 +56,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                 'full_name': None,
                 'rule_index': None,
                 'rule_name': violation.violated_rule_names,
-                'violation_type': 'group_violation',
+                'violation_type': 'GROUP_VIOLATION',
                 'violation_data': violation_data,
                 'inventory_data': violation.inventory_data
             }
