@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """Update test_data databases with new resources.
 
 When the inventory mock_gcp_results.py file is updated, then this script should
@@ -19,9 +20,7 @@ be run to update the forseti-test.db file with the additional resources.
 From the top forseti-security dir, run:
 
 PYTHONPATH=. python tests/services/model/importer/update_test_dbs.py
-
 """
-
 import datetime
 import os
 import shutil
