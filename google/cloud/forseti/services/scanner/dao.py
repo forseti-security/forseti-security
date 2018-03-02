@@ -197,16 +197,19 @@ def map_by_resource(violation_rows):
 
     for v_data in violation_rows:
 
-        # Inventory data is allowed to be a string.
-        if isinstance(v_data['inventory_data'], str):
-            v_data['inventory_data'] = json.dumps(v_data['inventory_data'])
 
         try:
             v_data['violation_data'] = json.loads(v_data['violation_data'])
-            v_data['inventory_data'] = json.loads(v_data['inventory_data'])
         except ValueError:
             LOGGER.warn('Invalid violation data, unable to parse json for %s',
                         v_data['violation_data'])
+
+        # inventory_data can be regular python string
+        try:
+            v_data['inventory_data'] = json.loads(v_data['inventory_data'])
+        except ValueError:
+            v_data['inventory_data'] = json.loads(
+                json.dumps(v_data['inventory_data']))
 
         v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
         if v_resource:
