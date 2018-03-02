@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Dockerfile (experimental) for getting Forseti up and running.
-# You still need to do all the other prereq GCP setup (e.g.
-# setting up service accounts, GCP infrastructure).
-
 FROM ubuntu:16.04
 
 # Expose our source so we can read in dependencies.
