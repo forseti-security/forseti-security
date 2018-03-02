@@ -26,6 +26,49 @@ from util import gcloud
 from util import utils
 
 
+class ForsetiInstructions(object):
+    """Forseti post-setup instructions."""
+
+    def __init__(self):
+        """Init."""
+        self.deployed_branches = []
+        self.deployment_template_messages = []
+        self.configuration_messages = []
+        self.other_messages = []
+
+    def merge_head(self, other_instruction):
+        """Merge instructions, input instructions will be merged to the head
+        of the current instructions.
+
+        Args:
+            other_instruction (ForsetiInstructions): The other instructions.
+        """
+        self.deployed_branches = (other_instruction.deployed_branches +
+                                  self.deployed_branches)
+        self.deployment_template_messages = (
+                other_instruction.deployment_template_messages +
+                self.deployment_template_messages)
+        self.configuration_messages = (
+                other_instruction.configuration_messages +
+                self.configuration_messages)
+        self.other_messages = (other_instruction.other_messages +
+                               self.other_messages)
+
+    def __str__(self):
+        """Str.
+
+        Returns:
+            str: String representation of ForsetiInstructions.
+        """
+        message = ''
+        message += '\n'.join(self.deployed_branches)
+        message += '\n'.join(self.deployment_template_messages)
+        message += '\n'.join(self.configuration_messages)
+        message += '\n'.join(self.other_messages)
+
+        return message
+
+
 class ForsetiInstaller(object):
     """Forseti installer base class (abstract)"""
     __metaclass__ = ABCMeta
@@ -63,11 +106,11 @@ class ForsetiInstaller(object):
             setup_continuation (bool): If this is a continuation of the
                 previous setup.
             final_setup (bool): The final setup.
-            previous_instructions (list): Post installation instructions
-                from previous installation.
+            previous_instructions (ForsetiInstructions): Post installation
+                instructions from previous installation.
 
         Returns:
-            list: List of all instructions.
+            ForsetiInstructions: Forseti instructions.
         """
         utils.print_banner('Installing Forseti {}'.format(
             self.config.installation_type.capitalize()))
@@ -96,12 +139,11 @@ class ForsetiInstaller(object):
                                                       bucket_name)
 
         if previous_instructions is not None:
-            instructions = previous_instructions + instructions
+            instructions.merge_head(previous_instructions)
 
         if final_setup:
             utils.print_banner('Forseti Post-Setup Instructions')
-            all_instructions = '\n'.join(instructions)
-            print(all_instructions)
+            print(instructions)
 
         return instructions
 
@@ -329,40 +371,37 @@ class ForsetiInstaller(object):
             bucket_name (str): Name of the GCS bucket
 
         Returns:
-            list: Post installation instructions.
+            ForsetiInstructions: Forseti instructions.
         """
 
-        instructions = []
+        instructions = ForsetiInstructions()
         if self.config.dry_run:
             message = (
                 'This was a dry run, so a deployment was not attempted. '
                 'You can still create the deployment manually.\n')
-            instructions.append(message)
+            instructions.deployed_branches.append(message)
         elif deploy_success:
-            instructions.append(constants.MESSAGE_FORSETI_BRANCH_DEPLOYED
-                                .format(self.config.installation_type,
-                                        self.branch))
+            instructions.deployed_branches.append(
+                constants.MESSAGE_FORSETI_BRANCH_DEPLOYED
+                .format(self.config.installation_type,
+                        self.branch))
         else:
-            instructions.append(constants.MESSAGE_DEPLOYMENT_HAD_ISSUES)
+            instructions.deployed_branches.append(
+                constants.MESSAGE_DEPLOYMENT_HAD_ISSUES)
 
         deploy_tpl_gcs_path = constants.DEPLOYMENT_TEMPLATE_OUTPUT_PATH.format(
             bucket_name)
 
-        instructions.append(constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION
-                            .format(deploy_tpl_gcs_path))
+        instructions.deployment_template_messages.append(
+            constants.MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION.format(
+                deploy_tpl_gcs_path))
 
         if self.config.dry_run:
-            instructions.append(
+            instructions.configuration_messages.append(
                 constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN
                 .format(forseti_conf_path, bucket_name))
         else:
-            instructions.append(
-                constants.MESSAGE_VIEW_DEPLOYMENT_DETAILS.format(
-                    deployment_name,
-                    self.project_id,
-                    self.organization_id))
-
-            instructions.append(
+            instructions.configuration_messages.append(
                 constants.MESSAGE_FORSETI_CONFIGURATION_GENERATED.format(
                     installation_type=self.config.installation_type,
                     timestamp=self.config.timestamp,
