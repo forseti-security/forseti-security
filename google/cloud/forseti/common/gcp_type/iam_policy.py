@@ -198,6 +198,21 @@ class IamPolicyBinding(object):
                 'Invalid IAM policy member: %s.', binding.get('members'))
             return None
 
+    def merge(self, other):
+        """Add `other` members to mine if the role names are the same.
+
+        Args:
+            other (IamPolicyBinding): the other IAM policy binding
+        """
+        if not isinstance(other, type(self)):
+            raise errors.InvalidIamPolicyBindingError(
+                "Cannot merge, other is not of type 'IamPolicyBinding'")
+        if other.role_name != self.role_name:
+            return
+        for member in other.members:
+            if member not in self.members:
+                self.members.append(member)
+
 
 class IamPolicyMember(object):
     """IAM Policy Member.
