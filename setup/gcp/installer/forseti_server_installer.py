@@ -57,7 +57,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         super(ForsetiServerInstaller, self).preflight_checks()
         self.get_email_settings()
-        # gcloud.enable_apis(self.config.dry_run)
+        gcloud.enable_apis(self.config.dry_run)
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
