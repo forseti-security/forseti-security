@@ -30,6 +30,10 @@ class UtilDateTimeInvalidValueException(UtilBaseDateTimeException):
     """Invalid Value Given for a Request."""
 
 
+class UtilDateTimeTypeErrorException(UtilBaseDateTimeException):
+    """Type Error for a given Request."""
+
+
 def get_datetime_from_string(string, string_format):
     """Get a datetime object from a string in the requested string_format.
 
@@ -49,7 +53,7 @@ def get_datetime_from_string(string, string_format):
     except TypeError:
         LOGGER.error('Unable to create a datetime with %s in format %s',
                      string, string_format)
-        raise UtilDateTimeInvalidValueException
+        raise UtilDateTimeTypeErrorException
     except ValueError:
         LOGGER.error('Unable to create a datetime with %s in format %s',
                      string, string_format)

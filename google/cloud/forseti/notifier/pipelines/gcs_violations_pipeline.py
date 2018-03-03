@@ -28,8 +28,6 @@ from google.cloud.forseti.notifier.pipelines import base_notification_pipeline a
 
 LOGGER = logger.get_logger(__name__)
 
-VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
-
 
 class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
     """Upload violations to GCS."""
