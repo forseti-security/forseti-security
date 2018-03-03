@@ -153,7 +153,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.user_can_grant_roles)
 
             # Waiting for VM to be initialized.
-            instance_name = deployment_name
+            instance_name = '{}-vm'.format(deployment_name)
             self.wait_until_vm_initialized(instance_name)
 
             # Create firewall rules.
