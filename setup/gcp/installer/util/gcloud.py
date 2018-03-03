@@ -828,9 +828,14 @@ def check_deployment_status(deployment_name, status):
         bool: Whether or not the deployment status match with the given status.
     """
 
-    _, out, _ = utils.run_command(
+    return_code, out, err = utils.run_command(
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
+
+    if return_code:
+        print(err)
+        print('There is something wrong with the deployment, exiting...')
+        sys.exit(1)
 
     deployment_info = json.loads(out)
 

@@ -57,7 +57,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         super(ForsetiServerInstaller, self).preflight_checks()
         self.get_email_settings()
-        gcloud.enable_apis(self.config.dry_run)
+        # gcloud.enable_apis(self.config.dry_run)
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
@@ -136,7 +136,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.replace_with_old_rules()
 
             print('Copying the default Forseti rules to:\n\t{}'.format(
-                bucket_name))
+                os.path.join(bucket_name, 'rules')))
 
             # Copy the rule directory to the GCS bucket.
             files.copy_file_to_destination(
@@ -363,7 +363,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.gsuite_superadmin_email = raw_input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
-        utils.print_banner('Configuring Email Settings')
+        utils.print_banner('Configuring Forseti Email Settings')
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key.
             print(constants.MESSAGE_ASK_SENDGRID_API_KEY)

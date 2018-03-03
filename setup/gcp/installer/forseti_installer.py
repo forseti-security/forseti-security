@@ -27,7 +27,7 @@ from util import utils
 
 
 class ForsetiInstructions(object):
-    """Forseti post-setup instructions."""
+    """Forseti setup instructions."""
 
     def __init__(self):
         """Init."""

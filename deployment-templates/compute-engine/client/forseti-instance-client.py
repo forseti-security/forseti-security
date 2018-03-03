@@ -48,7 +48,7 @@ def GenerateConfig(context):
     resources = []
 
     resources.append({
-        'name': context.env['deployment'],
+        'name':  '{}-vm'.format(context.env['deployment']),
         'type': 'compute.v1.instance',
         'properties': {
             'zone': context.properties['zone'],
