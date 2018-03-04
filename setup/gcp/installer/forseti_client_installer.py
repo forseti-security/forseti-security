@@ -16,20 +16,21 @@
 
 from forseti_installer import ForsetiInstaller
 
-from configs.client_config import ClientConfig
 from util import gcloud
 
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
 
-    def __init__(self, **kwargs):
+    def __init__(self, config, previous_installer=None):
         """Init
 
         Args:
-            kwargs (dict): The kwargs.
+            config (ClientConfig): The configuration object.
+            previous_installer (ForsetiInstaller): The previous ran installer,
+                we can get the installer environment information from it.
         """
-        super(ForsetiClientInstaller, self).__init__()
-        self.config = ClientConfig(**kwargs)
+        super(ForsetiClientInstaller, self).__init__(config,
+                                                     previous_installer)
         (self.server_ip, self.server_zone,
          self.server_name) = gcloud.get_forseti_server_info()
 

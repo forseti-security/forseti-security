@@ -49,12 +49,62 @@ def print_banner(*args):
     Args:
         args (str): Text(s) to put in the banner.
     """
+    texts = [arg for arg in args]
+    _print_banner(border_symbol='-',
+                  edge_symbol='|',
+                  corner_symbol='+',
+                  length=80,
+                  wrap_border=False,
+                  texts=texts)
+
+
+def print_installation_header(*args):
+    """Print installation header.
+
+    Installation header will have a different pattern than a normal banner.
+
+    Args:
+        args (str): Text(s) to put in the banner.
+    """
+    texts = [arg for arg in args]
+    _print_banner(border_symbol='#',
+                  edge_symbol='#',
+                  corner_symbol='#',
+                  length=80,
+                  wrap_border=True,
+                  texts=texts)
+
+
+def _print_banner(border_symbol, edge_symbol, corner_symbol,
+                  length, wrap_border, texts):
+    """Print a banner.
+
+    Args:
+        border_symbol (str): The symbol used on the border.
+        edge_symbol (str): The symbol used on the edge.
+        corner_symbol (str): The symbol to put at the corners.
+        length (int): The length of the border.
+        wrap_border (bool): Whether or not we want to wrap around the border.
+        texts (list): Text(s) to put in the banner.
+    """
+    if wrap_border:
+        border = corner_symbol + border_symbol * (length - 2) + corner_symbol
+    else:
+        border = corner_symbol + border_symbol * (length - 1)
+
     print('')
-    print('+-------------------------------------------------------')
-    for text in args:
-        print('|  {}'.format(text))
-    print('+-------------------------------------------------------')
+    print(border)
+    for text in texts:
+        text = '  ' + text
+        if wrap_border:
+            # Pad the text with empty space
+            padded_text = text + ' ' * (length - len(text) - 2)
+            print(edge_symbol + padded_text + edge_symbol)
+        else:
+            print(edge_symbol + text)
+    print(border)
     print('')
+
 
 
 def get_forseti_version():
@@ -148,13 +198,12 @@ def format_resource_id(resource_type, resource_id):
     return '%s/%s' % (resource_type, resource_id)
 
 
-def generate_service_acct_info(prefix, modifier, installation_type,
+def generate_service_acct_info(prefix, installation_type,
                                timestamp, project_id):
     """Format the service account email and name.
 
     Args:
         prefix (str): The prefix of the account id and account name.
-        modifier (str): Access level of the account.
         installation_type (str): Type of the installation (client/server).
         timestamp (str): The timestamp.
         project_id (str): Id of the project on GCP.
@@ -165,14 +214,10 @@ def generate_service_acct_info(prefix, modifier, installation_type,
     """
 
     service_account_name = constants.SERVICE_ACCT_NAME_FMT.format(
-        installation_type, prefix, modifier, timestamp)
+        installation_type, prefix, timestamp)
 
-    # Service account email will not contain the modifier due
-    # to character limits (max 30 characters)
-    service_account_email = full_service_acct_email(
-        constants.SERVICE_ACCT_ID_FMT.format(prefix,
-                                             installation_type,
-                                             timestamp), project_id)
+    service_account_email = full_service_acct_email(service_account_name,
+                                                    project_id)
 
     return service_account_email, service_account_name
 
