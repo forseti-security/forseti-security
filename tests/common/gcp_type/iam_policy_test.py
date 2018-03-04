@@ -135,7 +135,7 @@ class IamPolicyTest(ForsetiTestCase):
         with self.assertRaises(InvalidIamPolicyBindingError):
             IamPolicyBinding('roles/fake', [])
 
-    def test_binding_merge_other_type_different_raises(self):
+    def test_binding_merge_members_other_type_different_raises(self):
         """Test that merging raises exception if `other`is not of same type."""
         with self.assertRaises(InvalidIamPolicyBindingError):
             binding = {
@@ -146,9 +146,9 @@ class IamPolicyTest(ForsetiTestCase):
                 ]
             }
             iam_binding = IamPolicyBinding.create_from(binding)
-            iam_binding.merge([1, 2, 4])
+            iam_binding.merge_members([1, 2, 4])
 
-    def test_binding_merge_same_role_and_members(self):
+    def test_binding_merge_members_same_role_and_members(self):
         binding = {
             'role': 'roles/viewer',
             'members': [
@@ -158,10 +158,10 @@ class IamPolicyTest(ForsetiTestCase):
         }
         iam_binding1 = IamPolicyBinding.create_from(binding)
         iam_binding2 = IamPolicyBinding.create_from(binding)
-        iam_binding1.merge(iam_binding2)
+        iam_binding1.merge_members(iam_binding2)
         self.assertEqual(iam_binding1, iam_binding2)
 
-    def test_binding_merge_same_role_different_members(self):
+    def test_binding_merge_members_same_role_different_members(self):
         binding1 = {
             'role': 'roles/viewer',
             'members': [
@@ -185,11 +185,11 @@ class IamPolicyTest(ForsetiTestCase):
         }
         iam_binding1 = IamPolicyBinding.create_from(binding1)
         iam_binding2 = IamPolicyBinding.create_from(binding2)
-        iam_binding1.merge(iam_binding2)
+        iam_binding1.merge_members(iam_binding2)
         expected_binding = IamPolicyBinding.create_from(expected_binding)
         self.assertEqual(expected_binding, iam_binding1)
 
-    def test_binding_merge_same_role_mixed_members(self):
+    def test_binding_merge_members_same_role_mixed_members(self):
         binding1 = {
             'role': 'roles/viewer',
             'members': [
@@ -214,11 +214,11 @@ class IamPolicyTest(ForsetiTestCase):
         }
         iam_binding1 = IamPolicyBinding.create_from(binding1)
         iam_binding2 = IamPolicyBinding.create_from(binding2)
-        iam_binding1.merge(iam_binding2)
+        iam_binding1.merge_members(iam_binding2)
         expected_binding = IamPolicyBinding.create_from(expected_binding)
         self.assertEqual(expected_binding, iam_binding1)
 
-    def test_binding_merge_different_role(self):
+    def test_binding_merge_members_different_role(self):
         """Original binding remains same if other's role is different."""
         binding1 = {
             'role': 'roles/owner',
@@ -242,7 +242,7 @@ class IamPolicyTest(ForsetiTestCase):
         }
         iam_binding1 = IamPolicyBinding.create_from(binding1)
         iam_binding2 = IamPolicyBinding.create_from(binding2)
-        iam_binding1.merge(iam_binding2)
+        iam_binding1.merge_members(iam_binding2)
         expected_binding = IamPolicyBinding.create_from(expected_binding)
         self.assertEqual(expected_binding, iam_binding1)
 

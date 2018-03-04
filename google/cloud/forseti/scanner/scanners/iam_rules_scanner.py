@@ -82,8 +82,7 @@ def _add_bucket_ancestor_bindings(policy_data):
                 # do we have a binding with the same 'role_name' already?
                 for bucket_binding in bucket_bindings:
                     if bucket_binding.role_name == ancestor_binding.role_name:
-                        # yes, merge members.
-                        bucket_binding.merge(ancestor_binding)
+                        bucket_binding.merge_members(ancestor_binding)
                         break
                 else:
                     # no, add ancestor binding.

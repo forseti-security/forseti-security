@@ -198,7 +198,7 @@ class IamPolicyBinding(object):
                 'Invalid IAM policy member: %s.', binding.get('members'))
             return None
 
-    def merge(self, other):
+    def merge_members(self, other):
         """Add `other` members to mine if the role names are the same.
 
         Use case: merging members from ancestor bindings with the same role
