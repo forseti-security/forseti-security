@@ -189,7 +189,7 @@ MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS = (
     'Your Forseti Security Installation will not work until '
     'you enable GSuite data collection:\n'
     'https://forsetisecurity.org/docs/howto/configure/gsuite'
-    '-group-collection.html\n\n')
+    '-group-collection.html\n')
 
 MESSAGE_FORSETI_CONFIGURATION_INSTRUCTIONS = (
     'For instructions on how to change your roles or configuration files:\n'
@@ -199,7 +199,7 @@ MESSAGE_FORSETI_CONFIGURATION_INSTRUCTIONS = (
 MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS = (
     'If you would like to enable email notifications via SendGrid,'
     ' please refer to:\n'
-    'http://forsetisecurity.org/docs/howto/configure/email-notification.html'
+    'http://forsetisecurity.org/docs/howto/configure/email-notification.html\n'
 )
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
