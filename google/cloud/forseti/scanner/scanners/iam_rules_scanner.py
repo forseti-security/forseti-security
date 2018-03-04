@@ -64,20 +64,25 @@ def _add_bucket_ancestor_bindings(policy_data):
         'roles/storage.objectCreator',
         'roles/storage.objectAdmin',
     ])
-    bucket_data = [(r, bs) for (r, _, bs) in policy_data if r.type == 'bucket']
+    bucket_data = []
+    for (resource, _, bindings) in policy_data:
+        if resource.type == 'bucket':
+            bucket_data.append((resource, bindings))
+
     for bucket, bucket_bindings in bucket_data:
-        all_ancestor_bindings = [
-            bindings for (resource, _, bindings) in policy_data
-            # is the resource's full name a proper prefix of the bucket's full
-            # name?
-            if resource.full_name != bucket.full_name
-            # pylint: disable=compare-to-zero
-            and bucket.full_name.find(resource.full_name) == 0]
+        all_ancestor_bindings = []
+        for (resource, _, bindings) in policy_data:
+            if resource.full_name == bucket.full_name:
+                continue
+            if bucket.full_name.find(resource.full_name):
+                continue
+            all_ancestor_bindings.append(bindings)
 
         for ancestor_bindings in all_ancestor_bindings:
             for ancestor_binding in ancestor_bindings:
-                if (ancestor_binding.role_name not in storage_iam_roles
-                        or ancestor_binding in bucket_bindings):
+                if ancestor_binding.role_name not in storage_iam_roles:
+                    continue
+                if ancestor_binding in bucket_bindings:
                     continue
                 # do we have a binding with the same 'role_name' already?
                 for bucket_binding in bucket_bindings:
