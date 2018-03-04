@@ -35,6 +35,7 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 LOGGER = logger.get_logger(__name__)
 
 
+# pylint: disable=too-many-branches
 def _add_bucket_ancestor_bindings(policy_data):
     """Add bucket relevant IAM policy bindings from ancestors.
 
