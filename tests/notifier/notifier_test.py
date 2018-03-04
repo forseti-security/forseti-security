@@ -19,26 +19,28 @@ import mock
 from google.cloud.forseti.notifier import notifier
 from tests.unittest_utils import ForsetiTestCase
 
-class NotifierTest(ForsetiTestCase):
 
+class NotifierTest(ForsetiTestCase):
     def setUp(self):
         pass
 
     def test_can_convert_created_at_datetime_to_timestamp_string(self):
         violations = [
-            mock.MagicMock(created_at=datetime(1999, 12, 25, 1, 2, 3)),
-            mock.MagicMock(created_at=datetime(2010, 6, 8, 4, 5, 6))
+            mock.MagicMock(
+                created_at_datetime=datetime(1999, 12, 25, 1, 2, 3)),
+            mock.MagicMock(
+                created_at_datetime=datetime(2010, 6, 8, 4, 5, 6))
         ]
 
         expected_timestamps = ['1999-12-25T01:02:03Z',
                                '2010-06-08T04:05:06Z']
 
         violations_with_converted_timestamp = (
-            notifier.convert_created_at_to_timestamp(violations))
-        
+            notifier.convert_to_timestamp(violations))
+
         converted_timestamps = []
         for i in violations_with_converted_timestamp:
-            converted_timestamps.append(i.created_at)
+            converted_timestamps.append(i.created_at_datetime)
 
         self.assertEquals(expected_timestamps,
                           converted_timestamps)
