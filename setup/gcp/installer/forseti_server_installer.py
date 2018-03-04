@@ -427,8 +427,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             instructions.other_messages.append(
                 constants.MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS)
 
-        instructions.other_messages.append(
-            constants.MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS)
         return instructions
 
     @staticmethod
