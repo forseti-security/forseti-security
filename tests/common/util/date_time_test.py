@@ -20,7 +20,7 @@ import mock
 import unittest
 
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util.date_time import UtilDateTimedValueError
+from google.cloud.forseti.common.util.date_time import UtilDateTimeValueError
 from google.cloud.forseti.common.util.date_time import UtilDateTimeTypeError
 from tests.unittest_utils import ForsetiTestCase
 
@@ -56,7 +56,7 @@ class DateTimeTest(ForsetiTestCase):
 
         mock_datetime.assert_called_once_with('', '')
 
-        with self.assertRaises(UtilDateTimedValueError):
+        with self.assertRaises(UtilDateTimeValueError):
             date_time.get_datetime_from_string('','')
 
         mock_datetime.assert_once_with('', '')

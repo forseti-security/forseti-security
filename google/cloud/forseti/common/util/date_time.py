@@ -26,7 +26,7 @@ class UtilBaseDateTimeException(Exception):
     """A Base UtilDateTime Exception."""
 
 
-class UtilDateTimedValueError(UtilBaseDateTimeException):
+class UtilDateTimeValueError(UtilBaseDateTimeException):
     """Invalid Value Given for a Request."""
 
 
