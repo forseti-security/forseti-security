@@ -17,9 +17,11 @@ from datetime import datetime
 import mock
 import unittest
 
-from google.cloud.forseti.common.gcp_type import folder
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.gcp_type.bucket import Bucket
+from google.cloud.forseti.common.gcp_type.folder import Folder
+from google.cloud.forseti.common.gcp_type import iam_policy
+from google.cloud.forseti.common.gcp_type.organization import Organization
+from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.scanner.scanners import iam_rules_scanner
 from tests.unittest_utils import ForsetiTestCase
 
@@ -38,6 +40,111 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.fake_scanner_configs = {'output_path': '/fake/output/path'}
         self.scanner = iam_rules_scanner.IamPolicyScanner(
             {}, {}, mock.MagicMock(), '', '', '')
+        self._add_ancestor_bindings_test_data()
+
+    def _add_ancestor_bindings_test_data(self):
+        """Establishes the hierarchy below.
+
+               +----------------------------> proj_1
+               |
+               |
+               +                                     +-------> bucket_3_1
+            org_234 +------> folder_1 +-----> proj_3 |
+                                                     +-------> bucket_3_2
+               +
+               |
+               +----------------------------> proj_2 +-------> bucket_2_1
+        """
+        self.org_234 = Organization(
+            '234',
+            display_name='Organization 234',
+            full_name='organization/234/',
+            data='fake_org_data_234')
+
+        self.proj_1 = Project(
+            'proj-1',
+            project_number=22345,
+            display_name='My project 1',
+            parent=self.org_234,
+            full_name='organization/234/project/proj-1/',
+            data='fake_project_data_111')
+
+        self.proj_2 = Project(
+            'proj-2',
+            project_number=22346,
+            display_name='My project 2',
+            parent=self.org_234,
+            full_name='organization/234/project/proj-2/',
+            data='fake_project_data_222')
+
+        self.folder_1 = Folder(
+            '333',
+            display_name='Folder 1',
+            parent=self.org_234,
+            full_name='organization/234/folder/333/',
+            data='fake_folder_data_111')
+
+        self.proj_3 = Project(
+            'proj-3',
+            project_number=22347,
+            display_name='My project 3',
+            parent=self.folder_1,
+            full_name='organization/234/folder/333/project/proj-3/',
+            data='fake_project_data_333')
+
+        self.bucket_3_1 = Bucket(
+            'internal-3',
+            display_name='My project 3, internal data1',
+            parent=self.proj_3,
+            full_name='organization/234/folder/333/project/proj-3/bucket/internal-3/',
+            data='fake_project_data_333_bucket_1')
+
+        self.bucket_3_2 = Bucket(
+            'public-3',
+            display_name='My project 3, public data',
+            parent=self.proj_3,
+            full_name='organization/234/folder/333/project/proj-3/bucket/public-3/',
+            data='fake_project_data_333_bucket_2')
+
+        self.bucket_2_1 = Bucket(
+            'internal-2',
+            display_name='My project 2, internal data',
+            parent=self.proj_2,
+            full_name='organization/234/project/proj-2/bucket/internal-2/',
+            data='fake_project_data_222_bucket_1')
+
+        self.org_234_policy_resource = mock.MagicMock()
+        self.org_234_policy_resource.full_name = (
+            'organization/234/iam_policy/organization:234/')
+
+        self.folder_1_policy_resource = mock.MagicMock()
+        self.folder_1_policy_resource.full_name = (
+            'organization/234/folder/333/iam_policy/folder:333/')
+
+        self.proj_1_policy_resource = mock.MagicMock()
+        self.proj_1_policy_resource.full_name = (
+            'organization/234/project/proj-1/iam_policy/project:proj-1')
+
+        self.proj_2_policy_resource = mock.MagicMock()
+        self.proj_2_policy_resource.full_name = (
+            'organization/234/project/proj-2/iam_policy/project:proj-2')
+
+        self.proj_3_policy_resource = mock.MagicMock()
+        self.proj_3_policy_resource.full_name = (
+            'organization/234/folder/333/project/proj-3/iam_policy/project:proj-3')
+
+        self.bucket_3_1_policy_resource = mock.MagicMock()
+        self.bucket_3_1_policy_resource.full_name = (
+            'organization/234/folder/333/project/proj-3/bucket/internal-3/iam_policy/bucket:internal-3')
+
+        self.bucket_3_2_policy_resource = mock.MagicMock()
+        self.bucket_3_2_policy_resource.full_name = (
+            'organization/234/folder/333/project/proj-3/bucket/public-3/iam_policy/bucket:public-3')
+
+        self.bucket_2_1_policy_resource = mock.MagicMock()
+        self.bucket_2_1_policy_resource.full_name = (
+            'organization/234/folder/333/project/proj-2/bucket/internal-2/iam_policy/bucket:internal-2')
+
 
     def test_get_output_filename(self):
         """Test that the output filename of the scanner is correct.
@@ -50,7 +157,7 @@ class IamRulesScannerTest(ForsetiTestCase):
 
         expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
         actual = self.scanner._get_output_filename(self.fake_utcnow)
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
@@ -101,15 +208,15 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
-        self.assertEquals(1, mock_output_results_to_db.call_count)
-        self.assertEquals(1, mock_write_csv.call_count)
+        self.assertEqual(1, mock_flatten_violations.call_count)
+        self.assertEqual(1, mock_output_results_to_db.call_count)
+        self.assertEqual(1, mock_write_csv.call_count)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow,
             fake_csv_name)
-        self.assertEquals(0, mock_notifier.process.call_count)
+        self.assertEqual(0, mock_notifier.process.call_count)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
@@ -152,15 +259,748 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.scanner.scanner_configs = self.fake_scanner_configs
         self.scanner._output_results(None, '88888')
 
-        self.assertEquals(1, mock_flatten_violations.call_count)
-        self.assertEquals(1, mock_output_results_to_db.call_count)
-        self.assertEquals(1, mock_write_csv.call_count)
+        self.assertEqual(1, mock_flatten_violations.call_count)
+        self.assertEqual(1, mock_output_results_to_db.call_count)
+        self.assertEqual(1, mock_write_csv.call_count)
         mock_upload_csv.assert_called_once_with(
             self.scanner,
             self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow,
             fake_csv_name)
-        self.assertEquals(1, mock_notifier.process.call_count)
+        self.assertEqual(1, mock_notifier.process.call_count)
+
+    def test_add_bucket_ancestor_bindings_nothing_found(self):
+        """Test bucket with an org / project ancestry w/o relevant policies.
+
+        Setup:
+            * Use an org -> project -> bucket resource tree in which the
+              project and org ancestors have no GCS relevant policies
+
+        Expect:
+            * the bucket's policy bindings do not change since there's nothing
+              to pick up from the resource tree ancestors
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+        proj_2_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/viewer',
+                    'members': [
+                        'user:someone2@company.com',
+                    ]
+                },
+            ]
+        }
+        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_2_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_2, self.proj_2_policy_resource,
+                    proj_2_bindings))
+
+        bucket_bindings = []
+        policy_data.append(
+                (self.bucket_2_1, self.bucket_2_1_policy_resource,
+                    bucket_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+        self.assertEqual([], bucket_bindings)
+
+    def test_add_bucket_ancestor_bindings_success(self):
+        """Test bucket with an org / project ancestry with relevant policies.
+
+        Setup:
+            * Use an org -> project -> folder -> bucket resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings.
+            * the project has a 'roles/storage.objectCreator' binding
+            * the folder has a 'roles/storage.objectViewer' binding
+            * the project has 2 buckets: bucket_3_1 and bucket_3_2 respectively
+
+        Expect:
+            * the folder's objectViewer and the project's objectCreator
+              bindings will be added to both buckets' policy bindings.
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource,
+                    proj_3_bindings))
+
+        bucket_3_1_bindings = []
+        policy_data.append(
+                (self.bucket_3_1, self.bucket_3_1_policy_resource,
+                    bucket_3_1_bindings))
+
+        bucket_3_2_bindings = []
+        policy_data.append(
+                (self.bucket_3_2, self.bucket_3_2_policy_resource,
+                    bucket_3_2_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+
+        self.assertEqual(2, len(bucket_3_1_bindings))
+        self.assertEqual(2, len(bucket_3_2_bindings))
+
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEqual(expected_bindings, bucket_3_1_bindings)
+        self.assertEqual(expected_bindings, bucket_3_2_bindings)
+
+    def test_add_bucket_ancestor_bindings_same_role_different_members(self):
+        """Test bucket with an org / project ancestry with relevant policies.
+
+        Setup:
+            * Use an org -> project -> folder -> bucket resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings.
+            * both the folder and the project have a
+              'roles/storage.objectCreator' binding but different members
+            * the project has 2 buckets: bucket_3_1 and bucket_3_2 respectively
+              but we just use the former for this test
+
+        Expect:
+            * the folder's and the project's objectCreator bindings will be
+              added to the bucket's policy bindings with merged members.
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource,
+                    proj_3_bindings))
+
+        bucket_3_1_bindings = []
+        policy_data.append(
+                (self.bucket_3_1, self.bucket_3_1_policy_resource,
+                    bucket_3_1_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+
+        self.assertEqual(1, len(bucket_3_1_bindings))
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEqual(expected_bindings, bucket_3_1_bindings)
+
+    def test_add_bucket_ancestor_bindings_success_no_dups(self):
+        """Test bucket with an org / project ancestry with relevant policies.
+
+        Setup:
+            * Use an org -> project -> folder -> bucket resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings.
+            * the project has a 'roles/storage.objectViewer' binding
+            * the folder also has a 'roles/storage.objectViewer' binding
+            * the project has 2 buckets: bucket_3_1 and bucket_3_2 respectively
+              but we use just the former for this test
+
+        Expect:
+            * the objectViewer binding will be added to the bucket's policy
+              bindings (once).
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource,
+                    proj_3_bindings))
+
+        bucket_3_1_bindings = []
+        policy_data.append(
+                (self.bucket_3_1, self.bucket_3_1_policy_resource,
+                    bucket_3_1_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+
+        self.assertEqual(1, len(bucket_3_1_bindings))
+
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEqual(expected_bindings, bucket_3_1_bindings)
+
+    def test_add_bucket_ancestor_bindings_with_wrong_ancestors(self):
+        """Test bucket with an org / project ancestry w/o relevant policies.
+
+        Setup:
+            * Use an org -> project -> folder resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings.
+            * the project has a 'roles/storage.objectCreator' binding
+            * the folder has a 'roles/storage.objectViewer' binding
+            * the bucket added is not a descendent of the project/folder in
+              question though. It is attached to a different project ('proj_2')
+              that has no GCS relevant policy bindings.
+
+        Expect:
+            * the folder's objectViewer and the project's objectCreator
+              bindings will *not* be added to the bucket's policy bindings.
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+
+        proj_2_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/viewer',
+                    'members': [
+                        'user:someone2@company.com',
+                    ]
+                },
+            ]
+        }
+        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_2_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_2, self.proj_2_policy_resource,
+                    proj_2_bindings))
+
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource,
+                    proj_3_bindings))
+
+        bucket_bindings = []
+        policy_data.append(
+                (self.bucket_2_1, self.bucket_2_1_policy_resource,
+                    bucket_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+        self.assertEqual([], bucket_bindings)
+
+    def test_add_bucket_ancestor_bindings_with_2_ancestor_lines(self):
+        """Buckets with an independent org / project ancestry.
+
+        Setup:
+            * Use an org -> project -> folder resource tree in which
+              both the project and the folder ancestors have GCS relevant
+              policy bindings and 2 buckets.
+            * Use another org -> project resource tree in which the project has
+              GCS relevant policy bindings + a single bucket.
+
+        Expect:
+            * all 3 buckets will pick up the GCS relevant bindings.
+        """
+        org_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:owner@company.com',
+                    ]
+                }
+            ]
+        }
+        org_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in org_policy.get('bindings')])
+        policy_data = [
+                (self.org_234, self.org_234_policy_resource, org_bindings)]
+
+        proj_2_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectAdmin',
+                    'members': [
+                        'user:admin@storage.com',
+                    ]
+                },
+            ]
+        }
+        proj_2_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_2_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_2, self.proj_2_policy_resource, proj_2_bindings))
+
+        folder_1_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/resourcemanager.folderEditor',
+                    'members': [
+                        'user:fe@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+            ]
+        }
+        folder_1_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in folder_1_policy.get('bindings')])
+        policy_data.append(
+                (self.folder_1, self.folder_1_policy_resource,
+                    folder_1_bindings))
+
+        proj_3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/owner',
+                    'members': [
+                        'user:someone@company.com',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        proj_3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in proj_3_policy.get('bindings')])
+        policy_data.append(
+                (self.proj_3, self.proj_3_policy_resource, proj_3_bindings))
+
+        bucket_2_1_bindings = []
+        policy_data.append(
+                (self.bucket_2_1, self.bucket_2_1_policy_resource,
+                    bucket_2_1_bindings))
+
+        bucket_3_1_bindings = []
+        policy_data.append(
+                (self.bucket_3_1, self.bucket_3_1_policy_resource,
+                    bucket_3_1_bindings))
+
+        bucket_3_2_bindings = []
+        policy_data.append(
+                (self.bucket_3_2, self.bucket_3_2_policy_resource,
+                    bucket_3_2_bindings))
+
+        iam_rules_scanner._add_bucket_ancestor_bindings(policy_data)
+
+        self.assertEqual(1, len(bucket_2_1_bindings))
+        self.assertEqual(2, len(bucket_3_1_bindings))
+        self.assertEqual(2, len(bucket_3_2_bindings))
+
+
+        expected_b3_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:someone@who.is.outsi.de',
+                    ]
+                },
+                {
+                    'role': 'roles/storage.objectCreator',
+                    'members': [
+                        'user:someone@creative.com',
+                    ]
+                },
+            ]
+        }
+        expected_b3_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_b3_policy.get('bindings')])
+
+        self.assertEqual(expected_b3_bindings, bucket_3_1_bindings)
+        self.assertEqual(expected_b3_bindings, bucket_3_2_bindings)
+
+        expected_b2_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectAdmin',
+                    'members': [
+                        'user:admin@storage.com',
+                    ]
+                },
+            ]
+        }
+        expected_b2_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_b2_policy.get('bindings')])
+
+        self.assertEqual(expected_b2_bindings, bucket_2_1_bindings)
+
+    def test_retrieve_finds_bucket_policies(self):
+        """IamPolicyScanner::_retrieve() finds bucket policies.
+
+        _retrieve() is picking up bucket IAM policies (in addition to
+        the organization, folder and project level ones).
+        """
+        policy_resources = []
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/iam_policy/organization:234/'
+        pr.type_name = 'iam_policy/organization:234'
+        pr.name = 'organization:234'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["domain:gcp.work"], "role": "roles/billing.creator"}, {"members": ["user:da@gcp.work"], "role": "roles/owner"}], "etag": "BwVmVJ0OeTs="}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'organization'
+        pr.parent.name = '234'
+        pr.parent.full_name = 'organization/234/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/folder/333/iam_policy/folder:333/'
+        pr.type_name = 'iam_policy/folder:333'
+        pr.name = 'folder:333'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["user:dd@gcp.work"], "role": "roles/resourcemanager.folderEditor"}], "etag": "BwVmQ+cRxiA="}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'folder'
+        pr.parent.name = '333'
+        pr.parent.full_name = 'organization/234/folder/333/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/project/435/iam_policy/project:435/'
+        pr.type_name = 'iam_policy/project:435'
+        pr.name = 'project:435'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["user:abc@gcp.work"], "role": "roles/owner"}], "etag": "BwVlqEvec+E=", "version": 1}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'project'
+        pr.parent.name = '435'
+        pr.parent.full_name = 'organization/234/project/435/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/project/435/bucket/789/iam_policy/bucket:789/'
+        pr.type_name = 'iam_policy/bucket:789'
+        pr.name = 'bucket:789'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["projectEditor:435", "projectOwner:435"], "role": "roles/storage.legacyBucketOwner"}, {"members": ["projectViewer:435"], "role": "roles/storage.legacyBucketReader"}, {"members": ["user:ov@gmail.com"], "role": "roles/storage.objectViewer"}], "etag": "CAI=", "kind": "storage#policy", "resourceId": "projects/_/buckets/789"}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'bucket'
+        pr.parent.name = '789'
+        pr.parent.full_name = 'organization/234/project/435/bucket/789/'
+        policy_resources.append(pr)
+
+        mock_data_access = mock.MagicMock()
+        mock_data_access.scanner_iter.return_value = policy_resources
+        mock_service_config = mock.MagicMock()
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = mock.MagicMock(), mock_data_access
+        self.scanner.service_config = mock_service_config
+
+        # call the method under test.
+        policy_data, resource_counts = self.scanner._retrieve()
+
+        # we picked up the bucket IAM policy.
+        self.assertEqual(1, resource_counts['bucket'])
+        [(bucket, bucket_bindings)] = [
+                (r, bs) for (r, _, bs) in policy_data
+                if r.type == 'bucket']
+
+        self.assertEqual('789', bucket.id)
+        self.assertEqual('bucket', bucket.type)
+
+        expected_policy = {
+            'bindings': [
+                {
+                    'role': 'roles/storage.objectViewer',
+                    'members': [
+                        'user:ov@gmail.com',
+                    ]
+                },
+            ]
+        }
+        expected_bindings = filter(None, [ # pylint: disable=bad-builtin
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in expected_policy.get('bindings')])
+
+        self.assertEqual(expected_bindings, bucket_bindings)
 
 
 if __name__ == '__main__':
