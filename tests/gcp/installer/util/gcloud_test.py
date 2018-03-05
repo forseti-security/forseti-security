@@ -206,32 +206,6 @@ class GcloudTest(ForsetiTestCase):
                 gcloud.verify_gcloud_information(
                     'id', 'user', force_no_cloudshell, is_dev_shell)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
-    def test_check_cloudshell_with_flag_no_cloudshell(self, test_patch):
-        """Test check_cloudshell() when no cloudshell and flag to bypass."""
-        test_patch.return_value = {}
-        output_head = 'Bypass Cloud Shell'
-        force_no_cloudshell = True
-        is_dev_shell = False
-        with captured_output() as (out, err):
-            gcloud.verify_gcloud_information(
-                'id', 'user', force_no_cloudshell, is_dev_shell)
-            output = out.getvalue().strip()
-            self.assertTrue(output_head in output)
-
-    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
-    def test_check_cloudshell_has_flag_is_cloudshell(self, test_patch):
-        """Test check_cloudshell() when using cloudshell and flag to bypass."""
-        test_patch.return_value = {}
-        output_head = 'Bypass Cloud Shell'
-        force_no_cloudshell = True
-        is_dev_shell = True
-        with captured_output() as (out, err):
-            gcloud.verify_gcloud_information(
-                'id', 'user', force_no_cloudshell, is_dev_shell)
-            output = out.getvalue().strip()
-            self.assertTrue(output_head in output)
-
     @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
     def test_lookup_organization(self, test_patch):
         """Test lookup_organization().
