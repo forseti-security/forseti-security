@@ -19,6 +19,10 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 import re
 
 from google.cloud.forseti.common.gcp_type import errors
+from google.cloud.forseti.common.util import logger
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 # TODO: use the regex_util
@@ -187,7 +191,30 @@ class IamPolicyBinding(object):
         """
         if isinstance(binding, type(cls)):
             return binding
-        return cls(binding.get('role'), binding.get('members'))
+        try:
+            return cls(binding.get('role'), binding.get('members'))
+        except errors.InvalidIamPolicyMemberError:
+            LOGGER.warn(
+                'Invalid IAM policy member: %s.', binding.get('members'))
+            return None
+
+    def merge_members(self, other):
+        """Add `other` members to mine if the role names are the same.
+
+        Use case: merging members from ancestor bindings with the same role
+        name.
+
+        Args:
+            other (IamPolicyBinding): the other IAM policy binding
+        """
+        if not isinstance(other, type(self)):
+            raise errors.InvalidIamPolicyBindingError(
+                'Cannot merge, other is not of type \'IamPolicyBinding\'')
+        if other.role_name != self.role_name:
+            return
+        for member in other.members:
+            if member not in self.members:
+                self.members.append(member)
 
 
 class IamPolicyMember(object):
