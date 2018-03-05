@@ -69,8 +69,7 @@ def verify_gcloud_information(project_id,
     if not force_no_cloudshell and not is_devshell:
         print(constants.MESSAGE_NO_CLOUD_SHELL)
         sys.exit(1)
-    else:
-        print('Bypass Cloud Shell check, continuing...')
+
     if not authed_user:
         print('Error getting authed user. You may need to run '
               '"gcloud auth login". Exiting.')
@@ -808,9 +807,14 @@ def get_domain_from_organization_id(organization_id):
         str: Domain of the org.
     """
 
-    _, out, _ = utils.run_command(
+    return_code, out, err = utils.run_command(
         ['gcloud', 'organizations', 'describe', organization_id,
          '--format=json'])
+
+    if return_code:
+        print(err)
+        print('Unable to retrieve domain from the organization.')
+        return ''
 
     org_info = json.loads(out)
 

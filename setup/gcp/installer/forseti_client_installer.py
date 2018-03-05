@@ -56,7 +56,9 @@ class ForsetiClientInstaller(ForsetiInstaller):
                 self.project_id,
                 self.gcp_service_acct_email,
                 self.user_can_grant_roles)
-            instance_name = '{}-vm'.format(deployment_name)
+            instance_name = 'forseti-{}-vm-{}'.format(
+                self.config.installation_type,
+                self.config.timestamp)
             zone = '{}-c'.format(self.config.bucket_location)
             gcloud.enable_os_login(instance_name, zone)
             self.wait_until_vm_initialized(instance_name)
