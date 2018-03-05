@@ -43,7 +43,7 @@ def get_datetime_from_string(string, string_format):
 
         Raises:
            UtilDateTimeTypeError: When datetime.strptime() raises a TypeError.
-           UtilDateTimeValueErro: When datetime.strptime() raises a ValueError.
+           UtilDateTimeValueError: When datetime.strptime() raises a ValueError.
 
         Returns:
             datetime: A datetime object as requested.
