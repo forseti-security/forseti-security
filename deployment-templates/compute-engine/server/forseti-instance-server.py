@@ -70,9 +70,9 @@ mv forseti-security-{release_version} forseti-security
 
     resources = []
 
-    deployment_name_splited = context.env['deployment'].split('-')
-    deployment_name_splited.insert(len(deployment_name_splited)-1, 'vm')
-    instance_name = '-'.join(deployment_name_splited)
+    deployment_name_splitted = context.env['deployment'].split('-')
+    deployment_name_splitted.insert(len(deployment_name_splitted)-1, 'vm')
+    instance_name = '-'.join(deployment_name_splitted)
 
     resources.append({
         'name': instance_name,
