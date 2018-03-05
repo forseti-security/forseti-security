@@ -12,19 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the Folder resource"""
+"""Test the date_time utility functions."""
 
 from datetime import datetime
 
 import mock
 import unittest
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util.date_time import UtilDateTimedValueErrorException
-from google.cloud.forseti.common.util.date_time import UtilDateTimeTypeErrorException
+from google.cloud.forseti.common.util.date_time import UtilDateTimedValueError
+from google.cloud.forseti.common.util.date_time import UtilDateTimeTypeError
 from tests.unittest_utils import ForsetiTestCase
-# pylint: enable=line-too-long
 
 
 class DateTimeTest(ForsetiTestCase):
@@ -53,12 +51,12 @@ class DateTimeTest(ForsetiTestCase):
 
         mock_datetime.side_effect = [TypeError, ValueError]
 
-        with self.assertRaises(UtilDateTimeTypeErrorException):
+        with self.assertRaises(UtilDateTimeTypeError):
             date_time.get_datetime_from_string('','')
 
         mock_datetime.assert_called_once_with('', '')
 
-        with self.assertRaises(UtilDateTimedValueErrorException):
+        with self.assertRaises(UtilDateTimedValueError):
             date_time.get_datetime_from_string('','')
 
         mock_datetime.assert_once_with('', '')
