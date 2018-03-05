@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:16.04
+echo "Running pylint... "
 
-# Expose our source so we can read in dependencies.
-ADD . /forseti-security/
-WORKDIR /forseti-security/
-
-# Install host dependencies.
-RUN apt-get update -qq 1> /dev/null
-RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null
-RUN rm -rf /var/lib/apt/lists/*
-
-# Install the CloudSDK for `gcloud`.
-RUN curl -sSL https://sdk.cloud.google.com 1> /dev/null | bash
+docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"
