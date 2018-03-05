@@ -776,6 +776,9 @@ class KubernetesCluster(Resource):
         Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
+        if not self['selfLink'] or 'zones' not in self['selfLink']:
+            return {}
+
         return client.fetch_container_serviceconfig(self.parent().key(),
                                                     self.zone())
 
@@ -806,7 +809,7 @@ class KubernetesCluster(Resource):
             self_link_parts = self['selfLink'].split('/')
             return self_link_parts[self_link_parts.index('zones')+1]
         except KeyError:
-            LOGGER.warn('selfLink not found: %s', self._data)
+            LOGGER.debug('selfLink not found: %s', self._data)
             return ''
 
 class DataSet(Resource):
