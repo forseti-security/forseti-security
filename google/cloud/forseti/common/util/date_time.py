@@ -57,7 +57,7 @@ def get_datetime_from_string(string, string_format):
     except ValueError:
         LOGGER.error('Unable to create a datetime with %s in format %s',
                      string, string_format)
-        raise UtilDateTimedValueError
+        raise UtilDateTimeValueError
 
     return result
 
