@@ -755,8 +755,7 @@ def create_deployment(project_id,
 
     # Ping the deployment manager and make sure the API is ready
     utils.run_command(
-        ['gcloud', 'deployment-manager', 'deployments',
-         'describe', 'testing-deployment-manager-connection'])
+        ['gcloud', 'deployment-manager', 'deployments', 'list'])
 
     deployment_name = 'forseti-{}-{}'.format(installation_type,
                                              timestamp)

@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import subprocess
+import threading
 import time
 
 import constants
@@ -325,21 +326,41 @@ def extract_timestamp_from_name(instance_name, include_date=False):
     return instance_name.split('-')[-2][8:]
 
 
-def run_command(cmd_args):
+def run_command(cmd_args, number_of_retry=5, timeout_in_second=30):
     """Wrapper to run a command in subprocess.
+
+    If there is a timeout/error on the API call, we will re try up to 5 times
+    by default.
+    Each re try will increment timeout_in_second by 10.
 
     Args:
         cmd_args (list): The list of command arguments.
+        number_of_retry (int): Number of re try.
+        timeout_in_second (int): Timeout in second.
 
     Returns:
         int: The return code. 0 is "ok", anything else is "error".
         str: Output, if command was successful.
         err: Error output, if there was an error.
     """
+
     proc = subprocess.Popen(cmd_args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)
+
+    timer = threading.Timer(timeout_in_second, proc.kill)
+
+    timer.start()
     out, err = proc.communicate()
+    timer.cancel()
+
+    if proc.returncode and number_of_retry >= 1:
+        print('Command "{}" failed/timeout, retrying...'.format(
+            ' '.join(cmd_args)))
+        return run_command(cmd_args,
+                           number_of_retry - 1,
+                           timeout_in_second + 10)
+
     return proc.returncode, out, err
 
 
