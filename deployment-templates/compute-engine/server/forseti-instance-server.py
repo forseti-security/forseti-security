@@ -70,8 +70,12 @@ mv forseti-security-{release_version} forseti-security
 
     resources = []
 
+    deployment_name_splitted = context.env['deployment'].split('-')
+    deployment_name_splitted.insert(len(deployment_name_splitted)-1, 'vm')
+    instance_name = '-'.join(deployment_name_splitted)
+
     resources.append({
-        'name': '{}-vm'.format(context.env['deployment']),
+        'name': instance_name,
         'type': 'compute.v1.instance',
         'properties': {
             'zone': context.properties['zone'],

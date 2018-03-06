@@ -60,8 +60,7 @@ GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
 GCLOUD_ALPHA_REGEX = r'alpha.*'
 
-SERVICE_ACCT_NAME_FMT = 'forseti-{}-{}-{}-{}'
-SERVICE_ACCT_ID_FMT = 'forseti-{}-{}-{}'
+SERVICE_ACCT_NAME_FMT = 'forseti-{}-{}-{}'
 SERVICE_ACCT_EMAIL_FMT = '{}@{}.iam.gserviceaccount.com'
 
 INPUT_DEPLOYMENT_TEMPLATE_FILENAME = {
@@ -185,13 +184,23 @@ MESSAGE_HAS_ROLE_SCRIPT = (
     'those roles. Please run this script to assign the Forseti '
     'roles so that Forseti will work properly.\n\n')
 
-MESSAGE_ENABLE_GSUITE_GROUP = (
-    'If you want to enable G Suite Groups collection in '
-    'Forseti, for example, to use IAM Explain), follow '
-    ' the steps in the guide below:\n\n'
-    '    '
-    'http://forsetisecurity.org/docs/howto/configure/'
-    'gsuite-group-collection.html\n\n')
+MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS = (
+    'IMPORTANT NOTE\n'
+    'Your Forseti Security Installation will not work until '
+    'you enable GSuite data collection:\n'
+    'https://forsetisecurity.org/docs/howto/configure/gsuite'
+    '-group-collection.html\n')
+
+MESSAGE_FORSETI_CONFIGURATION_INSTRUCTIONS = (
+    'For instructions on how to change your roles or configuration files:\n'
+    'http://forsetisecurity.org/docs/howto/deploy/gcp-deployment.html#move'
+    '-configuration-to-gcs')
+
+MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS = (
+    'If you would like to enable email notifications via SendGrid,'
+    ' please refer to:\n'
+    'http://forsetisecurity.org/docs/howto/configure/email-notification.html\n'
+)
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'To read G Suite Groups and Users data, '
@@ -200,10 +209,7 @@ MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
-    'via an API key. '
-    'This step is optional and can be configured later.\n'
-    'Learn more about SendGrid here: '
-    'https://forsetisecurity.org/docs/howto/configure/email-notification.html')
+    'API Key (enter for none)')
 
 MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL = (
     'Forseti can be configured to access an '
@@ -221,18 +227,11 @@ MESSAGE_NO_CLOUD_SHELL = (
     '4) Set your project using '
     '"gcloud config project set <PROJECT_ID>".\n'
     '5) Run this setup again, with the --no-cloudshell flag, '
-    'i.e.\n\n    python setup_forseti.py --no-cloudshell\n')
+    'i.e.\n\n\tpython setup_forseti.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
-    'A Forseti configuration file (configs/{installation_type}/'
-    'forseti_conf_{installation_type}_{timestamp}.yaml) '
-    'has been generated. If you wish to change your '
-    'Forseti configuration or rules, e.g. enabling G Suite '
-    'Groups collection, either download the conf file in '
-    'your bucket `{bucket_name}` or edit your local copy, then follow '
-    'the guide below to copy the files to Cloud Storage:\n\n'
-    '    http://forsetisecurity.org/docs/howto/deploy/'
-    'gcp-deployment.html#move-configuration-to-gcs\n\n')
+    'Forseti configuration file(s) has been generated.\n\n'
+    '{forseti_config_file_paths}\n\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED_DRY_RUN = (
     'A Forseti configuration file has been generated. '
@@ -247,12 +246,11 @@ MESSAGE_DEPLOYMENT_HAD_ISSUES = (
     'discuss@forsetisecurity.org.\n')
 
 MESSAGE_FORSETI_BRANCH_DEPLOYED = (
-    'Forseti {} (branch/version: {}) has been '
-    'deployed to GCP.\n')
+    'Forseti (branch/version: {}) has been deployed to GCP.\n\n')
 
 MESSAGE_DEPLOYMENT_TEMPLATE_LOCATION = (
-    'Your generated Deployment Manager template can be '
-    'found here:\n\n    {}\n\n')
+    'Your generated Deployment Manager template(s) can be '
+    'found here:\n\n{deployment_template_gcs_paths}\n\n')
 
 MESSAGE_VIEW_DEPLOYMENT_DETAILS = (
     'You can view the details of your deployment in the '
@@ -296,7 +294,7 @@ QUESTION_ENABLE_WRITE_ACCESS = (
     '(e.g. for Enforcer) (y/n): ')
 
 QUESTION_GSUITE_SUPERADMIN_EMAIL = (
-    'Supply a G Suite super admin email: ')
+    'Email: ')
 
 QUESTION_SENDGRID_API_KEY = (
     'What is your SendGrid API key? '
@@ -316,7 +314,7 @@ QUESTION_ACCESS_TO_GRANT_ROLES = (
 
 QUESTION_CHOOSE_FOLDER = (
     'To find the folder, go to Cloud Console:\n\n'
-    '    https://console.cloud.google.com/'
+    '\thttps://console.cloud.google.com/'
     'cloud-resource-manager?organizationId={}\n\n'
     'Enter the folder id where you want '
     'Forseti to crawl for data: ')
