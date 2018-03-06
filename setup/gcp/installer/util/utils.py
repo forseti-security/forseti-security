@@ -329,7 +329,8 @@ def extract_timestamp_from_name(instance_name, include_date=False):
 def run_command(cmd_args, number_of_retry=5, timeout_in_second=10):
     """Wrapper to run a command in subprocess.
 
-    If there is a timeout on the API call, we will re try up to 5 times.
+    If there is a timeout on the API call, we will re try up to 5 times
+    by default. 
 
     Args:
         cmd_args (list): The list of command arguments.
