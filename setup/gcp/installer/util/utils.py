@@ -326,11 +326,12 @@ def extract_timestamp_from_name(instance_name, include_date=False):
     return instance_name.split('-')[-2][8:]
 
 
-def run_command(cmd_args, number_of_retry=5, timeout_in_second=10):
+def run_command(cmd_args, number_of_retry=5, timeout_in_second=30):
     """Wrapper to run a command in subprocess.
 
     If there is a timeout/error on the API call, we will re try up to 5 times
     by default.
+    Each re try will increment timeout_in_second by 10.
 
     Args:
         cmd_args (list): The list of command arguments.
@@ -353,8 +354,12 @@ def run_command(cmd_args, number_of_retry=5, timeout_in_second=10):
     out, err = proc.communicate()
     timer.cancel()
 
-    if proc.returncode and number_of_retry > 0:
-        return run_command(cmd_args, number_of_retry - 1)
+    if proc.returncode and number_of_retry >= 1:
+        print('Command "{}" failed/timeout, retrying...'.format(
+            ' '.join(cmd_args)))
+        return run_command(cmd_args,
+                           number_of_retry - 1,
+                           timeout_in_second + 10)
 
     return proc.returncode, out, err
 
