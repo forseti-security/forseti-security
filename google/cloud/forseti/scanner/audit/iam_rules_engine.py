@@ -20,7 +20,6 @@ determine whether there are violations.
 """
 
 import itertools
-import json
 import threading
 
 from google.cloud.forseti.common.gcp_type import errors as resource_errors
@@ -127,14 +126,15 @@ class IamRulesEngine(bre.BaseRulesEngine):
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_policy_violations(self, resource, policy, force_rebuild=False):
+    def find_policy_violations(
+            self, resource, policy, policy_bindings, force_rebuild=False):
         """Determine whether policy violates rules.
 
         Args:
             resource (gcp_type): The resource that the policy belongs to.
-            policy (forseti_data_model_resource): The policy to compare
-                against the rules.
+            policy (resource): The policy to compare against the rules.
                 See https://cloud.google.com/iam/reference/rest/v1/Policy.
+            policy_bindings (list): list of bindings found in `policy.data`
             force_rebuild (bool): If True, rebuilds the rule book.
                 This will reload the rules definition file and add the
                 rules to the book.
@@ -145,9 +145,6 @@ class IamRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        policy_bindings = [
-            iam_policy.IamPolicyBinding.create_from(b)
-            for b in json.loads(policy.data).get('bindings', [])]
         violations = self.rule_book.find_violations(
             resource, policy, policy_bindings)
 
@@ -336,9 +333,9 @@ class IamRuleBook(bre.BaseRuleBook):
                         resource_id=resource_id,
                         resource_type=resource_type)
 
-                    rule_bindings = [
+                    rule_bindings = filter(None, [ # pylint: disable=bad-builtin
                         iam_policy.IamPolicyBinding.create_from(b)
-                        for b in rule_def.get('bindings')]
+                        for b in rule_def.get('bindings')])
                     rule = scanner_rules.Rule(rule_name=rule_def.get('name'),
                                               rule_index=rule_index,
                                               bindings=rule_bindings,

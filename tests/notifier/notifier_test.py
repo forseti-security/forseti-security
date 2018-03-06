@@ -19,8 +19,8 @@ import mock
 from google.cloud.forseti.notifier import notifier
 from tests.unittest_utils import ForsetiTestCase
 
-class NotifierTest(ForsetiTestCase):
 
+class NotifierTest(ForsetiTestCase):
     def setUp(self):
         pass
 
@@ -37,7 +37,7 @@ class NotifierTest(ForsetiTestCase):
 
         violations_with_converted_timestamp = (
             notifier.convert_to_timestamp(violations))
-        
+
         converted_timestamps = []
         for i in violations_with_converted_timestamp:
             converted_timestamps.append(i.created_at_datetime)

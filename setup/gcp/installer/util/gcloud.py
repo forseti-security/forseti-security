@@ -45,7 +45,7 @@ def get_gcloud_info():
             props = config.get('properties', {})
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
-            print('Read gcloud info successfully')
+            print('Read gcloud info: Success')
         except ValueError as verr:
             print(verr)
             sys.exit(1)
@@ -66,14 +66,10 @@ def verify_gcloud_information(project_id,
     """
 
     check_proper_gcloud()
-    if not force_no_cloudshell:
-        if not is_devshell:
-            print(constants.MESSAGE_NO_CLOUD_SHELL)
-            sys.exit(1)
-        else:
-            print('Using Cloud Shell, continuing...')
-    else:
-        print('Bypass Cloud Shell check, continuing...')
+    if not force_no_cloudshell and not is_devshell:
+        print(constants.MESSAGE_NO_CLOUD_SHELL)
+        sys.exit(1)
+
     if not authed_user:
         print('Error getting authed user. You may need to run '
               '"gcloud auth login". Exiting.')
@@ -114,7 +110,7 @@ def check_proper_gcloud():
 
     print('Current gcloud version: {}'.format('.'.join(
         [str(d) for d in version])))
-    print('Gcloud alpha components? {}'.format(alpha_match is not None))
+    print('Gcloud alpha components: {}'.format(alpha_match is not None))
     if version < constants.GCLOUD_MIN_VERSION or not alpha_match:
         print(constants.MESSAGE_GCLOUD_VERSION_MISMATCH
               .format('.'.join([str(i) for i in constants.GCLOUD_MIN_VERSION]))
@@ -134,7 +130,7 @@ def enable_apis(dry_run=False):
         dry_run (bool): Whether this is a dry run. If True, don't actually
             enable the APIs.
     """
-    utils.print_banner('Enabling required APIs')
+    utils.print_banner('Enabling Required APIs')
     if dry_run:
         print('This is a dry run, so skipping this step.')
         return
@@ -169,8 +165,8 @@ def grant_client_svc_acct_roles(project_id,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account',
-                       'Account id: {}'.format(gcp_service_account))
+    utils.print_banner('Assigning Roles To The GCP Service Account',
+                       gcp_service_account)
 
     roles = {
         'forseti_project': constants.PROJECT_IAM_ROLES_CLIENT
@@ -218,8 +214,8 @@ def grant_server_svc_acct_roles(enable_write,
         bool: Whether or not a role script has been generated
     """
 
-    utils.print_banner('Assigning roles to the GCP service account',
-                       'Account id: {}'.format(gcp_service_account))
+    utils.print_banner('Assigning Roles To The GCP Service Account',
+                       gcp_service_account)
     access_target_roles = constants.GCP_READ_IAM_ROLES
     if enable_write:
         access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
@@ -453,12 +449,10 @@ def create_or_reuse_service_acct(acct_type,
             the installation.
     """
 
-    account = acct_type.replace('_', ' ')
-
-    choices = ['Create {}'.format(account), 'Reuse {}'.format(account)]
+    choices = ['Create {}'.format(acct_type), 'Reuse {}'.format(acct_type)]
 
     if not advanced_mode:
-        print ('Creating {}... '.format(account), end='')
+        print ('Creating {}... '.format(acct_type), end='')
         sys.stdout.flush()
         choice_index = 1
     else:
@@ -506,7 +500,7 @@ def create_or_reuse_service_acct(acct_type,
                                                    val['email']))
         acct_idx = utils.get_choice_id(svc_accts, print_fun)
         acct_email = svc_accts[acct_idx - 1]['email']
-    print ('Service account id: {}'.format(acct_email))
+    print ('\t{}'.format(acct_email))
     return acct_email
 
 
@@ -532,7 +526,7 @@ def check_billing_enabled(project_id, organization_id):
     try:
         billing_info = json.loads(out)
         if billing_info.get('billingEnabled'):
-            print('Billing is enabled.')
+            print('Billing: Enabled')
         else:
             _billing_not_enabled()
     except ValueError:
@@ -711,13 +705,9 @@ def create_firewall_rule(rule_name,
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
-    return_code, out, err = utils.run_command(gcloud_command_args)
+    return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
         print (err)
-    # print the output from gcp if the rule is created, example of the output
-    # NAME   NETWORK  DIRECTION  PRIORITY  ALLOW  DENY
-    # apple  default  INGRESS    1000             tcp:23
-    print (out)
 
 
 def enable_os_login(instance_name, zone):
@@ -760,8 +750,8 @@ def create_deployment(project_id,
         print('This is a dry run, so skipping this step.')
         return 0
 
-    utils.print_banner('Create Forseti {} deployment'.format(
-        installation_type))
+    utils.print_banner('Creating Forseti {} Deployment'.format(
+        installation_type.capitalize()))
 
     # Ping the deployment manager and make sure the API is ready
     utils.run_command(
@@ -817,9 +807,14 @@ def get_domain_from_organization_id(organization_id):
         str: Domain of the org.
     """
 
-    _, out, _ = utils.run_command(
+    return_code, out, err = utils.run_command(
         ['gcloud', 'organizations', 'describe', organization_id,
          '--format=json'])
+
+    if return_code:
+        print(err)
+        print('Unable to retrieve domain from the organization.')
+        return ''
 
     org_info = json.loads(out)
 
@@ -837,9 +832,14 @@ def check_deployment_status(deployment_name, status):
         bool: Whether or not the deployment status match with the given status.
     """
 
-    _, out, _ = utils.run_command(
+    return_code, out, err = utils.run_command(
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
+
+    if return_code:
+        print(err)
+        print('There is something wrong with the deployment, exiting...')
+        sys.exit(1)
 
     deployment_info = json.loads(out)
 

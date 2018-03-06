@@ -22,9 +22,9 @@ import logging.handlers
 
 
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
-                   '%(name)s(%(funcName)s): %(message)s')
+                   '%(name)s(%(funcName)s): %(message).1024s')
 SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
-                  '%(name)s(%(funcName)s): %(message)s')
+                  '%(name)s(%(funcName)s): %(message).1024s')
 LOGGERS = {}
 LOGLEVELS = {
     'debug': logging.DEBUG,
