@@ -194,7 +194,7 @@ class IamPolicyBinding(object):
         try:
             return cls(binding.get('role'), binding.get('members'))
         except errors.InvalidIamPolicyMemberError:
-            LOGGER.warn(
+            LOGGER.debug(
                 'Invalid IAM policy member: %s.', binding.get('members'))
             return None
 
