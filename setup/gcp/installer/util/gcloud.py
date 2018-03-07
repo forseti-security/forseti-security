@@ -140,7 +140,9 @@ def enable_apis(dry_run=False):
               end='')
         sys.stdout.flush()
         return_code, _, err = utils.run_command(
-            ['gcloud', 'services', 'enable', api['service']])
+            ['gcloud', 'services', 'enable', api['service']],
+            number_of_retry=5,
+            timeout_in_second=120)
         if return_code:
             print(err)
         else:
