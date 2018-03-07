@@ -790,7 +790,7 @@ def check_vm_init_status(vm_name, zone):
 
     _, out, _ = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
-         '--zone', zone, '--command', check_script_executed])
+         '--zone', zone, '--command', check_script_executed, '--quiet'])
 
     if 'Execution of startup script finished' in out:
         return True
