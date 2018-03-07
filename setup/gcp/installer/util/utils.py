@@ -326,7 +326,7 @@ def extract_timestamp_from_name(instance_name, include_date=False):
     return instance_name.split('-')[-2][8:]
 
 
-def run_command(cmd_args, number_of_retry=5, timeout_in_second=60):
+def run_command(cmd_args, number_of_retry=5, timeout_in_second=90):
     """Wrapper to run a command in subprocess.
 
     If there is a timeout/error on the API call, we will re try up to 5 times
