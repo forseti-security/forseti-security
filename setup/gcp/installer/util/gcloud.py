@@ -790,7 +790,10 @@ def check_vm_init_status(vm_name, zone):
 
     _, out, _ = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
-         '--zone', zone, '--command', check_script_executed])
+         '--zone', zone, '--command', check_script_executed, '--quiet'])
+    # --quiet flag is needed to eliminate the prompting for user input
+    # which will hang the run_command function
+    # i.e. It will create a folder at ~/.ssh and generate a new ssh key
 
     if 'Execution of startup script finished' in out:
         return True
