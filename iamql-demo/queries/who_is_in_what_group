@@ -1,0 +1,11 @@
+whoIsInWhatGroup:
+{
+ g group;
+ m member;
+}
+{
+ g.contains(m);
+}
+{
+ m, g
+}

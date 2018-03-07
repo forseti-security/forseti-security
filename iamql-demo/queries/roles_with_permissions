@@ -1,0 +1,11 @@
+showRolesWithPermissions:
+{
+ r role;
+ p permission;
+}
+{
+r.has(p);
+}
+{
+ r, p
+}

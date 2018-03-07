@@ -1,0 +1,15 @@
+whatDoesFelixAndJiyunHaveDirectAccessTo:
+{
+ m member((member_name=="felix@henrychang.mygbiz.com") or (member_name=="jiyun@henrychang.mygbiz.com"));
+ r role;
+ p permission(name like "%.get");
+ policy binding;
+ res resource;
+}
+{
+ r.has(p);
+ policy.grants(res, r, m);
+}
+{
+ res
+}

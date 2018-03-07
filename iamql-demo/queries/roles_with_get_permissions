@@ -1,0 +1,11 @@
+showRolesWithGetPermissions:
+{
+ r role;
+ p permission(name like "%.get");
+}
+{
+r.has(p);
+}
+{
+ r
+}

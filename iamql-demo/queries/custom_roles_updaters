@@ -1,0 +1,15 @@
+membersWhoCanUpdateCustomRoles:
+{
+ r role;
+ p permission(name=="iam.roles.update");
+ m member;
+ policy binding;
+ res resource;
+}
+{
+policy.grants(res, r, m);
+r.has(p);
+}
+{
+ m
+}

@@ -1,0 +1,5 @@
+Relations:
+https://github.com/GoogleCloudPlatform/forseti-security/blob/iamql-refactored/google/cloud/forseti/services/iamql/relations.py
+
+Grammar:
+https://github.com/GoogleCloudPlatform/forseti-security/blob/iamql-refactored/google/cloud/forseti/services/iamql/grammar.py
