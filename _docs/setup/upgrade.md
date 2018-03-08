@@ -50,7 +50,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
   1. When prompted to migrate configuration files choose “Y”.
 
-  1. Installer will prompt the necessary information to install Forseti.
+  1. Installer will prompt for the necessary information to install Forseti.
 
      If you don't have this information configured in v1.x, you will be prompted for them again during the installation:
 
