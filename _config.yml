@@ -22,10 +22,15 @@ exclude: ["Gemfile",
           "images/readme/",
           "client-secrets.json.enc",
           "_config.yml",
-          ".travis.yml"]
+          ".travis.yml",
+          "scripts/"]
+exclude_from_watch: ["_docs/latest/",
+                     "_data/doc_versions.yml",
+                     "_data/doc_version_index.yml"]
 plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
+  - jekyll-redirect-from
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
@@ -74,35 +79,6 @@ defaults:
       path: _docs/latest/faq
     values:
       category: FAQ (latest)
-  - scope:
-      path: _docs/v1.0
-    values:
-      category: Overview (v1.0)
-      layout: docs
-  - scope:
-      path: _docs/v1.0/concepts
-    values:
-      category: Concepts (v1.0)
-  - scope:
-      path: _docs/v1.0/setup
-    values:
-      category: Setup (v1.0)
-  - scope:
-      path: _docs/v1.0/use
-    values:
-      category: Use (v1.0)
-  - scope:
-      path: _docs/v1.0/configure
-    values:
-      category: Configure (v1.0)
-  - scope:
-      path: _docs/v1.0/develop
-    values:
-      category: Develop (v1.0)
-  - scope:
-      path: _docs/v1.0/faq
-    values:
-      category: FAQ (v1.0)
 # The order of faq categories is defined in _data/faq_categories.yml
   - scope:
       path: _faq/general
