@@ -178,14 +178,12 @@ def define_violation(dbengine):
             with self.violationmaker() as session:
                 if inventory_index_id:
                     return (
-                        session.query(self.TBL_VIOLATIONS)
-                            .filter(
+                        session.query(self.TBL_VIOLATIONS).filter(
                             self.TBL_VIOLATIONS.inventory_index_id ==
-                            inventory_index_id)
-                            .all())
+                            inventory_index_id).all()
+                    )
                 return (
-                    session.query(self.TBL_VIOLATIONS)
-                        .all())
+                    session.query(self.TBL_VIOLATIONS).all())
 
     base.metadata.create_all(dbengine)
 

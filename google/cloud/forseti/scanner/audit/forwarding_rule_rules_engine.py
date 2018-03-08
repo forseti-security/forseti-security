@@ -209,8 +209,8 @@ class Rule(object):
         """
         ip_matched = forwarding_rule.ip_address == self.rules['ip_address']
 
-        scheme_matched = forwarding_rule.load_balancing_scheme == \
-                         self.rules['load_balancing_scheme']
+        scheme_matched = forwarding_rule.load_balancing_scheme == self.rules[
+            'load_balancing_scheme']
 
         # only one of port or port range will be populated by the rule
         # for the port range. it is a string of form int-int
@@ -223,8 +223,8 @@ class Rule(object):
             ports_matched = int(forwarding_rule.ports[0]) == \
                             int(self.rules['port'])
 
-        protocol_matched = forwarding_rule.ip_protocol == \
-                           self.rules['ip_protocol']
+        protocol_matched = forwarding_rule.ip_protocol == self.rules[
+            'ip_protocol']
 
         # Checking for matching based on layer 4 protocol
         # ESP has no ports

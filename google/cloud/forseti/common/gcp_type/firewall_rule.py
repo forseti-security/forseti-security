@@ -247,7 +247,8 @@ class FirewallRule(object):
             ('destinationRanges', self.destination_ranges),
             ('priority', self._priority),
             ('sourceServiceAccounts', self.source_service_accounts),
-            ('targetServiceAccounts', self.target_service_accounts)]:
+            ('targetServiceAccounts', self.target_service_accounts)
+        ]:
             if value:
                 firewall_dict[key] = value
         return json.dumps(firewall_dict, sort_keys=True)
@@ -349,8 +350,9 @@ class FirewallRule(object):
               * _destination_ranges is set
         """
         if self.direction == 'INGRESS':
-            if (not self._source_ranges and not self._source_tags and not
-            self.source_service_accounts):
+            if (not self._source_ranges
+                    and not self._source_tags
+                    and not self.source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Ingress rule missing required field oneof "sourceRanges" '
                     'or "sourceTags" or "sourceServiceAccounts": "%s".' % self)
@@ -366,8 +368,9 @@ class FirewallRule(object):
                     'Egress rule missing required field "destinationRanges":'
                     '"%s".' % self)
 
-            if (self._source_ranges or self._source_tags or
-                    self._source_service_accounts):
+            if (self._source_ranges
+                    or self._source_tags
+                    or self._source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Egress rules cannot include "sourceRanges", "sourceTags"'
                     ' or "sourceServiceAccounts": "%s".' % self)

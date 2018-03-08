@@ -335,13 +335,12 @@ class ComputeFirewallAPI(object):
                         'Operation %s did not complete before timeout of %f, '
                         'marking operation as failed.', operation_name, timeout)
                     response.setdefault('error', {}).setdefault(
-                        'errors', []).append({
-                        'code':
-                            'OPERATION_TIMEOUT',
-                        'message': (
-                                'Operation exceeded timeout for completion '
-                                'of %0.2f seconds' % timeout)
-                    })
+                        'errors', []).append(
+                        {'code': 'OPERATION_TIMEOUT',
+                         'message': ('Operation exceeded timeout for completion'
+                                     'of %0.2f seconds' % timeout)
+                         }
+                    )
                     completed_operations.append(response)
                 else:
                     # Operation still running
@@ -1141,7 +1140,7 @@ class FirewallEnforcer(object):
                 raise FirewallEnforcementInsertFailedError(
                     'Firewall enforcement failed while inserting rules for '
                     'project {}. The following errors were encountered: {}'
-                        .format(self.project, change_errors))
+                    .format(self.project, change_errors))
 
         return change_count
 
@@ -1163,7 +1162,7 @@ class FirewallEnforcer(object):
                 raise FirewallEnforcementDeleteFailedError(
                     'Firewall enforcement failed while deleting rules for '
                     'project {}. The following errors were encountered: {}'
-                        .format(self.project, change_errors))
+                    .format(self.project, change_errors))
         return change_count
 
     def _update_rules(self):
@@ -1184,7 +1183,7 @@ class FirewallEnforcer(object):
                 raise FirewallEnforcementUpdateFailedError(
                     'Firewall enforcement failed while deleting rules for '
                     'project {}. The following errors were encountered: {}'
-                        .format(self.project, change_errors))
+                    .format(self.project, change_errors))
 
         return change_count
 

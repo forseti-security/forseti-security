@@ -494,9 +494,9 @@ class DataAccess(object):
         """
 
         result = (
-            session.query(InventoryIndex)
-                .filter(InventoryIndex.id == inventory_id)
-                .one())
+            session.query(InventoryIndex).filter(
+                InventoryIndex.id == inventory_id).one()
+        )
         session.expunge(result)
         return result
 
@@ -512,11 +512,10 @@ class DataAccess(object):
         """
 
         inventory_index = (
-            session.query(InventoryIndex)
-                .filter(or_(InventoryIndex.status == 'SUCCESS',
-                            InventoryIndex.status == 'PARTIAL_SUCCESS'))
-                .order_by(InventoryIndex.id.desc())
-                .first())
+            session.query(InventoryIndex).filter(
+                or_(InventoryIndex.status == 'SUCCESS',
+                    InventoryIndex.status == 'PARTIAL_SUCCESS')
+            ).order_by(InventoryIndex.id.desc()).first())
         session.expunge(inventory_index)
         LOGGER.info(
             'Latest success/partial_success inventory index id is: %s',
@@ -593,11 +592,11 @@ class Storage(BaseStorage):
         """
 
         return (
-            self.session.query(InventoryIndex)
-                .filter(InventoryIndex.id == existing_id)
-                .filter(InventoryIndex.status.in_(
-                [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
-                .one())
+            self.session.query(InventoryIndex).filter(
+                InventoryIndex.id == existing_id).filter(
+                InventoryIndex.status.in_([InventoryState.SUCCESS,
+                                           InventoryState.PARTIAL_SUCCESS])
+            ).one())
 
     def _get_resource_rows(self, key):
         """ Get the rows in the database for a certain resource

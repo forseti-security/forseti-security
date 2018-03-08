@@ -505,19 +505,13 @@ def define_model(model_name, dbengine, model_seed):
                 session.execute(GroupInGroup.__table__.delete())
 
                 # Select member relation into GroupInGroup
-                qry = (
-                    GroupInGroup.__table__.insert()
-                        .from_select(
-                        ['parent', 'member'],
-                        group_members.select()
-                            .where(
-                            group_members.c.group_name.startswith('group/')
-                        )
-                            .where(
-                            group_members.c.members_name.startswith('group/')
-                        )
+                qry = (GroupInGroup.__table__.insert().from_select(
+                    ['parent', 'member'], group_members.select().where(
+                        group_members.c.group_name.startswith('group/')
+                    ).where(
+                        group_members.c.members_name.startswith('group/')
                     )
-                )
+                ))
 
                 session.execute(qry)
 
@@ -539,17 +533,16 @@ def define_model(model_name, dbengine, model_seed):
                     # already in the table, indicated as NULL
                     # values through the outer-left-join
                     stmt = (
-                        select([tbl1.c.parent, tbl2.c.member])
-                            .select_from(expansion)
-                            .where(tbl3.c.parent == None)
-                            .distinct())
+                        select(
+                            [tbl1.c.parent, tbl2.c.member]
+                        ).select_from(expansion).where(tbl3.c.parent == None)
+                                                .distinct()
+                    )
 
                     # Execute the query and insert into the table
-                    qry = (
-                        GroupInGroup.__table__.insert()
-                            .from_select(
-                            ['parent', 'member'],
-                            stmt))
+                    qry = (GroupInGroup.__table__
+                           .insert()
+                           .from_select(['parent', 'member'], stmt))
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
@@ -644,8 +637,9 @@ def define_model(model_name, dbengine, model_seed):
             """
 
             qry = (
-                session.query(Resource)
-                    .filter(Resource.type == resource_type))
+                session.query(Resource).filter(
+                    Resource.type == resource_type)
+            )
 
             if parent_type_name:
                 qry = qry.filter(Resource.parent_type_name == parent_type_name)
@@ -733,16 +727,20 @@ def define_model(model_name, dbengine, model_seed):
                 resource_hierarchy)
 
             bindings = (
-                session.query(Binding, Member)
-                    .join(binding_members).join(Member).join(Role)
-                    .filter(Binding.resource_type_name.in_(bind_res_candidates))
-                    .filter(Role.name.in_(role_names))
-                    .filter(or_(Member.type == 'group',
-                                Member.name == member_name))
-                    .filter(and_(binding_members.c.bindings_id == Binding.id,
-                                 binding_members.c.members_name == Member.name))
-                    .filter(Role.name == Binding.role_name)
-                    .all())
+                session.query(
+                    Binding, Member).join(binding_members)
+                                    .join(Member)
+                                    .join(Role)
+                                    .filter(Binding.resource_type_name.in_(
+                                            bind_res_candidates))
+                                    .filter(Role.name.in_(role_names))
+                                    .filter(or_(Member.type == 'group',
+                                                Member.name == member_name))
+                                    .filter(and_(
+                    binding_members.c.bindings_id == Binding.id,
+                    binding_members.c.members_name == Member.name)
+                    ).filter(Role.name == Binding.role_name)
+                     .all())
 
             strategies = []
             for resource in bind_res_candidates:
@@ -802,11 +800,12 @@ def define_model(model_name, dbengine, model_seed):
                 session, permission_names)
 
             qry = (
-                session.query(Binding)
-                    .join(binding_members)
-                    .join(Member)
-                    .filter(Binding.role_name.in_([r.name for r in roles]))
-                    .filter(Member.name.in_(member_names)))
+                session.query(Binding).join(binding_members)
+                                      .join(Member)
+                                      .filter(Binding.role_name.in_(
+                                            [r.name for r in roles]))
+                                      .filter(Member.name.in_(member_names))
+            )
 
             bindings = qry.yield_per(1024)
             if not expand_resources:
@@ -818,8 +817,7 @@ def define_model(model_name, dbengine, model_seed):
                 session,
                 r_type_names)
 
-            res_exp = {k.type_name:
-                           [v.type_name for v in values]
+            res_exp = {k.type_name: [v.type_name for v in values]
                        for k, values in expansion.iteritems()}
 
             return [(binding.role_name,
@@ -871,13 +869,18 @@ def define_model(model_name, dbengine, model_seed):
                 expanded_resources = aliased(Resource)
                 qry = (
                     session.query(expanded_resources, Binding, Member)
-                        .filter(binding_members.c.bindings_id == Binding.id)
-                        .filter(binding_members.c.members_name == Member.name)
-                        .filter(expanded_resources.full_name.startswith(
-                        Resource.full_name))
-                        .filter(
-                        Resource.type_name == Binding.resource_type_name)
-                        .filter(Binding.role_name.in_(role_names)))
+                            .filter(
+                                binding_members.c.bindings_id == Binding.id)
+                            .filter(
+                                binding_members.c.members_name == Member.name)
+                            .filter(
+                                expanded_resources.full_name.startswith(
+                                        Resource.full_name))
+                            .filter(
+                                Resource.type_name == (
+                                    Binding.resource_type_name
+                                ))
+                            .filter(Binding.role_name.in_(role_names)))
             else:
                 qry = (
                     session.query(Resource, Binding, Member)
@@ -1064,8 +1067,7 @@ def define_model(model_name, dbengine, model_seed):
 
             for role, members in revocations.iteritems():
                 bindings = (
-                    session.query(Binding)
-                        .filter(
+                    session.query(Binding).filter(
                         Binding.resource_type_name == resource_type_name)
                         .filter(Binding.role_name == role)
                         .join(binding_members).join(Member)

@@ -294,9 +294,9 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
 
 
 class _ComputeBackendServicesRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Backend Services repository."""
 
     def __init__(self, **kwargs):
@@ -309,10 +309,9 @@ class _ComputeBackendServicesRepository(
             component='backendServices', **kwargs)
 
 
-class _ComputeDisksRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeDisksRepository(repository_mixins.AggregatedListQueryMixin,
+                              repository_mixins.ListQueryMixin,
+                              _base_repository.GCPRepository):
     """Implementation of Compute Disks repository."""
 
     def __init__(self, **kwargs):
@@ -342,9 +341,8 @@ class _ComputeDisksRepository(
     # pylint: enable=arguments-differ
 
 
-class _ComputeFirewallsRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeFirewallsRepository(repository_mixins.ListQueryMixin,
+                                  _base_repository.GCPRepository):
     """Implementation of Compute Forwarding Rules repository."""
 
     def __init__(self, **kwargs):
@@ -358,9 +356,9 @@ class _ComputeFirewallsRepository(
 
 
 class _ComputeForwardingRulesRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Forwarding Rules repository."""
 
     def __init__(self, **kwargs):
@@ -390,9 +388,8 @@ class _ComputeForwardingRulesRepository(
     # pylint: enable=arguments-differ
 
 
-class _ComputeGlobalOperationsRepository(
-    repository_mixins.GetQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeGlobalOperationsRepository(repository_mixins.GetQueryMixin,
+                                         _base_repository.GCPRepository):
     """Implementation of Compute Global Operations repository."""
 
     def __init__(self, **kwargs):
@@ -405,10 +402,9 @@ class _ComputeGlobalOperationsRepository(
             component='globalOperations', entity_field='operation', **kwargs)
 
 
-class _ComputeImagesRepository(
-    repository_mixins.GetQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeImagesRepository(repository_mixins.GetQueryMixin,
+                               repository_mixins.ListQueryMixin,
+                               _base_repository.GCPRepository):
     """Implementation of Compute Images repository."""
 
     def __init__(self, **kwargs):
@@ -422,9 +418,9 @@ class _ComputeImagesRepository(
 
 
 class _ComputeInstanceGroupManagersRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instance Group Managers repository."""
 
     def __init__(self, **kwargs):
@@ -438,9 +434,9 @@ class _ComputeInstanceGroupManagersRepository(
 
 
 class _ComputeInstanceGroupsRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instance Groups repository."""
 
     def __init__(self, **kwargs):
@@ -470,9 +466,8 @@ class _ComputeInstanceGroupsRepository(
             self, resource, verb='listInstances', **kwargs)
 
 
-class _ComputeInstanceTemplatesRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeInstanceTemplatesRepository(repository_mixins.ListQueryMixin,
+                                          _base_repository.GCPRepository):
     """Implementation of Compute Instance Templates repository."""
 
     def __init__(self, **kwargs):
@@ -486,9 +481,9 @@ class _ComputeInstanceTemplatesRepository(
 
 
 class _ComputeInstancesRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+        repository_mixins.AggregatedListQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
     """Implementation of Compute Instances repository."""
 
     def __init__(self, **kwargs):
@@ -518,9 +513,8 @@ class _ComputeInstancesRepository(
     # pylint: enable=arguments-differ
 
 
-class _ComputeNetworksRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeNetworksRepository(repository_mixins.ListQueryMixin,
+                                 _base_repository.GCPRepository):
     """Implementation of Compute Networks repository."""
 
     def __init__(self, **kwargs):
@@ -533,9 +527,8 @@ class _ComputeNetworksRepository(
             component='networks', **kwargs)
 
 
-class _ComputeProjectsRepository(
-    repository_mixins.GetQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeProjectsRepository(repository_mixins.GetQueryMixin,
+                                 _base_repository.GCPRepository):
     """Implementation of Compute Projects repository."""
 
     def __init__(self, **kwargs):
@@ -548,9 +541,8 @@ class _ComputeProjectsRepository(
             component='projects', **kwargs)
 
 
-class _ComputeRegionInstanceGroupsRepository(
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeRegionInstanceGroupsRepository(repository_mixins.ListQueryMixin,
+                                             _base_repository.GCPRepository):
     """Implementation of Compute Region Instance Groups repository."""
 
     def __init__(self, **kwargs):
@@ -580,10 +572,9 @@ class _ComputeRegionInstanceGroupsRepository(
             self, resource, verb='listInstances', **kwargs)
 
 
-class _ComputeSubnetworksRepository(
-    repository_mixins.AggregatedListQueryMixin,
-    repository_mixins.ListQueryMixin,
-    _base_repository.GCPRepository):
+class _ComputeSubnetworksRepository(repository_mixins.AggregatedListQueryMixin,
+                                    repository_mixins.ListQueryMixin,
+                                    _base_repository.GCPRepository):
     """Implementation of Compute Subnetworks repository."""
 
     def __init__(self, **kwargs):

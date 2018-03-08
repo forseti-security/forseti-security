@@ -42,7 +42,7 @@ IapResource = collections.namedtuple(
                     'backend_service',
                     'alternate_services',
                     'direct_access_sources',
-                    'iap_enabled',]
+                    'iap_enabled']
 )
 NetworkPort = collections.namedtuple(
     'NetworkPort',
