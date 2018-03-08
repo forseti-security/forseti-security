@@ -1,28 +1,24 @@
 ---
-title: Forseti Installation
+title: Upgrading from Forseti v1.x
 order: 001
 ---
 
 # {{ page.title }}
 
-This guide explains how to use the Forseti installation tool.
+This guide explains how to use the Forseti upgrade tool.
 
 ## Before you begin
 
-Prior to running the setup wizard, you will need:
+Prior to upgrading the setup wizard, you will need to know:
 
-  - A GCP organization for which you want to deploy Forseti.
-  - Org Admin IAM role in order for the script to assign the Forseti
-  service account roles on the organization IAM policy.
-  - A GCP project dedicated to Forseti, you can reuse the same 
-  project that has Forseti 1.0 installed in it.
-  - Enable billing on the project.
+  - Forseti Security 2.0 requires G Suite enablement. 
+  You must be able to specify a G Suite Super Admin account 
+  and perform the [Domain-wide Delegation steps]({% link _docs/configure/gsuite-group-collection.md %}).
+  Have this information and be prepared to do this 
+  prior to starting the installation.
 
+  - The Forseti Security 2.0 installer only migrates configuration and rule files.
 
-## Setting up Forseti Security
-
-The installer automatically determines setup information, generates a
-deployment template, and creates a Forseti deployment.
 
 ### Activate Google Cloud Shell
 
@@ -32,7 +28,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
   1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
   1. In the **Select a project** drop-down list at the top of the console, select the project where
-  you want to deploy Forseti.
+  you have your Forseti v1.x deployed.
   1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud
   Shell panel opens at the bottom of the page.
 
@@ -53,29 +49,15 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
   1. Run the installer:
 
-     To install both client and server:
      ```bash 
      python installer.py
      ```
-     To install server only:
-     ```bash 
-     python installer.py --type=server
-     ```
-     To install client only (Will required a Forseti server to install):
-     ```bash 
-     python installer.py --type=client
-     ```
 
-      To see additional configurations for the setup:
+  1. When prompted to migrate configurations choose “Y”
 
-      ```bash
-      python installer.py -h
-      ```
+  1. Installer will prompt the necessary information to install Forseti.
 
-  1. Installer will infer the necessary information to install Forseti.
-
-     If you ran the `installer.py` without extra flags, you will be
-     prompted to enter the following:
+     If you don't have these information configured in v1.x, you will be prompted again during the installation:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. Refer to
        setting up [email notifications]({% link _docs/configure/email-notification.md %})).
@@ -85,17 +67,6 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
        [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
        and is necessary for running [Explain]({% link _docs/configure/explain/index.md %}).
        Ask your G Suite Admin if you don't know what the super admin email is.
-
-  1. By installing the server, There is a cron job scheduled on the server to run every other
-   hour that executes the following commands after pulling down the latest configuration file 
-   on the GCS bucket.:
-     ```bash
-       MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
-       forseti inventory create --import_as ${MODEL_ID}
-       forseti model use ${MODEL_ID}
-       forseti scanner run
-       forseti notifier run
-     ```
 
 
 ## What's next
