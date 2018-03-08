@@ -57,8 +57,9 @@ def _api_not_enabled(error):
             all_errors = error_details.get('error', {}).get('errors', [])
             api_disabled_errors = [
                 error for error in all_errors
-                if (error.get('domain') == 'usageLimits'
-                    and error.get('reason') == 'accessNotConfigured')]
+                if (error.get('domain') == 'usageLimits' and
+                    error.get('reason') == 'accessNotConfigured')
+            ]
             if (api_disabled_errors and
                     len(api_disabled_errors) == len(all_errors)):
                 return True, api_disabled_errors[0].get('extendedHelp', '')

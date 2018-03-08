@@ -217,11 +217,11 @@ class Rule(object):
         # for the port, it will be the first and only port in the list
         ports_matched = False
         if self.rules['port_range'] and forwarding_rule.port_range:
-            ports_matched = forwarding_rule.port_range == \
-                            self.rules['port_range']
+            ports_matched = forwarding_rule.port_range == self.rules[
+                'port_range']
         elif self.rules['port'] and len(forwarding_rule.ports) == 1:
-            ports_matched = int(forwarding_rule.ports[0]) == \
-                            int(self.rules['port'])
+            ports_matched = int(forwarding_rule.ports[0]) == int(
+                self.rules['port'])
 
         protocol_matched = forwarding_rule.ip_protocol == self.rules[
             'ip_protocol']

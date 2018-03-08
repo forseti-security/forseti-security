@@ -457,17 +457,14 @@ class IamRuleBook(bre.BaseRuleBook):
         Returns:
             bool: True if rule applies to the resource, otherwise false.
         """
-        applies_to_self = (
-                resource_rule.applies_to ==
-                scanner_rules.RuleAppliesTo.SELF and
-                resource == curr_resource)
-        applies_to_children = (
-                resource_rule.applies_to ==
-                scanner_rules.RuleAppliesTo.CHILDREN and
-                resource != curr_resource)
-        applies_to_both = (
-                resource_rule.applies_to ==
-                scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
+        applies_to_self = (resource_rule.applies_to ==
+                           scanner_rules.RuleAppliesTo.SELF and
+                           resource == curr_resource)
+        applies_to_children = (resource_rule.applies_to ==
+                               scanner_rules.RuleAppliesTo.CHILDREN and
+                               resource != curr_resource)
+        applies_to_both = (resource_rule.applies_to ==
+                           scanner_rules.RuleAppliesTo.SELF_AND_CHILDREN)
 
         return applies_to_self or applies_to_children or applies_to_both
 

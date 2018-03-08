@@ -252,10 +252,10 @@ def define_model(model_name, dbengine, model_seed):
                           base.metadata,
                           Column('group_name', ForeignKey(
                               '{}.name'.format(members_tablename)),
-                                 primary_key=True),
+                          primary_key=True),
                           Column('members_name', ForeignKey(
                               '{}.name'.format(members_tablename)),
-                                 primary_key=True), )
+                          primary_key=True), )
 
     class Resource(base):
         """Row entry for a GCP resource."""
@@ -737,10 +737,10 @@ def define_model(model_name, dbengine, model_seed):
                 .filter(Role.name.in_(role_names))
                 .filter(or_(Member.type == 'group',
                             Member.name == member_name))
-                .filter(and_((binding_members.c.bindings_id
-                              == Binding.id),
-                             (binding_members.c.members_name
-                              == Member.name)))
+                .filter(and_((binding_members.c.bindings_id ==
+                              Binding.id),
+                             (binding_members.c.members_name ==
+                              Member.name)))
                 .filter(Role.name == Binding.role_name)
                 .all())
 
@@ -874,7 +874,7 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(binding_members.c.bindings_id == Binding.id)
                     .filter(binding_members.c.members_name == Member.name)
                     .filter(expanded_resources.full_name.startswith(
-                                    Resource.full_name))
+                            Resource.full_name))
                     .filter((Resource.type_name ==
                              Binding.resource_type_name))
                     .filter(Binding.role_name.in_(role_names))
@@ -1166,8 +1166,7 @@ def define_model(model_name, dbengine, model_seed):
                 LOGGER.error(error_message)
                 raise Exception(error_message)
 
-            return (
-                    session.query(Permission)
+            return (session.query(Permission)
                     .filter(Permission.name == permission_name)
                     .join(role_permissions).join(Role).join(Binding)
                     .filter(Binding.resource_type_name.in_(resource_type_names))
@@ -1546,7 +1545,7 @@ def define_model(model_name, dbengine, model_seed):
                 session.query(res_key, res_values)
                 .filter(res_key.type_name.in_(res_type_names))
                 .filter(res_values.full_name.startswith(
-                                res_key.full_name))
+                        res_key.full_name))
                 .yield_per(1024)
             )
 

@@ -81,6 +81,7 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
+
 class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
     """The RuleBook for enforced networks resources."""
 
@@ -168,8 +169,10 @@ class InstanceNetworkInterfaceRuleBook(bre.BaseRuleBook):
         whitelist = rule_def.get('whitelist')
         is_external_network = rule_def.get('is_external_network')
 
-        if ((whitelist is None) or (project is None) or (network is None)
-                or (is_external_network is None)):
+        if ((whitelist is None) or
+                (project is None) or
+                (network is None) or
+                (is_external_network is None)):
             raise audit_errors.InvalidRulesSchemaError(
                 'Faulty rule {}'.format(rule_def.get('name')))
 

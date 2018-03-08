@@ -206,7 +206,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             }
 
         resource_counts = {
-            resource_type.ResourceType.FIREWALL_RULE: count+1,
+            resource_type.ResourceType.FIREWALL_RULE: count + 1,
         }
 
         return project_policies, resource_counts

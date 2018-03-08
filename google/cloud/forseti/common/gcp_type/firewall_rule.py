@@ -114,13 +114,12 @@ class FirewallRule(object):
                   'network=%s\n'
                   'priority=%s\n'
                   'direction=%s\n'
-                  'action=%s\n') % (
-                     self.project_id,
-                     self.name,
-                     self.network,
-                     self._priority,
-                     self.direction,
-                     self._firewall_action)
+                  'action=%s\n') % (self.project_id,
+                                    self.name,
+                                    self.network,
+                                    self._priority,
+                                    self.direction,
+                                    self._firewall_action)
 
         for field_name, value in [
             ('sourceRanges', self._source_ranges),
@@ -350,9 +349,9 @@ class FirewallRule(object):
               * _destination_ranges is set
         """
         if self.direction == 'INGRESS':
-            if (not self._source_ranges
-                    and not self._source_tags
-                    and not self.source_service_accounts):
+            if (not self._source_ranges and
+                    not self._source_tags and
+                    not self.source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Ingress rule missing required field oneof "sourceRanges" '
                     'or "sourceTags" or "sourceServiceAccounts": "%s".' % self)
@@ -368,9 +367,9 @@ class FirewallRule(object):
                     'Egress rule missing required field "destinationRanges":'
                     '"%s".' % self)
 
-            if (self._source_ranges
-                    or self._source_tags
-                    or self._source_service_accounts):
+            if (self._source_ranges or
+                    self._source_tags or
+                    self._source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Egress rules cannot include "sourceRanges", "sourceTags"'
                     ' or "sourceServiceAccounts": "%s".' % self)

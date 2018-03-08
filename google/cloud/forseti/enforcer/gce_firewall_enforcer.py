@@ -139,13 +139,11 @@ def build_network_url(project, network):
       The fully qualified network url for the given project/network.
     """
     return (u'%(root)s%(api_name)s/%(version)s/projects/%(project)s/global/'
-            'networks/%(network)s') % {
-               'api_name': API_NAME,
-               'network': network,
-               'project': project,
-               'root': API_ROOT,
-               'version': API_VERSION
-           }
+            'networks/%(network)s') % {'api_name': API_NAME,
+                                       'network': network,
+                                       'project': project,
+                                       'root': API_ROOT,
+                                       'version': API_VERSION}
 
 
 class ComputeFirewallAPI(object):

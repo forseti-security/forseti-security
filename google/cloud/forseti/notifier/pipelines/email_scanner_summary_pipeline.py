@@ -146,7 +146,7 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
         scan_date = now_utc.strftime('%Y %b %d, %H:%M:%S (UTC)')
         email_content = EmailUtil.render_from_template(
             'scanner_summary.jinja', {
-                'scan_date':  scan_date,
+                'scan_date': scan_date,
                 'resource_summaries': resource_summaries,
                 'violation_errors': violation_errors,
             })
