@@ -29,7 +29,6 @@ LOGGER = logger.get_logger(__name__)
 class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
     """Email pipeline for scanner summary."""
 
-    # TODO: See if the base pipline init() can be reused.
     def __init__(self, sendgrid_key, resource, cycle_timestamp, violations,
                  global_configs, notifier_config, pipeline_config):
         """Initialize.
