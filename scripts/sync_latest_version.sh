@@ -13,7 +13,7 @@ if [ -z "$DOC_VERSIONS" ]; then
     exit -1
 fi
 
-LATEST_DOC_VERSION=$(echo "$DOC_VERSIONS" | sort -r | head -n 1)
+LATEST_DOC_VERSION=$(echo "$DOC_VERSIONS" | sort -rV | head -n 1)
 
 for release in $RELEASES; do
     if [ ! -d _docs/$release ]; then
