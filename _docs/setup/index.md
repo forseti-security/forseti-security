@@ -11,10 +11,10 @@ This guide explains how to use the Forseti installation tool.
 
 Prior to running the setup wizard, you will need:
 
-  - A GCP organization for which you want to deploy Forseti.
-  - Org Admin IAM role in order for the script to assign the Forseti
+  - A Google Cloud Platform (GCP) organization for which you want to deploy Forseti.
+  - Organization Administrator Cloud Identity and Access Management (IAM) role in order for the script to assign the Forseti
   service account roles on the organization IAM policy.
-  - A GCP project dedicated to Forseti, you can reuse the same 
+  - A GCP project dedicated to Forseti. You can reuse the same 
   project that has Forseti 1.0 installed in it.
   - Enable billing on the project.
 
@@ -75,7 +75,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
   1. By installing the server, There is a cron job scheduled on the server to run every other
    hour that executes the following commands after pulling down the latest configuration file 
-   on the GCS bucket.:
+   on the Google Cloud Storage bucket.:
      ```bash
        MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
        forseti inventory create --import_as ${MODEL_ID}
