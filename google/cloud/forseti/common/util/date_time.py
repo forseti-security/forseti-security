@@ -50,13 +50,15 @@ def get_datetime_from_string(string, string_format):
     """
     try:
         result = datetime.strptime(string, string_format)
-    except TypeError:
-        LOGGER.error('Unable to create a datetime with %s in format %s',
-                     string, string_format)
+    except TypeError as e:
+        LOGGER.error('Unable to create a datetime with %s in format '
+                     '%s\nError: %s',
+                     string, string_format, e)
         raise UtilDateTimeTypeError
-    except ValueError:
-        LOGGER.error('Unable to create a datetime with %s in format %s',
-                     string, string_format)
+    except ValueError as e:
+        LOGGER.error('Unable to create a datetime with %s in format '
+                     '%s\nError: %s',
+                     string, string_format, e)
         raise UtilDateTimeValueError
 
     return result
