@@ -22,7 +22,8 @@ exclude: ["Gemfile",
           "images/readme/",
           "client-secrets.json.enc",
           "_config.yml",
-          ".travis.yml"]
+          ".travis.yml",
+          "travis/"]
 plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
