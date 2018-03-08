@@ -232,17 +232,15 @@ class Rule(object):
         # leaving it open for new layer 4 if need be
         # default cause is no match thus a return False
         if forwarding_rule.ip_protocol == 'ESP':
-            matched = (
-                    ip_matched and
-                    scheme_matched and
-                    protocol_matched)
+            matched = (ip_matched and
+                       scheme_matched and
+                       protocol_matched)
         elif forwarding_rule.ip_protocol == 'TCP' \
             or forwarding_rule.ip_protocol == 'UDP':
-            matched = (
-                    ip_matched and
-                    scheme_matched and
-                    ports_matched and
-                    protocol_matched)
+            matched = (ip_matched and
+                       scheme_matched and
+                       ports_matched and
+                       protocol_matched)
         else:
             matched = False
         return matched

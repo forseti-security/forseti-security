@@ -30,8 +30,9 @@ LOGGER = logger.get_logger(__name__)
 class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
     """Email pipeline for inventory snapshot summary."""
 
-    def __init__(self, sendgrid_key, resource, cycle_timestamp, violations,
-                 global_configs, notifier_config, pipeline_config):
+    def __init__(self, sendgrid_key, resource=None, cycle_timestamp=None,
+                 violations=None, global_configs=None, notifier_config=None,
+                 pipeline_config=None):
         """Initialization.
 
         Args:

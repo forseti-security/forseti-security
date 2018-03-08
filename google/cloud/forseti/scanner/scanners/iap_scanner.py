@@ -189,7 +189,7 @@ class _RunData(object):
                 else:
                     fw_port_min = int(fw_port_range)
                     fw_port_max = int(fw_port_range)
-                if (fw_port_min <= network_port.port <= fw_port_max):
+                if fw_port_min <= network_port.port <= fw_port_max:
                     return True
             return False
 
@@ -399,11 +399,12 @@ class IapScanner(base_scanner.BaseScanner):
             direct_access_sources.sort()
             direct_access_str = ', '.join(direct_access_sources)
 
-            violation_data = {'alternate_services_violations': (
-                alternate_services_str), 'direct_access_sources_violations': (
-                direct_access_str), 'iap_enabled_violation': (
-                str(violation.iap_enabled_violation)), 'resource_name': (
-                violation.resource_name)}
+            violation_data = {
+                'alternate_services_violations': alternate_services_str,
+                'direct_access_sources_violations': direct_access_str,
+                'iap_enabled_violation': str(violation.iap_enabled_violation),
+                'resource_name': violation.resource_name
+            }
 
             yield {
                 'resource_id': violation.resource_id,

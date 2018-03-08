@@ -50,7 +50,7 @@ def find_pipelines(pipeline_name):
                and issubclass(obj, BaseNotificationPipeline) \
                and obj is not BaseNotificationPipeline:
                 return obj
-    except ImportError, e:
+    except ImportError as e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
@@ -85,7 +85,8 @@ def process(message):
 
     if message.get('status') == 'inventory_done':
         inv_email_pipeline = inv_summary.EmailInventorySnapshotSummaryPipeline(
-            payload.get('sendgrid_api_key'))
+            payload.get('sendgrid_api_key')
+        )
         inv_email_pipeline.run(
             payload.get('cycle_time'),
             payload.get('cycle_timestamp'),
@@ -98,7 +99,8 @@ def process(message):
 
     if message.get('status') == 'scanner_done':
         scanner_email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
-            payload.get('sendgrid_api_key'))
+            payload.get('sendgrid_api_key')
+        )
         scanner_email_pipeline.run(
             payload.get('output_csv_name'),
             payload.get('output_filename'),
