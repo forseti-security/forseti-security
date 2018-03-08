@@ -14,5 +14,6 @@
 
 """A sample action class for examples and testing."""
 
+
 class SampleAction(object):
     """SampleAction object."""

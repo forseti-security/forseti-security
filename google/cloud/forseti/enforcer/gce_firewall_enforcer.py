@@ -140,12 +140,12 @@ def build_network_url(project, network):
     """
     return (u'%(root)s%(api_name)s/%(version)s/projects/%(project)s/global/'
             'networks/%(network)s') % {
-                'api_name': API_NAME,
-                'network': network,
-                'project': project,
-                'root': API_ROOT,
-                'version': API_VERSION
-            }
+               'api_name': API_NAME,
+               'network': network,
+               'project': project,
+               'root': API_ROOT,
+               'version': API_VERSION
+           }
 
 
 class ComputeFirewallAPI(object):
@@ -175,11 +175,11 @@ class ComputeFirewallAPI(object):
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
-
     def _execute(self, request):
         """Execute the request and retry logic."""
 
         return request.execute(num_retries=4)
+
     # pylint: enable=no-self-use
 
     def list_networks(self, project, fields=None):
@@ -336,12 +336,12 @@ class ComputeFirewallAPI(object):
                         'marking operation as failed.', operation_name, timeout)
                     response.setdefault('error', {}).setdefault(
                         'errors', []).append({
-                            'code':
-                                'OPERATION_TIMEOUT',
-                            'message': (
+                        'code':
+                            'OPERATION_TIMEOUT',
+                        'message': (
                                 'Operation exceeded timeout for completion '
                                 'of %0.2f seconds' % timeout)
-                        })
+                    })
                     completed_operations.append(response)
                 else:
                     # Operation still running
@@ -428,7 +428,7 @@ class ComputeFirewallAPI(object):
                     # INVALID_FIELD_VALUE: Because the network probably
                     #     disappeared out from under us.
                     if error.get('code') in [
-                            'RESOURCE_ALREADY_EXISTS', 'INVALID_FIELD_VALUE'
+                        'RESOURCE_ALREADY_EXISTS', 'INVALID_FIELD_VALUE'
                     ]:
                         LOGGER.warn('Ignoring error: %s', error)
                     else:
@@ -760,7 +760,7 @@ class FirewallRules(object):
             if 'destinationRanges' not in rule:
                 raise InvalidFirewallRuleError(
                     'Egress rule missing required field "destinationRanges":'
-                    '"%s".'% rule)
+                    '"%s".' % rule)
 
         else:
             raise InvalidFirewallRuleError(
@@ -825,6 +825,7 @@ class FirewallRules(object):
 
         return True
     # pylint: enable=too-many-branches
+
 
 # pylint: disable=too-many-instance-attributes
 # TODO: Investigate improving so we can avoid the pylint disable.
@@ -1083,7 +1084,7 @@ class FirewallEnforcer(object):
                     raise FirewallQuotaExceededError(
                         'Firewall enforcement cannot update the policy for '
                         'project %s without exceed the current firewalls '
-                        'quota: %u,' %(self.project, limit))
+                        'quota: %u,' % (self.project, limit))
                 else:
                     LOGGER.info('Switching to "delete first" rule update order '
                                 'for project %s.', self.project)
@@ -1140,7 +1141,7 @@ class FirewallEnforcer(object):
                 raise FirewallEnforcementInsertFailedError(
                     'Firewall enforcement failed while inserting rules for '
                     'project {}. The following errors were encountered: {}'
-                    .format(self.project, change_errors))
+                        .format(self.project, change_errors))
 
         return change_count
 
@@ -1162,7 +1163,7 @@ class FirewallEnforcer(object):
                 raise FirewallEnforcementDeleteFailedError(
                     'Firewall enforcement failed while deleting rules for '
                     'project {}. The following errors were encountered: {}'
-                    .format(self.project, change_errors))
+                        .format(self.project, change_errors))
         return change_count
 
     def _update_rules(self):
@@ -1183,7 +1184,7 @@ class FirewallEnforcer(object):
                 raise FirewallEnforcementUpdateFailedError(
                     'Firewall enforcement failed while deleting rules for '
                     'project {}. The following errors were encountered: {}'
-                    .format(self.project, change_errors))
+                        .format(self.project, change_errors))
 
         return change_count
 

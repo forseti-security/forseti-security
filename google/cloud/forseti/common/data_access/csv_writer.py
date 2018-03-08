@@ -21,7 +21,6 @@ import unicodecsv as csv
 
 from google.cloud.forseti.common.data_access.errors import CSVFileError
 
-
 APPENGINE_FIELDNAMES = [
     'project_id',
     'name',
@@ -258,7 +257,7 @@ FORWARDING_RULES_FIELDNAMES = [
     'ip_address',
     'ip_protocol',
     'port_range',
-    'ports', # json list
+    'ports',  # json list
     'target',
     'load_balancing_scheme',
     'subnetwork',
@@ -437,8 +436,9 @@ CSV_FIELDNAME_MAP = {
 
     'cloudsql_instances': CLOUDSQL_INSTANCES_FIELDNAMES,
     'cloudsql_ipaddresses': CLOUDSQL_IPADDRESSES_FIELDNAMES,
-    'cloudsql_ipconfiguration_authorizednetworks': \
-        CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES,
+    'cloudsql_ipconfiguration_authorizednetworks': (
+        CLOUDSQL_IPCONFIGURATION_AUTHORIZEDNETWORKS_FIELDNAMES
+    ),
 
     'firewall_rules': FIREWALL_RULES_FIELDNAMES,
 

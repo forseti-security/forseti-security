@@ -110,9 +110,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None
             with csv_writer.write_csv(
-                resource_name=resource_name,
-                data=all_violations,
-                write_header=True) as csv_file:
+                    resource_name=resource_name,
+                    data=all_violations,
+                    write_header=True) as csv_file:
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 

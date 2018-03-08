@@ -507,24 +507,23 @@ def define_model(model_name, dbengine, model_seed):
                 # Select member relation into GroupInGroup
                 qry = (
                     GroupInGroup.__table__.insert()
-                    .from_select(
+                        .from_select(
                         ['parent', 'member'],
                         group_members.select()
-                        .where(
+                            .where(
                             group_members.c.group_name.startswith('group/')
-                            )
-                        .where(
+                        )
+                            .where(
                             group_members.c.members_name.startswith('group/')
-                            )
                         )
                     )
+                )
 
                 session.execute(qry)
 
                 iterations = 0
                 rows_affected = True
                 while rows_affected:
-
                     # Join membership on its own to find transitive
                     expansion = tbl1.join(tbl2, tbl1.c.member == tbl2.c.parent)
 
@@ -541,14 +540,14 @@ def define_model(model_name, dbengine, model_seed):
                     # values through the outer-left-join
                     stmt = (
                         select([tbl1.c.parent, tbl2.c.member])
-                        .select_from(expansion)
-                        .where(tbl3.c.parent == None)
-                        .distinct())
+                            .select_from(expansion)
+                            .where(tbl3.c.parent == None)
+                            .distinct())
 
                     # Execute the query and insert into the table
                     qry = (
                         GroupInGroup.__table__.insert()
-                        .from_select(
+                            .from_select(
                             ['parent', 'member'],
                             stmt))
 
@@ -646,7 +645,7 @@ def define_model(model_name, dbengine, model_seed):
 
             qry = (
                 session.query(Resource)
-                .filter(Resource.type == resource_type))
+                    .filter(Resource.type == resource_type))
 
             if parent_type_name:
                 qry = qry.filter(Resource.parent_type_name == parent_type_name)
@@ -735,15 +734,15 @@ def define_model(model_name, dbengine, model_seed):
 
             bindings = (
                 session.query(Binding, Member)
-                .join(binding_members).join(Member).join(Role)
-                .filter(Binding.resource_type_name.in_(bind_res_candidates))
-                .filter(Role.name.in_(role_names))
-                .filter(or_(Member.type == 'group',
-                            Member.name == member_name))
-                .filter(and_(binding_members.c.bindings_id == Binding.id,
-                             binding_members.c.members_name == Member.name))
-                .filter(Role.name == Binding.role_name)
-                .all())
+                    .join(binding_members).join(Member).join(Role)
+                    .filter(Binding.resource_type_name.in_(bind_res_candidates))
+                    .filter(Role.name.in_(role_names))
+                    .filter(or_(Member.type == 'group',
+                                Member.name == member_name))
+                    .filter(and_(binding_members.c.bindings_id == Binding.id,
+                                 binding_members.c.members_name == Member.name))
+                    .filter(Role.name == Binding.role_name)
+                    .all())
 
             strategies = []
             for resource in bind_res_candidates:
@@ -804,10 +803,10 @@ def define_model(model_name, dbengine, model_seed):
 
             qry = (
                 session.query(Binding)
-                .join(binding_members)
-                .join(Member)
-                .filter(Binding.role_name.in_([r.name for r in roles]))
-                .filter(Member.name.in_(member_names)))
+                    .join(binding_members)
+                    .join(Member)
+                    .filter(Binding.role_name.in_([r.name for r in roles]))
+                    .filter(Member.name.in_(member_names)))
 
             bindings = qry.yield_per(1024)
             if not expand_resources:
@@ -820,7 +819,7 @@ def define_model(model_name, dbengine, model_seed):
                 r_type_names)
 
             res_exp = {k.type_name:
-                       [v.type_name for v in values]
+                           [v.type_name for v in values]
                        for k, values in expansion.iteritems()}
 
             return [(binding.role_name,
@@ -872,19 +871,21 @@ def define_model(model_name, dbengine, model_seed):
                 expanded_resources = aliased(Resource)
                 qry = (
                     session.query(expanded_resources, Binding, Member)
-                    .filter(binding_members.c.bindings_id == Binding.id)
-                    .filter(binding_members.c.members_name == Member.name)
-                    .filter(expanded_resources.full_name.startswith(
+                        .filter(binding_members.c.bindings_id == Binding.id)
+                        .filter(binding_members.c.members_name == Member.name)
+                        .filter(expanded_resources.full_name.startswith(
                         Resource.full_name))
-                    .filter(Resource.type_name == Binding.resource_type_name)
-                    .filter(Binding.role_name.in_(role_names)))
+                        .filter(
+                        Resource.type_name == Binding.resource_type_name)
+                        .filter(Binding.role_name.in_(role_names)))
             else:
                 qry = (
                     session.query(Resource, Binding, Member)
-                    .filter(binding_members.c.bindings_id == Binding.id)
-                    .filter(binding_members.c.members_name == Member.name)
-                    .filter(Resource.type_name == Binding.resource_type_name)
-                    .filter(Binding.role_name.in_(role_names)))
+                        .filter(binding_members.c.bindings_id == Binding.id)
+                        .filter(binding_members.c.members_name == Member.name)
+                        .filter(
+                        Resource.type_name == Binding.resource_type_name)
+                        .filter(Binding.role_name.in_(role_names)))
 
             qry = qry.order_by(Resource.name.asc(), Binding.role_name.asc())
 
@@ -942,9 +943,9 @@ def define_model(model_name, dbengine, model_seed):
 
             res = (session.query(Binding, Member)
                    .filter(
-                       Binding.role_name.in_([r.name for r in roles]),
-                       Binding.resource_type_name.in_(
-                           [r.type_name for r in resources]))
+                Binding.role_name.in_([r.name for r in roles]),
+                Binding.resource_type_name.in_(
+                    [r.type_name for r in resources]))
                    .join(binding_members).join(Member))
 
             role_member_mapping = collections.defaultdict(set)
@@ -1064,10 +1065,11 @@ def define_model(model_name, dbengine, model_seed):
             for role, members in revocations.iteritems():
                 bindings = (
                     session.query(Binding)
-                    .filter(Binding.resource_type_name == resource_type_name)
-                    .filter(Binding.role_name == role)
-                    .join(binding_members).join(Member)
-                    .filter(Member.name.in_(members)).all())
+                        .filter(
+                        Binding.resource_type_name == resource_type_name)
+                        .filter(Binding.role_name == role)
+                        .join(binding_members).join(Member)
+                        .filter(Member.name.in_(members)).all())
 
                 for binding in bindings:
                     session.delete(binding)
@@ -1075,8 +1077,9 @@ def define_model(model_name, dbengine, model_seed):
                 inserted = False
                 existing_bindings = (
                     session.query(Binding)
-                    .filter(Binding.resource_type_name == resource_type_name)
-                    .filter(Binding.role_name == role).all())
+                        .filter(
+                        Binding.resource_type_name == resource_type_name)
+                        .filter(Binding.role_name == role).all())
 
                 for binding in existing_bindings:
                     if binding.role_name == role:
@@ -1117,9 +1120,9 @@ def define_model(model_name, dbengine, model_seed):
                 'bindings': {},
                 'resource': resource.type_name}
             for binding in (session.query(Binding)
-                            .filter(Binding.resource_type_name ==
-                                    resource_type_name)
-                            .all()):
+                    .filter(Binding.resource_type_name ==
+                            resource_type_name)
+                    .all()):
                 role = binding.role_name
                 members = [m.name for m in binding.members]
                 policy['bindings'][role] = members
@@ -1162,12 +1165,12 @@ def define_model(model_name, dbengine, model_seed):
                 raise Exception(error_message)
 
             return (
-                session.query(Permission)
-                .filter(Permission.name == permission_name)
-                .join(role_permissions).join(Role).join(Binding)
-                .filter(Binding.resource_type_name.in_(resource_type_names))
-                .join(binding_members).join(Member)
-                .filter(Member.name.in_(member_names)).first() is not None)
+                    session.query(Permission)
+                    .filter(Permission.name == permission_name)
+                    .join(role_permissions).join(Role).join(Binding)
+                    .filter(Binding.resource_type_name.in_(resource_type_names))
+                    .join(binding_members).join(Member)
+                    .filter(Member.name.in_(member_names)).first() is not None)
 
         @classmethod
         def list_roles_by_prefix(cls, session, role_prefix):
@@ -1182,7 +1185,7 @@ def define_model(model_name, dbengine, model_seed):
             """
 
             return [r.name for r in session.query(Role)
-                    .filter(Role.name.startswith(role_prefix)).all()]
+                .filter(Role.name.startswith(role_prefix)).all()]
 
         @classmethod
         def add_role_by_name(cls, session, role_name, permission_names):
@@ -1539,8 +1542,8 @@ def define_model(model_name, dbengine, model_seed):
 
             res = (
                 session.query(res_key, res_values)
-                .filter(res_key.type_name.in_(res_type_names))
-                .filter(res_values.full_name.startswith(
+                    .filter(res_key.type_name.in_(res_type_names))
+                    .filter(res_values.full_name.startswith(
                     res_key.full_name)).yield_per(1024))
 
             mapping = collections.defaultdict(set)
@@ -1648,10 +1651,10 @@ def define_model(model_name, dbengine, model_seed):
             transitive_membership = (
                 # This resolves groups to its transitive non-group members
                 select([t_ging.c.parent, t_members.c.members_name])
-                .select_from(
+                    .select_from(
                     t_ging.join(t_members,
                                 t_ging.c.member == t_members.c.group_name))
-                ).where(t_ging.c.parent.in_(group_names))
+            ).where(t_ging.c.parent.in_(group_names))
             if not show_group_members:
                 transitive_membership = transitive_membership.where(
                     not_(t_members.c.members_name.startswith('group/')))
@@ -1661,7 +1664,7 @@ def define_model(model_name, dbengine, model_seed):
 
             direct_membership = (
                 select([t_members.c.group_name, t_members.c.members_name])
-                .where(t_members.c.group_name.in_(group_names)))
+                    .where(t_members.c.group_name.in_(group_names)))
             if not show_group_members:
                 direct_membership = direct_membership.where(
                     not_(t_members.c.members_name.startswith('group/')))
@@ -1673,8 +1676,8 @@ def define_model(model_name, dbengine, model_seed):
                 # Show groups as members of other groups
                 group_in_groups = (
                     select([t_ging.c.parent, t_ging.c.member])
-                    .where(t_ging.c.parent.in_(group_names))
-                    )
+                        .where(t_ging.c.parent.in_(group_names))
+                )
                 selectables.append(
                     group_in_groups.alias('group_in_groups'))
 
@@ -1780,10 +1783,10 @@ def define_model(model_name, dbengine, model_seed):
                 resources_new = set()
                 for parent, child in (
                         session.query(res_anc, res_childs)
-                        .filter(res_childs.type_name.in_(resources_set))
-                        .filter(res_childs.parent_type_name ==
-                                res_anc.type_name)
-                        .all()):
+                                .filter(res_childs.type_name.in_(resources_set))
+                                .filter(res_childs.parent_type_name ==
+                                        res_anc.type_name)
+                                .all()):
 
                     if parent.type_name not in resources_set:
                         resources_new.add(parent.type_name)
@@ -1812,7 +1815,7 @@ def define_model(model_name, dbengine, model_seed):
 
             qry = (
                 session.query(Resource)
-                .filter(Resource.type_name == resource_type_name))
+                    .filter(Resource.type_name == resource_type_name))
 
             resources = qry.all()
             return cls._find_resource_path(session, resources)
@@ -1904,6 +1907,7 @@ def undefine_model(session_maker, data_access):
     session = session_maker()
     data_access.delete_all(session)
 
+
 LOCK = Lock()
 
 
@@ -1960,7 +1964,7 @@ class ModelManager(object):
                 watchdog_timer=datetime.datetime.utcnow(),
                 etag_seed=generate_model_seed(),
                 description='{}'
-                )
+            )
             session.add(model)
             self.sessionmakers[model.handle] = define_model(
                 model.handle, self.engine, model.etag_seed)
@@ -1993,7 +1997,7 @@ class ModelManager(object):
         """
 
         if handle not in [m.handle for m in self.models()]:
-            error_message = 'handle={}, available={}'\
+            error_message = 'handle={}, available={}' \
                 .format(handle, [m.handle for m in self.models()])
             LOGGER.error(error_message)
             raise KeyError(error_message)

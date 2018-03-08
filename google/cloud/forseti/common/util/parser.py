@@ -20,7 +20,6 @@ from dateutil import parser as dateutil_parser
 
 from google.cloud.forseti.common.util import logger
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -65,14 +64,15 @@ def format_timestamp(timestamp_str, datetime_formatter):
             timestamp_str = timestamp_str.replace('\'', '')
         formatted_timestamp = (
             dateutil_parser
-            .parse(timestamp_str)
-            .strftime(datetime_formatter))
+                .parse(timestamp_str)
+                .strftime(datetime_formatter))
     except (TypeError, ValueError) as e:
         LOGGER.warn('Unable to parse/format timestamp: %s\n,'
                     ' datetime_formatter: %s\n%s',
                     timestamp_str, datetime_formatter, e)
         formatted_timestamp = None
     return formatted_timestamp
+
 
 def json_stringify(obj_to_jsonify):
     """Convert a python object to json string.

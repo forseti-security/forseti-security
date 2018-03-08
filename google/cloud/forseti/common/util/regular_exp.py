@@ -16,6 +16,7 @@
 
 import re
 
+
 def escape_and_globify(pattern_string):
     """Given a pattern string with a glob, create actual regex pattern.
 

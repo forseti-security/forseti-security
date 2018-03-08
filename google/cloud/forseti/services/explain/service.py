@@ -26,6 +26,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     """Explain gRPC implementation."""
 
@@ -285,12 +286,11 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """
         model_name = self._get_handle(context)
         accesses = []
-        for role, resources in\
-            self.explainer.get_access_by_members(model_name,
-                                                 request.member_name,
-                                                 request.permission_names,
-                                                 request.expand_resources):
-
+        for role, resources in \
+                self.explainer.get_access_by_members(model_name,
+                                                     request.member_name,
+                                                     request.permission_names,
+                                                     request.expand_resources):
             access = explain_pb2.GetAccessByMembersReply.Access(
                 role=role, resources=resources, member=request.member_name)
             accesses.append(access)

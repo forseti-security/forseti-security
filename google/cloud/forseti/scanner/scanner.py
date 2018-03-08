@@ -41,8 +41,8 @@ def run(model_name=None, service_config=None):
 
     # TODO: Figure out if we still need to get the latest model here,
     # or should it be set in the server context before calling the scanner.
-    #snapshot_timestamp = _get_timestamp(global_configs)
-    #if not snapshot_timestamp:
+    # snapshot_timestamp = _get_timestamp(global_configs)
+    # if not snapshot_timestamp:
     #    LOGGER.warn('No snapshot timestamp found. Exiting.')
     #    sys.exit()
 

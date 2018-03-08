@@ -29,6 +29,7 @@ from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 
 class ResourceCache(dict):
     """Resource cache."""
+
     def __setitem__(self, key, value):
         """Overriding to assert the keys does not exist previously.
 
@@ -70,7 +71,7 @@ class EmptyImporter(object):
         self.session.add(self.model)
         self.model.add_description(
             json.dumps(
-                {'source':'empty', 'pristine':True}
+                {'source': 'empty', 'pristine': True}
             )
         )
         self.model.set_done()
@@ -150,17 +151,17 @@ class InventoryImporter(object):
             'subnetwork',
             'cloudsqlinstance',
             'kubernetes_cluster',
-            ]
+        ]
 
         gsuite_type_list = [
             'gsuite_group',
             'gsuite_user',
-            ]
+        ]
 
         member_type_list = [
             'gsuite_user_member',
             'gsuite_group_member',
-            ]
+        ]
 
         autoflush = self.session.autoflush
         try:
@@ -176,7 +177,7 @@ class InventoryImporter(object):
                     'pristine': True,
                     'gsuite_enabled': inventory.type_exists(
                         ['gsuite_group', 'gsuite_user'])
-                    }))
+                }))
 
                 if root.get_type() in ['organization']:
                     self.found_root = True
@@ -370,7 +371,7 @@ class InventoryImporter(object):
                 self.model.add_warning(msg)
                 continue
 
-            #binding['members'] can have duplicate ids
+            # binding['members'] can have duplicate ids
             members = set(binding['members'])
             for member in members:
                 member = member.replace(':', '/', 1)
@@ -378,7 +379,7 @@ class InventoryImporter(object):
                 # We still might hit external users or groups
                 # that we haven't seen in gsuite.
                 if member not in self.member_cache and \
-                   member not in self.member_cache_policies:
+                        member not in self.member_cache_policies:
                     try:
                         # This is the default case, e.g. 'group/foobar'
                         m_type, name = member.split('/', 1)
@@ -502,7 +503,7 @@ class InventoryImporter(object):
                                    self._convert_kubernetes_cluster,
                                    None),
             None: (None, None, None),
-            }
+        }
 
         res_type = resource.get_type() if resource else None
         if res_type not in handlers:

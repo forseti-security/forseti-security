@@ -20,11 +20,15 @@ import inspect
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.pipelines import findings_pipeline
-from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
-from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
-from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.forseti.notifier.pipelines import \
+    email_inventory_snapshot_summary_pipeline as inv_summary
+from google.cloud.forseti.notifier.pipelines import \
+    email_scanner_summary_pipeline as scanner_summary
+from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import \
+    BaseNotificationPipeline
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+
 # pylint: enable=line-too-long
 
 
@@ -47,11 +51,13 @@ def find_pipelines(pipeline_name):
             obj = getattr(module, filename)
 
             if inspect.isclass(obj) \
-               and issubclass(obj, BaseNotificationPipeline) \
-               and obj is not BaseNotificationPipeline:
+                    and issubclass(obj, BaseNotificationPipeline) \
+                    and obj is not BaseNotificationPipeline:
                 return obj
     except ImportError as e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
+
+
 # pylint: enable=inconsistent-return-statements
 
 
@@ -70,6 +76,7 @@ def convert_to_timestamp(violations):
                 string_formats.TIMESTAMP_TIMEZONE_NAME))
 
     return violations
+
 
 def process(message):
     """Process messages about what notifications to send.
@@ -112,6 +119,7 @@ def process(message):
             payload.get('email_recipient'),
             payload.get('email_description'))
         return
+
 
 def run(inventory_index_id, service_config=None):
     """Run the notifier.

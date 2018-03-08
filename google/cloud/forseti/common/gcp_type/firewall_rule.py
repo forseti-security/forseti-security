@@ -115,20 +115,20 @@ class FirewallRule(object):
                   'priority=%s\n'
                   'direction=%s\n'
                   'action=%s\n') % (
-                      self.project_id,
-                      self.name,
-                      self.network,
-                      self._priority,
-                      self.direction,
-                      self._firewall_action)
+                     self.project_id,
+                     self.name,
+                     self.network,
+                     self._priority,
+                     self.direction,
+                     self._firewall_action)
 
         for field_name, value in [
-                ('sourceRanges', self._source_ranges),
-                ('destinationRanges', self._destination_ranges),
-                ('sourceTags', self._source_tags),
-                ('targetTags', self._target_tags),
-                ('sourceServiceAccounts', self._source_service_accounts),
-                ('targetServiceAccounts', self._target_service_accounts),
+            ('sourceRanges', self._source_ranges),
+            ('destinationRanges', self._destination_ranges),
+            ('sourceTags', self._source_tags),
+            ('targetTags', self._target_tags),
+            ('sourceServiceAccounts', self._source_service_accounts),
+            ('targetServiceAccounts', self._target_service_accounts),
         ]:
             if value:
                 string += '%s=%s\n' % (field_name, value)
@@ -221,7 +221,6 @@ class FirewallRule(object):
         return FirewallRule._transform(
             firewall_dict, project_id=project_id, validate=validate)
 
-
     def as_json(self):
         """Returns a valid JSON representation of this firewall rule.
 
@@ -241,14 +240,14 @@ class FirewallRule(object):
             'name': self.name,
         }
         for key, value in [
-                self.firewall_action.json_dict(),
-                ('sourceRanges', self.source_ranges),
-                ('sourceTags', self.source_tags),
-                ('targetTags', self.target_tags),
-                ('destinationRanges', self.destination_ranges),
-                ('priority', self._priority),
-                ('sourceServiceAccounts', self.source_service_accounts),
-                ('targetServiceAccounts', self.target_service_accounts)]:
+            self.firewall_action.json_dict(),
+            ('sourceRanges', self.source_ranges),
+            ('sourceTags', self.source_tags),
+            ('targetTags', self.target_tags),
+            ('destinationRanges', self.destination_ranges),
+            ('priority', self._priority),
+            ('sourceServiceAccounts', self.source_service_accounts),
+            ('targetServiceAccounts', self.target_service_accounts)]:
             if value:
                 firewall_dict[key] = value
         return json.dumps(firewall_dict, sort_keys=True)
@@ -351,7 +350,7 @@ class FirewallRule(object):
         """
         if self.direction == 'INGRESS':
             if (not self._source_ranges and not self._source_tags and not
-                    self.source_service_accounts):
+            self.source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Ingress rule missing required field oneof "sourceRanges" '
                     'or "sourceTags" or "sourceServiceAccounts": "%s".' % self)
@@ -365,7 +364,7 @@ class FirewallRule(object):
             if not self._destination_ranges:
                 raise InvalidFirewallRuleError(
                     'Egress rule missing required field "destinationRanges":'
-                    '"%s".'% self)
+                    '"%s".' % self)
 
             if (self._source_ranges or self._source_tags or
                     self._source_service_accounts):
@@ -552,6 +551,7 @@ class FirewallRule(object):
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
                 self.firewall_action == other.firewall_action)
+
     # pylint: enable=protected-access
 
     # pylint: disable=protected-access
@@ -800,6 +800,7 @@ class FirewallAction(object):
         """
         return self.action == other.action and self.rules == other.rules
 
+
 def sort_rules(rules):
     """Sorts firewall rules by protocol and sorts ports.
 
@@ -852,6 +853,7 @@ def ips_in_list(ips, ips_list):
             return False
     return True
 
+
 def ip_in_range(ip_addr, ip_range):
     """Checks whether the ip/ip range is in another ip range.
 
@@ -871,6 +873,7 @@ def ip_in_range(ip_addr, ip_range):
     ip_range_network = netaddr.IPNetwork(ip_range)
     return ip_network in ip_range_network
 
+
 def expand_port_range(port_range):
     """Expands a port range.
 
@@ -885,6 +888,7 @@ def expand_port_range(port_range):
     """
     start, end = port_range.split('-')
     return [str(i) for i in xrange(int(start), int(end) + 1)]
+
 
 def expand_ports(ports):
     """Expands all ports in a list.

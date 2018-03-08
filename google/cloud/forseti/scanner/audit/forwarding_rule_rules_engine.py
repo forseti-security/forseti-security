@@ -20,7 +20,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -151,8 +150,8 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
         ip_address = rule_def.get('ip_address')
         ip_protocol = rule_def.get('ip_protocol')
         if (target is None) or (mode is None) or \
-           (load_balancing_scheme is None) or \
-           (ip_address is None) or (ip_protocol is None):
+                (load_balancing_scheme is None) or \
+                (ip_address is None) or (ip_protocol is None):
             raise audit_errors.InvalidRulesSchemaError(
                 'Faulty rule {}'.format(rule_def.get('name')))
         rule_def_resource = {'target': target,
@@ -179,6 +178,7 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
             list: A list of ResourceRules.
         """
         return list(self.resource_rules_map.values())
+
 
 class Rule(object):
     """Rule properties from the rule definition file.
@@ -210,7 +210,7 @@ class Rule(object):
         ip_matched = forwarding_rule.ip_address == self.rules['ip_address']
 
         scheme_matched = forwarding_rule.load_balancing_scheme == \
-            self.rules['load_balancing_scheme']
+                         self.rules['load_balancing_scheme']
 
         # only one of port or port range will be populated by the rule
         # for the port range. it is a string of form int-int
@@ -218,13 +218,13 @@ class Rule(object):
         ports_matched = False
         if self.rules['port_range'] and forwarding_rule.port_range:
             ports_matched = forwarding_rule.port_range == \
-                self.rules['port_range']
+                            self.rules['port_range']
         elif self.rules['port'] and len(forwarding_rule.ports) == 1:
             ports_matched = int(forwarding_rule.ports[0]) == \
-                int(self.rules['port'])
+                            int(self.rules['port'])
 
         protocol_matched = forwarding_rule.ip_protocol == \
-            self.rules['ip_protocol']
+                           self.rules['ip_protocol']
 
         # Checking for matching based on layer 4 protocol
         # ESP has no ports
@@ -236,7 +236,7 @@ class Rule(object):
                        scheme_matched and
                        protocol_matched)
         elif forwarding_rule.ip_protocol == 'TCP' \
-            or forwarding_rule.ip_protocol == 'UDP':
+                or forwarding_rule.ip_protocol == 'UDP':
             matched = (ip_matched and
                        scheme_matched and
                        ports_matched and

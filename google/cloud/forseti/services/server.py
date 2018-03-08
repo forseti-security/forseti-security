@@ -360,6 +360,8 @@ class ServiceConfig(AbstractServiceConfig):
         """
 
         return Storage
+
+
 # pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-locals
@@ -437,6 +439,8 @@ def serve(endpoint,
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
+
+
 # pylint: enable=too-many-locals
 
 

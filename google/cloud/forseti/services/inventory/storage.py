@@ -495,8 +495,8 @@ class DataAccess(object):
 
         result = (
             session.query(InventoryIndex)
-            .filter(InventoryIndex.id == inventory_id)
-            .one())
+                .filter(InventoryIndex.id == inventory_id)
+                .one())
         session.expunge(result)
         return result
 
@@ -513,15 +513,16 @@ class DataAccess(object):
 
         inventory_index = (
             session.query(InventoryIndex)
-            .filter(or_(InventoryIndex.status == 'SUCCESS',
-                        InventoryIndex.status == 'PARTIAL_SUCCESS'))
-            .order_by(InventoryIndex.id.desc())
-            .first())
+                .filter(or_(InventoryIndex.status == 'SUCCESS',
+                            InventoryIndex.status == 'PARTIAL_SUCCESS'))
+                .order_by(InventoryIndex.id.desc())
+                .first())
         session.expunge(inventory_index)
         LOGGER.info(
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
         return inventory_index.id
+
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -593,10 +594,10 @@ class Storage(BaseStorage):
 
         return (
             self.session.query(InventoryIndex)
-            .filter(InventoryIndex.id == existing_id)
-            .filter(InventoryIndex.status.in_(
+                .filter(InventoryIndex.id == existing_id)
+                .filter(InventoryIndex.status.in_(
                 [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
-            .one())
+                .one())
 
     def _get_resource_rows(self, key):
         """ Get the rows in the database for a certain resource
@@ -614,8 +615,8 @@ class Storage(BaseStorage):
 
         qry = (
             self.session.query(Inventory)
-            .filter(Inventory.index == self.index.id)
-            .filter(Inventory.key == key))
+                .filter(Inventory.index == self.index.id)
+                .filter(Inventory.key == key))
         rows = qry.all()
 
         if not rows:
@@ -733,8 +734,8 @@ class Storage(BaseStorage):
             new_rows = Inventory.from_resource(self.index, resource)
             old_rows = self._get_resource_rows(resource.key())
 
-            new_dict = {row.type_class : row for row in new_rows}
-            old_dict = {row.type_class : row for row in old_rows}
+            new_dict = {row.type_class: row for row in new_rows}
+            old_dict = {row.type_class: row for row in old_rows}
 
             for type_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
                 if type_class in new_dict:
@@ -839,7 +840,7 @@ class Storage(BaseStorage):
             p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
-                .filter(
+                    .filter(
                     and_(
                         Inventory.parent_key == p_key,
                         Inventory.parent_type == p_type,
@@ -854,6 +855,7 @@ class Storage(BaseStorage):
 
         for row in base_query.yield_per(PER_YIELD):
             yield row
+
     # pylint: enable=too-many-locals
 
     def get_root(self):
@@ -868,7 +870,7 @@ class Storage(BaseStorage):
                 Inventory.key == Inventory.parent_key,
                 Inventory.type == Inventory.parent_type,
                 Inventory.type_class == InventoryTypeClass.RESOURCE
-                )).first()
+            )).first()
 
     def type_exists(self,
                     type_list=None):
@@ -884,7 +886,7 @@ class Storage(BaseStorage):
             Inventory.index == self.index.id,
             Inventory.type_class == InventoryTypeClass.RESOURCE,
             Inventory.type.in_(type_list)
-            ))).scalar()
+        ))).scalar()
 
     def __enter__(self):
         """To support with statement for auto closing.

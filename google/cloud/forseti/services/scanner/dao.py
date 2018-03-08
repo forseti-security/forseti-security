@@ -33,12 +33,12 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services import db
 
-
 LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=no-member
 
 TIMESTAMP_FORMAT = string_formats.TIMESTAMP_TIMEZONE_NAME
+
 
 def _get_utc_now():
     """Get a datetime object for utcnow()
@@ -47,6 +47,7 @@ def _get_utc_now():
           datetime: A datetime object representin utcnow().
     """
     return datetime.utcnow()
+
 
 def _get_utc_now_timestamp(str_format=TIMESTAMP_FORMAT):
     """Get a str representing utcnow()
@@ -60,6 +61,7 @@ def _get_utc_now_timestamp(str_format=TIMESTAMP_FORMAT):
     utc_now = _get_utc_now()
 
     return utc_now.strftime(str_format)
+
 
 def define_violation(dbengine):
     """Defines table class for violations.
@@ -177,17 +179,18 @@ def define_violation(dbengine):
                 if inventory_index_id:
                     return (
                         session.query(self.TBL_VIOLATIONS)
-                        .filter(
+                            .filter(
                             self.TBL_VIOLATIONS.inventory_index_id ==
                             inventory_index_id)
-                        .all())
+                            .all())
                 return (
                     session.query(self.TBL_VIOLATIONS)
-                    .all())
+                        .all())
 
     base.metadata.create_all(dbengine)
 
     return ViolationAccess
+
 
 # pylint: disable=invalid-name
 def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
@@ -202,6 +205,7 @@ def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
 
     return {c.key: getattr(sqlalchemy_obj, c.key)
             for c in inspect(sqlalchemy_obj).mapper.column_attrs}
+
 
 def map_by_resource(violation_rows):
     """Create a map of violation types to violations of that resource.
@@ -237,6 +241,7 @@ def map_by_resource(violation_rows):
             v_by_type[v_resource].append(v_data)
 
     return dict(v_by_type)
+
 
 def _create_violation_hash(violation_full_name, inventory_data, violation_data):
     """Create a hash of violation data.
