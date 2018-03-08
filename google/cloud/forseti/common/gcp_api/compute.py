@@ -61,8 +61,8 @@ def _api_not_enabled(error):
                     and error.get('reason') == 'accessNotConfigured')]
             if (api_disabled_errors and
                     len(api_disabled_errors) == len(all_errors)):
-                return (True, api_disabled_errors[0].get('extendedHelp', ''))
-    return (False, '')
+                return True, api_disabled_errors[0].get('extendedHelp', '')
+    return False, ''
 
 
 # pylint: disable=invalid-name

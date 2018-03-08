@@ -595,7 +595,7 @@ class FirewallAction(object):
         if firewall_rule_action not in self.VALID_ACTIONS:
             raise InvalidFirewallActionError(
                 'Firewall rule action must be either allowed or denied'
-                ' got: %s' % (firewall_rule_action))
+                ' got: %s' % firewall_rule_action)
         self.action = firewall_rule_action
         self._any_value = None
         if firewall_rules:
@@ -626,7 +626,7 @@ class FirewallAction(object):
           InvalidFirewallActionError: If a rule is not formatted for the API.
         """
         self.validate()
-        return (self.action, self.rules)
+        return self.action, self.rules
 
     def validate(self):
         """Validates that the firewall rules are valid for use in the API.

@@ -133,6 +133,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         return all_violations
 
     def run(self):
+        """Run, the entry point for this scanner."""
         forwarding_rules = self._retrieve()
         all_violations = self._find_violations(forwarding_rules)
         self._output_results(all_violations)

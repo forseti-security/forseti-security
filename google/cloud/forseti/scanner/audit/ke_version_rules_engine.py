@@ -270,7 +270,7 @@ class ResourceRules(object):
         Returns:
             str: debug string
         """
-        return ('IapResourceRules<resource={}, rules={}>').format(
+        return 'IapResourceRules<resource={}, rules={}>'.format(
             self.resource, self.rules)
 
 

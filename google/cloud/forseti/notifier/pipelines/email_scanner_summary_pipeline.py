@@ -30,12 +30,19 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
     """Email pipeline for scanner summary."""
 
     # TODO: See if the base pipline init() can be reused.
-    def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
+    def __init__(self, sendgrid_key, resource, cycle_timestamp, violations,
+                 global_configs, notifier_config, pipeline_config):  # pylint: disable=super-init-not-called
         """Initialize.
 
         Args:
             sendgrid_key (str): The SendGrid API key.
         """
+        super(EmailScannerSummaryPipeline, self).__init__(resource,
+                                                          cycle_timestamp,
+                                                          violations,
+                                                          global_configs,
+                                                          notifier_config,
+                                                          pipeline_config)
         self.email_util = EmailUtil(sendgrid_key)
 
     def _compose(  # pylint: disable=arguments-differ

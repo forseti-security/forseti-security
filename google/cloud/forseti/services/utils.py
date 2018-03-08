@@ -106,7 +106,7 @@ def mutual_exclusive(lock):
         Returns:
             func: the decorated function
         """
-        def function(*args, **kw):
+        def func(*args, **kw):
             """Decorated functionality, mutexing wrapped function.
 
             Args:
@@ -121,7 +121,7 @@ def mutual_exclusive(lock):
                 return f(*args, **kw)
             finally:
                 lock.release()
-        return function
+        return func
     return wrap
 
 

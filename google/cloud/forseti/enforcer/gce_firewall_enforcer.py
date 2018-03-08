@@ -375,7 +375,7 @@ class ComputeFirewallAPI(object):
                         response.get('endTime', ''), op_wait_time, op_exec_time)
             LOGGER.debug('Operation response object: %r', response)
 
-        return (completed_operations, running_operations)
+        return completed_operations, running_operations
 
     def wait_for_all_to_complete(self, project, responses, timeout=0):
         """Wait for all requests to complete.
@@ -1209,7 +1209,7 @@ class FirewallEnforcer(object):
         failed_rules = []
         change_errors = []
         if not rules:
-            return (applied_rules, failed_rules, change_errors)
+            return applied_rules, failed_rules, change_errors
 
         successes = []
         failures = []
@@ -1294,4 +1294,4 @@ class FirewallEnforcer(object):
                     'Failure result contained an unknown operation name, '
                     '"%s": %s', operation_name, json.dumps(result))
 
-        return (applied_rules, failed_rules, change_errors)
+        return applied_rules, failed_rules, change_errors

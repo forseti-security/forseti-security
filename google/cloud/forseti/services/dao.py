@@ -407,7 +407,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 str: Role represented by name
             """
-            return '<Role(name=%s)>' % (self.name)
+            return '<Role(name=%s)>' % self.name
 
     class Permission(base):
         """Row entry for an IAM permission."""
@@ -424,7 +424,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 str: Permission represented by name
             """
-            return '<Permission(name=%s)>' % (self.name)
+            return '<Permission(name=%s)>' % self.name
 
     # pylint: disable=too-many-public-methods
     class ModelAccess(object):

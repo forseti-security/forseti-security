@@ -134,6 +134,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         return bucket_acls
 
     def run(self):
+        """Run, he entry point for this scanner."""
         buckets_acls = self._retrieve()
         all_violations = self._find_violations(buckets_acls)
         self._output_results(all_violations)
