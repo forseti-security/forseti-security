@@ -36,7 +36,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 ### Run setup
 
   1. Once you've started Cloud Shell, download Forseti. The installer is included.
-     Getting `master` branch will install Forseti v2.0.
+     Getting `master` branch will install [the latest released version of Forseti]({% link releases/index.md %}).
 
       ```bash
       git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
