@@ -136,10 +136,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         for violation in violations:
             for member in violation.members:
-                violation_data = {}
-                violation_data['full_name'] = violation.full_name
-                violation_data['role'] = violation.role
-                violation_data['member'] = '%s:%s' % (member.type, member.name)
+                violation_data = {'full_name': violation.full_name,
+                                  'role': violation.role, 'member': '%s:%s' % (
+                    member.type, member.name)}
 
                 yield {
                     'resource_id': violation.resource_id,

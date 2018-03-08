@@ -185,9 +185,8 @@ class OrgPolicyQueryMixin(object):
                 ex: HttpError 404 when requesting ... returned
                     "The resource '...' was not found"
         """
-        arguments = {'resource': resource,
-                     'fields': fields}
-        arguments['body'] = {'constraint': constraint}
+        arguments = {'resource': resource, 'fields': fields,
+                     'body': {'constraint': constraint}}
         if kwargs:
             arguments.update(kwargs)
         return self.execute_query(
@@ -215,9 +214,8 @@ class OrgPolicyQueryMixin(object):
                 ex: HttpError 404 when requesting ... returned
                     "The resource '...' was not found"
         """
-        arguments = {'resource': resource,
-                     'fields': fields}
-        arguments['body'] = {'constraint': constraint}
+        arguments = {'resource': resource, 'fields': fields,
+                     'body': {'constraint': constraint}}
         if kwargs:
             arguments.update(kwargs)
         return self.execute_query(
@@ -245,9 +243,7 @@ class OrgPolicyQueryMixin(object):
                 ex: HttpError 404 when requesting ... returned
                     "The resource '...' was not found"
         """
-        arguments = {'resource': resource,
-                     'fields': fields}
-        arguments['body'] = {}
+        arguments = {'resource': resource, 'fields': fields, 'body': {}}
         if max_results:
             arguments['body']['pageSize'] = max_results
 

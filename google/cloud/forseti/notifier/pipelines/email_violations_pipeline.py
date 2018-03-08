@@ -92,11 +92,8 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         output_file_name = self._write_temp_attachment()
         attachment = self.mail_util.create_attachment(
             file_location='{}/{}'.format(TEMP_DIR, output_file_name),
-            content_type='text/json',
-            filename=output_file_name,
-            disposition='attachment',
-            content_id='Violations'
-        )
+            content_type='text/json', filename=output_file_name,
+            content_id='Violations')
 
         return attachment
 

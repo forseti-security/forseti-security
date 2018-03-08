@@ -145,13 +145,10 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
 
         # Create an attachment out of the csv file and base64 encode the
         # content.
-        attachment = EmailUtil.create_attachment(
-            file_location=csv_name,
-            content_type='text/csv',
-            filename=output_filename,
-            disposition='attachment',
-            content_id='Scanner Violations'
-        )
+        attachment = EmailUtil.create_attachment(file_location=csv_name,
+                                                 content_type='text/csv',
+                                                 filename=output_filename,
+                                                 content_id='Scanner Violations')
         scanner_subject = '{} Complete - {} violation(s) found'.format(
             email_description, total_violations)
         try:

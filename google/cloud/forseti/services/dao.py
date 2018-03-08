@@ -601,7 +601,7 @@ def define_model(model_name, dbengine, model_seed):
                                                           resource_type_name)]
 
             if role:
-                roles = set([role])
+                roles = {role}
                 qry = session.query(Binding, Member).join(
                     binding_members).join(Member)
             else:
@@ -794,9 +794,8 @@ def define_model(model_name, dbengine, model_seed):
 
             if reverse_expand_members:
                 member_names = [m.name for m in
-                                cls.reverse_expand_members(
-                                    session,
-                                    [member_name], False)]
+                                cls.reverse_expand_members(session,
+                                                           [member_name])]
             else:
                 member_names = [member_name]
 
@@ -892,10 +891,8 @@ def define_model(model_name, dbengine, model_seed):
             if expand_groups:
                 to_expand = set([m.name for _, _, m in
                                  qry.yield_per(PER_YIELD)])
-                expansion = cls.expand_members_map(session,
-                                                   to_expand,
-                                                   show_group_members=False,
-                                                   member_contain_self=True)
+                expansion = cls.expand_members_map(session, to_expand,
+                                                   show_group_members=False)
 
             qry = qry.distinct()
 

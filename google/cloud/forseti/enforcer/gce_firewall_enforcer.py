@@ -767,8 +767,8 @@ class FirewallRules(object):
                 'Rule "direction" must be either "INGRESS" or "EGRESS": "%s".'
                 % rule)
 
-        max_256_value_keys = set(
-            ['sourceRanges', 'sourceTags', 'targetTags', 'destinationRanges'])
+        max_256_value_keys = {'sourceRanges', 'sourceTags', 'targetTags',
+                              'destinationRanges'}
         for key in max_256_value_keys:
             if key in rule and len(rule[key]) > 256:
                 raise InvalidFirewallRuleError(

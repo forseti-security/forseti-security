@@ -39,17 +39,16 @@ class GroupsScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['violated_rule_names'] = (
-                violation.violated_rule_names)
-            violation_data['member_email'] = violation.member_email
-            violation_data['member_id'] = violation.member_id
-            violation_data['member_status'] = violation.member_status
-            violation_data['member_type'] = violation.member_type
-            violation_data['parent_email'] = violation.parent.member_email
-            violation_data['parent_id'] = violation.parent.member_id
-            violation_data['parent_status'] = violation.parent.member_status
-            violation_data['parent_type'] = violation.parent.member_type
+            violation_data = {'violated_rule_names': (
+                violation.violated_rule_names),
+                'member_email': violation.member_email,
+                'member_id': violation.member_id,
+                'member_status': violation.member_status,
+                'member_type': violation.member_type,
+                'parent_email': violation.parent.member_email,
+                'parent_id': violation.parent.member_id,
+                'parent_status': violation.parent.member_status,
+                'parent_type': violation.parent.member_type}
             yield {
                 'resource_id': violation.member_email,
                 'resource_type': 'group_member',

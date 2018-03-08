@@ -480,8 +480,7 @@ class FirewallRule(object):
         if not self._firewall_action:
             if self.allowed:
                 self._firewall_action = FirewallAction(
-                    firewall_rules=self.allowed,
-                    firewall_rule_action='allowed')
+                    firewall_rules=self.allowed)
             else:
                 self._firewall_action = FirewallAction(
                     firewall_rules=self.denied,
@@ -648,7 +647,7 @@ class FirewallAction(object):
                         validate_port_range(port)
                     else:
                         validate_port(port)
-            invalid_keys = set(rule.keys()) - set(['IPProtocol', 'ports'])
+            invalid_keys = set(rule.keys()) - {'IPProtocol', 'ports'}
             if invalid_keys:
                 raise InvalidFirewallActionError(
                     'Action can only have "IPProtocol" and "ports": %s' %

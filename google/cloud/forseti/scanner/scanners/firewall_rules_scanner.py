@@ -73,10 +73,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['policy_names'] = violation.policy_names
-            violation_data['recommended_actions'] = (
-                violation.recommended_actions)
+            violation_data = {'policy_names': violation.policy_names,
+                              'recommended_actions': (
+                                  violation.recommended_actions)}
 
             violation_dict = {
                 'resource_id': violation.resource_id,

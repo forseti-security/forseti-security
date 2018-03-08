@@ -48,9 +48,7 @@ def validate(actions_config_path):
     errors.extend(errs)
 
     for action in actions:
-        action_errs = []
-        action_errs.append(
-            _check_action_type(action))
+        action_errs = [_check_action_type(action)]
         action_errs.extend(_check_trigger(action))
         for err in action_errs:
             if err is not None:

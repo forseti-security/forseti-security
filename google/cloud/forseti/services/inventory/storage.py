@@ -200,18 +200,16 @@ class Inventory(BASE):
         service_config = resource.get_kubernetes_service_config()
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
-        rows = []
-        rows.append(
-            Inventory(
-                index=index.id,
-                type_class=InventoryTypeClass.RESOURCE,
-                key=resource.key(),
-                type=resource.type(),
-                data=json.dumps(resource.data(), sort_keys=True),
-                parent_key=None if not parent else parent.key(),
-                parent_type=None if not parent else parent.type(),
-                other=other,
-                error=resource.get_warning()))
+        rows = [Inventory(
+            index=index.id,
+            type_class=InventoryTypeClass.RESOURCE,
+            key=resource.key(),
+            type=resource.type(),
+            data=json.dumps(resource.data(), sort_keys=True),
+            parent_key=None if not parent else parent.key(),
+            parent_type=None if not parent else parent.type(),
+            other=other,
+            error=resource.get_warning())]
 
         if iam_policy:
             rows.append(
@@ -802,8 +800,7 @@ class Storage(BaseStorage):
             object: Single row object or child/parent if 'with_parent' is set.
         """
 
-        filters = []
-        filters.append(Inventory.index == self.index.id)
+        filters = [Inventory.index == self.index.id]
 
         if fetch_iam_policy:
             filters.append(
