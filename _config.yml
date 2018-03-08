@@ -96,3 +96,32 @@ defaults:
       path: _faq/security_implications
     values:
       category: Security implications
+  - scope:
+      path: _docs/v1.1
+    values:
+      category: Overview (v1.1)
+      layout: docs
+  - scope:
+      path: _docs/v1.1/concepts
+    values:
+      category: Concepts (v1.1)
+  - scope:
+      path: _docs/v1.1/setup
+    values:
+      category: Setup (v1.1)
+  - scope:
+      path: _docs/v1.1/use
+    values:
+      category: Use (v1.1)
+  - scope:
+      path: _docs/v1.1/configure
+    values:
+      category: Configure (v1.1)
+  - scope:
+      path: _docs/v1.1/develop
+    values:
+      category: Develop (v1.1)
+  - scope:
+      path: _docs/v1.1/faq
+    values:
+      category: FAQ (v1.1)
