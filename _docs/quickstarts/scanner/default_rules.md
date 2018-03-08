@@ -9,13 +9,13 @@ Forseti Scanner has default rules that create a [violation]({% link _docs/quicks
 
 * BigQuery
   * Datasets should not be public.
-  * Datasets should not be accessible by users who are @gmail.com.
-  * Datasets should not be accessible by groups who are @gmail.com.
+  * Datasets should not be accessible by users who's email address matches `@gmail.com`.
+  * Datasets should not be accessible by groups who's email address matches `@gmail.com`.
 
 * Blacklist
-  * IP address of any GCP instances should not be listed on the [emergingthreats](https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt) website
+  * The IP address of any GCP instances should not be listed on the [emergingthreats](https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt) website
 
-* Cloud Storage (_note: this is NOT the same as Cloud Storage IAM policies!_)
+* Cloud Storage (legacy ACL policies)
   * Buckets ACLs should not be publicly accessible (`AllUsers`).
   * Buckets ACLs should not be accessible by any authenticated user (`AllAuthenticatedUsers`).
  

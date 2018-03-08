@@ -7,8 +7,7 @@ order: 102
 
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can configure Scanner to execute multiple scanners in
-the same run. Learn about [configuring
-Scanner]({% link _docs/configure/scanner/index.md %}).
+the same run. Learn about [configuring Scanner]({% link _docs/configure/scanner/index.md %}).
 
 ## BigQuery dataset ACL scanner
 
@@ -30,8 +29,7 @@ all of the VM instances in your environment and determines if any VMs
 with external IP addresses are on a specific blacklist you've configured.
 
 For examples of how to define scanner rules, see the
-[`blacklist_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/blacklist_rules.yaml)
-rule file.
+[`blacklist_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/blacklist_rules.yaml) rule file.
 
 ## Bucket ACL scanner
 
@@ -54,6 +52,7 @@ the
 rule file.
 
 ## Firewall Rules scanner
+
 Network firewall rules protects your network & organization by only allowing 
 desired traffic into and out of your network. The firewall rules scanner can 
 ensure that all your network's firewalls are properly configured.
