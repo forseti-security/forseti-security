@@ -31,11 +31,18 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
 
     # TODO: See if the base pipline init() can be reused.
     def __init__(self, sendgrid_key, resource, cycle_timestamp, violations,
-                 global_configs, notifier_config, pipeline_config):  # pylint: disable=super-init-not-called
+                 global_configs, notifier_config, pipeline_config):
         """Initialize.
 
         Args:
             sendgrid_key (str): The SendGrid API key.
+            resource (str): Violation resource name.
+            cycle_timestamp (str): Snapshot timestamp,
+               formatted as YYYYMMDDTHHMMSSZ.
+            violations (dict): Violations.
+            global_configs (dict): Global configurations.
+            notifier_config (dict): Notifier configurations.
+            pipeline_config (dict): Pipeline configurations.
         """
         super(EmailScannerSummaryPipeline, self).__init__(resource,
                                                           cycle_timestamp,
@@ -145,10 +152,11 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
 
         # Create an attachment out of the csv file and base64 encode the
         # content.
-        attachment = EmailUtil.create_attachment(file_location=csv_name,
-                                                 content_type='text/csv',
-                                                 filename=output_filename,
-                                                 content_id='Scanner Violations')
+        attachment = EmailUtil.create_attachment(
+            file_location=csv_name,
+            content_type='text/csv',
+            filename=output_filename,
+            content_id='Scanner Violations')
         scanner_subject = '{} Complete - {} violation(s) found'.format(
             email_description, total_violations)
         try:
