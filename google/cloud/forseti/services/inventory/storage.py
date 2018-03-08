@@ -594,9 +594,9 @@ class Storage(BaseStorage):
         return (
             self.session.query(InventoryIndex).filter(
                 InventoryIndex.id == existing_id).filter(
-                InventoryIndex.status.in_([InventoryState.SUCCESS,
-                                           InventoryState.PARTIAL_SUCCESS])
-            ).one())
+                    InventoryIndex.status.in_([InventoryState.SUCCESS,
+                                               InventoryState.PARTIAL_SUCCESS]))
+            .one())
 
     def _get_resource_rows(self, key):
         """ Get the rows in the database for a certain resource
@@ -614,8 +614,8 @@ class Storage(BaseStorage):
 
         qry = (
             self.session.query(Inventory)
-                .filter(Inventory.index == self.index.id)
-                .filter(Inventory.key == key))
+            .filter(Inventory.index == self.index.id)
+            .filter(Inventory.key == key))
         rows = qry.all()
 
         if not rows:
@@ -839,11 +839,9 @@ class Storage(BaseStorage):
             p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
-                    .filter(
-                    and_(
-                        Inventory.parent_key == p_key,
-                        Inventory.parent_type == p_type,
-                        parent_inventory.index == self.index.id)))
+                .filter(and_(Inventory.parent_key == p_key,
+                             Inventory.parent_type == p_type,
+                             parent_inventory.index == self.index.id)))
         else:
             base_query = self.session.query(Inventory)
 

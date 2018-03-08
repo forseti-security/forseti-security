@@ -20,15 +20,11 @@ import inspect
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.pipelines import findings_pipeline
-from google.cloud.forseti.notifier.pipelines import \
-    email_inventory_snapshot_summary_pipeline as inv_summary
-from google.cloud.forseti.notifier.pipelines import \
-    email_scanner_summary_pipeline as scanner_summary
-from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import \
-    BaseNotificationPipeline
+from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
+from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
+from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-
 # pylint: enable=line-too-long
 
 

@@ -22,8 +22,6 @@ from google.cloud.forseti.services.explain import explainer
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.common.util import logger
 
-# pylint: disable=no-member
-
 LOGGER = logger.get_logger(__name__)
 
 

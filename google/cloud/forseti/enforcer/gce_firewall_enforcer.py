@@ -334,11 +334,10 @@ class ComputeFirewallAPI(object):
                         'marking operation as failed.', operation_name, timeout)
                     response.setdefault('error', {}).setdefault(
                         'errors', []).append(
-                        {'code': 'OPERATION_TIMEOUT',
-                         'message': ('Operation exceeded timeout for completion'
-                                     'of %0.2f seconds' % timeout)
-                         }
-                    )
+                            {'code': 'OPERATION_TIMEOUT',
+                             'message': ('Operation exceeded timeout for '
+                                         'completion of %0.2f seconds' %
+                                         timeout)})
                     completed_operations.append(response)
                 else:
                     # Operation still running
@@ -424,9 +423,8 @@ class ComputeFirewallAPI(object):
                     #     else could have already added the rule.
                     # INVALID_FIELD_VALUE: Because the network probably
                     #     disappeared out from under us.
-                    if error.get('code') in [
-                        'RESOURCE_ALREADY_EXISTS', 'INVALID_FIELD_VALUE'
-                    ]:
+                    if error.get('code') in ['RESOURCE_ALREADY_EXISTS',
+                                             'INVALID_FIELD_VALUE']:
                         LOGGER.warn('Ignoring error: %s', error)
                     else:
                         LOGGER.error('Response has error: %s', error)

@@ -334,12 +334,11 @@ class IamRuleBook(bre.BaseRuleBook):
                         resource_id=resource_id,
                         resource_type=resource_type)
 
-                    rule_bindings = filter(None,
-                                           [  # pylint: disable=bad-builtin
-                                               iam_policy.IamPolicyBinding.create_from(
-                                                   b)
-                                               for b in
-                                               rule_def.get('bindings')])
+                    rule_bindings = filter(
+                        None,
+                        [iam_policy.IamPolicyBinding.create_from(b) for b in
+                         rule_def.get('bindings')]
+                    )
                     rule = scanner_rules.Rule(rule_name=rule_def.get('name'),
                                               rule_index=rule_index,
                                               bindings=rule_bindings,
@@ -535,8 +534,10 @@ class ResourceRules(object):
         """
         return ('ResourceRules<resource={}, rules={}, '
                 'applies_to={}, inherit_from_parents={}>').format(
-            self.resource, self.rules, self.applies_to,
-            self.inherit_from_parents)
+                    self.resource,
+                    self.rules,
+                    self.applies_to,
+                    self.inherit_from_parents)
 
     def find_mismatches(self, resource, policy_bindings):
         """Determine if the policy binding matches this rule's criteria.

@@ -122,12 +122,12 @@ class FirewallRule(object):
                                     self._firewall_action)
 
         for field_name, value in [
-            ('sourceRanges', self._source_ranges),
-            ('destinationRanges', self._destination_ranges),
-            ('sourceTags', self._source_tags),
-            ('targetTags', self._target_tags),
-            ('sourceServiceAccounts', self._source_service_accounts),
-            ('targetServiceAccounts', self._target_service_accounts),
+                ('sourceRanges', self._source_ranges),
+                ('destinationRanges', self._destination_ranges),
+                ('sourceTags', self._source_tags),
+                ('targetTags', self._target_tags),
+                ('sourceServiceAccounts', self._source_service_accounts),
+                ('targetServiceAccounts', self._target_service_accounts),
         ]:
             if value:
                 string += '%s=%s\n' % (field_name, value)
@@ -239,14 +239,14 @@ class FirewallRule(object):
             'name': self.name,
         }
         for key, value in [
-            self.firewall_action.json_dict(),
-            ('sourceRanges', self.source_ranges),
-            ('sourceTags', self.source_tags),
-            ('targetTags', self.target_tags),
-            ('destinationRanges', self.destination_ranges),
-            ('priority', self._priority),
-            ('sourceServiceAccounts', self.source_service_accounts),
-            ('targetServiceAccounts', self.target_service_accounts)
+                self.firewall_action.json_dict(),
+                ('sourceRanges', self.source_ranges),
+                ('sourceTags', self.source_tags),
+                ('targetTags', self.target_tags),
+                ('destinationRanges', self.destination_ranges),
+                ('priority', self._priority),
+                ('sourceServiceAccounts', self.source_service_accounts),
+                ('targetServiceAccounts', self.target_service_accounts)
         ]:
             if value:
                 firewall_dict[key] = value

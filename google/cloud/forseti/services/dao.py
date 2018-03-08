@@ -14,7 +14,7 @@
 
 """Database abstraction objects for Forseti Server."""
 
-# pylint: disable=too-many-lines,singleton-comparison
+# pylint: disable=too-many-lines
 # pylint: disable=too-many-branches
 
 import binascii
@@ -248,14 +248,16 @@ def define_model(model_name, dbengine, model_seed):
                                     '{}.name'.format(members_tablename)),
                                 primary_key=True), )
 
-    group_members = Table('{}_group_members'.format(model_name),
-                          base.metadata,
-                          Column('group_name', ForeignKey(
-                              '{}.name'.format(members_tablename)),
-                          primary_key=True),
-                          Column('members_name', ForeignKey(
-                              '{}.name'.format(members_tablename)),
-                          primary_key=True), )
+    group_members = Table(
+        '{}_group_members'.format(model_name),
+        base.metadata,
+        Column('group_name',
+               ForeignKey('{}.name'.format(members_tablename)),
+               primary_key=True),
+        Column('members_name',
+               ForeignKey('{}.name'.format(members_tablename)),
+               primary_key=True),
+    )
 
     class Resource(base):
         """Row entry for a GCP resource."""
@@ -733,7 +735,7 @@ def define_model(model_name, dbengine, model_seed):
                 .join(Member)
                 .join(Role)
                 .filter(Binding.resource_type_name.in_(
-                        bind_res_candidates))
+                    bind_res_candidates))
                 .filter(Role.name.in_(role_names))
                 .filter(or_(Member.type == 'group',
                             Member.name == member_name))
@@ -874,7 +876,7 @@ def define_model(model_name, dbengine, model_seed):
                     .filter(binding_members.c.bindings_id == Binding.id)
                     .filter(binding_members.c.members_name == Member.name)
                     .filter(expanded_resources.full_name.startswith(
-                            Resource.full_name))
+                        Resource.full_name))
                     .filter((Resource.type_name ==
                              Binding.resource_type_name))
                     .filter(Binding.role_name.in_(role_names))
@@ -945,9 +947,9 @@ def define_model(model_name, dbengine, model_seed):
 
             res = (session.query(Binding, Member)
                    .filter(
-                Binding.role_name.in_([r.name for r in roles]),
-                Binding.resource_type_name.in_(
-                    [r.type_name for r in resources]))
+                       Binding.role_name.in_([r.name for r in roles]),
+                       Binding.resource_type_name.in_(
+                           [r.type_name for r in resources]))
                    .join(binding_members).join(Member))
 
             role_member_mapping = collections.defaultdict(set)
@@ -1545,7 +1547,7 @@ def define_model(model_name, dbengine, model_seed):
                 session.query(res_key, res_values)
                 .filter(res_key.type_name.in_(res_type_names))
                 .filter(res_values.full_name.startswith(
-                        res_key.full_name))
+                    res_key.full_name))
                 .yield_per(1024)
             )
 
@@ -1656,9 +1658,7 @@ def define_model(model_name, dbengine, model_seed):
                 select([t_ging.c.parent, t_members.c.members_name])
                 .select_from(t_ging.join(t_members,
                                          (t_ging.c.member ==
-                                          t_members.c.group_name)
-                                         )
-                             )
+                                          t_members.c.group_name)))
             ).where(t_ging.c.parent.in_(group_names))
 
             if not show_group_members:
@@ -1686,7 +1686,7 @@ def define_model(model_name, dbengine, model_seed):
                 group_in_groups = (
                     select([t_ging.c.parent,
                             t_ging.c.member]).where(
-                        t_ging.c.parent.in_(group_names))
+                                t_ging.c.parent.in_(group_names))
                 )
                 selectables.append(
                     group_in_groups.alias('group_in_groups'))
