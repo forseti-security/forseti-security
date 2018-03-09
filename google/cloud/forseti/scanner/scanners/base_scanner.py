@@ -25,48 +25,6 @@ from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
-def upload_csv(output_path, now_utc, csv_name):
-    """Upload CSV to Cloud Storage.
-
-    Args:
-        output_path (str): The output path for the csv.
-        now_utc (datetime): The UTC timestamp of "now".
-        csv_name (str): The csv_name.
-    """
-    output_filename = get_output_filename(now_utc)
-
-    # If output path was specified, copy the csv temp file either to
-    # a local file or upload it to Google Cloud Storage.
-    full_output_path = os.path.join(output_path, output_filename)
-    LOGGER.info('Output path: %s', full_output_path)
-
-    if output_path.startswith('gs://'):
-        # An output path for GCS must be the full
-        # `gs://bucket-name/path/for/output`
-        storage_client = storage.StorageClient()
-        storage_client.put_text_file(
-            csv_name, full_output_path)
-    else:
-        # Otherwise, just copy it to the output path.
-        shutil.copy(csv_name, full_output_path)
-
-def get_output_filename(now_utc):
-    """Create the output filename.
-
-    Args:
-        now_utc (datetime): The datetime now in UTC. Generated at the top
-            level to be consistent across the scan.
-
-    Returns:
-        str: The output filename for the csv, formatted with the
-            now_utc timestamp.
-    """
-    output_timestamp = now_utc.strftime(
-        string_formats.TIMESTAMP_TIMEZONE_FILES)
-    output_filename = string_formats.SCANNER_OUTPUT_CSV_FMT.format(
-        output_timestamp)
-    return output_filename
-
 
 class BaseScanner(object):
     """This is a base class skeleton for scanners."""
@@ -95,6 +53,49 @@ class BaseScanner(object):
     def run(self):
         """Runs the pipeline."""
         pass
+
+    def _upload_csv(self, output_path, now_utc, csv_name):
+        """Upload CSV to Cloud Storage.
+
+        Args:
+            output_path (str): The output path for the csv.
+            now_utc (datetime): The UTC timestamp of "now".
+            csv_name (str): The csv_name.
+        """
+        output_filename = self.get_output_filename(now_utc)
+
+        # If output path was specified, copy the csv temp file either to
+        # a local file or upload it to Google Cloud Storage.
+        full_output_path = os.path.join(output_path, output_filename)
+        LOGGER.info('Output path: %s', full_output_path)
+
+        if output_path.startswith('gs://'):
+            # An output path for GCS must be the full
+            # `gs://bucket-name/path/for/output`
+            storage_client = storage.StorageClient()
+            storage_client.put_text_file(
+                csv_name, full_output_path)
+        else:
+            # Otherwise, just copy it to the output path.
+            shutil.copy(csv_name, full_output_path)
+
+    @staticmethod
+    def get_output_filename(now_utc):
+        """Create the output filename.
+
+        Args:
+            now_utc (datetime): The datetime now in UTC. Generated at the top
+                level to be consistent across the scan.
+
+        Returns:
+            str: The output filename for the csv, formatted with the
+                now_utc timestamp.
+        """
+        output_timestamp = now_utc.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+        output_filename = string_formats.SCANNER_OUTPUT_CSV_FMT.format(
+            output_timestamp)
+        return output_filename
 
     def _output_results_to_db(self, violations):
         """Output scanner results to DB.

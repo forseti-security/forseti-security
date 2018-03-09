@@ -532,7 +532,7 @@ class IapScannerTest(ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iap_scanner.notifier',
         autospec=True)
-    @mock.patch.object(base_scanner, 'upload_csv', autospec=True)
+    @mock.patch.object(iap_scanner.IapScanner, '_upload_csv', autospec=True)
     @mock.patch.object(iap_scanner.csv_writer, 'write_csv', autospec=True)
     @mock.patch.object(
         iap_scanner.IapScanner, '_output_results_to_db', autospec=True)
@@ -549,7 +549,7 @@ class IapScannerTest(ForsetiTestCase):
         self.scanner.run()
         self.assertEquals(1, mock_output_results.call_count)
         mock_upload_csv.assert_called_once_with(
-            self.fake_scanner_configs.get('output_path'),
+            self.scanner, self.fake_scanner_configs.get('output_path'),
             self.fake_utcnow, fake_csv_name)
         mock_csv_writer.assert_called_once_with(
             data=[{

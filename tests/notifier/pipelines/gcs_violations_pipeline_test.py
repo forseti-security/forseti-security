@@ -19,9 +19,7 @@ import unittest
 
 from datetime import datetime
 
-from google.cloud.forseti.scanner.scanners import base_scanner
-
-from google.cloud.forseti.common.util import string_formats, date_time
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.pipelines import gcs_violations_pipeline
 from tests.unittest_utils import ForsetiTestCase
 

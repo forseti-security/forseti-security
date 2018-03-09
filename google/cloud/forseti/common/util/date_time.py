@@ -22,15 +22,15 @@ from google.cloud.forseti.common.util import string_formats
 LOGGER = logger.get_logger(__name__)
 
 
-class UtilBaseDateTimeException(Exception):
+class Error(Exception):
     """A Base UtilDateTime Exception."""
 
 
-class UtilDateTimeValueError(UtilBaseDateTimeException):
+class DateTimeValueConversionError(Error):
     """Invalid Value Given for a Request."""
 
 
-class UtilDateTimeTypeError(UtilBaseDateTimeException):
+class DateTimeTypeConversionError(Error):
     """Type Error for a given Request."""
 
 
@@ -42,8 +42,10 @@ def get_datetime_from_string(string, string_format):
             string_format (str): A string used for formatting.
 
         Raises:
-           UtilDateTimeTypeError: When datetime.strptime() raises a TypeError.
-           UtilDateTimeValueError: When datetime.strptime() raises a ValueError.
+           DateTimeTypeConversionError: When datetime.strptime() raises a
+              TypeError.
+           DateTimeValueConversionError: When datetime.strptime() raises a
+              ValueError.
 
         Returns:
             datetime: A datetime object as requested.
@@ -54,12 +56,12 @@ def get_datetime_from_string(string, string_format):
         LOGGER.error('Unable to create a datetime with %s in format '
                      '%s\nError: %s',
                      string, string_format, e)
-        raise UtilDateTimeTypeError
+        raise DateTimeTypeConversionError
     except ValueError as e:
         LOGGER.error('Unable to create a datetime with %s in format '
                      '%s\nError: %s',
                      string, string_format, e)
-        raise UtilDateTimeValueError
+        raise DateTimeValueConversionError
 
     return result
 

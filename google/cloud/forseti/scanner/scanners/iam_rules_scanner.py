@@ -186,7 +186,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                             self.scanner_configs.get('output_path')):
                         os.makedirs(output_path)
                     output_path = os.path.abspath(output_path)
-                base_scanner.upload_csv(output_path, now_utc, output_csv_name)
+                self._upload_csv(output_path, now_utc, output_csv_name)
 
                 # Send summary email.
                 # TODO: Untangle this email by looking for the csv content
@@ -201,8 +201,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                         'sendgrid_api_key':
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
-                        'output_filename': base_scanner.get_output_filename(
-                            now_utc),
+                        'output_filename': self.get_output_filename(now_utc),
                         'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,
