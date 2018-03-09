@@ -601,7 +601,7 @@ class InventoryImporter(object):
         parent, full_res_name = self._get_parent(service_config)
         sc_type_name = to_type_name(
             service_config.get_type_class(),
-            ':'.join(parent.type_name.split('/')))
+            parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -641,7 +641,7 @@ class InventoryImporter(object):
         parent, full_res_name = self._get_parent(dataset_policy)
         policy_type_name = to_type_name(
             dataset_policy.get_type_class(),
-            ':'.join(parent.type_name.split('/')))
+            parent.type_name)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
