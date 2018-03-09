@@ -16,14 +16,11 @@
 
 from datetime import datetime
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util.email import EmailUtil
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.pipelines import base_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -33,7 +30,7 @@ VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
-class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
+class EmailViolations(base_notification.BaseNotification):
     """Email pipeline to perform notifications"""
 
     def __init__(self, resource, cycle_timestamp,
@@ -49,12 +46,12 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             notifier_config (dict): Notifier configurations.
             pipeline_config (dict): Pipeline configurations.
         """
-        super(EmailViolationsPipeline, self).__init__(resource,
-                                                      cycle_timestamp,
-                                                      violations,
-                                                      global_configs,
-                                                      notifier_config,
-                                                      pipeline_config)
+        super(EmailViolations, self).__init__(resource,
+                                              cycle_timestamp,
+                                              violations,
+                                              global_configs,
+                                              notifier_config,
+                                              pipeline_config)
         self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
 
     def _get_output_filename(self):

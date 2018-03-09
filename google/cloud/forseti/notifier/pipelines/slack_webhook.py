@@ -15,11 +15,8 @@
 
 import requests
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.pipelines import base_notification
 
 LOGGER = logger.get_logger(__name__)
 
@@ -28,7 +25,7 @@ VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
-class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
+class SlackWebhook(base_notification.BaseNotification):
     """Slack webhook pipeline to perform notifications"""
 
     def _dump_slack_output(self, data, indent=0):

@@ -19,10 +19,10 @@ import inspect
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.pipelines import findings_pipeline
-from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
-from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
-from google.cloud.forseti.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.forseti.notifier.pipelines import findings
+from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary as inv_summary
+from google.cloud.forseti.notifier.pipelines import email_scanner_summary as scanner_summary
+from google.cloud.forseti.notifier.pipelines.base_notification import BaseNotification
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
@@ -47,8 +47,8 @@ def find_pipelines(pipeline_name):
             obj = getattr(module, filename)
 
             if inspect.isclass(obj) \
-               and issubclass(obj, BaseNotificationPipeline) \
-               and obj is not BaseNotificationPipeline:
+               and issubclass(obj, BaseNotification) \
+               and obj is not BaseNotification:
                 return obj
     except ImportError, e:
         LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
@@ -84,7 +84,7 @@ def process(message):
     payload = message.get('payload')
 
     if message.get('status') == 'inventory_done':
-        inv_email_pipeline = inv_summary.EmailInventorySnapshotSummaryPipeline(
+        inv_email_pipeline = inv_summary.EmailInventorySnapshotSummary(
             payload.get('sendgrid_api_key'))
         inv_email_pipeline.run(
             payload.get('cycle_time'),
@@ -97,7 +97,7 @@ def process(message):
         return
 
     if message.get('status') == 'scanner_done':
-        scanner_email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
+        scanner_email_pipeline = scanner_summary.EmailScannerSummary(
             payload.get('sendgrid_api_key'))
         scanner_email_pipeline.run(
             payload.get('output_csv_name'),
@@ -177,7 +177,7 @@ def run(inventory_index_id, service_config=None):
         pipeline.run()
 
     if notifier_configs.get('violation').get('findings').get('enabled'):
-        findings_pipeline.FindingsPipeline().run(
+        findings.FindingsPipeline().run(
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
 

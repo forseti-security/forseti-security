@@ -18,7 +18,7 @@ from datetime import datetime
 import mock
 import unittest
 
-from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline
+from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -27,8 +27,8 @@ class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
 
     def test_can_compose_subject_and_content(self):
         email_pipeline = (
-            email_inventory_snapshot_summary_pipeline
-            .EmailInventorySnapshotSummaryPipeline(
+            email_inventory_snapshot_summary
+            .EmailInventorySnapshotSummary(
                 111111))
 
         snapshot_time = datetime.strptime('Dec 25 2000  1:00AM',

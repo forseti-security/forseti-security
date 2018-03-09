@@ -18,7 +18,7 @@ import unittest
 
 from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type import resource
-from google.cloud.forseti.notifier.pipelines import email_scanner_summary_pipeline
+from google.cloud.forseti.notifier.pipelines import email_scanner_summary
 from google.cloud.forseti.scanner.scanners import iam_rules_scanner
 from google.cloud.forseti.scanner.audit import rules as audit_rules
 from tests.unittest_utils import ForsetiTestCase
@@ -32,7 +32,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
     def test_can_compose_scanner_summary(self, mock_rules_engine):
         """Test that the scan summary is built correctly."""
         email_pipeline = (
-            email_scanner_summary_pipeline.EmailScannerSummaryPipeline(
+            email_scanner_summary.EmailScannerSummary(
                 111111))
 
         members = [iam_policy.IamPolicyMember.create_from(u)

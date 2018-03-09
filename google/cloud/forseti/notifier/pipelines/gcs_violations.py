@@ -18,12 +18,10 @@ import tempfile
 
 from datetime import datetime
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.pipelines import base_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -32,7 +30,7 @@ VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
 OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
-class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
+class GcsViolations(base_notification.BaseNotification):
     """Upload violations to GCS."""
 
     def _get_output_filename(self):

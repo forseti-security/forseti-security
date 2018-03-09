@@ -21,7 +21,7 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
-class BaseNotificationPipeline(object):
+class BaseNotification(object):
     """Base pipeline to perform notifications"""
 
     __metaclass__ = abc.ABCMeta

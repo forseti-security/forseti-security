@@ -16,15 +16,14 @@
 
 import abc
 
-from google.cloud.forseti.notifier.pipelines import (
-    base_notification_pipeline as bnp)
+from google.cloud.forseti.notifier.pipelines import base_notification
 from google.cloud.forseti.common.util import logger
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class BaseEmailNotificationPipeline(bnp.BaseNotificationPipeline):
+class BaseEmailNotification(base_notification.BaseNotification):
     """Base email pipeline."""
 
     __metaclass__ = abc.ABCMeta

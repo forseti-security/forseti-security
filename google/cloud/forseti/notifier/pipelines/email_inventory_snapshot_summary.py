@@ -13,13 +13,10 @@
 # limitations under the License.
 """Email pipeline to notify that inventory snapshots have been completed."""
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import EmailUtil
-from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.pipelines import base_email_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -27,7 +24,8 @@ LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=arguments-differ
 
-class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
+class EmailInventorySnapshotSummary(
+        base_email_notification.BaseEmailNotification):
     """Email pipeline for inventory snapshot summary."""
 
     # TODO: See if the base pipline init() can be reused.

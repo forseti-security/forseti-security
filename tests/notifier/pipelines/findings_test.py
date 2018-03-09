@@ -18,7 +18,6 @@ import datetime
 import mock
 
 from google.cloud.forseti.notifier import notifier
-from google.cloud.forseti.notifier.pipelines import findings_pipeline
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.scanner import scanner_dao_test
 from tests.unittest_utils import ForsetiTestCase
@@ -79,7 +78,7 @@ class FindingsPipelineTest(ForsetiTestCase):
                 scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
         findings = (
-            findings_pipeline.FindingsPipeline()
+            findings.FindingsPipeline()
             ._transform_to_findings(violations_as_dict))
 
         self.assertEquals(expected_findings, findings)

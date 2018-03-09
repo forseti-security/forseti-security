@@ -17,7 +17,7 @@ import json
 import mock
 import unittest
 
-from google.cloud.forseti.notifier.pipelines import slack_webhook_pipeline
+from google.cloud.forseti.notifier.pipelines import slack_webhook
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -43,8 +43,8 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
                      'violation_type': 'BUCKET_VIOLATION',
                      'id': 1L, 'resource_type': 'bucket'}
 
-        with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
-            slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
+        with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
+            slack_pipeline = slack_webhook.SlackWebhook()
             slack_pipeline.resource = 'buckets_acl_violations'
             actual_output = slack_pipeline._compose(violation=violation)
 
@@ -54,8 +54,8 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
 
     def test_no_url_no_run_pipeline(self):
         """Test that no url for Slack pipeline will skip running."""
-        with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
-            slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
+        with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
+            slack_pipeline = slack_webhook.SlackWebhook()
             slack_pipeline.pipeline_config = {}
             slack_pipeline._compose = mock.MagicMock()
             slack_pipeline.run()

@@ -15,18 +15,16 @@
 
 import collections
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.pipelines import base_email_notification
 
 LOGGER = logger.get_logger(__name__)
 
 
-class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
+class EmailScannerSummary(base_email_notification.BaseEmailNotification):
     """Email pipeline for scanner summary."""
 
     # TODO: See if the base pipline init() can be reused.
