@@ -21,6 +21,7 @@ from StringIO import StringIO
 import traceback
 import json
 
+from google.cloud.forseti.services.utils import get_key_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
@@ -600,7 +601,7 @@ class InventoryImporter(object):
         parent, full_res_name = self._get_parent(service_config)
         sc_type_name = to_type_name(
             service_config.get_type_class(),
-            parent.type_name)
+            ':'.join(parent.type_name.split('/')))
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -640,7 +641,7 @@ class InventoryImporter(object):
         parent, full_res_name = self._get_parent(dataset_policy)
         policy_type_name = to_type_name(
             dataset_policy.get_type_class(),
-            parent.type_name)
+            ':'.join(parent.type_name.split('/')))
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -902,6 +903,11 @@ class InventoryImporter(object):
         data = cloudsqlinstance.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             cloudsqlinstance)
+        parent_key = get_key_from_type_name(parent.type_name)
+        resource_identifier = '{}:{}'.format(parent_key,
+                                             cloudsqlinstance.get_key())
+        type_name = to_type_name(cloudsqlinstance.get_type(),
+                                 resource_identifier)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -919,7 +925,6 @@ class InventoryImporter(object):
         Args:
             service_account (object): Service account to store.
         """
-
         data = service_account.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account)
@@ -1116,16 +1121,9 @@ class InventoryImporter(object):
         Returns:
             str: type/name representation of the resource.
         """
-
-        resource_identifier = resource.get_key()
-
-        if resource.get_parent_key():
-            resource_identifier = '{}:{}'.format(resource.get_parent_key(),
-                                                 resource_identifier)
-
         return to_type_name(
             resource.get_type(),
-            resource_identifier)
+            resource.get_key())
 
     def _parent_type_name(self, resource):
         """Return the type/name for a resource's parent.
