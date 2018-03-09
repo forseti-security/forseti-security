@@ -21,6 +21,7 @@ from StringIO import StringIO
 import traceback
 import json
 
+from google.cloud.forseti.services.utils import get_key_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
@@ -902,6 +903,11 @@ class InventoryImporter(object):
         data = cloudsqlinstance.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             cloudsqlinstance)
+        parent_key = get_key_from_type_name(parent.type_name)
+        resource_identifier = '{}:{}'.format(parent_key,
+                                             cloudsqlinstance.get_key())
+        type_name = to_type_name(cloudsqlinstance.get_type(),
+                                 resource_identifier)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -919,7 +925,6 @@ class InventoryImporter(object):
         Args:
             service_account (object): Service account to store.
         """
-
         data = service_account.get_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account)
@@ -1116,7 +1121,6 @@ class InventoryImporter(object):
         Returns:
             str: type/name representation of the resource.
         """
-
         return to_type_name(
             resource.get_type(),
             resource.get_key())
