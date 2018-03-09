@@ -149,11 +149,11 @@ class ForwardingRuleRulesBook(bre.BaseRuleBook):
         port = rule_def.get('port')
         ip_address = rule_def.get('ip_address')
         ip_protocol = rule_def.get('ip_protocol')
-        if ((target is None)
-            or (mode is None)
-            or (load_balancing_scheme is None)
-            or (ip_address is None)
-            or (ip_protocol is None)):
+        if ((target is None) or
+                (mode is None) or
+                (load_balancing_scheme is None) or
+                (ip_address is None) or
+                (ip_protocol is None)):
             raise audit_errors.InvalidRulesSchemaError(
                 'Faulty rule {}'.format(rule_def.get('name')))
         rule_def_resource = {'target': target,
