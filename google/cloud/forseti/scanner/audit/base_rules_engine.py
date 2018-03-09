@@ -46,7 +46,7 @@ class BaseRulesEngine(object):
         self.full_rules_path = rules_file_path.strip()
         self.snapshot_timestamp = snapshot_timestamp
 
-    def build_rule_book(self, global_configs=None):
+    def build_rule_book(self, global_configs):
         """Build RuleBook from the rules definition file.
 
         Args:
