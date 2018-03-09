@@ -15,8 +15,8 @@
 """Wrapper for Compute API client."""
 import json
 import os
-from httplib2 import HttpLib2Error
 from googleapiclient import errors
+from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
