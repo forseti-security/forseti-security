@@ -538,7 +538,8 @@ def define_model(model_name, dbengine, model_seed):
                         select([tbl1.c.parent,
                                 tbl2.c.member])
                         .select_from(expansion)
-                        .where(tbl3.c.parent is None)
+                        # pylint: disable=singleton-comparison
+                        .where(tbl3.c.parent == None)
                         .distinct()
                     )
 
@@ -596,7 +597,7 @@ def define_model(model_name, dbengine, model_seed):
                                                           resource_type_name)]
 
             if role:
-                roles = {role}
+                roles = set([role])
                 qry = session.query(Binding, Member).join(
                     binding_members).join(Member)
             else:
@@ -796,7 +797,8 @@ def define_model(model_name, dbengine, model_seed):
             if reverse_expand_members:
                 member_names = [m.name for m in
                                 cls.reverse_expand_members(session,
-                                                           [member_name])]
+                                                           [member_name],
+                                                           False)]
             else:
                 member_names = [member_name]
 
@@ -897,7 +899,8 @@ def define_model(model_name, dbengine, model_seed):
                 to_expand = set([m.name for _, _, m in
                                  qry.yield_per(PER_YIELD)])
                 expansion = cls.expand_members_map(session, to_expand,
-                                                   show_group_members=False)
+                                                   show_group_members=False,
+                                                   member_contain_self=True)
 
             qry = qry.distinct()
 
@@ -2008,8 +2011,10 @@ class ModelManager(object):
         """
 
         if handle not in [m.handle for m in self.models()]:
-            error_message = 'handle={}, available={}' \
-                .format(handle, [m.handle for m in self.models()])
+            error_message = 'handle={}, available={}'.format(
+                handle,
+                [m.handle for m in self.models()]
+            )
             LOGGER.error(error_message)
             raise KeyError(error_message)
         try:
