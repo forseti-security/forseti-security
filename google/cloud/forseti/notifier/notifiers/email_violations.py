@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email pipeline to perform notifications"""
+"""Email notifier to perform notifications"""
 
 from datetime import datetime
 
@@ -20,7 +20,7 @@ from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util.email import EmailUtil
-from google.cloud.forseti.notifier.pipelines import base_notification
+from google.cloud.forseti.notifier.notifiers import base_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -31,10 +31,11 @@ OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
 
 
 class EmailViolations(base_notification.BaseNotification):
-    """Email pipeline to perform notifications"""
+    """Email notifier to perform notifications"""
 
     def __init__(self, resource, cycle_timestamp,
-                 violations, global_configs, notifier_config, pipeline_config):
+                 violations, global_configs, notifier_config,
+                 notifications_config):
         """Initialization.
 
         Args:
@@ -44,15 +45,15 @@ class EmailViolations(base_notification.BaseNotification):
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
-            pipeline_config (dict): Pipeline configurations.
+            notifications_config (dict): notifier configurations.
         """
         super(EmailViolations, self).__init__(resource,
                                               cycle_timestamp,
                                               violations,
                                               global_configs,
                                               notifier_config,
-                                              pipeline_config)
-        self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
+                                              notifications_config)
+        self.mail_util = EmailUtil(self.notifier_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -120,7 +121,7 @@ class EmailViolations(base_notification.BaseNotification):
         return email_subject, email_content
 
     def _compose(self, **kwargs):
-        """Compose the email pipeline map
+        """Compose the email notifier map
 
         Args:
             **kwargs: Arbitrary keyword arguments.
@@ -155,8 +156,8 @@ class EmailViolations(base_notification.BaseNotification):
 
         try:
             self.mail_util.send(
-                email_sender=self.pipeline_config['sender'],
-                email_recipient=self.pipeline_config['recipient'],
+                email_sender=self.notifier_config['sender'],
+                email_recipient=self.notifier_config['recipient'],
                 email_subject=subject,
                 email_content=content,
                 content_type='text/html',
@@ -165,6 +166,6 @@ class EmailViolations(base_notification.BaseNotification):
             LOGGER.warn('Unable to send Violations email')
 
     def run(self):
-        """Run the email pipeline"""
+        """Run the email notifier"""
         email_notification = self._compose()
         self._send(notification=email_notification)

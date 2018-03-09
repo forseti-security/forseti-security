@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the findings notification pipeline."""
+"""Tests the findings notification notifier."""
 
 import datetime
 import mock
 
 from google.cloud.forseti.notifier import notifier
+from google.cloud.forseti.notifier.notifiers import findings
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.scanner import scanner_dao_test
 from tests.unittest_utils import ForsetiTestCase
 
-class FindingsPipelineTest(ForsetiTestCase):
+class FindingsNotifierTest(ForsetiTestCase):
 
     def setUp(self):
         """Setup method."""
@@ -77,8 +78,9 @@ class FindingsPipelineTest(ForsetiTestCase):
             violations_as_dict.append(
                 scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
-        findings = (
-            findings.FindingsPipeline()
-            ._transform_to_findings(violations_as_dict))
+        finding_results = (
+            findings.Findingsnotifier()._transform_to_findings(
+                violations_as_dict)
+        )
 
-        self.assertEquals(expected_findings, findings)
+        self.assertEquals(expected_findings, finding_results)

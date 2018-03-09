@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Email pipeline to notify that inventory snapshots have been completed."""
+"""Email notifier to notify that inventory snapshots have been completed."""
 
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import EmailUtil
-from google.cloud.forseti.notifier.pipelines import base_email_notification
+from google.cloud.forseti.notifier.notifiers import base_email_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -26,7 +26,7 @@ LOGGER = logger.get_logger(__name__)
 
 class EmailInventorySnapshotSummary(
         base_email_notification.BaseEmailNotification):
-    """Email pipeline for inventory snapshot summary."""
+    """Email notifier for inventory snapshot summary."""
 
     # TODO: See if the base pipline init() can be reused.
     def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called

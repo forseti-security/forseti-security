@@ -29,7 +29,7 @@ LOGGER = logger.get_logger(__name__)
 OUTPUT_FILENAME = 'forseti_findings_{}.json'
 
 
-class FindingsPipeline(object):
+class Findingsnotifier(object):
     """Upload violations to GCS bucket as findings."""
 
     @staticmethod

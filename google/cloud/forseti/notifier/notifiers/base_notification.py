@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base pipeline to perform notifications"""
+"""Base notifier to perform notifications"""
 
 import abc
 
@@ -22,13 +22,14 @@ LOGGER = logger.get_logger(__name__)
 
 
 class BaseNotification(object):
-    """Base pipeline to perform notifications"""
+    """Base notifier to perform notifications"""
 
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, resource, cycle_timestamp,
-                 violations, global_configs, notifier_config, pipeline_config):
-        """Constructor for the base pipeline.
+                 violations, global_configs, notifier_config,
+                 notification_config):
+        """Constructor for the base notifier.
 
         Args:
             resource (str): Violation resource name.
@@ -37,13 +38,13 @@ class BaseNotification(object):
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
-            pipeline_config (dict): Pipeline configurations.
+            notification_config (dict): notifier configurations.
         """
         self.cycle_timestamp = cycle_timestamp
         self.resource = resource
         self.global_configs = global_configs
         self.notifier_config = notifier_config
-        self.pipeline_config = pipeline_config
+        self.notification_config = notification_config
         # TODO: import api_client
         # self.api_client = api_client
 
@@ -52,5 +53,5 @@ class BaseNotification(object):
 
     @abc.abstractmethod
     def run(self):
-        """Runs the pipeline."""
+        """Runs the notifier."""
         pass

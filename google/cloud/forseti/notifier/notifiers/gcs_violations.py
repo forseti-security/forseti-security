@@ -21,7 +21,7 @@ from datetime import datetime
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
-from google.cloud.forseti.notifier.pipelines import base_notification
+from google.cloud.forseti.notifier.notifiers import base_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -53,7 +53,7 @@ class GcsViolations(base_notification.BaseNotification):
             tmp_violations.flush()
 
             gcs_upload_path = '{}/{}'.format(
-                self.pipeline_config['gcs_path'],
+                self.notification_config['gcs_path'],
                 self._get_output_filename())
 
             if gcs_upload_path.startswith('gs://'):

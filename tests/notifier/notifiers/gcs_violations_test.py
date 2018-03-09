@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the GCS Violations upload pipeline."""
+"""Tests the GCS Violations upload notifier."""
 
 import mock
 import unittest
 
 from datetime import datetime
 
-from google.cloud.forseti.notifier.pipelines import gcs_violations
+from google.cloud.forseti.notifier.notifiers import gcs_violations
 from tests.unittest_utils import ForsetiTestCase
 
 
-class GcsViolationsPipelineTest(ForsetiTestCase):
-    """Tests for gcs_violations_pipeline."""
+class GcsViolationsnotifierTest(ForsetiTestCase):
+    """Tests for gcs_violations_notifier."""
 
     def setUp(self):
         """Setup."""
@@ -38,7 +38,7 @@ class GcsViolationsPipelineTest(ForsetiTestCase):
             'db_user': 'z',
         }
 
-        fake_pipeline_conf = {
+        fake_notifier_conf = {
             'gcs_path': 'gs://blah'
         }
 
@@ -48,10 +48,10 @@ class GcsViolationsPipelineTest(ForsetiTestCase):
             [],
             fake_global_conf,
             {},
-            fake_pipeline_conf)
+            fake_notifier_conf)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.pipelines.gcs_violations_pipeline.datetime',
+        'google.cloud.forseti.notifier.notifiers.gcs_violations.datetime',
         autospec=True)
     def test_get_output_filename(self, mock_datetime):
         """Test _get_output_filename()."""
@@ -78,7 +78,7 @@ class GcsViolationsPipelineTest(ForsetiTestCase):
         self.gvp._get_output_filename = mock.MagicMock(
             return_value=fake_output_name)
         gcs_path = '{}/{}'.format(
-            self.gvp.pipeline_config['gcs_path'],
+            self.gvp.notification_config['gcs_path'],
             fake_output_name)
 
         mock_tmp_json = mock.MagicMock()

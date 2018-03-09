@@ -11,27 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests the email scanner summary pipeline."""
+"""Tests the email scanner summary notifier."""
 
 import mock
 import unittest
 
 from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type import resource
-from google.cloud.forseti.notifier.pipelines import email_scanner_summary
+from google.cloud.forseti.notifier.notifiers import email_scanner_summary
 from google.cloud.forseti.scanner.scanners import iam_rules_scanner
 from google.cloud.forseti.scanner.audit import rules as audit_rules
 from tests.unittest_utils import ForsetiTestCase
 
 
-class EmailScannerSummaryPipelineTest(ForsetiTestCase):
-    """Tests for the email_scanner_summary_pipeline."""
+class EmailScannerSummarynotifierTest(ForsetiTestCase):
+    """Tests for the email_scanner_summary_notifier."""
 
     @mock.patch('google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine',
             autospec=True)
     def test_can_compose_scanner_summary(self, mock_rules_engine):
         """Test that the scan summary is built correctly."""
-        email_pipeline = (
+        email_notifier = (
             email_scanner_summary.EmailScannerSummary(
                 111111))
 
@@ -70,7 +70,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
             resource.ResourceType.PROJECT: 1,
         }
 
-        actual = email_pipeline._compose(all_violations, total_resources)
+        actual = email_notifier._compose(all_violations, total_resources)
 
         expected_summaries = {
             resource.ResourceType.ORGANIZATION: {

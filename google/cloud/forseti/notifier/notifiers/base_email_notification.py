@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base email pipeline to perform notifications"""
+"""Base email notifier to perform notifications"""
 
 import abc
 
-from google.cloud.forseti.notifier.pipelines import base_notification
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.common.util import logger
 
 
@@ -24,7 +24,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class BaseEmailNotification(base_notification.BaseNotification):
-    """Base email pipeline."""
+    """Base email notifier."""
 
     __metaclass__ = abc.ABCMeta
 

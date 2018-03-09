@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Email pipeline for scanner summary."""
+"""Email notifier for scanner summary."""
 
 import collections
 
@@ -19,13 +19,13 @@ from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.notifier.pipelines import base_email_notification
+from google.cloud.forseti.notifier.notifiers import base_email_notification
 
 LOGGER = logger.get_logger(__name__)
 
 
 class EmailScannerSummary(base_email_notification.BaseEmailNotification):
-    """Email pipeline for scanner summary."""
+    """Email notifier for scanner summary."""
 
     # TODO: See if the base pipline init() can be reused.
     def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
@@ -160,7 +160,7 @@ class EmailScannerSummary(base_email_notification.BaseEmailNotification):
             self, csv_name, output_filename, now_utc, all_violations,
             total_resources, violation_errors, email_sender, email_recipient,
             email_description):
-        """Run the email pipeline
+        """Run the email notifier
 
         Args:
             csv_name (str): The full path of the local csv filename.

@@ -19,10 +19,10 @@ import inspect
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.pipelines import findings
-from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary as inv_summary
-from google.cloud.forseti.notifier.pipelines import email_scanner_summary as scanner_summary
-from google.cloud.forseti.notifier.pipelines.base_notification import BaseNotification
+from google.cloud.forseti.notifier.notifiers import findings
+from google.cloud.forseti.notifier.notifiers import email_inventory_snapshot_summary as inv_summary
+from google.cloud.forseti.notifier.notifiers import email_scanner_summary as scanner_summary
+from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
@@ -32,17 +32,17 @@ LOGGER = logger.get_logger(__name__)
 
 
 # pylint: disable=inconsistent-return-statements
-def find_pipelines(pipeline_name):
+def find_notifiers(notifier_name):
     """Get the first class in the given sub module
     Args:
-        pipeline_name (str): Name of the pipeline.
+        notifier_name (str): Name of the notifier.
     Return:
         class: The class in the sub module
     """
     try:
         module = importlib.import_module(
-            'google.cloud.forseti.notifier.pipelines.{0}'.format(
-                pipeline_name))
+            'google.cloud.forseti.notifier.notifiers.{0}'.format(
+                notifier_name))
         for filename in dir(module):
             obj = getattr(module, filename)
 
@@ -51,7 +51,7 @@ def find_pipelines(pipeline_name):
                and obj is not BaseNotification:
                 return obj
     except ImportError, e:
-        LOGGER.error('Can\'t import pipeline %s: %s', pipeline_name, e.message)
+        LOGGER.error('Can\'t import notifier %s: %s', notifier_name, e.message)
 # pylint: enable=inconsistent-return-statements
 
 
@@ -84,22 +84,22 @@ def process(message):
     payload = message.get('payload')
 
     if message.get('status') == 'inventory_done':
-        inv_email_pipeline = inv_summary.EmailInventorySnapshotSummary(
+        inv_email_notifier = inv_summary.EmailInventorySnapshotSummary(
             payload.get('sendgrid_api_key'))
-        inv_email_pipeline.run(
+        inv_email_notifier.run(
             payload.get('cycle_time'),
             payload.get('cycle_timestamp'),
             payload.get('snapshot_cycle_status'),
-            payload.get('pipelines'),
+            payload.get('notifiers'),
             payload.get('email_sender'),
             payload.get('email_recipient')
         )
         return
 
     if message.get('status') == 'scanner_done':
-        scanner_email_pipeline = scanner_summary.EmailScannerSummary(
+        scanner_email_notifier = scanner_summary.EmailScannerSummary(
             payload.get('sendgrid_api_key'))
-        scanner_email_pipeline.run(
+        scanner_email_notifier.run(
             payload.get('output_csv_name'),
             payload.get('output_filename'),
             payload.get('now_utc'),
@@ -148,8 +148,8 @@ def run(inventory_index_id, service_config=None):
         LOGGER.info('retrieved %d violations for resource \'%s\'',
                     len(violations[retrieved_v]), retrieved_v)
 
-    # build notification pipelines
-    pipelines = []
+    # build notification notifiers
+    notifiers = []
     for resource in notifier_configs['resources']:
         if violations.get(resource['resource']) is None:
             LOGGER.warn('The resource name \'%s\' has no violations, '
@@ -161,23 +161,23 @@ def run(inventory_index_id, service_config=None):
         if not resource['should_notify']:
             LOGGER.debug('Not notifying for: %s', resource['resource'])
             continue
-        for pipeline in resource['pipelines']:
-            LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',
-                        pipeline['name'], resource['resource'])
-            chosen_pipeline = find_pipelines(pipeline['name'])
-            pipelines.append(chosen_pipeline(resource['resource'],
+        for notifier in resource['notifiers']:
+            LOGGER.info('Running \'%s\' notifier for resource \'%s\'',
+                        notifier['name'], resource['resource'])
+            chosen_notifier = find_notifiers(notifier['name'])
+            notifiers.append(chosen_notifier(resource['resource'],
                                              inventory_index_id,
                                              violations[resource['resource']],
                                              global_configs,
                                              notifier_configs,
-                                             pipeline['configuration']))
+                                             notifier['configuration']))
 
-    # run the pipelines
-    for pipeline in pipelines:
-        pipeline.run()
+    # run the notifiers
+    for notifier in notifiers:
+        notifier.run()
 
     if notifier_configs.get('violation').get('findings').get('enabled'):
-        findings.FindingsPipeline().run(
+        findings.Findingsnotifier().run(
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
 
