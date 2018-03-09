@@ -41,7 +41,7 @@ rules:
     special_group: '*'
     user_email: '*'
     domain: '*'
-    group_email: '*@gmail.com'
+    group_email: '*@googlegroups.com'
     role: '*'
     resource:
       - type: organization
