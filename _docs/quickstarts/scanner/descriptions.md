@@ -21,8 +21,8 @@ rule file.
 
 ## Blacklist scanner
 
-VM instances with external IP addresses communicate with the outside world.
-If they are compromised, they could appear in various 
+Virtual Machine (VM instances) that have external IP addresses can communicate
+with the outside world. If they are compromised, they could appear in various 
 blacklists and could be known as malicious, such as for sending spam, 
 hosting Command & Control servers, and so on. The blacklist scanner audits
 all of the VM instances in your environment and determines if any VMs
@@ -74,9 +74,10 @@ rule file.
 
 ## Groups scanner
 
-Because groups can be added to Cloud IAM policies, G Suite group membership can allow
-access on Google Cloud Platform. The group scanner supports a whitelist mode, to
-make sure that only authorized users are members of your G Suite group.
+Because groups can be added to Cloud Identity and Access Management (Cloud IAM)
+policies, G Suite group membership can allow access on Google Cloud Platform (GCP).
+The group scanner supports a whitelist mode, to make sure that only authorized
+users are members of your G Suite group.
 
 For examples of how to define scanner rules for your G Suite groups, see the
 [`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/group_rules.yaml)
@@ -84,9 +85,9 @@ rule file.
 
 ## IAM policy scanner (organization resources)
 
-Cloud Identity and Access Management (Cloud IAM) policies directly grant access
-on Google Cloud Platform. To ensure only authorized members and permissions are
-granted in Cloud IAM policies, IAM policy scanner supports the following:
+Cloud IAM policies directly grant access on GCP. To ensure only authorized
+members and permissions are granted in Cloud IAM policies, IAM policy scanner
+supports the following:
 
  - Whitelist, blacklist, and required modes.
  - Define if the scope of the rule inherits from parents or just self.
@@ -101,10 +102,7 @@ rule file.
 Cloud Identity-Aware Proxy (Cloud IAP) enforces access control at the network
 edge, inside the load balancer. If traffic can get directly to the VM, Cloud IAP
 is unable to enforce its access control. The IAP scanner ensures that firewall
-rules are properly configured and prevents the in
-The KE version scanner depends on the following Forseti Inventory pipelines:
-
- - `load_ke_pipeline`troduction of other network
+rules are properly configured and prevents the introduction of other network
 paths that bypass the normal load balancer to instance flow.
 
 For examples of how to define scanner rules for Cloud IAP, see the
@@ -124,7 +122,7 @@ rule file.
 
 ## KE Version scanner
 
-Kubernetes Engine (KE) clusters running on older versions can be exposed to security 
+Kubernetes Engine clusters running on older versions can be exposed to security 
 vulnerabilities, or lack of support.  The KE version scanner can ensure your 
 Kubernetes Engine clusters are running safe and supported versions.
 
