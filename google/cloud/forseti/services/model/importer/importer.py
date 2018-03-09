@@ -1117,9 +1117,15 @@ class InventoryImporter(object):
             str: type/name representation of the resource.
         """
 
+        resource_identifier = resource.get_key()
+
+        if resource.get_parent_key():
+            resource_identifier = '{}:{}'.format(resource.get_parent_key(),
+                                                 resource_identifier)
+
         return to_type_name(
             resource.get_type(),
-            resource.get_key())
+            resource_identifier)
 
     def _parent_type_name(self, resource):
         """Return the type/name for a resource's parent.
