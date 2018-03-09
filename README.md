@@ -28,5 +28,5 @@ for instructions on how to make changes.
 
 ## Community
 
-Check out our [community page](http://forsetisecurity.org/community) for ways
+Check out our [community page](http://forsetisecurity.org/community/) for ways
 to engage with the Forseti Community.
