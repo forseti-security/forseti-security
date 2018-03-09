@@ -92,7 +92,7 @@ class InventoryImporter(object):
 
         Args:
             session (object): Database session.
-            model (Model): Model name to create.
+            model (Model): Model object.
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
             inventory_id (str): Inventory id to import from
