@@ -241,6 +241,9 @@ def get_resources_from_full_name(full_name):
 def get_key_from_type_name(type_name):
     """Returns the key from type_name.
 
+    Args:
+        type_name (str): Type name.
+
     Returns:
         str: Resource key.
     """
