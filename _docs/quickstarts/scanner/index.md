@@ -8,7 +8,7 @@ This quickstart describes how to get started with Forseti Scanner. Forseti
 Scanner uses a JSON or YAML rules definition file to audit your Google Cloud
 Platform (GCP) resources, such as organizations or projects. After running the
 audit, Forseti Scanner outputs rule violations to Cloud SQL and optionally
-writes it to a bucket in Google Cloud Storage.
+writes it to Cloud Storage bucket.
 
 Forseti Scanner is different from the Cloud Security Scanner, which does App
 Engine vulnerability scanning. Learn more about
@@ -23,20 +23,20 @@ To configure which scanners to run, see
 [Configuring Forseti: Configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-scanner).
 
 
-##### Selecting a data model
+#### Selecting a data model
 
 ```bash
 $ forseti model use <YOUR_MODEL_NAME>
 ```
 
-##### Running the scanner
+#### Running the scanner
 
 ```bash
 $ forseti scanner run
 ```
 
-Scanner will produce violations and store them into the violation table in the database. 
-If you would like to be notified on violations, you will need to run the 
+Scanner produces violations and stores them in the violation table in the database. 
+To receive notifications for violations, run the 
 [Forseti Notifier]({% link _docs/configure/notifier/index.md %}).
 
 ## What's next
