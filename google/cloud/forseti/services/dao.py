@@ -165,7 +165,7 @@ class Model(MODEL_BASE):
         """
         warnings = self.get_warnings()
         if warnings:
-            LOGGER.warn('warnings = %s', warnings)
+            LOGGER.debug('warnings = %s', warnings)
             self.warnings = warnings
             self.state = 'PARTIAL_SUCCESS'
         else:
