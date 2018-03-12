@@ -20,7 +20,7 @@ import re
 
 from google.cloud.forseti.common.gcp_type import errors
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.regex_util import escape_and_globify
+from google.cloud.forseti.common.util.regular_exp import escape_and_globify
 
 
 LOGGER = logger.get_logger(__name__)
