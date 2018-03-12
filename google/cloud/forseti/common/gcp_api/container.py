@@ -216,7 +216,7 @@ class ContainerClient(object):
 
         Returns:
             dict: A serverconfig for a given Compute Engine zone.
-            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.zones/getServerconfig
+            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/ServerConfig
 
             {
               "defaultClusterVersion": string,
@@ -239,12 +239,12 @@ class ContainerClient(object):
         """
 
         try:
-            if zone and not location:
-                return self.repository.projects_zones.get_serverconfig(
-                    project_id, zone=zone)
-            elif location:
+            if location:
                 return self.repository.projects_locations.get_serverconfig(
                     project_id, location=location)
+            elif zone:
+                return self.repository.projects_zones.get_serverconfig(
+                    project_id, zone=zone)
             raise ValueError('get_serverconfig takes either zone or location, '
                              'got zone: %s, location: %s' % (zone, location))
         except (errors.HttpError, HttpLib2Error) as e:
