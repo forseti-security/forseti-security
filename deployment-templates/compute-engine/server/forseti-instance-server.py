@@ -44,7 +44,7 @@ mv forseti-security-{release_version} forseti-security
     SCANNER_BUCKET = context.properties['scanner-bucket']
     FORSETI_DB_NAME = context.properties['database-name']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
+    FORSETI_SERVER_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
     GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
 
@@ -61,7 +61,7 @@ mv forseti-security-{release_version} forseti-security
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
-        'export FORSETI_SERVER_CONF={forseti_conf}\n'
+        'export FORSETI_SERVER_CONF={forseti_server_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
                  forseti_conf=FORSETI_CONF)
 
@@ -174,6 +174,10 @@ python setup.py install
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
 
+# Store the variables in /etc/profile.d/forseti_environment.sh 
+# so all the users will have access to them
+echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
+
 # Set ownership of the project to $USER
 chown -R $USER {forseti_home}
 
@@ -224,7 +228,7 @@ echo "Execution of startup script finished"
 
     # Download the Forseti conf and rules.
     scanner_bucket=SCANNER_BUCKET,
-    forseti_conf=FORSETI_CONF,
+    forseti_server_conf=FORSETI_SERVER_CONF,
 
     # Env variables for Explain
     export_initialize_vars=EXPORT_INITIALIZE_VARS,
