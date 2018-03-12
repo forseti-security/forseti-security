@@ -63,7 +63,7 @@ mv forseti-security-{release_version} forseti-security
         'export FORSETI_HOME={forseti_home}\n'
         'export FORSETI_SERVER_CONF={forseti_server_conf}\n'
         ).format(forseti_home=FORSETI_HOME,
-                 forseti_conf=FORSETI_CONF)
+                 forseti_server_conf=FORSETI_SERVER_CONF)
 
     RUN_FREQUENCY = context.properties['run-frequency'].format(
         rand_minute=random.randint(0, 59))
