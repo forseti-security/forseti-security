@@ -172,9 +172,11 @@ def _mock_container():
     def _mock_ke_get_clusters(projectid):
         return results.KE_GET_CLUSTERS[projectid]
 
-    def _mock_ke_get_service_config(projectid, zone):
+    def _mock_ke_get_service_config(projectid, zone, location):
         del projectid
-        return results.KE_GET_SERVICECONFIG[zone]
+        if zone:
+            return results.KE_GET_SERVICECONFIG[zone]
+        return results.KE_GET_SERVICECONFIG[location]
 
     container_patcher = mock.patch(
         MODULE_PATH + 'container.ContainerClient', spec=True)
