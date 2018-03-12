@@ -235,6 +235,7 @@ class ContainerClient(object):
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP API fails
+            ValueError: Raised if neither zone nor location are passed in.
         """
 
         try:
