@@ -35,5 +35,4 @@ def escape_and_globify(pattern_string):
     """
     if pattern_string == '*':
         return '^.*$'
-    else:
-        return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+?'))
+    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+?'))
