@@ -16,6 +16,7 @@
 
 FAKE_PROJECT_ID = "project1"
 FAKE_ZONE = "us-central1-a"
+FAKE_LOCATION = "europe-west1"
 FAKE_BAD_ZONE = "bad-zone"
 
 FAKE_GET_SERVERCONFIG_RESPONSE = """
