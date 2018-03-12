@@ -139,7 +139,9 @@ chown -R $USER {forseti_home}
 # Export variables
 {persist_forseti_vars}
 
-sudo echo "{persist_forseti_vars}" >> $USER_HOME/.bashrc
+# Store the variables in /etc/profile.d/forseti_environment.sh 
+# so all the users will have access to them
+echo "echo '{persist_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
 echo "Execution of startup script finished"
 """.format(
