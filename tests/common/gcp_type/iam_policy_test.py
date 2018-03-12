@@ -94,6 +94,8 @@ class IamPolicyTest(ForsetiTestCase):
             'user:anyone@not.company.com'))
         self.assertFalse(iam_policy_members[2].matches(
             'user:anyone@notmycompany.com'))
+        self.assertFalse(iam_policy_members[2].matches(
+            'user:anyone@mycompany.com.notmycompany.com'))
         self.assertFalse(iam_policy_members[3].matches(
             'serviceAccount:someone@gserviceaccount.com'))
         self.assertFalse(iam_policy_members[3].matches(
