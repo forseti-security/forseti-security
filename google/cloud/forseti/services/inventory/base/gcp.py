@@ -436,17 +436,20 @@ class ApiClientImpl(ApiClient):
             yield cluster
 
     @create_lazy('container', _create_container)
-    def fetch_container_serviceconfig(self, projectid, zone):
+    def fetch_container_serviceconfig(self, projectid, zone=None,
+                                      location=None):
         """Kubernetes Engine per zone service config from gcp API call.
 
         Args:
             projectid (str): id of the project to query
             zone (str): zone of the Kubernetes Engine
+            location (str): location of the Kubernetes Engine
 
         Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
-        return self.container.get_serverconfig(projectid, zone)
+        return self.container.get_serverconfig(projectid, zone=zone,
+                                               location=location)
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):
