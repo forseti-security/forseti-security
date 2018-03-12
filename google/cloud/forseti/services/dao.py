@@ -2003,8 +2003,8 @@ class ModelManager(object):
         try:
             return self.sessionmakers[handle]
         except KeyError:
-            LOGGER.warn('Sessionmakers doesn\'t contain handle,'
-                        ' handle = %s', handle)
+            LOGGER.debug('Sessionmakers doesn\'t contain handle = %s,'
+                         ' creating a new handle.', handle)
             with self.modelmaker() as session:
                 model = (
                     session.query(Model).filter(Model.handle == handle).one()
