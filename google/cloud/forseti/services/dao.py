@@ -2004,7 +2004,7 @@ class ModelManager(object):
             return self.sessionmakers[handle]
         except KeyError:
             LOGGER.debug('Sessionmakers doesn\'t contain handle = %s,'
-                        ' creating a new handle.', handle)
+                         ' creating a new handle.', handle)
             with self.modelmaker() as session:
                 model = (
                     session.query(Model).filter(Model.handle == handle).one()
