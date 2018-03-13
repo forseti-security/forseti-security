@@ -776,11 +776,13 @@ class KubernetesCluster(Resource):
         Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
-        if not self['selfLink'] or 'zones' not in self['selfLink']:
+        try:
+            return client.fetch_container_serviceconfig(
+                self.parent().key(), zone=self.zone(), location=self.location())
+        except ValueError:
+            LOGGER.error('Cluster has no zone or location: %s',
+                         self._data)
             return {}
-
-        return client.fetch_container_serviceconfig(self.parent().key(),
-                                                    self.zone())
 
     def key(self):
         """Get key of this resource
@@ -799,6 +801,20 @@ class KubernetesCluster(Resource):
         """
         return 'kubernetes_cluster'
 
+    def location(self):
+        """Get KubernetesCluster location
+
+        Returns:
+            str: KubernetesCluster location
+        """
+        try:
+            self_link_parts = self['selfLink'].split('/')
+            return self_link_parts[self_link_parts.index('locations')+1]
+        except (KeyError, ValueError):
+            LOGGER.debug('selfLink not found or contains no locations: %s',
+                         self._data)
+            return None
+
     def zone(self):
         """Get KubernetesCluster zone
 
@@ -808,9 +824,10 @@ class KubernetesCluster(Resource):
         try:
             self_link_parts = self['selfLink'].split('/')
             return self_link_parts[self_link_parts.index('zones')+1]
-        except KeyError:
-            LOGGER.debug('selfLink not found: %s', self._data)
-            return ''
+        except (KeyError, ValueError):
+            LOGGER.debug('selfLink not found or containes no zones: %s',
+                         self._data)
+            return None
 
 class DataSet(Resource):
     """The Resource implementation for DataSet"""
