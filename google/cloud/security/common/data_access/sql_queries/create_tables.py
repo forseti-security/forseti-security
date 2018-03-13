@@ -559,6 +559,7 @@ CREATE_SERVICE_ACCOUNTS_TABLE = """
 CREATE_VIOLATIONS_TABLE = """
     CREATE TABLE `{0}` (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `violation_hash` varchar(255) NOT NULL,
         `resource_type` varchar(255) NOT NULL,
         `resource_id` varchar(255) NOT NULL,
         `rule_name` varchar(255) DEFAULT NULL,
@@ -579,6 +580,7 @@ CREATE_VIOLATIONS_TABLE = """
                               'IAP_VIOLATION',
                               'INSTANCE_NETWORK_INTERFACE_VIOLATION') NOT NULL,
         `violation_data` json DEFAULT NULL,
+        `created_at_datetime` datetime DEFAULT NULL,
         PRIMARY KEY (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 """

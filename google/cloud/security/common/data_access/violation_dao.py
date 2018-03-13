@@ -14,6 +14,8 @@
 
 """Provides the data access object (DAO) for Organizations."""
 
+from datetime import datetime
+import hashlib
 import json
 
 from collections import defaultdict
@@ -35,9 +37,9 @@ LOGGER = log_util.get_logger(__name__)
 class ViolationDao(dao.Dao):
     """Data access object (DAO) for rule violations."""
 
-    violation_attribute_list = ['resource_type', 'resource_id', 'rule_name',
-                                'rule_index', 'violation_type',
-                                'violation_data']
+    violation_attribute_list = [
+        'violation_hash', 'resource_type', 'resource_id', 'rule_name',
+        'rule_index', 'violation_type', 'violation_data', 'created_at_datetime']
     frozen_violation_attribute_list = frozenset(violation_attribute_list)
     Violation = namedtuple('Violation', frozen_violation_attribute_list)
 
@@ -82,16 +84,21 @@ class ViolationDao(dao.Dao):
         except MySQLdb.Error, e:
             raise db_errors.MySQLError(resource_name, e)
 
+        created_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
         inserted_rows = 0
         violation_errors = []
         for violation in violations:
             violation = self.Violation(
+                violation_hash=_create_violation_hash(
+                    violation['resource_id'], violation['violation_data']),
                 resource_type=violation['resource_type'],
                 resource_id=violation['resource_id'],
                 rule_name=violation['rule_name'],
                 rule_index=violation['rule_index'],
                 violation_type=violation['violation_type'],
-                violation_data=violation['violation_data'])
+                violation_data=violation['violation_data'],
+                created_at_datetime=created_at)
             for formatted_violation in _format_violation(violation,
                                                          resource_name):
                 try:
@@ -171,3 +178,38 @@ def map_by_resource(violation_rows):
             v_by_type[v_resource].append(v_data)
 
     return dict(v_by_type)
+
+def _create_violation_hash(resource_id, violation_data):
+    """Create a hash of violation data.
+    Args:
+        violation_full_name (str): The full name of the violation.
+        inventory_data (str): The inventory data.
+        violation_data (dict): A violation.
+    Returns:
+        str: The resulting hex digest or '' if we can't successfully create
+        a hash.
+    """
+
+    # TODO: Intelligently choose from hashlib.algorithms_guaranteed if our
+    # desired one is not available.
+    algorithm = 'sha512'
+
+    try:
+        violation_hash = hashlib.new(algorithm)
+    except ValueError as e:
+        LOGGER.error('Cannot create hash for a violation with algorithm: '
+                     '%s\n%s', algorithm, e)
+        return ''
+
+    try:
+        violation_hash.update(
+            str(resource_id) +
+            json.dumps(violation_data, sort_keys=True)
+        )
+    except TypeError as e:
+        LOGGER.error('Cannot create hash for a violation: %s\n%s',
+                     resource_id, e)
+        return ''
+
+    return violation_hash.hexdigest()
+

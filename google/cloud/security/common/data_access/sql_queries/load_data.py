@@ -22,7 +22,7 @@ LOAD_DATA = """
 
 INSERT_VIOLATION = """
     INSERT INTO {0}
-    (resource_type, resource_id, rule_name, rule_index,
-     violation_type, violation_data)
-    VALUES (%s, %s, %s, %s, %s, %s)
+    (violation_hash, resource_type, resource_id, rule_name, rule_index,
+     violation_type, violation_data, created_at_datetime)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 """

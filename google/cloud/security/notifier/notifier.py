@@ -35,6 +35,7 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.security.notifier.pipelines.cscc_pipeline import CsccPipeline
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 # pylint: enable=line-too-long
@@ -180,10 +181,11 @@ def main(_):
 
     # get violations
     v_dao = violation_dao.ViolationDao(global_configs)
+    violations_as_dict = v_dao.get_all_violations(timestamp)
+
     violations = {}
     try:
-        violations = violation_dao.map_by_resource(
-            v_dao.get_all_violations(timestamp))
+        violations = violation_dao.map_by_resource(violations_as_dict)
     except db_errors.MySQLError, e:
         # even if an error is raised we still want to continue execution
         # this is because if we don't have violations the Mysql table
@@ -220,6 +222,12 @@ def main(_):
     # run the pipelines
     for pipeline in pipelines:
         pipeline.run()
+
+    if notifier_configs.get('violation').get('cscc').get('enabled'):
+        CsccPipeline().run(
+            violations_as_dict,
+            notifier_configs.get('violation').get('cscc').get('gcs_path'),
+            timestamp)
 
 
 if __name__ == '__main__':
