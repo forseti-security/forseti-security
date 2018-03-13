@@ -44,17 +44,26 @@ class ContainerRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
+        self._projects_locations = None
         self._projects_zones = None
         self._projects_zones_clusters = None
 
         super(ContainerRepositoryClient, self).__init__(
-            'container', versions=['v1'],
+            'container', versions=['v1', 'v1beta1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
+    @property
+    def projects_locations(self):
+        """Returns a _ContainerProjectsLocationsRepository instance."""
+        if not self._projects_locations:
+            self._projects_locations = self._init_repository(
+                _ContainerProjectsLocationsRepository, version='v1beta1')
+        return self._projects_locations
+
     @property
     def projects_zones(self):
         """Returns a _ContainerProjectsZonesRepository instance."""
@@ -71,6 +80,49 @@ class ContainerRepositoryClient(_base_repository.BaseRepositoryClient):
                 _ContainerProjectsZonesClustersRepository)
         return self._projects_zones_clusters
     # pylint: enable=missing-return-doc, missing-return-type-doc
+
+
+class _ContainerProjectsLocationsRepository(
+        _base_repository.GCPRepository):
+    """Implementation of Container Projects.Locations repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ContainerProjectsLocationsRepository, self).__init__(
+            component='projects.locations', **kwargs)
+
+    def get_serverconfig(self, project_id, location, fields=None, **kwargs):
+        """Get KE serverconfig for location.
+
+        Args:
+            project_id (str): The id of the project to query.
+            location (str):  Name of the location to get the configuration for.
+            fields (str): Fields to include in the response - partial response.
+            **kwargs (dict): Optional additional arguments to pass to the query.
+
+        Returns:
+            dict: Response from the API.
+
+        Raises:
+            errors.HttpError: When attempting to get a non-existent entity.
+               ex: HttpError 404 when requesting ... returned
+                   "The resource '...' was not found"
+        """
+        name = 'projects/{}/locations/{}'.format(project_id, location)
+        arguments = {
+            'name': name,
+            'fields': fields,
+        }
+        if kwargs:
+            arguments.update(kwargs)
+        return self.execute_query(
+            verb='getServerConfig',
+            verb_arguments=arguments,
+        )
 
 
 class _ContainerProjectsZonesRepository(
@@ -151,16 +203,20 @@ class ContainerClient(object):
             quota_period=self.DEFAULT_QUOTA_PERIOD,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-    def get_serverconfig(self, project_id, zone):
-        """Gets the serverconfig for a project and zone.
+    def get_serverconfig(self, project_id, zone=None, location=None):
+        """Gets the serverconfig for a project and zone or location.
+
+        Requires either a zone or a location, if both are passed in, the
+        location is used instead of the zone.
 
         Args:
             project_id (int): The project id for a GCP project.
             zone (str):  Name of the zone to get the configuration for.
+            location (str): Name of the location to get the configuration for.
 
         Returns:
             dict: A serverconfig for a given Compute Engine zone.
-            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.zones/getServerconfig
+            https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/ServerConfig
 
             {
               "defaultClusterVersion": string,
@@ -179,11 +235,18 @@ class ContainerClient(object):
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP API fails
+            ValueError: Raised if neither zone nor location are passed in.
         """
 
         try:
-            return self.repository.projects_zones.get_serverconfig(project_id,
-                                                                   zone)
+            if location:
+                return self.repository.projects_locations.get_serverconfig(
+                    project_id, location=location)
+            elif zone:
+                return self.repository.projects_zones.get_serverconfig(
+                    project_id, zone=zone)
+            raise ValueError('get_serverconfig takes either zone or location, '
+                             'got zone: %s, location: %s' % (zone, location))
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.warn(api_errors.ApiExecutionError(project_id, e))
             raise api_errors.ApiExecutionError(project_id, e)
