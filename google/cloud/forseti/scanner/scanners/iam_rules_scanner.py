@@ -14,7 +14,6 @@
 
 """Scanner for the IAM rules engine."""
 
-from datetime import datetime
 import json
 import os
 import sys
@@ -26,6 +25,7 @@ from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iam_rules_engine
@@ -84,7 +84,7 @@ def _add_bucket_ancestor_bindings(policy_data):
                     continue
                 if ancestor_binding in bucket_bindings:
                     continue
-                # do we have a binding with the same 'role_name' already?
+                # Do we have a binding with the same 'role_name' already?
                 for bucket_binding in bucket_bindings:
                     if bucket_binding.role_name == ancestor_binding.role_name:
                         bucket_binding.merge_members(ancestor_binding)
@@ -177,7 +177,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
                 # Scanner timestamp for output file and email.
-                now_utc = datetime.utcnow()
+                now_utc = date_time.get_utc_now_datetime()
 
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
@@ -200,7 +200,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                         'sendgrid_api_key':
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
-                        'output_filename': self._get_output_filename(now_utc),
+                        'output_filename': self.get_output_filename(now_utc),
                         'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,

@@ -28,6 +28,7 @@ from google.cloud.forseti.common.gcp_type import instance_group as instance_grou
 from google.cloud.forseti.common.gcp_type import instance_group_manager as instance_group_manager_type
 from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
 from google.cloud.forseti.common.gcp_type import network as network_type
+from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners import iap_scanner
 from google.cloud.forseti.services.dao import ModelManager
 
@@ -526,7 +527,7 @@ class IapScannerTest(ForsetiTestCase):
             ), iap_resources[BACKEND_SERVICES['bs1'].key])
 
     @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iap_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.iap_scanner.date_time',
         autospec=True)
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iap_scanner.notifier',
@@ -536,9 +537,9 @@ class IapScannerTest(ForsetiTestCase):
     @mock.patch.object(
         iap_scanner.IapScanner, '_output_results_to_db', autospec=True)
     def test_run_scanner(self, mock_output_results, mock_csv_writer,
-                         mock_upload_csv, mock_notifier, mock_datetime):
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
+                         mock_upload_csv, mock_notifier, mock_date_time):
+        mock_date_time.get_utc_now_datetime = mock.MagicMock()
+        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
 
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(

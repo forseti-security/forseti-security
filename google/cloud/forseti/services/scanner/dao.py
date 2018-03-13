@@ -15,7 +15,6 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
-from datetime import datetime
 import hashlib
 import json
 
@@ -30,38 +29,12 @@ from sqlalchemy.orm import sessionmaker
 
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.services import db
 
 LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=no-member
-
-TIMESTAMP_FORMAT = string_formats.TIMESTAMP_TIMEZONE_NAME
-
-
-def _get_utc_now():
-    """Get a datetime object for utcnow()
-
-    Returns:
-          datetime: A datetime object representin utcnow().
-    """
-    return datetime.utcnow()
-
-
-def _get_utc_now_timestamp(str_format=TIMESTAMP_FORMAT):
-    """Get a str representing utcnow()
-
-    Args:
-        str_format (str): The requested format string.
-
-    Returns:
-          str: A timestamp in the classes default timestamp format.
-    """
-    utc_now = _get_utc_now()
-
-    return utc_now.strftime(str_format)
-
 
 def define_violation(dbengine):
     """Defines table class for violations.
@@ -141,7 +114,7 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
-                created_at_datetime = _get_utc_now()
+                created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
                     violation_hash = _create_violation_hash(
                         violation.get('full_name', ''),

@@ -14,7 +14,6 @@
 
 """Scanner for the Identity-Aware Proxy rules engine."""
 import collections
-from datetime import datetime
 import os
 
 from google.cloud.forseti.common.data_access import csv_writer
@@ -31,6 +30,7 @@ from google.cloud.forseti.common.gcp_type import (
     instance_template as instance_template_type)
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iap_rules_engine
@@ -444,7 +444,7 @@ class IapScanner(base_scanner.BaseScanner):
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
                 # Scanner timestamp for output file and email.
-                now_utc = datetime.utcnow()
+                now_utc = date_time.get_utc_now_datetime()
 
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
@@ -467,7 +467,7 @@ class IapScanner(base_scanner.BaseScanner):
                         'sendgrid_api_key':
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
-                        'output_filename': self._get_output_filename(now_utc),
+                        'output_filename': self.get_output_filename(now_utc),
                         'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,
