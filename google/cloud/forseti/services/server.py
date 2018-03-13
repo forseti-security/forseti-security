@@ -387,6 +387,12 @@ def serve(endpoint,
         Exception: No services to start
     """
 
+    # Configuring log level for the application
+    logger.set_logger_level_from_config(log_level)
+
+    if enable_console_log:
+        logger.enable_console_log()
+
     factories = []
     for service in services:
         factories.append(STATIC_SERVICE_MAPPING[service])
@@ -401,12 +407,6 @@ def serve(endpoint,
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try '
                      'again. Error: %s', err)
-
-    # Configuring log level for the application
-    logger.set_logger_level_from_config(log_level)
-
-    if enable_console_log:
-        logger.enable_console_log()
 
     # Setting up configurations
     forseti_inventory_config = forseti_config.get('inventory', {})

@@ -86,7 +86,8 @@ def set_logger_level(level):
 
 
 def enable_console_log():
-    """Enable console logging."""
+    """Enable console logging for all the new loggers and add console
+    handlers to all the existing loggers."""
 
     # pylint: disable=global-statement
     global LOG_TO_CONSOLE
