@@ -17,6 +17,7 @@
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
 # pylint: enable=line-too-long
@@ -62,7 +63,7 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
         email_content = EmailUtil.render_from_template(
             'inventory_snapshot_summary.jinja',
             {'snapshot_time':
-                 snapshot_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
+                 snapshot_time.strftime(string_formats.TIMESTAMP_READABLE_UTC),
              'snapshot_timestamp': snapshot_timestamp,
              'status_summary': status,
              'pipelines': inventory_pipelines})

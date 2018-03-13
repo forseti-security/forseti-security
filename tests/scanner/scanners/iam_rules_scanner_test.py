@@ -17,6 +17,7 @@ from datetime import datetime
 import mock
 import unittest
 
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type import iam_policy
@@ -146,18 +147,18 @@ class IamRulesScannerTest(ForsetiTestCase):
             'organization/234/folder/333/project/proj-2/bucket/internal-2/iam_policy/bucket:internal-2')
 
 
-    def test_get_output_filename(self):
+    def testget_output_filename(self):
         """Test that the output filename of the scanner is correct.
 
         Expected:
             * Scanner output filename matches the format.
         """
         fake_utcnow_str = self.fake_utcnow.strftime(
-            self.scanner.OUTPUT_TIMESTAMP_FMT)
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        expected = self.scanner.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
-        actual = self.scanner._get_output_filename(self.fake_utcnow)
-        self.assertEqual(expected, actual)
+        expected = string_formats.SCANNER_OUTPUT_CSV_FMT.format(fake_utcnow_str)
+        actual = self.scanner.get_output_filename(self.fake_utcnow)
+        self.assertEquals(expected, actual)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
@@ -169,7 +170,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.date_time',
         autospec=True)
     @mock.patch.object(
         iam_rules_scanner.csv_writer,
@@ -183,7 +184,8 @@ class IamRulesScannerTest(ForsetiTestCase):
     # autospec on staticmethod will return noncallable mock
     def test_output_results_local_no_email(
         self, mock_flatten_violations, mock_output_results_to_db,
-        mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
+        mock_write_csv, mock_date_time, mock_os, mock_upload_csv,
+        mock_notifier):
         """Test output results for local output, and don't send email.
 
         Setup:
@@ -198,8 +200,8 @@ class IamRulesScannerTest(ForsetiTestCase):
         """
         mock_os.path.abspath.return_value = (
             self.fake_scanner_configs.get('output_path'))
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
+        mock_date_time.get_utc_now_datetime = mock.MagicMock()
+        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
 
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
@@ -228,7 +230,7 @@ class IamRulesScannerTest(ForsetiTestCase):
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.os',
         autospec=True)
     @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.datetime',
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.date_time',
         autospec=True)
     @mock.patch.object(
         iam_rules_scanner.csv_writer,
@@ -242,12 +244,13 @@ class IamRulesScannerTest(ForsetiTestCase):
     # autospec on staticmethod will return noncallable mock
     def test_output_results_gcs_email(
         self, mock_flatten_violations, mock_output_results_to_db,
-        mock_write_csv, mock_datetime, mock_os, mock_upload_csv, mock_notifier):
+        mock_write_csv, mock_date_time, mock_os, mock_upload_csv,
+        mock_notifier):
 
         mock_os.path.abspath.return_value = (
             self.fake_scanner_configs.get('output_path'))
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
+        mock_date_time.get_utc_now_datetime= mock.MagicMock()
+        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
 
         fake_csv_name = 'fake.csv'
         fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)

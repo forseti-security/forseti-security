@@ -19,6 +19,7 @@ import mock
 
 from tests.unittest_utils import ForsetiTestCase
 from tests.scanner.test_data import fake_iam_policies
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.scanner.audit import iam_rules_engine as ire
 from google.cloud.forseti.scanner.scanners import iam_rules_scanner as irs
@@ -41,7 +42,7 @@ class ScannerRunnerTest(ForsetiTestCase):
             microsecond=0)
         self.fake_utcnow = fake_utcnow
         self.fake_utcnow_str = self.fake_utcnow.strftime(
-            scanner.OUTPUT_TIMESTAMP_FMT)
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
         self.fake_timestamp = '123456'
         self.scanner = scanner
         self.scanner.LOGGER = mock.MagicMock()

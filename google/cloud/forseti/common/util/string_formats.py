@@ -14,6 +14,12 @@
 
 """Common formatting methods."""
 
+# Filename patterns.
+FINDINGS_FILENAME = 'forseti_findings_{}.json'
+SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
+VIOLATION_JSON_FMT = 'violations.{}.{}.{}.json'
+
+# Timestamps.
 # Example: '2018-03-01T21:31:52'
 TIMESTAMP_UTC_OFFSET = '%Y-%m-%dT%H:%M:%S%z'
 
@@ -21,7 +27,21 @@ TIMESTAMP_UTC_OFFSET = '%Y-%m-%dT%H:%M:%S%z'
 TIMESTAMP_MICROS = '%Y-%m-%dT%H:%M:%S.%f'
 
 # Example: '2018-03-01T21:33:59Z'
-TIMESTAMP_TIMEZONE_NAME = '%Y-%m-%dT%H:%M:%SZ'
+TIMESTAMP_TIMEZONE = '%Y-%m-%dT%H:%M:%SZ'
 
 # Example: '01 March 2018 - 21:38:12'
-TIMESTAMP_HUMAN_READABLE = '%d %B %Y - %H:%M:%S'
+TIMESTAMP_READABLE = '%d %B %Y - %H:%M:%S'
+
+# Example: '2018-03-01 23:25:59'
+TIMESTAMP_MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+# Example: '2018 Mar 01, 23:14:55 (UTC)'
+TIMESTAMP_READABLE_UTC = '%Y %b %d, %H:%M:%S (UTC)'
+
+# Example: '20180301T213359Z'
+TIMESTAMP_TIMEZONE_FILES = '%Y%m%dT%H%M%SZ'
+
+# Defaults to use globally.
+DEFAULT_FORSETI_TIMESTAMP = TIMESTAMP_TIMEZONE
+DEFAULT_FORSETI_HUMAN_TIMESTAMP = TIMESTAMP_READABLE
+DEFAULT_FORSETI_FILE_TIMESTAMP = TIMESTAMP_TIMEZONE_FILES

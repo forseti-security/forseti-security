@@ -34,8 +34,10 @@ LOGGER = logger.get_logger(__name__)
 # pylint: disable=inconsistent-return-statements
 def find_pipelines(pipeline_name):
     """Get the first class in the given sub module
+
     Args:
         pipeline_name (str): Name of the pipeline.
+
     Return:
         class: The class in the sub module
     """
@@ -67,16 +69,18 @@ def convert_to_timestamp(violations):
     for violation in violations:
         violation.created_at_datetime = (
             violation.created_at_datetime.strftime(
-                string_formats.TIMESTAMP_TIMEZONE_NAME))
+                string_formats.TIMESTAMP_TIMEZONE))
 
     return violations
 
 def process(message):
     """Process messages about what notifications to send.
+
     Args:
         message (dict): Message with payload in dict.
             The payload will be different depending on the sender
             of the message.
+
             Example:
                 {'status': 'foobar_done',
                  'payload': {}}
@@ -113,10 +117,13 @@ def process(message):
 
 def run(inventory_index_id, service_config=None):
     """Run the notifier.
+
     Entry point when the notifier is run as a library.
+
     Args:
         inventory_index_id (str): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs
+
     Returns:
         int: Status code.
     """
