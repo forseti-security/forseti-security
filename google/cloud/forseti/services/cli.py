@@ -453,7 +453,7 @@ def define_parent_parser(parser_cls, config_env):
     LOGGER.debug('parser_cls = %s, config_env = %s',
                  parser_cls, config_env)
 
-    parent_parser = parser_cls()
+    parent_parser = parser_cls(prog='forseti')
     parent_parser.add_argument(
         '--endpoint',
         default=config_env['endpoint'],

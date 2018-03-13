@@ -244,3 +244,17 @@ def get_resources_from_full_name(full_name):
     resource_iter = iter(full_name_parts)
     for resource_id, resource_type in izip(resource_iter, resource_iter):
         yield resource_type, resource_id
+
+
+def get_key_from_type_name(type_name):
+    """Returns the key from type_name.
+
+    Args:
+        type_name (str): Type name.
+
+    Returns:
+        str: Resource key.
+    """
+    if '/' in type_name:
+        return type_name.split('/')[-1]
+    return type_name

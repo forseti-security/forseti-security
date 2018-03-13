@@ -165,7 +165,7 @@ class Model(MODEL_BASE):
         """
         warnings = self.get_warnings()
         if warnings:
-            LOGGER.warn('warnings = %s', warnings)
+            LOGGER.debug('warnings = %s', warnings)
             self.warnings = warnings
             self.state = 'PARTIAL_SUCCESS'
         else:
@@ -2020,8 +2020,8 @@ class ModelManager(object):
         try:
             return self.sessionmakers[handle]
         except KeyError:
-            LOGGER.warn('Sessionmakers doesn\'t contain handle,'
-                        ' handle = %s', handle)
+            LOGGER.debug('Sessionmakers doesn\'t contain handle = %s,'
+                         ' creating a new handle.', handle)
             with self.modelmaker() as session:
                 model = (
                     session.query(Model).filter(Model.handle == handle).one()
