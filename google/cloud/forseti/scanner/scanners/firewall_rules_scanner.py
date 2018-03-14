@@ -15,15 +15,11 @@
 
 from collections import defaultdict
 import json
-import os
 
-from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_type import firewall_rule
 from google.cloud.forseti.common.gcp_type import resource as resource_type
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import firewall_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
@@ -95,8 +91,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of violations.
         """
-        all_violations = self._flatten_violations(all_violations)
-        self._output_results_to_db(all_violations)
+        rule_indices = self.rules_engine.rule_book.rule_indices
+        all_violations = self._flatten_violations(all_violations, rule_indices)
+        self._output_results_to_db(list(all_violations))
 
     def _find_violations(self, policies):
         """Find violations in the policies.
