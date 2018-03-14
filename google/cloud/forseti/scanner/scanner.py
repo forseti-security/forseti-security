@@ -19,14 +19,16 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 LOGGER = logger.get_logger(__name__)
 
-def run(model_name=None, service_config=None):
+
+def run(model_name=None, progress_queue=None, service_config=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
 
     Args:
-        model_name (str): name of the data model
-        service_config (ServiceConfig): Forseti 2.0 service configs
+        model_name (str): The name of the data model.
+        progress_queue (Queue): The progress queue.
+        service_config (ServiceConfig): Forseti 2.0 service configs.
 
     Returns:
         int: Status code.
@@ -34,13 +36,6 @@ def run(model_name=None, service_config=None):
 
     global_configs = service_config.get_global_config()
     scanner_configs = service_config.get_scanner_config()
-
-    # TODO: Figure out if we still need to get the latest model here,
-    # or should it be set in the server context before calling the scanner.
-    # snapshot_timestamp = _get_timestamp(global_configs)
-    # if not snapshot_timestamp:
-    #    LOGGER.warn('No snapshot timestamp found. Exiting.')
-    #    sys.exit()
 
     violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
@@ -53,10 +48,16 @@ def run(model_name=None, service_config=None):
     for scanner in runnable_scanners:
         try:
             scanner.run()
+            progress_queue.put('Running {}...'.format(
+                scanner.__class__.__name__))
         except:
-            LOGGER.error('Error running scanner: %s',
-                         scanner.__class__.__name__, exc_info=True)
+            log_message = 'Error running scanner: {}'.format(
+                scanner.__class__.__name__)
+            progress_queue.put(log_message)
+            LOGGER.error(log_message, exc_info=True)
     # pylint: enable=bare-except
-
-    LOGGER.info('Scan complete!')
+    log_message = 'Scan completed!'
+    progress_queue.put(log_message)
+    progress_queue.put(None)
+    LOGGER.info(log_message)
     return 0
