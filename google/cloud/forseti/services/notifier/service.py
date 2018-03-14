@@ -14,16 +14,14 @@
 
 """Notifier gRPC service. """
 
+from Queue import Queue
+
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
 
 
 class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
@@ -32,7 +30,14 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
     HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
-        """Return the handle associated with the gRPC call."""
+        """Return the handle associated with the gRPC call.
+
+        Args:
+            context (object): Context of the request.
+
+        Returns:
+            str: The model handle.
+        """
 
         metadata = context.invocation_metadata()
         metadata_dict = {}
@@ -41,27 +46,49 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, notifier_api, service_config):
+        """Init.
+
+        Args:
+            notifier_api (Notifier): Notifier api implementation.
+            service_config (ServiceConfig): Forseti 2.0 service configs.
+        """
         super(GrpcNotifier, self).__init__()
         self.notifier = notifier_api
         self.service_config = service_config
 
     def Ping(self, request, _):
-        """Provides the capability to check for service availability."""
+        """Provides the capability to check for service availability.
+
+        Args:
+            request (PingRequest): The ping request.
+
+        Returns:
+            PingReply: The response to the ping request.
+        """
 
         return notifier_pb2.PingReply(data=request.data)
 
-    def Run(self, request, context):
-        """Run notifier."""
+    def Run(self, request, _):
+        """Run notifier.
+
+        Args:
+            request (RunRequest): The run request.
+
+        Yields:
+            Progress: The progress of the notifier.
+        """
+        progress_queue = Queue()
 
         LOGGER.info('Run notifier service with inventory index id: %s',
                     request.inventory_index_id)
-        result = self.notifier.run(
-            request.inventory_index_id,
-            self.service_config)
+        self.service_config.run_in_background(
+            lambda: self.notifier.run(
+                request.inventory_index_id,
+                progress_queue,
+                self.service_config))
 
-        reply = notifier_pb2.RunReply()
-        reply.status = result
-        return reply
+        for progress_message in iter(progress_queue.get, None):
+            yield notifier_pb2.Progress(message=progress_message)
 
 
 class GrpcNotifierFactory(object):

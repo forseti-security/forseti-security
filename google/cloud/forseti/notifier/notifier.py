@@ -111,12 +111,14 @@ def process(message):
             payload.get('email_description'))
         return
 
-def run(inventory_index_id, service_config=None):
+
+def run(inventory_index_id, progress_queue, service_config=None):
     """Run the notifier.
     Entry point when the notifier is run as a library.
     Args:
         inventory_index_id (str): Inventory index id.
-        service_config (ServiceConfig): Forseti 2.0 service configs
+        progress_queue (Queue): The progress queue.
+        service_config (ServiceConfig): Forseti 2.0 service configs.
     Returns:
         int: Status code.
     """
@@ -145,25 +147,28 @@ def run(inventory_index_id, service_config=None):
     violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
-        LOGGER.info('retrieved %d violations for resource \'%s\'',
-                    len(violations[retrieved_v]), retrieved_v)
+        log_message = ('Retrieved {} violations for resource \'{}\''.format(
+            len(violations[retrieved_v]), retrieved_v))
+        LOGGER.info(log_message)
+        progress_queue.put(log_message)
 
     # build notification pipelines
     pipelines = []
     for resource in notifier_configs['resources']:
         if violations.get(resource['resource']) is None:
-            LOGGER.warn('The resource name \'%s\' has no violations, '
-                        'skipping', resource['resource'])
-            continue
-        if not violations[resource['resource']]:
-            LOGGER.debug('No violations for: %s', resource['resource'])
+            log_message = 'Resource \'{}\' has no violations'.format(
+                resource['resource'])
+            progress_queue.put(log_message)
+            LOGGER.info(log_message)
             continue
         if not resource['should_notify']:
             LOGGER.debug('Not notifying for: %s', resource['resource'])
             continue
         for pipeline in resource['pipelines']:
-            LOGGER.info('Running \'%s\' pipeline for resource \'%s\'',
-                        pipeline['name'], resource['resource'])
+            log_message = 'Running \'{}\' for resource \'{}\''.format(
+                pipeline['name'], resource['resource'])
+            progress_queue.put(log_message)
+            LOGGER.info(log_message)
             chosen_pipeline = find_pipelines(pipeline['name'])
             pipelines.append(chosen_pipeline(resource['resource'],
                                              inventory_index_id,
@@ -181,5 +186,8 @@ def run(inventory_index_id, service_config=None):
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
 
-    LOGGER.info('Notification complete!')
+    log_message ='Notification completed!'
+    progress_queue.put(log_message)
+    progress_queue.put(None)
+    LOGGER.info(log_message)
     return 0
