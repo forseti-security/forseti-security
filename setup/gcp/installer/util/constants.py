@@ -209,7 +209,7 @@ MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
-    'API Key (enter for none)')
+    'API Key')
 
 MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL = (
     'Forseti can be configured to access an '

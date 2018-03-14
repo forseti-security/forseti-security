@@ -64,14 +64,13 @@ class BucketsAclScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['role'] = violation.role
-            violation_data['entity'] = violation.entity
-            violation_data['email'] = violation.email
-            violation_data['domain'] = violation.domain
-            violation_data['bucket'] = violation.bucket
-            violation_data['full_name'] = violation.full_name
-            violation_data['project_id'] = violation.project_id
+            violation_data = {'role': violation.role,
+                              'entity': violation.entity,
+                              'email': violation.email,
+                              'domain': violation.domain,
+                              'bucket': violation.bucket,
+                              'full_name': violation.full_name,
+                              'project_id': violation.project_id}
             yield {
                 'resource_id': violation.resource_id,
                 'full_name': violation.full_name,
@@ -134,6 +133,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         return bucket_acls
 
     def run(self):
+        """Run, he entry point for this scanner."""
         buckets_acls = self._retrieve()
         all_violations = self._find_violations(buckets_acls)
         self._output_results(all_violations)

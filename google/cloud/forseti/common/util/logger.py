@@ -20,7 +20,6 @@ Setup logging for Forseti Security. Logs to console and syslog.
 import logging
 import logging.handlers
 
-
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
@@ -28,9 +27,9 @@ SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
 LOGGERS = {}
 LOGLEVELS = {
     'debug': logging.DEBUG,
-    'info' : logging.INFO,
-    'warning' : logging.WARN,
-    'error' : logging.ERROR,
+    'info': logging.INFO,
+    'warning': logging.WARN,
+    'error': logging.ERROR,
 }
 LOGLEVEL = logging.INFO
 LOG_TO_CONSOLE = False

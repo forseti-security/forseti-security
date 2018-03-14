@@ -18,7 +18,6 @@ import json
 
 
 def format_violation(violation):
-
     """Format the policy violation data into a tuple.
 
     Also flattens the RuleViolation, since it consists of the resource,
@@ -51,6 +50,7 @@ def format_violation(violation):
            violation.rule_index,
            violation.violation_type,
            json.dumps(violation.violation_data))
+
 
 # TODO: refactor groups scanner to use the generic violations format
 def format_groups_violation(violation):

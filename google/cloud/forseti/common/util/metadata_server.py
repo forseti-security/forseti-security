@@ -23,7 +23,6 @@ import socket
 from google.cloud.forseti.common.util import errors
 from google.cloud.forseti.common.util import logger
 
-
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
 REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
@@ -44,6 +43,7 @@ def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
     """
     return httplib.HTTPConnection(hostname,
                                   timeout=METADATA_SERVER_CONN_TIMEOUT)
+
 
 def _issue_http_request(path, method, headers):
     """Perform a request on a specified httplib connection object.
@@ -68,6 +68,7 @@ def _issue_http_request(path, method, headers):
     finally:
         http_client.close()
 
+
 # TODO: Should use memoize or similar so that after the first check
 # the cached result is always returned, regardless of how often it is
 # called.
@@ -87,6 +88,7 @@ def can_reach_metadata_server():
         pass
 
     return response and response.status == HTTP_SUCCESS
+
 
 def get_value_for_attribute(attribute):
     """For a given key return the value.

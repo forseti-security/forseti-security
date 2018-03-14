@@ -62,16 +62,15 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['full_name'] = violation.full_name
-            violation_data['violation_type'] = violation.violation_type
-            violation_data['target'] = violation.target
-            violation_data['load_balancing_scheme'] = (
-                violation.load_balancing_scheme)
-            violation_data['port'] = violation.port
-            violation_data['port_range'] = violation.port_range
-            violation_data['ip_protocol'] = violation.ip_protocol
-            violation_data['ip_address'] = violation.ip_address
+            violation_data = {'full_name': violation.full_name,
+                              'violation_type': violation.violation_type,
+                              'target': violation.target,
+                              'load_balancing_scheme': (
+                                  violation.load_balancing_scheme),
+                              'port': violation.port,
+                              'port_range': violation.port_range,
+                              'ip_protocol': violation.ip_protocol,
+                              'ip_address': violation.ip_address}
             yield {
                 'resource_id': violation.resource_id,
                 'full_name': violation.full_name,
@@ -133,6 +132,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         return all_violations
 
     def run(self):
+        """Run, the entry point for this scanner."""
         forwarding_rules = self._retrieve()
         all_violations = self._find_violations(forwarding_rules)
         self._output_results(all_violations)

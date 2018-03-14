@@ -133,6 +133,7 @@ class KeVersionScanner(base_scanner.BaseScanner):
         return ke_clusters
 
     def run(self):
+        """Run, the entry point for this scanner."""
         ke_clusters = self._retrieve()
         all_violations = self._find_violations(ke_clusters)
         self._output_results(all_violations)

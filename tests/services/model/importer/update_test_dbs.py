@@ -19,16 +19,15 @@ be run to update the forseti-test.db file with the additional resources.
 From the top forseti-security dir, run:
 
 PYTHONPATH=. python tests/services/model/importer/update_test_dbs.py
-
 """
-
-import datetime
 import os
 import shutil
 import time
 import mock
+
 from tests.services.api_tests.api_tester import ApiTestRunner
 from tests.services.inventory import gcp_api_mocks
+from tests.services.model.importer import importer_test
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
 from google.cloud.forseti.common.util.threadpool import ThreadPool
@@ -54,9 +53,9 @@ class TestServiceConfig(MockServerConfig):
                                                 '',
                                                 {})
 
-    def run_in_background(self, function):
+    def run_in_background(self, func):
         """Stub."""
-        self.workers.add_func(function)
+        self.workers.add_func(func)
 
     def get_engine(self):
         return self.engine
@@ -90,9 +89,9 @@ def main():
                                                 import_as=''):
             continue
 
-    fake_time = datetime.datetime(2018, 1, 28, 10, 20, 30, 0)
-    fake_datetime = mock.patch.object(
-        InventoryIndex, '_utcnow', return_value=fake_time).start()
+    fake_time = importer_test.FAKE_DATETIME
+    _ = mock.patch.object(InventoryIndex,
+                          '_utcnow', return_value=fake_time).start()
 
     engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)
