@@ -14,7 +14,6 @@
 
 """ Inventory storage implementation. """
 
-import datetime
 import json
 
 from sqlalchemy import Column
@@ -28,9 +27,12 @@ from sqlalchemy import exists
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services.inventory.base.storage import \
-    Storage as BaseStorage
+from google.cloud.forseti.common.util import string_formats
+# pylint: disable=line-too-long
+from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
+# pylint: enable=line-too-long
 
 # pylint: disable=too-many-instance-attributes
 
@@ -72,9 +74,9 @@ class InventoryIndex(BASE):
 
     __tablename__ = 'inventory_index'
 
-    id = Column(String(32), primary_key=True)
-    start_time = Column(DateTime())
-    complete_time = Column(DateTime())
+    id = Column(String(256), primary_key=True)
+    start_datetime = Column(DateTime())
+    complete_datetime = Column(DateTime())
     status = Column(Text())
     schema_version = Column(Integer())
     progress = Column(Text())
@@ -91,7 +93,7 @@ class InventoryIndex(BASE):
             object: UTC now time object.
         """
 
-        return datetime.datetime.utcnow()
+        return date_time.get_utc_now_datetime()
 
     def __repr__(self):
         """Object string representation.
@@ -104,7 +106,7 @@ class InventoryIndex(BASE):
             self.__class__.__name__,
             self.id,
             self.schema_version,
-            self.start_time)
+            self.start_datetime)
 
     @classmethod
     def create(cls):
@@ -114,11 +116,11 @@ class InventoryIndex(BASE):
             object: InventoryIndex row object.
         """
 
-        start_time = cls._utcnow()
+        start_datetime = cls._utcnow()
         return InventoryIndex(
-            id=start_time.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-1],
-            start_time=start_time,
-            complete_time=datetime.datetime.utcfromtimestamp(0),
+            id=start_datetime.strftime(string_formats.TIMESTAMP_MICROS),
+            start_datetime=start_datetime,
+            complete_datetime=date_time.get_utc_now_datetime(),
             status=InventoryState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
@@ -130,7 +132,7 @@ class InventoryIndex(BASE):
             status (str): Final status.
         """
 
-        self.complete_time = InventoryIndex._utcnow()
+        self.complete_datetime = InventoryIndex._utcnow()
         self.status = status
 
     def add_warning(self, session, warning):
@@ -169,7 +171,7 @@ class Inventory(BASE):
 
     # Order is used to resemble the order of insert for a given inventory
     order = Column(Integer, primary_key=True, autoincrement=True)
-    index = Column(String(32))
+    index = Column(String(256))
     type_class = Column(Text)
     key = Column(Text)
     type = Column(Text)
@@ -200,18 +202,16 @@ class Inventory(BASE):
         service_config = resource.get_kubernetes_service_config()
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
-        rows = []
-        rows.append(
-            Inventory(
-                index=index.id,
-                type_class=InventoryTypeClass.RESOURCE,
-                key=resource.key(),
-                type=resource.type(),
-                data=json.dumps(resource.data(), sort_keys=True),
-                parent_key=None if not parent else parent.key(),
-                parent_type=None if not parent else parent.type(),
-                other=other,
-                error=resource.get_warning()))
+        rows = [Inventory(
+            index=index.id,
+            type_class=InventoryTypeClass.RESOURCE,
+            key=resource.key(),
+            type=resource.type(),
+            data=json.dumps(resource.data(), sort_keys=True),
+            parent_key=None if not parent else parent.key(),
+            parent_type=None if not parent else parent.type(),
+            other=other,
+            error=resource.get_warning())]
 
         if iam_policy:
             rows.append(
@@ -496,9 +496,9 @@ class DataAccess(object):
         """
 
         result = (
-            session.query(InventoryIndex)
-            .filter(InventoryIndex.id == inventory_id)
-            .one())
+            session.query(InventoryIndex).filter(
+                InventoryIndex.id == inventory_id).one()
+        )
         session.expunge(result)
         return result
 
@@ -514,16 +514,16 @@ class DataAccess(object):
         """
 
         inventory_index = (
-            session.query(InventoryIndex)
-            .filter(or_(InventoryIndex.status == 'SUCCESS',
-                        InventoryIndex.status == 'PARTIAL_SUCCESS'))
-            .order_by(InventoryIndex.id.desc())
-            .first())
+            session.query(InventoryIndex).filter(
+                or_(InventoryIndex.status == 'SUCCESS',
+                    InventoryIndex.status == 'PARTIAL_SUCCESS')
+            ).order_by(InventoryIndex.id.desc()).first())
         session.expunge(inventory_index)
         LOGGER.info(
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
         return inventory_index.id
+
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -594,10 +594,10 @@ class Storage(BaseStorage):
         """
 
         return (
-            self.session.query(InventoryIndex)
-            .filter(InventoryIndex.id == existing_id)
-            .filter(InventoryIndex.status.in_(
-                [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
+            self.session.query(InventoryIndex).filter(
+                InventoryIndex.id == existing_id).filter(
+                    InventoryIndex.status.in_([InventoryState.SUCCESS,
+                                               InventoryState.PARTIAL_SUCCESS]))
             .one())
 
     def _get_resource_rows(self, key):
@@ -735,8 +735,8 @@ class Storage(BaseStorage):
             new_rows = Inventory.from_resource(self.index, resource)
             old_rows = self._get_resource_rows(resource.key())
 
-            new_dict = {row.type_class : row for row in new_rows}
-            old_dict = {row.type_class : row for row in old_rows}
+            new_dict = {row.type_class: row for row in new_rows}
+            old_dict = {row.type_class: row for row in old_rows}
 
             for type_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
                 if type_class in new_dict:
@@ -802,8 +802,7 @@ class Storage(BaseStorage):
             object: Single row object or child/parent if 'with_parent' is set.
         """
 
-        filters = []
-        filters.append(Inventory.index == self.index.id)
+        filters = [Inventory.index == self.index.id]
 
         if fetch_iam_policy:
             filters.append(
@@ -842,11 +841,9 @@ class Storage(BaseStorage):
             p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
-                .filter(
-                    and_(
-                        Inventory.parent_key == p_key,
-                        Inventory.parent_type == p_type,
-                        parent_inventory.index == self.index.id)))
+                .filter(and_(Inventory.parent_key == p_key,
+                             Inventory.parent_type == p_type,
+                             parent_inventory.index == self.index.id)))
         else:
             base_query = self.session.query(Inventory)
 
@@ -857,6 +854,7 @@ class Storage(BaseStorage):
 
         for row in base_query.yield_per(PER_YIELD):
             yield row
+
     # pylint: enable=too-many-locals
 
     def get_root(self):
@@ -871,7 +869,7 @@ class Storage(BaseStorage):
                 Inventory.key == Inventory.parent_key,
                 Inventory.type == Inventory.parent_type,
                 Inventory.type_class == InventoryTypeClass.RESOURCE
-                )).first()
+            )).first()
 
     def type_exists(self,
                     type_list=None):
@@ -887,7 +885,7 @@ class Storage(BaseStorage):
             Inventory.index == self.index.id,
             Inventory.type_class == InventoryTypeClass.RESOURCE,
             Inventory.type.in_(type_list)
-            ))).scalar()
+        ))).scalar()
 
     def __enter__(self):
         """To support with statement for auto closing.

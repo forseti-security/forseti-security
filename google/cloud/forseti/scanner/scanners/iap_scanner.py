@@ -14,7 +14,6 @@
 
 """Scanner for the Identity-Aware Proxy rules engine."""
 import collections
-from datetime import datetime
 import os
 
 from google.cloud.forseti.common.data_access import csv_writer
@@ -31,6 +30,7 @@ from google.cloud.forseti.common.gcp_type import (
     instance_template as instance_template_type)
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iap_rules_engine
@@ -38,13 +38,12 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
 IapResource = collections.namedtuple(
-    'IapResource',
-    ['project_full_name',
-     'backend_service',
-     'alternate_services',
-     'direct_access_sources',
-     'iap_enabled',
-    ])
+    'IapResource', ['project_full_name',
+                    'backend_service',
+                    'alternate_services',
+                    'direct_access_sources',
+                    'iap_enabled']
+)
 NetworkPort = collections.namedtuple(
     'NetworkPort',
     ['network', 'port'])
@@ -189,8 +188,7 @@ class _RunData(object):
                 else:
                     fw_port_min = int(fw_port_range)
                     fw_port_max = int(fw_port_range)
-                if (network_port.port >= fw_port_min and
-                        network_port.port <= fw_port_max):
+                if fw_port_min <= network_port.port <= fw_port_max:
                     return True
             return False
 
@@ -400,15 +398,12 @@ class IapScanner(base_scanner.BaseScanner):
             direct_access_sources.sort()
             direct_access_str = ', '.join(direct_access_sources)
 
-            violation_data = {}
-            violation_data['alternate_services_violations'] = (
-                alternate_services_str)
-            violation_data['direct_access_sources_violations'] = (
-                direct_access_str)
-            violation_data['iap_enabled_violation'] = (
-                str(violation.iap_enabled_violation))
-            violation_data['resource_name'] = (
-                violation.resource_name)
+            violation_data = {
+                'alternate_services_violations': alternate_services_str,
+                'direct_access_sources_violations': direct_access_str,
+                'iap_enabled_violation': str(violation.iap_enabled_violation),
+                'resource_name': violation.resource_name
+            }
 
             yield {
                 'resource_id': violation.resource_id,
@@ -442,15 +437,14 @@ class IapScanner(base_scanner.BaseScanner):
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None
-            with csv_writer.write_csv(
-                resource_name=resource_name,
-                data=all_violations,
-                write_header=True) as csv_file:
+            with csv_writer.write_csv(resource_name=resource_name,
+                                      data=all_violations,
+                                      write_header=True) as csv_file:
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
                 # Scanner timestamp for output file and email.
-                now_utc = datetime.utcnow()
+                now_utc = date_time.get_utc_now_datetime()
 
                 output_path = self.scanner_configs.get('output_path')
                 if not output_path.startswith('gs://'):
@@ -473,7 +467,7 @@ class IapScanner(base_scanner.BaseScanner):
                         'sendgrid_api_key':
                             self.global_configs.get('sendgrid_api_key'),
                         'output_csv_name': output_csv_name,
-                        'output_filename': self._get_output_filename(now_utc),
+                        'output_filename': self.get_output_filename(now_utc),
                         'now_utc': now_utc,
                         'all_violations': all_violations,
                         'resource_counts': resource_counts,

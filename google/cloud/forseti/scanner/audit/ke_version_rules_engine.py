@@ -25,7 +25,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -155,6 +154,7 @@ class KeVersionRuleBook(bre.BaseRuleBook):
 
                     if rule not in resource_rules.rules:
                         resource_rules.rules.add(rule)
+
     # pylint: enable=invalid-name
 
     def get_resource_rules(self, resource):
@@ -270,7 +270,7 @@ class ResourceRules(object):
         Returns:
             str: debug string
         """
-        return ('IapResourceRules<resource={}, rules={}>').format(
+        return 'IapResourceRules<resource={}, rules={}>'.format(
             self.resource, self.rules)
 
 
@@ -537,6 +537,8 @@ class Rule(object):
             int: The hash of the rule index.
         """
         return hash(self.rule_index)
+
+
 # pylint: enable=inconsistent-return-statements
 
 # Rule violation.

@@ -209,8 +209,8 @@ class IamPolicyMember(object):
 
     ALL_USERS = 'allUsers'
     ALL_AUTH_USERS = 'allAuthenticatedUsers'
-    member_types = set([ALL_USERS, ALL_AUTH_USERS,
-                        'user', 'group', 'serviceAccount', 'domain'])
+    member_types = {ALL_USERS, ALL_AUTH_USERS, 'user', 'group',
+                    'serviceAccount', 'domain'}
 
     def __init__(self, member_type, member_name=None):
         """Initialize.

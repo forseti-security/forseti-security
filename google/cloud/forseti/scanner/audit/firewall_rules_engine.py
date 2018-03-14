@@ -26,7 +26,6 @@ from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -283,7 +282,6 @@ class RuleBook(bre.BaseRuleBook):
                     resource_type=resource_type)
                 self.org_policy_rules_map[gcp_resource] = sorted(expanded_rules)
 
-
     def find_violations(self, resource, policies):
         """Find policy binding violations in the rule book.
 
@@ -491,7 +489,7 @@ class Rule(object):
                 deletes.add(policy.name)
 
         updates = inserts & deletes
-        inserts, deletes = (inserts-updates, deletes-updates)
+        inserts, deletes = (inserts - updates, deletes - updates)
 
         if inserts or deletes or updates:
             yield self._create_violation(
@@ -591,6 +589,7 @@ class Rule(object):
             inventory_data=inventory_data
         )
 
+
 # Rule violation.
 # resource_type: string
 # resource_id: string
@@ -602,6 +601,7 @@ RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'full_name',
                             'rule_id', 'violation_type', 'policy_names',
                             'recommended_actions', 'inventory_data'])
+
 
 def is_whitelist_violation(rules, policy):
     """Checks if the policy is not a subset of those allowed by the rules.
@@ -615,6 +615,7 @@ def is_whitelist_violation(rules, policy):
     """
     return not any([policy < rule for rule in rules])
 
+
 def is_blacklist_violation(rules, policy):
     """Checks if the policy is a superset of any not allowed by the rules.
 
@@ -626,6 +627,7 @@ def is_blacklist_violation(rules, policy):
       bool: If the policy is a superset of one of the blacklisted rules or not.
     """
     return any([policy > rule for rule in rules])
+
 
 def is_rule_exists_violation(rule, policies, exact_match=True):
     """Checks if the rule is the same as one of the policies.

@@ -17,6 +17,7 @@
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.services import utils
 
+
 def find_ancestors(starting_resource, full_name):
     """Find the ancestors for a given resource.
 

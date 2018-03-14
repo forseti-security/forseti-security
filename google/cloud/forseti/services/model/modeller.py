@@ -19,6 +19,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+
 class Modeller(object):
     """Implements the Modeller API."""
 

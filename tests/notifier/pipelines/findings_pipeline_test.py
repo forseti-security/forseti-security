@@ -34,7 +34,8 @@ class FindingsPipelineTest(ForsetiTestCase):
         """Tear down method."""
         ForsetiTestCase.tearDown(self)
 
-    @mock.patch('google.cloud.forseti.services.scanner.dao._get_utc_now')
+    @mock.patch('google.cloud.forseti.common.util.date_time.'
+                'get_utc_now_datetime')
     def test_can_convert_to_findings(self, mock_get_utc_now):
         fake_datetime = datetime.datetime(2010, 8, 28, 10, 20, 30, 0)
         mock_get_utc_now.return_value = fake_datetime
