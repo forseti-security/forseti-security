@@ -606,5 +606,5 @@ class IapScanner(base_scanner.BaseScanner):
 
         LOGGER.debug('In run')
         iap_data = self._retrieve()
-        all_violations, resource_counts = self._find_violations(iap_data)
+        all_violations, _ = self._find_violations(iap_data)
         self._output_results(all_violations)

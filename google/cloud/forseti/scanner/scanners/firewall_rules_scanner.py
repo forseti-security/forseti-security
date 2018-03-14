@@ -156,6 +156,6 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Runs the data collection."""
-        policy_data, resource_counts = self._retrieve()
+        policy_data, _ = self._retrieve()
         all_violations = self._find_violations(policy_data)
         self._output_results(all_violations)
