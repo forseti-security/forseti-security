@@ -61,6 +61,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         Args:
             request (PingRequest): The ping request.
+            _ (object): Context of the request.
 
         Returns:
             PingReply: The response to the ping request.
@@ -72,6 +73,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         """Run scanner.
 
         Args:
+            _ (RunRequest): The run request.
             context (object): Context of the request.
 
         Yields:
@@ -80,7 +82,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
-        LOGGER.info('Run scanner service with model: {}'.format(model_name))
+        LOGGER.info('Run scanner service with model: %s', model_name)
         self.service_config.run_in_background(
             lambda: self.scanner.run(model_name,
                                      progress_queue,
@@ -94,10 +96,22 @@ class GrpcScannerFactory(object):
     """Factory class for Scanner service gRPC interface"""
 
     def __init__(self, config):
+        """Init.
+
+        Args:
+            config (ServiceConfig): The service config.
+        """
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the IAM Scanner service."""
+        """Create and register the IAM Scanner service.
+
+        Args:
+            server (object): The server object.
+
+        Returns:
+            object: The service object.
+        """
         service = GrpcScanner(scanner_api=scanner,
                               service_config=self.config)
         scanner_pb2_grpc.add_ScannerServicer_to_server(service, server)

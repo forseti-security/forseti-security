@@ -55,7 +55,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
                 scanner.__class__.__name__))
         except:
             log_message = 'Error running scanner: {}'.format(
-                         scanner.__class__.__name__)
+                scanner.__class__.__name__)
             progress_queue.put(log_message)
             LOGGER.error(log_message, exc_info=True)
     # pylint: enable=bare-except

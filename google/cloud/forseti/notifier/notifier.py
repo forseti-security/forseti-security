@@ -122,6 +122,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
     Returns:
         int: Status code.
     """
+    # pylint: disable=too-many-locals
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
 
@@ -186,7 +187,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
 
-    log_message ='Notification completed!'
+    log_message = 'Notification completed!'
     progress_queue.put(log_message)
     progress_queue.put(None)
     LOGGER.info(log_message)

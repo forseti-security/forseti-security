@@ -61,6 +61,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
 
         Args:
             request (PingRequest): The ping request.
+            _ (object): Context of the request.
 
         Returns:
             PingReply: The response to the ping request.
@@ -73,6 +74,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
 
         Args:
             request (RunRequest): The run request.
+            _ (object): Context of the request.
 
         Yields:
             Progress: The progress of the notifier.
@@ -95,10 +97,22 @@ class GrpcNotifierFactory(object):
     """Factory class for Notifier service gRPC interface"""
 
     def __init__(self, config):
+        """Init.
+
+        Args:
+            config (ServiceConfig): The service config.
+        """
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the Notifier service."""
+        """Create and register the Notifier service.
+
+        Args:
+            server (object): The server object.
+
+        Returns:
+             object: The service object.
+        """
         service = GrpcNotifier(notifier_api=notifier,
                                service_config=self.config)
         notifier_pb2_grpc.add_NotifierServicer_to_server(service, server)
