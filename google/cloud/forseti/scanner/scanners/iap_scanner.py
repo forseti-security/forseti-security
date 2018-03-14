@@ -14,9 +14,7 @@
 
 """Scanner for the Identity-Aware Proxy rules engine."""
 import collections
-import os
 
-from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_type import (
     backend_service as backend_service_type)
 from google.cloud.forseti.common.gcp_type import (
@@ -30,9 +28,7 @@ from google.cloud.forseti.common.gcp_type import (
     instance_template as instance_template_type)
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iap_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
