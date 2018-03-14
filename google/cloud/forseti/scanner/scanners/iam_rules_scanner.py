@@ -31,7 +31,6 @@ from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iam_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -136,10 +135,11 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         """
         for violation in violations:
             for member in violation.members:
-                violation_data = {}
-                violation_data['full_name'] = violation.full_name
-                violation_data['role'] = violation.role
-                violation_data['member'] = '%s:%s' % (member.type, member.name)
+                violation_data = {
+                    'full_name': violation.full_name,
+                    'role': violation.role, 'member': '%s:%s' % (member.type,
+                                                                 member.name)
+                }
 
                 yield {
                     'resource_id': violation.resource_id,
@@ -170,10 +170,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None
-            with csv_writer.write_csv(
-                resource_name=resource_name,
-                data=all_violations,
-                write_header=True) as csv_file:
+            with csv_writer.write_csv(resource_name=resource_name,
+                                      data=all_violations,
+                                      write_header=True) as csv_file:
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
@@ -258,7 +257,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 if policy.parent.type not in supported_iam_types:
                     continue
 
-                policy_bindings = filter(None, [ # pylint: disable=bad-builtin
+                policy_bindings = filter(None, [  # pylint: disable=bad-builtin
                     iam_policy.IamPolicyBinding.create_from(b)
                     for b in json.loads(policy.data).get('bindings', [])])
 

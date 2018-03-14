@@ -64,15 +64,13 @@ class BigqueryScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['dataset_id'] = violation.dataset_id
-            violation_data['full_name'] = violation.full_name
-            violation_data['access_domain'] = violation.domain
-            violation_data['access_user_by_email'] = violation.user_email
-            violation_data['access_special_group'] = violation.special_group
-            violation_data['access_group_by_email'] = violation.group_email
-            violation_data['role'] = violation.role
-            violation_data['view'] = violation.view
+            violation_data = {'dataset_id': violation.dataset_id,
+                              'full_name': violation.full_name,
+                              'access_domain': violation.domain,
+                              'access_user_by_email': violation.user_email,
+                              'access_special_group': violation.special_group,
+                              'access_group_by_email': violation.group_email,
+                              'role': violation.role, 'view': violation.view}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,

@@ -31,13 +31,29 @@ LOGGER = logger.get_logger(__name__)
 class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
     """Email pipeline for inventory snapshot summary."""
 
-    # TODO: See if the base pipline init() can be reused.
-    def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
+    def __init__(self, sendgrid_key, resource=None, cycle_timestamp=None,
+                 violations=None, global_configs=None, notifier_config=None,
+                 pipeline_config=None):
         """Initialization.
 
         Args:
             sendgrid_key (str): The SendGrid API key.
+            resource (str): Violation resource name.
+            cycle_timestamp (str): Snapshot timestamp,
+               formatted as YYYYMMDDTHHMMSSZ.
+            violations (dict): Violations.
+            global_configs (dict): Global configurations.
+            notifier_config (dict): Notifier configurations.
+            pipeline_config (dict): Pipeline configurations.
+            sendgrid_key (str): The SendGrid API key.
         """
+        super(EmailInventorySnapshotSummaryPipeline,
+              self).__init__(resource,
+                             cycle_timestamp,
+                             violations,
+                             global_configs,
+                             notifier_config,
+                             pipeline_config)
         self.email_util = EmailUtil(sendgrid_key)
 
     def _compose(

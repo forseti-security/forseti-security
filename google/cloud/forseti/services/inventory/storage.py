@@ -202,18 +202,16 @@ class Inventory(BASE):
         service_config = resource.get_kubernetes_service_config()
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
-        rows = []
-        rows.append(
-            Inventory(
-                index=index.id,
-                type_class=InventoryTypeClass.RESOURCE,
-                key=resource.key(),
-                type=resource.type(),
-                data=json.dumps(resource.data(), sort_keys=True),
-                parent_key=None if not parent else parent.key(),
-                parent_type=None if not parent else parent.type(),
-                other=other,
-                error=resource.get_warning()))
+        rows = [Inventory(
+            index=index.id,
+            type_class=InventoryTypeClass.RESOURCE,
+            key=resource.key(),
+            type=resource.type(),
+            data=json.dumps(resource.data(), sort_keys=True),
+            parent_key=None if not parent else parent.key(),
+            parent_type=None if not parent else parent.type(),
+            other=other,
+            error=resource.get_warning())]
 
         if iam_policy:
             rows.append(
@@ -498,9 +496,9 @@ class DataAccess(object):
         """
 
         result = (
-            session.query(InventoryIndex)
-            .filter(InventoryIndex.id == inventory_id)
-            .one())
+            session.query(InventoryIndex).filter(
+                InventoryIndex.id == inventory_id).one()
+        )
         session.expunge(result)
         return result
 
@@ -516,16 +514,16 @@ class DataAccess(object):
         """
 
         inventory_index = (
-            session.query(InventoryIndex)
-            .filter(or_(InventoryIndex.status == 'SUCCESS',
-                        InventoryIndex.status == 'PARTIAL_SUCCESS'))
-            .order_by(InventoryIndex.id.desc())
-            .first())
+            session.query(InventoryIndex).filter(
+                or_(InventoryIndex.status == 'SUCCESS',
+                    InventoryIndex.status == 'PARTIAL_SUCCESS')
+            ).order_by(InventoryIndex.id.desc()).first())
         session.expunge(inventory_index)
         LOGGER.info(
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
         return inventory_index.id
+
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -596,10 +594,10 @@ class Storage(BaseStorage):
         """
 
         return (
-            self.session.query(InventoryIndex)
-            .filter(InventoryIndex.id == existing_id)
-            .filter(InventoryIndex.status.in_(
-                [InventoryState.SUCCESS, InventoryState.PARTIAL_SUCCESS]))
+            self.session.query(InventoryIndex).filter(
+                InventoryIndex.id == existing_id).filter(
+                    InventoryIndex.status.in_([InventoryState.SUCCESS,
+                                               InventoryState.PARTIAL_SUCCESS]))
             .one())
 
     def _get_resource_rows(self, key):
@@ -737,8 +735,8 @@ class Storage(BaseStorage):
             new_rows = Inventory.from_resource(self.index, resource)
             old_rows = self._get_resource_rows(resource.key())
 
-            new_dict = {row.type_class : row for row in new_rows}
-            old_dict = {row.type_class : row for row in old_rows}
+            new_dict = {row.type_class: row for row in new_rows}
+            old_dict = {row.type_class: row for row in old_rows}
 
             for type_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
                 if type_class in new_dict:
@@ -804,8 +802,7 @@ class Storage(BaseStorage):
             object: Single row object or child/parent if 'with_parent' is set.
         """
 
-        filters = []
-        filters.append(Inventory.index == self.index.id)
+        filters = [Inventory.index == self.index.id]
 
         if fetch_iam_policy:
             filters.append(
@@ -844,11 +841,9 @@ class Storage(BaseStorage):
             p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
-                .filter(
-                    and_(
-                        Inventory.parent_key == p_key,
-                        Inventory.parent_type == p_type,
-                        parent_inventory.index == self.index.id)))
+                .filter(and_(Inventory.parent_key == p_key,
+                             Inventory.parent_type == p_type,
+                             parent_inventory.index == self.index.id)))
         else:
             base_query = self.session.query(Inventory)
 
@@ -859,6 +854,7 @@ class Storage(BaseStorage):
 
         for row in base_query.yield_per(PER_YIELD):
             yield row
+
     # pylint: enable=too-many-locals
 
     def get_root(self):
@@ -873,7 +869,7 @@ class Storage(BaseStorage):
                 Inventory.key == Inventory.parent_key,
                 Inventory.type == Inventory.parent_type,
                 Inventory.type_class == InventoryTypeClass.RESOURCE
-                )).first()
+            )).first()
 
     def type_exists(self,
                     type_list=None):
@@ -889,7 +885,7 @@ class Storage(BaseStorage):
             Inventory.index == self.index.id,
             Inventory.type_class == InventoryTypeClass.RESOURCE,
             Inventory.type.in_(type_list)
-            ))).scalar()
+        ))).scalar()
 
     def __enter__(self):
         """To support with statement for auto closing.

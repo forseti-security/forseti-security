@@ -32,7 +32,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.services import db
 
-
 LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=no-member
@@ -152,18 +151,17 @@ def define_violation(dbengine):
             with self.violationmaker() as session:
                 if inventory_index_id:
                     return (
-                        session.query(self.TBL_VIOLATIONS)
-                        .filter(
+                        session.query(self.TBL_VIOLATIONS).filter(
                             self.TBL_VIOLATIONS.inventory_index_id ==
-                            inventory_index_id)
-                        .all())
+                            inventory_index_id).all()
+                    )
                 return (
-                    session.query(self.TBL_VIOLATIONS)
-                    .all())
+                    session.query(self.TBL_VIOLATIONS).all())
 
     base.metadata.create_all(dbengine)
 
     return ViolationAccess
+
 
 # pylint: disable=invalid-name
 def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
@@ -178,6 +176,7 @@ def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
 
     return {c.key: getattr(sqlalchemy_obj, c.key)
             for c in inspect(sqlalchemy_obj).mapper.column_attrs}
+
 
 def map_by_resource(violation_rows):
     """Create a map of violation types to violations of that resource.
@@ -213,6 +212,7 @@ def map_by_resource(violation_rows):
             v_by_type[v_resource].append(v_data)
 
     return dict(v_by_type)
+
 
 def _create_violation_hash(violation_full_name, inventory_data, violation_data):
     """Create a hash of violation data.

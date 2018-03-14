@@ -38,13 +38,12 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
 IapResource = collections.namedtuple(
-    'IapResource',
-    ['project_full_name',
-     'backend_service',
-     'alternate_services',
-     'direct_access_sources',
-     'iap_enabled',
-    ])
+    'IapResource', ['project_full_name',
+                    'backend_service',
+                    'alternate_services',
+                    'direct_access_sources',
+                    'iap_enabled']
+)
 NetworkPort = collections.namedtuple(
     'NetworkPort',
     ['network', 'port'])
@@ -189,8 +188,7 @@ class _RunData(object):
                 else:
                     fw_port_min = int(fw_port_range)
                     fw_port_max = int(fw_port_range)
-                if (network_port.port >= fw_port_min and
-                        network_port.port <= fw_port_max):
+                if fw_port_min <= network_port.port <= fw_port_max:
                     return True
             return False
 
@@ -400,15 +398,12 @@ class IapScanner(base_scanner.BaseScanner):
             direct_access_sources.sort()
             direct_access_str = ', '.join(direct_access_sources)
 
-            violation_data = {}
-            violation_data['alternate_services_violations'] = (
-                alternate_services_str)
-            violation_data['direct_access_sources_violations'] = (
-                direct_access_str)
-            violation_data['iap_enabled_violation'] = (
-                str(violation.iap_enabled_violation))
-            violation_data['resource_name'] = (
-                violation.resource_name)
+            violation_data = {
+                'alternate_services_violations': alternate_services_str,
+                'direct_access_sources_violations': direct_access_str,
+                'iap_enabled_violation': str(violation.iap_enabled_violation),
+                'resource_name': violation.resource_name
+            }
 
             yield {
                 'resource_id': violation.resource_id,
@@ -442,10 +437,9 @@ class IapScanner(base_scanner.BaseScanner):
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None
-            with csv_writer.write_csv(
-                resource_name=resource_name,
-                data=all_violations,
-                write_header=True) as csv_file:
+            with csv_writer.write_csv(resource_name=resource_name,
+                                      data=all_violations,
+                                      write_header=True) as csv_file:
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 

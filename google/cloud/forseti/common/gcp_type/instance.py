@@ -166,6 +166,7 @@ class Instance(object):
             instance_network_interfaces.append(instance_network_interface)
         return instance_network_interfaces
 
+
 KEY_OBJECT_KIND = 'Instance'
 
 

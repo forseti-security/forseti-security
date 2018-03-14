@@ -72,10 +72,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['policy_names'] = violation.policy_names
-            violation_data['recommended_actions'] = (
-                violation.recommended_actions)
+            violation_data = {'policy_names': violation.policy_names,
+                              'recommended_actions': (
+                                  violation.recommended_actions)}
 
             violation_dict = {
                 'resource_id': violation.resource_id,
@@ -109,10 +108,9 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
         if self.scanner_configs.get('output_path'):
             LOGGER.info('Writing violations to csv...')
             output_csv_name = None
-            with csv_writer.write_csv(
-                resource_name=resource_name,
-                data=all_violations,
-                write_header=True) as csv_file:
+            with csv_writer.write_csv(resource_name=resource_name,
+                                      data=all_violations,
+                                      write_header=True) as csv_file:
                 output_csv_name = csv_file.name
                 LOGGER.info('CSV filename: %s', output_csv_name)
 
@@ -206,7 +204,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             }
 
         resource_counts = {
-            resource_type.ResourceType.FIREWALL_RULE: count+1,
+            resource_type.ResourceType.FIREWALL_RULE: count + 1,
         }
 
         return project_policies, resource_counts

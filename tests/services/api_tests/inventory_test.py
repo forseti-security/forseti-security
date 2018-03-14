@@ -44,9 +44,9 @@ class TestServiceConfig(MockServerConfig):
                                                 '',
                                                 {})
 
-    def run_in_background(self, function):
+    def run_in_background(self, func):
         """Stub."""
-        self.workers.add_func(function)
+        self.workers.add_func(func)
 
     def get_engine(self):
         return self.engine

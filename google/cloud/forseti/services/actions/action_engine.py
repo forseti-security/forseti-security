@@ -23,13 +23,11 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
-
 RuleResult = namedtuple('RuleResult',
                         ['rule_result', 'code', 'action_id', 'info'])
 
 
 class Action(object):
-
     """The base action class."""
 
     def __init__(self, config, action_id, action_type):
@@ -220,8 +218,10 @@ def get_action_class(class_str):
 class Error(Exception):
     """Base error class for this module."""
 
+
 class ActionImportError(Error):
     """Error raised when an action cannot be imported."""
+
 
 class MissingRequiredActionField(Error):
     """Error raised when an action configuration is missing a field."""

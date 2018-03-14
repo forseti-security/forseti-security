@@ -86,11 +86,11 @@ class AbstractServiceConfig(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def run_in_background(self, function):
+    def run_in_background(self, func):
         """Runs a function in a thread pool in the background.
 
         Args:
-            function (Function): Function to be executed.
+            func (Function): Function to be executed.
 
         Raises:
             NotImplementedError: Abstract.
@@ -343,14 +343,14 @@ class ServiceConfig(AbstractServiceConfig):
 
         return ClientComposition(self.endpoint)
 
-    def run_in_background(self, function):
+    def run_in_background(self, func):
         """Runs a function in a thread pool in the background.
 
         Args:
-            function (Function): Function to be executed.
+            func (Function): Function to be executed.
         """
 
-        self.thread_pool.apply_async(function)
+        self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
         """Returns the storage class used to access the inventory.
@@ -360,6 +360,8 @@ class ServiceConfig(AbstractServiceConfig):
         """
 
         return Storage
+
+
 # pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-locals
@@ -437,6 +439,8 @@ def serve(endpoint,
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
+
+
 # pylint: enable=too-many-locals
 
 
@@ -453,7 +457,7 @@ def main():
               '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
         '--forseti_config_file_path',
-        help=('Path to Forseti configuration file.'))
+        help='Path to Forseti configuration file.')
     parser.add_argument(
         '--services',
         nargs='*',
