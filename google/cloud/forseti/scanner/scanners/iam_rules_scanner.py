@@ -15,19 +15,15 @@
 """Scanner for the IAM rules engine."""
 
 import json
-import os
 import sys
 
-from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iam_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
