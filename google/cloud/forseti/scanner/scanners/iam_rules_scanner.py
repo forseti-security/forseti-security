@@ -260,4 +260,4 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         policy_data, resource_counts = self._retrieve()
         _add_bucket_ancestor_bindings(policy_data)
         all_violations = self._find_violations(policy_data)
-        self._output_results(all_violations, resource_counts)
+        self._output_results(all_violations)
