@@ -204,7 +204,7 @@ class Inventory(BASE):
         rows = [Inventory(
             inventory_index_id=index.id,
             type_class=InventoryTypeClass.RESOURCE,
-            key=resource.key(),
+            type_key=resource.key(),
             inventory_type=resource.type(),
             inventory_data=json.dumps(resource.data(), sort_keys=True),
             parent_key=None if not parent else parent.key(),
@@ -217,7 +217,7 @@ class Inventory(BASE):
                 Inventory(
                     inventory_index_id=index.id,
                     type_class=InventoryTypeClass.IAM_POLICY,
-                    key=resource.key(),
+                    type_key=resource.key(),
                     inventory_type=resource.type(),
                     inventory_data=json.dumps(iam_policy, sort_keys=True),
                     parent_key=resource.key(),
@@ -230,7 +230,7 @@ class Inventory(BASE):
                 Inventory(
                     inventory_index_id=index.id,
                     type_class=InventoryTypeClass.GCS_POLICY,
-                    key=resource.key(),
+                    type_key=resource.key(),
                     inventory_type=resource.type(),
                     inventory_data=json.dumps(gcs_policy, sort_keys=True),
                     parent_key=resource.key(),
@@ -243,7 +243,7 @@ class Inventory(BASE):
                 Inventory(
                     inventory_index_id=index.id,
                     type_class=InventoryTypeClass.DATASET_POLICY,
-                    key=resource.key(),
+                    type_key=resource.key(),
                     inventory_type=resource.type(),
                     inventory_data=json.dumps(dataset_policy, sort_keys=True),
                     parent_key=resource.key(),
@@ -256,7 +256,7 @@ class Inventory(BASE):
                 Inventory(
                     inventory_index_id=index.id,
                     type_class=InventoryTypeClass.BILLING_INFO,
-                    key=resource.key(),
+                    type_key=resource.key(),
                     inventory_type=resource.type(),
                     inventory_data=json.dumps(billing_info, sort_keys=True),
                     parent_key=resource.key(),
@@ -269,7 +269,7 @@ class Inventory(BASE):
                 Inventory(
                     inventory_index_id=index.id,
                     type_class=InventoryTypeClass.ENABLED_APIS,
-                    key=resource.key(),
+                    type_key=resource.key(),
                     inventory_type=resource.type(),
                     inventory_data=json.dumps(enabled_apis, sort_keys=True),
                     parent_key=resource.key(),
@@ -282,7 +282,7 @@ class Inventory(BASE):
                 Inventory(
                     inventory_index_id=index.id,
                     type_class=InventoryTypeClass.SERVICE_CONFIG,
-                    key=resource.key(),
+                    type_key=resource.key(),
                     inventory_type=resource.type(),
                     inventory_data=json.dumps(service_config, sort_keys=True),
                     parent_key=resource.key(),
@@ -301,7 +301,7 @@ class Inventory(BASE):
         """
 
         self.type_class = new_row.type_class
-        self.type_key = new_row.type_keykey
+        self.type_key = new_row.type_key
         self.inventory_type = new_row.inventory_type
         self.inventory_data = new_row.inventory_data
         self.parent_key = new_row.parent_key
@@ -319,7 +319,7 @@ class Inventory(BASE):
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
             self.inventory_index_id,
-            self.inventory_key,
+            self.type_key,
             self.inventory_type)
 
     def get_key(self):
@@ -329,7 +329,7 @@ class Inventory(BASE):
             str: resource key.
         """
 
-        return self.inventory_key
+        return self.type_key
 
     def get_type(self):
         """Get the row's resource type.
@@ -616,7 +616,7 @@ class Storage(BaseStorage):
         qry = (
             self.session.query(Inventory)
             .filter(Inventory.inventory_index_id == self.inventory_index.id)
-            .filter(Inventory.inventory_key == key))
+            .filter(Inventory.type_key == key))
         rows = qry.all()
 
         if not rows:
@@ -836,8 +836,8 @@ class Storage(BaseStorage):
 
         if with_parent:
             parent_inventory = aliased(Inventory)
-            p_key = parent_inventory.key
-            p_type = parent_inventory.type
+            p_key = parent_inventory.type_key
+            p_type = parent_inventory.inventory_type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
                 .filter(and_(
@@ -867,7 +867,7 @@ class Storage(BaseStorage):
         return self.session.query(Inventory).filter(
             and_(
                 Inventory.inventory_index_id == self.inventory_index.id,
-                Inventory.inventory_key == Inventory.parent_key,
+                Inventory.type_key == Inventory.parent_key,
                 Inventory.inventory_type == Inventory.parent_type,
                 Inventory.type_class == InventoryTypeClass.RESOURCE
             )).first()

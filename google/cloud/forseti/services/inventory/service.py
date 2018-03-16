@@ -43,8 +43,8 @@ def inventory_pb_from_object(inventory_index):
         schema_version=inventory_index.schema_version,
         count_objects=inventory_index.counter,
         status=inventory_index.status,
-        warnings=inventory_index.warnings,
-        errors=inventory_index.errors)
+        warnings=inventory_index.inventory_index_warnings,
+        errors=inventory_index.inventory_index_errors)
 
 
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
