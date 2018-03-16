@@ -202,7 +202,7 @@ class Inventory(BASE):
         other = json.dumps({'timestamp': resource.get_timestamp()})
 
         rows = [Inventory(
-            index=index.id,
+            inventory_index_id=index.id,
             type_class=InventoryTypeClass.RESOURCE,
             key=resource.key(),
             inventory_type=resource.type(),
@@ -215,7 +215,7 @@ class Inventory(BASE):
         if iam_policy:
             rows.append(
                 Inventory(
-                    index=index.id,
+                    inventory_index_id=index.id,
                     type_class=InventoryTypeClass.IAM_POLICY,
                     key=resource.key(),
                     inventory_type=resource.type(),
@@ -228,7 +228,7 @@ class Inventory(BASE):
         if gcs_policy:
             rows.append(
                 Inventory(
-                    index=index.id,
+                    inventory_index_id=index.id,
                     type_class=InventoryTypeClass.GCS_POLICY,
                     key=resource.key(),
                     inventory_type=resource.type(),
@@ -241,7 +241,7 @@ class Inventory(BASE):
         if dataset_policy:
             rows.append(
                 Inventory(
-                    index=index.id,
+                    inventory_index_id=index.id,
                     type_class=InventoryTypeClass.DATASET_POLICY,
                     key=resource.key(),
                     inventory_type=resource.type(),
@@ -254,7 +254,7 @@ class Inventory(BASE):
         if billing_info:
             rows.append(
                 Inventory(
-                    index=index.id,
+                    inventory_index_id=index.id,
                     type_class=InventoryTypeClass.BILLING_INFO,
                     key=resource.key(),
                     inventory_type=resource.type(),
@@ -267,7 +267,7 @@ class Inventory(BASE):
         if enabled_apis:
             rows.append(
                 Inventory(
-                    index=index.id,
+                    inventory_index_id=index.id,
                     type_class=InventoryTypeClass.ENABLED_APIS,
                     key=resource.key(),
                     inventory_type=resource.type(),
@@ -280,7 +280,7 @@ class Inventory(BASE):
         if service_config:
             rows.append(
                 Inventory(
-                    index=index.id,
+                    inventory_index_id=index.id,
                     type_class=InventoryTypeClass.SERVICE_CONFIG,
                     key=resource.key(),
                     inventory_type=resource.type(),
@@ -441,12 +441,12 @@ class DataAccess(object):
     """Access to inventory for services."""
 
     @classmethod
-    def delete(cls, session, inventory_id):
+    def delete(cls, session, inventory_index_id):
         """Delete an inventory index entry by id.
 
         Args:
             session (object): Database session.
-            inventory_id (str): Id specifying which inventory to delete.
+            inventory_index_id (str): Id specifying which inventory to delete.
 
         Returns:
             InventoryIndex: An expunged entry corresponding the inventory_id
@@ -456,11 +456,11 @@ class DataAccess(object):
         """
 
         try:
-            result = cls.get(session, inventory_id)
+            result = cls.get(session, inventory_index_id)
             session.query(Inventory).filter(
-                Inventory.inventory_index_id == inventory_id).delete()
+                Inventory.inventory_index_id == inventory_index_id).delete()
             session.query(InventoryIndex).filter(
-                InventoryIndex.id == inventory_id).delete()
+                InventoryIndex.id == inventory_index_id).delete()
             session.commit()
             return result
         except Exception:
@@ -483,12 +483,12 @@ class DataAccess(object):
             yield row
 
     @classmethod
-    def get(cls, session, inventory_id):
+    def get(cls, session, inventory_index_id):
         """Get an inventory index entry by id.
 
         Args:
             session (object): Database session
-            inventory_id (str): Inventory id
+            inventory_index_id (str): Inventory id
 
         Returns:
             InventoryIndex: Entry corresponding the id
@@ -496,7 +496,7 @@ class DataAccess(object):
 
         result = (
             session.query(InventoryIndex).filter(
-                InventoryIndex.id == inventory_id).one()
+                InventoryIndex.id == inventory_index_id).one()
         )
         session.expunge(result)
         return result
@@ -547,7 +547,7 @@ class Storage(BaseStorage):
         """
         self.session = session
         self.opened = False
-        self.index = None
+        self.inventory_index = None
         self.buffer = BufferedDbWriter(self.session)
         self._existing_id = existing_id
         self.session_completed = False
@@ -582,19 +582,19 @@ class Storage(BaseStorage):
         else:
             return index
 
-    def _open(self, existing_id):
+    def _open(self, inventory_index_id):
         """Open an existing inventory.
 
         Args:
-            existing_id (str): the id of the inventory to open
+            inventory_index_id (str): the id of the inventory to open.
 
         Returns:
-            object: The inventory db row.
+            object: The inventory index db row.
         """
 
         return (
             self.session.query(InventoryIndex).filter(
-                InventoryIndex.id == existing_id).filter(
+                InventoryIndex.id == inventory_index_id).filter(
                     InventoryIndex.status.in_([InventoryState.SUCCESS,
                                                InventoryState.PARTIAL_SUCCESS]))
             .one())
@@ -615,7 +615,7 @@ class Storage(BaseStorage):
 
         qry = (
             self.session.query(Inventory)
-            .filter(Inventory.inventory_index_id == self.index.id)
+            .filter(Inventory.inventory_index_id == self.inventory_index.id)
             .filter(Inventory.inventory_key == key))
         rows = qry.all()
 
@@ -647,15 +647,15 @@ class Storage(BaseStorage):
 
         # Should we create a new entry or are we opening an existing one?
         if existing_id:
-            self.index = self._open(existing_id)
+            self.inventory_index = self._open(existing_id)
         else:
-            self.index = self._create()
+            self.inventory_index = self._create()
 
         self.opened = True
         self.session.commit()
         if not self.readonly:
             self.session.begin_nested()
-        return self.index.id
+        return self.inventory_index.id
 
     def rollback(self):
         """Roll back the stored inventory, but keep the index entry."""
@@ -663,7 +663,7 @@ class Storage(BaseStorage):
         try:
             self.buffer.flush()
             self.session.rollback()
-            self.index.complete(status=InventoryState.FAILURE)
+            self.inventory_index.complete(status=InventoryState.FAILURE)
             self.session.commit()
         finally:
             self.session_completed = True
@@ -674,7 +674,7 @@ class Storage(BaseStorage):
         try:
             self.buffer.flush()
             self.session.commit()
-            self.index.complete()
+            self.inventory_index.complete()
             self.session.commit()
         finally:
             self.session_completed = True
@@ -709,11 +709,11 @@ class Storage(BaseStorage):
         if self.readonly:
             raise Exception('Opened storage readonly')
 
-        rows = Inventory.from_resource(self.index, resource)
+        rows = Inventory.from_resource(self.inventory_index, resource)
         for row in rows:
             self.buffer.add(row)
 
-        self.index.counter += len(rows)
+        self.inventory_index.counter += len(rows)
 
     def update(self, resource):
         """Update a resource in the storage.
@@ -731,7 +731,7 @@ class Storage(BaseStorage):
         self.buffer.flush()
 
         try:
-            new_rows = Inventory.from_resource(self.index, resource)
+            new_rows = Inventory.from_resource(self.inventory_index, resource)
             old_rows = self._get_resource_rows(resource.key())
 
             new_dict = {row.type_class: row for row in new_rows}
@@ -759,7 +759,7 @@ class Storage(BaseStorage):
 
         if self.readonly:
             raise Exception('Opened storage readonly')
-        self.index.set_error(self.session, message)
+        self.inventory_index.set_error(self.session, message)
 
     def warning(self, message):
         """Store a Warning message in storage. This will help debug problems.
@@ -773,7 +773,7 @@ class Storage(BaseStorage):
 
         if self.readonly:
             raise Exception('Opened storage readonly')
-        self.index.add_warning(self.session, message)
+        self.inventory_index.add_warning(self.session, message)
 
     # pylint: disable=too-many-locals
     def iter(self,
@@ -801,7 +801,7 @@ class Storage(BaseStorage):
             object: Single row object or child/parent if 'with_parent' is set.
         """
 
-        filters = [Inventory.inventory_index_id == self.index.id]
+        filters = [Inventory.inventory_index_id == self.inventory_index.id]
 
         if fetch_iam_policy:
             filters.append(
@@ -840,9 +840,11 @@ class Storage(BaseStorage):
             p_type = parent_inventory.type
             base_query = (
                 self.session.query(Inventory, parent_inventory)
-                .filter(and_(Inventory.parent_key == p_key,
-                             Inventory.parent_type == p_type,
-                             parent_inventory.index == self.index.id)))
+                .filter(and_(
+                    Inventory.parent_key == p_key,
+                    Inventory.parent_type == p_type,
+                    parent_inventory.inventory_index_id ==
+                    self.inventory_index.id)))
         else:
             base_query = self.session.query(Inventory)
 
@@ -864,7 +866,7 @@ class Storage(BaseStorage):
         """
         return self.session.query(Inventory).filter(
             and_(
-                Inventory.inventory_index_id == self.index.id,
+                Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.inventory_key == Inventory.parent_key,
                 Inventory.inventory_type == Inventory.parent_type,
                 Inventory.type_class == InventoryTypeClass.RESOURCE
@@ -881,7 +883,7 @@ class Storage(BaseStorage):
             bool: If these types of resources exists
         """
         return self.session.query(exists().where(and_(
-            Inventory.inventory_index_id == self.index.id,
+            Inventory.inventory_index_id == self.inventory_index.id,
             Inventory.type_class == InventoryTypeClass.RESOURCE,
             Inventory.inventory_type.in_(type_list)
         ))).scalar()

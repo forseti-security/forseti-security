@@ -173,7 +173,7 @@ class InventoryImporter(object):
                 root = inventory.get_root()
                 self.model.add_description(json.dumps({
                     'source': 'inventory',
-                    'source_info': {'inventory_index_id': inventory.index.id},
+                    'source_info': {'inventory_index_id': inventory.inventory_index.id},
                     'source_root': self._type_name(root),
                     'pristine': True,
                     'gsuite_enabled': inventory.type_exists(
@@ -231,7 +231,7 @@ class InventoryImporter(object):
             message = buf.read()
             self.model.set_error(message)
         else:
-            self.model.add_warning(inventory.index.warnings)
+            self.model.add_warning(inventory.inventory_index.warnings)
             self.model.set_done(item_counter)
         finally:
             self.session.commit()
