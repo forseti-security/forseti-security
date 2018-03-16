@@ -173,3 +173,10 @@ notifier:
             - name: slack_webhook_pipeline
               configuration:
                 webhook_url: ''
+
+    violation:
+      cscc:
+        enabled: false
+        # gcs_path should begin with "gs://"
+        gcs_path: gs://{CSCC_BUCKET}/
+                
