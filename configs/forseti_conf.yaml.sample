@@ -179,4 +179,3 @@ notifier:
         enabled: false
         # gcs_path should begin with "gs://"
         gcs_path: gs://{CSCC_BUCKET}/
-                
