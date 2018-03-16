@@ -18,13 +18,12 @@ import tempfile
 
 from datetime import datetime
 
-from google.cloud.forseti.common.gcp_api import storage
-from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import parser
-from google.cloud.forseti.common.util import string_formats
+from google.cloud.security.common.gcp_api import storage
+from google.cloud.security.common.util import log_util
+from google.cloud.security.common.util import parser
 
 
-LOGGER = logger.get_logger(__name__)
+LOGGER = log_util.get_logger(__name__)
 
 OUTPUT_FILENAME = 'forseti_findings_{}.json'
 
@@ -33,7 +32,7 @@ class CsccPipeline(object):
     """Upload violations to GCS bucket as findings."""
 
     @staticmethod
-    def _transform_to_findings(violations, inventory_timestamp):
+    def _transform_to_findings(violations):
         """Transform forseti violations to findings format.
 
         Args:
@@ -74,11 +73,10 @@ class CsccPipeline(object):
             str: The output filename for the violations json.
         """
         now_utc = datetime.utcnow()
-        output_timestamp = now_utc.strftime(
-            string_formats.TIMESTAMP_TIMEZONE_NAME)
+        output_timestamp = now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
         return OUTPUT_FILENAME.format(output_timestamp)
 
-    def run(self, violations, gcs_path, inventory_timestamp):
+    def run(self, violations, gcs_path):
         """Generate the temporary json file and upload to GCS.
 
         Args:
@@ -86,7 +84,7 @@ class CsccPipeline(object):
             gcs_path (str): The GCS bucket to upload the findings.
         """
         LOGGER.info('Running CSCC findings notification.')
-        findings = self._transform_to_findings(violations, inventory_timestamp)
+        findings = self._transform_to_findings(violations)
 
         with tempfile.NamedTemporaryFile() as tmp_violations:
             tmp_violations.write(parser.json_stringify(findings))

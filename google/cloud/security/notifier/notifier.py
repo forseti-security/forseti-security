@@ -226,8 +226,7 @@ def main(_):
     if notifier_configs.get('violation').get('cscc').get('enabled'):
         CsccPipeline().run(
             violations_as_dict,
-            notifier_configs.get('violation').get('cscc').get('gcs_path'),
-            timestamp)
+            notifier_configs.get('violation').get('cscc').get('gcs_path'))
 
 
 if __name__ == '__main__':

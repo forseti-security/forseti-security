@@ -181,10 +181,11 @@ def map_by_resource(violation_rows):
 
 def _create_violation_hash(resource_id, violation_data):
     """Create a hash of violation data.
+
     Args:
-        violation_full_name (str): The full name of the violation.
-        inventory_data (str): The inventory data.
+        resource_id (str): The id of the resource.
         violation_data (dict): A violation.
+
     Returns:
         str: The resulting hex digest or '' if we can't successfully create
         a hash.
@@ -212,4 +213,3 @@ def _create_violation_hash(resource_id, violation_data):
         return ''
 
     return violation_hash.hexdigest()
-
