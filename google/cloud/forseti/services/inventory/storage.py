@@ -81,8 +81,8 @@ class InventoryIndex(BASE):
     schema_version = Column(Integer())
     progress = Column(Text())
     counter = Column(Integer())
-    warnings = Column(Text(16777215))
-    errors = Column(Text())
+    inventory_index_warnings = Column(Text(16777215))
+    inventory_index_errors = Column(Text())
     message = Column(Text())
 
     @classmethod
@@ -144,10 +144,10 @@ class InventoryIndex(BASE):
         """
 
         warning_message = '{}\n'.format(warning)
-        if not self.warnings:
-            self.warnings = warning_message
+        if not self.inventory_index_warnings:
+            self.inventory_index_warnings = warning_message
         else:
-            self.warnings += warning_message
+            self.inventory_index_warnings += warning_message
         session.add(self)
         session.flush()
 
@@ -159,7 +159,7 @@ class InventoryIndex(BASE):
             message (str): Error message to set.
         """
 
-        self.errors = message
+        self.inventory_index_errors = message
         session.add(self)
         session.flush()
 
@@ -169,17 +169,16 @@ class Inventory(BASE):
 
     __tablename__ = 'gcp_inventory'
 
-    # Order is used to resemble the order of insert for a given inventory
-    order = Column(Integer, primary_key=True, autoincrement=True)
-    index = Column(String(256))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    inventory_index_id = Column(String(256))
+    inventory_type = Column(Text)
     type_class = Column(Text)
-    key = Column(Text)
-    type = Column(Text)
-    data = Column(Text(16777215))
-    parent_key = Column(Text)
+    type_key = Column(Text)
+    inventory_data = Column(Text(16777215))
     parent_type = Column(Text)
+    parent_key = Column(Text)
     other = Column(Text)
-    error = Column(Text)
+    inventory_errors = Column(Text)
 
     @classmethod
     def from_resource(cls, index, resource):
@@ -206,12 +205,12 @@ class Inventory(BASE):
             index=index.id,
             type_class=InventoryTypeClass.RESOURCE,
             key=resource.key(),
-            type=resource.type(),
-            data=json.dumps(resource.data(), sort_keys=True),
+            inventory_type=resource.type(),
+            inventory_data=json.dumps(resource.data(), sort_keys=True),
             parent_key=None if not parent else parent.key(),
             parent_type=None if not parent else parent.type(),
             other=other,
-            error=resource.get_warning())]
+            inventory_errors=resource.get_warning())]
 
         if iam_policy:
             rows.append(
@@ -219,12 +218,12 @@ class Inventory(BASE):
                     index=index.id,
                     type_class=InventoryTypeClass.IAM_POLICY,
                     key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(iam_policy, sort_keys=True),
+                    inventory_type=resource.type(),
+                    inventory_data=json.dumps(iam_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
-                    error=None))
+                    inventory_errors=None))
 
         if gcs_policy:
             rows.append(
@@ -232,12 +231,12 @@ class Inventory(BASE):
                     index=index.id,
                     type_class=InventoryTypeClass.GCS_POLICY,
                     key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(gcs_policy, sort_keys=True),
+                    inventory_type=resource.type(),
+                    inventory_data=json.dumps(gcs_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
-                    error=None))
+                    inventory_errors=None))
 
         if dataset_policy:
             rows.append(
@@ -245,12 +244,12 @@ class Inventory(BASE):
                     index=index.id,
                     type_class=InventoryTypeClass.DATASET_POLICY,
                     key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(dataset_policy, sort_keys=True),
+                    inventory_type=resource.type(),
+                    inventory_data=json.dumps(dataset_policy, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
-                    error=None))
+                    inventory_errors=None))
 
         if billing_info:
             rows.append(
@@ -258,12 +257,12 @@ class Inventory(BASE):
                     index=index.id,
                     type_class=InventoryTypeClass.BILLING_INFO,
                     key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(billing_info, sort_keys=True),
+                    inventory_type=resource.type(),
+                    inventory_data=json.dumps(billing_info, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
-                    error=None))
+                    inventory_errors=None))
 
         if enabled_apis:
             rows.append(
@@ -271,12 +270,12 @@ class Inventory(BASE):
                     index=index.id,
                     type_class=InventoryTypeClass.ENABLED_APIS,
                     key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(enabled_apis, sort_keys=True),
+                    inventory_type=resource.type(),
+                    inventory_data=json.dumps(enabled_apis, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
-                    error=None))
+                    inventory_errors=None))
 
         if service_config:
             rows.append(
@@ -284,12 +283,12 @@ class Inventory(BASE):
                     index=index.id,
                     type_class=InventoryTypeClass.SERVICE_CONFIG,
                     key=resource.key(),
-                    type=resource.type(),
-                    data=json.dumps(service_config, sort_keys=True),
+                    inventory_type=resource.type(),
+                    inventory_data=json.dumps(service_config, sort_keys=True),
                     parent_key=resource.key(),
                     parent_type=resource.type(),
                     other=other,
-                    error=None))
+                    inventory_errors=None))
 
         return rows
 
@@ -297,18 +296,18 @@ class Inventory(BASE):
         """Update a database row object from a resource.
 
         Args:
-            new_row (object): the Inventory row of the new resource
+            new_row (Inventory): the Inventory row of the new resource
 
         """
 
         self.type_class = new_row.type_class
-        self.key = new_row.key
-        self.type = new_row.type
-        self.data = new_row.data
+        self.type_key = new_row.type_keykey
+        self.inventory_type = new_row.inventory_type
+        self.inventory_data = new_row.inventory_data
         self.parent_key = new_row.parent_key
         self.parent_type = new_row.parent_type
         self.other = new_row.other
-        self.error = new_row.error
+        self.inventory_errors = new_row.inventory_errors
 
     def __repr__(self):
         """String representation of the database row object.
@@ -319,9 +318,9 @@ class Inventory(BASE):
 
         return """<{}(index='{}', key='{}', type='{}')>""".format(
             self.__class__.__name__,
-            self.index,
-            self.key,
-            self.type)
+            self.inventory_index_id,
+            self.inventory_key,
+            self.inventory_type)
 
     def get_key(self):
         """Get the row's resource key.
@@ -330,7 +329,7 @@ class Inventory(BASE):
             str: resource key.
         """
 
-        return self.key
+        return self.inventory_key
 
     def get_type(self):
         """Get the row's resource type.
@@ -339,7 +338,7 @@ class Inventory(BASE):
             str: resource type.
         """
 
-        return self.type
+        return self.inventory_type
 
     def get_type_class(self):
         """Get the row's resource type class.
@@ -375,7 +374,7 @@ class Inventory(BASE):
             dict: row's metadata.
         """
 
-        return json.loads(self.data)
+        return json.loads(self.inventory_data)
 
     def get_data_raw(self):
         """Get the row's data json string.
@@ -384,7 +383,7 @@ class Inventory(BASE):
             str: row's raw data.
         """
 
-        return self.data
+        return self.inventory_data
 
     def get_other(self):
         """Get the row's other data.
@@ -402,7 +401,7 @@ class Inventory(BASE):
             str: row's error data.
         """
 
-        return self.error
+        return self.inventory_errors
 
 
 class BufferedDbWriter(object):
@@ -459,7 +458,7 @@ class DataAccess(object):
         try:
             result = cls.get(session, inventory_id)
             session.query(Inventory).filter(
-                Inventory.index == inventory_id).delete()
+                Inventory.inventory_index_id == inventory_id).delete()
             session.query(InventoryIndex).filter(
                 InventoryIndex.id == inventory_id).delete()
             session.commit()
@@ -616,8 +615,8 @@ class Storage(BaseStorage):
 
         qry = (
             self.session.query(Inventory)
-            .filter(Inventory.index == self.index.id)
-            .filter(Inventory.key == key))
+            .filter(Inventory.inventory_index_id == self.index.id)
+            .filter(Inventory.inventory_key == key))
         rows = qry.all()
 
         if not rows:
@@ -802,7 +801,7 @@ class Storage(BaseStorage):
             object: Single row object or child/parent if 'with_parent' is set.
         """
 
-        filters = [Inventory.index == self.index.id]
+        filters = [Inventory.inventory_index_id == self.index.id]
 
         if fetch_iam_policy:
             filters.append(
@@ -833,7 +832,7 @@ class Storage(BaseStorage):
                 Inventory.type_class == InventoryTypeClass.RESOURCE)
 
         if type_list:
-            filters.append(Inventory.type.in_(type_list))
+            filters.append(Inventory.inventory_type.in_(type_list))
 
         if with_parent:
             parent_inventory = aliased(Inventory)
@@ -850,7 +849,7 @@ class Storage(BaseStorage):
         for qry_filter in filters:
             base_query = base_query.filter(qry_filter)
 
-        base_query = base_query.order_by(Inventory.order.asc())
+        base_query = base_query.order_by(Inventory.id.asc())
 
         for row in base_query.yield_per(PER_YIELD):
             yield row
@@ -865,9 +864,9 @@ class Storage(BaseStorage):
         """
         return self.session.query(Inventory).filter(
             and_(
-                Inventory.index == self.index.id,
-                Inventory.key == Inventory.parent_key,
-                Inventory.type == Inventory.parent_type,
+                Inventory.inventory_index_id == self.index.id,
+                Inventory.inventory_key == Inventory.parent_key,
+                Inventory.inventory_type == Inventory.parent_type,
                 Inventory.type_class == InventoryTypeClass.RESOURCE
             )).first()
 
@@ -882,9 +881,9 @@ class Storage(BaseStorage):
             bool: If these types of resources exists
         """
         return self.session.query(exists().where(and_(
-            Inventory.index == self.index.id,
+            Inventory.inventory_index_id == self.index.id,
             Inventory.type_class == InventoryTypeClass.RESOURCE,
-            Inventory.type.in_(type_list)
+            Inventory.inventory_type.in_(type_list)
         ))).scalar()
 
     def __enter__(self):
