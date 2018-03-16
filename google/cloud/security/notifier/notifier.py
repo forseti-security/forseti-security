@@ -152,6 +152,7 @@ def process(message):
             payload.get('email_description'))
         return
 
+# pylint: disable=too-many-branches
 def main(_):
     """Main function.
 
@@ -223,10 +224,11 @@ def main(_):
     for pipeline in pipelines:
         pipeline.run()
 
-    if notifier_configs.get('violation').get('cscc').get('enabled'):
-        CsccPipeline().run(
-            violations_as_dict,
-            notifier_configs.get('violation').get('cscc').get('gcs_path'))
+    if notifier_configs.get('violation'):
+        if notifier_configs.get('violation').get('cscc').get('enabled'):
+            CsccPipeline().run(
+                violations_as_dict,
+                notifier_configs.get('violation').get('cscc').get('gcs_path'))
 
 
 if __name__ == '__main__':
