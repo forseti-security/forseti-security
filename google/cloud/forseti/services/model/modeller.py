@@ -31,21 +31,21 @@ class Modeller(object):
         """
         self.config = config
 
-    def create_model(self, source, name, inventory_id, background):
+    def create_model(self, source, name, inventory_index_id, background):
         """Creates a model from the import source.
 
         Args:
             source (str): The source of the model, \"inventory\" or \"empty\"
             name (str): Model name to instantiate.
-            inventory_id (int): Inventory id to import from
+            inventory_index_id (int): Inventory id to import from
             background (bool): Whether to run the model creation in background
 
         Returns:
             object: the created data model
         """
 
-        LOGGER.info('Creating model: %s, inventory_id = %s',
-                    name, inventory_id)
+        LOGGER.info('Creating model: %s, inventory_index_id = %s',
+                    name, inventory_index_id)
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
@@ -60,7 +60,7 @@ class Modeller(object):
                     model_manager.model(model_handle, expunge=False),
                     data_access,
                     self.config,
-                    inventory_id)
+                    inventory_index_id)
                 import_runner.run()
 
         if background:

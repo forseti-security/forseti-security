@@ -449,7 +449,7 @@ class DataAccess(object):
             inventory_index_id (str): Id specifying which inventory to delete.
 
         Returns:
-            InventoryIndex: An expunged entry corresponding the inventory_id
+            InventoryIndex: An expunged entry corresponding the inventory_index_id
 
         Raises:
             Exception: Reraises any exception.

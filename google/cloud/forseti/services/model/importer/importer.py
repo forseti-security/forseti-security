@@ -87,7 +87,7 @@ class InventoryImporter(object):
                  model,
                  dao,
                  service_config,
-                 inventory_id,
+                 inventory_index_id,
                  *args,
                  **kwargs):
         """Create a Inventory importer which creates a model from the inventory.
@@ -97,7 +97,7 @@ class InventoryImporter(object):
             model (Model): Model object.
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
-            inventory_id (str): Inventory id to import from
+            inventory_index_id (str): Inventory id to import from
             *args (list): Unused.
             **kwargs (dict): Unused.
         """
@@ -106,7 +106,7 @@ class InventoryImporter(object):
         self.model = model
         self.dao = dao
         self.service_config = service_config
-        self.inventory_id = inventory_id
+        self.inventory_index_id = inventory_index_id
         self.session.add(self.model)
 
         self.role_cache = {}
@@ -169,7 +169,7 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
-            with Inventory(self.session, self.inventory_id, True) as inventory:
+            with Inventory(self.session, self.inventory_index_id, True) as inventory:
                 root = inventory.get_root()
                 self.model.add_description(json.dumps({
                     'source': 'inventory',

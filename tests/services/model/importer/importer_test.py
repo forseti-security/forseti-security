@@ -87,7 +87,7 @@ class ImporterTest(ForsetiTestCase):
                                          session=session),
                 data_access,
                 self.service_config,
-                inventory_id=FAKE_DATETIME_TIMESTAMP)
+                inventory_index_id=FAKE_DATETIME_TIMESTAMP)
             import_runner.run()
 
             # Make sure the 'full_name' for policies has an even number of
