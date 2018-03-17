@@ -900,18 +900,18 @@ class ForsetiGcpSetup(object):
                   'SendGrid, please refer to:\n\n'
                   '    '
                   'http://forsetisecurity.org/docs/howto/configure/'
-                  'email-notification\n\n')
+                  'email-notification.html\n\n')
 
         if self.gsuite_superadmin_email:
             print('To complete setup for G Suite Groups data collection, '
                   'follow the steps in the guide below:\n\n'
                   '    '
                   'http://forsetisecurity.org/docs/howto/configure/'
-                  'gsuite-group-collection\n\n')
+                  'gsuite-group-collection.html\n\n')
         else:
             print('If you want to enable G Suite Groups collection in '
                   'Forseti, for example, to use IAM Explain), follow '
                   ' the steps in the guide below:\n\n'
                   '    '
                   'http://forsetisecurity.org/docs/howto/configure/'
-                  'gsuite-group-collection\n\n')
+                  'gsuite-group-collection.html\n\n')
