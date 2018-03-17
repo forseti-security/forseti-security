@@ -15,6 +15,7 @@
 """Tests the Dao."""
 
 from tests.unittest_utils import ForsetiTestCase
+import datetime
 import mock
 import MySQLdb
 import unittest
@@ -103,11 +104,17 @@ class ViolationDaoTest(ForsetiTestCase):
         ]
 
         self.expected_fake_violations = [
-            ('x', '1', 'rule name', 0, 'ADDED',
-             '{"member": "user:a@foo.com", "role": "roles/editor"}'),
-            ('x', '1', 'rule name', 0, 'ADDED',
-             '{"member": "user:b@foo.com", "role": "roles/editor"}'),
-            ('a'*255, '1', 'b'*255, 1, 'REMOVED', long_string),
+            ('2e598a34bf36b5ad577f6e8eec47acf0ffe71143e82bc78c9cfaac8f553a4fa4f09078ebe0769639d9dc9fffc2dffb94345ae6696fbe4e646e8b9bb723fd3ab0',
+             'x', '1', 'rule name', 0, 'ADDED',
+             '{"member": "user:a@foo.com", "role": "roles/editor"}',
+             '2020-08-28 10:20:30'),
+            ('5420235c547006300e7842c45c9b0419bc1c5590fd4200607e9925010123f5905f374c2b182420f6ecb161146c8d18c6683045026c810009154b03a56f5a94f5',
+             'x', '1', 'rule name', 0, 'ADDED',
+             '{"member": "user:b@foo.com", "role": "roles/editor"}',
+             '2010-08-28 10:20:30'),
+            ('i'*255,
+             'a'*255, '1', 'b'*255, 1, 'REMOVED', long_string,
+             '2030-08-28 10:20:30'),
         ]
 
     def test_insert_violations_no_timestamp(self):
@@ -190,7 +197,10 @@ class ViolationDaoTest(ForsetiTestCase):
         with self.assertRaises(errors.MySQLError):
             self.dao.insert_violations([], self.resource_name)
 
-    def test_insert_violations_with_error(self):
+    @mock.patch(
+        'google.cloud.security.common.data_access.violation_dao'
+        '.datetime')
+    def test_insert_violations_with_error(self, mock_datetime):
         """Test insert_violations handles errors during insert.
 
         Setup:
@@ -211,6 +221,9 @@ class ViolationDaoTest(ForsetiTestCase):
         self.dao.create_snapshot_table = mock.MagicMock(
             return_value=self.fake_table_name)
         violation_dao.LOGGER = mock.MagicMock()
+
+        mock_datetime.utcnow.return_value = datetime.datetime(
+            2010, 8, 28, 10, 20, 30, 0)
 
         def insert_violation_side_effect(*args, **kwargs):
             if args[2] == self.expected_fake_violations[1]:

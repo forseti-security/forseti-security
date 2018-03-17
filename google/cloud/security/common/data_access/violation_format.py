@@ -45,12 +45,14 @@ def format_violation(violation):
     rule_name = violation.rule_name
     if rule_name:
         rule_name = rule_name[:255]
-    yield (resource_type,
+    yield (violation.violation_hash,
+           resource_type,
            resource_id,
            rule_name,
            violation.rule_index,
            violation.violation_type,
-           json.dumps(violation.violation_data))
+           json.dumps(violation.violation_data),
+           violation.created_at_datetime)
 
 # TODO: refactor groups scanner to use the generic violations format
 def format_groups_violation(violation):
