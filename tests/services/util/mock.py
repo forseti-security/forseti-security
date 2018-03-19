@@ -116,8 +116,8 @@ class MockServerConfig(AbstractServiceConfig):
 
         raise NotImplementedError()
 
-    def run_in_background(self, function):
-        """Runs a function in a thread pool in the background."""
+    def run_in_background(self, func):
+        """Runs a func in a thread pool in the background."""
 
         raise NotImplementedError()
 

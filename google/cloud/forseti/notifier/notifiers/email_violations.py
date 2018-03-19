@@ -16,9 +16,11 @@
 
 from datetime import datetime
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.notifiers import base_notification
 
@@ -40,8 +42,7 @@ class EmailViolations(base_notification.BaseNotification):
 
         Args:
             resource (str): Violation resource name.
-            cycle_timestamp (str): Snapshot timestamp,
-               formatted as YYYYMMDDTHHMMSSZ.
+            cycle_timestamp (str): Snapshot timestamp.
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
@@ -61,11 +62,13 @@ class EmailViolations(base_notification.BaseNotification):
         Returns:
             str: The output filename for the violations json.
         """
-        now_utc = datetime.utcnow()
-        output_timestamp = now_utc.strftime(OUTPUT_TIMESTAMP_FMT)
-        output_filename = VIOLATIONS_JSON_FMT.format(self.resource,
-                                                     self.cycle_timestamp,
-                                                     output_timestamp)
+        now_utc = date_time.get_utc_now_datetime()
+        output_timestamp = now_utc.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+        output_filename = string_formats.VIOLATION_JSON_FMT.format(
+            self.resource,
+            self.cycle_timestamp,
+            output_timestamp)
         return output_filename
 
     def _write_temp_attachment(self):
@@ -90,11 +93,8 @@ class EmailViolations(base_notification.BaseNotification):
         output_file_name = self._write_temp_attachment()
         attachment = self.mail_util.create_attachment(
             file_location='{}/{}'.format(TEMP_DIR, output_file_name),
-            content_type='text/json',
-            filename=output_file_name,
-            disposition='attachment',
-            content_id='Violations'
-        )
+            content_type='text/json', filename=output_file_name,
+            content_id='Violations')
 
         return attachment
 
@@ -106,12 +106,12 @@ class EmailViolations(base_notification.BaseNotification):
             unicode: Email template content rendered with
                 the provided variables.
         """
-        timestamp = datetime.strptime(
-            self.cycle_timestamp, '%Y-%m-%dT%H:%M:%S.%f')
-        pretty_timestamp = timestamp.strftime('%d %B %Y - %H:%M:%S')
+        timestamp = date_time.get_datetime_from_string(
+            self.cycle_timestamp, string_formats.TIMESTAMP_MICROS)
+        pretty_timestamp = timestamp.strftime(string_formats.TIMESTAMP_READABLE)
         email_content = self.mail_util.render_from_template(
             'notification_summary.jinja', {
-                'scan_date':  pretty_timestamp,
+                'scan_date': pretty_timestamp,
                 'resource': self.resource,
                 'violation_errors': self.violations,
             })

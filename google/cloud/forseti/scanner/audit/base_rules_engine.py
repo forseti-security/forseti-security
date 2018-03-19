@@ -23,7 +23,6 @@ from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -68,6 +67,7 @@ class BaseRulesEngine(object):
         rules = file_loader.read_and_parse_file(self.full_rules_path)
         LOGGER.debug('Got rules: %r', rules)
         return rules
+
 
 class BaseRuleBook(object):
     """Base class for RuleBooks.

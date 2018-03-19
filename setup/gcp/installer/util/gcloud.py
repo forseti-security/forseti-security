@@ -140,7 +140,9 @@ def enable_apis(dry_run=False):
               end='')
         sys.stdout.flush()
         return_code, _, err = utils.run_command(
-            ['gcloud', 'services', 'enable', api['service']])
+            ['gcloud', 'services', 'enable', api['service']],
+            number_of_retry=5,
+            timeout_in_second=120)
         if return_code:
             print(err)
         else:
@@ -755,8 +757,7 @@ def create_deployment(project_id,
 
     # Ping the deployment manager and make sure the API is ready
     utils.run_command(
-        ['gcloud', 'deployment-manager', 'deployments',
-         'describe', 'testing-deployment-manager-connection'])
+        ['gcloud', 'deployment-manager', 'deployments', 'list'])
 
     deployment_name = 'forseti-{}-{}'.format(installation_type,
                                              timestamp)
@@ -789,7 +790,10 @@ def check_vm_init_status(vm_name, zone):
 
     _, out, _ = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
-         '--zone', zone, '--command', check_script_executed])
+         '--zone', zone, '--command', check_script_executed, '--quiet'])
+    # --quiet flag is needed to eliminate the prompting for user input
+    # which will hang the run_command function
+    # i.e. It will create a folder at ~/.ssh and generate a new ssh key
 
     if 'Execution of startup script finished' in out:
         return True

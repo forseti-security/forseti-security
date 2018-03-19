@@ -19,6 +19,7 @@ import unittest
 
 from datetime import datetime
 
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import gcs_violations
 from tests.unittest_utils import ForsetiTestCase
 
@@ -51,19 +52,20 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             fake_notifier_conf)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_violations.datetime',
+        'google.cloud.forseti.notifier.pipelines.gcs_violations_pipeline'
+        '.date_time',
         autospec=True)
-    def test_get_output_filename(self, mock_datetime):
+    def test_get_output_filename(self, mock_date_time):
         """Test _get_output_filename()."""
-        mock_datetime.utcnow = mock.MagicMock()
-        mock_datetime.utcnow.return_value = self.fake_utcnow
-        output_timestamp = mock_datetime.utcnow().strftime(
-            gcs_violations.OUTPUT_TIMESTAMP_FMT)
+        mock_date_time.get_utc_now_datetime = mock.MagicMock()
+        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
+        expected_timestamp = self.fake_utcnow.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
 
         actual_filename = self.gvp._get_output_filename()
         self.assertEquals(
-            gcs_violations.VIOLATIONS_JSON_FMT.format(
-                self.gvp.resource, self.gvp.cycle_timestamp, output_timestamp),
+            string_formats.VIOLATION_JSON_FMT.format(
+                self.gvp.resource, self.gvp.cycle_timestamp, expected_timestamp),
             actual_filename)
 
     @mock.patch(

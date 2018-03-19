@@ -19,11 +19,14 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 API_EXECUTION_ERROR_ARG_FORMAT = '{}, {} = {},'
+
+
 # {Resource}, {Identifier_key} = {Identifier_value},
 
 
 class Error(Exception):
     """Base Error class."""
+
 
 class ApiExecutionError(Error):
     """Error for API executions."""

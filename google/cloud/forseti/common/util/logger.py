@@ -20,7 +20,6 @@ Setup logging for Forseti Security. Logs to console and syslog.
 import logging
 import logging.handlers
 
-
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
@@ -28,11 +27,12 @@ SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
 LOGGERS = {}
 LOGLEVELS = {
     'debug': logging.DEBUG,
-    'info' : logging.INFO,
-    'warning' : logging.WARN,
-    'error' : logging.ERROR,
+    'info': logging.INFO,
+    'warning': logging.WARN,
+    'error': logging.ERROR,
 }
 LOGLEVEL = logging.INFO
+LOG_TO_CONSOLE = False
 
 
 def get_logger(module_name):
@@ -45,17 +45,21 @@ def get_logger(module_name):
         logger: An instance of the configured logger.
     """
     # TODO: Move this into a configuration file.
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FMT))
-
     syslog_handler = logging.handlers.SysLogHandler()
     syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(syslog_handler)
     logger_instance.setLevel(LOGLEVEL)
+
+    if LOG_TO_CONSOLE:
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FMT))
+        logger_instance.addHandler(console_handler)
+
     LOGGERS[module_name] = logger_instance
     return logger_instance
+
 
 def _map_logger(func):
     """Map function to current loggers.
@@ -65,6 +69,7 @@ def _map_logger(func):
     """
     for logger in LOGGERS.itervalues():
         func(logger)
+
 
 def set_logger_level(level):
     """Modify log level of existing loggers as well as the default
@@ -77,6 +82,19 @@ def set_logger_level(level):
     global LOGLEVEL
     LOGLEVEL = level
     _map_logger(lambda logger: logger.setLevel(level))
+
+
+def enable_console_log():
+    """Enable console logging for all the new loggers and add console
+    handlers to all the existing loggers."""
+
+    # pylint: disable=global-statement
+    global LOG_TO_CONSOLE
+    LOG_TO_CONSOLE = True
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FMT))
+    _map_logger(lambda logger: logger.addHandler(console_handler))
+
 
 def set_logger_level_from_config(level_name):
     """Set the logger level from a config value.

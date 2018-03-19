@@ -14,12 +14,15 @@
 
 """Errors related to the audit module."""
 
+
 class Error(Exception):
     """Base error class for the module."""
+
 
 class InvalidRuleDefinitionError(Error):
     """Error for problems with the rule file."""
     pass
+
 
 class InvalidRulesSchemaError(Error):
     """Error for invalid rule schema."""

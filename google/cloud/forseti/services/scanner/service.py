@@ -14,16 +14,14 @@
 
 """ Scanner gRPC service. """
 
+from Queue import Queue
+
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
-
-# TODO: The next editor must remove this disable and correct issues.
-# pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc
 
 
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
@@ -32,7 +30,14 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     HANDLE_KEY = 'handle'
 
     def _get_handle(self, context):
-        """Return the handle associated with the gRPC call."""
+        """Return the handle associated with the gRPC call.
+
+        Args:
+            context (object): Context of the request.
+
+        Returns:
+            str: The model handle.
+        """
 
         metadata = context.invocation_metadata()
         metadata_dict = {}
@@ -41,36 +46,72 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def __init__(self, scanner_api, service_config):
+        """Init.
+
+        Args:
+            scanner_api (Scanner): Scanner api implementation.
+            service_config (ServiceConfig): Forseti 2.0 service configs.
+        """
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
         self.service_config = service_config
 
     def Ping(self, request, _):
-        """Provides the capability to check for service availability."""
+        """Provides the capability to check for service availability.
+
+        Args:
+            request (PingRequest): The ping request.
+            _ (object): Context of the request.
+
+        Returns:
+            PingReply: The response to the ping request.
+        """
 
         return scanner_pb2.PingReply(data=request.data)
 
-    def Run(self, request, context):
-        """Run scanner."""
+    def Run(self, _, context):
+        """Run scanner.
+
+        Args:
+            _ (RunRequest): The run request.
+            context (object): Context of the request.
+
+        Yields:
+            Progress: The progress of the scanner.
+        """
+        progress_queue = Queue()
 
         model_name = self._get_handle(context)
         LOGGER.info('Run scanner service with model: %s', model_name)
-        result = self.scanner.run(model_name,
-                                  self.service_config)
+        self.service_config.run_in_background(
+            lambda: self.scanner.run(model_name,
+                                     progress_queue,
+                                     self.service_config))
 
-        reply = scanner_pb2.RunReply()
-        reply.status = result
-        return reply
+        for progress_message in iter(progress_queue.get, None):
+            yield scanner_pb2.Progress(message=progress_message)
 
 
 class GrpcScannerFactory(object):
     """Factory class for Scanner service gRPC interface"""
 
     def __init__(self, config):
+        """Init.
+
+        Args:
+            config (ServiceConfig): The service config.
+        """
         self.config = config
 
     def create_and_register_service(self, server):
-        """Create and register the IAM Scanner service."""
+        """Create and register the IAM Scanner service.
+
+        Args:
+            server (object): The server object.
+
+        Returns:
+            object: The service object.
+        """
         service = GrpcScanner(scanner_api=scanner,
                               service_config=self.config)
         scanner_pb2_grpc.add_ScannerServicer_to_server(service, server)

@@ -15,6 +15,7 @@
 
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.notifiers import base_email_notification
 
@@ -28,13 +29,29 @@ class EmailInventorySnapshotSummary(
         base_email_notification.BaseEmailNotification):
     """Email notifier for inventory snapshot summary."""
 
-    # TODO: See if the base pipline init() can be reused.
-    def __init__(self, sendgrid_key):  # pylint: disable=super-init-not-called
+    def __init__(self, sendgrid_key, resource=None, cycle_timestamp=None,
+                 violations=None, global_configs=None, notifier_config=None,
+                 pipeline_config=None):
         """Initialization.
 
         Args:
             sendgrid_key (str): The SendGrid API key.
+            resource (str): Violation resource name.
+            cycle_timestamp (str): Snapshot timestamp,
+               formatted as YYYYMMDDTHHMMSSZ.
+            violations (dict): Violations.
+            global_configs (dict): Global configurations.
+            notifier_config (dict): Notifier configurations.
+            pipeline_config (dict): Pipeline configurations.
+            sendgrid_key (str): The SendGrid API key.
         """
+        super(EmailInventorySnapshotSummaryPipeline,
+              self).__init__(resource,
+                             cycle_timestamp,
+                             violations,
+                             global_configs,
+                             notifier_config,
+                             pipeline_config)
         self.email_util = EmailUtil(sendgrid_key)
 
     def _compose(
@@ -60,7 +77,7 @@ class EmailInventorySnapshotSummary(
         email_content = EmailUtil.render_from_template(
             'inventory_snapshot_summary.jinja',
             {'snapshot_time':
-                 snapshot_time.strftime('%Y %b %d, %H:%M:%S (UTC)'),
+                 snapshot_time.strftime(string_formats.TIMESTAMP_READABLE_UTC),
              'snapshot_timestamp': snapshot_timestamp,
              'status_summary': status,
              'pipelines': inventory_pipelines})

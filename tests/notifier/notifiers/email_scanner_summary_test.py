@@ -33,7 +33,8 @@ class EmailScannerSummarynotifierTest(ForsetiTestCase):
         """Test that the scan summary is built correctly."""
         email_notifier = (
             email_scanner_summary.EmailScannerSummary(
-                111111))
+                111111, '', '', {}, {}, {}, {})
+        )
 
         members = [iam_policy.IamPolicyMember.create_from(u)
             for u in ['user:a@b.c', 'group:g@h.i', 'serviceAccount:x@y.z']

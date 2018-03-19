@@ -14,7 +14,6 @@
 
 """Forseti CLI."""
 
-
 from argparse import ArgumentParser
 import json
 import os
@@ -32,6 +31,7 @@ class DefaultParser(ArgumentParser):
     """Default parser, when error is triggered, instead of printing
     error message, it will print the help message (-h).
     """
+
     def error(self, _):
         """This method will be triggered when error occurred.
 
@@ -66,7 +66,7 @@ def define_inventory_parser(parent):
         '-b',
         action='store_true',
         help='Execute inventory in background',
-        )
+    )
 
     delete_inventory_parser = action_subparser.add_parser(
         'delete',
@@ -162,7 +162,7 @@ def define_model_parser(parent):
     use_model_parser.add_argument(
         'model',
         help='Model to switch to, either handle or name'
-        )
+    )
 
     _ = action_subparser.add_parser(
         'list',
@@ -196,14 +196,14 @@ def define_model_parser(parent):
         '--id',
         default='',
         help='Inventory id to import from, if "inventory" source'
-        )
+    )
     create_model_parser.add_argument(
         '--background',
         '-b',
         default=False,
         action='store_true',
         help='Run import in background'
-        )
+    )
 
 
 def define_scanner_parser(parent):
@@ -246,8 +246,9 @@ def define_notifier_parser(parent):
         default=None,
         help=('Id of the inventory index to send violation notifications. '
               'If this is not specified, then the last inventory index id '
-              'will be used.'
-             ))
+              'will be used.')
+    )
+
 
 def define_explainer_parser(parent):
     """Define the explainer service parser.
@@ -452,7 +453,7 @@ def define_parent_parser(parser_cls, config_env):
     LOGGER.debug('parser_cls = %s, config_env = %s',
                  parser_cls, config_env)
 
-    parent_parser = parser_cls()
+    parent_parser = parser_cls(prog='forseti')
     parent_parser.add_argument(
         '--endpoint',
         default=config_env['endpoint'],
@@ -598,8 +599,8 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
-        result = client.run()
-        output.write(result)
+        for progress in client.run():
+            output.write(progress.message)
 
     actions = {
         'run': do_run}
@@ -620,8 +621,8 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        result = client.run(config.inventory_index_id)
-        output.write(result)
+        for progress in client.run(config.inventory_index_id):
+            output.write(progress.message)
 
     actions = {
         'run': do_run}
@@ -810,7 +811,6 @@ def run_explainer(client, config, output, _):
                                                    config.permission,
                                                    config.expand_groups,
                                                    config.expand_resources)):
-
             output.write(access)
 
     actions = {
@@ -832,7 +832,7 @@ def run_explainer(client, config, output, _):
 OUTPUTS = {
     'text': TextOutput,
     'json': JsonOutput,
-    }
+}
 
 SERVICES = {
     'explainer': run_explainer,
@@ -841,7 +841,7 @@ SERVICES = {
     'model': run_model,
     'scanner': run_scanner,
     'notifier': run_notifier,
-    }
+}
 
 
 class DefaultConfigParser(object):
@@ -884,7 +884,7 @@ class DefaultConfig(dict):
         'endpoint': '',
         'model': '',
         'format': 'text',
-        }
+    }
 
     def __init__(self, *args, **kwargs):
         """Constructor.

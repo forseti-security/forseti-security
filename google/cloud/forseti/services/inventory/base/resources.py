@@ -18,12 +18,12 @@
 # pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
-import datetime
 from functools import partial
 import json
-import pytz
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
@@ -45,7 +45,7 @@ def from_root_id(client, root_id):
         'organizations': Organization.fetch,
         'projects': Project.fetch,
         'folders': Folder.fetch,
-        }
+    }
 
     for prefix, func in root_map.iteritems():
         if root_id.startswith(prefix):
@@ -73,6 +73,7 @@ def cached(field_name):
         Returns:
             wrapper: Function wrapper to perform caching
         """
+
         def wrapper(*args, **kwargs):
             """Function wrapper to perform caching
 
@@ -88,12 +89,15 @@ def cached(field_name):
             result = f(*args, **kwargs)
             setattr(args[0], field_name, result)
             return result
+
         return wrapper
+
     return _cached
 
 
 class ResourceFactory(object):
     """ResourceFactory for visitor pattern"""
+
     def __init__(self, attributes):
         """Initialize
 
@@ -119,6 +123,7 @@ class ResourceFactory(object):
 
 class ResourceKey(object):
     """ResourceKey class"""
+
     def __init__(self, res_type, res_id):
         """Initialize
 
@@ -132,6 +137,7 @@ class ResourceKey(object):
 
 class Resource(object):
     """The Resource template"""
+
     def __init__(self, data, root=False, contains=None, **kwargs):
         """Initialize
 
@@ -157,7 +163,7 @@ class Resource(object):
         Returns:
             datatime: the datetime
         """
-        return datetime.datetime.now(pytz.UTC)
+        return date_time.get_utc_now_datetime()
 
     def __getitem__(self, key):
         """Get Item
@@ -238,7 +244,7 @@ class Resource(object):
         """
         return '\n'.join(self._warning)
 
-# pylint: disable=broad-except
+    # pylint: disable=broad-except
     def try_accept(self, visitor, stack=None):
         """Handle exceptions on the call the accept.
 
@@ -284,7 +290,8 @@ class Resource(object):
 
         if self._warning:
             visitor.update(self)
-# pylint: enable=broad-except
+
+    # pylint: enable=broad-except
 
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
@@ -364,7 +371,7 @@ class Resource(object):
         Returns:
             str: a string timestamp when the resource object was created.
         """
-        return self._timestamp.strftime('%Y-%m-%dT%H:%M:%S%z')
+        return self._timestamp.strftime(string_formats.TIMESTAMP_UTC_OFFSET)
 
     def stack(self):
         """Get resource hierarchy stack of this resource
@@ -416,6 +423,7 @@ class Resource(object):
 class Organization(Resource):
     """The Resource implementation for Organization
     """
+
     @classmethod
     def fetch(cls, client, resource_key):
         """Get Organization
@@ -462,6 +470,7 @@ class Organization(Resource):
 class Folder(Resource):
     """The Resource implementation for Folder
     """
+
     @classmethod
     def fetch(cls, client, resource_key):
         """Get Folder
@@ -509,6 +518,7 @@ class Folder(Resource):
 class Project(Resource):
     """The Resource implementation for Project
     """
+
     @classmethod
     def fetch(cls, client, resource_key):
         """Get Project
@@ -673,6 +683,7 @@ class Project(Resource):
 class GcsBucket(Resource):
     """The Resource implementation for GcsBucket
     """
+
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get IAM policy for this GCS bucket
@@ -720,6 +731,7 @@ class GcsBucket(Resource):
 class GcsObject(Resource):
     """The Resource implementation for GcsObject
     """
+
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get IAM policy for this GCS object
@@ -763,9 +775,11 @@ class GcsObject(Resource):
         """
         return self['id']
 
+
 class KubernetesCluster(Resource):
     """The Resource implementation for KubernetesCluster
     """
+
     @cached('service_config')
     def get_kubernetes_service_config(self, client=None):
         """Get service config for KubernetesCluster
@@ -776,11 +790,13 @@ class KubernetesCluster(Resource):
         Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
-        if not self['selfLink'] or 'zones' not in self['selfLink']:
+        try:
+            return client.fetch_container_serviceconfig(
+                self.parent().key(), zone=self.zone(), location=self.location())
+        except ValueError:
+            LOGGER.error('Cluster has no zone or location: %s',
+                         self._data)
             return {}
-
-        return client.fetch_container_serviceconfig(self.parent().key(),
-                                                    self.zone())
 
     def key(self):
         """Get key of this resource
@@ -799,6 +815,20 @@ class KubernetesCluster(Resource):
         """
         return 'kubernetes_cluster'
 
+    def location(self):
+        """Get KubernetesCluster location
+
+        Returns:
+            str: KubernetesCluster location
+        """
+        try:
+            self_link_parts = self['selfLink'].split('/')
+            return self_link_parts[self_link_parts.index('locations')+1]
+        except (KeyError, ValueError):
+            LOGGER.debug('selfLink not found or contains no locations: %s',
+                         self._data)
+            return None
+
     def zone(self):
         """Get KubernetesCluster zone
 
@@ -807,13 +837,16 @@ class KubernetesCluster(Resource):
         """
         try:
             self_link_parts = self['selfLink'].split('/')
-            return self_link_parts[self_link_parts.index('zones')+1]
-        except KeyError:
-            LOGGER.debug('selfLink not found: %s', self._data)
-            return ''
+            return self_link_parts[self_link_parts.index('zones') + 1]
+        except (KeyError, ValueError):
+            LOGGER.debug('selfLink not found or contains no zones: %s',
+                         self._data)
+            return None
+
 
 class DataSet(Resource):
     """The Resource implementation for DataSet"""
+
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset
@@ -847,6 +880,7 @@ class DataSet(Resource):
 
 class AppEngineApp(Resource):
     """The Resource implementation for AppEngineApp"""
+
     def key(self):
         """Get key of this resource
 
@@ -867,6 +901,7 @@ class AppEngineApp(Resource):
 
 class AppEngineService(Resource):
     """The Resource implementation for AppEngineService"""
+
     def key(self):
         """Get key of this resource
 
@@ -887,6 +922,7 @@ class AppEngineService(Resource):
 
 class AppEngineVersion(Resource):
     """The Resource implementation for AppEngineVersion"""
+
     def key(self):
         """Get key of this resource
 
@@ -907,6 +943,7 @@ class AppEngineVersion(Resource):
 
 class AppEngineInstance(Resource):
     """The Resource implementation for AppEngineInstance"""
+
     def key(self):
         """Get key of this resource
 
@@ -927,6 +964,7 @@ class AppEngineInstance(Resource):
 
 class ComputeProject(Resource):
     """The Resource implementation for ComputeProject"""
+
     def key(self):
         """Get key of this resource
 
@@ -946,6 +984,7 @@ class ComputeProject(Resource):
 
 class Instance(Resource):
     """The Resource implementation for Instance"""
+
     def key(self):
         """Get key of this resource
 
@@ -965,6 +1004,7 @@ class Instance(Resource):
 
 class Firewall(Resource):
     """The Resource implementation for Firewall"""
+
     def key(self):
         """Get key of this resource
 
@@ -984,6 +1024,7 @@ class Firewall(Resource):
 
 class Image(Resource):
     """The Resource implementation for Image"""
+
     def key(self):
         """Get key of this resource
 
@@ -1003,6 +1044,7 @@ class Image(Resource):
 
 class InstanceGroup(Resource):
     """The Resource implementation for InstanceGroup"""
+
     def key(self):
         """Get key of this resource
 
@@ -1022,6 +1064,7 @@ class InstanceGroup(Resource):
 
 class InstanceGroupManager(Resource):
     """The Resource implementation for InstanceGroupManager"""
+
     def key(self):
         """Get key of this resource
 
@@ -1041,6 +1084,7 @@ class InstanceGroupManager(Resource):
 
 class InstanceTemplate(Resource):
     """The Resource implementation for InstanceTemplate"""
+
     def key(self):
         """Get key of this resource
 
@@ -1060,6 +1104,7 @@ class InstanceTemplate(Resource):
 
 class Network(Resource):
     """The Resource implementation for Network"""
+
     def key(self):
         """Get key of this resource
 
@@ -1079,6 +1124,7 @@ class Network(Resource):
 
 class Subnetwork(Resource):
     """The Resource implementation for Subnetwork"""
+
     def key(self):
         """Get key of this resource
 
@@ -1098,6 +1144,7 @@ class Subnetwork(Resource):
 
 class BackendService(Resource):
     """The Resource implementation for BackendService"""
+
     def key(self):
         """Get key of this resource
 
@@ -1117,6 +1164,7 @@ class BackendService(Resource):
 
 class ForwardingRule(Resource):
     """The Resource implementation for ForwardingRule"""
+
     def key(self):
         """Get key of this resource
 
@@ -1136,6 +1184,7 @@ class ForwardingRule(Resource):
 
 class CuratedRole(Resource):
     """The Resource implementation for CuratedRole"""
+
     def key(self):
         """Get key of this resource
 
@@ -1163,6 +1212,7 @@ class CuratedRole(Resource):
 
 class Role(Resource):
     """The Resource implementation for role"""
+
     def key(self):
         """Get key of this resource
 
@@ -1182,6 +1232,7 @@ class Role(Resource):
 
 class CloudSqlInstance(Resource):
     """The Resource implementation for cloudsqlinstance"""
+
     def key(self):
         """Get key of this resource
 
@@ -1201,6 +1252,7 @@ class CloudSqlInstance(Resource):
 
 class ServiceAccount(Resource):
     """The Resource implementation for serviceaccount"""
+
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Service Account IAM policy for this service account
@@ -1232,6 +1284,7 @@ class ServiceAccount(Resource):
 
 class ServiceAccountKey(Resource):
     """The Resource implementation for serviceaccount_key"""
+
     def key(self):
         """Get key of this resource
 
@@ -1253,6 +1306,7 @@ class ServiceAccountKey(Resource):
 
 class GsuiteUser(Resource):
     """The Resource implementation for gsuite_user"""
+
     def key(self):
         """Get key of this resource
 
@@ -1272,6 +1326,7 @@ class GsuiteUser(Resource):
 
 class GsuiteGroup(Resource):
     """The Resource implementation for gsuite_group"""
+
     def key(self):
         """Get key of this resource
 
@@ -1291,6 +1346,7 @@ class GsuiteGroup(Resource):
 
 class GsuiteUserMember(Resource):
     """The Resource implementation for gsuite_user_member"""
+
     def key(self):
         """Get key of this resource
 
@@ -1310,6 +1366,7 @@ class GsuiteUserMember(Resource):
 
 class GsuiteGroupMember(Resource):
     """The Resource implementation for gsuite_group_member"""
+
     def key(self):
         """Get key of this resource
 
@@ -1329,6 +1386,7 @@ class GsuiteGroupMember(Resource):
 
 class ResourceIterator(object):
     """The Resource iterator template"""
+
     def __init__(self, resource, client):
         """Initialize
 
@@ -1348,6 +1406,7 @@ class ResourceIterator(object):
 
 class FolderIterator(ResourceIterator):
     """The Resource iterator implementation for Folder"""
+
     def iter(self):
         """Yields:
             Resource: Folder created
@@ -1359,6 +1418,7 @@ class FolderIterator(ResourceIterator):
 
 class FolderFolderIterator(ResourceIterator):
     """The Resource iterator implementation for Folder"""
+
     def iter(self):
         """Yields:
             Resource: Folder created
@@ -1370,6 +1430,7 @@ class FolderFolderIterator(ResourceIterator):
 
 class ProjectIterator(ResourceIterator):
     """The Resource iterator implementation for Project"""
+
     def iter(self):
         """Yields:
             Resource: Project created
@@ -1383,6 +1444,7 @@ class ProjectIterator(ResourceIterator):
 
 class FolderProjectIterator(ResourceIterator):
     """The Resource iterator implementation for Project"""
+
     def iter(self):
         """Yields:
             Resource: Project created
@@ -1396,6 +1458,7 @@ class FolderProjectIterator(ResourceIterator):
 
 class BucketIterator(ResourceIterator):
     """The Resource iterator implementation for GcsBucket"""
+
     def iter(self):
         """Yields:
             Resource: GcsBucket created
@@ -1409,6 +1472,7 @@ class BucketIterator(ResourceIterator):
 
 class ObjectIterator(ResourceIterator):
     """The Resource iterator implementation for GcsObject"""
+
     def iter(self):
         """Yields:
             Resource: GcsObject created
@@ -1420,6 +1484,7 @@ class ObjectIterator(ResourceIterator):
 
 class DataSetIterator(ResourceIterator):
     """The Resource iterator implementation for Dataset"""
+
     def iter(self):
         """Yields:
             Resource: Dataset created
@@ -1433,6 +1498,7 @@ class DataSetIterator(ResourceIterator):
 
 class AppEngineAppIterator(ResourceIterator):
     """The Resource iterator implementation for AppEngineApp"""
+
     def iter(self):
         """Yields:
             Resource: AppEngineApp created
@@ -1446,6 +1512,7 @@ class AppEngineAppIterator(ResourceIterator):
 
 class AppEngineServiceIterator(ResourceIterator):
     """The Resource iterator implementation for AppEngineService"""
+
     def iter(self):
         """Yields:
             Resource: AppEngineService created
@@ -1457,6 +1524,7 @@ class AppEngineServiceIterator(ResourceIterator):
 
 class AppEngineVersionIterator(ResourceIterator):
     """The Resource iterator implementation for AppEngineVersion"""
+
     def iter(self):
         """Yields:
             Resource: AppEngineVersion created
@@ -1470,6 +1538,7 @@ class AppEngineVersionIterator(ResourceIterator):
 
 class AppEngineInstanceIterator(ResourceIterator):
     """The Resource iterator implementation for AppEngineInstance"""
+
     def iter(self):
         """Yields:
             Resource: AppEngineInstance created
@@ -1481,8 +1550,10 @@ class AppEngineInstanceIterator(ResourceIterator):
                 versionid=self.resource['id']):
             yield FACTORIES['appengine_instance'].create_new(data)
 
+
 class KubernetesClusterIterator(ResourceIterator):
     """The Resource iterator implementation for KubernetesCluster"""
+
     def iter(self):
         """Yields:
             Resource: KubernetesCluster created
@@ -1493,8 +1564,10 @@ class KubernetesClusterIterator(ResourceIterator):
                     projectid=self.resource['projectId']):
                 yield FACTORIES['kubernetes_cluster'].create_new(data)
 
+
 class ComputeIterator(ResourceIterator):
     """The Resource iterator implementation for ComputeProject"""
+
     def iter(self):
         """Yields:
             Resource: ComputeProject created
@@ -1508,6 +1581,7 @@ class ComputeIterator(ResourceIterator):
 
 class InstanceIterator(ResourceIterator):
     """The Resource iterator implementation for Instance"""
+
     def iter(self):
         """Yields:
             Resource: Instance created
@@ -1521,6 +1595,7 @@ class InstanceIterator(ResourceIterator):
 
 class FirewallIterator(ResourceIterator):
     """The Resource iterator implementation for Firewall"""
+
     def iter(self):
         """Yields:
             Resource: Firewall created
@@ -1534,6 +1609,7 @@ class FirewallIterator(ResourceIterator):
 
 class ImageIterator(ResourceIterator):
     """The Resource iterator implementation for Image"""
+
     def iter(self):
         """Yields:
             Resource: Image created
@@ -1547,6 +1623,7 @@ class ImageIterator(ResourceIterator):
 
 class InstanceGroupIterator(ResourceIterator):
     """The Resource iterator implementation for InstanceGroup"""
+
     def iter(self):
         """Yields:
             Resource: InstanceGroup created
@@ -1560,6 +1637,7 @@ class InstanceGroupIterator(ResourceIterator):
 
 class InstanceGroupManagerIterator(ResourceIterator):
     """The Resource iterator implementation for InstanceGroupManager"""
+
     def iter(self):
         """Yields:
             Resource: InstanceGroupManager created
@@ -1573,6 +1651,7 @@ class InstanceGroupManagerIterator(ResourceIterator):
 
 class InstanceTemplateIterator(ResourceIterator):
     """The Resource iterator implementation for InstanceTemplate"""
+
     def iter(self):
         """Yields:
             Resource: InstanceTemplate created
@@ -1586,6 +1665,7 @@ class InstanceTemplateIterator(ResourceIterator):
 
 class NetworkIterator(ResourceIterator):
     """The Resource iterator implementation for Network"""
+
     def iter(self):
         """Yields:
             Resource: Network created
@@ -1599,6 +1679,7 @@ class NetworkIterator(ResourceIterator):
 
 class SubnetworkIterator(ResourceIterator):
     """The Resource iterator implementation for Subnetwork"""
+
     def iter(self):
         """Yields:
             Resource: Subnetwork created
@@ -1612,6 +1693,7 @@ class SubnetworkIterator(ResourceIterator):
 
 class BackendServiceIterator(ResourceIterator):
     """The Resource iterator implementation for BackendService"""
+
     def iter(self):
         """Yields:
             Resource: BackendService created
@@ -1625,6 +1707,7 @@ class BackendServiceIterator(ResourceIterator):
 
 class ForwardingRuleIterator(ResourceIterator):
     """The Resource iterator implementation for ForwardingRule"""
+
     def iter(self):
         """Yields:
             Resource: ForwardingRule created
@@ -1638,6 +1721,7 @@ class ForwardingRuleIterator(ResourceIterator):
 
 class CloudSqlIterator(ResourceIterator):
     """The Resource iterator implementation for CloudSqlInstance"""
+
     def iter(self):
         """Yields:
             Resource: CloudSqlInstance created
@@ -1651,6 +1735,7 @@ class CloudSqlIterator(ResourceIterator):
 
 class ServiceAccountIterator(ResourceIterator):
     """The Resource iterator implementation for ServiceAccount"""
+
     def iter(self):
         """Yields:
             Resource: ServiceAccount created
@@ -1664,6 +1749,7 @@ class ServiceAccountIterator(ResourceIterator):
 
 class ServiceAccountKeyIterator(ResourceIterator):
     """The Resource iterator implementation for ServiceAccountKey"""
+
     def iter(self):
         """Yields:
             Resource: ServiceAccountKey created
@@ -1676,6 +1762,7 @@ class ServiceAccountKeyIterator(ResourceIterator):
 
 class ProjectRoleIterator(ResourceIterator):
     """The Resource iterator implementation for Project Role"""
+
     def iter(self):
         """Yields:
             Resource: Role created
@@ -1689,6 +1776,7 @@ class ProjectRoleIterator(ResourceIterator):
 
 class OrganizationRoleIterator(ResourceIterator):
     """The Resource iterator implementation for Organization Role"""
+
     def iter(self):
         """Yields:
             Resource: Role created
@@ -1701,6 +1789,7 @@ class OrganizationRoleIterator(ResourceIterator):
 
 class OrganizationCuratedRoleIterator(ResourceIterator):
     """The Resource iterator implementation for OrganizationCuratedRole"""
+
     def iter(self):
         """Yields:
             Resource: CuratedRole created
@@ -1712,6 +1801,7 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
 
 class GsuiteGroupIterator(ResourceIterator):
     """The Resource iterator implementation for GsuiteGroup"""
+
     def iter(self):
         """Yields:
             Resource: GsuiteGroup created
@@ -1724,6 +1814,7 @@ class GsuiteGroupIterator(ResourceIterator):
 
 class GsuiteUserIterator(ResourceIterator):
     """The Resource iterator implementation for GsuiteUser"""
+
     def iter(self):
         """Yields:
             Resource: GsuiteUser created
@@ -1736,6 +1827,7 @@ class GsuiteUserIterator(ResourceIterator):
 
 class GsuiteMemberIterator(ResourceIterator):
     """The Resource iterator implementation for GsuiteMember"""
+
     def iter(self):
         """Yields:
             Resource: GsuiteUserMember or GsuiteGroupMember created
@@ -1760,7 +1852,7 @@ FACTORIES = {
             OrganizationRoleIterator,
             OrganizationCuratedRoleIterator,
             ProjectIterator,
-            ]}),
+        ]}),
 
     'folder': ResourceFactory({
         'dependsOn': ['organization'],
@@ -1768,7 +1860,7 @@ FACTORIES = {
         'contains': [
             FolderFolderIterator,
             FolderProjectIterator
-            ]}),
+        ]}),
 
     'project': ResourceFactory({
         'dependsOn': ['organization', 'folder'],
@@ -1792,179 +1884,179 @@ FACTORIES = {
             NetworkIterator,
             SubnetworkIterator,
             ProjectRoleIterator
-            ]}),
+        ]}),
 
     'appengine_app': ResourceFactory({
         'dependsOn': ['project'],
         'cls': AppEngineApp,
         'contains': [
             AppEngineServiceIterator,
-            ]}),
+        ]}),
 
     'appengine_service': ResourceFactory({
         'dependsOn': ['appengine_app'],
         'cls': AppEngineService,
         'contains': [
             AppEngineVersionIterator,
-            ]}),
+        ]}),
 
     'appengine_version': ResourceFactory({
         'dependsOn': ['appengine_service'],
         'cls': AppEngineVersion,
         'contains': [
             AppEngineInstanceIterator,
-            ]}),
+        ]}),
 
     'appengine_instance': ResourceFactory({
         'dependsOn': ['appengine_version'],
         'cls': AppEngineInstance,
         'contains': [
-            ]}),
+        ]}),
 
     'bucket': ResourceFactory({
         'dependsOn': ['project'],
         'cls': GcsBucket,
         'contains': [
             # ObjectIterator
-            ]}),
+        ]}),
 
     'object': ResourceFactory({
         'dependsOn': ['bucket'],
         'cls': GcsObject,
         'contains': [
-            ]}),
+        ]}),
 
     'dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': DataSet,
         'contains': [
-            ]}),
+        ]}),
 
     'kubernetes_cluster': ResourceFactory({
         'dependsOn': ['project'],
         'cls': KubernetesCluster,
         'contains': [
-            ]}),
+        ]}),
 
     'compute': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeProject,
         'contains': [
-            ]}),
+        ]}),
 
     'instance': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Instance,
         'contains': [
-            ]}),
+        ]}),
 
     'firewall': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Firewall,
         'contains': [
-            ]}),
+        ]}),
 
     'image': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Image,
         'contains': [
-            ]}),
+        ]}),
 
     'instancegroup': ResourceFactory({
         'dependsOn': ['project'],
         'cls': InstanceGroup,
         'contains': [
-            ]}),
+        ]}),
 
     'instancegroupmanager': ResourceFactory({
         'dependsOn': ['project'],
         'cls': InstanceGroupManager,
         'contains': [
-            ]}),
+        ]}),
 
     'instancetemplate': ResourceFactory({
         'dependsOn': ['project'],
         'cls': InstanceTemplate,
         'contains': [
-            ]}),
+        ]}),
 
     'backendservice': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BackendService,
         'contains': [
-            ]}),
+        ]}),
 
     'forwardingrule': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ForwardingRule,
         'contains': [
-            ]}),
+        ]}),
 
     'network': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Network,
         'contains': [
-            ]}),
+        ]}),
 
     'subnetwork': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Subnetwork,
         'contains': [
-            ]}),
+        ]}),
 
     'cloudsqlinstance': ResourceFactory({
         'dependsOn': ['project'],
         'cls': CloudSqlInstance,
         'contains': [
-            ]}),
+        ]}),
 
     'serviceaccount': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ServiceAccount,
         'contains': [
             ServiceAccountKeyIterator
-            ]}),
+        ]}),
 
     'serviceaccount_key': ResourceFactory({
         'dependsOn': ['serviceaccount'],
         'cls': ServiceAccountKey,
         'contains': [
-            ]}),
+        ]}),
 
     'role': ResourceFactory({
         'dependsOn': ['organization', 'project'],
         'cls': Role,
         'contains': [
-            ]}),
+        ]}),
 
     'curated_role': ResourceFactory({
         'dependsOn': [],
         'cls': CuratedRole,
         'contains': [
-            ]}),
+        ]}),
 
     'gsuite_user': ResourceFactory({
         'dependsOn': ['organization'],
         'cls': GsuiteUser,
         'contains': [
-            ]}),
+        ]}),
 
     'gsuite_group': ResourceFactory({
         'dependsOn': ['organization'],
         'cls': GsuiteGroup,
         'contains': [
             GsuiteMemberIterator,
-            ]}),
+        ]}),
 
     'gsuite_user_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],
         'cls': GsuiteUserMember,
         'contains': [
-            ]}),
+        ]}),
 
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],
         'cls': GsuiteGroupMember,
         'contains': [
-            ]}),
-    }
+        ]}),
+}

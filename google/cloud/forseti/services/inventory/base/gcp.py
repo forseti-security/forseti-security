@@ -120,11 +120,11 @@ def create_lazy(attribute, factory):
     Returns:
         function: Decorator
     """
-    def f_wrapper(function):
+    def f_wrapper(func):
         """Create decorator
 
         Args:
-            function (function): Function to wrap.
+            func (function): Function to wrap.
 
         Returns:
             function: Decorator
@@ -134,16 +134,16 @@ def create_lazy(attribute, factory):
             """Decorator implementation
 
             Args:
-                *args (list): Original function arguments
-                **kwargs (dict): Original function arguments
+                *args (list): Original func arguments
+                **kwargs (dict): Original func arguments
 
             Returns:
-                object: Result produced by the wrapped function
+                object: Result produced by the wrapped func
             """
             this = args[0]
             if not hasattr(this, attribute) or not getattr(this, attribute):
                 setattr(this, attribute, factory(this))
-            return function(*args, **kwargs)
+            return func(*args, **kwargs)
         return wrapper
     return f_wrapper
 
@@ -436,17 +436,20 @@ class ApiClientImpl(ApiClient):
             yield cluster
 
     @create_lazy('container', _create_container)
-    def fetch_container_serviceconfig(self, projectid, zone):
+    def fetch_container_serviceconfig(self, projectid, zone=None,
+                                      location=None):
         """Kubernetes Engine per zone service config from gcp API call.
 
         Args:
             projectid (str): id of the project to query
             zone (str): zone of the Kubernetes Engine
+            location (str): location of the Kubernetes Engine
 
         Returns:
             dict: Generator of Kubernetes Engine Cluster resources.
         """
-        return self.container.get_serverconfig(projectid, zone)
+        return self.container.get_serverconfig(projectid, zone=zone,
+                                               location=location)
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):

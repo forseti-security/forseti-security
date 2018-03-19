@@ -17,6 +17,7 @@
 from itertools import izip
 import logging
 
+
 # pylint: disable=protected-access
 
 
@@ -51,11 +52,13 @@ def autoclose_stream(f):
             """
 
             return context._state.client == 'closed'
+
         context = args[-1]
         for result in f(*args):
             yield result
             if closed(context):
                 return
+
     return wrapper
 
 
@@ -84,6 +87,7 @@ def logcall(f, level=logging.CRITICAL):
         result = f(*args, **kwargs)
         logging.log(level, 'exit %s(%s) -> %s', f.__name__, args, result)
         return result
+
     return wrapper
 
 
@@ -106,7 +110,8 @@ def mutual_exclusive(lock):
         Returns:
             func: the decorated function
         """
-        def function(*args, **kw):
+
+        def func(*args, **kw):
             """Decorated functionality, mutexing wrapped function.
 
             Args:
@@ -121,7 +126,9 @@ def mutual_exclusive(lock):
                 return f(*args, **kw)
             finally:
                 lock.release()
-        return function
+
+        return func
+
     return wrap
 
 
@@ -217,6 +224,7 @@ def get_sql_dialect(session):
 
     return session.bind.dialect.name
 
+
 def get_resources_from_full_name(full_name):
     """Parse resource info from full name.
 
@@ -236,3 +244,17 @@ def get_resources_from_full_name(full_name):
     resource_iter = iter(full_name_parts)
     for resource_id, resource_type in izip(resource_iter, resource_iter):
         yield resource_type, resource_id
+
+
+def get_key_from_type_name(type_name):
+    """Returns the key from type_name.
+
+    Args:
+        type_name (str): Type name.
+
+    Returns:
+        str: Resource key.
+    """
+    if '/' in type_name:
+        return type_name.split('/')[-1]
+    return type_name

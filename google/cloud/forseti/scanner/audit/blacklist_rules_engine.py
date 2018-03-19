@@ -19,13 +19,10 @@ import urllib2
 import struct
 import socket
 
-
 from collections import namedtuple
-
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
-
 
 LOGGER = logger.get_logger(__name__)
 
@@ -80,6 +77,7 @@ class BlacklistRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
+
 class BlacklistRuleBook(bre.BaseRuleBook):
     """The RuleBook for networks resources."""
 
@@ -131,7 +129,6 @@ class BlacklistRuleBook(bre.BaseRuleBook):
         if not resource_rules:
             self.resource_rules_map[rule_index] = rule
 
-
     def get_resource_rules(self):
         """Get all the resource rules for (resource, RuleAppliesTo.*).
         Returns:
@@ -159,6 +156,7 @@ class BlacklistRuleBook(bre.BaseRuleBook):
                                data, re.M)
 
         return ip_addresses, netblocks
+
 
 class Rule(object):
     """The rules class for instance_network_interface."""

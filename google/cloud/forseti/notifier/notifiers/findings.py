@@ -16,17 +16,14 @@
 
 import tempfile
 
-from datetime import datetime
-
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
 
 
 LOGGER = logger.get_logger(__name__)
-
-OUTPUT_FILENAME = 'forseti_findings_{}.json'
 
 
 class Findingsnotifier(object):
@@ -68,10 +65,10 @@ class Findingsnotifier(object):
         Returns:
             str: The output filename for the violations json.
         """
-        now_utc = datetime.utcnow()
+        now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
-            string_formats.TIMESTAMP_TIMEZONE_NAME)
-        return OUTPUT_FILENAME.format(output_timestamp)
+            string_formats.TIMESTAMP_TIMEZONE)
+        return string_formats.FINDINGS_FILENAME.format(output_timestamp)
 
     def run(self, violations, gcs_path):
         """Generate the temporary json file and upload to GCS.

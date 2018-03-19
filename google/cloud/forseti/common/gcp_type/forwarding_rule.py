@@ -73,7 +73,6 @@ class ForwardingRule(object):
         self.backend_service = backend_service
         self._json = raw_json
 
-
     @classmethod
     def from_dict(cls, project_id, full_name, forwarding_rule):
         """Returns a new ForwardingRule object from dict.
