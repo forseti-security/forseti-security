@@ -51,14 +51,14 @@ class EmailInventorySnapshotSummaryNotifierTest(ForsetiTestCase):
             RESOURCE_NAME='baz_resource',
             status='FAILURE',
             count=10)
-        mock_inventory_pipelines = [
-            mock_inventory_pipeline1,
+        mock_inventory_notifiers= [
+            mock_inventory_pipeline1 ,
             mock_inventory_pipeline2,
             mock_inventory_pipeline3]
 
         email_subject, email_content = email_notifier._compose(
             snapshot_time, snapshot_timestamp, status,
-            mock_inventory_pipelines)
+            mock_inventory_notifiers)
 
         expected_subject = ('Inventory Snapshot Complete: '
                             '20001225T010000Z SUCCESS')
