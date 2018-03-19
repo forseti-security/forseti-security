@@ -40,7 +40,6 @@ class BaseNotificationPipeline(object):
             pipeline_config (dict): Pipeline configurations.
         """
         self.cycle_timestamp = cycle_timestamp
-        self.resource = resource
         self.global_configs = global_configs
         self.notifier_config = notifier_config
         self.pipeline_config = pipeline_config
@@ -48,7 +47,19 @@ class BaseNotificationPipeline(object):
         # self.api_client = api_client
 
         # Get violations
-        self.violations = violations
+        self.violations = dict()
+        self.violations[resource] = violations
+
+    def add_data(self, resource, violations):
+        """Add violation data for another resource type.
+
+        Args:
+            resource (str): Violation resource name.
+            violations (dict): Violations.
+        """
+        if resource in self.violations:
+            raise ValueError('resource %s specified more than once' % resource)
+        self.violations[resource] = violations
 
     @abc.abstractmethod
     def run(self):
