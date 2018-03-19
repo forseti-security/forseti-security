@@ -52,8 +52,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             fake_notifier_conf)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.pipelines.gcs_violations_pipeline'
-        '.date_time',
+        'google.cloud.forseti.notifier.pipelines.gcs_violations.date_time',
         autospec=True)
     def test_get_output_filename(self, mock_date_time):
         """Test _get_output_filename()."""
