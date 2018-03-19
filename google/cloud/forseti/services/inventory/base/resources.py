@@ -823,7 +823,7 @@ class KubernetesCluster(Resource):
         """
         try:
             self_link_parts = self['selfLink'].split('/')
-            return self_link_parts[self_link_parts.index('locations')+1]
+            return self_link_parts[self_link_parts.index('locations') + 1]
         except (KeyError, ValueError):
             LOGGER.debug('selfLink not found or contains no locations: %s',
                          self._data)

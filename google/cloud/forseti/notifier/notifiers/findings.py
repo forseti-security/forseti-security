@@ -26,7 +26,7 @@ from google.cloud.forseti.common.util import string_formats
 LOGGER = logger.get_logger(__name__)
 
 
-class FindingsPipeline(object):
+class Findingsnotifier(object):
     """Upload violations to GCS bucket as findings."""
 
     @staticmethod

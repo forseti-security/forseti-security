@@ -11,24 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Email pipeline for scanner summary."""
+"""Email notifier for scanner summary."""
 
 import collections
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.notifiers import base_email_notification
 
 LOGGER = logger.get_logger(__name__)
 
 
-class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
-    """Email pipeline for scanner summary."""
+class EmailScannerSummary(base_email_notification.BaseEmailNotification):
+    """Email notifier for scanner summary."""
 
     def __init__(self, sendgrid_key, resource=None, cycle_timestamp=None,
                  violations=None,
@@ -46,12 +44,12 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             notifier_config (dict): Notifier configurations.
             pipeline_config (dict): Pipeline configurations.
         """
-        super(EmailScannerSummaryPipeline, self).__init__(resource,
-                                                          cycle_timestamp,
-                                                          violations,
-                                                          global_configs,
-                                                          notifier_config,
-                                                          pipeline_config)
+        super(EmailScannerSummary, self).__init__(resource,
+                                                  cycle_timestamp,
+                                                  violations,
+                                                  global_configs,
+                                                  notifier_config,
+                                                  pipeline_config)
         self.email_util = EmailUtil(sendgrid_key)
 
     def _compose(  # pylint: disable=arguments-differ
@@ -176,7 +174,7 @@ class EmailScannerSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             self, csv_name, output_filename, now_utc, all_violations,
             total_resources, violation_errors, email_sender, email_recipient,
             email_description):
-        """Run the email pipeline
+        """Run the email notifier
 
         Args:
             csv_name (str): The full path of the local csv filename.
