@@ -65,12 +65,10 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['project'] = violation.project
-            violation_data['full_name'] = violation.full_name
-            violation_data['network'] = violation.network
-            violation_data['ip'] = violation.ip
-            violation_data['inventory_data'] = violation.inventory_data
+            violation_data = {'project': violation.project,
+                              'full_name': violation.full_name,
+                              'network': violation.network, 'ip': violation.ip,
+                              'inventory_data': violation.inventory_data}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,

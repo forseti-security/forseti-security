@@ -22,6 +22,7 @@ import netaddr
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
+from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
@@ -49,8 +50,6 @@ class InvalidFirewallActionError(Error):
 
 class FirewallRule(object):
     """Represents Firewall resource."""
-
-    MYSQL_DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
     def __init__(self, validate=False, **kwargs):
         """Firewall resource.
@@ -114,13 +113,12 @@ class FirewallRule(object):
                   'network=%s\n'
                   'priority=%s\n'
                   'direction=%s\n'
-                  'action=%s\n') % (
-                      self.project_id,
-                      self.name,
-                      self.network,
-                      self._priority,
-                      self.direction,
-                      self._firewall_action)
+                  'action=%s\n') % (self.project_id,
+                                    self.name,
+                                    self.network,
+                                    self._priority,
+                                    self.direction,
+                                    self._firewall_action)
 
         for field_name, value in [
                 ('sourceRanges', self._source_ranges),
@@ -177,7 +175,7 @@ class FirewallRule(object):
                 firewall_dict.get('selfLink')),
             'firewall_rule_create_time': parser.format_timestamp(
                 parser.json_stringify(firewall_dict.get('creationTimestamp')),
-                FirewallRule.MYSQL_DATETIME_FORMAT),
+                string_formats.TIMESTAMP_MYSQL_DATETIME_FORMAT),
         }
         if project_id:
             in_dict['project_id'] = project_id
@@ -221,7 +219,6 @@ class FirewallRule(object):
         return FirewallRule._transform(
             firewall_dict, project_id=project_id, validate=validate)
 
-
     def as_json(self):
         """Returns a valid JSON representation of this firewall rule.
 
@@ -248,7 +245,8 @@ class FirewallRule(object):
                 ('destinationRanges', self.destination_ranges),
                 ('priority', self._priority),
                 ('sourceServiceAccounts', self.source_service_accounts),
-                ('targetServiceAccounts', self.target_service_accounts)]:
+                ('targetServiceAccounts', self.target_service_accounts)
+        ]:
             if value:
                 firewall_dict[key] = value
         return json.dumps(firewall_dict, sort_keys=True)
@@ -350,8 +348,9 @@ class FirewallRule(object):
               * _destination_ranges is set
         """
         if self.direction == 'INGRESS':
-            if (not self._source_ranges and not self._source_tags and not
-                    self.source_service_accounts):
+            if (not self._source_ranges and
+                    not self._source_tags and
+                    not self.source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Ingress rule missing required field oneof "sourceRanges" '
                     'or "sourceTags" or "sourceServiceAccounts": "%s".' % self)
@@ -365,9 +364,10 @@ class FirewallRule(object):
             if not self._destination_ranges:
                 raise InvalidFirewallRuleError(
                     'Egress rule missing required field "destinationRanges":'
-                    '"%s".'% self)
+                    '"%s".' % self)
 
-            if (self._source_ranges or self._source_tags or
+            if (self._source_ranges or
+                    self._source_tags or
                     self._source_service_accounts):
                 raise InvalidFirewallRuleError(
                     'Egress rules cannot include "sourceRanges", "sourceTags"'
@@ -480,8 +480,7 @@ class FirewallRule(object):
         if not self._firewall_action:
             if self.allowed:
                 self._firewall_action = FirewallAction(
-                    firewall_rules=self.allowed,
-                    firewall_rule_action='allowed')
+                    firewall_rules=self.allowed)
             else:
                 self._firewall_action = FirewallAction(
                     firewall_rules=self.denied,
@@ -553,6 +552,7 @@ class FirewallRule(object):
                 self.source_ranges == other.source_ranges and
                 self.destination_ranges == other.destination_ranges and
                 self.firewall_action == other.firewall_action)
+
     # pylint: enable=protected-access
 
     # pylint: disable=protected-access
@@ -595,7 +595,7 @@ class FirewallAction(object):
         if firewall_rule_action not in self.VALID_ACTIONS:
             raise InvalidFirewallActionError(
                 'Firewall rule action must be either allowed or denied'
-                ' got: %s' % (firewall_rule_action))
+                ' got: %s' % firewall_rule_action)
         self.action = firewall_rule_action
         self._any_value = None
         if firewall_rules:
@@ -626,7 +626,7 @@ class FirewallAction(object):
           InvalidFirewallActionError: If a rule is not formatted for the API.
         """
         self.validate()
-        return (self.action, self.rules)
+        return self.action, self.rules
 
     def validate(self):
         """Validates that the firewall rules are valid for use in the API.
@@ -648,7 +648,7 @@ class FirewallAction(object):
                         validate_port_range(port)
                     else:
                         validate_port(port)
-            invalid_keys = set(rule.keys()) - set(['IPProtocol', 'ports'])
+            invalid_keys = set(rule.keys()) - {'IPProtocol', 'ports'}
             if invalid_keys:
                 raise InvalidFirewallActionError(
                     'Action can only have "IPProtocol" and "ports": %s' %
@@ -801,6 +801,7 @@ class FirewallAction(object):
         """
         return self.action == other.action and self.rules == other.rules
 
+
 def sort_rules(rules):
     """Sorts firewall rules by protocol and sorts ports.
 
@@ -853,6 +854,7 @@ def ips_in_list(ips, ips_list):
             return False
     return True
 
+
 def ip_in_range(ip_addr, ip_range):
     """Checks whether the ip/ip range is in another ip range.
 
@@ -872,6 +874,7 @@ def ip_in_range(ip_addr, ip_range):
     ip_range_network = netaddr.IPNetwork(ip_range)
     return ip_network in ip_range_network
 
+
 def expand_port_range(port_range):
     """Expands a port range.
 
@@ -886,6 +889,7 @@ def expand_port_range(port_range):
     """
     start, end = port_range.split('-')
     return [str(i) for i in xrange(int(start), int(end) + 1)]
+
 
 def expand_ports(ports):
     """Expands all ports in a list.

@@ -15,7 +15,6 @@
 """ Database access objects for Forseti Scanner. """
 
 from collections import defaultdict
-from datetime import datetime
 import hashlib
 import json
 
@@ -30,36 +29,12 @@ from sqlalchemy.orm import sessionmaker
 
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.services import db
-
 
 LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=no-member
-
-TIMESTAMP_FORMAT = string_formats.TIMESTAMP_TIMEZONE_NAME
-
-def _get_utc_now():
-    """Get a datetime object for utcnow()
-
-    Returns:
-          datetime: A datetime object representin utcnow().
-    """
-    return datetime.utcnow()
-
-def _get_utc_now_timestamp(str_format=TIMESTAMP_FORMAT):
-    """Get a str representing utcnow()
-
-    Args:
-        str_format (str): The requested format string.
-
-    Returns:
-          str: A timestamp in the classes default timestamp format.
-    """
-    utc_now = _get_utc_now()
-
-    return utc_now.strftime(str_format)
 
 def define_violation(dbengine):
     """Defines table class for violations.
@@ -139,7 +114,7 @@ def define_violation(dbengine):
                 inventory_index_id (str): Id of the inventory index.
             """
             with self.violationmaker() as session:
-                created_at_datetime = _get_utc_now()
+                created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
                     violation_hash = _create_violation_hash(
                         violation.get('full_name', ''),
@@ -176,18 +151,17 @@ def define_violation(dbengine):
             with self.violationmaker() as session:
                 if inventory_index_id:
                     return (
-                        session.query(self.TBL_VIOLATIONS)
-                        .filter(
+                        session.query(self.TBL_VIOLATIONS).filter(
                             self.TBL_VIOLATIONS.inventory_index_id ==
-                            inventory_index_id)
-                        .all())
+                            inventory_index_id).all()
+                    )
                 return (
-                    session.query(self.TBL_VIOLATIONS)
-                    .all())
+                    session.query(self.TBL_VIOLATIONS).all())
 
     base.metadata.create_all(dbengine)
 
     return ViolationAccess
+
 
 # pylint: disable=invalid-name
 def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
@@ -202,6 +176,7 @@ def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
 
     return {c.key: getattr(sqlalchemy_obj, c.key)
             for c in inspect(sqlalchemy_obj).mapper.column_attrs}
+
 
 def map_by_resource(violation_rows):
     """Create a map of violation types to violations of that resource.
@@ -237,6 +212,7 @@ def map_by_resource(violation_rows):
             v_by_type[v_resource].append(v_data)
 
     return dict(v_by_type)
+
 
 def _create_violation_hash(violation_full_name, inventory_data, violation_data):
     """Create a hash of violation data.

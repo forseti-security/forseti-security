@@ -19,7 +19,7 @@ package notifier;
 service Notifier {
   rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc Run(RunRequest) returns (RunReply) {}
+  rpc Run(RunRequest) returns (stream Progress) {}
 
 }
 
@@ -27,8 +27,8 @@ message RunRequest {
   string inventory_index_id = 1;
 }
 
-message RunReply {
-  int32 status = 1;
+message Progress {
+  string message = 1;
 }
 
 message PingRequest {

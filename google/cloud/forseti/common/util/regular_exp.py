@@ -16,6 +16,7 @@
 
 import re
 
+
 def escape_and_globify(pattern_string):
     """Given a pattern string with a glob, create actual regex pattern.
 
@@ -24,6 +25,8 @@ def escape_and_globify(pattern_string):
     ".*@company.com", except that we don't want to match zero-length
     usernames before the "@".)
 
+    Special case the pattern '*' to match 0 or more characters.
+
     Args:
         pattern_string (str): The pattern string of which to make a regex.
 
@@ -31,4 +34,6 @@ def escape_and_globify(pattern_string):
         str: The pattern string, escaped except for the "*", which is
             transformed into ".+" (match on one or more characters).
     """
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.*'))
+    if pattern_string == '*':
+        return '^.*$'
+    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+?'))

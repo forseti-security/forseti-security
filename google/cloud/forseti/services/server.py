@@ -86,11 +86,11 @@ class AbstractServiceConfig(object):
         raise NotImplementedError()
 
     @abstractmethod
-    def run_in_background(self, function):
+    def run_in_background(self, func):
         """Runs a function in a thread pool in the background.
 
         Args:
-            function (Function): Function to be executed.
+            func (Function): Function to be executed.
 
         Raises:
             NotImplementedError: Abstract.
@@ -343,14 +343,14 @@ class ServiceConfig(AbstractServiceConfig):
 
         return ClientComposition(self.endpoint)
 
-    def run_in_background(self, function):
+    def run_in_background(self, func):
         """Runs a function in a thread pool in the background.
 
         Args:
-            function (Function): Function to be executed.
+            func (Function): Function to be executed.
         """
 
-        self.thread_pool.apply_async(function)
+        self.thread_pool.apply_async(func)
 
     def get_storage_class(self):
         """Returns the storage class used to access the inventory.
@@ -360,6 +360,8 @@ class ServiceConfig(AbstractServiceConfig):
         """
 
         return Storage
+
+
 # pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-locals
@@ -368,6 +370,7 @@ def serve(endpoint,
           forseti_db_connect_string,
           forseti_config_file_path,
           log_level,
+          enable_console_log,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -378,12 +381,19 @@ def serve(endpoint,
         forseti_db_connect_string (str): Forseti database string
         forseti_config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
+        enable_console_log (bool): Enable console logging.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
     Raises:
         Exception: No services to start
     """
+
+    # Configuring log level for the application
+    logger.set_logger_level_from_config(log_level)
+
+    if enable_console_log:
+        logger.enable_console_log()
 
     factories = []
     for service in services:
@@ -399,9 +409,6 @@ def serve(endpoint,
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try '
                      'again. Error: %s', err)
-
-    # Configuring log level for the application
-    logger.set_logger_level_from_config(log_level)
 
     # Setting up configurations
     forseti_inventory_config = forseti_config.get('inventory', {})
@@ -437,6 +444,8 @@ def serve(endpoint,
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
+
+
 # pylint: enable=too-many-locals
 
 
@@ -453,7 +462,7 @@ def main():
               '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
         '--forseti_config_file_path',
-        help=('Path to Forseti configuration file.'))
+        help='Path to Forseti configuration file.')
     parser.add_argument(
         '--services',
         nargs='*',
@@ -466,10 +475,15 @@ def main():
         help='Sets the threshold for Forseti\'s logger.'
              ' Logging messages which are less severe'
              ' than the level you set will be ignored.')
+    parser.add_argument(
+        '--enable_console_log',
+        action='store_true',
+        help='Print log to console.')
     args = vars(parser.parse_args())
 
     serve(args['endpoint'], args['services'], args['forseti_db'],
-          args['forseti_config_file_path'], args['log_level'])
+          args['forseti_config_file_path'], args['log_level'],
+          args['enable_console_log'])
 
 
 if __name__ == '__main__':

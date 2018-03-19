@@ -20,28 +20,10 @@ import re
 
 from google.cloud.forseti.common.gcp_type import errors
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.regular_exp import escape_and_globify
 
 
 LOGGER = logger.get_logger(__name__)
-
-
-# TODO: use the regex_util
-def _escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string (str): The pattern string of which to make a regex.
-
-    Returns:
-        str: The pattern string, escaped except for the "*", which is
-        transformed into ".+" (match on one or more characters).
-    """
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
 
 
 def _get_iam_members(members):
@@ -141,7 +123,7 @@ class IamPolicyBinding(object):
                  'role_name={}, members={}'.format(role_name, members)))
         self.role_name = role_name
         self.members = _get_iam_members(members)
-        self.role_pattern = re.compile(_escape_and_globify(role_name),
+        self.role_pattern = re.compile(escape_and_globify(role_name),
                                        flags=re.IGNORECASE)
 
     def __eq__(self, other):
@@ -227,8 +209,8 @@ class IamPolicyMember(object):
 
     ALL_USERS = 'allUsers'
     ALL_AUTH_USERS = 'allAuthenticatedUsers'
-    member_types = set([ALL_USERS, ALL_AUTH_USERS,
-                        'user', 'group', 'serviceAccount', 'domain'])
+    member_types = {ALL_USERS, ALL_AUTH_USERS, 'user', 'group',
+                    'serviceAccount', 'domain'}
 
     def __init__(self, member_type, member_name=None):
         """Initialize.
@@ -244,7 +226,7 @@ class IamPolicyMember(object):
         self.name = member_name
         self.name_pattern = None
         if member_name:
-            self.name_pattern = re.compile(_escape_and_globify(self.name),
+            self.name_pattern = re.compile(escape_and_globify(self.name),
                                            flags=re.IGNORECASE)
 
     def __eq__(self, other):

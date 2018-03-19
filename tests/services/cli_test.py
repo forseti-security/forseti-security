@@ -59,11 +59,17 @@ CLIENT.explain.query_access_by_members = mock.Mock(return_value='test')
 CLIENT.explain.query_access_by_permissions = mock.Mock(return_value=iter(['test']))
 CLIENT.explain.query_access_by_resources = mock.Mock(return_value='test')
 
+
+class Progress(object):
+    def __init__(self, message):
+        self.message = message
+
+
 CLIENT.scanner = CLIENT
-CLIENT.scanner.run = mock.Mock(return_value=iter(['test']))
+CLIENT.scanner.run = mock.Mock(return_value=iter([Progress('test')]))
 
 CLIENT.notifier = CLIENT
-CLIENT.notifier.run = mock.Mock(return_value=iter(['test']))
+CLIENT.notifier.run = mock.Mock(return_value=iter([Progress('test')]))
 
 
 class ArgumentParserError(Exception):

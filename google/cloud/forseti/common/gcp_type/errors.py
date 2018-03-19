@@ -38,6 +38,7 @@ class InvalidIamPolicyMemberError(Error):
     """Error for invalid IAM policy members."""
     pass
 
+
 class InvalidGroupMemberError(Error):
     """Error for invalid Group members."""
     pass

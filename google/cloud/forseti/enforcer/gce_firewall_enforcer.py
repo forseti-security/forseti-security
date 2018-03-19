@@ -139,13 +139,11 @@ def build_network_url(project, network):
       The fully qualified network url for the given project/network.
     """
     return (u'%(root)s%(api_name)s/%(version)s/projects/%(project)s/global/'
-            'networks/%(network)s') % {
-                'api_name': API_NAME,
-                'network': network,
-                'project': project,
-                'root': API_ROOT,
-                'version': API_VERSION
-            }
+            'networks/%(network)s') % {'api_name': API_NAME,
+                                       'network': network,
+                                       'project': project,
+                                       'root': API_ROOT,
+                                       'version': API_VERSION}
 
 
 class ComputeFirewallAPI(object):
@@ -175,11 +173,11 @@ class ComputeFirewallAPI(object):
         retry_on_exception=http_retry,
         wait_exponential_multiplier=1000,
         stop_max_attempt_number=4)
-
     def _execute(self, request):
         """Execute the request and retry logic."""
 
         return request.execute(num_retries=4)
+
     # pylint: enable=no-self-use
 
     def list_networks(self, project, fields=None):
@@ -335,13 +333,11 @@ class ComputeFirewallAPI(object):
                         'Operation %s did not complete before timeout of %f, '
                         'marking operation as failed.', operation_name, timeout)
                     response.setdefault('error', {}).setdefault(
-                        'errors', []).append({
-                            'code':
-                                'OPERATION_TIMEOUT',
-                            'message': (
-                                'Operation exceeded timeout for completion '
-                                'of %0.2f seconds' % timeout)
-                        })
+                        'errors', []).append(
+                            {'code': 'OPERATION_TIMEOUT',
+                             'message': ('Operation exceeded timeout for '
+                                         'completion of %0.2f seconds' %
+                                         timeout)})
                     completed_operations.append(response)
                 else:
                     # Operation still running
@@ -375,7 +371,7 @@ class ComputeFirewallAPI(object):
                         response.get('endTime', ''), op_wait_time, op_exec_time)
             LOGGER.debug('Operation response object: %r', response)
 
-        return (completed_operations, running_operations)
+        return completed_operations, running_operations
 
     def wait_for_all_to_complete(self, project, responses, timeout=0):
         """Wait for all requests to complete.
@@ -427,9 +423,8 @@ class ComputeFirewallAPI(object):
                     #     else could have already added the rule.
                     # INVALID_FIELD_VALUE: Because the network probably
                     #     disappeared out from under us.
-                    if error.get('code') in [
-                            'RESOURCE_ALREADY_EXISTS', 'INVALID_FIELD_VALUE'
-                    ]:
+                    if error.get('code') in ['RESOURCE_ALREADY_EXISTS',
+                                             'INVALID_FIELD_VALUE']:
                         LOGGER.warn('Ignoring error: %s', error)
                     else:
                         LOGGER.error('Response has error: %s', error)
@@ -760,15 +755,15 @@ class FirewallRules(object):
             if 'destinationRanges' not in rule:
                 raise InvalidFirewallRuleError(
                     'Egress rule missing required field "destinationRanges":'
-                    '"%s".'% rule)
+                    '"%s".' % rule)
 
         else:
             raise InvalidFirewallRuleError(
                 'Rule "direction" must be either "INGRESS" or "EGRESS": "%s".'
                 % rule)
 
-        max_256_value_keys = set(
-            ['sourceRanges', 'sourceTags', 'targetTags', 'destinationRanges'])
+        max_256_value_keys = {'sourceRanges', 'sourceTags', 'targetTags',
+                              'destinationRanges'}
         for key in max_256_value_keys:
             if key in rule and len(rule[key]) > 256:
                 raise InvalidFirewallRuleError(
@@ -825,6 +820,7 @@ class FirewallRules(object):
 
         return True
     # pylint: enable=too-many-branches
+
 
 # pylint: disable=too-many-instance-attributes
 # TODO: Investigate improving so we can avoid the pylint disable.
@@ -1083,7 +1079,7 @@ class FirewallEnforcer(object):
                     raise FirewallQuotaExceededError(
                         'Firewall enforcement cannot update the policy for '
                         'project %s without exceed the current firewalls '
-                        'quota: %u,' %(self.project, limit))
+                        'quota: %u,' % (self.project, limit))
                 else:
                     LOGGER.info('Switching to "delete first" rule update order '
                                 'for project %s.', self.project)
@@ -1209,7 +1205,7 @@ class FirewallEnforcer(object):
         failed_rules = []
         change_errors = []
         if not rules:
-            return (applied_rules, failed_rules, change_errors)
+            return applied_rules, failed_rules, change_errors
 
         successes = []
         failures = []
@@ -1294,4 +1290,4 @@ class FirewallEnforcer(object):
                     'Failure result contained an unknown operation name, '
                     '"%s": %s', operation_name, json.dumps(result))
 
-        return (applied_rules, failed_rules, change_errors)
+        return applied_rules, failed_rules, change_errors

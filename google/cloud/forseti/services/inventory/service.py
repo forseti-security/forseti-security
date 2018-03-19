@@ -36,10 +36,10 @@ def inventory_pb_from_object(inventory_index):
 
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
-        start_time=timestamp.Timestamp().FromDatetime(
-            inventory_index.start_time),
-        complete_time=timestamp.Timestamp().FromDatetime(
-            inventory_index.complete_time),
+        start_timestamp=timestamp.Timestamp().FromDatetime(
+            inventory_index.start_datetime),
+        complete_timestamp=timestamp.Timestamp().FromDatetime(
+            inventory_index.complete_datetime),
         schema_version=inventory_index.schema_version,
         count_objects=inventory_index.counter,
         status=inventory_index.status,

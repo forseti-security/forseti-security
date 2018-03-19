@@ -29,7 +29,9 @@ class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
         email_pipeline = (
             email_inventory_snapshot_summary_pipeline
             .EmailInventorySnapshotSummaryPipeline(
-                111111))
+                    111111, '', '', {}, {}, {}, {}
+            )
+        )
 
         snapshot_time = datetime.strptime('Dec 25 2000  1:00AM',
                                           '%b %d %Y %I:%M%p')

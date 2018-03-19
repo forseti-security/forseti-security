@@ -48,9 +48,7 @@ def validate(actions_config_path):
     errors.extend(errs)
 
     for action in actions:
-        action_errs = []
-        action_errs.append(
-            _check_action_type(action))
+        action_errs = [_check_action_type(action)]
         action_errs.extend(_check_trigger(action))
         for err in action_errs:
             if err is not None:
@@ -60,6 +58,7 @@ def validate(actions_config_path):
         raise ConfigLoadError(errors)
 
     return config
+
 
 def _load_and_validate_yaml(path):
     """Loads the configuration from a path.
@@ -79,6 +78,7 @@ def _load_and_validate_yaml(path):
         except yaml.YAMLError as yaml_error:
             raise ConfigLoadError(yaml_error)
     return config
+
 
 def _load_actions(config):
     """Loads the actions actions from the config.
@@ -102,6 +102,7 @@ def _load_actions(config):
         actions.append(action)
     return actions, errors
 
+
 def _check_action_type(action):
     """Validates the action type.
 
@@ -122,6 +123,7 @@ def _check_action_type(action):
     except (AttributeError, ImportError):
         return ActionTypeDoesntExist(action_type)
     return None
+
 
 def _check_trigger(action):
     """Validates the triggers.

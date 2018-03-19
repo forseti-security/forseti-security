@@ -16,8 +16,8 @@
 
 from google.cloud.forseti.common.util import logger
 
-
 LOGGER = logger.get_logger(__name__)
+
 
 class Explainer(object):
     """Implements the Explain API."""

@@ -366,8 +366,8 @@ class ProjectEnforcer(object):
                 e)  # HttpError Class decodes json encoded error into str
             if ((e.resp.status in (400, 404) and
                  ('Invalid value for project' in error_msg or
-                  'Failed to find project' in error_msg))
-                    or  # Error string changed
+                  # Error string changed.
+                  'Failed to find project' in error_msg)) or
                     (e.resp.status == 403 and
                      'scheduled for deletion' in error_msg)):
                 raise ProjectDeletedError(error_msg)

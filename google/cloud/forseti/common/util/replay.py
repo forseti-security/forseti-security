@@ -62,6 +62,7 @@ def record(requests):
             """Record and serialize GCP API call answers.
 
             Args:
+                self (object): Self of the caller.
                 request (HttpRequest): The HttpRequest object to execute.
                 **args (list): Additional args to pass through to function.
                 **kwargs (dict): Additional key word args to pass through to
@@ -149,6 +150,7 @@ def replay(requests):
             """Replay and deserialize GCP API call answers.
 
             Args:
+                self (object): Self of the caller.
                 request (HttpRequest): The HttpRequest object to execute.
                 **args (list): Additional args to pass through to function.
                 **kwargs (dict): Additional key word args to pass through to

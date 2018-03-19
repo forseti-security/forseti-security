@@ -62,13 +62,12 @@ class CloudSqlAclScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {}
-            violation_data['instance_name'] = violation.instance_name
-            violation_data['full_name'] = violation.full_name
-            violation_data['authorized_networks'] = (
-                violation.authorized_networks)
-            violation_data['require_ssl'] = violation.require_ssl
-            violation_data['project_id'] = violation.resource_id
+            violation_data = {'instance_name': violation.instance_name,
+                              'full_name': violation.full_name,
+                              'authorized_networks': (
+                                  violation.authorized_networks),
+                              'require_ssl': violation.require_ssl,
+                              'project_id': violation.resource_id}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,

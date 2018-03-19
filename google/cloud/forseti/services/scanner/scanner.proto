@@ -19,15 +19,15 @@ package scanner;
 service Scanner {
   rpc Ping(PingRequest) returns (PingReply) {}
 
-  rpc Run(RunRequest) returns (RunReply) {}
+  rpc Run(RunRequest) returns (stream Progress) {}
 
 }
 
 message RunRequest {
 }
 
-message RunReply {
-  int32 status = 1;
+message Progress {
+  string message = 1;
 }
 
 message PingRequest {
