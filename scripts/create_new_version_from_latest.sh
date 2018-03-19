@@ -17,6 +17,14 @@ function snapshot_docs() {
   cp -R _docs/_latest/ _docs/$RELEASE_VERSION
 }
 
+function doc_categories_has_version() {
+  yq '. | has("'$RELEASE_VERSION'")' _data/doc_categories.yml
+}
+
+function snapshot_doc_categories() {
+  echo "$(yq -y '. += {"'$RELEASE_VERSION'": .latest}' _data/doc_categories.yml)" > _data/doc_categories.yml
+}
+
 function update_docs_links() {
   find _docs/$RELEASE_VERSION -type f -exec sed -i s:_docs/_latest:_docs/$RELEASE_VERSION:g {} +
   find _docs/$RELEASE_VERSION -type f -exec sed -i s:docs/_latest:docs/$RELEASE_VERSION:g {} +
@@ -48,6 +56,14 @@ fi
 
 echo "Adding '$RELEASE_VERSION' to _config.yml ..."
 add_version_to_config
+
+if [ "$(doc_categories_has_version)" = "true" ]; then
+  echo "Version '$RELEASE_VERSION' is already present in _data/doc_categories.yml."
+  echo "Please update by hand, if necessary."
+else
+  echo "Snapshotting latest doc categories in '_data/doc_categories.yml' for $RELEASE_VERSION ..."
+  snapshot_doc_categories
+fi
 
 echo "Snapshotting latest docs to '_docs/$RELEASE_VERSION/' ..."
 snapshot_docs
