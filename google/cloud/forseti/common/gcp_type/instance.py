@@ -48,7 +48,7 @@ class Instance(object):
         self.resource_id = kwargs.get('id')
         self.scheduling = kwargs.get('scheduling')
         self.service_accounts = kwargs.get('service_accounts')
-        self.status = kwargs.get('status')
+        self.status = kwargs.get('inventory_status')
         self.status_message = kwargs.get('status_message')
         self.tags = kwargs.get('tags')
         self.zone = kwargs.get('zone')
@@ -80,7 +80,7 @@ class Instance(object):
                   'network_interfaces': instance.get('networkInterfaces', []),
                   'scheduling': instance.get('scheduling', {}),
                   'service_accounts': instance.get('serviceAccounts', []),
-                  'status': instance.get('status'),
+                  'inventory_status': instance.get('inventory_status'),
                   'status_message': instance.get('statusMessage'),
                   'tags': instance.get('tags'),
                   'zone': instance.get('zone'),
@@ -122,11 +122,11 @@ class Instance(object):
             'networkInterfaces': self.network_interfaces,
             'scheduling': self.scheduling,
             'serviceAccounts': self.service_accounts,
-            'status': self.status,
+            'inventory_status': self.status,
             'statusMessage': self.status_message,
             'tags': self.tags,
             'zone': self.zone,
-            'inventory_data': self._json}
+            'resource_data': self._json}
 
         # Strip out empty values
         resource_dict = dict((k, v) for k, v in resource_dict.items() if v)

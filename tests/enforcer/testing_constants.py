@@ -443,7 +443,7 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
   timestamp_sec: 1234567890
   batch_id: 1234567890
   run_context: ENFORCER_BATCH
-  status: SUCCESS
+  inventory_status: SUCCESS
   gce_firewall_enforcement {
     rules_before {
       json: '[{"allowed": [{"IPProtocol": "icmp"}], "description": '

@@ -54,7 +54,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         """Test get buckets."""
         mock_responses = []
         for page in fake_storage.GET_BUCKETS_RESPONSES:
-            mock_responses.append(({'status': '200'}, page))
+            mock_responses.append(({'inventory_status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_bucket_names = fake_storage.EXPECTED_FAKE_BUCKET_NAMES
@@ -125,7 +125,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         """Test get objects."""
         mock_responses = []
         for page in fake_storage.LIST_OBJECTS_RESPONSES:
-            mock_responses.append(({'status': '200'}, page))
+            mock_responses.append(({'inventory_status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_object_names = fake_storage.EXPECTED_FAKE_OBJECT_NAMES
@@ -179,9 +179,9 @@ class StorageTest(unittest_utils.ForsetiTestCase):
     def test_get_text_file(self):
         """Test get test file returns a valid response."""
         mock_responses = [
-            ({'status': '200',
+            ({'inventory_status': '200',
               'content-range': '0-2/5'}, b'123'),
-            ({'status': '200',
+            ({'inventory_status': '200',
               'content-range': '3-4/5'}, b'45')
         ]
         http_mocks.mock_http_response_sequence(mock_responses)

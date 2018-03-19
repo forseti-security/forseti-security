@@ -49,12 +49,12 @@ class ReplayTest(unittest_utils.ForsetiTestCase):
             os.environ[replay.REPLAY_ENVIRONMENT_VAR] = ''
 
             mock_responses = []
-            mock_responses.append(({'status': '200'},
+            mock_responses.append(({'inventory_status': '200'},
                                    fake_compute.GET_PROJECT_RESPONSE))
             for page in fake_compute.LIST_NETWORKS_RESPONSES:
-                mock_responses.append(({'status': '200'}, page))
+                mock_responses.append(({'inventory_status': '200'}, page))
             mock_responses.append((
-                {'status': '403', 'content-type': 'application/json'},
+                {'inventory_status': '403', 'content-type': 'application/json'},
                 fake_compute.ACCESS_DENIED))
             http_mocks.mock_http_response_sequence(mock_responses)
         else:

@@ -108,19 +108,19 @@ class ComputeFirewallAPI(ForsetiTestCase):
         """
         pending_responses = [{
             'name': 'operation-1400179586831',
-            'status': 'PENDING'
+            'inventory_status': 'PENDING'
         }, {
             'name': 'operation-1400179586832',
-            'status': 'PENDING'
+            'inventory_status': 'PENDING'
         }]
 
         completed_response = {
             'name': 'operation-1400179586831',
-            'status': 'DONE'
+            'inventory_status': 'DONE'
         }
         running_response = {
             'name': 'operation-1400179586832',
-            'status': 'PENDING'
+            'inventory_status': 'PENDING'
         }
 
         self.gce_service.globalOperations().get().execute.side_effect = [
@@ -164,12 +164,12 @@ class ComputeFirewallAPI(ForsetiTestCase):
         """
         pending_response = {
             'name': 'operation-1400179586831',
-            'status': 'PENDING'
+            'inventory_status': 'PENDING'
         }
 
         expected_response = {
             'name': 'operation-1400179586831',
-            'status': 'PENDING',
+            'inventory_status': 'PENDING',
             'error': {
                 'errors': [{
                     'code': 'OPERATION_TIMEOUT',
@@ -201,18 +201,18 @@ class ComputeFirewallAPI(ForsetiTestCase):
         """
         pending_responses = [{
             'name': 'operation-1400179586831',
-            'status': 'PENDING'
+            'inventory_status': 'PENDING'
         }, {
             'name': 'operation-1400179586832',
-            'status': 'PENDING'
+            'inventory_status': 'PENDING'
         }]
 
         completed_responses = [{
             'name': 'operation-1400179586831',
-            'status': 'DONE'
+            'inventory_status': 'DONE'
         }, {
             'name': 'operation-1400179586832',
-            'status': 'DONE'
+            'inventory_status': 'DONE'
         }]
 
         self.gce_service.globalOperations().get().execute.side_effect = [
@@ -1172,7 +1172,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
         """Adds the rule to failures on HttpError exception.
 
         Setup:
-          * Create a status 409 HttpError object.
+          * Create a inventory_status 409 HttpError object.
           * Set insert_function to raise HttpError.
           * Run apply_change with fake insert_function.
 
@@ -1180,7 +1180,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
           * Passed in rule ends up in failures list.
         """
         response = fe.httplib2.Response({
-            'status': '409',
+            'inventory_status': '409',
             'content-type': 'application/json'
         })
         response.reason = 'Duplicate Rule'
@@ -1222,7 +1222,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
                     'code': 'NOT_FOUND'
                 }]
             },
-            'status': 'DONE',
+            'inventory_status': 'DONE',
             'name': 'test'
         }
 
@@ -1329,7 +1329,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
                     'code': 'NOT_FOUND'
                 }]
             },
-            'status': 'DONE',
+            'inventory_status': 'DONE',
             'name': 'test'
         }
 

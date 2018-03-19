@@ -261,4 +261,4 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'full_name',
                                 'rule_name', 'rule_index', 'violation_type',
-                                'project', 'network', 'ip', 'inventory_data'])
+                                'project', 'network', 'ip', 'resource_data'])

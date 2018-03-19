@@ -238,7 +238,7 @@ APP_NOT_FOUND = """
  "error": {
   "code": 404,
   "message": "Could not find Application 'forseti-system-test'.",
-  "status": "NOT_FOUND"
+  "inventory_status": "NOT_FOUND"
  }
 }
 """
@@ -248,7 +248,7 @@ PERMISSION_DENIED = """
  "error": {
   "code": 403,
   "message": "Operation not allowed",
-  "status": "PERMISSION_DENIED"
+  "inventory_status": "PERMISSION_DENIED"
  }
 }
 """

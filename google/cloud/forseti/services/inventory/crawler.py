@@ -285,7 +285,7 @@ def run_crawler(storage,
 
     Args:
         storage (object): Storage implementation to use.
-        progresser (object): Progresser to notify status updates.
+        progresser (object): Progresser to notify inventory_status updates.
         config (object): Inventory configuration on server
         parallel (bool): If true, use the parallel crawler implementation.
 

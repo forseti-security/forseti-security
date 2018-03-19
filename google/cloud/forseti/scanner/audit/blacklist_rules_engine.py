@@ -248,4 +248,4 @@ class Rule(object):
                                ['resource_type', 'full_name',
                                 'rule_blacklist', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
-                                'network', 'ip', 'inventory_data'])
+                                'network', 'ip', 'resource_data'])

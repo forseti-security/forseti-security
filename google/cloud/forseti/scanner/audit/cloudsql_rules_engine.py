@@ -255,4 +255,4 @@ class Rule(object):
                                ['resource_type', 'resource_id', 'full_name',
                                 'rule_name', 'rule_index', 'violation_type',
                                 'instance_name', 'authorized_networks',
-                                'require_ssl', 'inventory_data'])
+                                'require_ssl', 'resource_data'])

@@ -726,7 +726,7 @@ class ComputeClient(object):
             operation_id (str): The operation id.
 
         Returns:
-            dict: Global Operation status and info.
+            dict: Global Operation inventory_status and info.
             https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
 
         Raises:
@@ -737,7 +737,7 @@ class ComputeClient(object):
         try:
             results = self.repository.global_operations.get(
                 project_id, operation_id)
-            LOGGER.debug('Getting the operation status, project_id = %s,'
+            LOGGER.debug('Getting the operation inventory_status, project_id = %s,'
                          ' operation_id = %s, results = %s',
                          project_id, operation_id, results)
             return results

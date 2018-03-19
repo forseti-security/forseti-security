@@ -69,7 +69,7 @@ class MetadataServerTest(ForsetiTestCase):
         """Test can_reach_metadata_server returns True with a valid response.
 
         Setup:
-            * Have httplib return a valid respone and response.status.
+            * Have httplib return a valid respone and response.inventory_status.
 
         Expected results:
             * A True result.

@@ -58,7 +58,7 @@ ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
                                 'destinationRanges', 'sourceTags',
                                 'targetTags'))
 
-# Maximum time to allow an active API operation to wait for status=Done
+# Maximum time to allow an active API operation to wait for inventory_status=Done
 OPERATION_TIMEOUT = 600.0
 
 
@@ -311,7 +311,7 @@ class ComputeFirewallAPI(object):
             completed_operations = []
             running_operations = []
             for response in responses:
-                status = response['status']
+                status = response['inventory_status']
                 if status == 'DONE':
                     completed_operations.append(response)
                     continue
@@ -321,9 +321,9 @@ class ComputeFirewallAPI(object):
                 request = self.gce_service.globalOperations().get(
                     project=project, operation=operation_name)
                 response = self._execute(request)
-                status = response['status']
-                LOGGER.info('status of %s is %s', operation_name, status)
-                if response['status'] == 'DONE':
+                status = response['inventory_status']
+                LOGGER.info('inventory_status of %s is %s', operation_name, status)
+                if response['inventory_status'] == 'DONE':
                     completed_operations.append(response)
                     continue
 
@@ -448,7 +448,7 @@ class ComputeFirewallAPI(object):
         Returns:
           A fake successful completed response.
         """
-        return {'status': 'DONE', 'name': rule_name}
+        return {'inventory_status': 'DONE', 'name': rule_name}
 
 
 class FirewallRules(object):

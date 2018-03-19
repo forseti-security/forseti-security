@@ -21,7 +21,7 @@ from StringIO import StringIO
 import traceback
 import json
 
-from google.cloud.forseti.services.utils import get_key_from_type_name
+from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
@@ -180,7 +180,7 @@ class InventoryImporter(object):
                         ['gsuite_group', 'gsuite_user'])
                 }))
 
-                if root.get_type() in ['organization']:
+                if root.get_resource_type() in ['organization']:
                     self.found_root = True
                 if not self.found_root:
                     raise Exception(
@@ -248,8 +248,8 @@ class InventoryImporter(object):
             Exception: if the principal type is unknown.
         """
 
-        gsuite_type = principal.get_type()
-        data = principal.get_data()
+        gsuite_type = principal.get_resource_type()
+        data = principal.get_resource_data()
         if gsuite_type == 'gsuite_user':
             member = 'user/{}'.format(data['primaryEmail'])
         elif gsuite_type == 'gsuite_group':
@@ -311,7 +311,7 @@ class InventoryImporter(object):
                 str: type:name representation of the member.
             """
 
-            data = child.get_data()
+            data = child.get_resource_data()
             return '{}/{}'.format(data['type'].lower(),
                                   data['email'])
 
@@ -325,7 +325,7 @@ class InventoryImporter(object):
                 str: group:name representation of the group.
             """
 
-            data = parent.get_data()
+            data = parent.get_resource_data()
             return 'group/{}'.format(data['email'])
 
         # Gsuite group members don't have to be part
@@ -365,7 +365,7 @@ class InventoryImporter(object):
             KeyError: if member could not be found in any cache.
         """
 
-        bindings = policy.get_data().get('bindings', [])
+        bindings = policy.get_resource_data().get('bindings', [])
         for binding in bindings:
             role = binding['role']
             if role not in self.role_cache:
@@ -507,7 +507,7 @@ class InventoryImporter(object):
             None: (None, None, None),
         }
 
-        res_type = resource.get_type() if resource else None
+        res_type = resource.get_resource_type() if resource else None
         if res_type not in handlers:
             self.model.add_warning('No handler for type "{}"'.format(res_type))
 
@@ -539,16 +539,16 @@ class InventoryImporter(object):
         Args:
             gae_resource (dict): An appengine resource to store.
         """
-        data = gae_resource.get_data()
+        data = gae_resource.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             gae_resource)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=gae_resource.get_key(),
-            type=gae_resource.get_type(),
+            name=gae_resource.get_resource_id(),
+            type=gae_resource.get_resource_type(),
             display_name=data.get('name', ''),
-            data=gae_resource.get_data_raw(),
+            data=gae_resource.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(gae_resource, resource)
@@ -559,17 +559,17 @@ class InventoryImporter(object):
         Args:
             bucket (object): Bucket to store.
         """
-        data = bucket.get_data()
+        data = bucket.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             bucket)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=bucket.get_key(),
-            type=bucket.get_type(),
+            name=bucket.get_resource_id(),
+            type=bucket.get_resource_type(),
             display_name=data.get('displayName', ''),
             email=data.get('email', ''),
-            data=bucket.get_data_raw(),
+            data=bucket.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(bucket, resource)
@@ -580,16 +580,16 @@ class InventoryImporter(object):
         Args:
             cluster (dict): A Kubernetes cluster resource to store.
         """
-        data = cluster.get_data()
+        data = cluster.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             cluster)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=cluster.get_key(),
-            type=cluster.get_type(),
+            name=cluster.get_resource_id(),
+            type=cluster.get_resource_type(),
             display_name=data.get('name', ''),
-            data=cluster.get_data_raw(),
+            data=cluster.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(cluster, resource)
@@ -602,16 +602,16 @@ class InventoryImporter(object):
         """
         parent, full_res_name = self._get_parent(service_config)
         sc_type_name = to_type_name(
-            service_config.get_type_class(),
+            service_config.get_resource_data_class(),
             parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=sc_res_name,
                 type_name=sc_type_name,
-                name=service_config.get_key(),
-                type=service_config.get_type_class(),
-                data=service_config.get_data_raw(),
+                name=service_config.get_resource_id(),
+                type=service_config.get_resource_data_class(),
+                data=service_config.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_dataset(self, dataset):
@@ -625,9 +625,9 @@ class InventoryImporter(object):
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=dataset.get_key(),
-            type=dataset.get_type(),
-            data=dataset.get_data_raw(),
+            name=dataset.get_resource_id(),
+            type=dataset.get_resource_type(),
+            data=dataset.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(dataset, resource)
@@ -642,16 +642,16 @@ class InventoryImporter(object):
         # as a resource.
         parent, full_res_name = self._get_parent(dataset_policy)
         policy_type_name = to_type_name(
-            dataset_policy.get_type_class(),
+            dataset_policy.get_resource_data_class(),
             parent.type_name)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=policy_res_name,
                 type_name=policy_type_name,
-                name=dataset_policy.get_key(),
-                type=dataset_policy.get_type_class(),
-                data=dataset_policy.get_data_raw(),
+                name=dataset_policy.get_resource_id(),
+                type=dataset_policy.get_resource_data_class(),
+                data=dataset_policy.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_computeproject(self, computeproject):
@@ -660,18 +660,18 @@ class InventoryImporter(object):
         Args:
             computeproject (object): computeproject to store.
         """
-        data = computeproject.get_data()
+        data = computeproject.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             computeproject)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=computeproject.get_key(),
-                type=computeproject.get_type(),
+                name=computeproject.get_resource_id(),
+                type=computeproject.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=computeproject.get_data_raw(),
+                data=computeproject.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_iam_policy(self, iam_policy):
@@ -682,7 +682,7 @@ class InventoryImporter(object):
         """
         parent, full_res_name = self._get_parent(iam_policy)
         iam_policy_type_name = to_type_name(
-            iam_policy.get_type_class(),
+            iam_policy.get_resource_data_class(),
             ':'.join(parent.type_name.split('/')))
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
@@ -691,9 +691,9 @@ class InventoryImporter(object):
             self.dao.TBL_RESOURCE(
                 full_name=iam_policy_full_res_name,
                 type_name=iam_policy_type_name,
-                name=iam_policy.get_key(),
-                type=iam_policy.get_type_class(),
-                data=iam_policy.get_data_raw(),
+                name=iam_policy.get_resource_id(),
+                type=iam_policy.get_resource_data_class(),
+                data=iam_policy.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_image(self, image):
@@ -702,18 +702,18 @@ class InventoryImporter(object):
         Args:
             image (object): Image to store.
         """
-        data = image.get_data()
+        data = image.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             image)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=image.get_key(),
-                type=image.get_type(),
+                name=image.get_resource_id(),
+                type=image.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=image.get_data_raw(),
+                data=image.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_instancegroup(self, instancegroup):
@@ -722,18 +722,18 @@ class InventoryImporter(object):
         Args:
             instancegroup (object): Instancegroup to store.
         """
-        data = instancegroup.get_data()
+        data = instancegroup.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instancegroup)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=instancegroup.get_key(),
-                type=instancegroup.get_type(),
+                name=instancegroup.get_resource_id(),
+                type=instancegroup.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=instancegroup.get_data_raw(),
+                data=instancegroup.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_instancegroupmanager(self, instancegroupmanager):
@@ -742,18 +742,18 @@ class InventoryImporter(object):
         Args:
             instancegroupmanager (object): InstanceGroupManager to store.
         """
-        data = instancegroupmanager.get_data()
+        data = instancegroupmanager.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instancegroupmanager)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=instancegroupmanager.get_key(),
-                type=instancegroupmanager.get_type(),
+                name=instancegroupmanager.get_resource_id(),
+                type=instancegroupmanager.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=instancegroupmanager.get_data_raw(),
+                data=instancegroupmanager.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_instancetemplate(self, instancetemplate):
@@ -762,18 +762,18 @@ class InventoryImporter(object):
         Args:
             instancetemplate (object): InstanceTemplate to store.
         """
-        data = instancetemplate.get_data()
+        data = instancetemplate.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instancetemplate)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=instancetemplate.get_key(),
-                type=instancetemplate.get_type(),
+                name=instancetemplate.get_resource_id(),
+                type=instancetemplate.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=instancetemplate.get_data_raw(),
+                data=instancetemplate.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_instance(self, instance):
@@ -782,18 +782,18 @@ class InventoryImporter(object):
         Args:
             instance (object): Instance to store.
         """
-        data = instance.get_data()
+        data = instance.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instance)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=instance.get_key(),
-                type=instance.get_type(),
+                name=instance.get_resource_id(),
+                type=instance.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=instance.get_data_raw(),
+                data=instance.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_firewall(self, firewall):
@@ -802,18 +802,18 @@ class InventoryImporter(object):
         Args:
             firewall (object): Firewall to store.
         """
-        data = firewall.get_data()
+        data = firewall.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             firewall)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=firewall.get_key(),
-                type=firewall.get_type(),
+                name=firewall.get_resource_id(),
+                type=firewall.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=firewall.get_data_raw(),
+                data=firewall.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_backendservice(self, backendservice):
@@ -822,18 +822,18 @@ class InventoryImporter(object):
         Args:
             backendservice (object): Backendservice to store.
         """
-        data = backendservice.get_data()
+        data = backendservice.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             backendservice)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=backendservice.get_key(),
-                type=backendservice.get_type(),
+                name=backendservice.get_resource_id(),
+                type=backendservice.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=backendservice.get_data_raw(),
+                data=backendservice.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_forwardingrule(self, forwardingrule):
@@ -842,18 +842,18 @@ class InventoryImporter(object):
         Args:
             forwardingrule (object): ForwardingRule to store.
         """
-        data = forwardingrule.get_data()
+        data = forwardingrule.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             forwardingrule)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=forwardingrule.get_key(),
-                type=forwardingrule.get_type(),
+                name=forwardingrule.get_resource_id(),
+                type=forwardingrule.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=forwardingrule.get_data_raw(),
+                data=forwardingrule.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_network(self, network):
@@ -862,18 +862,18 @@ class InventoryImporter(object):
         Args:
             network (object): Network to store.
         """
-        data = network.get_data()
+        data = network.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             network)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=network.get_key(),
-                type=network.get_type(),
+                name=network.get_resource_id(),
+                type=network.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=network.get_data_raw(),
+                data=network.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_subnetwork(self, subnetwork):
@@ -882,18 +882,18 @@ class InventoryImporter(object):
         Args:
             subnetwork (object): Subnetwork to store.
         """
-        data = subnetwork.get_data()
+        data = subnetwork.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             subnetwork)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=subnetwork.get_key(),
-                type=subnetwork.get_type(),
+                name=subnetwork.get_resource_id(),
+                type=subnetwork.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=subnetwork.get_data_raw(),
+                data=subnetwork.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_cloudsqlinstance(self, cloudsqlinstance):
@@ -902,23 +902,23 @@ class InventoryImporter(object):
         Args:
             cloudsqlinstance (object): Cloudsql to store.
         """
-        data = cloudsqlinstance.get_data()
+        data = cloudsqlinstance.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             cloudsqlinstance)
-        parent_key = get_key_from_type_name(parent.type_name)
+        parent_key = get_resource_id_from_type_name(parent.type_name)
         resource_identifier = '{}:{}'.format(parent_key,
-                                             cloudsqlinstance.get_key())
-        type_name = to_type_name(cloudsqlinstance.get_type(),
+                                             cloudsqlinstance.get_resource_id())
+        type_name = to_type_name(cloudsqlinstance.get_resource_type(),
                                  resource_identifier)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=cloudsqlinstance.get_key(),
-                type=cloudsqlinstance.get_type(),
+                name=cloudsqlinstance.get_resource_id(),
+                type=cloudsqlinstance.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=cloudsqlinstance.get_data_raw(),
+                data=cloudsqlinstance.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_serviceaccount(self, service_account):
@@ -927,17 +927,17 @@ class InventoryImporter(object):
         Args:
             service_account (object): Service account to store.
         """
-        data = service_account.get_data()
+        data = service_account.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=service_account.get_key(),
-            type=service_account.get_type(),
+            name=service_account.get_resource_id(),
+            type=service_account.get_resource_type(),
             display_name=data.get('displayName', ''),
             email=data.get('email', ''),
-            data=service_account.get_data_raw(),
+            data=service_account.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(service_account, resource)
@@ -949,18 +949,18 @@ class InventoryImporter(object):
             service_account_key (object): Service account key to store.
         """
 
-        data = service_account_key.get_data()
+        data = service_account_key.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account_key)
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
                 type_name=type_name,
-                name=service_account_key.get_key(),
-                type=service_account_key.get_type(),
+                name=service_account_key.get_resource_id(),
+                type=service_account_key.get_resource_type(),
                 display_name=data.get('displayName', ''),
                 email=data.get('email', ''),
-                data=service_account_key.get_data_raw(),
+                data=service_account_key.get_resource_data_raw(),
                 parent=parent))
 
     def _convert_folder(self, folder):
@@ -970,7 +970,7 @@ class InventoryImporter(object):
             folder (object): Folder to store.
         """
 
-        data = folder.get_data()
+        data = folder.get_resource_data()
         if self._is_root(folder):
             parent, type_name = None, self._type_name(folder)
             full_res_name = type_name
@@ -980,10 +980,10 @@ class InventoryImporter(object):
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=folder.get_key(),
-            type=folder.get_type(),
+            name=folder.get_resource_id(),
+            type=folder.get_resource_type(),
             display_name=data.get('displayName', ''),
-            data=folder.get_data_raw(),
+            data=folder.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(folder, resource)
@@ -995,7 +995,7 @@ class InventoryImporter(object):
             project (object): Project to store.
         """
 
-        data = project.get_data()
+        data = project.get_resource_data()
         if self._is_root(project):
             parent, type_name = None, self._type_name(project)
             full_res_name = type_name
@@ -1005,10 +1005,10 @@ class InventoryImporter(object):
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=project.get_key(),
-            type=project.get_type(),
+            name=project.get_resource_id(),
+            type=project.get_resource_type(),
             display_name=data.get('name', ''),
-            data=project.get_data_raw(),
+            data=project.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(project, resource)
@@ -1031,7 +1031,7 @@ class InventoryImporter(object):
             role (object): Role to store.
         """
 
-        data = role.get_data()
+        data = role.get_resource_data()
         is_custom = not data['name'].startswith('roles/')
         db_permissions = []
         if 'includedPermissions' not in data:
@@ -1061,10 +1061,10 @@ class InventoryImporter(object):
                 self.dao.TBL_RESOURCE(
                     full_name=full_res_name,
                     type_name=type_name,
-                    name=role.get_key(),
-                    type=role.get_type(),
+                    name=role.get_resource_id(),
+                    type=role.get_resource_type(),
                     display_name=data.get('title'),
-                    data=role.get_data_raw(),
+                    data=role.get_resource_data_raw(),
                     parent=parent))
 
     def _convert_organization(self, organization):
@@ -1076,15 +1076,15 @@ class InventoryImporter(object):
 
         # Under current assumptions, organization is always root
         self.found_root = True
-        data = organization.get_data()
+        data = organization.get_resource_data()
         type_name = self._type_name(organization)
         org = self.dao.TBL_RESOURCE(
             full_name=to_full_resource_name('', type_name),
             type_name=type_name,
-            name=organization.get_key(),
-            type=organization.get_type(),
+            name=organization.get_resource_id(),
+            type=organization.get_resource_type(),
             display_name=data.get('displayName', ''),
-            data=organization.get_data_raw(),
+            data=organization.get_resource_data_raw(),
             parent=None)
 
         self._add_to_cache(organization, org)
@@ -1124,8 +1124,8 @@ class InventoryImporter(object):
             str: type/name representation of the resource.
         """
         return to_type_name(
-            resource.get_type(),
-            resource.get_key())
+            resource.get_resource_type(),
+            resource.get_resource_id())
 
     def _parent_type_name(self, resource):
         """Return the type/name for a resource's parent.
@@ -1138,8 +1138,8 @@ class InventoryImporter(object):
         """
 
         return to_type_name(
-            resource.get_parent_type(),
-            resource.get_parent_key())
+            resource.get_parent_resource_type(),
+            resource.get_parent_resource_id())
 
     def _full_resource_name(self, resource):
         """Returns the parent object, full resource name and type name.
@@ -1168,8 +1168,8 @@ class InventoryImporter(object):
         """
         if not self.found_root:
             is_root = \
-                resource.get_type() == resource.get_parent_type() and \
-                resource.get_key() == resource.get_parent_key()
+                resource.get_resource_type() == resource.get_parent_resource_type() and \
+                resource.get_resource_id() == resource.get_parent_resource_id()
             if is_root:
                 self.found_root = True
             return is_root

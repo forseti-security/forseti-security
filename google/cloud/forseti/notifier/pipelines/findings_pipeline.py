@@ -53,7 +53,7 @@ class FindingsPipeline(object):
                     'resource_id': violation.get('resource_id'),
                     'rule_index': violation.get('rule_index'),
                     'inventory_index_id': violation.get('inventory_index_id'),
-                    'inventory_data': violation.get('inventory_data')
+                    'resource_data': violation.get('resource_data')
                 }
             }
             findings.append(finding)

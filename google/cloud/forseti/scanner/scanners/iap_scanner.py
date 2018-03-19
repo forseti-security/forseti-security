@@ -413,7 +413,7 @@ class IapScanner(base_scanner.BaseScanner):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
-                'inventory_data': violation.inventory_data
+                'resource_data': violation.inventory_data
             }
 
     def _output_results(self, all_violations, resource_counts):
@@ -474,7 +474,7 @@ class IapScanner(base_scanner.BaseScanner):
                         'violation_errors': violation_errors
                     }
                     message = {
-                        'status': 'scanner_done',
+                        'inventory_status': 'scanner_done',
                         'payload': payload
                     }
                     notifier.process(message)

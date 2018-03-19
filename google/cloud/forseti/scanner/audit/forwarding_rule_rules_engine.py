@@ -31,7 +31,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
                                 'load_balancing_scheme', 'port_range',
                                 'resource_type', 'port', 'ip_protocol',
                                 'ip_address', 'resource_id', 'full_name',
-                                'inventory_data'])
+                                'resource_data'])
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.

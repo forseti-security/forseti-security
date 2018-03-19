@@ -298,7 +298,7 @@ class CloudResourceManagerClient(object):
                     filter=' '.join(filters)):
                 LOGGER.debug('Geting all the projects the authenticated'
                              ' account has access to, parent_id = %s,'
-                             ' parent_type = %s, **filterargs = %s,'
+                             ' parent_resource_type = %s, **filterargs = %s,'
                              ' response = %s',
                              parent_id, parent_type, filterargs, response)
                 yield response

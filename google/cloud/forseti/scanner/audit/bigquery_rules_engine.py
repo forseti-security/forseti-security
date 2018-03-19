@@ -193,7 +193,7 @@ class Rule(object):
                                  'rule_index', 'violation_type', 'dataset_id',
                                  'role', 'special_group', 'user_email',
                                  'domain', 'group_email', 'view',
-                                 'inventory_data']
+                                 'resource_data']
     frozen_rule_attributes = frozenset(rule_violation_attributes)
     RuleViolation = namedtuple(
         'RuleViolation',

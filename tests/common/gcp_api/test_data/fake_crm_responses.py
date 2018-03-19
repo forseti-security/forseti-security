@@ -182,7 +182,7 @@ GET_PROJECT_NOT_FOUND = """
  "error": {
   "code": 403,
   "message": "The caller does not have permission",
-  "status": "PERMISSION_DENIED"
+  "inventory_status": "PERMISSION_DENIED"
  }
 }
 """

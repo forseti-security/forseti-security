@@ -84,7 +84,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                 'rule_index': rule_indices.get(violation.rule_id, 0),
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
-                'inventory_data': violation.inventory_data
+                'resource_data': violation.inventory_data
             }
             sorted(violation_dict)
             yield violation_dict
@@ -145,7 +145,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                         'violation_errors': violation_errors
                     }
                     message = {
-                        'status': 'scanner_done',
+                        'inventory_status': 'scanner_done',
                         'payload': payload
                     }
                     notifier.process(message)

@@ -120,7 +120,7 @@ class KeCluster(object):
             current_master_version=cluster.get('currentMasterVersion'),
             current_node_version=cluster.get('currentNodeVersion'),
             create_time=cluster.get('createTime'),
-            status=cluster.get('status'),
+            status=cluster.get('inventory_status'),
             status_message=cluster.get('statusMessage'),
             node_ipv4_cidr_size=cluster.get('nodeIpv4CidrSize'),
             instance_group_urls=cluster.get('instanceGroupUrls', []),

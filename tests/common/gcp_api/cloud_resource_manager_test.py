@@ -169,7 +169,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         """Test multiple pages when calling get_organizations()."""
         mock_responses = []
         for page in fake_crm_responses.SEARCH_ORGANIZATIONS:
-            mock_responses.append(({'status': '200'}, page))
+            mock_responses.append(({'inventory_status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.crm_api_client.get_organizations()

@@ -31,7 +31,7 @@ class FirewallRuleDirection(Enum):
 
 
 class DeploymentStatus(Enum):
-    """Deployment status."""
+    """Deployment inventory_status."""
     RUNNING = 'RUNNING'
     DONE = 'DONE'
 

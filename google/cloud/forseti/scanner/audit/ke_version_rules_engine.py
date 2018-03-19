@@ -556,4 +556,4 @@ RuleViolation = namedtuple('RuleViolation',
                             'rule_name', 'rule_index', 'violation_type',
                             'violation_reason', 'project_id',
                             'cluster_name', 'node_pool_name',
-                            'inventory_data'])
+                            'resource_data'])

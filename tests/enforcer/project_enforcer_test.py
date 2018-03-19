@@ -58,7 +58,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             constants.EXPECTED_FIREWALL_RULES.values())
 
         response_403 = httplib2.Response({
-            'status': '403',
+            'inventory_status': '403',
             'content-type': 'application/json'
         })
         response_403.reason = 'Failed'
@@ -125,7 +125,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             in the RAW_EXPECTED_JSON_POLICY.
 
         Expected Results:
-          A ProjectResult proto with status=SUCCESS and all rules listed in
+          A ProjectResult proto with inventory_status=SUCCESS and all rules listed in
           rules_unchanged.
         """
         self.gce_service.firewalls().list().execute.return_value = {
@@ -149,7 +149,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             second call.
 
         Expected Results:
-          A ProjectResult proto showing status=SUCCESS, details on the rules
+          A ProjectResult proto showing inventory_status=SUCCESS, details on the rules
           changed, all_rules_changed set to True, and a copy of the previous and
           current firewall rules.
         """
@@ -187,7 +187,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             and the expected new firewall rules on the second call.
 
         Expected Results:
-          A ProjectResult proto showing status=SUCCESS, details on the rules
+          A ProjectResult proto showing inventory_status=SUCCESS, details on the rules
           changed, and a copy of the previous and current firewall rules.
         """
         # Make a deep copy of the expected rules
@@ -233,7 +233,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             second call.
 
         Expected Results:
-          A ProjectResult proto showing status=SUCCESS, details on the rules
+          A ProjectResult proto showing inventory_status=SUCCESS, details on the rules
           changed, and a copy of the previous and current firewall rules.
         """
         # Make a deep copy of the expected rules
@@ -267,7 +267,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Set retry_on_dry_run to True so that code path will be tested.
 
         Expected Results:
-          A ProjectResult proto showing status=SUCCESS, details on the rules
+          A ProjectResult proto showing inventory_status=SUCCESS, details on the rules
           changed, all_rules_changed set to True, and a copy of the previous and
           current firewall rules.
         """
@@ -298,7 +298,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
                               expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_rules_changed_exceeds_maximum_retries(self):
-        """Validate error status if rule is constantly readded while enforcing.
+        """Validate error inventory_status if rule is constantly readded while enforcing.
 
         Setup:
           * Set API calls to return the different firewall rules from the new
@@ -307,7 +307,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Set retry_on_dry_run to True so that code path will be tested.
 
         Expected Results:
-          A ProjectResult proto showing status=ERROR, details on the rules
+          A ProjectResult proto showing inventory_status=ERROR, details on the rules
           changed, and a copy of the previous and current firewall rules.
         """
         extra_rules = copy.deepcopy(self.expected_rules)
@@ -360,7 +360,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Set prechange_callback arg to a function that always returns false.
 
         Expected Results:
-          A ProjectResult proto showing status=SUCCESS, with no rules changed.
+          A ProjectResult proto showing inventory_status=SUCCESS, with no rules changed.
         """
         self.gce_service.firewalls().list().execute.return_value = (
             constants.DEFAULT_FIREWALL_API_RESPONSE)
@@ -431,7 +431,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Enforce the expected policy which will raise an exception.
 
         Expected Result:
-          A ProjectResult proto showing status=ERROR and a reason string.
+          A ProjectResult proto showing inventory_status=ERROR and a reason string.
         """
         firewall_policy = []
 
@@ -460,7 +460,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Enforce the expected policy which deletes all rules.
 
         Expected Result:
-          A ProjectResult proto showing status=SUCCESS and the number of rules
+          A ProjectResult proto showing inventory_status=SUCCESS and the number of rules
           changed in an audit_log, and a copy of the previous and current
           firewall rules.
         """
@@ -482,7 +482,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
                               expect_rules_before=True, expect_rules_after=True)
 
     def test_enforce_policy_firewall_enforcer_error(self):
-        """Verifies that a firewall enforcer error returns a status=ERROR proto.
+        """Verifies that a firewall enforcer error returns a inventory_status=ERROR proto.
 
         Setup:
           * Switch the dry run response to a firewall change to be an error.
@@ -491,13 +491,13 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Enforce the expected policy which will force a firewall change.
 
         Expected Result:
-          A ProjectResult proto showing status=ERROR and a reason string.
+          A ProjectResult proto showing inventory_status=ERROR and a reason string.
         """
         mock_dry_run = mock.patch.object(project_enforcer.fe.ComputeFirewallAPI,
                                          '_create_dry_run_response').start()
 
         mock_dry_run.return_value = {
-            'status': 'DONE',
+            'inventory_status': 'DONE',
             'name': 'test-net-allow-all-tcp',
             'error': {
                 'errors': [{
@@ -549,7 +549,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             and the partially updated firewall rules on the second call.
 
         Expected Results:
-          A ProjectResult proto showing status=ERROR, the correct reason string,
+          A ProjectResult proto showing inventory_status=ERROR, the correct reason string,
           the number of rules changed in an audit_log, and a copy of the
           previous and current firewall rules.
         """
@@ -582,7 +582,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'update_firewall_rule').start()
 
         mock_update_firewall_rule.return_value = {
-            'status': 'DONE',
+            'inventory_status': 'DONE',
             'name': 'test-net-allow-corp-internal-0',
             'error': {
                 'errors': [{
@@ -622,7 +622,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             and an error on the second call.
 
         Expected Results:
-          A ProjectResult proto showing status=ERROR, the correct reason string,
+          A ProjectResult proto showing inventory_status=ERROR, the correct reason string,
           the number of rules changed in an audit_log, and a copy of the
           previous firewall rules only.
         """
@@ -671,7 +671,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             rules.
 
         Expected Results:
-          A ProjectResult proto showing status=ERROR and the correct reason
+          A ProjectResult proto showing inventory_status=ERROR and the correct reason
           string.
         """
         self.gce_service.networks().list().execute.side_effect = self.error_403
@@ -694,7 +694,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Set the firewalls.list API call to return an error.
 
         Expected Results:
-          A ProjectResult proto showing status=ERROR and the correct reason
+          A ProjectResult proto showing inventory_status=ERROR and the correct reason
           string.
         """
         self.gce_service.firewalls().list().execute.side_effect = self.error_403
@@ -720,7 +720,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
           * Set the first firewall policy rule to have a very long name.
 
         Expected Results:
-          A ProjectResult proto showing status=ERROR and the correct reason
+          A ProjectResult proto showing inventory_status=ERROR and the correct reason
           string.
         """
         # Set the first firewall policy rule to have a very long name
@@ -747,18 +747,18 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_deleted_403(self):
-        """Verifies that a deleted project returns status=PROJECT_DELETED.
+        """Verifies that a deleted project returns inventory_status=PROJECT_DELETED.
 
         Setup:
           * Switch the list_firewalls response to be a 403 error with the reason
             string set to pending deletion.
 
         Expected Result:
-          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          A ProjectResult proto showing inventory_status=PROJECT_DELETED and the correct
           reason string.
         """
         deleted_403 = httplib2.Response({
-            'status': '403',
+            'inventory_status': '403',
             'content-type': 'application/json'
         })
         deleted_403.reason = ('Project has been scheduled for deletion and '
@@ -786,18 +786,18 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_deleted_400(self):
-        """Verifies that a deleted project returns a status=PROJECT_DELETED.
+        """Verifies that a deleted project returns a inventory_status=PROJECT_DELETED.
 
         Setup:
           * Switch the ListFirewalls response to be a 400 error with the reason
             string set to unknown project.
 
         Expected Result:
-          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          A ProjectResult proto showing inventory_status=PROJECT_DELETED and the correct
           reason string.
         """
         deleted_400 = httplib2.Response({
-            'status': '400',
+            'inventory_status': '400',
             'content-type': 'application/json'
         })
         deleted_400.reason = 'Invalid value for project: %s' % self.project
@@ -821,18 +821,18 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.validate_results(self.expected_proto, result)
 
     def test_enforce_policy_firewall_enforcer_gce_api_disabled(self):
-        """Project returns a status=PROJECT_DELETED if GCE API is disabled.
+        """Project returns a inventory_status=PROJECT_DELETED if GCE API is disabled.
 
         Setup:
           * Switch the ListFirewalls response to be a 403 error with the reason
             string set to GCE API disabled.
 
         Expected Result:
-          A ProjectResult proto showing status=PROJECT_DELETED and the correct
+          A ProjectResult proto showing inventory_status=PROJECT_DELETED and the correct
           reason string.
         """
         api_disabled_403 = httplib2.Response(
-            {'status': '403',
+            {'inventory_status': '403',
              'content-type': 'application/json'})
         api_disabled_403.reason = (
             'Access Not Configured. Compute Engine API has not been used in '

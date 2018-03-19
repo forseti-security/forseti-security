@@ -28,7 +28,7 @@ INSTANCE_DATA = [{
     'resource_id': 'resource_id-2',
     'scheduling': {'preemptible': 'false', 'automaticRestart': 'true', 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'status': 'status-1',
+    'inventory_status': 'inventory_status-1',
     'status_message': 'status_message-1',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'wwww'},
     'zone': 'zone-1'
@@ -47,7 +47,7 @@ INSTANCE_DATA = [{
     'resource_id': '5555',
     'scheduling': {'preemptible': 'false', 'automaticRestart': 'true', 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'status': 'RUNNING',
+    'inventory_status': 'RUNNING',
     'status_message': '',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'xxxx'},
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
@@ -66,7 +66,7 @@ INSTANCE_DATA = [{
     'resource_id': '4444',
     'scheduling': {'preemptible': 'false', 'automaticRestart': 'true', 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'status': 'RUNNING',
+    'inventory_status': 'RUNNING',
     'status_message': '',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'wwww'},
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
@@ -85,7 +85,7 @@ INSTANCE_DATA = [{
     'resource_id': '4444',
     'scheduling': {'preemptible': 'false', 'automaticRestart': 'true', 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'status': 'RUNNING',
+    'inventory_status': 'RUNNING',
     'status_message': '',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'wwww'},
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'

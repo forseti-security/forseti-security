@@ -236,7 +236,7 @@ FOLDERS_FIELDNAMES = [
     'name',
     'display_name',
     'lifecycle_state',
-    'parent_type',
+    'parent_resource_type',
     'parent_id',
     'raw_folder',
     'create_time',
@@ -299,7 +299,7 @@ INSTANCES_FIELDNAMES = [
     'network_interfaces',
     'scheduling',
     'service_accounts',
-    'status',
+    'inventory_status',
     'status_message',
     'tags',
     'zone',
@@ -390,7 +390,7 @@ PROJECTS_FIELDNAMES = [
     'project_id',
     'project_name',
     'lifecycle_state',
-    'parent_type',
+    'parent_resource_type',
     'parent_id',
     'raw_project',
     'create_time'
@@ -496,7 +496,7 @@ def write_csv(resource_name, data, write_header=False):
         for i in data:
             # Not ready to send these data via CSV attachment as they break
             # across multiple columns.
-            i.pop('inventory_data')
+            i.pop('resource_data')
             writer.writerow(i)
 
         # This must be closed before returned for loading.

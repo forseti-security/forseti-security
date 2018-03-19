@@ -43,7 +43,7 @@ FAKE_EXPECTED_VIOLATIONS = [
               {'DELETE_FIREWALL_RULES': ['fw-tag-match_111']}},
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
      'resource_type': 'firewall_rule',
-     'inventory_data': 'inventory_data_111',
+     'resource_data': 'inventory_data_111',
     },
     {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
      'resource_id': 'fake_firewall_222',
@@ -56,7 +56,7 @@ FAKE_EXPECTED_VIOLATIONS = [
               {'DELETE_FIREWALL_RULES': ['fw-tag-match_222']}},
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
-     'inventory_data': 'inventory_data_222',
+     'resource_data': 'inventory_data_222',
      }
 ]
 
@@ -99,7 +99,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
         keys = ['inventory_index_id', 'resource_id', 'full_name',
                 'resource_type', 'rule_name', 'rule_index', 'violation_type',
-                'violation_data', 'violation_hash', 'inventory_data',
+                'violation_data', 'violation_hash', 'resource_data',
                 'created_at_datetime']
 
         for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
@@ -151,7 +151,7 @@ class ScannerDaoTest(ForsetiTestCase):
         expected_violations_as_dict = [
             {'full_name': u'full_name_111',
              'id': 1,
-             'inventory_data': u'inventory_data_111',
+             'resource_data': u'inventory_data_111',
              'inventory_index_id': u'aaa',
              'resource_id': u'fake_firewall_111',
              'resource_type': u'firewall_rule',
@@ -163,7 +163,7 @@ class ScannerDaoTest(ForsetiTestCase):
             },
             {'full_name': u'full_name_222',
              'id': 2,
-             'inventory_data': u'inventory_data_222',
+             'resource_data': u'inventory_data_222',
              'inventory_index_id': u'aaa',
              'resource_id': u'fake_firewall_222',
              'resource_type': u'firewall_rule',

@@ -256,7 +256,7 @@ class ForsetiInstaller(object):
         return deployment_completed, deployment_name
 
     def wait_until_vm_initialized(self, vm_name):
-        """Check vm init status.
+        """Check vm init inventory_status.
 
         Args:
             vm_name (str): Name of the VM instance.

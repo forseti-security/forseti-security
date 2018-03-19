@@ -159,7 +159,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
         expected_violations = [
             {'resource_id': u'node-version-not-allowed',
              'rule_name': 'Disallowed node pool version',
-             'inventory_data': '{"nodePools": [{"version": "1.7.10-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.7.11-gke.1", "initialClusterVersion": "1.7.10-gke.1", "name": "node-version-not-allowed", "currentNodeVersion": "1.7.10-gke.1"}',
+             'resource_data': '{"nodePools": [{"version": "1.7.10-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.7.11-gke.1", "initialClusterVersion": "1.7.10-gke.1", "name": "node-version-not-allowed", "currentNodeVersion": "1.7.10-gke.1"}',
             'full_name': u'organization/12345/project/foo/',             'rule_index': 2,
              'rule_index': 2,
              'violation_data': {
@@ -175,7 +175,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
              'resource_type': 'ke'},
             {'resource_id': u'master-version-invalid',
              'rule_name': 'Unsupported master version',
-             'inventory_data': '{"nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1"}',
+             'resource_data': '{"nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1"}',
              'full_name': u'organization/12345/project/foo/',
              'rule_index': 1,
              'violation_data': {
@@ -190,7 +190,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
              'resource_type': 'ke'},
             {'resource_id': u'node-version-invalid',
              'rule_name': 'Unsupported node pool version',
-             'inventory_data': '{"nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1"}',
+             'resource_data': '{"nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1"}',
              'full_name': u'organization/12345/project/foo/',
              'rule_index': 0,
              'violation_data': {

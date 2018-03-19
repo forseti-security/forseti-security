@@ -112,7 +112,7 @@ AD_GROUP_MEMBER_TEMPLATE = """
  "email": "{email}",
  "role": "MEMBER",
  "type": "{type}",
- "status": "ACTIVE"
+ "inventory_status": "ACTIVE"
 }}
 """
 
@@ -316,7 +316,7 @@ CRM_GET_FOLDERS = {
     "folders/" + FOLDER_ID_PREFIX + "3": [],
 }
 
-# Fields: num, id, name, parent_type, parent_id
+# Fields: num, id, name, parent_resource_type, parent_id
 CRM_PROJECT_TEMPLATE = """
 {{
  "projectNumber": "104{num}",
@@ -325,8 +325,8 @@ CRM_PROJECT_TEMPLATE = """
  "name": "{name}",
  "createTime": "2017-07-12T17:50:40.895Z",
  "parent": {{
-  "type": "{parent_type}",
-  "id": "{parent_id}"
+  "type": "{parent_resource_type}",
+  "id": "{parent_resource_id}"
  }}
 }}
 """
@@ -338,32 +338,32 @@ CRM_GET_PROJECT = {
                 num=1,
                 id="project1",
                 name="Project 1",
-                parent_type="organization",
-                parent_id="111222333")),
+                parent_resource_type="organization",
+                parent_resource_id="111222333")),
     PROJECT_ID_PREFIX + "2":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
                 num=2,
                 id="project2",
                 name="Project 2",
-                parent_type="organization",
-                parent_id="111222333")),
+                parent_resource_type="organization",
+                parent_resource_id="111222333")),
     PROJECT_ID_PREFIX + "3":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
                 num=3,
                 id="project3",
                 name="Project 3",
-                parent_type="folder",
-                parent_id="1")),
+                parent_resource_type="folder",
+                parent_resource_id="1")),
     PROJECT_ID_PREFIX + "4":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
                 num=4,
                 id="project4",
                 name="Project 4",
-                parent_type="folder",
-                parent_id="3")),
+                parent_resource_type="folder",
+                parent_resource_id="3")),
 }
 
 CRM_GET_PROJECTS = {
@@ -623,7 +623,7 @@ GCE_INSTANCE_TEMPLATE_IAP = """
   "fingerprint": "gilEhx3hEXk="
  }},
  "machineType": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/machineTypes/f1-micro",
- "status": "RUNNING",
+ "inventory_status": "RUNNING",
  "zone": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c",
  "canIpForward": false,
  "networkInterfaces": [
@@ -708,7 +708,7 @@ GCE_INSTANCE_TEMPLATE_STANDARD = """
   "fingerprint": "42WmSpB8rSM="
  }},
  "machineType": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-west1-a/machineTypes/n1-standard-2",
- "status": "RUNNING",
+ "inventory_status": "RUNNING",
  "zone": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-west1-a",
  "canIpForward": false,
  "networkInterfaces": [
@@ -992,7 +992,7 @@ GCE_IMAGES_TEMPLATE = """
   "state": "DEPRECATED",
   "replacement": "https://www.googleapis.com/compute/v1/projects/{project}/global/images/centos-6-custom-v20171208"
  }},
- "status": "READY",
+ "inventory_status": "READY",
  "archiveSizeBytes": "688350464",
  "diskSizeGb": "10",
  "sourceDisk": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-b/disks/disk-install-centos-6-custom-dz0wt",
@@ -1016,7 +1016,7 @@ GCE_IMAGES_TEMPLATE = """
  "name": "centos-6-custom-v20171208",
  "description": "Custom CentOS 6 built on 20171208",
  "sourceType": "RAW",
- "status": "READY",
+ "inventory_status": "READY",
  "archiveSizeBytes": "788880064",
  "diskSizeGb": "10",
  "sourceDisk": "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-b/disks/disk-install-centos-6-custom-62bzs",
@@ -1718,7 +1718,7 @@ CONTAINER_CLUSTERS_TEMPLATE = """
       "instanceGroupUrls": [
         "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instanceGroupManagers/gke-{cl_name}-{np_name}-12345678-grp"
       ],
-      "status": "RUNNING"
+      "inventory_status": "RUNNING"
     }}
   ],
   "locations": [
@@ -1738,7 +1738,7 @@ CONTAINER_CLUSTERS_TEMPLATE = """
   "currentMasterVersion": "1.7.11-gke.1",
   "currentNodeVersion": "1.7.11-gke.1",
   "createTime": "2017-10-24T19:36:21+00:00",
-  "status": "RUNNING",
+  "inventory_status": "RUNNING",
   "nodeIpv4CidrSize": 24,
   "servicesIpv4Cidr": "10.11.240.0/20",
   "instanceGroupUrls": [
@@ -1846,7 +1846,7 @@ IAM_GET_CURATED_ROLES = [{
     "title":
         "App Engine Viewer",
     "description":
-        "Ability to view App Engine app status.",
+        "Ability to view App Engine app inventory_status.",
     "includedPermissions": [
         "appengine.applications.get", "appengine.instances.get",
         "appengine.instances.list", "appengine.operations.get",
@@ -1865,7 +1865,7 @@ IAM_GET_CURATED_ROLES = [{
     "title":
         "App Engine Code Viewer",
     "description":
-        "Ability to view App Engine app status and deployed source code.",
+        "Ability to view App Engine app inventory_status and deployed source code.",
     "includedPermissions": [
         "appengine.applications.get", "appengine.instances.get",
         "appengine.instances.list", "appengine.operations.get",
