@@ -166,7 +166,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
         progress_queue.put(log_message)
 
     # build notification pipelines
-    pipelines = []
+    pipelines = dict()
     for resource in notifier_configs['resources']:
         if violations.get(resource['resource']) is None:
             log_message = 'Resource \'{}\' has no violations'.format(
@@ -177,18 +177,21 @@ def run(inventory_index_id, progress_queue, service_config=None):
         if not resource['should_notify']:
             LOGGER.debug('Not notifying for: %s', resource['resource'])
             continue
-        for pipeline in resource['pipelines']:
+        for pipeline_cfg in resource['pipelines']:
             log_message = 'Running \'{}\' for resource \'{}\''.format(
-                pipeline['name'], resource['resource'])
+                pipeline_cfg['name'], resource['resource'])
             progress_queue.put(log_message)
             LOGGER.info(log_message)
-            chosen_pipeline = find_pipelines(pipeline['name'])
-            pipelines.append(chosen_pipeline(resource['resource'],
-                                             inventory_index_id,
-                                             violations[resource['resource']],
-                                             global_configs,
-                                             notifier_configs,
-                                             pipeline['configuration']))
+            chosen_pipeline = find_pipelines(pipeline_cfg['name'])
+            if chosen_pipeline not in pipelines:
+                pipelines[chosen_pipeline] = chosen_pipeline(
+                    resource['resource'], inventory_index_id,
+                    violations[resource['resource']], global_configs,
+                    notifier_configs, pipeline_cfg['configuration'])
+            else:
+                pipeline = pipelines[chosen_pipeline]
+                pipeline.add_data(resource['resource'],
+                                  violations[resource['resource']])
 
     # run the pipelines
     for pipeline in pipelines:
