@@ -26,9 +26,6 @@ from google.cloud.forseti.notifier.notifiers import base_notification
 
 LOGGER = logger.get_logger(__name__)
 
-VIOLATIONS_JSON_FMT = 'violations.{}.{}.{}.json'
-OUTPUT_TIMESTAMP_FMT = '%Y%m%dT%H%M%SZ'
-
 
 class GcsViolations(base_notification.BaseNotification):
     """Upload violations to GCS."""

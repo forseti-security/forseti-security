@@ -45,7 +45,7 @@ class EmailInventorySnapshotSummary(
             pipeline_config (dict): Pipeline configurations.
             sendgrid_key (str): The SendGrid API key.
         """
-        super(EmailInventorySnapshotSummaryPipeline,
+        super(EmailInventorySnapshotSummary,
               self).__init__(resource,
                              cycle_timestamp,
                              violations,
