@@ -58,8 +58,8 @@ It's important to know that if you don't plan to execute a particular piece of
 Forseti, such as `forseti_enforcer`, you don't need to create that service account
 or grant those permissions.
 
-* Learn more about [GCP IAM roles](https://cloud.google.com/iam/docs/v1.1/understanding-roles#predefined_roles).
-* Learn more about [Using IAM securely](https://cloud.google.com/iam/docs/v1.1/using-iam-securely).
+* Learn more about [GCP IAM roles](https://cloud.google.com/iam/docs/understanding-roles#predefined_roles).
+* Learn more about [Using IAM securely](https://cloud.google.com/iam/docs/using-iam-securely).
 
 ### Service account for Forseti Security
 Forseti Security needs the following roles for `forseti_inventory` and/or

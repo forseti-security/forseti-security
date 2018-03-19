@@ -24,7 +24,7 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
     [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
     to fetch your data. If Forseti isn't currently collecting the data you
     want from GCP, you'll need to extend Forseti's API support for
-    [Google Cloud APIs](https://cloud.google.com/apis/docs/v1.1/overview).
+    [Google Cloud APIs](https://cloud.google.com/apis/docs/overview).
 1.  The pipeline_requirements_map.py file is an internal map that defines
     the requirements for each pipeline. The map values are the dependencies
     the pipeline needs to run. Specify the following values in

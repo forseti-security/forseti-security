@@ -40,10 +40,10 @@ at least the following variables:
     numbers, and hyphens, such as "valid-instancename-1".
     - Instance names must be unique and can't be reused for up to 7 days after
     deletion.
-    - Read more about [naming guidelines](https://cloud.google.com/sql/docs/v1.1/mysql/instance-settings#settings-2ndgen).
+    - Read more about [naming guidelines](https://cloud.google.com/sql/docs/mysql/instance-settings#settings-2ndgen).
   - `SCANNER_BUCKET`
     - Add only the bucket name. Don't include `gs://`.
-    - Make sure the name conforms to [bucket naming guidelines](https://cloud.google.com/storage/docs/v1.1/naming).
+    - Make sure the name conforms to [bucket naming guidelines](https://cloud.google.com/storage/docs/naming).
     - Use the same name for both the Cloud Storage and Compute Engine sections
     in the template.
 
@@ -89,7 +89,7 @@ You can also modify the following templates:
     - You can customize the startup script.
     - By default, the startup script sets up the environment to install Forseti
     Security and run the tools hourly.
-    - Learn more about [Using Startup Scripts](https://cloud.google.com/deployment-manager/docs/v1.1/step-by-step-guide/setting-metadata-and-startup-scripts).
+    - Learn more about [Using Startup Scripts](https://cloud.google.com/deployment-manager/docs/step-by-step-guide/setting-metadata-and-startup-scripts).
 
 ### Deploying Forseti Security
 

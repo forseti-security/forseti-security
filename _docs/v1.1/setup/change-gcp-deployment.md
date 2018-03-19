@@ -83,4 +83,4 @@ not need to ssh to the instance to run all the git clone/python install commands
 Some resources can't be updated in a deployment. If you see an error that you can't 
 change a certain resource, you'll need to create a new deployment of Forseti.
 
-Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/v1.1/deployments/updating-deployments).
+Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).

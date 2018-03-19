@@ -30,7 +30,7 @@ You'll also need the project ID of the resource you want to enforce.
 Forseti Enforcer policy files are JSON formatted rule lists that apply to a
 project. Each rule must contain a name, sourceRanges or sourceTags, and one or
 more allowed protocols. To learn more, refer to the
-[Compute Engine Firewall](https://cloud.google.com/compute/docs/v1.1/reference/latest/firewalls)
+[Compute Engine Firewall](https://cloud.google.com/compute/docs/reference/latest/firewalls)
 documentation.
 
 If a rule does not include a network name, then it's applied to all networks

@@ -10,12 +10,12 @@ summary email dispatched from Forseti Security to BigQuery.
 To complete this guide, you'll need the following:
 
 - A Google Cloud Platform (GCP)
-  [Organization resource](https://cloud.google.com/resource-manager/docs/v1.1/creating-managing-organization).
+  [Organization resource](https://cloud.google.com/resource-manager/docs/creating-managing-organization).
 - A Forseti Security installation with
   [email notifications]({% link _docs/v1.1/configure/email-notification.md %}) enabled.
 - A GCP project with the
   [BigQuery API enabled](https://console.cloud.google.com/flows/enableapi?apiid=bigquery) and
-  [billing enabled](https://cloud.google.com/billing/docs/v1.1/how-to/modify-project#enable_billing_for_a_project).
+  [billing enabled](https://cloud.google.com/billing/docs/how-to/modify-project#enable_billing_for_a_project).
 
 ## Setting up configurations
 ### Filtering your email notifications

@@ -57,7 +57,7 @@ rules:
 - **bindings**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to 
   audit. 
   - **role_name**: A
-    [Cloud IAM role](https://cloud.google.com/compute/docs/v1.1/access/iam) such as
+    [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam) such as
     "roles/editor" or "roles/viewer".
     - You can also use wildcards, such as **roles/***. Refer to the starter rules or the
       unit tests directory for examples.
@@ -93,7 +93,7 @@ rules:
 
  - **name**: The description of your rule.
  - **bucket**: The bucket name you want to audit.
- - **entity**: The [ACL entity](https://cloud.google.com/storage/docs/v1.1/access-control/lists)
+ - **entity**: The [ACL entity](https://cloud.google.com/storage/docs/access-control/lists)
    that holds the bucket permissions.
  - **email**: The email of the entity.
  - **domain**: The domain of the entity.
@@ -101,7 +101,7 @@ rules:
  - **resource**: The resource under which the bucket resides.
 
 For more information, refer to the
-[BucketAccessControls](https://cloud.google.com/storage/docs/v1.1/json_api/v1/objectAccessControls#resource)
+[BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/objectAccessControls#resource)
 documentation.
 
 ## Cloud SQL rules
@@ -173,7 +173,7 @@ rules:
 - **ip_address**: The IP address for which this forwarding rule serves.
 
 To learn more, see the
-[ForwardingRules](https://cloud.google.com/compute/docs/v1.1/reference/latest/forwardingRules)
+[ForwardingRules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules)
 documentation.
 
 ## IAP rules

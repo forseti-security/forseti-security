@@ -30,7 +30,7 @@ deployment template, and creates a Forseti deployment.
 
 ### Activate Google Cloud Shell
 
-It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/v1.1/quickstart) to run the
+It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the
 Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included
 in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
 
