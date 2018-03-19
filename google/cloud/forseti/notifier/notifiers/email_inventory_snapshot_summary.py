@@ -76,8 +76,8 @@ class EmailInventorySnapshotSummary(
 
         email_content = EmailUtil.render_from_template(
             'inventory_snapshot_summary.jinja',
-            {'snapshot_time':
-                 snapshot_time.strftime(string_formats.TIMESTAMP_READABLE_UTC),
+            {'snapshot_time': snapshot_time.strftime(
+                string_formats.TIMESTAMP_READABLE_UTC),
              'snapshot_timestamp': snapshot_timestamp,
              'status_summary': status,
              'pipelines': inventory_pipelines})

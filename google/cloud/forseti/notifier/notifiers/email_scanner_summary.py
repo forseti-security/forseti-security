@@ -44,12 +44,12 @@ class EmailScannerSummary(base_email_notification.BaseEmailNotification):
             notifier_config (dict): Notifier configurations.
             pipeline_config (dict): Pipeline configurations.
         """
-        super(EmailScannerSummaryPipeline, self).__init__(resource,
-                                                          cycle_timestamp,
-                                                          violations,
-                                                          global_configs,
-                                                          notifier_config,
-                                                          pipeline_config)
+        super(EmailScannerSummary, self).__init__(resource,
+                                                  cycle_timestamp,
+                                                  violations,
+                                                  global_configs,
+                                                  notifier_config,
+                                                  pipeline_config)
         self.email_util = EmailUtil(sendgrid_key)
 
     def _compose(  # pylint: disable=arguments-differ

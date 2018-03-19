@@ -14,8 +14,6 @@
 
 """Email notifier to perform notifications"""
 
-from datetime import datetime
-
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger

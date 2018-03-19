@@ -36,6 +36,7 @@ LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=no-member
 
+
 def define_violation(dbengine):
     """Defines table class for violations.
 
