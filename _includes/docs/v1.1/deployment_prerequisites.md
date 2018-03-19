@@ -43,7 +43,7 @@ To create a separate service account for enabling G Suite data collection, follo
 
 In order for Forseti to have access to read data from your GCP environment, you will need 
 to assign roles to a particular _member_: either the Inventory/Scanner/Enforcer 
-service account or your Google user. You can refer to the [official documentation about members](https://cloud.google.com/iam/_docs/v1.1/overview#concepts_related_to_identity) for more information.
+service account or your Google user. You can refer to the [official documentation about members](https://cloud.google.com/iam/docs/overview#concepts_related_to_identity) for more information.
 
 Also, you can grant the roles on the organization, folder, or project IAM policies.
 

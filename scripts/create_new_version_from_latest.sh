@@ -40,7 +40,6 @@ function update_includes_links() {
   find _includes/docs/$RELEASE_VERSION -type f -exec sed -i s:_docs/_latest:_docs/$RELEASE_VERSION:g {} +
   find _includes/docs/$RELEASE_VERSION -type f -exec sed -i s:docs/_latest:docs/$RELEASE_VERSION:g {} +
   find _includes/docs/$RELEASE_VERSION -type f -exec sed -i s:_docs/latest:_docs/$RELEASE_VERSION:g {} +
-  find _includes/docs/$RELEASE_VERSION -type f -exec sed -i s:docs/latest:docs/$RELEASE_VERSION:g {} +
 }
 
 
