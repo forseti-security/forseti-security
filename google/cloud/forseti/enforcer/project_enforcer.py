@@ -502,7 +502,7 @@ class EnforcementError(Error):
         """Initialize.
 
         Args:
-            status (int): The inventory_status code to use for the error.
+            status (int): The status code to use for the error.
             reason (str): The reason to use for the error.
         """
         self._status = int(status)
