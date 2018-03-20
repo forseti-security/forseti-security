@@ -470,7 +470,7 @@ class Rule(object):
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
                     direct_sources_violations),
-                inventory_data=resource.json)
+                resource_data=resource.json)
         return None
 
     def __repr__(self):

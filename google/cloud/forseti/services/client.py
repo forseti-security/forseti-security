@@ -662,7 +662,8 @@ class ClientComposition(object):
             proto: the returned proto message of creating model
         """
 
-        return self.model.new_model(source, name, inventory_index_id, background)
+        return self.model.new_model(source, name, inventory_index_id,
+                                    background)
 
     def list_models(self):
         """List existing models.

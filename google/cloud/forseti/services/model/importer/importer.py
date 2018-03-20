@@ -169,11 +169,13 @@ class InventoryImporter(object):
             self.session.autoflush = False
             item_counter = 0
             last_res_type = None
-            with Inventory(self.session, self.inventory_index_id, True) as inventory:
+            with Inventory(self.session, self.inventory_index_id,
+                           True) as inventory:
                 root = inventory.get_root()
                 self.model.add_description(json.dumps({
                     'source': 'inventory',
-                    'source_info': {'inventory_index_id': inventory.inventory_index.id},
+                    'source_info': {
+                        'inventory_index_id': inventory.inventory_index.id},
                     'source_root': self._type_name(root),
                     'pristine': True,
                     'gsuite_enabled': inventory.type_exists(
@@ -1167,9 +1169,11 @@ class InventoryImporter(object):
             bool: Whether the resource is root or not
         """
         if not self.found_root:
-            is_root = \
-                resource.get_resource_type() == resource.get_parent_resource_type() and \
-                resource.get_resource_id() == resource.get_parent_resource_id()
+            is_root = (
+                resource.get_resource_type() ==
+                resource.get_parent_resource_type() and
+                resource.get_resource_id() ==
+                resource.get_parent_resource_id())
             if is_root:
                 self.found_root = True
             return is_root

@@ -267,5 +267,5 @@ class Rule(object):
                 domain=bigquery_acl.domain,
                 group_email=bigquery_acl.group_email,
                 view=bigquery_acl.view,
-                inventory_data=bigquery_acl.json
+                resource_data=bigquery_acl.json
             )

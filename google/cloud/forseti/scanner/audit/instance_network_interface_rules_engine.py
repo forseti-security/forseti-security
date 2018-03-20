@@ -248,7 +248,7 @@ class Rule(object):
                     project=project,
                     network=network,
                     ip=ips,
-                    inventory_data=instance_network_interface.as_json())
+                    resource_data=instance_network_interface.as_json())
 
     # Rule violation.
     # resource_type: string

@@ -49,7 +49,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 violation_type=audit_rules.VIOLATION_TYPE['whitelist'],
                 role='role1',
                 members=tuple(members),
-                inventory_data=''),
+                resource_data=''),
             audit_rules.RuleViolation(
                 resource_type='project',
                 resource_id='def222',
@@ -59,7 +59,7 @@ class EmailScannerSummaryPipelineTest(ForsetiTestCase):
                 violation_type=audit_rules.VIOLATION_TYPE['blacklist'],
                 role='role2',
                 members=tuple(members),
-                inventory_data=''),
+                resource_data=''),
         ]
 
         scanner = iam_rules_scanner.IamPolicyScanner(

@@ -586,7 +586,7 @@ class Rule(object):
             violation_type=violation_type,
             policy_names=[p.name for p in policies],
             recommended_actions=recommended_actions,
-            inventory_data=inventory_data
+            resource_data=inventory_data
         )
 
 

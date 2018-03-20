@@ -415,10 +415,10 @@ class Resource(object):
         """
         return ('{}<data="{}", parent_resource_type="{}", '
                 'parent_resource_id="{}">').format(
-            self.__class__.__name__,
-            json.dumps(self._data),
-            self.parent().type(),
-            self.parent().key())
+                    self.__class__.__name__,
+                    json.dumps(self._data),
+                    self.parent().type(),
+                    self.parent().key())
 
 
 class Organization(Resource):

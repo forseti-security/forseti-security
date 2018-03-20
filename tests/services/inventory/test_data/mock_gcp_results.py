@@ -316,7 +316,7 @@ CRM_GET_FOLDERS = {
     "folders/" + FOLDER_ID_PREFIX + "3": [],
 }
 
-# Fields: num, id, name, parent_resource_type, parent_id
+# Fields: num, id, name, parent_type, parent_id
 CRM_PROJECT_TEMPLATE = """
 {{
  "projectNumber": "104{num}",
@@ -325,8 +325,8 @@ CRM_PROJECT_TEMPLATE = """
  "name": "{name}",
  "createTime": "2017-07-12T17:50:40.895Z",
  "parent": {{
-  "type": "{parent_resource_type}",
-  "id": "{parent_resource_id}"
+  "type": "{parent_type}",
+  "id": "{parent_id}"
  }}
 }}
 """
@@ -338,32 +338,32 @@ CRM_GET_PROJECT = {
                 num=1,
                 id="project1",
                 name="Project 1",
-                parent_resource_type="organization",
-                parent_resource_id="111222333")),
+                parent_type="organization",
+                parent_id="111222333")),
     PROJECT_ID_PREFIX + "2":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
                 num=2,
                 id="project2",
                 name="Project 2",
-                parent_resource_type="organization",
-                parent_resource_id="111222333")),
+                parent_type="organization",
+                parent_id="111222333")),
     PROJECT_ID_PREFIX + "3":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
                 num=3,
                 id="project3",
                 name="Project 3",
-                parent_resource_type="folder",
-                parent_resource_id="1")),
+                parent_type="folder",
+                parent_id="1")),
     PROJECT_ID_PREFIX + "4":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
                 num=4,
                 id="project4",
                 name="Project 4",
-                parent_resource_type="folder",
-                parent_resource_id="3")),
+                parent_type="folder",
+                parent_id="3")),
 }
 
 CRM_GET_PROJECTS = {

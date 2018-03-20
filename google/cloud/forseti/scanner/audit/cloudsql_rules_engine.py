@@ -240,7 +240,7 @@ class Rule(object):
                 instance_name=cloudsql_acl.instance_name,
                 authorized_networks=cloudsql_acl.authorized_networks,
                 require_ssl=cloudsql_acl.require_ssl,
-                inventory_data=cloudsql_acl.json)
+                resource_data=cloudsql_acl.json)
 
     # Rule violation.
     # resource_type: string

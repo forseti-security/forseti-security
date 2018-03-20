@@ -316,12 +316,12 @@ class Inventory(BASE):
             str: A description of inventory_index
         """
 
-        return ("<{}(inventory_index_id='{}', resource_id='{}',"
-                " resource_type='{}')>").format(
-            self.__class__.__name__,
-            self.inventory_index_id,
-            self.resource_id,
-            self.resource_type)
+        return ('<{}(inventory_index_id=\'{}\', resource_id=\'{}\','
+                ' resource_type=\'{}\')>').format(
+                    self.__class__.__name__,
+                    self.inventory_index_id,
+                    self.resource_id,
+                    self.resource_type)
 
     def get_resource_id(self):
         """Get the row's resource id.
@@ -450,7 +450,8 @@ class DataAccess(object):
             inventory_index_id (str): Id specifying which inventory to delete.
 
         Returns:
-            InventoryIndex: An expunged entry corresponding the inventory_index_id
+            InventoryIndex: An expunged entry corresponding the
+                inventory_index_id.
 
         Raises:
             Exception: Reraises any exception.
@@ -596,8 +597,9 @@ class Storage(BaseStorage):
         return (
             self.session.query(InventoryIndex).filter(
                 InventoryIndex.id == inventory_index_id).filter(
-                    InventoryIndex.inventory_status.in_([InventoryState.SUCCESS,
-                                                         InventoryState.PARTIAL_SUCCESS]))
+                    InventoryIndex.inventory_status.in_(
+                        [InventoryState.SUCCESS,
+                         InventoryState.PARTIAL_SUCCESS]))
             .one())
 
     def _get_resource_rows(self, key):
@@ -814,19 +816,23 @@ class Storage(BaseStorage):
 
         elif fetch_dataset_policy:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.DATASET_POLICY)
+                Inventory.resource_data_class ==
+                InventoryTypeClass.DATASET_POLICY)
 
         elif fetch_billing_info:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.BILLING_INFO)
+                Inventory.resource_data_class ==
+                InventoryTypeClass.BILLING_INFO)
 
         elif fetch_enabled_apis:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.ENABLED_APIS)
+                Inventory.resource_data_class ==
+                InventoryTypeClass.ENABLED_APIS)
 
         elif fetch_service_config:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.SERVICE_CONFIG)
+                Inventory.resource_data_class ==
+                InventoryTypeClass.SERVICE_CONFIG)
 
         else:
             filters.append(

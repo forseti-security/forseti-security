@@ -54,7 +54,7 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
         violation_type='BIGQUERY_VIOLATION',
         resource_type='bigquery_dataset',
         view='',
-        inventory_data='inventory_dataset222'),
+        resource_data='inventory_dataset222'),
     Rule.RuleViolation(
         domain='',
         resource_id='xza',
@@ -69,5 +69,5 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
         violation_type='BIGQUERY_VIOLATION',
         resource_type='bigquery_dataset',
         view='',
-        inventory_data='inventory_dataset333')
+        resource_data='inventory_dataset333')
 ]

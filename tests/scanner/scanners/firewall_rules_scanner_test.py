@@ -159,7 +159,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
-                inventory_data='fake_inventory_data111'
+                resource_data='fake_inventory_data111'
             ),
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
@@ -169,7 +169,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
-                inventory_data='fake_inventory_data222'
+                resource_data='fake_inventory_data222'
             ),
         ]
         flattened_violations = [
@@ -184,7 +184,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
-                'resource_data': v.inventory_data
+                'resource_data': v.resource_data
             } for i, v in enumerate(violations)]
 
         self.scanner._output_results(violations, '88888')
@@ -248,7 +248,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
-                inventory_data='fake_inventory_data111'
+                resource_data='fake_inventory_data111'
             ),
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
@@ -258,7 +258,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
-                inventory_data='fake_inventory_data222'
+                resource_data='fake_inventory_data222'
             ),
         ]
         rule_indices = {
@@ -280,7 +280,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
-                'resource_data': v.inventory_data
+                'resource_data': v.resource_data
             } for i, v in enumerate(violations)]
 
         mock_output_results_to_db.assert_called_once_with(
@@ -296,7 +296,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             fake_csv_name)
         self.assertEquals(1, mock_notifier.process.call_count)
         expected_message = {
-            'inventory_status': 'scanner_done',
+            'status': 'scanner_done',
             'payload': {
                 'email_description': 'Firewall Rules Scan',
                 'email_sender':

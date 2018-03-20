@@ -1455,7 +1455,7 @@ class RuleBookTest(ForsetiTestCase):
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']},
-                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
+                resource_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
             )
         ]
         project1_violations = [
@@ -1467,7 +1467,7 @@ class RuleBookTest(ForsetiTestCase):
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']},
-                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
+                resource_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
             )
         ]
         project2_violations = [
@@ -1479,7 +1479,7 @@ class RuleBookTest(ForsetiTestCase):
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']},
-                inventory_data=['{"denied": [{"IPProtocol": "tcp", "ports": ["22"]}], "destinationRanges": ["11.0.0.1"], "direction": "EGRESS", "name": "policy1", "network": "network1"}']
+                resource_data=['{"denied": [{"IPProtocol": "tcp", "ports": ["22"]}], "destinationRanges": ["11.0.0.1"], "direction": "EGRESS", "name": "policy1", "network": "network1"}']
             )
         ]
         project3_violations = [
@@ -1495,7 +1495,7 @@ class RuleBookTest(ForsetiTestCase):
                     'UPDATE_FIREWALL_RULES': [],
                     'INSERT_FIREWALL_RULES': ['rule4: rule 0']
                 },
-                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/1"]}']
+                resource_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/1"]}']
            )
         ]
         resources_and_policies = (
