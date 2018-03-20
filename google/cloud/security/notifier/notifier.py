@@ -152,7 +152,28 @@ def process(message):
             payload.get('email_description'))
         return
 
-# pylint: disable=too-many-branches
+def run_cscc_notification(notifier_configs, violations_as_dict):
+    """Get the first class in the given sub module
+
+    Args:
+        notifier_configs (dict): Notification configuration.
+        violations_as_dict (tuple): Tuple of violations in dict format.
+    """
+    if not notifier_configs.get('violation'):
+        LOGGER.debug('Violation section is not found in forseti config file.')
+        return
+    if not notifier_configs.get('violation').get('cscc').get('enabled'):
+        LOGGER.debug('CSCC notification is not enabled.')
+        return
+    if '{CSCC_BUCKET}' in (
+            notifier_configs.get('violation').get('cscc').get('gcs_path')):
+        LOGGER.debug('CSCC bucket is not configured.')
+        return
+    CsccPipeline().run(
+        violations_as_dict,
+        notifier_configs.get('violation').get('cscc').get('gcs_path'))
+
+# pylint: disable=too-many-locals
 def main(_):
     """Main function.
 
@@ -228,12 +249,7 @@ def main(_):
     for pipeline in pipelines:
         pipeline.run()
 
-    if notifier_configs.get('violation'):
-        if notifier_configs.get('violation').get('cscc').get('enabled'):
-            CsccPipeline().run(
-                violations_as_dict,
-                notifier_configs.get('violation').get('cscc').get('gcs_path'))
-
+    run_cscc_notification(notifier_configs, violations_as_dict)
 
 if __name__ == '__main__':
     app.run()
