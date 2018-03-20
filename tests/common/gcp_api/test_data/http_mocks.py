@@ -22,7 +22,7 @@ def mock_http_response(response, status='200'):
     """Set the mock response to an http request."""
     http_mock = http.HttpMock()
     http_mock.response_headers = {
-        'inventory_status': status,
+        'status': status,
         'content-type': 'application/json',
     }
     http_mock.data = response

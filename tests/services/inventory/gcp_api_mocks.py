@@ -234,7 +234,7 @@ def _mock_gce():
         if projectid in results.GCE_GET_PROJECT:
             return results.GCE_GET_PROJECT[projectid]
         response = httplib2.Response(
-            {'inventory_status': '403', 'content-type': 'application/json'})
+            {'status': '403', 'content-type': 'application/json'})
         content = results.GCE_API_NOT_ENABLED_TEMPLATE.format(id=projectid)
         error_403 = errors.HttpError(response, content)
         raise api_errors.ApiNotEnabledError('Access Not Configured.', error_403)

@@ -65,7 +65,7 @@ GET_ROLES_PAGE_2 = """
   {
    "name": "roles/appengine.appViewer",
    "title": "App Engine Viewer",
-   "description": "Ability to view App Engine app inventory_status.",
+   "description": "Ability to view App Engine app status.",
    "includedPermissions": [
     "appengine.applications.get",
     "appengine.instances.get",
@@ -93,7 +93,7 @@ GET_ROLES_PAGE_3 = """
   {
    "name": "roles/appengine.codeViewer",
    "title": "App Engine Code Viewer",
-   "description": "Ability to view App Engine app inventory_status and deployed source code.",
+   "description": "Ability to view App Engine app status and deployed source code.",
    "includedPermissions": [
     "appengine.applications.get",
     "appengine.instances.get",
@@ -255,7 +255,7 @@ SERVICE_ACCOUNT_NOT_FOUND = """
  "error": {
   "code": 404,
   "message": "Service account projects/forseti-system-test/serviceAccounts/111111-compute@developer.gserviceaccount.com does not exist.",
-  "inventory_status": "NOT_FOUND"
+  "status": "NOT_FOUND"
  }
 }
 """
@@ -265,7 +265,7 @@ PERMISSION_DENIED = """
  "error": {
   "code": 403,
   "message": "The caller does not have permission",
-  "inventory_status": "PERMISSION_DENIED"
+  "status": "PERMISSION_DENIED"
  }
 }
 """

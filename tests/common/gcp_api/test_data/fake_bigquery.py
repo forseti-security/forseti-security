@@ -114,7 +114,7 @@ PERMISSION_DENIED = """
  "error": {
   "code": 403,
   "message": "The caller does not have permission",
-  "inventory_status": "PERMISSION_DENIED"
+  "status": "PERMISSION_DENIED"
  }
 }
 """

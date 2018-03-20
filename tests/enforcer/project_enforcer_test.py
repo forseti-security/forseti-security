@@ -497,7 +497,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
                                          '_create_dry_run_response').start()
 
         mock_dry_run.return_value = {
-            'inventory_status': 'DONE',
+            'status': 'DONE',
             'name': 'test-net-allow-all-tcp',
             'error': {
                 'errors': [{

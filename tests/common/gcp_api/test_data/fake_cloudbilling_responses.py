@@ -39,7 +39,7 @@ PROJECT_NOT_FOUND = """
  "error": {
   "code": 404,
   "message": "Requested entity was not found.",
-  "inventory_status": "NOT_FOUND"
+  "status": "NOT_FOUND"
  }
 }
 """
@@ -49,7 +49,7 @@ PERMISSION_DENIED = """
  "error": {
   "code": 403,
   "message": "The caller does not have permission",
-  "inventory_status": "PERMISSION_DENIED"
+  "status": "PERMISSION_DENIED"
  }
 }
 """

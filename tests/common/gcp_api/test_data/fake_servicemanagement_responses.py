@@ -181,7 +181,7 @@ PERMISSION_DENIED = """
  "error": {
   "code": 403,
   "message": "Project 'project1' not found or permission denied.",
-  "inventory_status": "PERMISSION_DENIED"
+  "status": "PERMISSION_DENIED"
  }
 }
 """

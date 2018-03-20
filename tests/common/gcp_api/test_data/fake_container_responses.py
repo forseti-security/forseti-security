@@ -119,7 +119,7 @@ FAKE_GET_CLUSTERS_RESPONSE = """
           "instanceGroupUrls": [
             "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroupManagers/gke-cluster-1-default-pool-12345678-grp"
           ],
-          "inventory_status": "RUNNING"
+          "status": "RUNNING"
         }
       ],
       "locations": [
@@ -139,7 +139,7 @@ FAKE_GET_CLUSTERS_RESPONSE = """
       "currentMasterVersion": "1.7.11-gke.1",
       "currentNodeVersion": "1.7.11-gke.1",
       "createTime": "2017-10-24T19:36:21+00:00",
-      "inventory_status": "RUNNING",
+      "status": "RUNNING",
       "nodeIpv4CidrSize": 24,
       "servicesIpv4Cidr": "10.11.240.0/20",
       "instanceGroupUrls": [
@@ -158,7 +158,7 @@ INVALID_ARGUMENT_400 = """
   "error": {
     "code": 400,
     "message": "zone \"bad-zone\" does not exist.",
-    "inventory_status": "INVALID_ARGUMENT"
+    "status": "INVALID_ARGUMENT"
   }
 }
 """

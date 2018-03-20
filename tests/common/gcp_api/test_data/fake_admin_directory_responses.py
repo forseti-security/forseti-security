@@ -66,7 +66,7 @@ FAKE_MEMBERS_LIST_RESPONSE1 = """
     "email": "writer@my-gcp-project.iam.gserviceaccount.com",
     "role": "MEMBER",
     "type": "USER",
-    "inventory_status": "ACTIVE"
+    "status": "ACTIVE"
   },{
     "kind": "admin#directory#member",
     "etag": "efgh1234EFGH1234",
@@ -74,14 +74,14 @@ FAKE_MEMBERS_LIST_RESPONSE1 = """
     "email": "myuser@mydomain.com",
     "role": "MEMBER",
     "type": "USER",
-    "inventory_status": "ACTIVE"
+    "status": "ACTIVE"
   },{
     "kind": "admin#directory#member",
     "etag": "hijk1234HIJK1234",
     "id": "33333",
     "role": "MEMBER",
     "type": "USER",
-    "inventory_status": "ACTIVE"
+    "status": "ACTIVE"
   }
  ]
 }
@@ -98,7 +98,7 @@ FAKE_MEMBERS_LIST_RESPONSE2 = """
     "email": "reader@my-gcp-project.iam.gserviceaccount.com",
     "role": "MEMBER",
     "type": "USER",
-    "inventory_status": "ACTIVE"
+    "status": "ACTIVE"
   },{
     "kind": "admin#directory#member",
     "etag": "efgh1234EFGH1234",
@@ -106,7 +106,7 @@ FAKE_MEMBERS_LIST_RESPONSE2 = """
     "email": "myuser2@mydomain.com",
     "role": "OWNER",
     "type": "USER",
-    "inventory_status": "ACTIVE"
+    "status": "ACTIVE"
   }
  ]
 }
