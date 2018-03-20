@@ -752,7 +752,7 @@ class ForsetiGcpSetup(object):
 
         if not self.gsuite_superadmin_email:
             # Ask for G Suite super admin email
-            print('\nTo read G Suite Groups data.'
+            print('\nTo read G Suite Groups data. '
                   'This step is optional and can be configured later.')
             self.gsuite_superadmin_email = raw_input(
                 'What is your organization\'s G Suite super admin email? '
@@ -760,7 +760,8 @@ class ForsetiGcpSetup(object):
 
         if not self.cscc_bucket:
             # Ask for the CSCC bucket
-            print('\nForseti violation data can be integrated with CSCC.')
+            print('\nForseti violation data can be integrated with CSCC. '
+                  'This step is optional and can be configured later.')
             self.cscc_bucket = raw_input(
                 'What is name of the bucket to save Forseti violations, '
                 'for CSCC integation? (press [enter] to skip) ').strip()
