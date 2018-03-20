@@ -599,8 +599,8 @@ def run_scanner(client, config, output, _):
 
     def do_run():
         """Run a scanner."""
-        result = client.run()
-        output.write(result)
+        for progress in client.run():
+            output.write(progress.message)
 
     actions = {
         'run': do_run}
@@ -621,8 +621,8 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        result = client.run(config.inventory_index_id)
-        output.write(result)
+        for progress in client.run(config.inventory_index_id):
+            output.write(progress.message)
 
     actions = {
         'run': do_run}
