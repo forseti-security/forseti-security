@@ -354,7 +354,6 @@ class InventoryImporter(object):
 
         # Store all members which are mentioned in policies
         # that were not previously in groups or gsuite users.
-        self.session.add_all(self.member_cache_policies.values())
         self.session.flush()
 
     def _store_iam_policy(self, policy):

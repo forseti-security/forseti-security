@@ -11,23 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Slack webhook pipeline to perform notifications."""
+"""Slack webhook notifier to perform notifications."""
 
 import requests
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.notifiers import base_notification
 
 LOGGER = logger.get_logger(__name__)
 
 TEMP_DIR = '/tmp'
 
 
-class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
-    """Slack webhook pipeline to perform notifications"""
+class SlackWebhook(base_notification.BaseNotification):
+    """Slack webhook notifier to perform notifications"""
 
     def _dump_slack_output(self, data, indent=0):
         """Iterate over a dictionary and output a custom formatted string
@@ -77,15 +74,15 @@ class SlackWebhookPipeline(bnp.BaseNotificationPipeline):
             **kwargs: Arbitrary keyword arguments.
                 payload: violation data for body of POST request\
         """
-        url = self.pipeline_config.get('webhook_url')
+        url = self.notifier_config.get('webhook_url')
         request = requests.post(url, json={'text': kwargs.get('payload')})
 
         LOGGER.info(request)
 
     def run(self):
-        """Run the slack webhook pipeline"""
-        if not self.pipeline_config.get('webhook_url'):
-            LOGGER.warn('No url found, not running Slack pipeline.')
+        """Run the slack webhook notifier"""
+        if not self.notifier_config.get('webhook_url'):
+            LOGGER.warn('No url found, not running Slack notifier.')
             return
 
         for violation in self.violations:

@@ -11,16 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Email pipeline to notify that inventory snapshots have been completed."""
+"""Email notifier to notify that inventory snapshots have been completed."""
 
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.email import EmailUtil
-from google.cloud.forseti.notifier.pipelines import base_email_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.notifiers import base_email_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -28,8 +25,9 @@ LOGGER = logger.get_logger(__name__)
 
 # pylint: disable=arguments-differ
 
-class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
-    """Email pipeline for inventory snapshot summary."""
+class EmailInventorySnapshotSummary(
+        base_email_notification.BaseEmailNotification):
+    """Email notifier for inventory snapshot summary."""
 
     def __init__(self, sendgrid_key, resource=None, cycle_timestamp=None,
                  violations=None, global_configs=None, notifier_config=None,
@@ -47,7 +45,7 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             pipeline_config (dict): Pipeline configurations.
             sendgrid_key (str): The SendGrid API key.
         """
-        super(EmailInventorySnapshotSummaryPipeline,
+        super(EmailInventorySnapshotSummary,
               self).__init__(resource,
                              cycle_timestamp,
                              violations,
@@ -78,8 +76,8 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
 
         email_content = EmailUtil.render_from_template(
             'inventory_snapshot_summary.jinja',
-            {'snapshot_time':
-                 snapshot_time.strftime(string_formats.TIMESTAMP_READABLE_UTC),
+            {'snapshot_time': snapshot_time.strftime(
+                string_formats.TIMESTAMP_READABLE_UTC),
              'snapshot_timestamp': snapshot_timestamp,
              'status_summary': status,
              'pipelines': inventory_pipelines})

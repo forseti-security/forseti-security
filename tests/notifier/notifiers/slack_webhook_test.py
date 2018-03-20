@@ -11,18 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests the email scanner summary pipeline."""
+"""Tests the email scanner summary notifier."""
 
 import json
 import mock
 import unittest
 
-from google.cloud.forseti.notifier.pipelines import slack_webhook_pipeline
+from google.cloud.forseti.notifier.notifiers import slack_webhook
 from tests.unittest_utils import ForsetiTestCase
 
 
-class SlackWebhookPipelineTest(ForsetiTestCase):
-    """Tests for the slack_webhook_pipeline."""
+class SlackWebhooknotifierTest(ForsetiTestCase):
+    """Tests for the slack_webhook_notifier."""
 
     def test_can_compose_slack_message(self):
         """Test that the slack message is built correctly."""
@@ -43,24 +43,24 @@ class SlackWebhookPipelineTest(ForsetiTestCase):
                      'violation_type': 'BUCKET_VIOLATION',
                      'id': 1L, 'resource_type': 'bucket'}
 
-        with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
-            slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
-            slack_pipeline.resource = 'buckets_acl_violations'
-            actual_output = slack_pipeline._compose(violation=violation)
+        with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
+            slack_notifier = slack_webhook.SlackWebhook()
+            slack_notifier.resource = 'buckets_acl_violations'
+            actual_output = slack_notifier._compose(violation=violation)
 
             expected_output = "*type*:\t`buckets_acl_violations`\n*details*:\n\t*bucket*:\t\t`test-bucket-world-readable-123`\n\t*domain*:\t\t`n/a`\n\t*role*:\t\t`READER`\n\t*email*:\t\t`n/a`\n\t*entity*:\t\t`allUsers`"
 
             self.assertEqual(expected_output.strip(), actual_output.strip())
 
-    def test_no_url_no_run_pipeline(self):
-        """Test that no url for Slack pipeline will skip running."""
-        with mock.patch.object(slack_webhook_pipeline.SlackWebhookPipeline, '__init__', lambda x: None):
-            slack_pipeline = slack_webhook_pipeline.SlackWebhookPipeline()
-            slack_pipeline.pipeline_config = {}
-            slack_pipeline._compose = mock.MagicMock()
-            slack_pipeline.run()
+    def test_no_url_no_run_notifier(self):
+        """Test that no url for Slack notifier will skip running."""
+        with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
+            slack_notifier = slack_webhook.SlackWebhook()
+            slack_notifier.notifier_config = {}
+            slack_notifier._compose = mock.MagicMock()
+            slack_notifier.run()
 
-            slack_pipeline._compose.assert_not_called()
+            slack_notifier._compose.assert_not_called()
 
 
 if __name__ == '__main__':

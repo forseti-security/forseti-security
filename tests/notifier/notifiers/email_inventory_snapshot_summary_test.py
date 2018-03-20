@@ -11,24 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests the email inventory snapshot pipeline."""
+"""Tests the email inventory snapshot notifier."""
 
 from datetime import datetime
 
 import mock
 import unittest
 
-from google.cloud.forseti.notifier.pipelines import email_inventory_snapshot_summary_pipeline
+from google.cloud.forseti.notifier.notifiers import email_inventory_snapshot_summary
 from tests.unittest_utils import ForsetiTestCase
 
 
-class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
-    """Tests for the email_inventory_snapshot_summary_pipeline."""
+class EmailInventorySnapshotSummaryNotifierTest(ForsetiTestCase):
+    """Tests for the email_inventory_snapshot_summary_notifier."""
 
     def test_can_compose_subject_and_content(self):
-        email_pipeline = (
-            email_inventory_snapshot_summary_pipeline
-            .EmailInventorySnapshotSummaryPipeline(
+        self.maxDiff = None
+        email_notifier = (
+            email_inventory_snapshot_summary
+            .EmailInventorySnapshotSummary(
                     111111, '', '', {}, {}, {}, {}
             )
         )
@@ -50,14 +51,14 @@ class EmailInventorySnapshotSummaryPipelineTest(ForsetiTestCase):
             RESOURCE_NAME='baz_resource',
             status='FAILURE',
             count=10)
-        mock_inventory_pipelines = [
-            mock_inventory_pipeline1,
+        mock_inventory_notifiers= [
+            mock_inventory_pipeline1 ,
             mock_inventory_pipeline2,
             mock_inventory_pipeline3]
 
-        email_subject, email_content = email_pipeline._compose(
+        email_subject, email_content = email_notifier._compose(
             snapshot_time, snapshot_timestamp, status,
-            mock_inventory_pipelines)
+            mock_inventory_notifiers)
 
         expected_subject = ('Inventory Snapshot Complete: '
                             '20001225T010000Z SUCCESS')
