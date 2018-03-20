@@ -182,11 +182,11 @@ def run(inventory_index_id, progress_queue, service_config=None):
             LOGGER.info(log_message)
             chosen_pipeline = find_notifiers(notifier['name'])
             notifiers.append(chosen_pipeline(resource['resource'],
-                                            inventory_index_id,
-                                            violations[resource['resource']],
-                                            global_configs,
-                                            notifier_configs,
-                                            notifier['configuration']))
+                                             inventory_index_id,
+                                             violations[resource['resource']],
+                                             global_configs,
+                                             notifier_configs,
+                                             notifier['configuration']))
 
     # Run the notifiers.
     for notifier in notifiers:
