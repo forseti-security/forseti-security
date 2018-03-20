@@ -280,7 +280,7 @@ class MemberNode(anytree.node.NodeMixin):
         """
         self.member_id = member_id
         self.member_email = member_email
-        self.inventory_data = member_email
+        self.resource_data = member_email
         self.member_type = member_type
         self.member_status = member_status
         self.parent = parent
