@@ -146,6 +146,7 @@ class ForsetiGcpSetup(object):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
+        self.cscc_bucket = kwargs.get('cscc_bucket')
         self.network_host_project_id = kwargs.get('network_host_project_id',
                                                   self.project_id)
         self.vpc_name = kwargs.get('vpc_name') or 'default'
@@ -710,6 +711,7 @@ class ForsetiGcpSetup(object):
             'EMAIL_RECIPIENT': self.notification_recipient_email,
             'EMAIL_SENDER': self.notification_sender_email,
             'SENDGRID_API_KEY': self.sendgrid_api_key,
+            'CSCC_BUCKET': self.cscc_bucket,
             'SCANNER_BUCKET': self.bucket_name[len('gs://'):],
             'GROUPS_SERVICE_ACCOUNT_KEY_FILE':
                 '/home/ubuntu/{}'.format(GSUITE_KEY_NAME),
@@ -750,11 +752,19 @@ class ForsetiGcpSetup(object):
 
         if not self.gsuite_superadmin_email:
             # Ask for G Suite super admin email
-            print('\nTo read G Suite Groups data.'
+            print('\nTo read G Suite Groups data. '
                   'This step is optional and can be configured later.')
             self.gsuite_superadmin_email = raw_input(
                 'What is your organization\'s G Suite super admin email? '
                 '(press [enter] to skip) ').strip()
+
+        if not self.cscc_bucket:
+            # Ask for the CSCC bucket
+            print('\nForseti violation data can be integrated with CSCC. '
+                  'This step is optional and can be configured later.')
+            self.cscc_bucket = raw_input(
+                'What is name of the bucket to save Forseti violations, '
+                'for CSCC integation? (press [enter] to skip) ').strip()
 
     def create_deployment(self):
         """Create the GCP deployment.

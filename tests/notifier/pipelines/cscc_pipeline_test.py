@@ -21,7 +21,7 @@ from tests.unittest_utils import ForsetiTestCase
 
 
 FAKE_VIOLATIONS = [
-    {'created_at_datetime': datetime.datetime(2018, 3, 13, 6, 28, 8),
+    {'created_at_datetime': '2018-03-13T06:28:08Z',
      'id': 10L,
      'resource_id': 'nic000',
      'resource_type': 'instance',
@@ -33,7 +33,7 @@ FAKE_VIOLATIONS = [
                         u'raw_data': u'{raw000}'},
      'violation_hash': '3bc3359d7508214bb07d28941c9ddcde687d39edb54f1b55dcbdc274532bd37fcbe5fbdbb576d67782b6b0da36ba77ae4d98703cfee7b89aff2d25884e53dc0b',
      'violation_type': 'INSTANCE_NETWORK_INTERFACE_VIOLATION'},
-    {'created_at_datetime': datetime.datetime(2018, 3, 13, 6, 28, 8),
+    {'created_at_datetime': '2018-03-13T06:28:08Z',
      'id': 11L,
      'resource_id': 'nic111',
      'resource_type': 'instance',

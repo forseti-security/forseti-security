@@ -176,6 +176,6 @@ notifier:
 
     violation:
       cscc:
-        enabled: false
+        enabled: true
         # gcs_path should begin with "gs://"
-        gcs_path: gs://{CSCC_BUCKET}/
+        gcs_path: gs://CSCC_BUCKET/
