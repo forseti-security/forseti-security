@@ -92,7 +92,7 @@ message ProjectResult {
   // How this entry was generated
   optional RunContext run_context = 5;
 
-  // Enforcement inventory_status
+  // Enforcement status
   optional EnforcementStatus status = 6;
 
   // If Status is not SUCCESS, what was the reason?

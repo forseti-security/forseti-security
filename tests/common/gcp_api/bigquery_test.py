@@ -54,7 +54,7 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
         """Test that get_bigquery_projectids returns an emptly list."""
         mock_responses = []
         for page in fbq.PROJECTS_LIST_REQUEST_RESPONSE_EMPTY:
-            mock_responses.append(({'inventory_status': '200'}, json.dumps(page)))
+            mock_responses.append(({'status': '200'}, json.dumps(page)))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         return_value = self.bq_api_client.get_bigquery_projectids()
@@ -65,7 +65,7 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
         """Test get_bigquery_projectids returns a valid list of project ids."""
         mock_responses = []
         for page in fbq.PROJECTS_LIST_REQUEST_RESPONSE:
-            mock_responses.append(({'inventory_status': '200'}, json.dumps(page)))
+            mock_responses.append(({'status': '200'}, json.dumps(page)))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         return_value = self.bq_api_client.get_bigquery_projectids()

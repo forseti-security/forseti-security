@@ -65,7 +65,7 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             snapshot_time (datetime): Snapshot time, in UTC.
             snapshot_timestamp (str): Snapshot timestamp,
                 formatted as YYYYMMDDTHHMMSSZ.
-            status (str): Overall inventory_status of current snapshot cycle.
+            status (str): Overall status of current snapshot cycle.
             inventory_pipelines (list): Inventory pipelines.
 
         Returns:
@@ -119,7 +119,7 @@ class EmailInventorySnapshotSummaryPipeline(bnp.BaseEmailNotificationPipeline):
             snapshot_time (datetime): Snapshot time, in UTC.
             snapshot_timestamp (str): Snapshot timestamp, formatted
                 as YYYYMMDDTHHMMSSZ.
-            status (str): Overall inventory_status of current snapshot cycle.
+            status (str): Overall status of current snapshot cycle.
             inventory_pipelines (list): Inventory pipelines.
             email_sender (str): Sender of the email.
             email_recipient (str): Recipient of the email.

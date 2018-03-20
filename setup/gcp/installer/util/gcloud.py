@@ -640,7 +640,7 @@ def get_vm_instance_info(instance_name, try_match=False):
         str: Name of the forseti server instance.
     """
     def _ping_compute_instance():
-        """Check compute instance inventory_status."""
+        """Check compute instance status."""
         utils.run_command(
             ['gcloud', 'compute', 'instances', 'list', '--format=json'])
 
@@ -776,7 +776,7 @@ def create_deployment(project_id,
 
 
 def check_vm_init_status(vm_name, zone):
-    """Check vm initialization inventory_status.
+    """Check vm initialization status.
 
     Args:
         vm_name (str): Name of the VM instance.
@@ -826,14 +826,14 @@ def get_domain_from_organization_id(organization_id):
 
 
 def check_deployment_status(deployment_name, status):
-    """Check the inventory_status of a deployment.
+    """Check the status of a deployment.
 
     Args:
         deployment_name (str): Deployment name.
         status (DeploymentStatus): Status of the deployment.
 
     Returns:
-        bool: Whether or not the deployment inventory_status match with the given inventory_status.
+        bool: Whether or not the deployment status match with the given status.
     """
 
     return_code, out, err = utils.run_command(
@@ -847,6 +847,6 @@ def check_deployment_status(deployment_name, status):
 
     deployment_info = json.loads(out)
 
-    current_status = deployment_info['deployment']['operation']['inventory_status']
+    current_status = deployment_info['deployment']['operation']['status']
 
     return current_status == status.value

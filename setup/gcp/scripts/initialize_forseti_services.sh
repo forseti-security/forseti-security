@@ -52,7 +52,7 @@ SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"
 SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
 
 
-# Cannot use "read -d" since it returns a nonzero exit inventory_status.
+# Cannot use "read -d" since it returns a nonzero exit status.
 API_SERVICE="$(cat << EOF
 [Unit]
 Description=Forseti API Server

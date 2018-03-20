@@ -149,7 +149,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     'rule_name': violation.rule_name,
                     'violation_type': violation.violation_type,
                     'violation_data': violation_data,
-                    'resource_data': violation.inventory_data
+                    'resource_data': violation.resource_data
                 }
 
     def _output_results(self, all_violations, resource_counts):
@@ -207,7 +207,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                         'violation_errors': violation_errors
                     }
                     message = {
-                        'inventory_status': 'scanner_done',
+                        'status': 'scanner_done',
                         'payload': payload
                     }
                     notifier.process(message)

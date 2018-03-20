@@ -35,7 +35,7 @@ STATUS_DELETED = enforcer_log_pb2.PROJECT_DELETED
 STATUS_UNSPECIFIED = enforcer_log_pb2.ENFORCEMENT_STATUS_UNSPECIFIED
 
 # Default number of times to try applying the firewall policy to a project
-# before the inventory_status is changed to ERROR and the enforcement fails.
+# before the status is changed to ERROR and the enforcement fails.
 MAX_ENFORCEMENT_RETRIES = 3
 
 LOGGER = logger.get_logger(__name__)
@@ -123,7 +123,7 @@ class ProjectEnforcer(object):
                 firewall policy. Set to 0 to disable retry behavior.
 
         Returns:
-            enforcer_log_pb2.ProjectResult: A proto with details on the inventory_status
+            enforcer_log_pb2.ProjectResult: A proto with details on the status
                 of the enforcement and an audit log with any changes made.
         """
         if networks:
@@ -459,10 +459,10 @@ class ProjectEnforcer(object):
                 results.all_rules_changed = True
 
     def _set_error_status(self, msg, *args):
-        """Set inventory_status to result ERROR and update the reason string from msg.
+        """Set status to result ERROR and update the reason string from msg.
 
         Args:
-            msg (str): The error message to use as the inventory_status reason.
+            msg (str): The error message to use as the status reason.
             *args (list): Optional args to format the msg string with.
         """
         if args:
@@ -473,7 +473,7 @@ class ProjectEnforcer(object):
         LOGGER.warn('Project %s had an error: %s', self.project_id, msg)
 
     def _set_deleted_status(self, e):
-        """Set inventory_status of result to DELETED and update reason string.
+        """Set status of result to DELETED and update reason string.
 
         Args:
             e (Exception): The exception raised.
@@ -511,7 +511,7 @@ class EnforcementError(Error):
         super(EnforcementError, self).__init__(str(self))
 
     def status(self):
-        """Return inventory_status.
+        """Return status.
 
         Returns:
             int: Status code.

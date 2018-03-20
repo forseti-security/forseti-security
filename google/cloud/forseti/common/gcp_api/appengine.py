@@ -27,7 +27,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 def _is_status_not_found(error):
-    """Decodes the error from the API to check if inventory_status is NOT_FOUND.
+    """Decodes the error from the API to check if status is NOT_FOUND.
 
     Args:
         error (errors.HttpError): The error response from the API.
@@ -40,9 +40,9 @@ def _is_status_not_found(error):
                 'application/json'):
             error_details = json.loads(error.content.decode('utf-8'))
             # If a project does not have the AppEngine API enabled,
-            # then it will return response inventory_status NOT_FOUND. This
+            # then it will return response status NOT_FOUND. This
             # is an expected result for most projects.
-            if error_details.get('error', {}).get('inventory_status', '') == 'NOT_FOUND':
+            if error_details.get('error', {}).get('status', '') == 'NOT_FOUND':
                 LOGGER.debug(error)
                 return True
     return False

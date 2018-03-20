@@ -46,7 +46,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
 
     def test_is_status_not_found_404(self):
         response = httplib2.Response({
-            'inventory_status': '404',
+            'status': '404',
             'content-type': 'application/json'})
         response.reason = 'Not Found'
         error = errors.HttpError(response, fae.APP_NOT_FOUND, '')
@@ -54,7 +54,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
 
     def test_is_status_not_found_403(self):
         response = httplib2.Response({
-            'inventory_status': '403',
+            'status': '403',
             'content-type': 'application/json'})
         response.reason = 'Permission Denied'
         error = errors.HttpError(response, fae.PERMISSION_DENIED, '')
@@ -142,7 +142,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
     def test_list_versions(self):
         mock_responses = []
         for page in fae.LIST_VERSIONS_RESPONSES:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         response = self.ae_api_client.list_versions(

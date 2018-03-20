@@ -47,7 +47,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
         """Test that get_enabled_apis returns correctly."""
         mock_responses = []
         for page in fake_sm.LIST_CONSUMER_SERVICES_RESPONSES:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         return_value = self.sm_api_client.get_enabled_apis(

@@ -145,7 +145,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                         'violation_errors': violation_errors
                     }
                     message = {
-                        'inventory_status': 'scanner_done',
+                        'status': 'scanner_done',
                         'payload': payload
                     }
                     notifier.process(message)

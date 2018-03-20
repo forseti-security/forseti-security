@@ -68,7 +68,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
             violation_data = {'project': violation.project,
                               'full_name': violation.full_name,
                               'network': violation.network, 'ip': violation.ip,
-                              'resource_data': violation.inventory_data}
+                              'resource_data': violation.resource_data}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -77,7 +77,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
-                'resource_data': violation.inventory_data
+                'resource_data': violation.resource_data
             }
 
     def _output_results(self, all_violations):

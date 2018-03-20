@@ -54,7 +54,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         """Test get backend services."""
         mock_responses = []
         for page in fake_compute.LIST_BACKEND_SERVICES_RESPONSES:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_backend_services(self.project_id)
@@ -102,7 +102,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         """Test get firewall rules."""
         mock_responses = []
         for page in fake_compute.LIST_FIREWALLS_RESPONSES:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_firewall_rules(self.project_id)
@@ -291,11 +291,11 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
     def test_get_instance_groups(self):
         """Test get instance groups."""
         mock_responses = [
-            ({'inventory_status': '200'},
+            ({'status': '200'},
              fake_compute.INSTANCE_GROUPS_AGGREGATED_LIST),
-            ({'inventory_status': '200'},
+            ({'status': '200'},
              fake_compute.INSTANCE_GROUP_LIST_INSTANCES),
-            ({'inventory_status': '200'},
+            ({'status': '200'},
              fake_compute.REGION_INSTANCE_GROUP_LIST_INSTANCES)
         ]
         http_mocks.mock_http_response_sequence(mock_responses)
@@ -362,7 +362,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         """Test get networks."""
         mock_responses = []
         for page in fake_compute.LIST_NETWORKS_RESPONSES:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_networks(self.project_id)
@@ -397,7 +397,7 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         """Test get subnetworks."""
         mock_responses = []
         for page in fake_compute.SUBNETWORKS_AGGREGATED_LIST:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gce_api_client.get_subnetworks(self.project_id)

@@ -50,7 +50,7 @@ class QueueProgresser(Progress):
         """Initialize
 
         Args:
-            queue (Queue): progress queue to storage inventory_status
+            queue (Queue): progress queue to storage status
         """
         super(QueueProgresser, self).__init__()
         self.queue = queue
@@ -61,12 +61,12 @@ class QueueProgresser(Progress):
         self.queue.put_nowait(self)
 
     def _notify_eof(self):
-        """Notify end of inventory_status updates into queue."""
+        """Notify end of status updates into queue."""
 
         self.queue.put(None)
 
     def on_new_object(self, resource):
-        """Update the inventory_status with the new resource.
+        """Update the status with the new resource.
 
         Args:
             resource (Resource): db row of Resource
@@ -148,7 +148,7 @@ def run_inventory(service_config,
 
     Args:
         service_config (object): Service configuration.
-        queue (object): Queue to push inventory_status updates into.
+        queue (object): Queue to push status updates into.
         session (object): Database session.
         progresser (object): Progresser implementation to use.
         background (bool): whether to run the inventory in background
@@ -187,7 +187,7 @@ def run_import(client, model_name, inventory_index_id, background):
         background (bool): If the import should run in background.
 
     Returns:
-        object: RPC response object to indicate inventory_status.
+        object: RPC response object to indicate status.
     """
 
     return client.model.new_model('INVENTORY',
@@ -216,7 +216,7 @@ class Inventory(object):
             model_name (str): Model name to import into
 
         Yields:
-            object: Yields inventory_status updates.
+            object: Yields status updates.
         """
 
         queue = Queue()

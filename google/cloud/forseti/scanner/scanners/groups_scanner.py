@@ -58,7 +58,7 @@ class GroupsScanner(base_scanner.BaseScanner):
                 'rule_name': violation.violated_rule_names,
                 'violation_type': 'GROUP_VIOLATION',
                 'violation_data': violation_data,
-                'resource_data': violation.inventory_data
+                'resource_data': violation.resource_data
             }
 
     def _output_results(self, all_violations):

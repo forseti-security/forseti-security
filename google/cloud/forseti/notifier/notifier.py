@@ -85,12 +85,12 @@ def process(message):
             of the message.
 
             Example:
-                {'inventory_status': 'foobar_done',
+                {'status': 'foobar_done',
                  'payload': {}}
     """
     payload = message.get('payload')
 
-    if message.get('inventory_status') == 'inventory_done':
+    if message.get('status') == 'inventory_done':
         inv_email_pipeline = inv_summary.EmailInventorySnapshotSummaryPipeline(
             payload.get('sendgrid_api_key')
         )
@@ -104,7 +104,7 @@ def process(message):
         )
         return
 
-    if message.get('inventory_status') == 'scanner_done':
+    if message.get('status') == 'scanner_done':
         scanner_email_pipeline = scanner_summary.EmailScannerSummaryPipeline(
             payload.get('sendgrid_api_key')
         )

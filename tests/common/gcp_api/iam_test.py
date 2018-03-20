@@ -44,7 +44,7 @@ class IamTest(unittest_utils.ForsetiTestCase):
         """Test get iam curated roles."""
         mock_responses = []
         for page in fake_iam.GET_ROLES_RESPONSES:
-            mock_responses.append(({'inventory_status': '200'}, page))
+            mock_responses.append(({'status': '200'}, page))
         http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.iam_api_client.get_curated_roles()

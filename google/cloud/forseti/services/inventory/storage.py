@@ -316,7 +316,8 @@ class Inventory(BASE):
             str: A description of inventory_index
         """
 
-        return """<{}(index='{}', key='{}', type='{}')>""".format(
+        return ("<{}(inventory_index_id='{}', resource_id='{}',"
+                " resource_type='{}')>").format(
             self.__class__.__name__,
             self.inventory_index_id,
             self.resource_id,
