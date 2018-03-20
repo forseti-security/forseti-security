@@ -184,6 +184,10 @@ def main(_):
     v_dao = violation_dao.ViolationDao(global_configs)
     violations_as_dict = v_dao.get_all_violations(timestamp)
 
+    for i in violations_as_dict:
+        i['created_at_datetime'] = (
+            i.get('created_at_datetime').strftime('%Y-%m-%dT%H:%M:%SZ'))
+
     violations = {}
     try:
         violations = violation_dao.map_by_resource(violations_as_dict)

@@ -49,9 +49,7 @@ class CsccPipeline(object):
                 'finding_source_id': 'FORSETI',
                 'finding_category': violation.get('violation_type'),
                 'finding_asset_ids': violation.get('resource_id'),
-                'finding_time_event': (
-                    violation.get('created_at_datetime')
-                    .strftime('%Y-%m-%dT%H:%M:%SZ')),
+                'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
                     'violation_data': violation.get('violation_data'),
@@ -98,3 +96,4 @@ class CsccPipeline(object):
                 storage_client = storage.StorageClient()
                 storage_client.put_text_file(
                     tmp_violations.name, gcs_upload_path)
+        LOGGER.info('Completed CSCC findings notification.')
