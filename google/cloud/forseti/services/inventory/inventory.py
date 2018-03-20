@@ -56,7 +56,7 @@ class QueueProgresser(Progress):
         self.queue = queue
 
     def _notify(self):
-        """Notify inventory_status update into queue."""
+        """Notify status update into queue."""
 
         self.queue.put_nowait(self)
 

@@ -275,7 +275,7 @@ class MemberNode(anytree.node.NodeMixin):
             member_id (str): id of the member
             member_email (str): email of the member
             member_type (str): type of the member
-            member_status (str): inventory_status of the member
+            member_status (str): status of the member
             parent (node): parent node
         """
         self.member_id = member_id

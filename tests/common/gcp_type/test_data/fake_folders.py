@@ -21,14 +21,14 @@ FAKE_FOLDERS_DB_ROWS = [
      'lifecycle_state': 'ACTIVE',
      'create_time': '2015-09-09 00:01:01',
      'parent_id': '9999',
-     'parent_resource_type': 'organization'},
+     'parent_type': 'organization'},
     {'folder_id': '222222222222',
      'name': 'folders/222222222222',
      'display_name': 'Folder2',
      'lifecycle_state': 'ACTIVE',
      'create_time': '2015-10-10 00:02:02',
      'parent_id': None,
-     'parent_resource_type': None},
+     'parent_type': None},
 ]
 
 FAKE_FOLDERS_RESPONSE = {
@@ -59,13 +59,13 @@ FAKE_FOLDERS_OK_IAM_DB_ROWS = [
      'display_name': 'Folder1',
      'lifecycle_state': 'ACTIVE',
      'parent_id': '9999',
-     'parent_resource_type': 'organizations',
+     'parent_type': 'organizations',
      'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
     {'folder_id': '2222222222',
      'display_name': 'Folder2',
      'lifecycle_state': 'ACTIVE',
      'parent_id': None,
-     'parent_resource_type': None,
+     'parent_type': None,
      'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:d@e.f"]}]}'},
 ]
 
@@ -74,13 +74,13 @@ FAKE_FOLDERS_BAD_IAM_DB_ROWS = [
      'display_name': 'Folder1',
      'lifecycle_state': 'ACTIVE',
      'parent_id': '9999',
-     'parent_resource_type': 'organizations',
+     'parent_type': 'organizations',
      'iam_policy': '{"bindings": [{"role": "roles/viewer", "members": ["user:a@b.c"]}]}'},
     {'folder_id': '2222222222',
      'display_name': 'Folder2',
      'lifecycle_state': 'ACTIVE',
      'parent_id': None,
-     'parent_resource_type': None,
+     'parent_type': None,
      'iam_policy': ''},
 ]
 

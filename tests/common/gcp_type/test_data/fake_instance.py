@@ -31,7 +31,7 @@ FAKE_INSTANCE_RESPONSE_1 = {
     'resource_id': '4444',
     'scheduling': {'preemptible': False, 'automaticRestart': True, 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'inventory_status': 'RUNNING',
+    'status': 'RUNNING',
     'status_message': '',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'wwww'},
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
@@ -51,7 +51,7 @@ FAKE_INSTANCE_RESPONSE_2 = {
     'resource_id': '5555',
     'scheduling': {'preemptible': False, 'automaticRestart': True, 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'inventory_status': 'RUNNING',
+    'status': 'RUNNING',
     'status_message': '',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'xxxx'},
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
@@ -70,7 +70,7 @@ FAKE_INSTANCE_RESPONSE_LEGACY = {
     'resource_id': '4444',
     'scheduling': {'preemptible': False, 'automaticRestart': True, 'onHostMaintenance': 'MIGRATE'},
     'service_accounts': [{'email': 'none@developer.gserviceaccount.com', 'scopes': ['https://www.googleapis.com/auth/somewhere']}],
-    'inventory_status': 'RUNNING',
+    'status': 'RUNNING',
     'status_message': '',
     'tags': {'items': ['one', 'two', 'three'], 'fingerprint': 'wwww'},
     'zone': 'https://www.googleapis.com/compute/v1/projects/project-1/zones/datacenter'
