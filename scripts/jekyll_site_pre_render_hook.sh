@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Creates and updates data structures to represent _docs/latest/ on every
+# Jekyll build
+
 rm -rf _docs/latest
 ./scripts/build_doc_version_index.sh
 cp -R _docs/_latest/ _docs/latest

@@ -1,23 +1,46 @@
 #!/bin/bash
+#
+# Create a new documentation version when a new release is discovered in the
+# repository
+
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+#######################################
+# List all unique major and minor
+# semantic versions, excluding v1.0.
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   array - unique versions
+#######################################
 function uniq_major_minor_filter() {
     echo "$1" | grep -Eo 'v[0-9]+\.[0-9]+' | uniq | sed '/v1.0/d'
 }
 
-ALL_RELEASE_TAGS=$(git tag -l v*.*)
-RELEASES=$(uniq_major_minor_filter "$ALL_RELEASE_TAGS")
-DOC_VERSIONS=$(uniq_major_minor_filter "$(ls _docs)")
+function main() {
+	local all_release_tags releases doc_versions
+	all_release_tags="$(git tag -l v*.*)"
+	releases="$(uniq_major_minor_filter "${all_release_tags}")"
+	doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
-if [ -z "$DOC_VERSIONS" ]; then
-    echo The _docs/ directory is not versioned properly. Please initialize with \
-         at least one version.
-    exit -1
-fi
+	if [ -z "${doc_versions}" ]; then
+	    err "The _docs/ directory is not versioned properly. Please initialize 
+	    	with at least one version."
+	    exit -1
+	fi
 
-LATEST_DOC_VERSION=$(echo "$DOC_VERSIONS" | sort -rV | head -n 1)
+	local latest_doc_version
+	latest_doc_version="$(echo "${doc_versions}" | sort -rV | head -n 1)"
 
-for release in $RELEASES; do
-    if [ ! -d _docs/$release ]; then
-        cp -R _docs/$LATEST_DOC_VERSION _docs/$release
-    fi
-done
+	for release in ${RELEASES}; do
+	    if [ ! -d _docs/${release} ]; then
+	        cp -R _docs/${latest_doc_version} _docs/${release}
+	    fi
+	done
+}
 
+main "$@"
