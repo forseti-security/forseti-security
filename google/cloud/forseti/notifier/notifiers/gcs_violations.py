@@ -38,7 +38,7 @@ class GcsViolations(base_notification.BaseNotification):
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
-        output_filename = string_formats.VIOLATION_JSON_FMT.format(
+        output_filename = string_formats.VIOLATION_CSV_FMT.format(
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
@@ -55,5 +55,4 @@ class GcsViolations(base_notification.BaseNotification):
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
-                storage_client.put_text_file(
-                    '/tmp/%s' % csv_file.name, gcs_upload_path)
+                storage_client.put_text_file(csv_file.name, gcs_upload_path)
