@@ -45,7 +45,7 @@ configuration change.
 
 ### Minimum configuration
 
-{% include docs/latest/min_conf_settings.md %}
+{% include docs/v1.1/howto/min_conf_settings.md %}
 
 ### Configuring Inventory
 
@@ -88,7 +88,7 @@ updated configuration:
  
 Forseti Scanner is dependent on specific Inventory pipelines. To learn about
 the available scanners and dependencies, see
-[Scanner Specifications]({% link _docs/latest/configure/scanner/descriptions.md %}).
+[Scanner Specifications]({% link _docs/v1.1/quickstarts/scanner/descriptions.md %}).
  
  
 ### Configuring Notifier

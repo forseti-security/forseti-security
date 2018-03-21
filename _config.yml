@@ -23,6 +23,7 @@ exclude: ["Gemfile",
           "client-secrets.json.enc",
           "_config.yml",
           ".travis.yml",
+          "travis/",
           "scripts/"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
@@ -102,26 +103,14 @@ defaults:
       category: Overview (v1.1)
       layout: docs
   - scope:
-      path: _docs/v1.1/concepts
+      path: _docs/v1.1/quickstarts
     values:
-      category: Concepts (v1.1)
+      category: Quickstarts (v1.1)
   - scope:
-      path: _docs/v1.1/setup
+      path: _docs/v1.1/howto
     values:
-      category: Setup (v1.1)
+      category: Howtos (v1.1)
   - scope:
-      path: _docs/v1.1/use
+      path: _docs/v1.1/guides
     values:
-      category: Use (v1.1)
-  - scope:
-      path: _docs/v1.1/configure
-    values:
-      category: Configure (v1.1)
-  - scope:
-      path: _docs/v1.1/develop
-    values:
-      category: Develop (v1.1)
-  - scope:
-      path: _docs/v1.1/faq
-    values:
-      category: FAQ (v1.1)
+      category: Guides (v1.1)

@@ -5,8 +5,7 @@ order: 106
 
 # {{ page.title }}
 
-Forseti Scanner has default rules that create a [violation]({% link _docs/latest/configure/scanner/policy-violations.md %})
-when their conditions are met.
+Forseti Scanner has default rules that create a [violation]({% link _docs/v1.1/quickstarts/scanner/policy-violations.md %}) when their conditions are met.
 
 * BigQuery
   * Datasets should not be public.

@@ -30,6 +30,4 @@ to follow along and ask questions of the Forseti Security community.
 
 If you're having trouble you can file an issue, but first we ask that you 
 check out the discuss list or [FAQs]({% link _docs/latest/faq/index.md %})
-to see if anyone has experienced a similar issue. 
-
-
+to see if anyone has experienced a similar issue.

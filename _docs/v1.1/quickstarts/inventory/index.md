@@ -4,10 +4,12 @@ order: 002
 ---
 # {{ page.title }}
 
-This page describes how to get started with Forseti Inventory. Forseti
+This quickstart describes how to get started with Forseti Inventory. Forseti
 Inventory collects and stores information about your Google Cloud Platform
 (GCP) resources. Forseti Scanner and Enforcer use Inventory data to
 perform operations.
+
+{% include docs/v1.1/resources.md %}
 
 ## Executing the inventory loader
 
@@ -24,7 +26,7 @@ To display Inventory flag options, run the following commands:
 
 ## Configuring Inventory
 
-{% include docs/latest/min_conf_settings.md %}
+{% include docs/v1.1/howto/min_conf_settings.md %}
 
 ## What's next
-- Learn more about [configuring Forseti]({% link _docs/latest/configure/configuring-forseti.md %}).
+- Learn more about [configuring Forseti]({% link _docs/v1.1/howto/configure/configuring-forseti.md %}).

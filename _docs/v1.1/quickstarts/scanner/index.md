@@ -4,7 +4,7 @@ order: 101
 ---
 # {{ page.title }}
 
-This page describes how to get started with Forseti Scanner. Forseti
+This quickstart describes how to get started with Forseti Scanner. Forseti
 Scanner uses a JSON or YAML rules definition file to audit your Google Cloud
 Platform (GCP) resources, such as organizations or projects. After running the
 audit, Forseti Scanner outputs rule violations to Cloud SQL and optionally
@@ -17,7 +17,7 @@ Engine vulnerability scanning. Learn more about
 ## Scanners
 
 Forseti Scanner can run multiple scanners at a time. To configure which scanners
-to run, see [Configuring Forseti: Configuring Scanner]({% link _docs/latest/configure/configuring-forseti.md %}#configuring-scanner).
+to run, see [Configuring Forseti: Configuring Scanner]({% link _docs/v1.1/howto/configure/configuring-forseti.md %}#configuring-scanner).
 
 ## Running Forseti Scanner
 
@@ -26,7 +26,7 @@ To run Forseti Scanner, follow the process below:
   1. Activate any virtualenv you're using for your Forseti installation,
      if applicable (e.g. if you're running in a dev environment).
      
-  1. Run the [inventory data import]({% link _docs/latest/configure/inventory/index.md %}#executing-the-inventory-loader) 
+  1. Run the [inventory data import](http://forsetisecurity.org/docs/quickstarts/inventory/index.html#executing-the-inventory-loader) 
      first, to make sure the data for scanning is available and up-to-date.
 
   1. Run the scanners:
@@ -42,7 +42,7 @@ manually.
 
 ## What's next
 
-- Read more about [configuring Scanner]({% link _docs/latest/configure/configuring-forseti.md %}#configuring-scanner).
-- Learn about the [different scanners]({% link _docs/latest/configure/scanner/descriptions.md %}) available in Forseti.
-- Learn about [defining rules]({% link _docs/latest/configure/scanner/rules.md %}).
-- Read about how Scanner outputs [policy violations]({% link _docs/latest/configure/scanner/policy-violations.md %}).
+- Read more about [configuring Scanner]({% link _docs/v1.1/howto/configure/configuring-forseti.md %}#configuring-scanner).
+- Learn about the [different scanners]({% link _docs/v1.1/quickstarts/scanner/descriptions.md %}) available in Forseti.
+- Learn about [defining rules]({% link _docs/v1.1/quickstarts/scanner/rules.md %}).
+- Read about how Scanner outputs [policy violations]({% link _docs/v1.1/quickstarts/scanner/policy-violations.md %}).

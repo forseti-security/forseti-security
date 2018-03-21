@@ -4,11 +4,11 @@ order: 002
 ---
 # {{ page.title }}
 
-This guide explains how to use the Forseti setup wizard, which helps to 
+This quickstart explains how to use the Forseti setup wizard, which helps to 
 automate some of the Forseti installation and setup on GCP.
 
 **If you are trying to install Forseti in a developer environment, please
-refer to the [Development Environment Setup]({% link _docs/latest/develop/dev-setup.md %}).**
+refer to the [Development Environment Setup]({% link _docs/v1.1/howto/deploy/dev-setup.md %}).**
 
 Setup wizard is not available prior to version 1.1.0.
 
@@ -30,15 +30,11 @@ deployment template, and creates a Forseti deployment.
 
 ### Activate Google Cloud Shell
 
-It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the
-Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included
-in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
+It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
 
   1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
-  1. In the **Select a project** drop-down list at the top of the console, select the project where
-  you want to deploy Forseti.
-  1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud
-  Shell panel opens at the bottom of the page.
+  1. In the **Select a project** drop-down list at the top of the console, select the project where you want to deploy Forseti.
+  1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud Shell panel opens at the bottom of the page.
 
 ### Run setup
   
@@ -79,12 +75,12 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
      prompted to enter the following:
      
      * SendGrid API key: Optional, used for sending email via SendGrid. Refer to 
-       setting up [email notifications]({% link _docs/latest/configure/email-notification.md %})).
+       setting up [email notifications]({% link _docs/v1.1/howto/configure/email-notification.md %})).
      * Email recipient: If a SendGrid API key is provided, you will also be asked
        to whom Forseti should send the email notifications.
      * G Suite super admin email: This is part of the 
-       [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %}) 
-       and is necessary for running [Explain]({% link _docs/latest/configure/explain/index.md %}). 
+       [G Suite Google Groups collection]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %}) 
+       and is necessary for running [IAM Explain]({% link _docs/v1.1/quickstarts/explain/index.md %}). 
        Ask your G Suite Admin if you don't know what the super admin email is.
 
   1. If you previously used Cloud Shell to SSH to a Compute Engine instance and 
@@ -94,15 +90,14 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
      Forseti Compute Engine instance .
 
   1. After the setup wizard successfully completes Forseti setup and deployment, 
-     complete the steps to [enable G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %}).
-     This is a **required** step if you also plan to deploy Explain.
+     complete the steps to [enable G Suite Google Groups collection]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %}). This is a **required** step if you also plan to deploy IAM Explain.
 
 ## What's next
 
-  - Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}),
-  [Scanner]({% link _docs/latest/configure/scanner/index.md %}),
-  and [Enforcer]({% link _docs/latest/configure/enforcer/index.md %}).
-  - Configure Forseti to send [email notifications]({% link _docs/latest/configure/email-notification.md %}).
-  - Enable [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
+  - Customize [Inventory]({% link _docs/v1.1/quickstarts/inventory/index.md %}),
+  [Scanner]({% link _docs/v1.1/quickstarts/scanner/index.md %}),
+  and [Enforcer]({% link _docs/v1.1/quickstarts/enforcer/index.md %}).
+  - Configure Forseti to send [email notifications]({% link _docs/v1.1/howto/configure/email-notification.md %}).
+  - Enable [G Suite Google Groups collection]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %})
   for processing by Forseti.
-  - Learn how to [change a deployment]({% link _docs/latest/setup/change-gcp-deployment.md %}).
+  - Learn how to [change a deployment]({% link _docs/v1.1/howto/deploy/change-gcp-deployment.md %}).
