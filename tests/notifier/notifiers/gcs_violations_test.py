@@ -72,7 +72,8 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         'google.cloud.forseti.common.gcp_api.storage.StorageClient',
         autospec=True)
     @mock.patch('tempfile.NamedTemporaryFile')
-    def test_run(self, mock_tempfile, mock_storage):
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
+    def test_run(self, mock_os, mock_tempfile, mock_storage):
         """Test run()."""
         fake_tmpname = 'tmp_name'
         fake_output_name = 'abc'
@@ -84,7 +85,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             fake_output_name)
 
         mock_tmp_csv = mock.MagicMock()
-        mock_tempfile.return_value.__enter__.return_value = mock_tmp_csv
+        mock_tempfile.return_value = mock_tmp_csv
         mock_tmp_csv.name = fake_tmpname
         mock_tmp_csv.write = mock.MagicMock()
 
