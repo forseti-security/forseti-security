@@ -66,7 +66,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
                                 'member': u'user:ab.cd@example.com',
                                 'role': u'roles/storage.objectViewer'},
              'violation_type': 'ADDED'}]
-        self.evp = email_violations_pipeline.EmailViolationsPipeline(
+        self.evp = email_violations_pipeline.EmailViolations(
             'policy_violations',
             '2018-03-14T14:49:36.101287',
             self.violations,
