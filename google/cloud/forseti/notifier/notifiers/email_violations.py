@@ -14,12 +14,16 @@
 
 """Email notifier to perform notifications"""
 
+
+import shutil
+
+
+from google.cloud.forseti.common.data_access import csv_writer
+from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.notifiers import base_notification
 
 
@@ -33,7 +37,7 @@ class EmailViolations(base_notification.BaseNotification):
 
     def __init__(self, resource, cycle_timestamp,
                  violations, global_configs, notifier_config,
-                 notifications_config):
+                 notification_config):
         """Initialization.
 
         Args:
@@ -42,15 +46,15 @@ class EmailViolations(base_notification.BaseNotification):
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
-            notifications_config (dict): notifier configurations.
+            notification_config (dict): notifier configurations.
         """
         super(EmailViolations, self).__init__(resource,
                                               cycle_timestamp,
                                               violations,
                                               global_configs,
                                               notifier_config,
-                                              notifications_config)
-        self.mail_util = EmailUtil(self.notifier_config['sendgrid_api_key'])
+                                              notification_config)
+        self.mail_util = EmailUtil(self.notification_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -61,7 +65,7 @@ class EmailViolations(base_notification.BaseNotification):
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
-        output_filename = string_formats.VIOLATION_JSON_FMT.format(
+        output_filename = string_formats.VIOLATION_CSV_FMT.format(
             self.resource,
             self.cycle_timestamp,
             output_timestamp)
@@ -76,8 +80,14 @@ class EmailViolations(base_notification.BaseNotification):
         # Make attachment
         output_file_name = self._get_output_filename()
         output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
-        with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(self.violations))
+        with csv_writer.write_csv(resource_name='violations',
+                                  data=self.violations,
+                                  write_header=True) as csv_file:
+            output_csv_name = csv_file.name
+            LOGGER.info('CSV filename: %s', output_csv_name)
+
+            shutil.copyfile(output_csv_name, output_file_path)
+
         return output_file_name
 
     def _make_attachment(self):
@@ -89,7 +99,7 @@ class EmailViolations(base_notification.BaseNotification):
         output_file_name = self._write_temp_attachment()
         attachment = self.mail_util.create_attachment(
             file_location='{}/{}'.format(TEMP_DIR, output_file_name),
-            content_type='text/json', filename=output_file_name,
+            content_type='text/csv', filename=output_file_name,
             content_id='Violations')
 
         return attachment
@@ -152,8 +162,8 @@ class EmailViolations(base_notification.BaseNotification):
 
         try:
             self.mail_util.send(
-                email_sender=self.notifier_config['sender'],
-                email_recipient=self.notifier_config['recipient'],
+                email_sender=self.notification_config['sender'],
+                email_recipient=self.notification_config['recipient'],
                 email_subject=subject,
                 email_content=content,
                 content_type='text/html',
