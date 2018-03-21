@@ -14,7 +14,9 @@
 
 """Tests the Email Violations upload pipeline."""
 
+import filecmp
 import mock
+import os
 import unittest
 
 from datetime import datetime
@@ -43,13 +45,36 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
             'sendgrid_api_key': 'dsvgig9y0u[puv'
         }
 
+        self.violations = [
+            {'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-ext/',
+             'inventory_data': '{"bindings": [{"members": ["projectEditor:be-p1-196611", "projectOwner:be-p1-196611"], "role": "roles/storage.legacyBucketOwner"}, {"members": ["projectViewer:be-p1-196611"], "role": "roles/storage.legacyBucketReader"}], "etag": "CAE=", "kind": "storage#policy", "resourceId": "projects/_/buckets/be-1-ext"}',
+             'resource_id': 'be-1-ext',
+             'resource_type': 'bucket',
+             'rule_index': 1,
+             'rule_name': 'Allow only service accounts to have access',
+             'violation_data': {'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-ext/',
+                                 'member': u'user:abc@example.com',
+                                 'role': u'roles/storage.objectAdmin'},
+             'violation_type': 'ADDED'},
+            {'full_name': 'o/5/f/4/folder/9/project/be-p1-196611/bucket/be-1-int/',
+             'inventory_data': '{"bindings": [{"members": ["projectEditor:be-p1-196611", "projectOwner:be-p1-196611"], "role": "roles/storage.legacyBucketOwner"}, {"members": ["projectViewer:be-p1-196611"], "role": "roles/storage.legacyBucketReader"}], "etag": "CAE=", "kind": "storage#policy", "resourceId": "projects/_/buckets/be-1-int"}',
+             'resource_id': 'be-1-int',
+             'resource_type': 'bucket',
+             'rule_index': 1,
+             'rule_name': 'Allow only service accounts to have access',
+             'violation_data': {'full_name': 'o/5/f/4/folder/9/project/be-p1-196611/bucket/be-1-int/',
+                                'member': u'user:ab.cd@example.com',
+                                'role': u'roles/storage.objectViewer'},
+             'violation_type': 'ADDED'}]
         self.evp = email_violations_pipeline.EmailViolationsPipeline(
-            'abcd',
-            '11111',
-            [],
+            'policy_violations',
+            '2018-03-14T14:49:36.101287',
+            self.violations,
             fake_global_conf,
             {},
             fake_pipeline_conf)
+        self.test_data_path = os.path.join(
+                os.path.dirname(__file__), 'test_data_attachment.csv')
 
     @mock.patch(
         'google.cloud.forseti.notifier.pipelines.email_violations_pipeline'
@@ -69,6 +94,12 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
                 expected_timestamp),
             actual_filename)
 
+    def test_write_temp_attachment(self):
+        """Test _write_temp_attachment()."""
+        file_name = self.evp._write_temp_attachment()
+        self.assertTrue(
+            filecmp.cmp('/tmp/%s' % file_name,
+                        self.test_data_path, shallow=False))
 
 if __name__ == '__main__':
     unittest.main()
