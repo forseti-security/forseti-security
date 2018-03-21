@@ -447,6 +447,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             for notifier in notifiers:
                 if notifier['name'] == 'gcs_violations':
                     return notifier['configuration']['gcs_path']
+        return ''
 
     @staticmethod
     def _swap_config_fields(old_config, new_config):
@@ -458,7 +459,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             old_config (dict): Old configuration.
             new_config (dict): New configuration.
         """
-
+        # pylint: disable=too-many-locals
         # Some fields have been renamed from v1 to v2
         # This is a map to map names from v2 back to v1
         field_names_mapping = {
