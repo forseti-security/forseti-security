@@ -22,25 +22,22 @@ function uniq_major_minor_filter() {
 }
 
 function main() {
-	local all_release_tags releases doc_versions
-	all_release_tags="$(git tag -l v*.*)"
-	releases="$(uniq_major_minor_filter "${all_release_tags}")"
-	doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
+    local all_release_tags releases doc_versions
+    all_release_tags="$(git tag -l v*.*)"
+    releases="$(uniq_major_minor_filter "${all_release_tags}")"
+    doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
-	if [ -z "${doc_versions}" ]; then
-	    err "The _docs/ directory is not versioned properly. Please initialize 
-	    	with at least one version."
-	    exit -1
-	fi
+    if [ -z "${doc_versions}" ]; then
+        err "The _docs/ directory is not versioned properly. Please initialize 
+            with at least one version."
+        exit -1
+    fi
 
-	local latest_doc_version
-	latest_doc_version="$(echo "${doc_versions}" | sort -rV | head -n 1)"
-
-	for release in ${RELEASES}; do
-	    if [ ! -d _docs/${release} ]; then
-	        cp -R _docs/${latest_doc_version} _docs/${release}
-	    fi
-	done
+    for release in ${RELEASES}; do
+        if [ ! -d _docs/${release} ]; then
+            ./scripts/create_new_version_from_latest.sh ${release}
+        fi
+    done
 }
 
 main "$@"
