@@ -18,11 +18,37 @@
   </div>
   <div class="col-md-4 text-right">
     <div class="btn-group" id="version-dropdown" style="margin-top: 1px; margin-bottom: 0; margin-right: 30px">
-      <a data-target="#version-dropdown" class="btn btn-raised dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+      <a data-target="#version-dropdown" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
         {{ release_version }}
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu">
+        {% comment %}
+          Liquid does not gives us an easy way to split a string at a specific
+          occurrence of a character, and keep the rest. Therefore, we use the
+          hack below.
+
+          'doc_name' is the document's name with repesct to Jekyll: where it
+          resides on the disk. The name looks something like:
+
+            "_docs/v0.0/dir/name/file.md"
+
+          The 'doc_name' is the portion of the file path after the top-level
+          _docs/ and version directory. It's how we access the inverted index to
+          tell which versions this document belongs to; it stays the same
+          between versions.
+
+          So, we split on slashes, and keep everything starting from the 2nd 
+          index to the end. Hence the magic number '999' is meant to make sure
+          even deep hierarchies are kept.
+
+          We do the same with the 'url_name' for purposes of linking the specific
+          version of this file, except the URL structure looks like:
+
+            baseurl/docs/v0.0/dir/name/file/index.html
+
+          possibly, and we do not want the trailing "index.html".
+        {% endcomment %}
         {% assign doc_name = page.path | split:"/" | slice:2,999 | join:"/" %}
         {% assign url_name = page.url | split:"/" | slice:3,999 | join:"/" | remove:"index.html" %}
         
