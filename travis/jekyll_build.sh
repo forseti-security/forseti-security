@@ -3,7 +3,7 @@
 if  [ -z ${JGT+x} ]; then
     # We don't have access to the encrypted vars.
     bundle exec jekyll build
-else:
+else
     # We do have access to the encrypted vars.
     JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
 fi
