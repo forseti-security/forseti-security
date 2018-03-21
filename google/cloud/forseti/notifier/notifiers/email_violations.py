@@ -37,7 +37,7 @@ class EmailViolations(base_notification.BaseNotification):
 
     def __init__(self, resource, cycle_timestamp,
                  violations, global_configs, notifier_config,
-                 notifications_config):
+                 notification_config):
         """Initialization.
 
         Args:
@@ -46,15 +46,15 @@ class EmailViolations(base_notification.BaseNotification):
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
-            notifications_config (dict): notifier configurations.
+            notification_config (dict): notifier configurations.
         """
         super(EmailViolations, self).__init__(resource,
                                               cycle_timestamp,
                                               violations,
                                               global_configs,
                                               notifier_config,
-                                              notifications_config)
-        self.mail_util = EmailUtil(self.notifier_config['sendgrid_api_key'])
+                                              notification_config)
+        self.mail_util = EmailUtil(self.notification_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -162,8 +162,8 @@ class EmailViolations(base_notification.BaseNotification):
 
         try:
             self.mail_util.send(
-                email_sender=self.notifier_config['sender'],
-                email_recipient=self.notifier_config['recipient'],
+                email_sender=self.notification_config['sender'],
+                email_recipient=self.notification_config['recipient'],
                 email_subject=subject,
                 email_content=content,
                 content_type='text/html',
