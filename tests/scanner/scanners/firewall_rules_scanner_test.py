@@ -23,7 +23,6 @@ import unittest
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner.scanners import firewall_rules_scanner
-from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from tests import unittest_utils
 from tests.scanner.scanners.data import fake_firewall_rules as fake_data
@@ -99,50 +98,11 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         actual = self.scanner.get_output_filename(self.fake_utcnow)
         self.assertEquals(expected, actual)
 
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.notifier',
-        autospec=True)
-    @mock.patch.object(
-        firewall_rules_scanner.FirewallPolicyScanner,
-        '_upload_csv', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
-        autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner'
-        '.date_time',
-        autospec=True)
-    @mock.patch.object(
-        firewall_rules_scanner.csv_writer,
-        'write_csv', autospec=True)
     @mock.patch.object(
         firewall_rules_scanner.FirewallPolicyScanner,
         '_output_results_to_db', autospec=True)
-    def test_output_results_local_no_email(
-        self, mock_output_results_to_db,
-        mock_write_csv, mock_date_time, mock_os, mock_upload_csv,
-        mock_notifier):
-        """Test output results for local output, and don't send email.
-
-        Setup:
-            * Create fake csv filename.
-            * Create fake file path.
-            * Mock the csv file name within the context manager.
-            * Mock the timestamp for the email.
-            * Mock the file path.
-
-        Expect:
-            * _upload_csv() is called once with the fake parameters.
-        """
-        mock_os.path.abspath.return_value = (
-            self.fake_scanner_configs.get('output_path'))
-        mock_date_time.get_utc_now_datetime = mock.MagicMock()
-        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
-
-        fake_csv_name = 'fake.csv'
-        fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
-        fake_csv_file.name = fake_csv_name
-
+    def test_output_results_local(self, mock_output_results_to_db):
+        """Test _output_results() flattens results & writes them to db."""
         self.scanner.scanner_configs = self.fake_scanner_configs
         rule_indices = {
             'rule1': 1,
@@ -187,135 +147,10 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 'resource_data': v.resource_data
             } for i, v in enumerate(violations)]
 
-        self.scanner._output_results(violations, '88888')
+        self.scanner._output_results(violations)
 
         mock_output_results_to_db.assert_called_once_with(
             self.scanner, flattened_violations)
-        mock_write_csv.assert_called_once_with(
-            resource_name='violations',
-            data=flattened_violations,
-            write_header=True)
-        mock_upload_csv.assert_called_once_with(
-            self.scanner,
-            self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow,
-            fake_csv_name)
-        self.assertEquals(0, mock_notifier.process.call_count)
-
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.notifier',
-        autospec=True)
-    @mock.patch.object(
-        firewall_rules_scanner.FirewallPolicyScanner,
-        '_upload_csv', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner.os',
-        autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.firewall_rules_scanner'
-        '.date_time',
-        autospec=True)
-    @mock.patch.object(
-        firewall_rules_scanner.csv_writer,
-        'write_csv', autospec=True)
-    @mock.patch.object(
-        firewall_rules_scanner.FirewallPolicyScanner,
-        '_output_results_to_db', autospec=True)
-    def test_output_results_gcs_email(
-        self, mock_output_results_to_db,
-        mock_write_csv, mock_date_time, mock_os, mock_upload_csv,
-        mock_notifier):
-
-        mock_os.path.abspath.return_value = (
-            self.fake_scanner_configs.get('output_path'))
-        mock_date_time.get_utc_now_datetime = mock.MagicMock()
-        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
-
-        fake_csv_name = 'fake.csv'
-        fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
-        fake_csv_file.name = fake_csv_name
-
-        fake_global_configs = {}
-        fake_global_configs['email_recipient'] = 'foo@bar.com'
-        self.scanner.global_configs = fake_global_configs
-        self.scanner.scanner_configs = self.fake_scanner_configs
-        violations = [
-            firewall_rules_scanner.firewall_rules_engine.RuleViolation(
-                resource_type='firewall_rule',
-                resource_id='p1',
-                full_name='fake_full_name111',
-                rule_id='rule1',
-                violation_type='violation1',
-                policy_names=['n1'],
-                recommended_actions=['a1'],
-                resource_data='fake_inventory_data111'
-            ),
-            firewall_rules_scanner.firewall_rules_engine.RuleViolation(
-                resource_type='firewall_rule',
-                resource_id='p2',
-                full_name='fake_full_name222',
-                rule_id='rule2',
-                violation_type='violation2',
-                policy_names=['n2'],
-                recommended_actions=['a2'],
-                resource_data='fake_inventory_data222'
-            ),
-        ]
-        rule_indices = {
-            'rule1': 1,
-            'rule2': 2,
-        }
-        self.scanner.rules_engine.rule_book.rule_indices.get.side_effect = (
-            lambda x, y: rule_indices.get(x, -1))
-        self.scanner._output_results(violations, '88888')
-        flattened_violations = [
-            {
-                'resource_id': v.resource_id,
-                'resource_type': v.resource_type,
-                'full_name': v.full_name,
-                'rule_name': v.rule_id,
-                'rule_index': i+1,
-                'violation_type': v.violation_type,
-                'violation_data': {
-                    'policy_names': v.policy_names,
-                    'recommended_actions': v.recommended_actions,
-                },
-                'resource_data': v.resource_data
-            } for i, v in enumerate(violations)]
-
-        mock_output_results_to_db.assert_called_once_with(
-            self.scanner, flattened_violations)
-        mock_write_csv.assert_called_once_with(
-            resource_name='violations',
-            data=flattened_violations,
-            write_header=True)
-        mock_upload_csv.assert_called_once_with(
-            self.scanner,
-            self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow,
-            fake_csv_name)
-        self.assertEquals(1, mock_notifier.process.call_count)
-        expected_message = {
-            'status': 'scanner_done',
-            'payload': {
-                'email_description': 'Firewall Rules Scan',
-                'email_sender':
-                self.scanner.global_configs.get('email_sender'),
-                'email_recipient':
-                self.scanner.global_configs.get('email_recipient'),
-                'sendgrid_api_key':
-                self.scanner.global_configs.get('sendgrid_api_key'),
-                'output_csv_name': fake_csv_name,
-                'output_filename': self.scanner.get_output_filename(
-                    self.fake_utcnow),
-                'now_utc': self.fake_utcnow,
-                'all_violations': flattened_violations,
-                'resource_counts': '88888',
-                'violation_errors': mock_output_results_to_db(
-                    self, flattened_violations),
-            }
-        }
-        mock_notifier.process.assert_called_once_with(expected_message)
 
     @parameterized.parameterized.expand([
         (
@@ -625,10 +460,6 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         scanner.rules_engine.rule_book.org_res_rel_dao = mock.MagicMock()
         scanner.run()
         self.assertEquals(1, mock_output_results_to_db.call_count)
-        violation_output_to_db = mock_output_results_to_db.call_args[0][1][0]
-        self.assertEquals(
-            [mock_resource1.name],
-            violation_output_to_db.get('violation_data').get('policy_names'))
 
     def assert_rule_violation_lists_equal(self, expected, violations):
         sorted(expected, key=lambda k: k.resource_id)

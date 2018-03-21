@@ -181,18 +181,19 @@ def run(inventory_index_id, progress_queue, service_config=None):
             progress_queue.put(log_message)
             LOGGER.info(log_message)
             chosen_pipeline = find_notifiers(notifier['name'])
-            notifier.append(chosen_pipeline(resource['resource'],
-                                            inventory_index_id,
-                                            violations[resource['resource']],
-                                            global_configs,
-                                            notifier_configs,
-                                            notifier['configuration']))
+            notifiers.append(chosen_pipeline(resource['resource'],
+                                             inventory_index_id,
+                                             violations[resource['resource']],
+                                             global_configs,
+                                             notifier_configs,
+                                             notifier['configuration']))
 
     # Run the notifiers.
     for notifier in notifiers:
         notifier.run()
 
-    if notifier_configs.get('violation').get('findings').get('enabled'):
+    if (notifier_configs.get('violation') and
+            notifier_configs.get('violation').get('findings').get('enabled')):
         findings.Findingsnotifier().run(
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
