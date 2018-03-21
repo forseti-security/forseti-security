@@ -12,19 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Email pipeline to perform notifications"""
+"""Email notifier to perform notifications"""
 
-
-# TODO: Investigate improving so we can avoid the pylint disable.
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.email import EmailUtil
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.notifiers import base_notification
 
 
 LOGGER = logger.get_logger(__name__)
@@ -32,11 +28,12 @@ LOGGER = logger.get_logger(__name__)
 TEMP_DIR = '/tmp'
 
 
-class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
-    """Email pipeline to perform notifications"""
+class EmailViolations(base_notification.BaseNotification):
+    """Email notifier to perform notifications"""
 
     def __init__(self, resource, cycle_timestamp,
-                 violations, global_configs, notifier_config, pipeline_config):
+                 violations, global_configs, notifier_config,
+                 notifications_config):
         """Initialization.
 
         Args:
@@ -45,15 +42,15 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
-            pipeline_config (dict): Pipeline configurations.
+            notifications_config (dict): notifier configurations.
         """
-        super(EmailViolationsPipeline, self).__init__(resource,
-                                                      cycle_timestamp,
-                                                      violations,
-                                                      global_configs,
-                                                      notifier_config,
-                                                      pipeline_config)
-        self.mail_util = EmailUtil(self.pipeline_config['sendgrid_api_key'])
+        super(EmailViolations, self).__init__(resource,
+                                              cycle_timestamp,
+                                              violations,
+                                              global_configs,
+                                              notifier_config,
+                                              notifications_config)
+        self.mail_util = EmailUtil(self.notifier_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -120,7 +117,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         return email_subject, email_content
 
     def _compose(self, **kwargs):
-        """Compose the email pipeline map
+        """Compose the email notifier map
 
         Args:
             **kwargs: Arbitrary keyword arguments.
@@ -155,8 +152,8 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
 
         try:
             self.mail_util.send(
-                email_sender=self.pipeline_config['sender'],
-                email_recipient=self.pipeline_config['recipient'],
+                email_sender=self.notifier_config['sender'],
+                email_recipient=self.notifier_config['recipient'],
                 email_subject=subject,
                 email_content=content,
                 content_type='text/html',
@@ -165,6 +162,6 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
             LOGGER.warn('Unable to send Violations email')
 
     def run(self):
-        """Run the email pipeline"""
+        """Run the email notifier"""
         email_notification = self._compose()
         self._send(notification=email_notification)

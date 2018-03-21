@@ -248,7 +248,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
             # Fields that have changed categories cannot be merged,
             # swap them here instead.
-            self._swap_config_fields(new_conf, self.v1_config.config)
+            self._swap_config_fields(self.v1_config.config, new_conf)
 
             files.write_data_to_yaml_file(new_conf, forseti_conf_path)
 

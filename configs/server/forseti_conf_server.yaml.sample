@@ -82,16 +82,16 @@ notifier:
     resources:
         - resource: policy_violations
           should_notify: false
-          pipelines:
+          notifiers:
             # Email violations
-            - name: email_violations_pipeline
+            - name: email_violations
               configuration:
                 sendgrid_api_key: ''
                 sender: ''
                 # Multiple recipients can be specified as comma-separated text.
                 recipient: ''
             # Upload violations to GCS.
-            - name: gcs_violations_pipeline
+            - name: gcs_violations
               configuration:
                 # gcs_path should begin with "gs://"
                 gcs_path: ''
@@ -99,7 +99,7 @@ notifier:
             # Create an incoming webhook in your organization's Slack setting, located at:
             # https://[your_org].slack.com/apps/manage/custom-integrations
             # Add the provided URL in the configuration below in `webhook_url`.
-            - name: slack_webhook_pipeline
+            - name: slack_webhook
               configuration:
                 webhook_url: ''
 

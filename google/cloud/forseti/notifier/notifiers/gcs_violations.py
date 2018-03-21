@@ -16,20 +16,18 @@
 
 import tempfile
 
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
-# pylint: enable=line-too-long
+from google.cloud.forseti.notifier.notifiers import base_notification
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
+class GcsViolations(base_notification.BaseNotification):
     """Upload violations to GCS."""
 
     def _get_output_filename(self):
@@ -52,7 +50,7 @@ class GcsViolationsPipeline(bnp.BaseNotificationPipeline):
             tmp_violations.flush()
 
             gcs_upload_path = '{}/{}'.format(
-                self.pipeline_config['gcs_path'],
+                self.notification_config['gcs_path'],
                 self._get_output_filename())
 
             if gcs_upload_path.startswith('gs://'):
