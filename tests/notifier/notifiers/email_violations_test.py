@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the Email Violations upload pipeline."""
+"""Tests the Email Violations upload notifier."""
 
 import filecmp
 import mock
@@ -47,7 +47,13 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
 
         self.violations = [
             {'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-ext/',
-             'inventory_data': '{"bindings": [{"members": ["projectEditor:be-p1-196611", "projectOwner:be-p1-196611"], "role": "roles/storage.legacyBucketOwner"}, {"members": ["projectViewer:be-p1-196611"], "role": "roles/storage.legacyBucketReader"}], "etag": "CAE=", "kind": "storage#policy", "resourceId": "projects/_/buckets/be-1-ext"}',
+             'inventory_data': (
+                 '{"bindings": [{"members": ["projectEditor:be-p1-196611", '
+                 '"projectOwner:be-p1-196611"], "role": "roles/storage.lega'
+                 'cyBucketOwner"}, {"members": ["projectViewer:be-p1-196611'
+                 '"], "role": "roles/storage.legacyBucketReader"}], "etag":'
+                 '"CAE=", "kind": "storage#policy", "resourceId": "projects'
+                 '/_/buckets/be-1-ext"}'),
              'resource_id': 'be-1-ext',
              'resource_type': 'bucket',
              'rule_index': 1,
@@ -56,13 +62,19 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
                                  'member': u'user:abc@example.com',
                                  'role': u'roles/storage.objectAdmin'},
              'violation_type': 'ADDED'},
-            {'full_name': 'o/5/f/4/folder/9/project/be-p1-196611/bucket/be-1-int/',
-             'inventory_data': '{"bindings": [{"members": ["projectEditor:be-p1-196611", "projectOwner:be-p1-196611"], "role": "roles/storage.legacyBucketOwner"}, {"members": ["projectViewer:be-p1-196611"], "role": "roles/storage.legacyBucketReader"}], "etag": "CAE=", "kind": "storage#policy", "resourceId": "projects/_/buckets/be-1-int"}',
+            {'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-int/',
+             'inventory_data': (
+                 '{"bindings": [{"members": ["projectEditor:be-p1-196611", '
+                 '"projectOwner:be-p1-196611"], "role": "roles/storage.lega'
+                 'cyBucketOwner"}, {"members": ["projectViewer:be-p1-196611'
+                 '"], "role": "roles/storage.legacyBucketReader"}], "etag":'
+                 '"CAE=", "kind": "storage#policy", "resourceId": "projects'
+                 '/_/buckets/be-1-int"}'),
              'resource_id': 'be-1-int',
              'resource_type': 'bucket',
              'rule_index': 1,
              'rule_name': 'Allow only service accounts to have access',
-             'violation_data': {'full_name': 'o/5/f/4/folder/9/project/be-p1-196611/bucket/be-1-int/',
+             'violation_data': {'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-int/',
                                 'member': u'user:ab.cd@example.com',
                                 'role': u'roles/storage.objectViewer'},
              'violation_type': 'ADDED'}]
