@@ -36,12 +36,33 @@ sudo systemctl restart forseti.service
 # Wait until the service is started
 sleep 10s
 
+# Set the output format to json
+forseti config format json
+
 # Run inventory command
 MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."
 forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
-sleep 10s
+sleep 5s
+
+LOOP_COUNT = 0
+MAX_LOOP_COUNT = 50
+# Wait until the model is initialized
+GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
+MODEL_STATUS=`eval GET_MODEL_STATUS`
+while [$MODEL_STATUS == 'CREATED'] && ((LOOP_COUNT <= MAX_LOOP_COUNT));
+do
+   MODEL_STATUS=`eval GET_MODEL_STATUS`
+   LOOP_COUNT=$((LOOP_COUNT + 1))
+   sleep 5s
+done
+
+if [MODEL_STATS == 'BROKEN']
+    then
+        echo "Model is broken, please contact discuss@forsetisecurity.org for support."
+        exit
+fi
 
 # Run model command
 echo "Using model ${MODEL_NAME} to run scanner"
