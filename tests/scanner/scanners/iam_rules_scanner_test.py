@@ -38,7 +38,6 @@ class IamRulesScannerTest(ForsetiTestCase):
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
             microsecond=0)
 
-        self.fake_scanner_configs = {'output_path': '/fake/output/path'}
         self.scanner = iam_rules_scanner.IamPolicyScanner(
             {}, {}, mock.MagicMock(), '', '', '')
         self._add_ancestor_bindings_test_data()
@@ -160,21 +159,6 @@ class IamRulesScannerTest(ForsetiTestCase):
         actual = self.scanner.get_output_filename(self.fake_utcnow)
         self.assertEquals(expected, actual)
 
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
-        autospec=True)
-    @mock.patch.object(
-        iam_rules_scanner.IamPolicyScanner,
-        '_upload_csv', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.os',
-        autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.date_time',
-        autospec=True)
-    @mock.patch.object(
-        iam_rules_scanner.csv_writer,
-        'write_csv', autospec=True)
     @mock.patch.object(
         iam_rules_scanner.IamPolicyScanner,
         '_output_results_to_db', autospec=True)
@@ -182,95 +166,13 @@ class IamRulesScannerTest(ForsetiTestCase):
         iam_rules_scanner.IamPolicyScanner,
         '_flatten_violations')
     # autospec on staticmethod will return noncallable mock
-    def test_output_results_local_no_email(
-        self, mock_flatten_violations, mock_output_results_to_db,
-        mock_write_csv, mock_date_time, mock_os, mock_upload_csv,
-        mock_notifier):
-        """Test output results for local output, and don't send email.
-
-        Setup:
-            * Create fake csv filename.
-            * Create fake file path.
-            * Mock the csv file name within the context manager.
-            * Mock the timestamp for the email.
-            * Mock the file path.
-
-        Expect:
-            * _upload_csv() is called once with the fake parameters.
-        """
-        mock_os.path.abspath.return_value = (
-            self.fake_scanner_configs.get('output_path'))
-        mock_date_time.get_utc_now_datetime = mock.MagicMock()
-        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
-
-        fake_csv_name = 'fake.csv'
-        fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
-        fake_csv_file.name = fake_csv_name
-
-        self.scanner.scanner_configs = self.fake_scanner_configs
-        self.scanner._output_results(None, '88888')
+    def test_output_results(
+            self, mock_flatten_violations, mock_output_results_to_db):
+        """Test _output_results() flattens / stores results."""
+        self.scanner._output_results(None)
 
         self.assertEqual(1, mock_flatten_violations.call_count)
         self.assertEqual(1, mock_output_results_to_db.call_count)
-        self.assertEqual(1, mock_write_csv.call_count)
-        mock_upload_csv.assert_called_once_with(
-            self.scanner,
-            self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow,
-            fake_csv_name)
-        self.assertEqual(0, mock_notifier.process.call_count)
-
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.notifier',
-        autospec=True)
-    @mock.patch.object(
-        iam_rules_scanner.IamPolicyScanner,
-        '_upload_csv', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.os',
-        autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.date_time',
-        autospec=True)
-    @mock.patch.object(
-        iam_rules_scanner.csv_writer,
-        'write_csv', autospec=True)
-    @mock.patch.object(
-        iam_rules_scanner.IamPolicyScanner,
-        '_output_results_to_db', autospec=True)
-    @mock.patch.object(
-        iam_rules_scanner.IamPolicyScanner,
-        '_flatten_violations')
-    # autospec on staticmethod will return noncallable mock
-    def test_output_results_gcs_email(
-        self, mock_flatten_violations, mock_output_results_to_db,
-        mock_write_csv, mock_date_time, mock_os, mock_upload_csv,
-        mock_notifier):
-
-        mock_os.path.abspath.return_value = (
-            self.fake_scanner_configs.get('output_path'))
-        mock_date_time.get_utc_now_datetime= mock.MagicMock()
-        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
-
-        fake_csv_name = 'fake.csv'
-        fake_csv_file = type(mock_write_csv.return_value.__enter__.return_value)
-        fake_csv_file.name = fake_csv_name
-
-        fake_global_configs = {}
-        fake_global_configs['email_recipient'] = 'foo@bar.com'
-        self.scanner.global_configs = fake_global_configs
-        self.scanner.scanner_configs = self.fake_scanner_configs
-        self.scanner._output_results(None, '88888')
-
-        self.assertEqual(1, mock_flatten_violations.call_count)
-        self.assertEqual(1, mock_output_results_to_db.call_count)
-        self.assertEqual(1, mock_write_csv.call_count)
-        mock_upload_csv.assert_called_once_with(
-            self.scanner,
-            self.fake_scanner_configs.get('output_path'),
-            self.fake_utcnow,
-            fake_csv_name)
-        self.assertEqual(1, mock_notifier.process.call_count)
 
     def test_add_bucket_ancestor_bindings_nothing_found(self):
         """Test bucket with an org / project ancestry w/o relevant policies.
