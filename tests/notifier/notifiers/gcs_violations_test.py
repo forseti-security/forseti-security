@@ -63,8 +63,9 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
 
         actual_filename = self.gvp._get_output_filename()
         self.assertEquals(
-            string_formats.VIOLATION_JSON_FMT.format(
-                self.gvp.resource, self.gvp.cycle_timestamp, expected_timestamp),
+            string_formats.VIOLATION_CSV_FMT.format(
+                self.gvp.resource, self.gvp.cycle_timestamp,
+                expected_timestamp),
             actual_filename)
 
     @mock.patch(
@@ -82,14 +83,14 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             self.gvp.notification_config['gcs_path'],
             fake_output_name)
 
-        mock_tmp_json = mock.MagicMock()
-        mock_tempfile.return_value.__enter__.return_value = mock_tmp_json
-        mock_tmp_json.name = fake_tmpname
-        mock_tmp_json.write = mock.MagicMock()
+        mock_tmp_csv = mock.MagicMock()
+        mock_tempfile.return_value.__enter__.return_value = mock_tmp_csv
+        mock_tmp_csv.name = fake_tmpname
+        mock_tmp_csv.write = mock.MagicMock()
 
         self.gvp.run()
 
-        mock_tmp_json.write.assert_called()
+        mock_tmp_csv.write.assert_called()
         mock_storage.return_value.put_text_file.assert_called_once_with(
             fake_tmpname, gcs_path)
 
