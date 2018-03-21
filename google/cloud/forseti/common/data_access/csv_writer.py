@@ -488,7 +488,7 @@ def write_csv(resource_name, data, write_header=False):
     csv_file = tempfile.NamedTemporaryFile(delete=False)
     try:
         writer = csv.DictWriter(csv_file, doublequote=False, escapechar='\\',
-                                quoting=csv.QUOTE_NONE,
+                                quoting=csv.QUOTE_NONE, extrasaction='ignore',
                                 fieldnames=CSV_FIELDNAME_MAP[resource_name])
         if write_header:
             writer.writeheader()
