@@ -55,6 +55,11 @@ inventory:
     # Valid values are: debug, info, warning, error
     loglevel: info
 
+    # Number of days to retain inventory data: 
+    #  -1 : (default) keep all previous data forever
+    #   0 : delete all previous inventory data before running
+    retention_days: -1
+
     pipelines:
         - resource: appengine
           enabled: true
@@ -253,3 +258,9 @@ notifier:
               configuration:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+    violation:
+      cscc:
+        enabled: true
+        # gcs_path should begin with "gs://"
+        gcs_path: gs://{CSCC_BUCKET}

@@ -19,25 +19,7 @@ See: https://cloud.google.com/iam/reference/rest/v1/Policy
 import re
 
 from google.cloud.security.common.gcp_type import errors
-
-
-# TODO: use the regex_util
-def _escape_and_globify(pattern_string):
-    """Given a pattern string with a glob, create actual regex pattern.
-
-    To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (THe actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
-    usernames before the "@".)
-
-    Args:
-        pattern_string (str): The pattern string of which to make a regex.
-
-    Returns:
-        str: The pattern string, escaped except for the "*", which is
-        transformed into ".+" (match on one or more characters).
-    """
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+'))
+from google.cloud.security.common.util.regex_util import escape_and_globify
 
 
 def _get_iam_members(members):
@@ -137,7 +119,7 @@ class IamPolicyBinding(object):
                  'role_name={}, members={}'.format(role_name, members)))
         self.role_name = role_name
         self.members = _get_iam_members(members)
-        self.role_pattern = re.compile(_escape_and_globify(role_name),
+        self.role_pattern = re.compile(escape_and_globify(role_name),
                                        flags=re.IGNORECASE)
 
     def __eq__(self, other):
@@ -217,7 +199,7 @@ class IamPolicyMember(object):
         self.name = member_name
         self.name_pattern = None
         if member_name:
-            self.name_pattern = re.compile(_escape_and_globify(self.name),
+            self.name_pattern = re.compile(escape_and_globify(self.name),
                                            flags=re.IGNORECASE)
 
     def __eq__(self, other):
@@ -288,6 +270,28 @@ class IamPolicyMember(object):
             member_name = identity_parts[1]
         return cls(identity_parts[0], member_name=member_name)
 
+    def _is_matching_domain(self, other):
+        """Determine whether IAM policy member belongs to domain.
+
+        This applies to a situation where a rule has a `domain` style `members`
+        specification and the policy to check specifies users.
+
+        Args:
+            other (IamPolicyMember): The policy binding member to check.
+
+        Returns:
+            bool: True if `other` is a member of the domain, False otherwise.
+        """
+        if self.type != 'domain' or other.type != 'user':
+            return False
+
+        try:
+            _, domain = other.name.rsplit('@', 1)
+        except ValueError:
+            return False
+
+        return self.name == domain
+
     def matches(self, other):
         """Determine if another member matches.
 
@@ -308,4 +312,5 @@ class IamPolicyMember(object):
         # {member_type}:{member_name} .
         return ((self.type == self.ALL_USERS) or
                 (self.type == other_member.type and
-                 self.name_pattern.match(other_member.name)))
+                 self.name_pattern.match(other_member.name)) or
+                self._is_matching_domain(other_member))

@@ -35,6 +35,7 @@ from google.cloud.security.common.data_access import violation_dao
 from google.cloud.security.common.util import file_loader
 from google.cloud.security.common.util import log_util
 from google.cloud.security.notifier.pipelines.base_notification_pipeline import BaseNotificationPipeline
+from google.cloud.security.notifier.pipelines.cscc_pipeline import CsccPipeline
 from google.cloud.security.notifier.pipelines import email_inventory_snapshot_summary_pipeline as inv_summary
 from google.cloud.security.notifier.pipelines import email_scanner_summary_pipeline as scanner_summary
 # pylint: enable=line-too-long
@@ -151,6 +152,28 @@ def process(message):
             payload.get('email_description'))
         return
 
+def run_cscc_notification(notifier_configs, violations_as_dict):
+    """Get the first class in the given sub module
+
+    Args:
+        notifier_configs (dict): Notification configuration.
+        violations_as_dict (tuple): Tuple of violations in dict format.
+    """
+    if not notifier_configs.get('violation'):
+        LOGGER.debug('Violation section is not found in forseti config file.')
+        return
+    if not notifier_configs.get('violation').get('cscc').get('enabled'):
+        LOGGER.debug('CSCC notification is not enabled.')
+        return
+    if '{CSCC_BUCKET}' in (
+            notifier_configs.get('violation').get('cscc').get('gcs_path')):
+        LOGGER.debug('CSCC bucket is not configured.')
+        return
+    CsccPipeline().run(
+        violations_as_dict,
+        notifier_configs.get('violation').get('cscc').get('gcs_path'))
+
+# pylint: disable=too-many-locals
 def main(_):
     """Main function.
 
@@ -180,10 +203,15 @@ def main(_):
 
     # get violations
     v_dao = violation_dao.ViolationDao(global_configs)
+    violations_as_dict = v_dao.get_all_violations(timestamp)
+
+    for i in violations_as_dict:
+        i['created_at_datetime'] = (
+            i.get('created_at_datetime').strftime('%Y-%m-%dT%H:%M:%SZ'))
+
     violations = {}
     try:
-        violations = violation_dao.map_by_resource(
-            v_dao.get_all_violations(timestamp))
+        violations = violation_dao.map_by_resource(violations_as_dict)
     except db_errors.MySQLError, e:
         # even if an error is raised we still want to continue execution
         # this is because if we don't have violations the Mysql table
@@ -221,6 +249,7 @@ def main(_):
     for pipeline in pipelines:
         pipeline.run()
 
+    run_cscc_notification(notifier_configs, violations_as_dict)
 
 if __name__ == '__main__':
     app.run()

@@ -29,7 +29,10 @@ RUN apt-get update && apt-get install -qq -y \
     python-dev \
     unzip \
     wget \
+    curl \
   && rm -rf /var/lib/apt/lists/*
+
+RUN curl https://sdk.cloud.google.com 1> /dev/null | bash
 
 RUN pip install -q --upgrade pip
 RUN pip install -q --upgrade \
