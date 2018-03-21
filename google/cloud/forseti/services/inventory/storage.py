@@ -737,15 +737,16 @@ class Storage(BaseStorage):
             new_rows = Inventory.from_resource(self.inventory_index, resource)
             old_rows = self._get_resource_rows(resource.key())
 
-            new_dict = {row.type_class: row for row in new_rows}
-            old_dict = {row.type_class: row for row in old_rows}
+            new_dict = {row.resource_data_class: row for row in new_rows}
+            old_dict = {row.resource_data_class: row for row in old_rows}
 
-            for type_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
-                if type_class in new_dict:
-                    if type_class in old_dict:
-                        old_dict[type_class].copy_inplace(new_dict[type_class])
+            for resource_data_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
+                if resource_data_class in new_dict:
+                    if resource_data_class in old_dict:
+                        old_dict[resource_data_class].copy_inplace(
+                            new_dict[resource_data_class])
                     else:
-                        self.session.add(new_dict[type_class])
+                        self.session.add(new_dict[resource_data_class])
             self.session.commit()
         except Exception as e:
             raise Exception('Resource Update Unsuccessful: {}'.format(e))
