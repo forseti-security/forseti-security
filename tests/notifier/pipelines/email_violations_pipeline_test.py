@@ -22,12 +22,12 @@ import unittest
 from datetime import datetime
 
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.pipelines import email_violations_pipeline
+from google.cloud.forseti.notifier.notifiers import email_violations
 from tests.unittest_utils import ForsetiTestCase
 
 
 class EmailViolationsPipelineTest(ForsetiTestCase):
-    """Tests for email_violations_pipeline."""
+    """Tests for email_violations."""
 
     def setUp(self):
         """Setup."""
@@ -66,7 +66,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
                                 'member': u'user:ab.cd@example.com',
                                 'role': u'roles/storage.objectViewer'},
              'violation_type': 'ADDED'}]
-        self.evp = email_violations_pipeline.EmailViolationsPipeline(
+        self.evp = email_violations.EmailViolations(
             'policy_violations',
             '2018-03-14T14:49:36.101287',
             self.violations,
@@ -77,8 +77,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
                 os.path.dirname(__file__), 'test_data_attachment.csv')
 
     @mock.patch(
-        'google.cloud.forseti.notifier.pipelines.email_violations_pipeline'
-        '.date_time',
+        'google.cloud.forseti.notifier.notifiers.email_violations.date_time',
         autospec=True)
     def test_get_output_filename(self, mock_date_time):
         """Test _get_output_filename()."""
