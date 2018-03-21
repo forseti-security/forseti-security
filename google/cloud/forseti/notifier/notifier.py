@@ -194,10 +194,10 @@ def run(inventory_index_id, progress_queue, service_config=None):
     for pipeline in pipelines:
         pipeline.run()
 
-    if notifier_configs.get('violation').get('findings').get('enabled'):
-        findings_pipeline.FindingsPipeline().run(
-            violations_as_dict,
-            notifier_configs.get('violation').get('findings').get('gcs_path'))
+    # if notifier_configs.get('violation').get('findings').get('enabled'):
+    #     findings_pipeline.FindingsPipeline().run(
+    #         violations_as_dict,
+    #         notifier_configs.get('violation').get('findings').get('gcs_path'))
 
     log_message = 'Notification completed!'
     progress_queue.put(log_message)
