@@ -82,7 +82,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         # Make attachment
         output_file_name = self._get_output_filename()
         output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
-        with csv_writer.write_csv(resource_name=self.resource,
+        with csv_writer.write_csv(resource_name='violations',
                                   data=self.violations,
                                   write_header=True) as csv_file:
             output_csv_name = csv_file.name
