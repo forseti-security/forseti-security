@@ -15,14 +15,17 @@
 """Email pipeline to perform notifications"""
 
 
+import shutil
+
+
 # TODO: Investigate improving so we can avoid the pylint disable.
 # pylint: disable=line-too-long
+from google.cloud.forseti.common.data_access import csv_writer
+from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.notifier.pipelines import base_notification_pipeline as bnp
 # pylint: enable=line-too-long
 
@@ -64,7 +67,7 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
-        output_filename = string_formats.VIOLATION_JSON_FMT.format(
+        output_filename = string_formats.VIOLATION_CSV_FMT.format(
             self.resource,
             self.cycle_timestamp,
             output_timestamp)
@@ -79,8 +82,14 @@ class EmailViolationsPipeline(bnp.BaseNotificationPipeline):
         # Make attachment
         output_file_name = self._get_output_filename()
         output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
-        with open(output_file_path, 'w+') as f:
-            f.write(parser.json_stringify(self.violations))
+        with csv_writer.write_csv(resource_name=self.resource,
+                                  data=self.violations,
+                                  write_header=True) as csv_file:
+            output_csv_name = csv_file.name
+            LOGGER.info('CSV filename: %s', output_csv_name)
+
+            shutil.copyfile(output_csv_name, output_file_path)
+
         return output_file_name
 
     def _make_attachment(self):
