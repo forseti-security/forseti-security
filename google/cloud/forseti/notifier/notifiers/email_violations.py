@@ -49,7 +49,8 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        self.mail_util = email.EmailUtil(self.notification_config['sendgrid_api_key'])
+        self.mail_util = email.EmailUtil(
+            self.notification_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
         """Create the output filename.
