@@ -1,0 +1,3 @@
+resource_id,resource_type,full_name,rule_index,rule_name,violation_type,violation_data
+be-1-ext,bucket,o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-ext/,1,Allow only service accounts to have access,ADDED,{'member': u'user:abc@example.com'\, 'role': u'roles/storage.objectAdmin'\, 'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-ext/'}
+be-1-int,bucket,o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-int/,1,Allow only service accounts to have access,ADDED,{'member': u'user:ab.cd@example.com'\, 'role': u'roles/storage.objectViewer'\, 'full_name': 'o/5/f/4/f/9/p/be-p1-196611/bucket/be-1-int/'}

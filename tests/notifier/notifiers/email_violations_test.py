@@ -86,7 +86,8 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
             {},
             fake_pipeline_conf)
         self.test_data_path = os.path.join(
-                os.path.dirname(__file__), 'test_data_attachment.csv')
+                os.path.dirname(__file__), 'test_data',
+                'expected_attachment.csv')
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.date_time',
