@@ -50,6 +50,102 @@ FAKE_GLOBAL_CONFIGS = {
         'max_appengine_api_calls_per_second': 20,
         'max_iam_api_calls_per_second': 20}
 
+FAKE_VIOLATIONS = {
+    'iap_violations': [
+        {'created_at_datetime': '2018-03-16T09:29:52Z',
+         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+         'id': 47L,
+         'inventory_data': {
+             'bindings': [
+                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketOwner'},
+                 {'members': ['pViewer:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketReader'}],
+             'etag': 'CAE=',
+             'kind': 'storage#policy',
+             'resourceId': 'ps/_/buckets/be-1-ext'},
+         'inventory_index_id': '2018-03-14T14:49:36.101287',
+         'resource_id': 'be-1-ext',
+         'resource_type': 'bucket',
+         'rule_index': 1L,
+         'rule_name': 'Allow only service accounts to have access',
+         'violation_data': {
+             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+             'member': 'user:altair@gcp.work',
+             'role': 'roles/storage.objectAdmin'},
+         'violation_hash': '15fda93a6fdd32d867064677cf07686f79b65d',
+         'violation_type': 'IAP_VIOLATION'},
+        {'created_at_datetime': '2018-03-16T09:29:52Z',
+         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+         'id': 48L,
+         'inventory_data': {
+             'bindings': [
+                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketOwner'},
+                 {'members': ['pViewer:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketReader'}],
+             'etag': 'CAE=',
+             'kind': 'storage#policy',
+             'resourceId': 'ps/_/buckets/be-1-ext'},
+         'inventory_index_id': '2018-03-14T14:49:36.101287',
+         'resource_id': 'be-1-ext',
+         'resource_type': 'bucket',
+         'rule_index': 1L,
+         'rule_name': 'Allow only service accounts to have access',
+         'violation_data': {
+             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+             'member': 'user:altair@gcp.work',
+             'role': 'roles/storage.admin'},
+         'violation_hash': 'f93745f39163060ceee17385b4677b91746382',
+         'violation_type': 'IAP_VIOLATION'}],
+    'policy_violations': [
+        {'created_at_datetime': '2018-03-16T09:29:52Z',
+         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+         'id': 1L,
+         'inventory_data': {
+             'bindings': [
+                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketOwner'},
+                 {'members': ['pViewer:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketReader'}],
+             'etag': 'CAE=',
+             'kind': 'storage#policy',
+             'resourceId': 'ps/_/buckets/be-1-ext'},
+         'inventory_index_id': '2018-03-14T14:49:36.101287',
+         'resource_id': 'be-1-ext',
+         'resource_type': 'bucket',
+         'rule_index': 1L,
+         'rule_name': 'Allow only service accounts to have access',
+         'violation_data': {
+             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+             'member': 'user:altair@gcp.work',
+             'role': 'roles/storage.objectAdmin'},
+             'violation_hash': '15fda93a6fdd32d867064677cf07686f79b',
+             'violation_type': 'ADDED'},
+        {'created_at_datetime': '2018-03-16T09:29:52Z',
+         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+         'id': 2L,
+         'inventory_data': {
+             'bindings': [
+                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketOwner'},
+                 {'members': ['pViewer:be-p1-196611'],
+                  'role': 'roles/storage.legacyBucketReader'}],
+             'etag': 'CAE=',
+             'kind': 'storage#policy',
+             'resourceId': 'ps/_/buckets/be-1-ext'},
+         'inventory_index_id': '2018-03-14T14:49:36.101287',
+         'resource_id': 'be-1-ext',
+         'resource_type': 'bucket',
+         'rule_index': 1L,
+         'rule_name': 'Allow only service accounts to have access',
+         'violation_data': {
+             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
+             'member': 'user:altair@gcp.work',
+             'role': 'roles/storage.admin'},
+             'violation_hash': 'f93745f39163060ceee17385b4677b91746',
+             'violation_type': 'ADDED'}]}
+
 class NotifierTest(ForsetiTestCase):
     def setUp(self):
         pass
@@ -91,6 +187,29 @@ class NotifierTest(ForsetiTestCase):
             The local find_notifiers() function is never called -> no notifiers
             are looked up, istantiated or run."""
         mock_dao.map_by_resource.return_value = dict()
+        mock_srvc_cfg = mock.MagicMock()
+        mock_srvc_cfg.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
+        mock_srvc_cfg.get_notifier_config.return_value = FAKE_NOTIFIER_CONFIGS
+        notifier.run('iid-1-2-3', mock.MagicMock(), mock_srvc_cfg)
+        self.assertFalse(mock_find_notifiers.called)
+
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
+    def test_notifications_for_nonempty_violations(
+        self, mock_dao, mock_find_notifiers):
+        """The email/GCS upload notifiers are instantiated/run.
+
+        Setup:
+            Mock the scanner_dao and make its map_by_resource() function return
+            the FAKE_VIOLATIONS dict
+
+        Expected outcome:
+            The local find_notifiers() is called with with 'email_violations'
+            and 'gcs_violations' respectively. These 2 notifiers are
+            instantiated and run."""
+        mock_dao.map_by_resource.return_value = FAKE_VIOLATIONS
         mock_srvc_cfg = mock.MagicMock()
         mock_srvc_cfg.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_srvc_cfg.get_notifier_config.return_value = FAKE_NOTIFIER_CONFIGS
