@@ -36,12 +36,12 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
-  - name: sample BigQuery rule to search for datasets accessible by groups with gmail.com addresses
+  - name: sample BigQuery rule to search for datasets accessible by groups with googlegroups.com addresses
     dataset_id: '*'
     special_group: '*'
     user_email: '*'
     domain: '*'
-    group_email: '*@gmail.com'
+    group_email: '*@googlegroups.com'
     role: '*'
     resource:
       - type: organization
