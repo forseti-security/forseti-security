@@ -15,19 +15,15 @@
 """Scanner for the IAM rules engine."""
 
 import json
-import os
 import sys
 
-from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.scanner.audit import iam_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
@@ -152,65 +148,14 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     'inventory_data': violation.inventory_data
                 }
 
-    def _output_results(self, all_violations, resource_counts):
+    def _output_results(self, all_violations):
         """Output results.
 
         Args:
-            all_violations (list): A list of violations
-            resource_counts (dict): Resource count map.
+            all_violations (list): A list of violations.
         """
-        resource_name = 'violations'
-
-        all_violations = list(self._flatten_violations(all_violations))
-        violation_errors = self._output_results_to_db(all_violations)
-
-        # Write the CSV for all the violations.
-        # TODO: Move this into the base class? The IAP scanner version of this
-        # is a wholesale copy.
-        if self.scanner_configs.get('output_path'):
-            LOGGER.info('Writing violations to csv...')
-            output_csv_name = None
-            with csv_writer.write_csv(resource_name=resource_name,
-                                      data=all_violations,
-                                      write_header=True) as csv_file:
-                output_csv_name = csv_file.name
-                LOGGER.info('CSV filename: %s', output_csv_name)
-
-                # Scanner timestamp for output file and email.
-                now_utc = date_time.get_utc_now_datetime()
-
-                output_path = self.scanner_configs.get('output_path')
-                if not output_path.startswith('gs://'):
-                    if not os.path.exists(
-                            self.scanner_configs.get('output_path')):
-                        os.makedirs(output_path)
-                    output_path = os.path.abspath(output_path)
-                self._upload_csv(output_path, now_utc, output_csv_name)
-
-                # Send summary email.
-                # TODO: Untangle this email by looking for the csv content
-                # from the saved copy.
-                if self.global_configs.get('email_recipient') is not None:
-                    payload = {
-                        'email_description': 'Policy Scan',
-                        'email_sender':
-                            self.global_configs.get('email_sender'),
-                        'email_recipient':
-                            self.global_configs.get('email_recipient'),
-                        'sendgrid_api_key':
-                            self.global_configs.get('sendgrid_api_key'),
-                        'output_csv_name': output_csv_name,
-                        'output_filename': self.get_output_filename(now_utc),
-                        'now_utc': now_utc,
-                        'all_violations': all_violations,
-                        'resource_counts': resource_counts,
-                        'violation_errors': violation_errors
-                    }
-                    message = {
-                        'status': 'scanner_done',
-                        'payload': payload
-                    }
-                    notifier.process(message)
+        all_violations = self._flatten_violations(all_violations)
+        self._output_results_to_db(all_violations)
 
     def _find_violations(self, policies):
         """Find violations in the policies.
@@ -308,7 +253,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
     def run(self):
         """Runs the data collection."""
 
-        policy_data, resource_counts = self._retrieve()
+        policy_data, _ = self._retrieve()
         _add_bucket_ancestor_bindings(policy_data)
         all_violations = self._find_violations(policy_data)
-        self._output_results(all_violations, resource_counts)
+        self._output_results(all_violations)
