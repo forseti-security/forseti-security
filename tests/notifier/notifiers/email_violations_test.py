@@ -93,8 +93,8 @@ class EmailViolationsTest(ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.date_time',
         autospec=True)
-    def test_make_attachment(self, mock_date_time):
-        """Test _get_output_filename()."""
+    def test_make_attachment_csv_name(self, mock_date_time):
+        """Test the CSV attachment name()."""
         mock_date_time.get_utc_now_datetime = mock.MagicMock()
         mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
         expected_timestamp = self.fake_utcnow.strftime(
@@ -111,8 +111,8 @@ class EmailViolationsTest(ForsetiTestCase):
         'google.cloud.forseti.notifier.notifiers.email_violations.email',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
-    def test__make_attachment(self, mock_os, mock_mail_util):
-        """Test _make_attachment()."""
+    def test_make_attachment_csv_correctness(self, mock_os, mock_mail_util):
+        """Test the CSV file correctness."""
         mail_util = mock.MagicMock(spec=EmailUtil)
         mock_mail_util.EmailUtil.return_value = mail_util
         evp = email_violations.EmailViolations(*self.evp_init_args)
