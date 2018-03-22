@@ -21,12 +21,13 @@ import unittest
 
 from datetime import datetime
 
+from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import email_violations
 from tests.unittest_utils import ForsetiTestCase
 
 
-class EmailViolationsPipelineTest(ForsetiTestCase):
+class EmailViolationsTest(ForsetiTestCase):
     """Tests for email_violations."""
 
     def setUp(self):
@@ -35,13 +36,13 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
             year=1901, month=2, day=3, hour=4, minute=5, second=6,
             microsecond=7)
 
-        fake_global_conf = {
+        self.fake_global_conf = {
             'db_host': 'x',
             'db_name': 'y',
             'db_user': 'z',
         }
 
-        fake_pipeline_conf = {
+        self.fake_pipeline_conf = {
             'sendgrid_api_key': 'dsvgig9y0u[puv'
         }
 
@@ -78,40 +79,64 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
                                 'member': u'user:ab.cd@example.com',
                                 'role': u'roles/storage.objectViewer'},
              'violation_type': 'ADDED'}]
-        self.evp = email_violations.EmailViolations(
-            'policy_violations',
-            '2018-03-14T14:49:36.101287',
-            self.violations,
-            fake_global_conf,
-            {},
-            fake_pipeline_conf)
         self.expected_attachment_path = os.path.join(
                 os.path.dirname(__file__), 'test_data',
                 'expected_attachment.csv')
+        self.evp_init_args = [
+            'policy_violations',
+            '2018-03-14T14:49:36.101287',
+            self.violations,
+            self.fake_global_conf,
+            {},
+            self.fake_pipeline_conf]
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.date_time',
         autospec=True)
-    def test_get_output_filename(self, mock_date_time):
+    def test_make_attachment(self, mock_date_time):
         """Test _get_output_filename()."""
         mock_date_time.get_utc_now_datetime = mock.MagicMock()
         mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
         expected_timestamp = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        actual_filename = self.evp._get_output_filename()
+        evp = email_violations.EmailViolations(*self.evp_init_args)
+        attachment = evp._make_attachment()
         self.assertEquals(
             string_formats.VIOLATION_CSV_FMT.format(
-                self.evp.resource, self.evp.cycle_timestamp,
-                expected_timestamp),
-            actual_filename)
+                evp.resource, evp.cycle_timestamp, expected_timestamp),
+            attachment.filename)
 
-    def test_write_temp_attachment(self):
-        """Test _write_temp_attachment()."""
-        file_name = self.evp._write_temp_attachment()
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifiers.email_violations.email',
+        autospec=True)
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
+    def test__make_attachment(self, mock_os, mock_mail_util):
+        """Test _make_attachment()."""
+        mail_util = mock.MagicMock(spec=EmailUtil)
+        mock_mail_util.EmailUtil.return_value = mail_util
+        evp = email_violations.EmailViolations(*self.evp_init_args)
+        evp._make_attachment()
+        self.assertTrue(mail_util.create_attachment.called)
         self.assertTrue(
-            filecmp.cmp('/tmp/%s' % file_name,
-                        self.expected_attachment_path, shallow=False))
+            filecmp.cmp(
+                mail_util.create_attachment.call_args[1]['file_location'],
+                self.expected_attachment_path, shallow=False))
+
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifiers.email_violations.email',
+        autospec=True)
+    def test_make_attachment_no_temp_files_left(self, mock_mail_util):
+        """Test _make_attachment() leaves no temp files behind."""
+        mail_util = mock.MagicMock(spec=EmailUtil)
+        mock_mail_util.EmailUtil.return_value = mail_util
+        evp = email_violations.EmailViolations(*self.evp_init_args)
+        evp._make_attachment()
+        self.assertTrue(mail_util.create_attachment.called)
+        self.assertFalse(
+            os.path.exists(
+                mail_util.create_attachment.call_args[1]['file_location']))
+
 
 if __name__ == '__main__':
     unittest.main()

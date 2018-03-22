@@ -14,10 +14,8 @@
 
 """Email notifier to perform notifications"""
 
-import shutil
-
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.util.email import EmailUtil
+from google.cloud.forseti.common.util import email
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
@@ -51,7 +49,7 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        self.mail_util = EmailUtil(self.notification_config['sendgrid_api_key'])
+        self.mail_util = email.EmailUtil(self.notification_config['sendgrid_api_key'])
 
     def _get_output_filename(self):
         """Create the output filename.
@@ -68,36 +66,22 @@ class EmailViolations(base_notification.BaseNotification):
             output_timestamp)
         return output_filename
 
-    def _write_temp_attachment(self):
-        """Write the attachment to a temp file.
-
-        Returns:
-            str: The output filename for the violations json just written.
-        """
-        # Make attachment
-        output_file_name = self._get_output_filename()
-        output_file_path = '{}/{}'.format(TEMP_DIR, output_file_name)
-        with csv_writer.write_csv(resource_name='violations',
-                                  data=self.violations,
-                                  write_header=True) as csv_file:
-            output_csv_name = csv_file.name
-            LOGGER.info('CSV filename: %s', output_csv_name)
-
-            shutil.copyfile(output_csv_name, output_file_path)
-
-        return output_file_name
-
     def _make_attachment(self):
         """Create the attachment object.
 
         Returns:
             attachment: SendGrid attachment object.
         """
-        output_file_name = self._write_temp_attachment()
-        attachment = self.mail_util.create_attachment(
-            file_location='{}/{}'.format(TEMP_DIR, output_file_name),
-            content_type='text/csv', filename=output_file_name,
-            content_id='Violations')
+        output_file_name = self._get_output_filename()
+        with csv_writer.write_csv(resource_name='violations',
+                                  data=self.violations,
+                                  write_header=True) as csv_file:
+            output_csv_name = csv_file.name
+            LOGGER.info('CSV filename: %s', output_csv_name)
+            attachment = self.mail_util.create_attachment(
+                file_location=csv_file.name,
+                content_type='text/csv', filename=output_file_name,
+                content_id='Violations')
 
         return attachment
 
