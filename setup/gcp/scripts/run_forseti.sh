@@ -46,19 +46,19 @@ forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
 sleep 5s
 
-LOOP_COUNT = 0
-MAX_LOOP_COUNT = 50
+LOOP_COUNT=0
+MAX_LOOP_COUNT=50
 # Wait until the model is initialized
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
-MODEL_STATUS=`eval GET_MODEL_STATUS`
-while [$MODEL_STATUS == 'CREATED'] && ((LOOP_COUNT <= MAX_LOOP_COUNT));
+MODEL_STATUS=`eval $GET_MODEL_STATUS`
+while [ "$MODEL_STATUS" == "CREATED" ] && ((LOOP_COUNT <= MAX_LOOP_COUNT));
 do
-   MODEL_STATUS=`eval GET_MODEL_STATUS`
+   MODEL_STATUS=`eval $GET_MODEL_STATUS`
    LOOP_COUNT=$((LOOP_COUNT + 1))
    sleep 5s
 done
 
-if [MODEL_STATS == 'BROKEN']
+if [ "$MODEL_STATUS" == "BROKEN" ]
     then
         echo "Model is broken, please contact discuss@forsetisecurity.org for support."
         exit
