@@ -171,8 +171,8 @@ function main() {
     echo "Updating site links within '_docs/${RELEASE_VERSION}/' ..."
     update_docs_links
 
-    echo "Snapshotting latest includes to '_includes/docs/${RELEASE_VERSION}'
-        ..."
+    echo "Snapshotting latest includes to '_includes/docs/${RELEASE_VERSION}'" \
+         "..."
     snapshot_includes
 
     echo "Updating site links within '_includes/docs/${RELEASE_VERSION}' ..."
