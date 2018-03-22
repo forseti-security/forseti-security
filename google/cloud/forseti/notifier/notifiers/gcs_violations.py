@@ -14,12 +14,11 @@
 
 """Upload violations to GCS."""
 
-import tempfile
 
+from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 
@@ -34,20 +33,21 @@ class GcsViolations(base_notification.BaseNotification):
         """Create the output filename.
 
         Returns:
-            str: The output filename for the violations json.
+            str: The output filename for the violations CSV file.
         """
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
-        output_filename = string_formats.VIOLATION_JSON_FMT.format(
+        output_filename = string_formats.VIOLATION_CSV_FMT.format(
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
     def run(self):
-        """Generate the temporary json file and upload to GCS."""
-        with tempfile.NamedTemporaryFile() as tmp_violations:
-            tmp_violations.write(parser.json_stringify(self.violations))
-            tmp_violations.flush()
+        """Generate the temporary CSV file and upload to GCS."""
+        with csv_writer.write_csv(resource_name='violations',
+                                  data=self.violations,
+                                  write_header=True) as csv_file:
+            LOGGER.info('CSV filename: %s', csv_file.name)
 
             gcs_upload_path = '{}/{}'.format(
                 self.notification_config['gcs_path'],
@@ -55,5 +55,4 @@ class GcsViolations(base_notification.BaseNotification):
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
-                storage_client.put_text_file(
-                    tmp_violations.name, gcs_upload_path)
+                storage_client.put_text_file(csv_file.name, gcs_upload_path)
