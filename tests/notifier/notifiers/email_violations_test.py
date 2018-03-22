@@ -85,7 +85,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
             fake_global_conf,
             {},
             fake_pipeline_conf)
-        self.test_data_path = os.path.join(
+        self.expected_attachment_path = os.path.join(
                 os.path.dirname(__file__), 'test_data',
                 'expected_attachment.csv')
 
@@ -111,7 +111,7 @@ class EmailViolationsPipelineTest(ForsetiTestCase):
         file_name = self.evp._write_temp_attachment()
         self.assertTrue(
             filecmp.cmp('/tmp/%s' % file_name,
-                        self.test_data_path, shallow=False))
+                        self.expected_attachment_path, shallow=False))
 
 if __name__ == '__main__':
     unittest.main()
