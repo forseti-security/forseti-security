@@ -17,6 +17,8 @@ from datetime import datetime
 import mock
 
 from google.cloud.forseti.notifier import notifier
+from google.cloud.forseti.notifier.notifiers import email_violations
+from google.cloud.forseti.notifier.notifiers import gcs_violations
 from tests.unittest_utils import ForsetiTestCase
 
 FAKE_NOTIFIER_CONFIGS = {
@@ -194,11 +196,17 @@ class NotifierTest(ForsetiTestCase):
         self.assertFalse(mock_find_notifiers.called)
 
     @mock.patch(
+        ('google.cloud.forseti.notifier.notifiers.email_violations'
+         '.EmailViolations'), autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifiers.gcs_violations.GcsViolations',
+        autospec=True)
+    @mock.patch(
         'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
     def test_notifications_for_nonempty_violations(
-        self, mock_dao, mock_find_notifiers):
+        self, mock_dao, mock_find_notifiers, mock_gcs_cls, mock_email_cls):
         """The email/GCS upload notifiers are instantiated/run.
 
         Setup:
@@ -213,5 +221,13 @@ class NotifierTest(ForsetiTestCase):
         mock_srvc_cfg = mock.MagicMock()
         mock_srvc_cfg.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_srvc_cfg.get_notifier_config.return_value = FAKE_NOTIFIER_CONFIGS
+
+        mock_email_obj = mock.MagicMock(spec=email_violations.EmailViolations)
+        mock_email_cls.return_value = mock_email_obj
+        mock_gcs_obj = mock.MagicMock(spec=gcs_violations.GcsViolations)
+        mock_gcs_cls.return_value = mock_gcs_obj
+        mock_find_notifiers.side_effect = [mock_email_cls, mock_gcs_cls]
         notifier.run('iid-1-2-3', mock.MagicMock(), mock_srvc_cfg)
-        self.assertFalse(mock_find_notifiers.called)
+        self.assertTrue(mock_find_notifiers.called)
+        self.assertTrue(mock_email_obj.run.called)
+        self.assertTrue(mock_gcs_obj.run.called)
