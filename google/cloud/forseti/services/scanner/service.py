@@ -102,12 +102,11 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             model_name (str): Model name.
             progress_queue (Queue): Progress queue.
         """
-        # pylint: disable=broad-except
         try:
             self.scanner.run(model_name,
                              progress_queue,
                              self.service_config)
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-except
             LOGGER.error(e)
             progress_queue.put('Error occurred during the scanning process.')
             progress_queue.put(None)
