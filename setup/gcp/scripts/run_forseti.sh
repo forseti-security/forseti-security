@@ -48,7 +48,7 @@ sleep 5s
 
 LOOP_COUNT=0
 MAX_LOOP_COUNT=50
-# Wait until the model is initialized
+# Waiting for models to be finished building.
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
 while [ "$MODEL_STATUS" == "CREATED" ] && ((LOOP_COUNT <= MAX_LOOP_COUNT));
