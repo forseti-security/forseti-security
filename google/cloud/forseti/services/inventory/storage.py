@@ -172,7 +172,7 @@ class Inventory(BASE):
     id = Column(Integer, primary_key=True, autoincrement=True)
     inventory_index_id = Column(String(256))
     resource_type = Column(Text)
-    resource_data_class = Column(Text)
+    category = Column(Text)
     resource_id = Column(Text)
     resource_data = Column(Text(16777215))
     parent_resource_type = Column(Text)
@@ -203,7 +203,7 @@ class Inventory(BASE):
 
         rows = [Inventory(
             inventory_index_id=index.id,
-            resource_data_class=InventoryTypeClass.RESOURCE,
+            category=InventoryTypeClass.RESOURCE,
             resource_id=resource.key(),
             resource_type=resource.type(),
             resource_data=json.dumps(resource.data(), sort_keys=True),
@@ -216,7 +216,7 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    resource_data_class=InventoryTypeClass.IAM_POLICY,
+                    category=InventoryTypeClass.IAM_POLICY,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(iam_policy, sort_keys=True),
@@ -229,7 +229,7 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    resource_data_class=InventoryTypeClass.GCS_POLICY,
+                    category=InventoryTypeClass.GCS_POLICY,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(gcs_policy, sort_keys=True),
@@ -242,7 +242,7 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    resource_data_class=InventoryTypeClass.DATASET_POLICY,
+                    category=InventoryTypeClass.DATASET_POLICY,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(dataset_policy, sort_keys=True),
@@ -255,7 +255,7 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    resource_data_class=InventoryTypeClass.BILLING_INFO,
+                    category=InventoryTypeClass.BILLING_INFO,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(billing_info, sort_keys=True),
@@ -268,7 +268,7 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    resource_data_class=InventoryTypeClass.ENABLED_APIS,
+                    category=InventoryTypeClass.ENABLED_APIS,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(enabled_apis, sort_keys=True),
@@ -281,7 +281,7 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    resource_data_class=InventoryTypeClass.SERVICE_CONFIG,
+                    category=InventoryTypeClass.SERVICE_CONFIG,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(service_config, sort_keys=True),
@@ -300,7 +300,7 @@ class Inventory(BASE):
 
         """
 
-        self.resource_data_class = new_row.resource_data_class
+        self.category = new_row.category
         self.resource_id = new_row.resource_id
         self.resource_type = new_row.resource_type
         self.resource_data = new_row.resource_data
@@ -341,14 +341,14 @@ class Inventory(BASE):
 
         return self.resource_type
 
-    def get_resource_data_class(self):
+    def get_category(self):
         """Get the row's resource type class.
 
         Returns:
             str: resource type class.
         """
 
-        return self.resource_data_class
+        return self.category
 
     def get_parent_resource_id(self):
         """Get the row's parent key.
@@ -737,16 +737,16 @@ class Storage(BaseStorage):
             new_rows = Inventory.from_resource(self.inventory_index, resource)
             old_rows = self._get_resource_rows(resource.key())
 
-            new_dict = {row.resource_data_class: row for row in new_rows}
-            old_dict = {row.resource_data_class: row for row in old_rows}
+            new_dict = {row.category: row for row in new_rows}
+            old_dict = {row.category: row for row in old_rows}
 
-            for resource_data_class in InventoryTypeClass.SUPPORTED_TYPECLASS:
-                if resource_data_class in new_dict:
-                    if resource_data_class in old_dict:
-                        old_dict[resource_data_class].copy_inplace(
-                            new_dict[resource_data_class])
+            for category in InventoryTypeClass.SUPPORTED_TYPECLASS:
+                if category in new_dict:
+                    if category in old_dict:
+                        old_dict[category].copy_inplace(
+                            new_dict[category])
                     else:
-                        self.session.add(new_dict[resource_data_class])
+                        self.session.add(new_dict[category])
             self.session.commit()
         except Exception as e:
             raise Exception('Resource Update Unsuccessful: {}'.format(e))
@@ -809,35 +809,35 @@ class Storage(BaseStorage):
 
         if fetch_iam_policy:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.IAM_POLICY)
+                Inventory.category == InventoryTypeClass.IAM_POLICY)
 
         elif fetch_gcs_policy:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.GCS_POLICY)
+                Inventory.category == InventoryTypeClass.GCS_POLICY)
 
         elif fetch_dataset_policy:
             filters.append(
-                Inventory.resource_data_class ==
+                Inventory.category ==
                 InventoryTypeClass.DATASET_POLICY)
 
         elif fetch_billing_info:
             filters.append(
-                Inventory.resource_data_class ==
+                Inventory.category ==
                 InventoryTypeClass.BILLING_INFO)
 
         elif fetch_enabled_apis:
             filters.append(
-                Inventory.resource_data_class ==
+                Inventory.category ==
                 InventoryTypeClass.ENABLED_APIS)
 
         elif fetch_service_config:
             filters.append(
-                Inventory.resource_data_class ==
+                Inventory.category ==
                 InventoryTypeClass.SERVICE_CONFIG)
 
         else:
             filters.append(
-                Inventory.resource_data_class == InventoryTypeClass.RESOURCE)
+                Inventory.category == InventoryTypeClass.RESOURCE)
 
         if type_list:
             filters.append(Inventory.resource_type.in_(type_list))
@@ -877,7 +877,7 @@ class Storage(BaseStorage):
                 Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.resource_id == Inventory.parent_resource_id,
                 Inventory.resource_type == Inventory.parent_resource_type,
-                Inventory.resource_data_class == InventoryTypeClass.RESOURCE
+                Inventory.category == InventoryTypeClass.RESOURCE
             )).first()
 
     def type_exists(self,
@@ -892,7 +892,7 @@ class Storage(BaseStorage):
         """
         return self.session.query(exists().where(and_(
             Inventory.inventory_index_id == self.inventory_index.id,
-            Inventory.resource_data_class == InventoryTypeClass.RESOURCE,
+            Inventory.category == InventoryTypeClass.RESOURCE,
             Inventory.resource_type.in_(type_list)
         ))).scalar()
 

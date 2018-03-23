@@ -603,7 +603,7 @@ class InventoryImporter(object):
         """
         parent, full_res_name = self._get_parent(service_config)
         sc_type_name = to_type_name(
-            service_config.get_resource_data_class(),
+            service_config.get_category(),
             parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         self.session.add(
@@ -611,7 +611,7 @@ class InventoryImporter(object):
                 full_name=sc_res_name,
                 type_name=sc_type_name,
                 name=service_config.get_resource_id(),
-                type=service_config.get_resource_data_class(),
+                type=service_config.get_category(),
                 data=service_config.get_resource_data_raw(),
                 parent=parent))
 
@@ -643,7 +643,7 @@ class InventoryImporter(object):
         # as a resource.
         parent, full_res_name = self._get_parent(dataset_policy)
         policy_type_name = to_type_name(
-            dataset_policy.get_resource_data_class(),
+            dataset_policy.get_category(),
             parent.type_name)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         self.session.add(
@@ -651,7 +651,7 @@ class InventoryImporter(object):
                 full_name=policy_res_name,
                 type_name=policy_type_name,
                 name=dataset_policy.get_resource_id(),
-                type=dataset_policy.get_resource_data_class(),
+                type=dataset_policy.get_category(),
                 data=dataset_policy.get_resource_data_raw(),
                 parent=parent))
 
@@ -683,7 +683,7 @@ class InventoryImporter(object):
         """
         parent, full_res_name = self._get_parent(iam_policy)
         iam_policy_type_name = to_type_name(
-            iam_policy.get_resource_data_class(),
+            iam_policy.get_category(),
             ':'.join(parent.type_name.split('/')))
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
@@ -693,7 +693,7 @@ class InventoryImporter(object):
                 full_name=iam_policy_full_res_name,
                 type_name=iam_policy_type_name,
                 name=iam_policy.get_resource_id(),
-                type=iam_policy.get_resource_data_class(),
+                type=iam_policy.get_category(),
                 data=iam_policy.get_resource_data_raw(),
                 parent=parent))
 
