@@ -486,7 +486,7 @@ class RuleTest(ForsetiTestCase):
                           '0.0.0.0/0'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
               },
           ],
       ),
@@ -537,7 +537,7 @@ class RuleTest(ForsetiTestCase):
                           '0.0.0.0/0'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
               },
               {
                   'resource_type': 'firewall_rule',
@@ -551,7 +551,7 @@ class RuleTest(ForsetiTestCase):
                           '0.0.0.0/0 2'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "all"}], "direction": "INGRESS", "name": "0.0.0.0/0 2", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0", "1.1.1.1"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "all"}], "direction": "INGRESS", "name": "0.0.0.0/0 2", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0", "1.1.1.1"]}']
               },
           ],
       ),
@@ -624,7 +624,7 @@ class RuleTest(ForsetiTestCase):
                           'Any to 443 on https-server'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["https-server", "tag2"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["https-server", "tag2"]}']
               },
           ],
       ),
@@ -683,7 +683,7 @@ class RuleTest(ForsetiTestCase):
                           'Any to 443 on https-server'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["tag1", "tag2"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["tag1", "tag2"]}']
               },
               {
                   'resource_type': 'firewall_rule',
@@ -697,7 +697,7 @@ class RuleTest(ForsetiTestCase):
                           'Any to 80/443 to https-server and tag3'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["80", "443"]}], "direction": "INGRESS", "name": "Any to 80/443 to https-server and tag3", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["https-server", "tag3"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["80", "443"]}], "direction": "INGRESS", "name": "Any to 80/443 to https-server and tag3", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["https-server", "tag3"]}']
               },
           ],
       ),
@@ -791,7 +791,7 @@ class RuleTest(ForsetiTestCase):
                           'Allow SSH to tag from 1.1.1.1: rule 0'
                       ]
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "Allow 22 from 1.1.1.1", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["1.1.1.2"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "Allow 22 from 1.1.1.1", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["1.1.1.2"]}']
               },
           ],
       ),
@@ -932,7 +932,7 @@ class RuleTest(ForsetiTestCase):
                       ],
                       'UPDATE_FIREWALL_RULES': [],
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "SSH from 1.1.1.1", "network": "network", "sourceRanges": ["1.1.1.1"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "443 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["80"]}], "direction": "INGRESS", "name": "80 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "SSH from 1.1.1.1", "network": "network", "sourceRanges": ["1.1.1.1"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "443 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["80"]}], "direction": "INGRESS", "name": "80 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}']
               },
           ],
       ),
@@ -1001,7 +1001,7 @@ class RuleTest(ForsetiTestCase):
                       ],
                       'UPDATE_FIREWALL_RULES': [],
                   },
-                  'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "SSH from 1.1.1.1", "network": "network", "sourceRanges": ["1.1.1.1"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["80"]}], "direction": "INGRESS", "name": "80 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}']
+                  'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "SSH from 1.1.1.1", "network": "network", "sourceRanges": ["1.1.1.1"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["80"]}], "direction": "INGRESS", "name": "80 from 10.0.0.0/8", "network": "network", "sourceRanges": ["10.0.0.0/8"]}']
               },
           ],
       ),
@@ -1455,7 +1455,7 @@ class RuleBookTest(ForsetiTestCase):
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']},
-                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
+                resource_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
             )
         ]
         project1_violations = [
@@ -1467,7 +1467,7 @@ class RuleBookTest(ForsetiTestCase):
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'DELETE_FIREWALL_RULES': ['policy1']},
-                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
+                resource_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
             )
         ]
         project2_violations = [
@@ -1479,7 +1479,7 @@ class RuleBookTest(ForsetiTestCase):
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
                 policy_names=['policy1'],
                 recommended_actions={'INSERT_FIREWALL_RULES': ['rule3: rule 0']},
-                inventory_data=['{"denied": [{"IPProtocol": "tcp", "ports": ["22"]}], "destinationRanges": ["11.0.0.1"], "direction": "EGRESS", "name": "policy1", "network": "network1"}']
+                resource_data=['{"denied": [{"IPProtocol": "tcp", "ports": ["22"]}], "destinationRanges": ["11.0.0.1"], "direction": "EGRESS", "name": "policy1", "network": "network1"}']
             )
         ]
         project3_violations = [
@@ -1495,7 +1495,7 @@ class RuleBookTest(ForsetiTestCase):
                     'UPDATE_FIREWALL_RULES': [],
                     'INSERT_FIREWALL_RULES': ['rule4: rule 0']
                 },
-                inventory_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/1"]}']
+                resource_data=['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/1"]}']
            )
         ]
         resources_and_policies = (
@@ -1590,7 +1590,7 @@ class RuleEngineTest(ForsetiTestCase):
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
-                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
+                    'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
                 }
             ],
         ),
@@ -1618,7 +1618,7 @@ class RuleEngineTest(ForsetiTestCase):
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
-                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
+                    'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
                 }
             ],
         ),

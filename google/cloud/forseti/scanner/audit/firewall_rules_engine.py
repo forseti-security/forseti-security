@@ -586,7 +586,7 @@ class Rule(object):
             violation_type=violation_type,
             policy_names=[p.name for p in policies],
             recommended_actions=recommended_actions,
-            inventory_data=inventory_data
+            resource_data=inventory_data
         )
 
 
@@ -600,7 +600,7 @@ class Rule(object):
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'full_name',
                             'rule_id', 'violation_type', 'policy_names',
-                            'recommended_actions', 'inventory_data'])
+                            'recommended_actions', 'resource_data'])
 
 
 def is_whitelist_violation(rules, policy):

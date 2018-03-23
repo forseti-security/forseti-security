@@ -46,7 +46,7 @@ def create_list_of_bq_objects_from_data():
             role=data['role'],
             group_email=data['access_group_by_email'],
             view='',
-            raw_json=data['inventory_data'])
+            raw_json=data['resource_data'])
         fake_bigquery_scanner_list.append(temp_test_bq_acl)
     return fake_bigquery_scanner_list
 

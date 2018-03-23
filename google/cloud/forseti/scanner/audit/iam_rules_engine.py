@@ -620,7 +620,7 @@ class ResourceRules(object):
                     violation_type=violation_type,
                     role=role_name,
                     members=tuple(members),
-                    inventory_data=resource.data)
+                    resource_data=resource.data)
 
     def _check_whitelistblacklist_rules(self, resource, rule, policy_bindings):
         """Check whitelist and blacklist rules.
@@ -657,7 +657,7 @@ class ResourceRules(object):
                         violation_type=violation_type,
                         role=policy_binding.role_name,
                         members=tuple(violating_members),
-                        inventory_data=resource.data)
+                        resource_data=resource.data)
 
     def _dispatch_rule_mode_check(self, mode, rule_members=None,
                                   policy_members=None):

@@ -532,6 +532,5 @@ class IapScannerTest(ForsetiTestCase):
         self.scanner.run()
         self.assertEquals(1, mock_output_results.call_count)
 
-
 if __name__ == '__main__':
     unittest.main()

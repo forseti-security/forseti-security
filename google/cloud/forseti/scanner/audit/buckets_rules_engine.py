@@ -246,7 +246,7 @@ class Rule(object):
                 domain=bucket_acl.domain,
                 bucket=bucket_acl.bucket,
                 project_id=bucket_acl.project_id,
-                inventory_data=bucket_acl.json)
+                resource_data=bucket_acl.json)
 
     # Rule violation.
     # resource_type: string
@@ -263,4 +263,4 @@ class Rule(object):
                                ['resource_type', 'resource_id', 'full_name',
                                 'rule_name', 'rule_index', 'violation_type',
                                 'role', 'entity', 'email', 'domain', 'bucket',
-                                'project_id', 'inventory_data'])
+                                'project_id', 'resource_data'])

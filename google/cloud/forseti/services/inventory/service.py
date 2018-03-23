@@ -37,14 +37,14 @@ def inventory_pb_from_object(inventory_index):
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
         start_timestamp=timestamp.Timestamp().FromDatetime(
-            inventory_index.start_datetime),
+            inventory_index.created_at_datetime),
         complete_timestamp=timestamp.Timestamp().FromDatetime(
-            inventory_index.complete_datetime),
+            inventory_index.completed_at_datetime),
         schema_version=inventory_index.schema_version,
         count_objects=inventory_index.counter,
-        status=inventory_index.status,
-        warnings=inventory_index.warnings,
-        errors=inventory_index.errors)
+        status=inventory_index.inventory_status,
+        warnings=inventory_index.inventory_index_warnings,
+        errors=inventory_index.inventory_index_errors)
 
 
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
@@ -87,7 +87,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         for progress in self.inventory.create(request.background,
                                               request.model_name):
             yield inventory_pb2.Progress(
-                id=progress.inventory_id,
+                id=progress.inventory_index_id,
                 final_message=progress.final_message,
                 step=progress.step,
                 warnings=progress.warnings,

@@ -233,7 +233,7 @@ class Rule(object):
                         project=project,
                         network=network,
                         ip=access_config.get('natIP'),
-                        inventory_data=network_interface.as_json())
+                        resource_data=network_interface.as_json())
 
     # Rule violation.
     # resource_type: string
@@ -248,4 +248,4 @@ class Rule(object):
                                ['resource_type', 'full_name',
                                 'rule_blacklist', 'rule_name',
                                 'rule_index', 'violation_type', 'project',
-                                'network', 'ip', 'inventory_data'])
+                                'network', 'ip', 'resource_data'])
