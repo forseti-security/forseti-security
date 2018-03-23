@@ -33,7 +33,6 @@ def run(model_name=None, progress_queue=None, service_config=None):
     Returns:
         int: Status code.
     """
-
     global_configs = service_config.get_global_config()
     scanner_configs = service_config.get_scanner_config()
 
