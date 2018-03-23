@@ -237,7 +237,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 'max_crm_api_calls_per_100_seconds',
                 'max_iam_api_calls_per_second',
                 'max_results_admin_api',
-                'max_sqladmin_api_calls_per_100_seconds']
+                'max_sqladmin_api_calls_per_100_seconds',
+                'resources']
             field_identifiers = {'scanners': 'name',
                                  'resources': 'resource',
                                  'pipelines': 'name'}
@@ -432,6 +433,23 @@ class ForsetiServerInstaller(ForsetiInstaller):
         return instructions
 
     @staticmethod
+    def _get_gcs_path(resources):
+        """Get gcs path from resources.
+
+        Args:
+            resources (list): List of resources under the notifier section in
+                the forseti_config_server.yaml file.
+        Returns:
+            str: The gcs path.
+        """
+        for resource in resources:
+            notifiers = resource['notifiers']
+            for notifier in notifiers:
+                if notifier['name'] == 'gcs_violations':
+                    return notifier['configuration']['gcs_path']
+        return ''
+
+    @staticmethod
     def _swap_config_fields(old_config, new_config):
         """Swapping fields. This will work for all v1 migrating to v2.
 
@@ -441,7 +459,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             old_config (dict): Old configuration.
             new_config (dict): New configuration.
         """
-
+        # pylint: disable=too-many-locals
         # Some fields have been renamed from v1 to v2
         # This is a map to map names from v2 back to v1
         field_names_mapping = {
@@ -482,3 +500,30 @@ class ForsetiServerInstaller(ForsetiInstaller):
             if v1_field in old_config_global:
                 new_conf_api_quota[field] = (old_config_global[v1_field]
                                              or new_conf_api_quota[field])
+
+        old_notifier_resources = old_config['notifier']['resources']
+        new_notifier_resources = new_config['notifier']['resources']
+        new_scanner_gcs_path = ForsetiServerInstaller._get_gcs_path(
+            new_notifier_resources)
+
+        resource_name_to_index = {}
+
+        for idx, old_resource in enumerate(old_notifier_resources):
+            resource_name_to_index[old_resource['resource']] = idx
+
+        for idx, resource in enumerate(new_notifier_resources):
+            resource_name = resource['resource']
+            if resource_name in resource_name_to_index:
+                # if resource_name is in the old notifier section, replace
+                # the new notifier section with the old one and update the
+                # values accordingly.
+                new_notifier_resources[idx] = old_notifier_resources[
+                    resource_name_to_index[resource_name]]
+                resource_to_update = new_notifier_resources[idx]
+                resource_to_update['notifiers'] = resource_to_update.pop(
+                    'pipelines')
+                for notifier in resource_to_update['notifiers']:
+                    notifier['name'] = notifier['name'].replace('_pipeline', '')
+                    if notifier['name'] == 'gcs_violations':
+                        notifier['configuration']['gcs_path'] = (
+                            new_scanner_gcs_path)
