@@ -83,7 +83,7 @@ class FunctionalTest(ForsetiTestCase):
             'max_iam_api_calls_per_second',
             'max_servicemanagement_api_calls_per_100_seconds',
             'max_sqladmin_api_calls_per_100_seconds',
-            'max_results_admin_api']
+            'max_results_admin_api', 'resources']
         field_identifiers = {'scanners': 'name',
                              'resources': 'resource',
                              'pipelines': 'name'}
@@ -130,7 +130,7 @@ class FunctionalTest(ForsetiTestCase):
             'max_iam_api_calls_per_second',
             'max_servicemanagement_api_calls_per_100_seconds',
             'max_sqladmin_api_calls_per_100_seconds',
-            'max_results_admin_api']
+            'max_results_admin_api', 'resources']
         field_identifiers = {'scanners': 'name',
                              'resources': 'resource',
                              'pipelines': 'name'}
@@ -177,7 +177,7 @@ class FunctionalTest(ForsetiTestCase):
             'max_iam_api_calls_per_second',
             'max_servicemanagement_api_calls_per_100_seconds',
             'max_sqladmin_api_calls_per_100_seconds',
-            'max_results_admin_api']
+            'max_results_admin_api', 'resources']
         field_identifiers = {'scanners': 'name',
                              'resources': 'resource',
                              'pipelines': 'name'}
