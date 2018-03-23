@@ -84,13 +84,29 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         LOGGER.info('Run notifier service with inventory index id: %s',
                     request.inventory_index_id)
         self.service_config.run_in_background(
-            lambda: self.notifier.run(
-                request.inventory_index_id,
-                progress_queue,
-                self.service_config))
+            lambda: self._run_notifier(request.inventory_index_id,
+                                       progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
             yield notifier_pb2.Progress(message=progress_message)
+
+    def _run_notifier(self, inventory_index_id, progress_queue):
+        """Run notifier.
+
+        Args:
+            inventory_index_id (str): Inventory index id.
+            progress_queue (Queue): Progress queue.
+        """
+        try:
+            self.notifier.run(
+                inventory_index_id,
+                progress_queue,
+                self.service_config)
+        except Exception as e: # pylint: disable=broad-except
+            LOGGER.error(e)
+            progress_queue.put('Error occurred during the '
+                               'notification process.')
+            progress_queue.put(None)
 
 
 class GrpcNotifierFactory(object):

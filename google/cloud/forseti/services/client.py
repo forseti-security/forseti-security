@@ -118,14 +118,12 @@ class ScannerClient(ForsetiClient):
         echo = self.stub.Ping(scanner_pb2.PingRequest(data=data)).data
         return echo == data
 
-    @require_model
     def run(self):
         """Runs the scanner
 
         Returns:
             proto: the returned proto message.
         """
-
         request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
                              metadata=self.metadata())
