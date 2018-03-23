@@ -82,14 +82,34 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
-        LOGGER.info('Run scanner service with model: %s', model_name)
-        self.service_config.run_in_background(
-            lambda: self.scanner.run(model_name,
-                                     progress_queue,
-                                     self.service_config))
+        if not model_name:
+            progress_queue.put(
+                'You must specify a model before running the Forseti'
+                ' scanner. Run `forseti model -h` for more information.')
+            progress_queue.put(None)
+        else:
+            LOGGER.info('Run scanner service with model: %s', model_name)
+            self.service_config.run_in_background(
+                lambda: self._run_scanner(model_name, progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(message=progress_message)
+
+    def _run_scanner(self, model_name, progress_queue):
+        """Run scanner.
+
+        Args:
+            model_name (str): Model name.
+            progress_queue (Queue): Progress queue.
+        """
+        try:
+            self.scanner.run(model_name,
+                             progress_queue,
+                             self.service_config)
+        except Exception as e: # pylint: disable=broad-except
+            LOGGER.error(e)
+            progress_queue.put('Error occurred during the scanning process.')
+            progress_queue.put(None)
 
 
 class GrpcScannerFactory(object):
