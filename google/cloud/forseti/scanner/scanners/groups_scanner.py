@@ -50,10 +50,11 @@ class GroupsScanner(base_scanner.BaseScanner):
                 'parent_status': violation.parent.member_status,
                 'parent_type': violation.parent.member_type
             }
+            full_name = violation.parent.member_id + ':' + violation.member_id
             yield {
                 'resource_id': violation.member_email,
                 'resource_type': 'group_member',
-                'full_name': None,
+                'full_name': full_name,
                 'rule_index': None,
                 'rule_name': violation.violated_rule_names,
                 'violation_type': 'GROUP_VIOLATION',
