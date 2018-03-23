@@ -121,12 +121,12 @@ class ScannerClient(ForsetiClient):
     def run(self):
         """Runs the scanner
 
-        Returns:
+        Yields:
             proto: the returned proto message.
         """
         request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
-                             metadata=self.metadata())
+                            metadata=self.metadata())
 
 
 class NotifierClient(ForsetiClient):
