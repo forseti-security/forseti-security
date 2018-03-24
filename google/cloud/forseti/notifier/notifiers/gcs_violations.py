@@ -19,6 +19,7 @@ from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 

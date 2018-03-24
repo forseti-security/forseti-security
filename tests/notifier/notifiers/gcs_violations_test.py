@@ -21,6 +21,7 @@ from datetime import datetime
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import gcs_violations
+from tests.notifier.notifiers.test_data import fake_violations
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -94,6 +95,54 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         mock_tmp_csv.write.assert_called()
         mock_storage.return_value.put_text_file.assert_called_once_with(
             fake_tmpname, gcs_path)
+
+    @mock.patch(
+        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        autospec=True)
+    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
+    def test_run_with_json(self, mock_csv_writer, mock_parser, mock_storage):
+        """Test run() with json file format."""
+        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON
+        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
+        resource = 'policy_violations'
+        cycle_timestamp = '2018-03-24T00:49:02.891287'
+        gvp = gcs_violations.GcsViolations(
+            resource,
+            cycle_timestamp,
+            fake_violations.VIOLATIONS,
+            fake_violations.GLOBAL_CONFIGS,
+            notifier_config,
+            notification_config)
+
+        gvp.run()
+
+        self.assertFalse(mock_csv_writer.called)
+        self.assertTrue(mock_parser.called)
+
+    @mock.patch(
+        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        autospec=True)
+    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
+    def test_run_with_csv(self, mock_csv_writer, mock_parser, mock_storage):
+        """Test run() with default file format (CSV)."""
+        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_DEFAULT
+        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
+        resource = 'policy_violations'
+        cycle_timestamp = '2018-03-24T00:49:02.891287'
+        gvp = gcs_violations.GcsViolations(
+            resource,
+            cycle_timestamp,
+            fake_violations.VIOLATIONS,
+            fake_violations.GLOBAL_CONFIGS,
+            notifier_config,
+            notification_config)
+
+        gvp.run()
+
+        self.assertTrue(mock_csv_writer.called)
+        self.assertFalse(mock_parser.called)
 
 
 if __name__ == '__main__':
