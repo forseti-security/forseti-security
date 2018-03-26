@@ -61,7 +61,8 @@ class EmailViolations(base_notification.BaseNotification):
         Returns:
             attachment: SendGrid attachment object.
         """
-        output_file_name = self._get_output_filename()
+        output_file_name = self._get_output_filename(
+            string_formats.VIOLATION_CSV_FMT)
         with csv_writer.write_csv(resource_name='violations',
                                   data=self.violations,
                                   write_header=True) as csv_file:
@@ -80,7 +81,8 @@ class EmailViolations(base_notification.BaseNotification):
         Returns:
             attachment: SendGrid attachment object.
         """
-        output_file_name = self._get_output_filename()
+        output_file_name = self._get_output_filename(
+            string_formats.VIOLATION_JSON_FMT)
         with tempfile.NamedTemporaryFile() as tmp_violations:
             tmp_violations.write(parser.json_stringify(self.violations))
             tmp_violations.flush()
@@ -127,11 +129,21 @@ class EmailViolations(base_notification.BaseNotification):
 
         email_map = {}
 
-        attachment = self._make_attachment()
-        subject, content = self._make_content()
-        email_map['subject'] = subject
-        email_map['content'] = content
-        email_map['attachment'] = attachment
+        data_format = self.notification_config.get('data_format', 'csv')
+        if data_format not in ['json', 'csv']:
+            LOGGER.error(
+                'Email violations: invalid data format: %s', data_format)
+        else:
+            attachment = None
+            if data_format == 'csv':
+                attachment = self._make_attachment_csv()
+            else:
+                attachment = self._make_attachment_json()
+            subject, content = self._make_content()
+            email_map['subject'] = subject
+            email_map['content'] = content
+            email_map['attachment'] = attachment
+
         return email_map
 
     def _send(self, **kwargs):
@@ -162,4 +174,5 @@ class EmailViolations(base_notification.BaseNotification):
     def run(self):
         """Run the email notifier"""
         email_notification = self._compose()
-        self._send(notification=email_notification)
+        if email_notification:
+            self._send(notification=email_notification)

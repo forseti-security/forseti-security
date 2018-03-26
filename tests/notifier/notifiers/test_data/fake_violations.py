@@ -65,6 +65,18 @@ NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
+NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
+    'resources': [
+        {'notifiers': [
+            {'configuration': {
+                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
+                'recipient': 'ab@cloud.cc',
+                'sender': 'cd@ex.com',
+                'data_format': 'xyz-invalid'},
+             'name': 'email_violations'}],
+         'should_notify': True,
+         'resource': 'policy_violations'}]}
+
 GLOBAL_CONFIGS = {
     'max_bigquery_api_calls_per_100_seconds': 17000,
     'max_cloudbilling_api_calls_per_60_seconds': 300,
