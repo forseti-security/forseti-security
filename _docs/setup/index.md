@@ -65,7 +65,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
      prompted to enter the following:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. Refer to
-       setting up [email notifications]({% link _docs/configure/email-notification.md %})).
+       setting up [email notifications]({% link _docs/configure/email-notification.md %}).
      * Email recipient \[Optional\]: If a SendGrid API key is provided, you will also be asked
        to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
@@ -87,7 +87,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
 ## What's next
 
-  - Customize [Inventory]({% link _docs/configure/inventory/index.md %}),
+  - Customize [Inventory]({% link _docs/configure/inventory/index.md %}) and
   [Scanner]({% link _docs/configure/scanner/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/configure/email-notification.md %}).
   - Enable [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
