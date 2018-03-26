@@ -18,8 +18,8 @@ NOTIFIER_CONFIGS_GCS_JSON = {
         {'notifiers': [
             {'configuration': {
                 'gcs_path': 'gs://fs-violations/scanner_violations'},
-                'name': 'gcs_violations',
-                'data_format': 'json'}],
+             'name': 'gcs_violations',
+             'data_format': 'json'}],
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
@@ -28,7 +28,7 @@ NOTIFIER_CONFIGS_GCS_DEFAULT = {
         {'notifiers': [
             {'configuration': {
                 'gcs_path': 'gs://fs-violations/scanner_violations'},
-                'name': 'gcs_violations'}],
+             'name': 'gcs_violations'}],
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
@@ -39,8 +39,8 @@ NOTIFIER_CONFIGS_EMAIL_JSON = {
                 'sendgrid_api_key': 'SG.HmvWMOd_QKm',
                 'recipient': 'ab@cloud.cc',
                 'sender': 'cd@ex.com'},
-                 'name': 'email_violations',
-                 'data_format': 'json'}],
+             'name': 'email_violations',
+             'data_format': 'json'}],
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
@@ -51,26 +51,26 @@ NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
                 'sendgrid_api_key': 'SG.HmvWMOd_QKm',
                 'recipient': 'ab@cloud.cc',
                 'sender': 'cd@ex.com'},
-                 'name': 'email_violations'}],
+             'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
 GLOBAL_CONFIGS = {
-        'max_bigquery_api_calls_per_100_seconds': 17000,
-        'max_cloudbilling_api_calls_per_60_seconds': 300,
-        'max_compute_api_calls_per_second': 20,
-        'max_results_admin_api': 500,
-        'max_sqladmin_api_calls_per_100_seconds': 100,
-        'max_container_api_calls_per_100_seconds': 1000,
-        'max_crm_api_calls_per_100_seconds': 400,
-        'domain_super_admin_email': 'chsl@vkvd.com',
-        'db_name': 'forseti-inventory',
-        'db_user': 'forseti_user',
-        'max_admin_api_calls_per_100_seconds': 1500,
-        'db_host': '127.0.0.1',
-        'groups_service_account_key_file': '/tmp/forseti-gsuite-reader.json',
-        'max_appengine_api_calls_per_second': 20,
-        'max_iam_api_calls_per_second': 20}
+    'max_bigquery_api_calls_per_100_seconds': 17000,
+    'max_cloudbilling_api_calls_per_60_seconds': 300,
+    'max_compute_api_calls_per_second': 20,
+    'max_results_admin_api': 500,
+    'max_sqladmin_api_calls_per_100_seconds': 100,
+    'max_container_api_calls_per_100_seconds': 1000,
+    'max_crm_api_calls_per_100_seconds': 400,
+    'domain_super_admin_email': 'chsl@vkvd.com',
+    'db_name': 'forseti-inventory',
+    'db_user': 'forseti_user',
+    'max_admin_api_calls_per_100_seconds': 1500,
+    'db_host': '127.0.0.1',
+    'groups_service_account_key_file': '/tmp/forseti-gsuite-reader.json',
+    'max_appengine_api_calls_per_second': 20,
+    'max_iam_api_calls_per_second': 20}
 
 VIOLATIONS = {
     'iap_violations': [
@@ -142,8 +142,8 @@ VIOLATIONS = {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
              'member': 'user:ghi@example.com',
              'role': 'roles/storage.objectAdmin'},
-             'violation_hash': '15fda93a6fdd32d867064677cf07686f79b',
-             'violation_type': 'ADDED'},
+         'violation_hash': '15fda93a6fdd32d867064677cf07686f79b',
+         'violation_type': 'ADDED'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
          'id': 2L,
@@ -165,5 +165,5 @@ VIOLATIONS = {
              'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
              'member': 'user:jkl@example.com',
              'role': 'roles/storage.admin'},
-             'violation_hash': 'f93745f39163060ceee17385b4677b91746',
-             'violation_type': 'ADDED'}]}
+         'violation_hash': 'f93745f39163060ceee17385b4677b91746',
+         'violation_type': 'ADDED'}]}
