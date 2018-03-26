@@ -162,8 +162,8 @@ sudo apt-get install -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" 
 pip install -q --upgrade setuptools pip wheel
 pip install -q --upgrade -r requirements.txt
 
-# Set ownership of config and rules to $USER
-chown -R $USER {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
+# Change the access level of configs/ rules/ and run_forseti.sh
+chmod -R ugo+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
 
 # Install Forseti
 python setup.py install
@@ -178,15 +178,13 @@ python setup.py install
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
-# Set ownership of the project to $USER
-chown -R $USER {forseti_home}
 
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server
-sudo su $USER -c "python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH"
+python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
 
 # Download server configuration from GCS
-sudo su $USER -c "gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_server_conf}"
+gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_server_conf}
 
 # Start Forseti service depends on vars defined above.
 bash ./setup/gcp/scripts/initialize_forseti_services.sh
@@ -211,8 +209,7 @@ EOF
 )"
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
-sudo su $USER -c "$FORSETI_HOME/setup/gcp/scripts/run_forseti.sh"
-(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
+(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER
 echo "Added the run_forseti.sh to crontab"
 
 echo "Execution of startup script finished"
