@@ -62,7 +62,7 @@ def _issue_http_request(path, method, headers):
     http_client = _obtain_http_client()
 
     try:
-        return http_client.request(path, method, headers)
+        return http_client.request(path, method, headers=headers)
     except socket.error:
         raise errors.MetadataServerHttpError
     finally:
