@@ -14,11 +14,14 @@
 
 """Email notifier to perform notifications"""
 
+import tempfile
+
 from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.util import email
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import email
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 
@@ -52,23 +55,8 @@ class EmailViolations(base_notification.BaseNotification):
         self.mail_util = email.EmailUtil(
             self.notification_config['sendgrid_api_key'])
 
-    def _get_output_filename(self):
-        """Create the output filename.
-
-        Returns:
-            str: The output filename for the violations json.
-        """
-        now_utc = date_time.get_utc_now_datetime()
-        output_timestamp = now_utc.strftime(
-            string_formats.TIMESTAMP_TIMEZONE_FILES)
-        output_filename = string_formats.VIOLATION_CSV_FMT.format(
-            self.resource,
-            self.cycle_timestamp,
-            output_timestamp)
-        return output_filename
-
-    def _make_attachment(self):
-        """Create the attachment object.
+    def _make_attachment_csv(self):
+        """Create the attachment object in csv format.
 
         Returns:
             attachment: SendGrid attachment object.
@@ -81,6 +69,24 @@ class EmailViolations(base_notification.BaseNotification):
             LOGGER.info('CSV filename: %s', output_csv_name)
             attachment = self.mail_util.create_attachment(
                 file_location=csv_file.name,
+                content_type='text/csv', filename=output_file_name,
+                content_id='Violations')
+
+        return attachment
+
+    def _make_attachment_json(self):
+        """Create the attachment object json format.
+
+        Returns:
+            attachment: SendGrid attachment object.
+        """
+        output_file_name = self._get_output_filename()
+        with tempfile.NamedTemporaryFile() as tmp_violations:
+            tmp_violations.write(parser.json_stringify(self.violations))
+            tmp_violations.flush()
+            LOGGER.info('JSON filename: %s', tmp_violations.name)
+            attachment = self.mail_util.create_attachment(
+                file_location=tmp_violations.name,
                 content_type='text/csv', filename=output_file_name,
                 content_id='Violations')
 
