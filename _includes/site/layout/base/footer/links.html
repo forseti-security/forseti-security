@@ -2,7 +2,7 @@
   <h2>Documentation</h2>
   <ul class="links">
     {% for tab in site.data.doc_categories %}
-      <li><a href="{{ site.baseurl }}/{{ tab.href }}">{{ tab.title }}</a></li>
+      <li><a href="{{ site.baseurl }}/{{ tab.href | replace:'$$VERSION$$','latest' }}">{{ tab.title }}</a></li>
     {% endfor %}
   </ul>
 </div>
