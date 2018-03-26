@@ -93,7 +93,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
                 lambda: self._run_scanner(model_name, progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
-            yield scanner_pb2.Progress(message=progress_message)
+            yield scanner_pb2.Progress(server_message=progress_message)
 
     def _run_scanner(self, model_name, progress_queue):
         """Run scanner.
