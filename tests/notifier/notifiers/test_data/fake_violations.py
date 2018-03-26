@@ -32,6 +32,16 @@ NOTIFIER_CONFIGS_GCS_DEFAULT = {
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
+NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT = {
+    'resources': [
+        {'notifiers': [
+            {'configuration': {
+                'gcs_path': 'gs://fs-violations/scanner_violations',
+                'data_format': 'xxx-invalid'},
+             'name': 'gcs_violations'}],
+         'should_notify': True,
+         'resource': 'policy_violations'}]}
+
 NOTIFIER_CONFIGS_EMAIL_JSON = {
     'resources': [
         {'notifiers': [
