@@ -40,6 +40,7 @@ class BaseNotification(object):
     """Base notifier to perform notifications"""
 
     __metaclass__ = abc.ABCMeta
+    supported_data_formats = ['csv', 'json']
 
     def __init__(self, resource, cycle_timestamp,
                  violations, global_configs, notifier_config,
@@ -65,7 +66,6 @@ class BaseNotification(object):
 
         # Get violations
         self.violations = violations
-        self.supported_data_formats = ['csv', 'json']
 
     @abc.abstractmethod
     def run(self):
