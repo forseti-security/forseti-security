@@ -17,9 +17,9 @@ NOTIFIER_CONFIGS_GCS_JSON = {
     'resources': [
         {'notifiers': [
             {'configuration': {
-                'gcs_path': 'gs://fs-violations/scanner_violations'},
-             'name': 'gcs_violations',
-             'data_format': 'json'}],
+                'gcs_path': 'gs://fs-violations/scanner_violations',
+                'data_format': 'json'},
+             'name': 'gcs_violations'}],
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
@@ -38,9 +38,9 @@ NOTIFIER_CONFIGS_EMAIL_JSON = {
             {'configuration': {
                 'sendgrid_api_key': 'SG.HmvWMOd_QKm',
                 'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com'},
-             'name': 'email_violations',
-             'data_format': 'json'}],
+                'sender': 'cd@ex.com',
+                'data_format': 'json'},
+             'name': 'email_violations'}],
          'should_notify': True,
          'resource': 'policy_violations'}]}
 

@@ -101,12 +101,14 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
-    def test_run_with_json(self, mock_csv_writer, mock_parser, mock_storage):
+    def test_run_with_json(self, mock_write_csv, mock_json_stringify,
+        mock_storage):
         """Test run() with json file format."""
         notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON
         notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
         resource = 'policy_violations'
         cycle_timestamp = '2018-03-24T00:49:02.891287'
+        mock_json_stringify.return_value = 'test123'
         gvp = gcs_violations.GcsViolations(
             resource,
             cycle_timestamp,
@@ -117,8 +119,8 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
 
         gvp.run()
 
-        self.assertFalse(mock_csv_writer.called)
-        self.assertTrue(mock_parser.called)
+        self.assertFalse(mock_write_csv.called)
+        self.assertTrue(mock_json_stringify.called)
 
     @mock.patch(
         'google.cloud.forseti.common.gcp_api.storage.StorageClient',

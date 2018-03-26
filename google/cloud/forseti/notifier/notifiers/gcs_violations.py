@@ -14,6 +14,7 @@
 
 """Upload violations to GCS."""
 
+import tempfile
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import storage
@@ -43,17 +44,43 @@ class GcsViolations(base_notification.BaseNotification):
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
-    def run(self):
-        """Generate the temporary CSV file and upload to GCS."""
+    def _upload_json(self, gcs_upload_path):
+        """Upload violations in json format.
+
+        Args:
+            gcs_upload_path (string): the GCS upload path.
+        """
+        with tempfile.NamedTemporaryFile() as tmp_violations:
+            tmp_violations.write(parser.json_stringify(self.violations))
+            tmp_violations.flush()
+            storage_client = storage.StorageClient()
+            storage_client.put_text_file(tmp_violations.name, gcs_upload_path)
+
+    def _upload_csv(self, gcs_upload_path):
+        """Upload violations in csv format.
+
+        Args:
+            gcs_upload_path (string): the GCS upload path.
+        """
         with csv_writer.write_csv(resource_name='violations',
                                   data=self.violations,
                                   write_header=True) as csv_file:
             LOGGER.info('CSV filename: %s', csv_file.name)
+            storage_client = storage.StorageClient()
+            storage_client.put_text_file(csv_file.name, gcs_upload_path)
 
-            gcs_upload_path = '{}/{}'.format(
-                self.notification_config['gcs_path'],
-                self._get_output_filename())
+    def run(self):
+        """Generate the temporary CSV file and upload to GCS."""
+        gcs_upload_path = '{}/{}'.format(
+            self.notification_config['gcs_path'],
+            self._get_output_filename())
 
-            if gcs_upload_path.startswith('gs://'):
-                storage_client = storage.StorageClient()
-                storage_client.put_text_file(csv_file.name, gcs_upload_path)
+        import pdb; pdb.set_trace()
+        if gcs_upload_path.startswith('gs://'):
+            data_format = self.notification_config.get('data_format', 'csv')
+            if data_format == 'csv':
+                self._upload_csv(gcs_upload_path)
+            elif data_format == 'json':
+                self._upload_json(gcs_upload_path)
+            else:
+                LOGGER.error('GCS upload: invalid data format: %s', data_format)
