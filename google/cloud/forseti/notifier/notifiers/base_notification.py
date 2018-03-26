@@ -16,7 +16,9 @@
 
 import abc
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
@@ -55,3 +57,20 @@ class BaseNotification(object):
     def run(self):
         """Runs the notifier."""
         pass
+
+    def _get_output_filename(self, filename_template):
+        """Create the output filename.
+
+        Args:
+            filename_template (string): template to use for the output filename
+
+        Returns:
+            str: The output filename for the violations CSV file.
+        """
+        now_utc = date_time.get_utc_now_datetime()
+        output_timestamp = now_utc.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+
+        output_filename = filename_template.format(
+            self.resource, self.cycle_timestamp, output_timestamp)
+        return output_filename

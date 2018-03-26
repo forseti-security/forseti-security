@@ -44,7 +44,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         }
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
+        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',
         autospec=True)
     def test_get_output_filename(self, mock_date_time):
         """Test_get_output_filename()."""
@@ -68,7 +68,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             actual_filename)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
+        'google.cloud.forseti.notifier.notifiers.base_notification.date_time',
         autospec=True)
     def test_get_output_filename_with_json(self, mock_date_time):
         """Test _get_output_filename()."""

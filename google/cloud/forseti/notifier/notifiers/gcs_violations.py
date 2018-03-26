@@ -18,7 +18,6 @@ import tempfile
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import storage
-from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
@@ -30,23 +29,6 @@ LOGGER = logger.get_logger(__name__)
 
 class GcsViolations(base_notification.BaseNotification):
     """Upload violations to GCS."""
-
-    def _get_output_filename(self, filename_template):
-        """Create the output filename.
-
-        Args:
-            filename_template (string): template to use for the output filename
-
-        Returns:
-            str: The output filename for the violations CSV file.
-        """
-        now_utc = date_time.get_utc_now_datetime()
-        output_timestamp = now_utc.strftime(
-            string_formats.TIMESTAMP_TIMEZONE_FILES)
-
-        output_filename = filename_template.format(
-            self.resource, self.cycle_timestamp, output_timestamp)
-        return output_filename
 
     def _upload_json(self, gcs_upload_path):
         """Upload violations in json format.
