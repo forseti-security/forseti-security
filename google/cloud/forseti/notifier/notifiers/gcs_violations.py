@@ -75,7 +75,6 @@ class GcsViolations(base_notification.BaseNotification):
             self.notification_config['gcs_path'],
             self._get_output_filename())
 
-        import pdb; pdb.set_trace()
         if gcs_upload_path.startswith('gs://'):
             data_format = self.notification_config.get('data_format', 'csv')
             if data_format == 'csv':
