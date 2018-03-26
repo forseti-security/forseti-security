@@ -40,7 +40,13 @@ class GcsViolations(base_notification.BaseNotification):
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
-        output_filename = string_formats.VIOLATION_CSV_FMT.format(
+
+        data_format = self.notification_config.get('data_format', 'csv')
+        filename_format = string_formats.VIOLATION_CSV_FMT
+        if data_format != 'csv':
+            filename_format = string_formats.VIOLATION_JSON_FMT
+
+        output_filename = filename_format.format(
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
@@ -70,16 +76,16 @@ class GcsViolations(base_notification.BaseNotification):
             storage_client.put_text_file(csv_file.name, gcs_upload_path)
 
     def run(self):
-        """Generate the temporary CSV file and upload to GCS."""
-        gcs_upload_path = '{}/{}'.format(
-            self.notification_config['gcs_path'],
-            self._get_output_filename())
-
-        if gcs_upload_path.startswith('gs://'):
+        """Generate the temporary (CSV xor JSON) file and upload to GCS."""
+        if self.notification_config['gcs_path'].startswith('gs://'):
             data_format = self.notification_config.get('data_format', 'csv')
-            if data_format == 'csv':
-                self._upload_csv(gcs_upload_path)
-            elif data_format == 'json':
-                self._upload_json(gcs_upload_path)
-            else:
+            if data_format not in ['json', 'csv']:
                 LOGGER.error('GCS upload: invalid data format: %s', data_format)
+            else:
+                gcs_upload_path = '{}/{}'.format(
+                    self.notification_config['gcs_path'],
+                    self._get_output_filename())
+                if data_format == 'csv':
+                    self._upload_csv(gcs_upload_path)
+                else:
+                    self._upload_json(gcs_upload_path)

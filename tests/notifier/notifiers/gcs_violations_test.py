@@ -34,23 +34,14 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             year=1900, month=1, day=1, hour=0, minute=0, second=0,
             microsecond=0)
 
-        fake_global_conf = {
+        self.fake_global_conf = {
             'db_host': 'x',
             'db_name': 'y',
             'db_user': 'z',
         }
-
-        fake_notifier_conf = {
+        self.fake_notifier_conf = {
             'gcs_path': 'gs://blah'
         }
-
-        self.gvp = gcs_violations.GcsViolations(
-            'abcd',
-            '11111',
-            [],
-            fake_global_conf,
-            {},
-            fake_notifier_conf)
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
@@ -62,11 +53,44 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         expected_timestamp = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        actual_filename = self.gvp._get_output_filename()
+        gvp = gcs_violations.GcsViolations(
+            'abcd',
+            '11111',
+            [],
+            self.fake_global_conf,
+            {},
+            self.fake_notifier_conf)
+        actual_filename = gvp._get_output_filename()
         self.assertEquals(
             string_formats.VIOLATION_CSV_FMT.format(
-                self.gvp.resource, self.gvp.cycle_timestamp,
-                expected_timestamp),
+                gvp.resource, gvp.cycle_timestamp, expected_timestamp),
+            actual_filename)
+
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
+        autospec=True)
+    def test_get_output_filename_with_json(self, mock_date_time):
+        """Test _get_output_filename()."""
+        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON
+        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
+        resource = 'policy_violations'
+        cycle_timestamp = '2018-03-24T00:49:02.891287'
+        gvp = gcs_violations.GcsViolations(
+            resource,
+            cycle_timestamp,
+            fake_violations.VIOLATIONS,
+            fake_violations.GLOBAL_CONFIGS,
+            notifier_config,
+            notification_config)
+        mock_date_time.get_utc_now_datetime = mock.MagicMock()
+        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
+        expected_timestamp = self.fake_utcnow.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+
+        actual_filename = gvp._get_output_filename()
+        self.assertEquals(
+            string_formats.VIOLATION_JSON_FMT.format(
+                gvp.resource, gvp.cycle_timestamp, expected_timestamp),
             actual_filename)
 
     @mock.patch(
@@ -79,18 +103,23 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         fake_tmpname = 'tmp_name'
         fake_output_name = 'abc'
 
-        self.gvp._get_output_filename = mock.MagicMock(
-            return_value=fake_output_name)
+        gvp = gcs_violations.GcsViolations(
+            'abcd',
+            '11111',
+            [],
+            self.fake_global_conf,
+            {},
+            self.fake_notifier_conf)
+        gvp._get_output_filename = mock.MagicMock(return_value=fake_output_name)
         gcs_path = '{}/{}'.format(
-            self.gvp.notification_config['gcs_path'],
-            fake_output_name)
+            gvp.notification_config['gcs_path'], fake_output_name)
 
         mock_tmp_csv = mock.MagicMock()
         mock_tempfile.return_value = mock_tmp_csv
         mock_tmp_csv.name = fake_tmpname
         mock_tmp_csv.write = mock.MagicMock()
 
-        self.gvp.run()
+        gvp.run()
 
         mock_tmp_csv.write.assert_called()
         mock_storage.return_value.put_text_file.assert_called_once_with(
