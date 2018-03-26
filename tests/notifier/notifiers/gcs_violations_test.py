@@ -20,6 +20,7 @@ import unittest
 from datetime import datetime
 
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import gcs_violations
 from tests.notifier.notifiers.test_data import fake_violations
 from tests.unittest_utils import ForsetiTestCase
@@ -210,7 +211,8 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
 
         gvp._get_output_filename = mock.MagicMock()
 
-        gvp.run()
+        with self.assertRaises(base_notification.InvalidDataFormatError):
+            gvp.run()
 
         self.assertFalse(gvp._get_output_filename.called)
         self.assertFalse(mock_write_csv.called)

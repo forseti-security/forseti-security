@@ -61,7 +61,9 @@ class GcsViolations(base_notification.BaseNotification):
             data_format = self.notification_config.get('data_format', 'csv')
             if data_format not in self.supported_data_formats:
                 LOGGER.error('GCS upload: invalid data format: %s', data_format)
-            elif data_format == 'csv':
+                raise base_notification.InvalidDataFormatError(data_format)
+
+            if data_format == 'csv':
                 gcs_upload_path = '{}/{}'.format(
                     self.notification_config['gcs_path'],
                     self._get_output_filename(

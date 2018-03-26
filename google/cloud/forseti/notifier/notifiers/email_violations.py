@@ -134,16 +134,17 @@ class EmailViolations(base_notification.BaseNotification):
         if data_format not in self.supported_data_formats:
             LOGGER.error(
                 'Email violations: invalid data format: %s', data_format)
+            raise base_notification.InvalidDataFormatError(data_format)
+
+        attachment = None
+        if data_format == 'csv':
+            attachment = self._make_attachment_csv()
         else:
-            attachment = None
-            if data_format == 'csv':
-                attachment = self._make_attachment_csv()
-            else:
-                attachment = self._make_attachment_json()
-            subject, content = self._make_content()
-            email_map['subject'] = subject
-            email_map['content'] = content
-            email_map['attachment'] = attachment
+            attachment = self._make_attachment_json()
+        subject, content = self._make_content()
+        email_map['subject'] = subject
+        email_map['content'] = content
+        email_map['attachment'] = attachment
 
         return email_map
 

@@ -23,6 +23,17 @@ from google.cloud.forseti.common.util import string_formats
 LOGGER = logger.get_logger(__name__)
 
 
+class InvalidDataFormatError(Exception):
+    """Raised in case of an invalid notifier data format.
+
+    Attributes:
+        msg  -- error message detailing the (invalid) data_format
+    """
+
+    def __init__(self, invalid_data_format):
+        self.msg = 'Invalid data format: %s' % invalid_data_format
+
+
 class BaseNotification(object):
     """Base notifier to perform notifications"""
 

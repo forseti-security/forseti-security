@@ -23,6 +23,7 @@ from datetime import datetime
 
 from google.cloud.forseti.common.util.email import EmailUtil
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import email_violations
 from tests.notifier.notifiers.test_data import fake_violations
 from tests.unittest_utils import ForsetiTestCase
@@ -149,7 +150,8 @@ class EmailViolationsTest(ForsetiTestCase):
         evp._get_output_filename = mock.MagicMock()
         evp._make_attachment_csv = mock.MagicMock()
         evp._make_attachment_json = mock.MagicMock()
-        evp.run()
+        with self.assertRaises(base_notification.InvalidDataFormatError):
+            evp.run()
 
         self.assertFalse(evp._get_output_filename.called)
         self.assertFalse(evp._make_attachment_csv.called)
