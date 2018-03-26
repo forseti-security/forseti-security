@@ -49,8 +49,11 @@ class FileLoaderTest(ForsetiTestCase):
             file_loader._get_filetype_parser('path/to/file.yaml', 'asdf')
 
     @mock.patch.object(client.GoogleCredentials, 'get_application_default')
-    def test_read_file_from_gcs_json(self, mock_default_credential):
+    @mock.patch.object(metadata_server, 'can_reach_metadata_server', spec=True)
+    def test_read_file_from_gcs_json(self, mock_reach_metadata,
+                                     mock_default_credential):
         """Test read_file_from_gcs for json."""
+        mock_reach_metadata.return_value = False
         mock_responses = [
             ({'status': '200',
               'content-range': '0-10/11'}, b'{"test": 1}')
@@ -62,8 +65,11 @@ class FileLoaderTest(ForsetiTestCase):
         self.assertEqual(expected_dict, return_dict)
 
     @mock.patch.object(client.GoogleCredentials, 'get_application_default')
-    def test_read_file_from_gcs_yaml(self, mock_default_credential):
+    @mock.patch.object(metadata_server, 'can_reach_metadata_server', spec=True)
+    def test_read_file_from_gcs_yaml(self, mock_reach_metadata,
+                                     mock_default_credential):
         """Test read_file_from_gcs for yaml."""
+        mock_reach_metadata.return_value = False
         mock_responses = [
             ({'status': '200',
               'content-range': '0-6/7'}, b'test: 1')
