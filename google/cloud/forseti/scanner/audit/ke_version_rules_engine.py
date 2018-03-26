@@ -420,7 +420,7 @@ class Rule(object):
             project_id=ke_cluster.project_id,
             cluster_name=ke_cluster.name,
             node_pool_name=node_pool_name,
-            inventory_data=str(ke_cluster))
+            resource_data=str(ke_cluster))
 
     def _node_versions_valid(self, ke_cluster):
         """Check the node pool versions against the supported version list.
@@ -556,4 +556,4 @@ RuleViolation = namedtuple('RuleViolation',
                             'rule_name', 'rule_index', 'violation_type',
                             'violation_reason', 'project_id',
                             'cluster_name', 'node_pool_name',
-                            'inventory_data'])
+                            'resource_data'])

@@ -118,14 +118,12 @@ class ScannerClient(ForsetiClient):
         echo = self.stub.Ping(scanner_pb2.PingRequest(data=data)).data
         return echo == data
 
-    @require_model
     def run(self):
         """Runs the scanner
 
         Returns:
             proto: the returned proto message.
         """
-
         request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
                              metadata=self.metadata())
@@ -198,15 +196,16 @@ class ModelClient(ForsetiClient):
         echo = self.stub.Ping(model_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def new_model(self, source, name, inventory_id='', background=True):
+    def new_model(self, source, name, inventory_index_id='', background=True):
         """Creates a new model, reply contains the handle.
 
         Args:
             source (str): the source to create the model, either EMPTY
-                or INVENTORY
-            name (str): the name for the model
-            inventory_id (str): the index id of the inventory to import from
-            background (bool): whether to run in background
+                or INVENTORY.
+            name (str): the name for the model.
+            inventory_index_id (str): the index id of the inventory to
+                import from.
+            background (bool): whether to run in background.
 
         Returns:
             proto: the returned proto message of creating model
@@ -216,7 +215,7 @@ class ModelClient(ForsetiClient):
             model_pb2.CreateModelRequest(
                 type=source,
                 name=name,
-                id=inventory_id,
+                id=inventory_index_id,
                 background=background))
 
     def list_models(self):
@@ -304,32 +303,32 @@ class InventoryClient(ForsetiClient):
             model_name=import_as)
         return self.stub.Create(request)
 
-    def get(self, inventory_id):
+    def get(self, inventory_index_id):
         """Returns all information about a particular inventory.
 
         Args:
-            inventory_id (str): the index id of the inventory to query
+            inventory_index_id (str): the index id of the inventory to query.
 
         Returns:
-            proto: the returned proto message of get inventory
+            proto: the returned proto message of get inventory.
         """
 
         request = inventory_pb2.GetRequest(
-            id=inventory_id)
+            id=inventory_index_id)
         return self.stub.Get(request)
 
-    def delete(self, inventory_id):
+    def delete(self, inventory_index_id):
         """Delete an inventory.
 
         Args:
-            inventory_id (str): the index id of the inventory to delete
+            inventory_index_id (str): the index id of the inventory to delete.
 
         Returns:
-            proto: the returned proto message of delete inventory
+            proto: the returned proto message of delete inventory.
         """
 
         request = inventory_pb2.DeleteRequest(
-            id=inventory_id)
+            id=inventory_index_id)
         return self.stub.Delete(request)
 
     def list(self):
@@ -646,21 +645,23 @@ class ClientComposition(object):
             if not all([c.is_available() for c in self.clients]):
                 raise Exception('gRPC connected but services not registered')
 
-    def new_model(self, source, name, inventory_id='', background=False):
+    def new_model(self, source, name, inventory_index_id='', background=False):
         """Create a new model from the specified source.
 
         Args:
             source (str): the source to create the model, either EMPTY
-                or INVENTORY
-            name (str): the name for the model
-            inventory_id (str): the index id of the inventory to import from
-            background (bool): whether to run in background
+                or INVENTORY.
+            name (str): the name for the model.
+            inventory_index_id (str): the index id of the inventory to
+                import from.
+            background (bool): whether to run in background.
 
         Returns:
             proto: the returned proto message of creating model
         """
 
-        return self.model.new_model(source, name, inventory_id, background)
+        return self.model.new_model(source, name, inventory_index_id,
+                                    background)
 
     def list_models(self):
         """List existing models.

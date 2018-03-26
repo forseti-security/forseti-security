@@ -470,7 +470,7 @@ class Rule(object):
                 iap_enabled_violation=iap_enabled_violation,
                 direct_access_sources_violations=(
                     direct_sources_violations),
-                inventory_data=resource.json)
+                resource_data=resource.json)
         return None
 
     def __repr__(self):
@@ -537,4 +537,4 @@ RuleViolation = namedtuple(
     ['resource_type', 'resource_id', 'full_name', 'resource_name', 'rule_name',
      'rule_index', 'violation_type', 'alternate_services_violations',
      'iap_enabled_violation', 'direct_access_sources_violations',
-     'inventory_data'])
+     'resource_data'])

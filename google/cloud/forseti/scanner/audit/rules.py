@@ -157,7 +157,7 @@ class RuleMode(object):
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'full_name',
                             'rule_name', 'rule_index', 'violation_type',
-                            'role', 'members', 'inventory_data'])
+                            'role', 'members', 'resource_data'])
 
 # Rule violation types.
 VIOLATION_TYPE = {
