@@ -57,21 +57,23 @@ class GcsViolations(base_notification.BaseNotification):
 
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
-        if self.notification_config['gcs_path'].startswith('gs://'):
-            data_format = self.notification_config.get('data_format', 'csv')
-            if data_format not in self.supported_data_formats:
-                LOGGER.error('GCS upload: invalid data format: %s', data_format)
-                raise base_notification.InvalidDataFormatError(data_format)
+        if not self.notification_config['gcs_path'].startswith('gs://'):
+            return
 
-            if data_format == 'csv':
-                gcs_upload_path = '{}/{}'.format(
-                    self.notification_config['gcs_path'],
-                    self._get_output_filename(
-                        string_formats.VIOLATION_CSV_FMT))
-                self._upload_csv(gcs_upload_path)
-            else:
-                gcs_upload_path = '{}/{}'.format(
-                    self.notification_config['gcs_path'],
-                    self._get_output_filename(
-                        string_formats.VIOLATION_JSON_FMT))
-                self._upload_json(gcs_upload_path)
+        data_format = self.notification_config.get('data_format', 'csv')
+        if data_format not in self.supported_data_formats:
+            LOGGER.error('GCS upload: invalid data format: %s', data_format)
+            raise base_notification.InvalidDataFormatError(data_format)
+
+        if data_format == 'csv':
+            gcs_upload_path = '{}/{}'.format(
+                self.notification_config['gcs_path'],
+                self._get_output_filename(
+                    string_formats.VIOLATION_CSV_FMT))
+            self._upload_csv(gcs_upload_path)
+        else:
+            gcs_upload_path = '{}/{}'.format(
+                self.notification_config['gcs_path'],
+                self._get_output_filename(
+                    string_formats.VIOLATION_JSON_FMT))
+            self._upload_json(gcs_upload_path)
