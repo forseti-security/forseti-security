@@ -209,7 +209,7 @@ EOF
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
 USER=ubuntu
-(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER
+(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"
