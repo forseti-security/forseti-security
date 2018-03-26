@@ -124,7 +124,6 @@ exec 2>&1
 sudo apt-get update -y
 sudo apt-get upgrade -y
 
-USER=ubuntu
 USER_HOME=/home/ubuntu
 
 # Install fluentd if necessary.
@@ -209,7 +208,7 @@ EOF
 )"
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
-(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER
+(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab
 echo "Added the run_forseti.sh to crontab"
 
 echo "Execution of startup script finished"
