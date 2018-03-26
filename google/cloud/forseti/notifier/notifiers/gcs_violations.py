@@ -59,7 +59,7 @@ class GcsViolations(base_notification.BaseNotification):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
         if self.notification_config['gcs_path'].startswith('gs://'):
             data_format = self.notification_config.get('data_format', 'csv')
-            if data_format not in ['json', 'csv']:
+            if data_format not in self.supported_data_formats:
                 LOGGER.error('GCS upload: invalid data format: %s', data_format)
             elif data_format == 'csv':
                 gcs_upload_path = '{}/{}'.format(

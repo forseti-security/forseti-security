@@ -61,7 +61,7 @@ class EmailViolations(base_notification.BaseNotification):
         Returns:
             attachment: SendGrid attachment object.
         """
-        output_file_name = self._get_output_filename(
+        output_filename = self._get_output_filename(
             string_formats.VIOLATION_CSV_FMT)
         with csv_writer.write_csv(resource_name='violations',
                                   data=self.violations,
@@ -70,7 +70,7 @@ class EmailViolations(base_notification.BaseNotification):
             LOGGER.info('CSV filename: %s', output_csv_name)
             attachment = self.mail_util.create_attachment(
                 file_location=csv_file.name,
-                content_type='text/csv', filename=output_file_name,
+                content_type='text/csv', filename=output_filename,
                 content_id='Violations')
 
         return attachment
@@ -81,7 +81,7 @@ class EmailViolations(base_notification.BaseNotification):
         Returns:
             attachment: SendGrid attachment object.
         """
-        output_file_name = self._get_output_filename(
+        output_filename = self._get_output_filename(
             string_formats.VIOLATION_JSON_FMT)
         with tempfile.NamedTemporaryFile() as tmp_violations:
             tmp_violations.write(parser.json_stringify(self.violations))
@@ -89,7 +89,8 @@ class EmailViolations(base_notification.BaseNotification):
             LOGGER.info('JSON filename: %s', tmp_violations.name)
             attachment = self.mail_util.create_attachment(
                 file_location=tmp_violations.name,
-                content_type='text/csv', filename=output_file_name,
+                content_type='text/json',
+                filename=output_filename,
                 content_id='Violations')
 
         return attachment
@@ -130,7 +131,7 @@ class EmailViolations(base_notification.BaseNotification):
         email_map = {}
 
         data_format = self.notification_config.get('data_format', 'csv')
-        if data_format not in ['json', 'csv']:
+        if data_format not in self.supported_data_formats:
             LOGGER.error(
                 'Email violations: invalid data format: %s', data_format)
         else:

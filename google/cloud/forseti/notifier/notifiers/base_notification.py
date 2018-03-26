@@ -52,6 +52,7 @@ class BaseNotification(object):
 
         # Get violations
         self.violations = violations
+        self.supported_data_formats = ['csv', 'json']
 
     @abc.abstractmethod
     def run(self):
@@ -67,8 +68,8 @@ class BaseNotification(object):
         Returns:
             str: The output filename for the violations CSV file.
         """
-        now_utc = date_time.get_utc_now_datetime()
-        output_timestamp = now_utc.strftime(
+        utc_now_datetime = date_time.get_utc_now_datetime()
+        output_timestamp = utc_now_datetime.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
         output_filename = filename_template.format(
