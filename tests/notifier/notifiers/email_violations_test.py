@@ -47,7 +47,7 @@ class EmailViolationsTest(ForsetiTestCase):
             'sendgrid_api_key': 'dsvgig9y0u[puv'
         }
 
-        self.expected_attachment_path = os.path.join(
+        self.expected_csv_attachment_path = os.path.join(
                 os.path.dirname(__file__), 'test_data',
                 'expected_attachment.csv')
 
@@ -91,7 +91,7 @@ class EmailViolationsTest(ForsetiTestCase):
         self.assertTrue(
             filecmp.cmp(
                 mail_util.create_attachment.call_args[1]['file_location'],
-                self.expected_attachment_path, shallow=False))
+                self.expected_csv_attachment_path, shallow=False))
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.email',
