@@ -47,6 +47,30 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
         autospec=True)
     def test_get_output_filename(self, mock_date_time):
+        """Test_get_output_filename()."""
+        mock_date_time.get_utc_now_datetime = mock.MagicMock()
+        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
+        expected_timestamp = self.fake_utcnow.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+
+        gvp = gcs_violations.GcsViolations(
+            'abcd',
+            '11111',
+            [],
+            self.fake_global_conf,
+            {},
+            self.fake_notifier_conf)
+        actual_filename = gvp._get_output_filename(
+            string_formats.VIOLATION_CSV_FMT)
+        self.assertEquals(
+            string_formats.VIOLATION_CSV_FMT.format(
+                gvp.resource, gvp.cycle_timestamp, expected_timestamp),
+            actual_filename)
+
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
+        autospec=True)
+    def test_get_output_filename_with_json(self, mock_date_time):
         """Test _get_output_filename()."""
         mock_date_time.get_utc_now_datetime = mock.MagicMock()
         mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
@@ -60,34 +84,8 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             self.fake_global_conf,
             {},
             self.fake_notifier_conf)
-        actual_filename = gvp._get_output_filename()
-        self.assertEquals(
-            string_formats.VIOLATION_CSV_FMT.format(
-                gvp.resource, gvp.cycle_timestamp, expected_timestamp),
-            actual_filename)
-
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_violations.date_time',
-        autospec=True)
-    def test_get_output_filename_with_json(self, mock_date_time):
-        """Test _get_output_filename()."""
-        notifier_config = fake_violations.NOTIFIER_CONFIGS_GCS_JSON
-        notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
-        resource = 'policy_violations'
-        cycle_timestamp = '2018-03-24T00:49:02.891287'
-        gvp = gcs_violations.GcsViolations(
-            resource,
-            cycle_timestamp,
-            fake_violations.VIOLATIONS,
-            fake_violations.GLOBAL_CONFIGS,
-            notifier_config,
-            notification_config)
-        mock_date_time.get_utc_now_datetime = mock.MagicMock()
-        mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
-        expected_timestamp = self.fake_utcnow.strftime(
-            string_formats.TIMESTAMP_TIMEZONE_FILES)
-
-        actual_filename = gvp._get_output_filename()
+        actual_filename = gvp._get_output_filename(
+            string_formats.VIOLATION_JSON_FMT)
         self.assertEquals(
             string_formats.VIOLATION_JSON_FMT.format(
                 gvp.resource, gvp.cycle_timestamp, expected_timestamp),
@@ -146,8 +144,13 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             notifier_config,
             notification_config)
 
+        gvp._get_output_filename = mock.MagicMock()
         gvp.run()
 
+        self.assertTrue(gvp._get_output_filename.called)
+        self.assertEquals(
+            string_formats.VIOLATION_JSON_FMT,
+            gvp._get_output_filename.call_args[0][0])
         self.assertFalse(mock_write_csv.called)
         self.assertTrue(mock_json_stringify.called)
 
@@ -170,8 +173,13 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             notifier_config,
             notification_config)
 
+        gvp._get_output_filename = mock.MagicMock()
         gvp.run()
 
+        self.assertTrue(gvp._get_output_filename.called)
+        self.assertEquals(
+            string_formats.VIOLATION_CSV_FMT,
+            gvp._get_output_filename.call_args[0][0])
         self.assertTrue(mock_csv_writer.called)
         self.assertFalse(mock_parser.called)
 
@@ -200,8 +208,11 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             notifier_config,
             notification_config)
 
+        gvp._get_output_filename = mock.MagicMock()
+
         gvp.run()
 
+        self.assertFalse(gvp._get_output_filename.called)
         self.assertFalse(mock_write_csv.called)
         self.assertFalse(mock_json_stringify.called)
         self.assertTrue(mock_logger.error.called)

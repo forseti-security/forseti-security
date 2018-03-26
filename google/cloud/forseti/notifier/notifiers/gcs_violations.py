@@ -31,8 +31,11 @@ LOGGER = logger.get_logger(__name__)
 class GcsViolations(base_notification.BaseNotification):
     """Upload violations to GCS."""
 
-    def _get_output_filename(self):
+    def _get_output_filename(self, filename_template):
         """Create the output filename.
+
+        Args:
+            filename_template (string): template to use for the output filename
 
         Returns:
             str: The output filename for the violations CSV file.
@@ -41,12 +44,7 @@ class GcsViolations(base_notification.BaseNotification):
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        data_format = self.notification_config.get('data_format', 'csv')
-        filename_format = string_formats.VIOLATION_CSV_FMT
-        if data_format != 'csv':
-            filename_format = string_formats.VIOLATION_JSON_FMT
-
-        output_filename = filename_format.format(
+        output_filename = filename_template.format(
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
 
@@ -82,10 +80,15 @@ class GcsViolations(base_notification.BaseNotification):
             if data_format not in ['json', 'csv']:
                 LOGGER.error('GCS upload: invalid data format: %s', data_format)
             else:
-                gcs_upload_path = '{}/{}'.format(
-                    self.notification_config['gcs_path'],
-                    self._get_output_filename())
                 if data_format == 'csv':
+                    gcs_upload_path = '{}/{}'.format(
+                        self.notification_config['gcs_path'],
+                        self._get_output_filename(
+                            string_formats.VIOLATION_CSV_FMT))
                     self._upload_csv(gcs_upload_path)
                 else:
+                    gcs_upload_path = '{}/{}'.format(
+                        self.notification_config['gcs_path'],
+                        self._get_output_filename(
+                            string_formats.VIOLATION_JSON_FMT))
                     self._upload_json(gcs_upload_path)
