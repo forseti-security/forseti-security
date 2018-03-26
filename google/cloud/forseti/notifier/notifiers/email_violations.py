@@ -89,7 +89,7 @@ class EmailViolations(base_notification.BaseNotification):
             LOGGER.info('JSON filename: %s', tmp_violations.name)
             attachment = self.mail_util.create_attachment(
                 file_location=tmp_violations.name,
-                content_type='text/json',
+                content_type='application/json',
                 filename=output_filename,
                 content_id='Violations')
 
