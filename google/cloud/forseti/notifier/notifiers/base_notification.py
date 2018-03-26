@@ -26,14 +26,15 @@ LOGGER = logger.get_logger(__name__)
 class InvalidDataFormatError(Exception):
     """Raised in case of an invalid notifier data format."""
 
-    def __init__(self, invalid_data_format):
+    def __init__(self, notifier, invalid_data_format):
         """Constructor for the base notifier.
 
         Args:
+            notifier (str): the notifier module/name
             invalid_data_format (str): the invalid data format in question.
         """
         super(InvalidDataFormatError, self).__init__(
-            'Invalid data format: %s' % invalid_data_format)
+            '%s: invalid data format: %s' % (notifier, invalid_data_format))
 
 
 class BaseNotification(object):

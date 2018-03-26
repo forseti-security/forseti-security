@@ -132,9 +132,8 @@ class EmailViolations(base_notification.BaseNotification):
 
         data_format = self.notification_config.get('data_format', 'csv')
         if data_format not in self.supported_data_formats:
-            LOGGER.error(
-                'Email violations: invalid data format: %s', data_format)
-            raise base_notification.InvalidDataFormatError(data_format)
+            raise base_notification.InvalidDataFormatError(
+                'Email notifier', data_format)
 
         attachment = None
         if data_format == 'csv':

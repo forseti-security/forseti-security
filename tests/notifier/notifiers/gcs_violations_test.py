@@ -185,15 +185,12 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         self.assertFalse(mock_parser.called)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_violations.LOGGER',
-        autospec=True)
-    @mock.patch(
         'google.cloud.forseti.common.gcp_api.storage.StorageClient',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
     def test_run_with_invalid_data_format(self, mock_write_csv,
-        mock_json_stringify, mock_storage, mock_logger):
+        mock_json_stringify, mock_storage):
         """Test run() with json file format."""
         notifier_config = (
             fake_violations.NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT)
@@ -217,10 +214,6 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
         self.assertFalse(gvp._get_output_filename.called)
         self.assertFalse(mock_write_csv.called)
         self.assertFalse(mock_json_stringify.called)
-        self.assertTrue(mock_logger.error.called)
-        self.assertEquals(
-            ('GCS upload: invalid data format: %s', 'xxx-invalid'),
-            mock_logger.error.call_args[0])
 
 
 if __name__ == '__main__':

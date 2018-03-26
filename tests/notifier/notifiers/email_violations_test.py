@@ -123,15 +123,12 @@ class EmailViolationsTest(ForsetiTestCase):
                 mail_util.create_attachment.call_args[1]['file_location']))
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.LOGGER',
-        autospec=True)
-    @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.email',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
     def test_run_with_invalid_data_format(self, mock_write_csv,
-        mock_json_stringify, mock_mail_util, mock_logger):
+        mock_json_stringify, mock_mail_util):
         """Test run() with invalid data format."""
         notifier_config = (
             fake_violations.NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT)
@@ -158,10 +155,6 @@ class EmailViolationsTest(ForsetiTestCase):
         self.assertFalse(evp._make_attachment_json.called)
         self.assertFalse(mock_write_csv.called)
         self.assertFalse(mock_json_stringify.called)
-        self.assertTrue(mock_logger.error.called)
-        self.assertEquals(
-            ('Email violations: invalid data format: %s', 'xyz-invalid'),
-            mock_logger.error.call_args[0])
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.email',
