@@ -228,7 +228,7 @@ MESSAGE_NO_CLOUD_SHELL = (
     '4) Set your project using '
     '"gcloud config project set <PROJECT_ID>".\n'
     '5) Run this setup again, with the --no-cloudshell flag, '
-    'i.e.\n\n\tpython setup_forseti.py --no-cloudshell\n')
+    'i.e.\n\n\tpython setup/installer.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
     'Forseti configuration file(s) has been generated.\n\n'
