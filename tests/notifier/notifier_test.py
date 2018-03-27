@@ -15,6 +15,7 @@
 
 from datetime import datetime
 import mock
+import unittest
 
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import email_violations
@@ -105,4 +106,10 @@ class NotifierTest(ForsetiTestCase):
         notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
         self.assertTrue(mock_find_notifiers.called)
         self.assertTrue(mock_email_violations.run.called)
+        self.assertEquals(1, mock_email_violations.run.call_count)
         self.assertTrue(mock_gcs_violations.run.called)
+        self.assertEquals(1, mock_gcs_violations.run.call_count)
+
+
+if __name__ == '__main__':
+    unittest.main()
