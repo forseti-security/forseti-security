@@ -26,6 +26,23 @@
   }
 }
 
+.promo-rows {
+  margin: 50px 0;
+}
+
+.promo-row {
+  padding: 30px 0;
+
+  .promo-text p {
+    font-size: 120%;
+  }
+
+  a.btn-link {
+    margin: 0;
+    padding: 8px 0;
+  }
+}
+
 .pre-footer {
   background-color: $grey-200;
   margin-bottom: -40px;
