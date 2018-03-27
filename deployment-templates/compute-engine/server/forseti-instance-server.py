@@ -162,7 +162,7 @@ pip install -q --upgrade setuptools pip wheel
 pip install -q --upgrade -r requirements.txt
 
 # Change the access level of configs/ rules/ and run_forseti.sh
-chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
+chmod -R ugo+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
 
 # Install Forseti
 python setup.py install
