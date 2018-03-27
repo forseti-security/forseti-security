@@ -15,17 +15,17 @@
 
 NOTIFIER_CONFIGS = {
     'resources': [
-        {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com'},
-                 'name': 'email_violations'},
-            {'configuration': {
-                'gcs_path': 'gs://fs-violations/scanner_violations'},
-                'name': 'gcs_violations'}],
-         'should_notify': True,
-         'resource': 'policy_violations'}]}
+        {'resource': 'policy_violations',
+         'notifiers': [
+             {'name': 'email_violations',
+              'configuration': {
+                  'sendgrid_api_key': 'SG.HmvWMOd_QKm',
+                  'recipient': 'ab@cloud.cc',
+                  'sender': 'cd@ex.com'}},
+             {'name': 'gcs_violations',
+              'configuration': {
+                  'gcs_path': 'gs://fs-violations/scanner_violations'}}],
+         'should_notify': True}]}
 
 NOTIFIER_CONFIGS_GCS_JSON = {
     'resources': [
