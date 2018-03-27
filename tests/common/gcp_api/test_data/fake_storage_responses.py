@@ -646,19 +646,3 @@ NOT_FOUND = """
  }
 }
 """
-
-USER_PROJECT_MISSING = """
-{
- "error": {
-  "errors": [
-   {
-    "domain": "global",
-    "reason": "required",
-    "message": "Bucket is requester pays bucket but no user project provided."
-   }
-  ],
-  "code": 400,
-  "message": "Bucket is requester pays bucket but no user project provided."
- }
-}
-"""

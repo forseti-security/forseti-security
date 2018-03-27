@@ -123,9 +123,8 @@ class MetadataServerTest(ForsetiTestCase):
         """
         mock_response = 'expected_response'
 
-        with mock.patch(
-                'httplib.HTTPResponse',
-                mock.mock_open(read_data=mock_response)) as mock_http_resp:
+        with mock.patch('httplib.HTTPResponse',
+                        mock.mock_open(read_data=mock_response)) as mock_http_resp:
             mock_http_resp.return_value.status = httplib.OK
             mock_meta_req.side_effect = mock_http_resp
 
@@ -133,41 +132,6 @@ class MetadataServerTest(ForsetiTestCase):
 
         self.assertEqual(actual_response, mock_response)
 
-    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
-    def test_get_project_id_with_exception(self, mock_meta_req):
-        """Test get_project_id returns correctly when exception is raised.
-
-        Setup:
-            * Have _issue_http_request raise errors.MetadataServerHttpError
-
-        Expected results:
-            * A matching string.
-        """
-        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
-        actual_response = metadata_server.get_project_id()
-        self.assertIsNone(actual_response)
-
-    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
-    def test_get_project_id(self, mock_meta_req):
-        """Test get_project_id returns correctly.
-
-        Setup:
-            * Have _issue_http_request return a project id.
-
-        Expected results:
-            * A matching string.
-        """
-        mock_response = 'test-project'
-
-        with mock.patch(
-                'httplib.HTTPResponse',
-                mock.mock_open(read_data=mock_response)) as mock_http_resp:
-            mock_http_resp.return_value.status = httplib.OK
-            mock_meta_req.side_effect = mock_http_resp
-
-            actual_response = metadata_server.get_project_id()
-
-        self.assertEqual(actual_response, mock_response)
 
 if __name__ == '__main__':
     unittest.main()

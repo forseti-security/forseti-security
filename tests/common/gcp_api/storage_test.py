@@ -22,7 +22,6 @@ from tests.common.gcp_api.test_data import fake_storage_responses as fake_storag
 from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import storage
-from google.cloud.forseti.common.util import metadata_server
 
 
 class StorageTest(unittest_utils.ForsetiTestCase):
@@ -30,13 +29,8 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
     @classmethod
     @mock.patch.object(client, 'GoogleCredentials', spec=True)
-    @mock.patch.object(metadata_server, 'get_project_id', spec=True)
-    @mock.patch.object(metadata_server, 'can_reach_metadata_server', spec=True)
-    def setUpClass(cls, mock_reach_metadata, mock_get_project_id,
-                   mock_google_credential):
+    def setUpClass(cls, mock_google_credential):
         """Set up."""
-        mock_reach_metadata.return_value = True
-        mock_get_project_id.return_value = 'test-project'
         cls.gcs_api_client = storage.StorageClient({})
 
     def test_get_bucket_and_path_from(self):
@@ -93,20 +87,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_bucket_acls(fake_storage.FAKE_BUCKET_NAME)
 
-    def test_get_buckets_acls_user_project(self):
-        """Test get buckets acls requires user project."""
-        mock_responses = [
-            ({'status': '400', 'content-type': 'application/json'},
-             fake_storage.USER_PROJECT_MISSING),
-            ({'status': '200', 'content-type': 'application/json'},
-             fake_storage.GET_BUCKET_ACL),
-        ]
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        results = self.gcs_api_client.get_bucket_acls(
-            fake_storage.FAKE_BUCKET_NAME)
-        self.assertEqual(3, len(results))
-
     def test_get_bucket_iam_policy(self):
         """Test get bucket iam policy."""
         http_mocks.mock_http_response(
@@ -124,20 +104,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             self.gcs_api_client.get_bucket_iam_policy(
                 fake_storage.FAKE_BUCKET_NAME)
 
-    def test_get_bucket_iam_policy_user_project(self):
-        """Test get bucket iam policy requires user project."""
-        mock_responses = [
-            ({'status': '400', 'content-type': 'application/json'},
-             fake_storage.USER_PROJECT_MISSING),
-            ({'status': '200', 'content-type': 'application/json'},
-             fake_storage.GET_BUCKET_IAM_POLICY_RESPONSE),
-        ]
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        results = self.gcs_api_client.get_bucket_iam_policy(
-            fake_storage.FAKE_BUCKET_NAME)
-        self.assertTrue('bindings' in results)
-
     def test_get_default_object_acls(self):
         """Test get default object acls."""
         http_mocks.mock_http_response(
@@ -154,20 +120,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_default_object_acls(
                  fake_storage.FAKE_BUCKET_NAME)
-
-    def test_get_default_object_acls_user_project(self):
-        """Test get default object acls requires user project."""
-        mock_responses = [
-            ({'status': '400', 'content-type': 'application/json'},
-             fake_storage.USER_PROJECT_MISSING),
-            ({'status': '200', 'content-type': 'application/json'},
-             fake_storage.DEFAULT_OBJECT_ACL),
-        ]
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        results = self.gcs_api_client.get_default_object_acls(
-            fake_storage.FAKE_BUCKET_NAME)
-        self.assertEqual(3, len(results))
 
     def test_get_objects(self):
         """Test get objects."""
@@ -190,23 +142,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_objects(fake_storage.FAKE_PROJECT_NUMBER)
 
-    def test_get_objects_user_project(self):
-        """Test get objects requires user project."""
-        mock_responses = [
-            ({'status': '400', 'content-type': 'application/json'},
-             fake_storage.USER_PROJECT_MISSING)]
-
-        for page in fake_storage.LIST_OBJECTS_RESPONSES:
-            mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        expected_object_names = fake_storage.EXPECTED_FAKE_OBJECT_NAMES
-
-        results = self.gcs_api_client.get_objects(
-            fake_storage.FAKE_PROJECT_NUMBER)
-        self.assertEquals(expected_object_names,
-                          [r.get('name') for r in results])
-
     def test_get_object_iam_policy(self):
         """Test get object iam policy."""
         http_mocks.mock_http_response(
@@ -224,20 +159,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             self.gcs_api_client.get_object_iam_policy(
                 fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
 
-    def test_get_object_iam_policy_user_project(self):
-        """Test get object iam policy requires user project."""
-        mock_responses = [
-            ({'status': '400', 'content-type': 'application/json'},
-             fake_storage.USER_PROJECT_MISSING),
-            ({'status': '200', 'content-type': 'application/json'},
-             fake_storage.GET_OBJECT_IAM_POLICY_RESPONSE),
-        ]
-        http_mocks.mock_http_response_sequence(mock_responses)
-
-        results = self.gcs_api_client.get_object_iam_policy(
-            fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
-        self.assertTrue('bindings' in results)
-
     def test_get_object_acls(self):
         """Test get object acls."""
         http_mocks.mock_http_response(
@@ -254,20 +175,6 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_object_acls(
                 fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
-
-    def test_get_object_acls_user_project(self):
-        """Test get object acls requires user project."""
-        mock_responses = [
-            ({'status': '400', 'content-type': 'application/json'},
-             fake_storage.USER_PROJECT_MISSING),
-            ({'status': '200', 'content-type': 'application/json'},
-             fake_storage.GET_OBJECT_ACL),
-        ]
-
-        results = self.gcs_api_client.get_object_acls(
-            fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
-        self.assertEqual(4, len(results))
-
 
     def test_get_text_file(self):
         """Test get test file returns a valid response."""
