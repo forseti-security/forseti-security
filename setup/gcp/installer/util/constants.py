@@ -107,7 +107,6 @@ PROJECT_IAM_ROLES_SERVER = [
 
 PROJECT_IAM_ROLES_CLIENT = [
     'roles/storage.objectViewer',
-    'roles/storage.objectCreator',
     'roles/logging.logWriter'
 ]
 
