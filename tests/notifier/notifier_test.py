@@ -19,134 +19,9 @@ import mock
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import email_violations
 from google.cloud.forseti.notifier.notifiers import gcs_violations
+from tests.notifier.notifiers.test_data import fake_violations
 from tests.unittest_utils import ForsetiTestCase
 
-FAKE_NOTIFIER_CONFIGS = {
-    'resources': [
-        {'notifiers': [
-            {'configuration': {
-                'sendgrid_api_key': 'SG.HmvWMOd_QKm',
-                'recipient': 'ab@cloud.cc',
-                'sender': 'cd@ex.com'},
-                 'name': 'email_violations'},
-            {'configuration': {
-                'gcs_path': 'gs://fs-violations/scanner_violations'},
-                'name': 'gcs_violations'}],
-         'should_notify': True,
-         'resource': 'policy_violations'}]}
-
-FAKE_GLOBAL_CONFIGS = {
-        'max_bigquery_api_calls_per_100_seconds': 17000,
-        'max_cloudbilling_api_calls_per_60_seconds': 300,
-        'max_compute_api_calls_per_second': 20,
-        'max_results_admin_api': 500,
-        'max_sqladmin_api_calls_per_100_seconds': 100,
-        'max_container_api_calls_per_100_seconds': 1000,
-        'max_crm_api_calls_per_100_seconds': 400,
-        'domain_super_admin_email': 'chsl@vkvd.com',
-        'db_name': 'forseti-inventory',
-        'db_user': 'forseti_user',
-        'max_admin_api_calls_per_100_seconds': 1500,
-        'db_host': '127.0.0.1',
-        'groups_service_account_key_file': '/tmp/forseti-gsuite-reader.json',
-        'max_appengine_api_calls_per_second': 20,
-        'max_iam_api_calls_per_second': 20}
-
-FAKE_VIOLATIONS = {
-    'iap_violations': [
-        {'created_at_datetime': '2018-03-16T09:29:52Z',
-         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 47L,
-         'inventory_data': {
-             'bindings': [
-                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketOwner'},
-                 {'members': ['pViewer:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketReader'}],
-             'etag': 'CAE=',
-             'kind': 'storage#policy',
-             'resourceId': 'ps/_/buckets/be-1-ext'},
-         'inventory_index_id': '2018-03-14T14:49:36.101287',
-         'resource_id': 'be-1-ext',
-         'resource_type': 'bucket',
-         'rule_index': 1L,
-         'rule_name': 'Allow only service accounts to have access',
-         'violation_data': {
-             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-             'member': 'user:abc@example.com',
-             'role': 'roles/storage.objectAdmin'},
-         'violation_hash': '15fda93a6fdd32d867064677cf07686f79b65d',
-         'violation_type': 'IAP_VIOLATION'},
-        {'created_at_datetime': '2018-03-16T09:29:52Z',
-         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 48L,
-         'inventory_data': {
-             'bindings': [
-                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketOwner'},
-                 {'members': ['pViewer:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketReader'}],
-             'etag': 'CAE=',
-             'kind': 'storage#policy',
-             'resourceId': 'ps/_/buckets/be-1-ext'},
-         'inventory_index_id': '2018-03-14T14:49:36.101287',
-         'resource_id': 'be-1-ext',
-         'resource_type': 'bucket',
-         'rule_index': 1L,
-         'rule_name': 'Allow only service accounts to have access',
-         'violation_data': {
-             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-             'member': 'user:def@example.com',
-             'role': 'roles/storage.admin'},
-         'violation_hash': 'f93745f39163060ceee17385b4677b91746382',
-         'violation_type': 'IAP_VIOLATION'}],
-    'policy_violations': [
-        {'created_at_datetime': '2018-03-16T09:29:52Z',
-         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 1L,
-         'inventory_data': {
-             'bindings': [
-                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketOwner'},
-                 {'members': ['pViewer:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketReader'}],
-             'etag': 'CAE=',
-             'kind': 'storage#policy',
-             'resourceId': 'ps/_/buckets/be-1-ext'},
-         'inventory_index_id': '2018-03-14T14:49:36.101287',
-         'resource_id': 'be-1-ext',
-         'resource_type': 'bucket',
-         'rule_index': 1L,
-         'rule_name': 'Allow only service accounts to have access',
-         'violation_data': {
-             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-             'member': 'user:ghi@example.com',
-             'role': 'roles/storage.objectAdmin'},
-             'violation_hash': '15fda93a6fdd32d867064677cf07686f79b',
-             'violation_type': 'ADDED'},
-        {'created_at_datetime': '2018-03-16T09:29:52Z',
-         'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-         'id': 2L,
-         'inventory_data': {
-             'bindings': [
-                 {'members': ['pEditor:be-p1-196611', 'pOwner:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketOwner'},
-                 {'members': ['pViewer:be-p1-196611'],
-                  'role': 'roles/storage.legacyBucketReader'}],
-             'etag': 'CAE=',
-             'kind': 'storage#policy',
-             'resourceId': 'ps/_/buckets/be-1-ext'},
-         'inventory_index_id': '2018-03-14T14:49:36.101287',
-         'resource_id': 'be-1-ext',
-         'resource_type': 'bucket',
-         'rule_index': 1L,
-         'rule_name': 'Allow only service accounts to have access',
-         'violation_data': {
-             'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
-             'member': 'user:jkl@example.com',
-             'role': 'roles/storage.admin'},
-             'violation_hash': 'f93745f39163060ceee17385b4677b91746',
-             'violation_type': 'ADDED'}]}
 
 class NotifierTest(ForsetiTestCase):
     def setUp(self):
@@ -190,8 +65,8 @@ class NotifierTest(ForsetiTestCase):
             are looked up, istantiated or run."""
         mock_dao.map_by_resource.return_value = dict()
         mock_srvc_cfg = mock.MagicMock()
-        mock_srvc_cfg.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
-        mock_srvc_cfg.get_notifier_config.return_value = FAKE_NOTIFIER_CONFIGS
+        mock_srvc_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
+        mock_srvc_cfg.get_notifier_config.return_value = fake_violations.NOTIFIER_CONFIGS
         notifier.run('iid-1-2-3', mock.MagicMock(), mock_srvc_cfg)
         self.assertFalse(mock_find_notifiers.called)
 
@@ -211,16 +86,16 @@ class NotifierTest(ForsetiTestCase):
 
         Setup:
             Mock the scanner_dao and make its map_by_resource() function return
-            the FAKE_VIOLATIONS dict
+            the VIOLATIONS dict
 
         Expected outcome:
             The local find_notifiers() is called with with 'email_violations'
             and 'gcs_violations' respectively. These 2 notifiers are
             instantiated and run."""
-        mock_dao.map_by_resource.return_value = FAKE_VIOLATIONS
+        mock_dao.map_by_resource.return_value = fake_violations.VIOLATIONS
         mock_srvc_cfg = mock.MagicMock()
-        mock_srvc_cfg.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
-        mock_srvc_cfg.get_notifier_config.return_value = FAKE_NOTIFIER_CONFIGS
+        mock_srvc_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
+        mock_srvc_cfg.get_notifier_config.return_value = fake_violations.NOTIFIER_CONFIGS
 
         mock_email_obj = mock.MagicMock(spec=email_violations.EmailViolations)
         mock_email_cls.return_value = mock_email_obj
