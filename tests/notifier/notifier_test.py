@@ -81,7 +81,7 @@ class NotifierTest(ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
     def test_notifications_for_nonempty_violations(
-        self, mock_dao, mock_find_notifiers, mock_gcs_cls, mock_email_cls):
+        self, mock_dao, mock_find_notifiers, mock_gcs_cls, mock_email_violations_cls):
         """The email/GCS upload notifiers are instantiated/run.
 
         Setup:
@@ -97,12 +97,12 @@ class NotifierTest(ForsetiTestCase):
         mock_service_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
         mock_service_cfg.get_notifier_config.return_value = fake_violations.NOTIFIER_CONFIGS
 
-        mock_email_obj = mock.MagicMock(spec=email_violations.EmailViolations)
-        mock_email_cls.return_value = mock_email_obj
+        mock_email_violations = mock.MagicMock(spec=email_violations.EmailViolations)
+        mock_email_violations_cls.return_value = mock_email_violations
         mock_gcs_obj = mock.MagicMock(spec=gcs_violations.GcsViolations)
         mock_gcs_cls.return_value = mock_gcs_obj
-        mock_find_notifiers.side_effect = [mock_email_cls, mock_gcs_cls]
+        mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_cls]
         notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
         self.assertTrue(mock_find_notifiers.called)
-        self.assertTrue(mock_email_obj.run.called)
+        self.assertTrue(mock_email_violations.run.called)
         self.assertTrue(mock_gcs_obj.run.called)
