@@ -62,7 +62,7 @@ def _issue_http_request(path, method, headers):
     http_client = _obtain_http_client()
 
     try:
-        return http_client.request(path, method, headers)
+        return http_client.request(path, method, headers=headers)
     except socket.error:
         raise errors.MetadataServerHttpError
     finally:
@@ -103,11 +103,25 @@ def get_value_for_attribute(attribute):
     try:
         http_response = _issue_http_request(
             path, HTTP_GET, REQUIRED_METADATA_HEADER)
-        read_response = http_response.read()
-
-        return read_response
+        return http_response.read()
     except (TypeError, ValueError,
             errors.MetadataServerHttpError) as e:
         LOGGER.error('Unable to read value for attribute key %s '
                      'from metadata server: %s', attribute, e)
+        return None
+
+
+def get_project_id():
+    """Get the project id from the metadata server.
+
+    Returns:
+        str: The of the project id, on error, returns None.
+    """
+    path = '/computeMetadata/v1/project/project-id'
+    try:
+        http_response = _issue_http_request(
+            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+        return http_response.read()
+    except errors.MetadataServerHttpError as e:
+        LOGGER.error('Unable to read project id from metadata server: %s', e)
         return None

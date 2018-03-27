@@ -119,7 +119,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 violation_type='violation1',
                 policy_names=['n1'],
                 recommended_actions=['a1'],
-                inventory_data='fake_inventory_data111'
+                resource_data='fake_inventory_data111'
             ),
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type='firewall_rule',
@@ -129,7 +129,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 violation_type='violation2',
                 policy_names=['n2'],
                 recommended_actions=['a2'],
-                inventory_data='fake_inventory_data222'
+                resource_data='fake_inventory_data222'
             ),
         ]
         flattened_violations = [
@@ -144,7 +144,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'policy_names': v.policy_names,
                     'recommended_actions': v.recommended_actions,
                 },
-                'inventory_data': v.inventory_data
+                'resource_data': v.resource_data
             } for i, v in enumerate(violations)]
 
         self.scanner._output_results(violations)
@@ -175,7 +175,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
-                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
+                    'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["1", "3389"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["0.0.0.0/0"], "targetTags": ["linux"]}']
                 }
             ],
         ),
@@ -201,7 +201,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                     'recommended_actions': {
                         'DELETE_FIREWALL_RULES': ['policy1']
                     },
-                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
+                    'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "network1", "sourceRanges": ["11.0.0.1"], "targetTags": ["test"]}']
                 }
             ],
         ),
@@ -288,7 +288,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                         'UPDATE_FIREWALL_RULES': [],
                         'INSERT_FIREWALL_RULES': ['golden_policy: rule 1'],
                     },
-                    'inventory_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "n1", "sourceRanges": ["10.0.0.0/8"], "targetTags": ["internal"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["23"]}], "direction": "INGRESS", "name": "deleteme", "network": "n3", "sourceRanges": ["11.0.0.0/8"], "targetTags": ["tag"]}']
+                    'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "policy1", "network": "n1", "sourceRanges": ["10.0.0.0/8"], "targetTags": ["internal"]}', '{"allowed": [{"IPProtocol": "tcp", "ports": ["23"]}], "direction": "INGRESS", "name": "deleteme", "network": "n3", "sourceRanges": ["11.0.0.0/8"], "targetTags": ["tag"]}']
                 }
         ]
         expected_violations = [

@@ -169,7 +169,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                 alternate_services_violations=[],
                 direct_access_sources_violations=[],
                 iap_enabled_violation=True,
-                inventory_data='{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}'),
+                resource_data='{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}'),
         ]
         self.assertEquals(expected_violations, results)
 
@@ -205,7 +205,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                 alternate_services_violations=[alternate_service],
                 direct_access_sources_violations=[],
                 iap_enabled_violation=False,
-                inventory_data='{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}'),
+                resource_data='{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}'),
         ]
         self.assertEquals(expected_violations, results)
 
@@ -239,7 +239,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                 alternate_services_violations=[],
                 direct_access_sources_violations=[direct_source],
                 iap_enabled_violation=False,
-                inventory_data = '{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}')
+                resource_data = '{"name": "bs1", "full_name": "fake_full_name111", "id": "None"}')
         ]
         self.assertEquals(expected_violations, results)
 

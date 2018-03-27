@@ -413,11 +413,12 @@ class Resource(object):
         Returns:
             str: Resource representation
         """
-        return '{}<data="{}", parent_type="{}", parent_key="{}">'.format(
-            self.__class__.__name__,
-            json.dumps(self._data),
-            self.parent().type(),
-            self.parent().key())
+        return ('{}<data="{}", parent_resource_type="{}", '
+                'parent_resource_id="{}">').format(
+                    self.__class__.__name__,
+                    json.dumps(self._data),
+                    self.parent().type(),
+                    self.parent().key())
 
 
 class Organization(Resource):

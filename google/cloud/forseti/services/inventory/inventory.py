@@ -26,15 +26,15 @@ from google.cloud.forseti.services.inventory.crawler import run_crawler
 class Progress(object):
     """Progress state."""
 
-    def __init__(self, final_message=False, step='', inventory_id=''):
+    def __init__(self, final_message=False, step='', inventory_index_id=''):
         """Initialize
 
         Args:
             final_message (bool): whether it is the last message
             step (str): which step is this progress about
-            inventory_id (str): The id of the inventory
+            inventory_index_id (str): The id of the inventory index.
         """
-        self.inventory_id = inventory_id
+        self.inventory_index_id = inventory_index_id
         self.final_message = final_message
         self.step = step
         self.warnings = 0
@@ -163,7 +163,7 @@ def run_inventory(service_config,
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
-            progresser.inventory_id = storage.index.id
+            progresser.inventory_index_id = storage.inventory_index.id
             progresser.final_message = True if background else False
             queue.put(progresser)
             result = run_crawler(storage,
@@ -177,13 +177,13 @@ def run_inventory(service_config,
         return result
 
 
-def run_import(client, model_name, inventory_id, background):
+def run_import(client, model_name, inventory_index_id, background):
     """Runs the import against an inventory.
 
     Args:
         client (object): Api client to use.
         model_name (str): Model name to create.
-        inventory_id (str): Inventory index to source.
+        inventory_index_id (str): Inventory index to source.
         background (bool): If the import should run in background.
 
     Returns:
@@ -192,7 +192,7 @@ def run_import(client, model_name, inventory_id, background):
 
     return client.model.new_model('INVENTORY',
                                   model_name,
-                                  inventory_id,
+                                  inventory_index_id,
                                   background)
 
 
@@ -246,7 +246,7 @@ class Inventory(object):
                         return result
                     return run_import(self.config.client(),
                                       model_name,
-                                      result.inventory_id,
+                                      result.inventory_index_id,
                                       background)
                 except Exception as e:
                     queue.put(e)

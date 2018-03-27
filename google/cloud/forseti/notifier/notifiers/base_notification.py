@@ -16,15 +16,32 @@
 
 import abc
 
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
+
+
+class InvalidDataFormatError(Exception):
+    """Raised in case of an invalid notifier data format."""
+
+    def __init__(self, notifier, invalid_data_format):
+        """Constructor for the base notifier.
+
+        Args:
+            notifier (str): the notifier module/name
+            invalid_data_format (str): the invalid data format in question.
+        """
+        super(InvalidDataFormatError, self).__init__(
+            '%s: invalid data format: %s' % (notifier, invalid_data_format))
 
 
 class BaseNotification(object):
     """Base notifier to perform notifications"""
 
     __metaclass__ = abc.ABCMeta
+    supported_data_formats = ['csv', 'json']
 
     def __init__(self, resource, cycle_timestamp,
                  violations, global_configs, notifier_config,
@@ -55,3 +72,20 @@ class BaseNotification(object):
     def run(self):
         """Runs the notifier."""
         pass
+
+    def _get_output_filename(self, filename_template):
+        """Create the output filename.
+
+        Args:
+            filename_template (string): template to use for the output filename
+
+        Returns:
+            str: The output filename for the violations CSV file.
+        """
+        utc_now_datetime = date_time.get_utc_now_datetime()
+        output_timestamp = utc_now_datetime.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+
+        output_filename = filename_template.format(
+            self.resource, self.cycle_timestamp, output_timestamp)
+        return output_filename

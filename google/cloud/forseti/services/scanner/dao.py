@@ -60,7 +60,7 @@ def define_violation(dbengine):
         id = Column(Integer, primary_key=True)
         created_at_datetime = Column(DateTime())
         full_name = Column(String(1024))
-        inventory_data = Column(Text(16777215))
+        resource_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
@@ -119,7 +119,7 @@ def define_violation(dbengine):
                 for violation in violations:
                     violation_hash = _create_violation_hash(
                         violation.get('full_name', ''),
-                        violation.get('inventory_data', ''),
+                        violation.get('resource_data', ''),
                         violation.get('violation_data', ''),
                     )
 
@@ -133,7 +133,7 @@ def define_violation(dbengine):
                         violation_type=violation.get('violation_type'),
                         violation_data=json.dumps(
                             violation.get('violation_data')),
-                        inventory_data=violation.get('inventory_data'),
+                        resource_data=violation.get('resource_data'),
                         violation_hash=violation_hash,
                         created_at_datetime=created_at_datetime
                     )
@@ -201,12 +201,12 @@ def map_by_resource(violation_rows):
             LOGGER.warn('Invalid violation data, unable to parse json for %s',
                         v_data['violation_data'])
 
-        # inventory_data can be regular python string
+        # resource_data can be regular python string
         try:
-            v_data['inventory_data'] = json.loads(v_data['inventory_data'])
+            v_data['resource_data'] = json.loads(v_data['resource_data'])
         except ValueError:
-            v_data['inventory_data'] = json.loads(
-                json.dumps(v_data['inventory_data']))
+            v_data['resource_data'] = json.loads(
+                json.dumps(v_data['resource_data']))
 
         v_resource = vm.VIOLATION_RESOURCES.get(v_data['violation_type'])
         if v_resource:
@@ -215,12 +215,12 @@ def map_by_resource(violation_rows):
     return dict(v_by_type)
 
 
-def _create_violation_hash(violation_full_name, inventory_data, violation_data):
+def _create_violation_hash(violation_full_name, resource_data, violation_data):
     """Create a hash of violation data.
 
     Args:
         violation_full_name (str): The full name of the violation.
-        inventory_data (str): The inventory data.
+        resource_data (str): The inventory data.
         violation_data (dict): A violation.
 
     Returns:
@@ -243,7 +243,7 @@ def _create_violation_hash(violation_full_name, inventory_data, violation_data):
         # Group resources do not have full name.  Issue #1072
         violation_hash.update(
             json.dumps(violation_full_name) +
-            json.dumps(inventory_data, sort_keys=True) +
+            json.dumps(resource_data, sort_keys=True) +
             json.dumps(violation_data, sort_keys=True)
         )
     except TypeError as e:

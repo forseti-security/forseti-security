@@ -48,17 +48,18 @@ class GroupsScanner(base_scanner.BaseScanner):
                 'parent_email': violation.parent.member_email,
                 'parent_id': violation.parent.member_id,
                 'parent_status': violation.parent.member_status,
-                'parent_type': violation.parent.member_type
+                'parent_resource_type': violation.parent.member_type
             }
+            full_name = violation.parent.member_id + ':' + violation.member_id
             yield {
                 'resource_id': violation.member_email,
                 'resource_type': 'group_member',
-                'full_name': None,
+                'full_name': full_name,
                 'rule_index': None,
                 'rule_name': violation.violated_rule_names,
                 'violation_type': 'GROUP_VIOLATION',
                 'violation_data': violation_data,
-                'inventory_data': violation.inventory_data
+                'resource_data': violation.resource_data
             }
 
     def _output_results(self, all_violations):
@@ -280,7 +281,7 @@ class MemberNode(anytree.node.NodeMixin):
         """
         self.member_id = member_id
         self.member_email = member_email
-        self.inventory_data = member_email
+        self.resource_data = member_email
         self.member_type = member_type
         self.member_status = member_status
         self.parent = parent

@@ -80,7 +80,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
                 'rule_index': rule_indices.get(violation.rule_id, 0),
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
-                'inventory_data': violation.inventory_data
+                'resource_data': violation.resource_data
             }
             sorted(violation_dict)
             yield violation_dict

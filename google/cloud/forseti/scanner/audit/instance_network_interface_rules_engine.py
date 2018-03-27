@@ -248,7 +248,7 @@ class Rule(object):
                     project=project,
                     network=network,
                     ip=ips,
-                    inventory_data=instance_network_interface.as_json())
+                    resource_data=instance_network_interface.as_json())
 
     # Rule violation.
     # resource_type: string
@@ -261,4 +261,4 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'full_name',
                                 'rule_name', 'rule_index', 'violation_type',
-                                'project', 'network', 'ip', 'inventory_data'])
+                                'project', 'network', 'ip', 'resource_data'])

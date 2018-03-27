@@ -51,7 +51,7 @@ class FindingsNotifierTest(ForsetiTestCase):
              'finding_properties':
                  {'inventory_index_id': 'aaa',
                   'resource_id': 'fake_firewall_111',
-                  'inventory_data': 'inventory_data_111',
+                  'resource_data': 'inventory_data_111',
                   'rule_index': 111,
                   'violation_data': '{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}', 'resource_type': u'firewall_rule'},
              },
@@ -65,7 +65,7 @@ class FindingsNotifierTest(ForsetiTestCase):
             'finding_properties':
                 {'inventory_index_id': 'aaa',
                  'resource_id': 'fake_firewall_222',
-                 'inventory_data': 'inventory_data_222',
+                 'resource_data': 'inventory_data_222',
                  'rule_index': 222,
                  'violation_data': '{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}', 'resource_type': u'firewall_rule'},
             }
