@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Wrapper for Storage API client."""
-import json
 import StringIO
 import urlparse
 from googleapiclient import errors
@@ -24,7 +23,6 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.util import metadata_server
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -59,44 +57,6 @@ def get_bucket_and_path_from(full_path):
     bucket_name = parsed.netloc
     object_name = parsed.path[1:]  # Skip leading / in path.
     return bucket_name, object_name
-
-
-def _get_projectid_from_metadata():
-    """Get the current project id from the metadata server, if reachable.
-
-    Returns:
-        str: The current project id or None if the metadata server is
-            unreachable.
-    """
-    if metadata_server.can_reach_metadata_server():
-        return metadata_server.get_project_id()
-    return None
-
-
-def _user_project_missing_error(error):
-    """Parses the error and checks if it is a no user project exception.
-
-    Args:
-        error (Exception): The error message to check.
-
-    Returns:
-        bool: True if this is a user project missing error, else False.
-    """
-    if isinstance(error, errors.HttpError):
-        if (error.resp.status == 400 and
-                error.resp.get('content-type', '').startswith(
-                    'application/json')):
-            error_details = json.loads(error.content.decode('utf-8'))
-            all_errors = error_details.get('error', {}).get('errors', [])
-            user_project_required_errors = [
-                error for error in all_errors
-                if (error.get('domain', '') == 'global' and
-                    error.get('reason', '') == 'required')
-            ]
-            if (user_project_required_errors and
-                    len(user_project_required_errors) == len(all_errors)):
-                return True
-    return False
 
 
 class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -365,11 +325,6 @@ class StorageClient(object):
         """
         del args
         # Storage API has unlimited rate.
-        if 'user_project' in kwargs:
-            self._user_project = kwargs['user_project']
-        else:
-            self._user_project = _get_projectid_from_metadata()
-
         self.repository = StorageRepositoryClient(
             credentials=kwargs.get('credentials'),
             quota_max_calls=0,
@@ -448,13 +403,11 @@ class StorageClient(object):
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_bucket_acls(self, bucket, user_project=None):
+    def get_bucket_acls(self, bucket):
         """Gets acls for GCS bucket.
 
         Args:
             bucket (str): The name of the bucket.
-            user_project (str): The user project to bill the bucket access to,
-                for requester pays buckets.
 
         Returns:
             dict: ACL json for bucket
@@ -464,11 +417,7 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            kwargs = {}
-            if user_project:
-                kwargs['userProject'] = user_project
-            results = self.repository.bucket_acls.list(resource=bucket,
-                                                       **kwargs)
+            results = self.repository.bucket_acls.list(resource=bucket)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'items')
             LOGGER.debug('Getting acls for a GCS Bucket, bucket = %s,'
@@ -476,24 +425,16 @@ class StorageClient(object):
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if not user_project and _user_project_missing_error(e):
-                if self._user_project:
-                    LOGGER.info('User project required for bucket %s, '
-                                'retrying.', bucket)
-                    return self.get_bucket_acls(bucket, self._user_project)
-
             api_exception = api_errors.ApiExecutionError(
                 'bucketAccessControls', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_bucket_iam_policy(self, bucket, user_project=None):
+    def get_bucket_iam_policy(self, bucket):
         """Gets the IAM policy for a bucket.
 
         Args:
             bucket (str): The bucket to fetch the policy for.
-            user_project (str): The user project to bill the bucket access to,
-                for requester pays buckets.
 
         Returns:
             dict: The IAM policies for the bucket.
@@ -503,33 +444,21 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            kwargs = {}
-            if user_project:
-                kwargs['userProject'] = user_project
-            results = self.repository.buckets.get_iam_policy(bucket, **kwargs)
+            results = self.repository.buckets.get_iam_policy(bucket)
             LOGGER.debug('Getting the IAM policy for a bucket, bucket = %s,'
                          ' results = %s', bucket, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            if not user_project and _user_project_missing_error(e):
-                if self._user_project:
-                    LOGGER.info('User project required for bucket %s, '
-                                'retrying.', bucket)
-                    return self.get_bucket_iam_policy(bucket,
-                                                      self._user_project)
-
             api_exception = api_errors.ApiExecutionError(
                 'bucketIamPolicy', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_default_object_acls(self, bucket, user_project=None):
+    def get_default_object_acls(self, bucket):
         """Gets acls for GCS bucket.
 
         Args:
             bucket (str): The name of the bucket.
-            user_project (str): The user project to bill the bucket access to,
-                for requester pays buckets.
 
         Returns:
             dict: ACL json for bucket
@@ -539,11 +468,7 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            kwargs = {}
-            if user_project:
-                kwargs['userProject'] = user_project
-            results = self.repository.default_object_acls.list(resource=bucket,
-                                                               **kwargs)
+            results = self.repository.default_object_acls.list(resource=bucket)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'items')
             LOGGER.debug('Getting default object acls for GCS bucket, bucket'
@@ -551,25 +476,16 @@ class StorageClient(object):
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if not user_project and _user_project_missing_error(e):
-                if self._user_project:
-                    LOGGER.info('User project required for bucket %s, '
-                                'retrying.', bucket)
-                    return self.get_default_object_acls(bucket,
-                                                        self._user_project)
-
             api_exception = api_errors.ApiExecutionError(
                 'defaultObjectAccessControls', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_objects(self, bucket, user_project=None):
+    def get_objects(self, bucket):
         """Gets all objects in a bucket.
 
         Args:
             bucket (str): The bucket to list to objects in.
-            user_project (str): The user project to bill the bucket access to,
-                for requester pays buckets.
 
         Returns:
             list: a list of object resource dicts.
@@ -580,12 +496,8 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            kwargs = {}
-            if user_project:
-                kwargs['userProject'] = user_project
             paged_results = self.repository.objects.list(bucket,
-                                                         projection='full',
-                                                         **kwargs)
+                                                         projection='full')
             flattened_results = api_helpers.flatten_list_results(paged_results,
                                                                  'items')
             LOGGER.debug('Getting all the objects in a bucket, bucket = %s,'
@@ -593,26 +505,17 @@ class StorageClient(object):
                          bucket, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if not user_project and _user_project_missing_error(e):
-                if self._user_project:
-                    LOGGER.info('User project required for bucket %s, '
-                                'retrying.', bucket)
-                    return self.get_objects(bucket, self._user_project)
-
             api_exception = api_errors.ApiExecutionError(
                 'objects', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_object_acls(self, bucket, object_name, user_project=None):
+    def get_object_acls(self, bucket, object_name):
         """Gets acls for GCS object.
 
         Args:
             bucket (str): The name of the bucket.
             object_name (str): The name of the object.
-            user_project (str): The user project to bill the bucket access to,
-                for requester pays buckets.
-
 
         Returns:
             dict: ACL json for bucket
@@ -622,12 +525,8 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            kwargs = {}
-            if user_project:
-                kwargs['userProject'] = user_project
             results = self.repository.object_acls.list(resource=bucket,
-                                                       object=object_name,
-                                                       **kwargs)
+                                                       object=object_name)
             flattened_results = api_helpers.flatten_list_results(results,
                                                                  'items')
             LOGGER.debug('Getting acls for GCS object, bucket = %s,'
@@ -635,26 +534,17 @@ class StorageClient(object):
                          bucket, object_name, flattened_results)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            if not user_project and _user_project_missing_error(e):
-                if self._user_project:
-                    LOGGER.info('User project required for bucket %s, '
-                                'retrying.', bucket)
-                    return self.get_object_acls(bucket, object_name,
-                                                self._user_project)
-
             api_exception = api_errors.ApiExecutionError(
                 'objectAccessControls', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_object_iam_policy(self, bucket, object_name, user_project=None):
+    def get_object_iam_policy(self, bucket, object_name):
         """Gets the IAM policy for an object.
 
         Args:
             bucket (str): The bucket to fetch the policy for.
             object_name (str): The object name to fetch the policy for.
-            user_project (str): The user project to bill the bucket access to,
-                for requester pays buckets.
 
         Returns:
             dict: The IAM policies for the object.
@@ -664,24 +554,13 @@ class StorageClient(object):
                 GCP API fails
         """
         try:
-            kwargs = {}
-            if user_project:
-                kwargs['userProject'] = user_project
             results = self.repository.objects.get_iam_policy(bucket,
-                                                             object_name,
-                                                             **kwargs)
+                                                             object_name)
             LOGGER.debug('Getting the IAM policy for an object, bucket = %s,'
                          ' object_name = %s, results = %s',
                          bucket, object_name, results)
             return results
         except (errors.HttpError, HttpLib2Error) as e:
-            if not user_project and _user_project_missing_error(e):
-                if self._user_project:
-                    LOGGER.info('User project required for bucket %s, '
-                                'retrying.', bucket)
-                    return self.get_object_iam_policy(bucket, object_name,
-                                                      self._user_project)
-
             api_exception = api_errors.ApiExecutionError(
                 'objectIamPolicy', e, 'bucket', bucket)
             LOGGER.error(api_exception)
