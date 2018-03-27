@@ -104,10 +104,19 @@ class NotifierTest(ForsetiTestCase):
         mock_gcs_violations_cls.return_value = mock_gcs_violations
         mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
         notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
+
+        # The notifiers were only run once i.e. for 'policy_violations'
         self.assertTrue(mock_find_notifiers.called)
-        self.assertTrue(mock_email_violations.run.called)
+        self.assertEquals(1, mock_email_violations_cls.call_count)
+        self.assertEquals(
+            'policy_violations',
+            mock_email_violations_cls.call_args[0][0])
         self.assertEquals(1, mock_email_violations.run.call_count)
-        self.assertTrue(mock_gcs_violations.run.called)
+
+        self.assertEquals(1, mock_gcs_violations_cls.call_count)
+        self.assertEquals(
+            'policy_violations',
+            mock_gcs_violations_cls.call_args[0][0])
         self.assertEquals(1, mock_gcs_violations.run.call_count)
 
 
