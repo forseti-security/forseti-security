@@ -17,8 +17,7 @@
 if [[ -z "${GSUITE_ADMIN_CREDENTIAL_PATH}" ]]; then
     echo "This script is a piece of the Forseti deployment infrastructure."
     echo "It is meant to be run from the Forseti VM that gets deployed by"
-    echo "Deployment Manager (either using 'gcloud deployment-manager' or"
-    echo "setup_forseti.py). This script expects either root or"
+    echo "Deployment Manager. This script expects either root or"
     echo "unauthenticated sudo privileges on the target VM."
 fi
 
