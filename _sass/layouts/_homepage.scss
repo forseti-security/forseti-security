@@ -9,6 +9,12 @@
   .logo-info {
     display: inline-block;
     margin: 0 0 25px;
+
+    @media (min-width: $screen-md-min) {
+      left: -235px;
+      margin: 0 0 -85px;
+      position: relative;
+    }
   }
 
   .project-title {
@@ -40,6 +46,13 @@
   a.btn-link {
     margin: 0;
     padding: 8px 0;
+  }
+
+  @media (max-width: $screen-xs-max) {
+    .promo-image img {
+      margin: 0 auto;
+      max-width: 55%;
+    }
   }
 }
 
