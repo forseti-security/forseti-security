@@ -1,6 +1,8 @@
 ---
 title: Develop
 order: 000
+hide:
+  right_sidebar: true
 ---
 
 | **[Contributing to Forseti]({% link _docs/_latest/develop/contributing)** |
