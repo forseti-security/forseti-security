@@ -61,4 +61,12 @@
   margin-bottom: -40px;
   padding: 35px 0;
   text-align: center;
+
+  a {
+    padding: 0 12px;
+  }
+
+  a:hover {
+    text-decoration: none;
+  }
 }
