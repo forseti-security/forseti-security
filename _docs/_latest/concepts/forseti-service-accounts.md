@@ -14,11 +14,16 @@ the scenarios for which it's best to use separate service accounts:
  * **[G Suite Groups service account](#g-suite-groups-service-account)**
  (optional): used to inventory G Suite Groups and their members.
  Forseti Explain requires this to be enabled.
- * **[Explain service account](#forseti-explain-service-account)**
+ * **[Explain service account](#explain-service-account)**
  (optional): used to provide Explain functionality.
 
 When you name your service accounts, it's best to use a descriptive name like
 `forseti-security` or `forseti-security-gsuite`.
+
+The image below shows how different service accounts can work with
+different modules:
+
+![service account architecture diagram](/images/docs/concepts/service-account-architecture.png)
 
 ### Forseti Security service account
 
@@ -84,7 +89,7 @@ service account needs is read-access on the Groups and Group Members services.
 Explain should have its own service account and it only requires access to read
 from the inventory stored in Cloud SQL.
 
-**Granted on the project where Forseti Explain is deployed**
+**Granted on the project where Explain is deployed**
 
  * `roles/cloudsql.client`
  
