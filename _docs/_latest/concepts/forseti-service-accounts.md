@@ -21,7 +21,7 @@ When you name your service accounts, it's best to use a descriptive name like
 `forseti-security` or `forseti-security-gsuite`.
 
 The image below shows how different service accounts can work with
-different modules:
+different modules and resources:
 
 ![service account architecture diagram](/images/docs/concepts/service-account-architecture.png)
 
