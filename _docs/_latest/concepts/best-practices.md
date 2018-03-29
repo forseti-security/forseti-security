@@ -6,7 +6,7 @@ order: 100
 # {{ page.title }}
 
 This page includes best practices and rationale for using Forseti with specific
-resources in your Google Cloud Platforms (GCP) environments. Future Forseti
+resources in your Google Cloud Platform (GCP) environments. Future Forseti
 releases are expected to include scans that correspond to each best practice,
 so you can easily run them.
 
