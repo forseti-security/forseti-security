@@ -45,7 +45,7 @@ def _obtain_http_client(hostname=METADATA_SERVER_HOSTNAME):
                                   timeout=METADATA_SERVER_CONN_TIMEOUT)
 
 
-def _issue_http_request(path, method, headers):
+def _issue_http_request(method, path, headers):
     """Perform a request on a specified httplib connection object.
 
     Args:
@@ -60,13 +60,12 @@ def _issue_http_request(path, method, headers):
         MetadataServerHttpError: When we can't reach the requested host.
     """
     http_client = _obtain_http_client()
-
     try:
-        return http_client.request(path, method, headers=headers)
-    except socket.error:
+        http_client.request(method, path, headers=headers)
+        return http_client.getresponse()
+    except (socket.error,  httplib.HTTPException) as e:
+        LOGGER.error('Error with request: %s', e)
         raise errors.MetadataServerHttpError
-    finally:
-        http_client.close()
 
 
 # TODO: Should use memoize or similar so that after the first check
@@ -80,13 +79,11 @@ def can_reach_metadata_server():
     """
     path = '/computeMetadata/v1/instance/id'
     response = None
-
     try:
         response = _issue_http_request(
-            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+            HTTP_GET, path, REQUIRED_METADATA_HEADER)
     except errors.MetadataServerHttpError:
         pass
-
     return response and response.status == HTTP_SUCCESS
 
 
@@ -102,7 +99,7 @@ def get_value_for_attribute(attribute):
     path = '/computeMetadata/v1/instance/attributes/%s' % attribute
     try:
         http_response = _issue_http_request(
-            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+            HTTP_GET, path, REQUIRED_METADATA_HEADER)
         return http_response.read()
     except (TypeError, ValueError,
             errors.MetadataServerHttpError) as e:
@@ -120,7 +117,7 @@ def get_project_id():
     path = '/computeMetadata/v1/project/project-id'
     try:
         http_response = _issue_http_request(
-            path, HTTP_GET, REQUIRED_METADATA_HEADER)
+            HTTP_GET, path, REQUIRED_METADATA_HEADER)
         return http_response.read()
     except errors.MetadataServerHttpError as e:
         LOGGER.error('Unable to read project id from metadata server: %s', e)
