@@ -32,6 +32,7 @@ plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
   - jekyll-redirect-from
+  - jekyll-responsive-image
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
@@ -47,6 +48,22 @@ collections:
     output: true
   faq:
     output: false
+
+# Responsive image templates and resizing configuration
+responsive_image:
+  base_path: images
+  output_path_format: images/resized/%{dirname}/%{filename}-%{width}x%{height}.%{extension}
+  template: _includes/responsive_image/template.html
+  sizes:
+    - width: 320
+    - width: 600
+    - width: 800
+    - width: 1000
+    - width: 1400
+  default_quality: 95
+  strip: true
+
+
 
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.

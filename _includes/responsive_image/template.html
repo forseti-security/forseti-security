@@ -1,0 +1,23 @@
+{% capture srcset %}
+    {% for i in resized %}
+        /{{ i.path }} {{ i.width }}w,
+    {% endfor %}
+{% endcapture %}
+{% assign indentation = "" %}
+{% if indent %}
+  {% assign num_indent = indent | plus:0 %}
+  {% for count in (1..num_indent) %}
+    {% assign indentation = indentation | append:"  " %}  
+  {% endfor %}
+{% endif %}
+{{ indentation }}<img class="img-responsive" src="/{{ path }}" srcset="{{ srcset | strip_newlines }}/{{ original.path }} {{original.width}}w" alt="{{ alt }}" sizes="(max-width: 991px) 100vw, 60vw" />
+{% comment %}
+  Due to the way Jekyll handles includes, we must explicitly parameterize the
+  level of indentation. There's no way to include a template at the contextually
+  appropriate level of indentation.
+
+  Furthermore, we set the responsive "sizes" attribute based upon the breakpoint
+  at which the 3-column docs page layout changes from 1-column @ 100% to 3-columns
+  side-by-side. This happens at the medium breakpoint, so we change from a 100%
+  viewport hint to an approximately 60% hint (~7 cols/12 cols)
+{% endcomment %}
