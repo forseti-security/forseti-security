@@ -91,6 +91,7 @@ GCP_READ_IAM_ROLES = [
     'roles/appengine.appViewer',
     'roles/bigquery.dataViewer',
     'roles/servicemanagement.quotaViewer',
+    'roles/serviceusage.serviceUsageConsumer',
     'roles/cloudsql.viewer'
 ]
 
