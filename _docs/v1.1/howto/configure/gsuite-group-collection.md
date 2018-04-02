@@ -32,12 +32,12 @@ service account. You can go directly to the
       details to the consent screen later, edit your
       [OAuth consent screen](https://console.developers.google.com/apis/credentials/consent) settings.
             
-      ![create service account window with product name field highlighted](/images/docs/howto/create-service-account.png)
+{% responsive_image path: images/docs/configuration/create-service-account.png alt: "create service account window with product name field highlighted" indent: 3 %}
         
 1. To create and download a JSON key for the service account:
 
    * Click **More** on the service account row, then click **Create key**.
-      ![more menu with create key highlighted](/images/docs/howto/create-key.png)
+{% responsive_image path: images/docs/configuration/create-key.png alt: "more menu with create key highlighted" indent: 3 %}
    *  On the **Create private key** dialog that appears, select **JSON**, then click **Create**.
    *  In the **Save File** window that appears, save the file to a local directory.
 
@@ -46,7 +46,7 @@ service account. You can go directly to the
 1. On the **Client ID for Service account client** panel that appears, copy the **Client ID**
    value, which will be a large number.
     
-   ![service account panel with client ID highlighted](/images/docs/howto/client-id.png)
+{% responsive_image path: images/docs/configuration/client-id.png alt: "service account panel with client ID highlighted" indent: 2 %}
         
 ### Enable the service account in your G Suite admin control panel.
 You must have the **super admin** role in admin.google.com to complete these steps:
@@ -59,7 +59,7 @@ You must have the **super admin** role in admin.google.com to complete these ste
     https://www.googleapis.com/auth/admin.directory.group.readonly
     ```
 1. Click **Authorize**.
-   ![manage api client access in Google Admin Security settings](/images/docs/howto/admin-security.png)
+{% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
 
 ## Configuring Forseti to enable G Suite Google Groups collection
 

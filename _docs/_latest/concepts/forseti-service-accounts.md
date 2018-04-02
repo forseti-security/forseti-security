@@ -23,7 +23,7 @@ When you name your service accounts, it's best to use a descriptive name like
 The image below shows how different service accounts can work with
 different modules and resources:
 
-![service account architecture diagram](/images/docs/concepts/service-account-architecture.png)
+{% responsive_image path: images/docs/concepts/service-account-architecture.png alt: "service account architecture diagram" %}
 
 ### Forseti Security service account
 
