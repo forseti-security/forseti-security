@@ -56,6 +56,7 @@ API_SERVICE="$(cat << EOF
 [Unit]
 Description=Forseti API Server
 [Service]
+User=ubuntu
 Restart=always
 RestartSec=3
 ExecStart=$FORSETI_COMMAND
@@ -72,6 +73,7 @@ SQL_PROXY_SERVICE="$(cat << EOF
 [Unit]
 Description=Cloud SQL Proxy
 [Service]
+User=ubuntu
 Restart=always
 RestartSec=3
 ExecStart=$SQL_PROXY_COMMAND
