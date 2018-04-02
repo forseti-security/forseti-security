@@ -5,6 +5,7 @@ group :jekyll_plugins do
   gem 'jekyll-github-metadata'
   gem 'jekyll-sitemap'
   gem 'jekyll-redirect-from'
+  gem 'jekyll-responsive-image'
   gem 'listen'
 end
 gem 'execjs'

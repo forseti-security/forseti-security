@@ -14,7 +14,7 @@ provide their respective features, and provide a foundation that addons can
 build upon.
 
 Get started with
-[Forseti Security]({% link _docs/latest/setup/gcp-deployment.md %}).
+[Forseti Security]({% link _docs/latest/configure/configuring-forseti.md %}).
 
 ## When to use Forseti Security
 
