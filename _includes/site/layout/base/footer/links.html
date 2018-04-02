@@ -1,7 +1,7 @@
 <div class="col-sm-4">
   <h2>Documentation</h2>
   <ul class="links">
-    {% for tab in site.data.doc_categories %}
+    {% for tab in site.data.doc_categories['latest'] %}
       <li><a href="{{ site.baseurl }}/{{ tab.href | replace:'$$VERSION$$','latest' }}">{{ tab.title }}</a></li>
     {% endfor %}
   </ul>
