@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+set -e
+trap 'return_code=$?' ERR
 
 if  [ -z ${JGT+x} ]; then
     # We don't have access to the encrypted vars.
@@ -24,3 +26,5 @@ fi
 bundle exec htmlproofer --check-img-http --check-opengraph --check-html \
 --check-favicon --report-missing-names --report-script-embeds \
 --url-ignore "/GoogleCloudPlatform/forseti-security/edit/" ./_www/www
+
+exit ${return_code}
