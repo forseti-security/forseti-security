@@ -76,13 +76,13 @@ in your `forseti_conf.yaml`.
 
 If you are running Forseti on GCP and made any changes to the above values, 
 you will need to copy the conf file to the GCS bucket. See 
-["Move Configuration to GCS"]({% link _docs/latest/setup/gcp-deployment.md %}) 
+["Move Configuration to GCS"]({% link _docs/latest/configure/configuring-forseti.md %}) 
 for details on how to do this.
 
 ## Deploying to GCP with G Suite Google Groups collection
 
 If you
-[created a deployment]({% link _docs/latest/setup/gcp-deployment.md %})
+[created a deployment]({% link _docs/latest/configure/configuring-forseti.md %})
 on GCP, run the following command to copy your G Suite key to your Forseti instance:
 
   ```

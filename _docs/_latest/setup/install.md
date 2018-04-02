@@ -71,11 +71,11 @@ steps below:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For
        more information, see
-       [Enabling email notifications]({% link _docs/configure/email-notification.md %}).
+       [Enabling email notifications]({% link _docs/latest/configure/email-notification.md %}).
      * Email recipient \[Optional\]: If you provide a SendGrid API key, you will
        also be asked to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
+       [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
        and is necessary. Ask your G Suite Admin if you don't know the super
        admin email.
 
@@ -93,10 +93,10 @@ steps below:
 ## What's next
 
   - Learn how to customize
-    [Inventory]({% link _docs/configure/inventory/index.md %}) and 
-    [Scanner]({% link _docs/configure/scanner/index.md %}).
+    [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and 
+    [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
   - Configure Forseti to send
-    [email notifications]({% link _docs/configure/email-notification.md %}).
+    [email notifications]({% link _docs/latest/configure/email-notification.md %}).
   - Enable
-    [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
+    [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
     for processing by Forseti.

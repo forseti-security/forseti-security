@@ -9,10 +9,10 @@ access Forseti Security.
 
 ---
 
-| **[Command Line]({% link _docs/use/cli.md %})** |
+| **[Command Line]({% link _docs/latest/use/cli.md %})** |
 | :---------------------------------------------------------------------------- |
 | Using the command line to access Forseti data. |
 
-**[Inventory]({% link _docs/use/inventory.md %})**
+**[Inventory]({% link _docs/latest/use/inventory.md %})**
 | :---------------------------------------------------------------------------- |
 | Using third party tools to query raw Forseti Inventory data. |
