@@ -81,7 +81,7 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: false
+          should_notify: true
           notifiers:
             # Email violations
             - name: email_violations

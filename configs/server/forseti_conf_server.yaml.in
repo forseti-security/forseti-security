@@ -82,7 +82,7 @@ notifier:
     # to send alerts for every violation found
     resources:
         - resource: policy_violations
-          should_notify: false
+          should_notify: true
           notifiers:
             # Email violations
             - name: email_violations
@@ -140,7 +140,7 @@ notifier:
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
         - resource: firewall_rule_violations
-          should_notify: false
+          should_notify: true
           notifiers:
             # Upload violations to GCS.
             - name: gcs_violations
