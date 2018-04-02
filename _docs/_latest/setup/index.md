@@ -17,18 +17,18 @@ Platform (GCP) environments.
 | :---------------------------------------------------------------------------- |
 | Get new features and update your GCP deployment by upgrading your Forseti Security installation to the latest version. |
 
-| **[Inventory]({% link _docs/latest/quickstarts/inventory/index.md %})** |
+| **[Inventory]({% link _docs/latest/configure/inventory/index.md %})** |
 | :---------------------------------------------------------------------------- |
 | Set up Inventory to collect and store information about your GCP resources. Inventory helps you undersand your resources and take action to conserve resources, reduce cost, and minimize security exposure. |
 
-| **[Scanner]({% link _docs/latest/quickstarts/scanner/index.md %})** |
+| **[Scanner]({% link _docs/latest/configure/scanner/index.md %})** |
 | :---------------------------------------------------------------------------- |
 | Set up Scanner to monitor your GCP resources for rule violations. Scanner uses the information from Inventory to regularly compare role-based access policies for your resources. |
 
-| **[Enforcer]({% link _docs/latest/quickstarts/enforcer/index.md %})** |
+| **[Enforcer]({% link _docs/latest/configure/enforcer/index.md %})** |
 | :---------------------------------------------------------------------------- |
 | Set up Enforcer to automatically correct policy discrepancies. Enforcer uses policies you create to compare the current state of your Compute Engine firewall to the desired state and uses Google Cloud APIs to make changes if it finds any differences. |
 
-| **[IAM Explain]({% link _docs/latest/quickstarts/explain/index.md %})** |
+| **[IAM Explain]({% link _docs/latest/configure/explain/index.md %})** |
 | :---------------------------------------------------------------------------- |
 | Set up IAM Explain to help you understand, test, and develop Cloud Identity and Access Management (Cloud IAM) policies. |
