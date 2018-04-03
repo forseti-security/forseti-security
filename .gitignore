@@ -43,3 +43,6 @@ _www/
 .jekyll-metadata/
 _config.yml~
 Gemfile.lock
+
+# automatically resized images
+images/resized/

@@ -1,0 +1,29 @@
+  - scope:
+      path: _docs/$$VERSION$$
+    values:
+      category: Overview ($$VERSION$$)
+      layout: docs
+  - scope:
+      path: _docs/$$VERSION$$/concepts
+    values:
+      category: Concepts ($$VERSION$$)
+  - scope:
+      path: _docs/$$VERSION$$/setup
+    values:
+      category: Setup ($$VERSION$$)
+  - scope:
+      path: _docs/$$VERSION$$/use
+    values:
+      category: Use ($$VERSION$$)
+  - scope:
+      path: _docs/$$VERSION$$/configure
+    values:
+      category: Configure ($$VERSION$$)
+  - scope:
+      path: _docs/$$VERSION$$/develop
+    values:
+      category: Develop ($$VERSION$$)
+  - scope:
+      path: _docs/$$VERSION$$/faq
+    values:
+      category: FAQ ($$VERSION$$)

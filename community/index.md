@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Community
 ---
 # {{ page.title }}
@@ -28,7 +29,5 @@ to follow along and ask questions of the Forseti Security community.
 **Having trouble?**
 
 If you're having trouble you can file an issue, but first we ask that you 
-check out the discuss list or [FAQs]({% link _docs/faq/index.md %})
-to see if anyone has experienced a similar issue. 
-
-
+check out the discuss list or [FAQs]({% link _docs/latest/faq/index.md %})
+to see if anyone has experienced a similar issue.

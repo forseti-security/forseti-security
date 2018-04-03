@@ -1,6 +1,13 @@
 source 'https://rubygems.org'
 
-gem 'github-pages', '>=172', group: :jekyll_plugins
+group :jekyll_plugins do
+  gem 'rouge'
+  gem 'jekyll-github-metadata'
+  gem 'jekyll-sitemap'
+  gem 'jekyll-redirect-from'
+  gem 'jekyll-responsive-image'
+  gem 'listen'
+end
 gem 'execjs'
 gem 'therubyracer'
 gem 'html-proofer'
