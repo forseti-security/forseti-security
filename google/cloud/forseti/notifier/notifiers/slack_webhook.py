@@ -74,14 +74,14 @@ class SlackWebhook(base_notification.BaseNotification):
             **kwargs: Arbitrary keyword arguments.
                 payload: violation data for body of POST request\
         """
-        url = self.notifier_config.get('webhook_url')
+        url = self.notification_config.get('webhook_url')
         request = requests.post(url, json={'text': kwargs.get('payload')})
 
         LOGGER.info(request)
 
     def run(self):
         """Run the slack webhook notifier"""
-        if not self.notifier_config.get('webhook_url'):
+        if not self.notification_config.get('webhook_url'):
             LOGGER.warn('No url found, not running Slack notifier.')
             return
 
