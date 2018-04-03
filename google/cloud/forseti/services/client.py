@@ -286,13 +286,15 @@ class InventoryClient(ForsetiClient):
         echo = self.stub.Ping(inventory_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def create(self, background=False, import_as=None):
+    def create(self, background=False, import_as=None, enable_debug=False):
         """Creates a new inventory, with an optional import.
 
         Args:
             background (bool): whether to run in background
             import_as (str): the name of the data model to create after
                 inventory is created
+            enable_debug (bool): whether to emit additional information
+                for debugging
 
         Returns:
             proto: the returned proto message of create inventory
@@ -300,7 +302,8 @@ class InventoryClient(ForsetiClient):
 
         request = inventory_pb2.CreateRequest(
             background=background,
-            model_name=import_as)
+            model_name=import_as,
+            enable_debug=enable_debug)
         return self.stub.Create(request)
 
     def get(self, inventory_index_id):

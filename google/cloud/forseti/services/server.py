@@ -253,8 +253,7 @@ class ServiceConfig(AbstractServiceConfig):
                  notifier_config,
                  global_config,
                  forseti_db_connect_string,
-                 endpoint,
-                 enable_debug_mode):
+                 endpoint):
         """Initialize
 
         Args:
@@ -264,7 +263,6 @@ class ServiceConfig(AbstractServiceConfig):
             global_config (dict): Global configurations
             forseti_db_connect_string (str): Forseti database string
             endpoint (str): server endpoint
-            enable_debug_mode (bool): Enable debug mode.
         """
 
         super(ServiceConfig, self).__init__()
@@ -274,7 +272,6 @@ class ServiceConfig(AbstractServiceConfig):
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
-        self.enable_debug_mode = enable_debug_mode
 
         self.inventory_config = inventory_config
         self.inventory_config.set_service_config(self)
@@ -374,7 +371,6 @@ def serve(endpoint,
           forseti_config_file_path,
           log_level,
           enable_console_log,
-          enable_debug_mode,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -386,7 +382,6 @@ def serve(endpoint,
         forseti_config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
-        enable_debug_mode (bool): Enable debug mode.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
@@ -435,8 +430,7 @@ def serve(endpoint,
                            notifier_config=forseti_notifier_config,
                            global_config=forseti_global_config,
                            forseti_db_connect_string=forseti_db_connect_string,
-                           endpoint=endpoint,
-                           enable_debug_mode=enable_debug_mode)
+                           endpoint=endpoint)
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
@@ -485,10 +479,6 @@ def main():
         '--enable_console_log',
         action='store_true',
         help='Print log to console.')
-    parser.add_argument(
-        '--enable_debug_mode',
-        action='store_true',
-        help='Emit additional details for debugging.')
     args = vars(parser.parse_args())
 
     serve(args['endpoint'],
@@ -496,8 +486,7 @@ def main():
           args['forseti_db'],
           args['forseti_config_file_path'],
           args['log_level'],
-          args['enable_console_log'],
-          args['enable_debug_mode'])
+          args['enable_console_log'])
 
 
 if __name__ == '__main__':
