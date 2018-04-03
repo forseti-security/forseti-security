@@ -1,6 +1,6 @@
 ---
 title: Forseti Architecture
-order: 106
+order: 105
 ---
 
 # {{ page.title }}
