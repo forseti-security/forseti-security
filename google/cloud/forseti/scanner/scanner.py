@@ -43,6 +43,9 @@ def run(model_name=None, progress_queue=None, service_config=None):
         global_configs, scanner_configs, service_config, model_name,
         None).build()
 
+    if runnable_scanners:
+        runnable_scanners[0].initialize_scanner_index_id()
+
     # pylint: disable=bare-except
     for scanner in runnable_scanners:
         try:

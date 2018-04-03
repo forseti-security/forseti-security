@@ -60,15 +60,16 @@ def define_violation(dbengine):
         id = Column(Integer, primary_key=True)
         created_at_datetime = Column(DateTime())
         full_name = Column(String(1024))
-        resource_data = Column(Text(16777215))
         inventory_index_id = Column(String(256))
+        resource_data = Column(Text(16777215))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
-        rule_name = Column(String(256))
         rule_index = Column(Integer, default=0)
+        rule_name = Column(String(256))
+        scanner_index_id = Column(String(256))
         violation_data = Column(Text)
-        violation_type = Column(String(256), nullable=False)
         violation_hash = Column(String(256))
+        violation_type = Column(String(256), nullable=False)
 
         def __repr__(self):
             """String representation.
@@ -107,12 +108,13 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations, inventory_index_id):
+        def create(self, violations, inventory_index_id, scanner_index_id):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
                 inventory_index_id (str): Id of the inventory index.
+                scanner_index_id (str): Id for the current scanner run.
             """
             with self.violationmaker() as session:
                 created_at_datetime = date_time.get_utc_now_datetime()
@@ -124,18 +126,19 @@ def define_violation(dbengine):
                     )
 
                     violation = self.TBL_VIOLATIONS(
+                        created_at_datetime=created_at_datetime,
+                        full_name=violation.get('full_name'),
                         inventory_index_id=inventory_index_id,
+                        resource_data=violation.get('resource_data'),
                         resource_id=violation.get('resource_id'),
                         resource_type=violation.get('resource_type'),
-                        full_name=violation.get('full_name'),
-                        rule_name=violation.get('rule_name'),
                         rule_index=violation.get('rule_index'),
-                        violation_type=violation.get('violation_type'),
+                        rule_name=violation.get('rule_name'),
+                        scanner_index_id=scanner_index_id,
                         violation_data=json.dumps(
                             violation.get('violation_data')),
-                        resource_data=violation.get('resource_data'),
                         violation_hash=violation_hash,
-                        created_at_datetime=created_at_datetime
+                        violation_type=violation.get('violation_type')
                     )
 
                     session.add(violation)
