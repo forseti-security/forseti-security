@@ -264,7 +264,7 @@ class ServiceConfig(AbstractServiceConfig):
             global_config (dict): Global configurations
             forseti_db_connect_string (str): Forseti database string
             endpoint (str): server endpoint
-            enable_debug_mode (bool): Enable console logging.
+            enable_debug_mode (bool): Enable debug mode.
         """
 
         super(ServiceConfig, self).__init__()
@@ -386,7 +386,7 @@ def serve(endpoint,
         forseti_config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
-        enable_debug_mode (bool): Enable console logging.
+        enable_debug_mode (bool): Enable debug mode.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
