@@ -52,6 +52,7 @@ message Progress {
 message CreateRequest {
   bool background = 1;
   string model_name = 2;
+  bool enable_debug = 3;
 }
 
 message ListRequest {
