@@ -198,9 +198,9 @@ notifier:
 
         - resource: iap_violations
           should_notify: true
-          pipelines:
+          notifiers:
             # Upload violations to GCS.
-            - name: gcs_violations_pipeline
+            - name: gcs_violations
               configuration:
                 data_format: csv
                 # gcs_path should begin with "gs://"
