@@ -86,14 +86,22 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
 
         for progress in self.inventory.create(request.background,
                                               request.model_name):
+
+            if self.inventory.config.enable_debug_mode:
+                last_warning = repr(progress.last_warning)
+                last_error = repr(progress.last_error)
+            else:
+                last_warning = None
+                last_error = None
+
             yield inventory_pb2.Progress(
                 id=progress.inventory_index_id,
                 final_message=progress.final_message,
                 step=progress.step,
                 warnings=progress.warnings,
                 errors=progress.errors,
-                last_warning=repr(progress.last_warning),
-                last_error=repr(progress.last_error))
+                last_warning=last_warning,
+                last_error=last_error)
 
     @autoclose_stream
     def List(self, request, _):
