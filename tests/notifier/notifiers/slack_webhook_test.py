@@ -56,7 +56,7 @@ class SlackWebhooknotifierTest(ForsetiTestCase):
         """Test that no url for Slack notifier will skip running."""
         with mock.patch.object(slack_webhook.SlackWebhook, '__init__', lambda x: None):
             slack_notifier = slack_webhook.SlackWebhook()
-            slack_notifier.notifier_config = {}
+            slack_notifier.notification_config = {}
             slack_notifier._compose = mock.MagicMock()
             slack_notifier.run()
 
