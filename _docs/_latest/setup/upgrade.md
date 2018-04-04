@@ -25,13 +25,13 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
   1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
   1. In the **Select a project** drop-down list at the top of the console, select the project where
-  you have your Forseti v1.x deployed.
-  1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud
+  you have Forseti v1.x deployed.
+  1. On the top right of the console, click **Activate Google Cloud Shell**. The Cloud
   Shell panel opens at the bottom of the page.
 
 ### Run setup
 
-  1. Once you've started Cloud Shell, download Forseti. The installer is included.
+  1. After you activate Cloud Shell, download Forseti. The installer is included.
      Getting `master` branch will install [the latest released version of Forseti]({% link releases/index.md %}).
 
       ```bash
@@ -44,7 +44,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
      python setup/installer.py
      ```
 
-  1. When prompted to migrate configuration files choose “Y”.
+  1. When prompted to migrate configuration files, select "Y".
 
   1. The installer will prompt you for the necessary information to install Forseti.
 
@@ -56,9 +56,9 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
        to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
        [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
-       and is necessary.
-       Ask your G Suite Admin if you don't know which super admin email to use.
-  1. Forseti is now upgrade to v2.x. To manually remove unused resources, please follow the instructions
+       and is required.
+       Ask your G Suite admin if you don't know which super admin email to use.
+  1. Forseti is now upgraded to v2.x. To manually remove unused resources, follow the instructions
   at the end of the installation process.
 
 ## What's next
