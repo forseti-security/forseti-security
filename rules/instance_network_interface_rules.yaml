@@ -25,7 +25,6 @@
 #     is_external_network: True
 #     # This would be a custom list of your projects/networks.
 #     whitelist:
-#       whitelist.
 #       project-1:
 #        - network-1
 #       project-2:
