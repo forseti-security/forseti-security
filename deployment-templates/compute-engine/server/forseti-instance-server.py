@@ -184,6 +184,7 @@ python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $
 
 # Download server configuration from GCS
 gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_server_conf}
+gsutil cp -r gs://{scanner_bucket}/rules $FORSETI_HOME/
 
 # Start Forseti service depends on vars defined above.
 bash ./setup/gcp/scripts/initialize_forseti_services.sh
@@ -211,10 +212,6 @@ echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 USER=ubuntu
 (echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
-
-# Put the config and rule files in place.
-sudo gsutil cp gs://$SCANNER_BUCKET/configs/server/forseti_conf_server.yaml $FORSETI_SERVER_CONF
-sudo gsutil cp -r gs://$SCANNER_BUCKET/rules $FORSETI_HOME/
 
 echo "Execution of startup script finished"
 """.format(
