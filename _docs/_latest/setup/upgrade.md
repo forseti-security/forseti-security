@@ -63,8 +63,8 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
 
 ## What's next
 
-  - Customize [Inventory]({% link _docs/configure/inventory/index.md %}) and
-  [Scanner]({% link _docs/configure/scanner/index.md %}).
-  - Configure Forseti to send [email notifications]({% link _docs/configure/email-notification.md %}).
-  - Enable [G Suite Google Groups collection]({% link _docs/configure/gsuite-group-collection.md %})
+  - Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
+  [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
+  - Configure Forseti to send [email notifications]({% link _docs/latest/configure/email-notification.md %}).
+  - Enable [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
   for processing by Forseti.
