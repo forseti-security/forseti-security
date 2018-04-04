@@ -81,6 +81,12 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_service_config.get_scanner_config.return_value = ONE_SCANNER
         mock_service_config.engine = mock.MagicMock()
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_scoped_session = mock.MagicMock()
+        mock_data_access = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = (
+            mock_scoped_session, mock_data_access)
+        mock_data_access.scanner_iter.return_value = []
         with mock.patch.object(BaseScanner, "init_scanner_index_id") as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertTrue(mock_initializer.called)
