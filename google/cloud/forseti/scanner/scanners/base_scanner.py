@@ -101,7 +101,7 @@ class BaseScanner(object):
         return output_filename
 
     @staticmethod
-    def initialize_scanner_index_id():
+    def init_scanner_index_id():
         """Initialize the `scanner_index_id` to use for a scanner run."""
         utc_now = date_time.get_utc_now_datetime()
         BaseScanner.scanner_index_id = (

@@ -67,7 +67,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_scanner_builder_module.ScannerBuilder.return_value = (
             mock_scanner_builder)
         mock_scanner_builder.build.return_value = []
-        with mock.patch.object(BaseScanner, "initialize_scanner_index_id") as mock_initializer:
+        with mock.patch.object(BaseScanner, "init_scanner_index_id") as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertFalse(mock_initializer.called)
 
@@ -81,7 +81,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_service_config.get_scanner_config.return_value = ONE_SCANNER
         mock_service_config.engine = mock.MagicMock()
-        with mock.patch.object(BaseScanner, "initialize_scanner_index_id") as mock_initializer:
+        with mock.patch.object(BaseScanner, "init_scanner_index_id") as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertTrue(mock_initializer.called)
             self.assertEquals(1, mock_initializer.call_count)
