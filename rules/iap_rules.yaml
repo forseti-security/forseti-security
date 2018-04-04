@@ -25,12 +25,12 @@ rules:
     allowed_direct_access_sources: ''
     allowed_iap_enabled: '*'
 
-  # custom rules
-  - name: Allow direct access from debug IPs and internal monitoring hosts
-    resource:
-      - type: organization
-        applies_to: self_and_children
-        resource_ids:
-          - {ORGANIZATION_ID}
-    inherit_from_parents: true
-    allowed_direct_access_sources: '10.*,monitoring-instance-tag'
+  # Below is the example rule that you can reference to create your own custom rule.
+  #- name: Allow direct access from debug IPs and internal monitoring hosts
+  #  resource:
+  #    - type: organization
+  #      applies_to: self_and_children
+  #      resource_ids:
+  #        - {ORGANIZATION_ID}
+  #  inherit_from_parents: true
+  #  allowed_direct_access_sources: '10.*,monitoring-instance-tag'
