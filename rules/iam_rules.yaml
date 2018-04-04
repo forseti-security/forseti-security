@@ -28,7 +28,7 @@ rules:
           - user:*@{DOMAIN}
           - group:*@{DOMAIN}
 
-  # custom rules
+  # Below are the example rules that you can reference to create your own custom rule.
   #- name: Allow only service accounts to have access
   #  mode: whitelist
   #  resource:
