@@ -66,7 +66,7 @@ def define_violation(dbengine):
         resource_type = Column(String(256), nullable=False)
         rule_index = Column(Integer, default=0)
         rule_name = Column(String(256))
-        scanner_index_id = Column(String(256))
+        scanner_start_time = Column(String(256))
         violation_data = Column(Text)
         violation_hash = Column(String(256))
         violation_type = Column(String(256), nullable=False)
@@ -108,13 +108,13 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations, inventory_index_id, scanner_index_id):
+        def create(self, violations, inventory_index_id, scanner_start_time):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
                 inventory_index_id (str): Id of the inventory index.
-                scanner_index_id (str): Id for the current scanner run.
+                scanner_start_time (str): Id for the current scanner run.
             """
             with self.violationmaker() as session:
                 created_at_datetime = date_time.get_utc_now_datetime()
@@ -134,7 +134,7 @@ def define_violation(dbengine):
                         resource_type=violation.get('resource_type'),
                         rule_index=violation.get('rule_index'),
                         rule_name=violation.get('rule_name'),
-                        scanner_index_id=scanner_index_id,
+                        scanner_start_time=scanner_start_time,
                         violation_data=json.dumps(
                             violation.get('violation_data')),
                         violation_hash=violation_hash,

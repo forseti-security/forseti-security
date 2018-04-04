@@ -51,7 +51,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         'google.cloud.forseti.scanner.scanner.scanner_builder', autospec=True)
     def test_no_runnable_scanners(
         self, mock_scanner_builder_module, mock_service_config):
-        """Test that the scanner_index_id is not initialized."""
+        """Test that the scanner_start_time is not initialized."""
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_service_config.get_scanner_config.return_value = NO_SCANNERS
         mock_service_config.engine = mock.MagicMock()
@@ -59,7 +59,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_scanner_builder_module.ScannerBuilder.return_value = (
             mock_scanner_builder)
         mock_scanner_builder.build.return_value = []
-        with mock.patch.object(BaseScanner, "init_scanner_index_id") as mock_initializer:
+        with mock.patch.object(BaseScanner, "init_scanner_start_time") as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertFalse(mock_initializer.called)
 
@@ -69,7 +69,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
     def test_with_runnable_scanners(
         self, mock_service_config, mock_iam_rules_engine):
-        """Test that the scanner_index_id *is* initialized."""
+        """Test that the scanner_start_time *is* initialized."""
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_service_config.get_scanner_config.return_value = ONE_SCANNER
         mock_service_config.engine = mock.MagicMock()
@@ -79,7 +79,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_service_config.model_manager.get.return_value = (
             mock_scoped_session, mock_data_access)
         mock_data_access.scanner_iter.return_value = []
-        with mock.patch.object(BaseScanner, "init_scanner_index_id") as mock_initializer:
+        with mock.patch.object(BaseScanner, "init_scanner_start_time") as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertTrue(mock_initializer.called)
             self.assertEquals(1, mock_initializer.call_count)

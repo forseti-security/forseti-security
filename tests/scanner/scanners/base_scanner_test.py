@@ -32,15 +32,15 @@ class BaseScannerTest(ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.base_scanner.date_time',
         autospec=True)
-    def test_init_scanner_index_id(self, mock_date_time):
-        """Test that the 'scanner_index_id' is initialized correctly."""
+    def test_init_scanner_start_time(self, mock_date_time):
+        """Test that the 'scanner_start_time' is initialized correctly."""
         mock_date_time.get_utc_now_datetime.return_value = self.fake_utcnow
 
         expected = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_MICROS)
 
-        BaseScanner.init_scanner_index_id()
-        self.assertEquals(expected, BaseScanner.scanner_index_id)
+        BaseScanner.init_scanner_start_time()
+        self.assertEquals(expected, BaseScanner.scanner_start_time)
 
 
 if __name__ == '__main__':

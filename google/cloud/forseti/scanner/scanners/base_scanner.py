@@ -31,7 +31,7 @@ class BaseScanner(object):
     """This is a base class skeleton for scanners."""
     __metaclass__ = abc.ABCMeta
 
-    scanner_index_id = None
+    scanner_start_time = None
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp, rules):
@@ -101,10 +101,10 @@ class BaseScanner(object):
         return output_filename
 
     @staticmethod
-    def init_scanner_index_id():
-        """Initialize the `scanner_index_id` to use for a scanner run."""
+    def init_scanner_start_time():
+        """Initialize the `scanner_start_time` to use for a scanner run."""
         utc_now = date_time.get_utc_now_datetime()
-        BaseScanner.scanner_index_id = (
+        BaseScanner.scanner_start_time = (
             utc_now.strftime(string_formats.TIMESTAMP_MICROS))
 
     def _output_results_to_db(self, violations):
@@ -128,7 +128,7 @@ class BaseScanner(object):
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
         violation_access.create(
-            violations, inventory_index_id, self.scanner_index_id)
+            violations, inventory_index_id, self.scanner_start_time)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))
