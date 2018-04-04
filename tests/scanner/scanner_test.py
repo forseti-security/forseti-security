@@ -22,17 +22,28 @@ from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.scanner.scanners.base_scanner import BaseScanner
 from tests.unittest_utils import ForsetiTestCase
 
+FAKE_TIMESTAMP = '20001225T121212Z'
+FAKE_GLOBAL_CONFIGS = {
+    'db_host': 'foo_host',
+    'db_user': 'foo_user',
+    'db_name': 'foo_db',
+    'email_recipient': 'foo_email_recipient'
+}
+
+NO_SCANNERS = {'scanners': [
+    {'name': 'bigquery', 'enabled': False},
+    {'name': 'bucket_acl', 'enabled': False},
+    {'name': 'cloudsql_acl', 'enabled': False},
+    {'name': 'iam_policy', 'enabled': False}
+]}
+ONE_SCANNER = {'scanners': [
+    {'name': 'bigquery', 'enabled': False},
+    {'name': 'bucket_acl', 'enabled': False},
+    {'name': 'cloudsql_acl', 'enabled': False},
+    {'name': 'iam_policy', 'enabled': True}
+]}
 
 class ScannerRunnerTest(ForsetiTestCase):
-
-    FAKE_GLOBAL_CONFIGS = {
-        'db_host': 'foo_host',
-        'db_user': 'foo_user',
-        'db_name': 'foo_db',
-        'email_recipient': 'foo_email_recipient'
-    }
-
-    FAKE_SCANNER_CONFIGS = {'output_path': 'foo_output_path'}
 
     def setUp(self):
         fake_utcnow = datetime(
@@ -49,11 +60,8 @@ class ScannerRunnerTest(ForsetiTestCase):
     def test_no_runnable_scanners(
         self, mock_scanner_builder_module, mock_service_config):
         """Test that the scanner_index_id is not initialized."""
-        import pdb; pdb.set_trace()
-        mock_service_config.get_global_config.return_value = (
-            self.FAKE_GLOBAL_CONFIGS)
-        mock_service_config.get_scanner_config.return_value = (
-            self.FAKE_SCANNER_CONFIGS)
+        mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
+        mock_service_config.get_scanner_config.return_value = NO_SCANNERS
         mock_service_config.engine = mock.MagicMock()
         mock_scanner_builder = mock.MagicMock()
         mock_scanner_builder_module.ScannerBuilder.return_value = (
@@ -62,6 +70,21 @@ class ScannerRunnerTest(ForsetiTestCase):
         with mock.patch.object(BaseScanner, "initialize_scanner_index_id") as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertFalse(mock_initializer.called)
+
+    @mock.patch(
+        'google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine', autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
+    def test_with_runnable_scanners(
+        self, mock_service_config, mock_iam_rules_engine):
+        """Test that the scanner_index_id *is* initialized."""
+        mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
+        mock_service_config.get_scanner_config.return_value = ONE_SCANNER
+        mock_service_config.engine = mock.MagicMock()
+        with mock.patch.object(BaseScanner, "initialize_scanner_index_id") as mock_initializer:
+            scanner.run('m1', mock.MagicMock(), mock_service_config)
+            self.assertTrue(mock_initializer.called)
+            self.assertEquals(1, mock_initializer.call_count)
 
 
 if __name__ == '__main__':
