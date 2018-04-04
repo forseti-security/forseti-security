@@ -25,8 +25,8 @@ rules:
     bindings:
       - role: roles/resourcemanager.organizationAdmin
         members:
-          - user:*@gcp.work
-          - group:*@gcp.work
+          - user:*@{DOMAIN}
+          - group:*@{DOMAIN}
 
   # custom rules
   - name: Allow only service accounts to have access
@@ -53,4 +53,4 @@ rules:
     bindings:
       - role: roles/owner
         members:
-          - user:*@gcp.work
+          - user:*@{DOMAIN}
