@@ -17,17 +17,15 @@ from datetime import datetime
 import unittest
 import mock
 
-from tests.unittest_utils import ForsetiTestCase
-from tests.scanner.test_data import fake_iam_policies
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner import scanner
-from google.cloud.forseti.scanner.audit import iam_rules_engine as ire
-from google.cloud.forseti.scanner.scanners import iam_rules_scanner as irs
+from google.cloud.forseti.scanner.scanners.base_scanner import BaseScanner
+from tests.unittest_utils import ForsetiTestCase
 
 
 class ScannerRunnerTest(ForsetiTestCase):
 
-    FAKE_global_configs = {
+    FAKE_GLOBAL_CONFIGS = {
         'db_host': 'foo_host',
         'db_user': 'foo_user',
         'db_name': 'foo_db',
@@ -38,24 +36,32 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     def setUp(self):
         fake_utcnow = datetime(
-            year=1900, month=1, day=1, hour=0, minute=0, second=0,
-            microsecond=0)
+            year=1900, month=9, day=8, hour=7, minute=6, second=5,
+            microsecond=4)
         self.fake_utcnow = fake_utcnow
         self.fake_utcnow_str = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
-        self.fake_timestamp = '123456'
-        self.scanner = scanner
-        self.scanner.LOGGER = mock.MagicMock()
-        self.scanner.FLAGS = mock.MagicMock()
-        self.scanner.FLAGS.rules = 'fake/path/to/rules.yaml'
-        self.scanner.FLAGS.list_engines = None
-        self.ire = ire
-        self.irs = irs
 
-        self.fake_main_argv = []
-        self.fake_org_policies = fake_iam_policies.FAKE_ORG_IAM_POLICY_MAP
-        self.fake_project_policies = \
-            fake_iam_policies.FAKE_PROJECT_IAM_POLICY_MAP
+    @mock.patch(
+        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.scanner.scanner.scanner_builder', autospec=True)
+    def test_no_runnable_scanners(
+        self, mock_scanner_builder_module, mock_service_config):
+        """Test that the scanner_index_id is not initialized."""
+        import pdb; pdb.set_trace()
+        mock_service_config.get_global_config.return_value = (
+            self.FAKE_GLOBAL_CONFIGS)
+        mock_service_config.get_scanner_config.return_value = (
+            self.FAKE_SCANNER_CONFIGS)
+        mock_service_config.engine = mock.MagicMock()
+        mock_scanner_builder = mock.MagicMock()
+        mock_scanner_builder_module.ScannerBuilder.return_value = (
+            mock_scanner_builder)
+        mock_scanner_builder.build.return_value = []
+        with mock.patch.object(BaseScanner, "initialize_scanner_index_id") as mock_initializer:
+            scanner.run('m1', mock.MagicMock(), mock_service_config)
+            self.assertFalse(mock_initializer.called)
 
 
 if __name__ == '__main__':
