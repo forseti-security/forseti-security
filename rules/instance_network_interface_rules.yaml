@@ -24,10 +24,12 @@ rules:
     is_external_network: True
     # this would be a custom list of your networks/projects.
     whitelist:
-      master: 
-        - master-1
-      network: 
-        - network-1 
-        - network-2
-      default:
-        - default-1
+      # Below are examples that you can reference to create your own custom
+      # whitelist.
+      # project-1:
+      #  - network-1
+      # project-2:
+      #  - network-2
+      #  - network-2-2
+      #project-3:
+      #  - network-3
