@@ -109,6 +109,12 @@ notifier:
         - resource: blacklist_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -119,6 +125,12 @@ notifier:
         - resource: bigquery_acl_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -129,6 +141,12 @@ notifier:
         - resource: buckets_acl_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -139,6 +157,12 @@ notifier:
         - resource: cloudsql_acl_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -149,6 +173,12 @@ notifier:
         - resource: firewall_rule_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -159,6 +189,12 @@ notifier:
         - resource: forwarding_rule_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -169,6 +205,12 @@ notifier:
         - resource: ke_version_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -179,6 +221,12 @@ notifier:
         - resource: groups_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -189,6 +237,12 @@ notifier:
         - resource: instance_network_interface_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -199,6 +253,12 @@ notifier:
         - resource: iap_violations
           should_notify: true
           notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -211,5 +271,3 @@ notifier:
         enabled: false
         # gcs_path should begin with "gs://"
         gcs_path:
-
-
