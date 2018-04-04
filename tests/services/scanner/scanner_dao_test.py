@@ -27,6 +27,7 @@ from tests.unittest_utils import ForsetiTestCase
 from tests.services.util.db import create_test_engine
 
 FAKE_INVENTORY_INDEX_ID = 'aaa'
+FAKE_SCANNER_INDEX_ID = 'bbb'
 FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
                         '111111111111111111111111111111111111111111111111111111'
                         '11111111111111111111')
@@ -65,8 +66,9 @@ def populate_db():
     engine = create_test_engine()
     violation_access_cls = scanner_dao.define_violation(engine)
     violation_access = violation_access_cls(engine)
-    violation_access.create(FAKE_EXPECTED_VIOLATIONS,
-                            FAKE_INVENTORY_INDEX_ID)
+    violation_access.create(
+        FAKE_EXPECTED_VIOLATIONS, FAKE_INVENTORY_INDEX_ID,
+        FAKE_SCANNER_INDEX_ID)
     return violation_access 
 
 class ScannerDaoTest(ForsetiTestCase):
@@ -153,6 +155,7 @@ class ScannerDaoTest(ForsetiTestCase):
              'id': 1,
              'resource_data': u'inventory_data_111',
              'inventory_index_id': u'aaa',
+             'scanner_index_id': u'bbb',
              'resource_id': u'fake_firewall_111',
              'resource_type': u'firewall_rule',
              'rule_index': 111,
@@ -165,6 +168,7 @@ class ScannerDaoTest(ForsetiTestCase):
              'id': 2,
              'resource_data': u'inventory_data_222',
              'inventory_index_id': u'aaa',
+             'scanner_index_id': u'bbb',
              'resource_id': u'fake_firewall_222',
              'resource_type': u'firewall_rule',
              'rule_index': 222,
