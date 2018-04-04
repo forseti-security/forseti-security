@@ -22,7 +22,6 @@ from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.scanner.scanners.base_scanner import BaseScanner
 from tests.unittest_utils import ForsetiTestCase
 
-FAKE_TIMESTAMP = '20001225T121212Z'
 FAKE_GLOBAL_CONFIGS = {
     'db_host': 'foo_host',
     'db_user': 'foo_user',
@@ -36,6 +35,7 @@ NO_SCANNERS = {'scanners': [
     {'name': 'cloudsql_acl', 'enabled': False},
     {'name': 'iam_policy', 'enabled': False}
 ]}
+
 ONE_SCANNER = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
     {'name': 'bucket_acl', 'enabled': False},
@@ -44,14 +44,6 @@ ONE_SCANNER = {'scanners': [
 ]}
 
 class ScannerRunnerTest(ForsetiTestCase):
-
-    def setUp(self):
-        fake_utcnow = datetime(
-            year=1900, month=9, day=8, hour=7, minute=6, second=5,
-            microsecond=4)
-        self.fake_utcnow = fake_utcnow
-        self.fake_utcnow_str = self.fake_utcnow.strftime(
-            string_formats.TIMESTAMP_TIMEZONE_FILES)
 
     @mock.patch(
         'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
