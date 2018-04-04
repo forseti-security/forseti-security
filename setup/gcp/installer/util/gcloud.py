@@ -174,14 +174,12 @@ def grant_client_svc_acct_roles(project_id,
         'forseti_project': constants.PROJECT_IAM_ROLES_CLIENT
     }
 
-    # Forseti client doesn't have write access,
-    # no target id and gsuite account are needed
-    enable_write = False
+    # Forseti client doesn't have target id and gsuite account.
     target_id = ''
     gsuite_account = ''
 
     return _grant_svc_acct_roles(
-        enable_write, target_id, project_id, gsuite_account,
+        target_id, project_id, gsuite_account,
         gcp_service_account, user_can_grant_roles, roles)
 
 
@@ -229,12 +227,11 @@ def grant_server_svc_acct_roles(enable_write,
     }
 
     return _grant_svc_acct_roles(
-        enable_write, target_id, project_id, gsuite_service_account,
+        target_id, project_id, gsuite_service_account,
         gcp_service_account, user_can_grant_roles, roles)
 
 
-def _grant_svc_acct_roles(enable_write,
-                          target_id,
+def _grant_svc_acct_roles(target_id,
                           project_id,
                           gsuite_service_account,
                           gcp_service_account,
@@ -243,7 +240,6 @@ def _grant_svc_acct_roles(enable_write,
     """Grant roles to GCP service account.
 
     Args:
-        enable_write (bool): Whether or not to enable write access
         target_id (str): Id of the access_target
         project_id (str): GCP Project Id
         gsuite_service_account (str): GSuite service account email
@@ -254,10 +250,6 @@ def _grant_svc_acct_roles(enable_write,
     Returns:
         bool: Whether or not a role script has been generated
     """
-
-    access_target_roles = constants.GCP_READ_IAM_ROLES
-    if enable_write:
-        access_target_roles.extend(constants.GCP_WRITE_IAM_ROLES)
 
     grant_roles_cmds = _grant_roles(roles, target_id, project_id,
                                     gsuite_service_account,
