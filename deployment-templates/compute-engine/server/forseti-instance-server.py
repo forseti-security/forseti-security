@@ -184,6 +184,7 @@ python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $
 
 # Download server configuration from GCS
 gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_server_conf}
+gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
 # Start Forseti service depends on vars defined above.
 bash ./setup/gcp/scripts/initialize_forseti_services.sh
