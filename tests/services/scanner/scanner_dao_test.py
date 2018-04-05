@@ -16,18 +16,19 @@
 
 from datetime import datetime
 import hashlib
-
 from itertools import izip
 import json
 import mock
+import os
+import tempfile
 import unittest
 
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.unittest_utils import ForsetiTestCase
 from tests.services.util.db import create_test_engine
+from tests.unittest_utils import ForsetiTestCase
 
 FAKE_INVENTORY_INDEX_ID = 'aaa'
-FAKE_SCANNER_INDEX_ID = 'bbb'
 FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
                         '111111111111111111111111111111111111111111111111111111'
                         '11111111111111111111')
@@ -61,15 +62,19 @@ FAKE_EXPECTED_VIOLATIONS = [
      }
 ]
 
-def populate_db():
-    """Populate the db with violations."""
-    engine = create_test_engine()
+def populate_db(scanner_start_time, tmpfile=None):
+    """Populate the db with violations.
+
+    Args:
+        scanner_start_time (str): the scanner start time to use.
+    """
+    engine = create_test_engine(tmpfile=tmpfile)
     violation_access_cls = scanner_dao.define_violation(engine)
     violation_access = violation_access_cls(engine)
     violation_access.create(
         FAKE_EXPECTED_VIOLATIONS, FAKE_INVENTORY_INDEX_ID,
-        FAKE_SCANNER_INDEX_ID)
-    return violation_access 
+        scanner_start_time)
+    return violation_access
 
 class ScannerDaoTest(ForsetiTestCase):
     """Test scanner data access."""
@@ -90,7 +95,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        saved_violations = populate_db().list()
+        saved_violations, tmpfile = populate_db('bbb').list()
 
         expected_hash_values = [
           (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
@@ -142,7 +147,7 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        saved_violations = populate_db().list()
+        saved_violations = populate_db('bbb').list()
 
 
         converted_violations_as_dict = []
@@ -239,7 +244,7 @@ class ScannerDaoTest(ForsetiTestCase):
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             ['aaa', 'bbb', 'ccc'],
-            self.test_violation_data)                                                  
+            self.test_violation_data)
         self.assertEquals(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_full_name_not_string(self):
@@ -247,8 +252,31 @@ class ScannerDaoTest(ForsetiTestCase):
         returned_hash = scanner_dao._create_violation_hash(
             None,
             self.test_inventory_data,
-            self.test_violation_data)                                                  
+            self.test_violation_data)
         self.assertEquals(expected_hash, returned_hash)
+
+    def test_only_most_recent_violations_are_listed(self):
+        """Only violations from most recent scanner run are listed."""
+        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
+        try:
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            populate_db(scanner_start_time, tmpfile)
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            populate_db(scanner_start_time, tmpfile)
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            violations = populate_db(scanner_start_time, tmpfile).list()
+
+            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+            self.assertEquals(expected_number_of_violations, len(violations))
+            self.assertEquals(
+                scanner_start_time, violations[0].scanner_start_time)
+        finally:
+            os.close(fd)
+            os.remove(tmpfile)
+
 
 if __name__ == '__main__':
     unittest.main()

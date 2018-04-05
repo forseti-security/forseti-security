@@ -21,10 +21,14 @@ import tempfile
 from google.cloud.forseti.services.dao import create_engine
 
 
-def create_test_engine(enforce_fks=True):
+def create_test_engine(tmpfile=None, enforce_fks=True):
     """Create a test engine with a db file in /tmp/."""
 
-    engine, _ = create_test_engine_with_file(enforce_fks=enforce_fks)
+    if tmpfile:
+        engine, _ = create_test_engine_with_existing_tempfile(
+            tmpfile, enforce_fks=enforce_fks)
+    else:
+        engine, _ = create_test_engine_with_file(enforce_fks=enforce_fks)
     return engine
 
 
@@ -40,6 +44,16 @@ def create_test_engine_with_file(enforce_fks=True):
         return engine, tmpfile
     finally:
         os.close(fd)
+
+
+def create_test_engine_with_existing_tempfile(tmpfile, enforce_fks=True):
+    """Create a test engine with the supplied `tmpfile`."""
+
+    logging.info('Creating database at %s', tmpfile)
+    engine = create_engine('sqlite:///{}'.format(tmpfile),
+                           sqlite_enforce_fks=enforce_fks,
+                           connect_args={'check_same_thread': False})
+    return engine, tmpfile
 
 
 def cleanup(test_callback):

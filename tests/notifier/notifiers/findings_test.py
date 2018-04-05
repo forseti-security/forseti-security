@@ -71,7 +71,7 @@ class FindingsNotifierTest(ForsetiTestCase):
             }
         ]
 
-        violations = scanner_dao_test.populate_db().list()
+        violations = scanner_dao_test.populate_db('ccc').list()
         violations = notifier.convert_to_timestamp(violations)
 
         violations_as_dict = []
