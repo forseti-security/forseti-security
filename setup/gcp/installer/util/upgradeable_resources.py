@@ -100,10 +100,17 @@ class ForsetiV1Configuration(object):
 
         # Copy files from GCS to the temp directory
         for rule in self._rules:
-            success = files.copy_file_to_destination(rule.path, tempdir)
+            # if the file doesn't exist in the GCP bucket, the command
+            # is expected to fail and we don't want to output failure
+            # messages to confuse user.
+            success = files.copy_file_to_destination(rule.path,
+                                                     tempdir,
+                                                     suppress_output=True)
             if not success:
                 rules_to_remove.append(rule)
                 continue
+            if 'gke' in rule.file_name:
+                rule.file_name = rule.file_name.replace('gke', 'ke')
             local_file_path = os.path.join(tempdir, rule.file_name)
             rule.data = files.read_yaml_file_from_local(local_file_path)
             os.unlink(local_file_path)
