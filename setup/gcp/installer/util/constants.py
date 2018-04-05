@@ -54,7 +54,8 @@ FORSETI_V1_RULE_FILES = [
     'iam_rules.yaml',
     'iap_rules.yaml',
     'instance_network_interface_rules.yaml',
-    'ke_rules.yaml']
+    'ke_rules.yaml',
+    'gke_rules.yaml']
 
 GCLOUD_MIN_VERSION = (180, 0, 0)
 GCLOUD_VERSION_REGEX = r'Google Cloud SDK (.*)'
