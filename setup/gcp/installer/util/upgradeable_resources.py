@@ -100,6 +100,9 @@ class ForsetiV1Configuration(object):
 
         # Copy files from GCS to the temp directory
         for rule in self._rules:
+            # if the file doesn't exist in the GCP bucket, the command
+            # is expected to fail and we don't want to output failure
+            # messages to confuse user.
             success = files.copy_file_to_destination(rule.path,
                                                      tempdir,
                                                      suppress_output=True)
