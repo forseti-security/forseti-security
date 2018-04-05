@@ -181,6 +181,7 @@ echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | s
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server
 python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
+chown ubuntu:root $GSUITE_ADMIN_CREDENTIAL_PATH
 
 # Download server configuration from GCS
 gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_server_conf}

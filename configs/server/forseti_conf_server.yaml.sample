@@ -86,6 +86,7 @@ notifier:
             # Email violations
             - name: email_violations
               configuration:
+                data_format: csv
                 sendgrid_api_key: ''
                 sender: ''
                 # Multiple recipients can be specified as comma-separated text.
@@ -93,6 +94,7 @@ notifier:
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
+                data_format: csv
                 # gcs_path should begin with "gs://"
                 gcs_path: ''
             # Slack webhook pipeline
@@ -101,6 +103,7 @@ notifier:
             # Add the provided URL in the configuration below in `webhook_url`.
             - name: slack_webhook
               configuration:
+                data_format: json  # slack only supports json
                 webhook_url: ''
 
     violation:
