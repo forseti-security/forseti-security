@@ -338,7 +338,7 @@ def run_command(cmd_args, number_of_retry=5,
         cmd_args (list): The list of command arguments.
         number_of_retry (int): Number of re try.
         timeout_in_second (int): Timeout in second.
-        suppress_output (bool): Supress output.
+        suppress_output (bool): Suppress output.
 
     Returns:
         int: The return code. 0 is "ok", anything else is "error".
@@ -362,7 +362,8 @@ def run_command(cmd_args, number_of_retry=5,
                 ' '.join(cmd_args)))
         return run_command(cmd_args,
                            number_of_retry - 1,
-                           timeout_in_second + 10)
+                           timeout_in_second + 10,
+                           suppress_output=suppress_output)
 
     return proc.returncode, out, err
 
