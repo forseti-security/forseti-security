@@ -100,7 +100,9 @@ class ForsetiV1Configuration(object):
 
         # Copy files from GCS to the temp directory
         for rule in self._rules:
-            success = files.copy_file_to_destination(rule.path, tempdir)
+            success = files.copy_file_to_destination(rule.path,
+                                                     tempdir,
+                                                     suppress_output=True)
             if not success:
                 rules_to_remove.append(rule)
                 continue
