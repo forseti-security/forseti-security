@@ -68,6 +68,8 @@ def populate_db(
 
     Args:
         scanner_start_time (str): the scanner start time to use.
+        tmpfile (str): the temporary file to use for the sqlite database
+        violations (dict): the violations to write to the test database
     """
     engine = create_test_engine(tmpfile=tmpfile)
     violation_access_cls = scanner_dao.define_violation(engine)
