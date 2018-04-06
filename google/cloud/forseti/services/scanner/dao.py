@@ -18,18 +18,19 @@ from collections import defaultdict
 import hashlib
 import json
 
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import and_
 from sqlalchemy import Column
 from sqlalchemy import DateTime
-from sqlalchemy import String
-from sqlalchemy import Integer
-from sqlalchemy import Text
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import inspect
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
 from sqlalchemy.orm import sessionmaker
 
 from google.cloud.forseti.common.data_access import violation_map as vm
-from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 
 LOGGER = logger.get_logger(__name__)
@@ -84,7 +85,6 @@ def define_violation(dbengine):
 
     class ViolationAccess(object):
         """Facade for violations, implement APIs against violations table."""
-        TBL_VIOLATIONS = Violation
 
         def __init__(self, dbengine):
             """Constructor for the Violation Access.
@@ -125,7 +125,7 @@ def define_violation(dbengine):
                         violation.get('violation_data', ''),
                     )
 
-                    violation = self.TBL_VIOLATIONS(
+                    violation = Violation(
                         created_at_datetime=created_at_datetime,
                         full_name=violation.get('full_name'),
                         inventory_index_id=inventory_index_id,
@@ -153,14 +153,24 @@ def define_violation(dbengine):
                 list: List of Violation row entry objects.
             """
             with self.violationmaker() as session:
-                if inventory_index_id:
+                a_recent_violation = (
+                    session.query(Violation)
+                    .order_by(Violation.scanner_start_time.desc()).first())
+                if not a_recent_violation:
+                    return []
+
+                most_recent_ts = a_recent_violation.scanner_start_time
+                if not inventory_index_id:
                     return (
-                        session.query(self.TBL_VIOLATIONS).filter(
-                            self.TBL_VIOLATIONS.inventory_index_id ==
-                            inventory_index_id).all()
-                    )
+                        session.query(Violation)
+                        .filter(Violation.scanner_start_time == most_recent_ts)
+                        .all())
                 return (
-                    session.query(self.TBL_VIOLATIONS).all())
+                    session.query(Violation)
+                    .filter(and_(
+                        Violation.inventory_index_id == inventory_index_id,
+                        Violation.scanner_start_time == most_recent_ts))
+                    .all())
 
     base.metadata.create_all(dbengine)
 

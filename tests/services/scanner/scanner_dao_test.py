@@ -62,7 +62,8 @@ FAKE_EXPECTED_VIOLATIONS = [
      }
 ]
 
-def populate_db(scanner_start_time, tmpfile=None):
+def populate_db(
+        scanner_start_time, tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
     """Populate the db with violations.
 
     Args:
@@ -72,8 +73,7 @@ def populate_db(scanner_start_time, tmpfile=None):
     violation_access_cls = scanner_dao.define_violation(engine)
     violation_access = violation_access_cls(engine)
     violation_access.create(
-        FAKE_EXPECTED_VIOLATIONS, FAKE_INVENTORY_INDEX_ID,
-        scanner_start_time)
+        violations, FAKE_INVENTORY_INDEX_ID, scanner_start_time)
     return violation_access
 
 class ScannerDaoTest(ForsetiTestCase):
@@ -95,7 +95,7 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        saved_violations, tmpfile = populate_db('bbb').list()
+        saved_violations = populate_db('bbb').list()
 
         expected_hash_values = [
           (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
@@ -267,12 +267,83 @@ class ScannerDaoTest(ForsetiTestCase):
             populate_db(scanner_start_time, tmpfile)
             scanner_start_time = (
                 datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            violations = populate_db(scanner_start_time, tmpfile).list()
+            access = populate_db(scanner_start_time, tmpfile)
+            violations = access.list()
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
-            self.assertEquals(
-                scanner_start_time, violations[0].scanner_start_time)
+            for violation in violations:
+                self.assertEquals(
+                    scanner_start_time, violation.scanner_start_time)
+        finally:
+            os.close(fd)
+            os.remove(tmpfile)
+
+    def test_list_with_empty_table(self):
+        """list() returns `[]` if the `violations` table is empty."""
+        self.assertEquals([], populate_db('bbb', violations=[]).list())
+
+    def test_list_with_single_scanner_run_data(self):
+        """list() works with violations from a single scanner run."""
+        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
+        try:
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            access = populate_db(scanner_start_time, tmpfile)
+            violations = access.list()
+
+            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+            self.assertEquals(expected_number_of_violations, len(violations))
+            for violation in violations:
+                self.assertEquals(
+                    scanner_start_time, violation.scanner_start_time)
+        finally:
+            os.close(fd)
+            os.remove(tmpfile)
+
+    def test_only_most_recent_violations_are_listed_with_index_id(self):
+        """Only violations from most recent scanner run are listed."""
+        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
+        try:
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            populate_db(scanner_start_time, tmpfile)
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            populate_db(scanner_start_time, tmpfile)
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            access = populate_db(scanner_start_time, tmpfile)
+            violations = access.list(FAKE_INVENTORY_INDEX_ID)
+
+            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+            self.assertEquals(expected_number_of_violations, len(violations))
+            for violation in violations:
+                self.assertEquals(
+                    scanner_start_time, violation.scanner_start_time)
+        finally:
+            os.close(fd)
+            os.remove(tmpfile)
+
+    def test_list_with_empty_table_with_index_id(self):
+        """list() returns `[]` if the `violations` table is empty."""
+        self.assertEquals(
+            [], populate_db('bbb', violations=[]).list(FAKE_INVENTORY_INDEX_ID))
+
+    def test_list_with_single_scanner_run_data_with_index_id(self):
+        """list() works with violations from a single scanner run."""
+        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
+        try:
+            scanner_start_time = (
+                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
+            access = populate_db(scanner_start_time, tmpfile)
+            violations = access.list(FAKE_INVENTORY_INDEX_ID)
+
+            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+            self.assertEquals(expected_number_of_violations, len(violations))
+            for violation in violations:
+                self.assertEquals(
+                    scanner_start_time, violation.scanner_start_time)
         finally:
             os.close(fd)
             os.remove(tmpfile)
