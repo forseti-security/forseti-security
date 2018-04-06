@@ -36,9 +36,9 @@ NO_SCANNERS = {'scanners': [
     {'name': 'iam_policy', 'enabled': False}
 ]}
 
-ONE_SCANNER = {'scanners': [
+TWO_SCANNERS = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
-    {'name': 'bucket_acl', 'enabled': False},
+    {'name': 'bucket_acl', 'enabled': True},
     {'name': 'cloudsql_acl', 'enabled': False},
     {'name': 'iam_policy', 'enabled': True}
 ]}
@@ -51,7 +51,10 @@ class ScannerRunnerTest(ForsetiTestCase):
         'google.cloud.forseti.scanner.scanner.scanner_builder', autospec=True)
     def test_no_runnable_scanners(
         self, mock_scanner_builder_module, mock_service_config):
-        """Test that the scanner_start_time is not initialized."""
+        """Test that the 'scanner_start_time' is not initialized.
+
+        No initialization occurs if the list of runnable scanners is empty.
+        """
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
         mock_service_config.get_scanner_config.return_value = NO_SCANNERS
         mock_service_config.engine = mock.MagicMock()
@@ -66,12 +69,19 @@ class ScannerRunnerTest(ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine', autospec=True)
     @mock.patch(
+        'google.cloud.forseti.scanner.scanners.bucket_rules_scanner.buckets_rules_engine', autospec=True)
+    @mock.patch(
         'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
     def test_with_runnable_scanners(
-        self, mock_service_config, mock_iam_rules_engine):
-        """Test that the scanner_start_time *is* initialized."""
+        self, mock_service_config, mock_bucket_rules_engine,
+        mock_iam_rules_engine):
+        """Test that the 'scanner_start_time' *is* initialized.
+
+        We have 2 runnable scanners. The 'scanner_start_time' should be
+        initialized only once though.
+        """
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
-        mock_service_config.get_scanner_config.return_value = ONE_SCANNER
+        mock_service_config.get_scanner_config.return_value = TWO_SCANNERS
         mock_service_config.engine = mock.MagicMock()
         mock_service_config.model_manager = mock.MagicMock()
         mock_scoped_session = mock.MagicMock()

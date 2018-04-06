@@ -114,7 +114,8 @@ def define_violation(dbengine):
             Args:
                 violations (list): A list of violations.
                 inventory_index_id (str): Id of the inventory index.
-                scanner_start_time (str): Id for the current scanner run.
+                scanner_start_time (str): start time stamp for the current
+                    scanner run.
             """
             with self.violationmaker() as session:
                 created_at_datetime = date_time.get_utc_now_datetime()
