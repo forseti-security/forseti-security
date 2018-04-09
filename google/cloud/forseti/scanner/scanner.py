@@ -47,6 +47,7 @@ def mark_scanner_index_complete(service_config):
     """
     scanner_configs = service_config.get_scanner_config()
     scanner_index_id = scanner_configs['scanner_index_id']
+
     with service_config.scoped_session() as session:
         scanner_index = (
             session.query(scanner_dao.ScannerIndex)

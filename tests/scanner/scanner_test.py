@@ -13,7 +13,7 @@
 # limitations under the License.
 """Scanner runner script test."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import mock
 from sqlalchemy.orm import sessionmaker
 import unittest
@@ -82,8 +82,7 @@ class ScannerRunnerTest(ForsetiTestCase):
             self.assertEquals(1, mock_initializer.call_count)
 
     @mock.patch(
-        'google.cloud.forseti.services.scanner.dao.date_time',
-        autospec=True)
+        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
     @mock.patch(
         'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
     def test_init_scanner_index(self, mock_service_config, mock_date_time):
@@ -92,14 +91,45 @@ class ScannerRunnerTest(ForsetiTestCase):
             db.create_scoped_sessionmaker(mock_service_config.engine))
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
+
         utc_now = datetime.utcnow()
         mock_date_time.get_utc_now_datetime.return_value = utc_now
+
         scanner.init_scanner_index(mock_service_config)
-        session = Session(bind=mock_service_config.engine)
+
         expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
+        session = Session(bind=mock_service_config.engine)
         db_row = (session.query(ScannerIndex)
                   .filter(ScannerIndex.id == expected_id).one())
         self.assertEquals(ScannerState.CREATED, db_row.scanner_status)
+        self.assertEquals(utc_now, db_row.created_at_datetime)
+
+    @mock.patch(
+        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
+    def test_mark_scanner_index_complete(self, mock_service_config, mock_date_time):
+        start = datetime.utcnow()
+        end = start + timedelta(minutes=5)
+        # ScannerIndex.create() calls get_utc_now_datetime() twice.
+        mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
+
+        mock_service_config.engine = create_test_engine()
+        mock_service_config.sessionmaker = (
+            db.create_scoped_sessionmaker(mock_service_config.engine))
+        mock_service_config.scoped_session.return_value = (
+            mock_service_config.sessionmaker())
+
+        scanner_index_id = scanner.init_scanner_index(mock_service_config)
+        mock_service_config.get_scanner_config.return_value = dict(
+            scanner_index_id=scanner_index_id)
+
+        scanner.mark_scanner_index_complete(mock_service_config)
+        session = Session(bind=mock_service_config.engine)
+        db_row = (session.query(ScannerIndex)
+                  .filter(ScannerIndex.id == scanner_index_id).one())
+        self.assertEquals(ScannerState.SUCCESS, db_row.scanner_status)
+        self.assertEquals(end, db_row.completed_at_datetime)
 
 
 if __name__ == '__main__':

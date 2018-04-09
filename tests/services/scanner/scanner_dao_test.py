@@ -386,7 +386,7 @@ class ScannerIndexTest(ForsetiTestCase):
         """`ScannerIndex` complete() works as expected."""
         start = datetime.utcnow()
         end = start + timedelta(minutes=5)
-        # create() calls get_utc_now_datetime() twice.
+        # ScannerIndex.create() calls get_utc_now_datetime() twice.
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
         db_row = scanner_dao.ScannerIndex.create()
