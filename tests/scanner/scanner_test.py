@@ -20,6 +20,7 @@ import unittest
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner import scanner
+from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner.dao import (
     ScannerIndex, ScannerState)
 from tests.services.util.db import create_test_engine
@@ -87,6 +88,10 @@ class ScannerRunnerTest(ForsetiTestCase):
         'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
     def test_init_scanner_index(self, mock_service_config, mock_date_time):
         mock_service_config.engine = create_test_engine()
+        mock_service_config.sessionmaker = (
+            db.create_scoped_sessionmaker(mock_service_config.engine))
+        mock_service_config.scoped_session.return_value = (
+            mock_service_config.sessionmaker())
         utc_now = datetime.utcnow()
         mock_date_time.get_utc_now_datetime.return_value = utc_now
         scanner.init_scanner_index(mock_service_config)

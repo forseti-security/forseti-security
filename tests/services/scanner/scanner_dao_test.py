@@ -25,8 +25,9 @@ import tempfile
 import unittest
 
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.services.scanner import dao as scanner_dao
 from google.cloud.forseti.scanner import scanner
+from google.cloud.forseti.services import db
+from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
 
@@ -76,6 +77,10 @@ def populate_db(tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
     mock_service_config = mock.MagicMock()
     engine = create_test_engine(tmpfile=tmpfile)
     mock_service_config.engine = engine
+    mock_service_config.sessionmaker = (
+        db.create_scoped_sessionmaker(mock_service_config.engine))
+    mock_service_config.scoped_session.return_value = (
+        mock_service_config.sessionmaker())
     scanner_index_id = scanner.init_scanner_index(mock_service_config)
     violation_access_cls = scanner_dao.define_violation(engine)
     violation_access = violation_access_cls(engine)

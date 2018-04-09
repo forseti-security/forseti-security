@@ -15,7 +15,6 @@
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
-from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 LOGGER = logger.get_logger(__name__)
@@ -33,14 +32,11 @@ def init_scanner_index(service_config):
         str: the id of the 'scanner_index' db row
     """
     scanner_dao.initialize(service_config.engine)
-    sessionmaker = db.create_scoped_sessionmaker(service_config.engine)
-    result = None
-    with sessionmaker() as session:
+    with service_config.scoped_session() as session:
         scanner_index = scanner_dao.ScannerIndex.create()
         session.add(scanner_index)
         session.flush()
-        result = scanner_index.id
-    return result
+        return scanner_index.id
 
 
 def run(model_name=None, progress_queue=None, service_config=None):

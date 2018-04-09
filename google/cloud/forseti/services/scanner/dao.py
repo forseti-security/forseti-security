@@ -81,7 +81,7 @@ class ScannerIndex(BASE):
         Returns:
             str: String representation of the object.
         """
-        return "<{}(id='{}', version='{}', timestamp='{}')>".format(
+        return """<{}(id='{}', version='{}', timestamp='{}')>""".format(
             self.__class__.__name__,
             self.id,
             self.schema_version,
