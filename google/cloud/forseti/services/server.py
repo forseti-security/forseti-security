@@ -481,8 +481,11 @@ def main():
         help='Print log to console.')
     args = vars(parser.parse_args())
 
-    serve(args['endpoint'], args['services'], args['forseti_db'],
-          args['forseti_config_file_path'], args['log_level'],
+    serve(args['endpoint'],
+          args['services'],
+          args['forseti_db'],
+          args['forseti_config_file_path'],
+          args['log_level'],
           args['enable_console_log'])
 
 
