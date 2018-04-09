@@ -62,9 +62,9 @@ class ScannerRunnerTest(ForsetiTestCase):
     def test_with_runnable_scanners(
         self, mock_service_config, mock_bucket_rules_engine,
         mock_iam_rules_engine):
-        """Test that the 'scanner_start_time' *is* initialized.
+        """Test that the 'scanner_index_id' *is* initialized.
 
-        We have 2 runnable scanners. The 'scanner_start_time' should be
+        We have 2 runnable scanners. The 'scanner_index_id' should be
         initialized only once though.
         """
         mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
