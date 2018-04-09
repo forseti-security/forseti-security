@@ -31,9 +31,12 @@ from sqlalchemy.orm import sessionmaker
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services import db
 
 LOGGER = logger.get_logger(__name__)
+BASE = declarative_base()
+CURRENT_SCHEMA = 1
 
 # pylint: disable=no-member
 
@@ -266,3 +269,100 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
         return ''
 
     return violation_hash.hexdigest()
+
+
+class ScannerState(object):
+    """Possible states for inventory."""
+
+    SUCCESS = 'SUCCESS'
+    RUNNING = 'RUNNING'
+    FAILURE = 'FAILURE'
+    PARTIAL_SUCCESS = 'PARTIAL_SUCCESS'
+    TIMEOUT = 'TIMEOUT'
+    CREATED = 'CREATED'
+
+
+class ScannerIndex(BASE):
+    """Represents a scanner run."""
+
+    __tablename__ = 'scanner_index'
+
+    id = Column(String(256), primary_key=True)
+    created_at_datetime = Column(DateTime())
+    completed_at_datetime = Column(DateTime())
+    scanner_status = Column(Text())
+    schema_version = Column(Integer())
+    scanner_index_warnings = Column(Text(16777215))
+    scanner_index_errors = Column(Text())
+    message = Column(Text())
+
+    @classmethod
+    def _utcnow(cls):
+        """Return current time in utc.
+
+        Returns:
+            object: UTC now time object.
+        """
+        return date_time.get_utc_now_datetime()
+
+    def __repr__(self):
+        """Object string representation.
+
+        Returns:
+            str: String representation of the object.
+        """
+        return "<{}(id='{}', version='{}', timestamp='{}')>".format(
+            self.__class__.__name__,
+            self.id,
+            self.schema_version,
+            self.created_at_datetime)
+
+    @classmethod
+    def create(cls):
+        """Create a new scanner index row.
+
+        Returns:
+            object: ScannerIndex row object.
+        """
+        created_at_datetime = cls._utcnow()
+        return ScannerIndex(
+            id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
+            created_at_datetime=created_at_datetime,
+            completed_at_datetime=date_time.get_utc_now_datetime(),
+            scanner_status=ScannerState.CREATED,
+            schema_version=CURRENT_SCHEMA)
+
+    def complete(self, status=ScannerState.SUCCESS):
+        """Mark the scanner as completed with a final scanner_status.
+
+        Args:
+            status (str): Final scanner_status.
+        """
+        self.completed_at_datetime = ScannerIndex._utcnow()
+        self.scanner_status = status
+
+    def add_warning(self, session, warning):
+        """Add a warning to the scanner.
+
+        Args:
+            session (object): session object to work on.
+            warning (str): Warning message
+        """
+        warning_message = '{}\n'.format(warning)
+        if not self.scanner_index_warnings:
+            self.scanner_index_warnings = warning_message
+        else:
+            self.scanner_index_warnings += warning_message
+        session.add(self)
+        session.flush()
+
+    def set_error(self, session, message):
+        """Indicate a broken import.
+
+        Args:
+            session (object): session object to work on.
+            message (str): Error message to set.
+        """
+        self.scanner_index_errors = message
+        session.add(self)
+        session.flush()

@@ -14,12 +14,13 @@
 
 """ Unit Tests for Scanner DAO. """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 from itertools import izip
 import json
 import mock
 import os
+from sqlalchemy.orm import sessionmaker
 import tempfile
 import unittest
 
@@ -27,6 +28,8 @@ from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
+
+Session = sessionmaker()
 
 FAKE_INVENTORY_INDEX_ID = 'aaa'
 FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
@@ -349,6 +352,69 @@ class ScannerDaoTest(ForsetiTestCase):
         finally:
             os.close(fd)
             os.remove(tmpfile)
+
+class ScannerIndexTest(ForsetiTestCase):
+    """Test scanner data access."""
+
+    def setUp(self):
+        """Setup method."""
+        ForsetiTestCase.setUp(self)
+        self.fd, self.tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
+        self.engine = create_test_engine(tmpfile=self.tmpfile)
+        scanner_dao.ScannerIndex.__table__.create(bind=self.engine)
+        self.session = Session(bind=self.engine)
+
+    def tearDown(self):
+        """Teardown method."""
+        os.close(self.fd)
+        os.remove(self.tmpfile)
+        ForsetiTestCase.tearDown(self)
+
+    @mock.patch(
+        'google.cloud.forseti.services.scanner.dao.date_time',
+        autospec=True)
+    def test_scanner_index_create(self, mock_date_time):
+        """`ScannerIndex` create() works as expected."""
+        utc_now = datetime.utcnow()
+        mock_date_time.get_utc_now_datetime.return_value = utc_now
+        db_row = scanner_dao.ScannerIndex.create()
+        expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
+        self.assertEquals(expected_id, db_row.id)
+        self.assertEquals(utc_now, db_row.created_at_datetime)
+        self.assertEquals(
+            scanner_dao.ScannerState.CREATED, db_row.scanner_status)
+
+    @mock.patch(
+        'google.cloud.forseti.services.scanner.dao.date_time',
+        autospec=True)
+    def test_scanner_index_complete(self, mock_date_time):
+        """`ScannerIndex` complete() works as expected."""
+        start = datetime.utcnow()
+        end = start + timedelta(minutes=5)
+        # create() calls get_utc_now_datetime() twice.
+        mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
+
+        db_row = scanner_dao.ScannerIndex.create()
+        expected_id = start.strftime(string_formats.TIMESTAMP_MICROS)
+        self.assertEquals(expected_id, db_row.id)
+        db_row.complete()
+        self.assertEquals(end, db_row.completed_at_datetime)
+        self.assertEquals(
+            scanner_dao.ScannerState.SUCCESS, db_row.scanner_status)
+
+    def test_scanner_index_add_warning(self):
+        """`ScannerIndex` add_warning() works as expected."""
+        db_row = scanner_dao.ScannerIndex.create()
+        db_row.add_warning(self.session, '1st warning')
+        db_row.add_warning(self.session, '2nd warning')
+        self.assertEquals(
+            '1st warning\n2nd warning\n', db_row.scanner_index_warnings)
+
+    def test_scanner_index_set_error(self):
+        """`ScannerIndex` set_error() works as expected."""
+        db_row = scanner_dao.ScannerIndex.create()
+        db_row.set_error(self.session, 'scanner error!')
+        self.assertEquals('scanner error!', db_row.scanner_index_errors)
 
 
 if __name__ == '__main__':
