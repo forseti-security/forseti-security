@@ -77,8 +77,27 @@ def _check_blacklist_members(rule_members=None, policy_members=None):
     ]
     return violating_members
 
+def _is_member(member, members):
+    """Whether a member is in a list of members.
+
+    Args:
+        member(IamPolicyMember): The iam member that we are searching for.
+        members (list): The list of iam members that we are searching in.
+
+    Return:
+        bool: True if member is in members.  False otherwise.
+    """
+
+    for m in members:
+        if member.matches(m):
+            return True
+    return False
+
 def _check_required_members(rule_members=None, policy_members=None):
     """Required: Check that rule members are in policy members.
+
+    All rule members need to be in the IAM policy.  Any additional members
+    beyond the required members are allowed to be in the policy.
 
     If a required rule member is NOT found in the policy members, add
     it to the violating members. Note that the check is different:
@@ -95,7 +114,7 @@ def _check_required_members(rule_members=None, policy_members=None):
     violating_members = []
     for rule_member in rule_members:
         # check if rule_member is found in policy_members
-        if not any(rule_member.matches(m) for m in policy_members):
+        if not _is_member(rule_member, policy_members):
             violating_members.append(rule_member)
     return violating_members
 
