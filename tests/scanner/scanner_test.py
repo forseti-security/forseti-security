@@ -14,13 +14,20 @@
 """Scanner runner script test."""
 
 from datetime import datetime
-import unittest
 import mock
+from sqlalchemy.orm import sessionmaker
+import unittest
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner import scanner
-from google.cloud.forseti.scanner.scanners.base_scanner import BaseScanner
+from google.cloud.forseti.services.scanner.dao import (
+    ScannerIndex, ScannerState)
+from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
+
+
+Session = sessionmaker()
+
 
 FAKE_GLOBAL_CONFIGS = {
     'db_host': 'foo_host',
@@ -46,27 +53,6 @@ TWO_SCANNERS = {'scanners': [
 class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanner.scanner_builder', autospec=True)
-    def test_no_runnable_scanners(
-        self, mock_scanner_builder_module, mock_service_config):
-        """Test that the 'scanner_start_time' is not initialized.
-
-        No initialization occurs if the list of runnable scanners is empty.
-        """
-        mock_service_config.get_global_config.return_value = FAKE_GLOBAL_CONFIGS
-        mock_service_config.get_scanner_config.return_value = NO_SCANNERS
-        mock_service_config.engine = mock.MagicMock()
-        mock_scanner_builder = mock.MagicMock()
-        mock_scanner_builder_module.ScannerBuilder.return_value = (
-            mock_scanner_builder)
-        mock_scanner_builder.build.return_value = []
-        with mock.patch.object(BaseScanner, "init_scanner_start_time") as mock_initializer:
-            scanner.run('m1', mock.MagicMock(), mock_service_config)
-            self.assertFalse(mock_initializer.called)
-
-    @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine', autospec=True)
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.bucket_rules_scanner.buckets_rules_engine', autospec=True)
@@ -89,10 +75,26 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_service_config.model_manager.get.return_value = (
             mock_scoped_session, mock_data_access)
         mock_data_access.scanner_iter.return_value = []
-        with mock.patch.object(BaseScanner, "init_scanner_start_time") as mock_initializer:
+        with mock.patch.object(scanner, 'init_scanner_index') as mock_initializer:
             scanner.run('m1', mock.MagicMock(), mock_service_config)
             self.assertTrue(mock_initializer.called)
             self.assertEquals(1, mock_initializer.call_count)
+
+    @mock.patch(
+        'google.cloud.forseti.services.scanner.dao.date_time',
+        autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
+    def test_init_scanner_index(self, mock_service_config, mock_date_time):
+        mock_service_config.engine = create_test_engine()
+        utc_now = datetime.utcnow()
+        mock_date_time.get_utc_now_datetime.return_value = utc_now
+        scanner.init_scanner_index(mock_service_config)
+        session = Session(bind=mock_service_config.engine)
+        expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
+        db_row = (session.query(ScannerIndex)
+                  .filter(ScannerIndex.id == expected_id).one())
+        self.assertEquals(ScannerState.CREATED, db_row.scanner_status)
 
 
 if __name__ == '__main__':

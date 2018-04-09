@@ -34,11 +34,13 @@ def init_scanner_index(service_config):
     """
     scanner_dao.initialize(service_config.engine)
     sessionmaker = db.create_scoped_sessionmaker(service_config.engine)
-    session = sessionmaker()
-    scanner_index = scanner_dao.ScannerIndex.create()
-    session.add(scanner_index)
-    session.flush()
-    return scanner_index.id
+    result = None
+    with sessionmaker() as session:
+        scanner_index = scanner_dao.ScannerIndex.create()
+        session.add(scanner_index)
+        session.flush()
+        result = scanner_index.id
+    return result
 
 
 def run(model_name=None, progress_queue=None, service_config=None):
@@ -64,9 +66,6 @@ def run(model_name=None, progress_queue=None, service_config=None):
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
         None).build()
-
-    if runnable_scanners:
-        runnable_scanners[0].init_scanner_start_time()
 
     # pylint: disable=bare-except
     for scanner in runnable_scanners:

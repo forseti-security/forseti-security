@@ -26,6 +26,7 @@ import unittest
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+from google.cloud.forseti.scanner import scanner
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
 
@@ -65,21 +66,22 @@ FAKE_EXPECTED_VIOLATIONS = [
      }
 ]
 
-def populate_db(
-        scanner_start_time, tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
+def populate_db(tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
     """Populate the db with violations.
 
     Args:
-        scanner_start_time (str): the scanner start time to use.
         tmpfile (str): the temporary file to use for the sqlite database
         violations (dict): the violations to write to the test database
     """
+    mock_service_config = mock.MagicMock()
     engine = create_test_engine(tmpfile=tmpfile)
+    mock_service_config.engine = engine
+    scanner_index_id = scanner.init_scanner_index(mock_service_config)
     violation_access_cls = scanner_dao.define_violation(engine)
     violation_access = violation_access_cls(engine)
     violation_access.create(
-        violations, FAKE_INVENTORY_INDEX_ID, scanner_start_time)
-    return violation_access
+        violations, FAKE_INVENTORY_INDEX_ID, scanner_index_id)
+    return violation_access, scanner_index_id
 
 class ScannerDaoTest(ForsetiTestCase):
     """Test scanner data access."""
@@ -100,7 +102,8 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        saved_violations = populate_db('bbb').list()
+        access, _ = populate_db()
+        saved_violations = access.list()
 
         expected_hash_values = [
           (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
@@ -152,8 +155,8 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        saved_violations = populate_db('bbb').list()
-
+        access, scanner_index_id = populate_db()
+        saved_violations = access.list()
 
         converted_violations_as_dict = []
         for violation in saved_violations:
@@ -165,7 +168,7 @@ class ScannerDaoTest(ForsetiTestCase):
              'id': 1,
              'resource_data': u'inventory_data_111',
              'inventory_index_id': u'aaa',
-             'scanner_start_time': u'bbb',
+             'scanner_index_id': u'%s' % scanner_index_id,
              'resource_id': u'fake_firewall_111',
              'resource_type': u'firewall_rule',
              'rule_index': 111,
@@ -178,7 +181,7 @@ class ScannerDaoTest(ForsetiTestCase):
              'id': 2,
              'resource_data': u'inventory_data_222',
              'inventory_index_id': u'aaa',
-             'scanner_start_time': u'bbb',
+             'scanner_index_id': u'%s' % scanner_index_id,
              'resource_id': u'fake_firewall_222',
              'resource_type': u'firewall_rule',
              'rule_index': 222,
@@ -264,44 +267,37 @@ class ScannerDaoTest(ForsetiTestCase):
         """Only violations from most recent scanner run are listed."""
         fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
         try:
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            populate_db(scanner_start_time, tmpfile)
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            populate_db(scanner_start_time, tmpfile)
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            access = populate_db(scanner_start_time, tmpfile)
+            populate_db(tmpfile)
+            populate_db(tmpfile)
+            access, scanner_index_id = populate_db(tmpfile)
             violations = access.list()
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
             for violation in violations:
                 self.assertEquals(
-                    scanner_start_time, violation.scanner_start_time)
+                    scanner_index_id, violation.scanner_index_id)
         finally:
             os.close(fd)
             os.remove(tmpfile)
 
     def test_list_with_empty_table(self):
         """list() returns `[]` if the `violations` table is empty."""
-        self.assertEquals([], populate_db('bbb', violations=[]).list())
+        access, _ = populate_db(violations=[])
+        self.assertEquals([], access.list())
 
     def test_list_with_single_scanner_run_data(self):
         """list() works with violations from a single scanner run."""
         fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
         try:
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            access = populate_db(scanner_start_time, tmpfile)
+            access, scanner_index_id = populate_db(tmpfile)
             violations = access.list()
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
             for violation in violations:
                 self.assertEquals(
-                    scanner_start_time, violation.scanner_start_time)
+                    scanner_index_id, violation.scanner_index_id)
         finally:
             os.close(fd)
             os.remove(tmpfile)
@@ -310,48 +306,41 @@ class ScannerDaoTest(ForsetiTestCase):
         """Only violations from most recent scanner run are listed."""
         fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
         try:
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            populate_db(scanner_start_time, tmpfile)
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            populate_db(scanner_start_time, tmpfile)
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            access = populate_db(scanner_start_time, tmpfile)
+            populate_db(tmpfile)
+            populate_db(tmpfile)
+            access, scanner_index_id = populate_db(tmpfile)
             violations = access.list(FAKE_INVENTORY_INDEX_ID)
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
             for violation in violations:
                 self.assertEquals(
-                    scanner_start_time, violation.scanner_start_time)
+                    scanner_index_id, violation.scanner_index_id)
         finally:
             os.close(fd)
             os.remove(tmpfile)
 
     def test_list_with_empty_table_with_index_id(self):
         """list() returns `[]` if the `violations` table is empty."""
-        self.assertEquals(
-            [], populate_db('bbb', violations=[]).list(FAKE_INVENTORY_INDEX_ID))
+        access, _ = populate_db(violations=[])
+        self.assertEquals([], access.list(FAKE_INVENTORY_INDEX_ID))
 
     def test_list_with_single_scanner_run_data_with_index_id(self):
         """list() works with violations from a single scanner run."""
         fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
         try:
-            scanner_start_time = (
-                datetime.now().strftime(string_formats.TIMESTAMP_MICROS))
-            access = populate_db(scanner_start_time, tmpfile)
+            access, scanner_index_id = populate_db(tmpfile)
             violations = access.list(FAKE_INVENTORY_INDEX_ID)
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
             for violation in violations:
                 self.assertEquals(
-                    scanner_start_time, violation.scanner_start_time)
+                    scanner_index_id, violation.scanner_index_id)
         finally:
             os.close(fd)
             os.remove(tmpfile)
+
 
 class ScannerIndexTest(ForsetiTestCase):
     """Test scanner data access."""
