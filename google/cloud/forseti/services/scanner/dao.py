@@ -363,3 +363,12 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
         return ''
 
     return violation_hash.hexdigest()
+
+
+def initialize(engine):
+    """Create all tables in the database if not existing.
+
+    Args:
+        engine (object): Database engine to operate on.
+    """
+    BASE.metadata.create_all(engine)

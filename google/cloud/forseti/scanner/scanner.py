@@ -15,9 +15,30 @@
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_builder
+from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 LOGGER = logger.get_logger(__name__)
+
+
+def init_scanner_index(service_config):
+    """Initialize the 'scanner_index' table.
+
+    Make sure we have a 'scanner_index' row for the current scanner run.
+
+    Args:
+        service_config (ServiceConfig): Forseti 2.0 service configs.
+
+    Returns:
+        str: the id of the 'scanner_index' db row
+    """
+    scanner_dao.initialize(service_config.engine)
+    sessionmaker = db.create_scoped_sessionmaker(service_config.engine)
+    session = sessionmaker()
+    scanner_index = scanner_dao.ScannerIndex.create()
+    session.add(scanner_index)
+    session.flush()
+    return scanner_index.id
 
 
 def run(model_name=None, progress_queue=None, service_config=None):
@@ -39,8 +60,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
     violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
 
-    scanner_index = scanner_dao.ScannerIndex.create()
-    scanner_configs['scanner_index_id'] = scanner_index.id
+    scanner_configs['scanner_index_id'] = init_scanner_index(service_config)
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
         None).build()
