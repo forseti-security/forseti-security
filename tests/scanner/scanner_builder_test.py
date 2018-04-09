@@ -15,6 +15,7 @@
 """Tests the pipeline builder."""
 
 import mock
+import unittest
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.scanner import scanner_builder
