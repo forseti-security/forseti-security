@@ -76,10 +76,13 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_service_config.model_manager.get.return_value = (
             mock_scoped_session, mock_data_access)
         mock_data_access.scanner_iter.return_value = []
-        with mock.patch.object(scanner, 'init_scanner_index') as mock_initializer:
-            scanner.run('m1', mock.MagicMock(), mock_service_config)
-            self.assertTrue(mock_initializer.called)
-            self.assertEquals(1, mock_initializer.call_count)
+        with mock.patch.object(scanner, 'init_scanner_index') as init_mock:
+            with mock.patch.object(scanner, 'mark_scanner_index_complete') as closing_mock:
+                scanner.run('m1', mock.MagicMock(), mock_service_config)
+                self.assertTrue(init_mock.called)
+                self.assertEquals(1, init_mock.call_count)
+                self.assertTrue(closing_mock.called)
+                self.assertEquals(1, closing_mock.call_count)
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
