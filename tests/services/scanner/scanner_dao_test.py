@@ -88,6 +88,7 @@ def populate_db(tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
         violations, FAKE_INVENTORY_INDEX_ID, scanner_index_id)
     return violation_access, scanner_index_id
 
+
 class ScannerDaoTest(ForsetiTestCase):
     """Test scanner data access."""
 

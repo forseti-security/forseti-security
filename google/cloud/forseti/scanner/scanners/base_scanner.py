@@ -117,7 +117,9 @@ class BaseScanner(object):
 
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
-        violation_access.create(violations, inventory_index_id)
+        violation_access.create(
+            violations, inventory_index_id,
+            self.scanner_configs['scanner_index_id'])
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))

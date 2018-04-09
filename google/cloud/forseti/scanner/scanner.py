@@ -39,6 +39,23 @@ def init_scanner_index(service_config):
         return scanner_index.id
 
 
+def mark_scanner_index_complete(service_config):
+    """Mark the current 'scanner_index' row as complete.
+
+    Args:
+        service_config (ServiceConfig): Forseti 2.0 service configs.
+    """
+    scanner_configs = service_config.get_scanner_config()
+    scanner_index_id = scanner_configs['scanner_index_id']
+    with service_config.scoped_session() as session:
+        scanner_index = (
+            session.query(scanner_dao.ScannerIndex)
+            .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
+        scanner_index.complete()
+        session.add(scanner_index)
+        session.flush()
+
+
 def run(model_name=None, progress_queue=None, service_config=None):
     """Run the scanners.
 
@@ -76,6 +93,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
             LOGGER.error(log_message, exc_info=True)
     # pylint: enable=bare-except
     log_message = 'Scan completed!'
+    mark_scanner_index_complete(service_config)
     progress_queue.put(log_message)
     progress_queue.put(None)
     LOGGER.info(log_message)
