@@ -100,13 +100,13 @@ the notifier will run on.
   $ forseti notifier run
 
   # Send the violations by inventory index id.
-  $ forseti notifier run --inventory_index_id
+  $ forseti notifier run --inventory_index_id <inventory index id>
 
   # Send the violations by scanner index id.
-  $ forseti notifier run --inventory_index_id
+  $ forseti notifier run --scanner_index_id <scanner index id>
   ```
 
 ## What's next
 
 - Read more about
-  [Configure a sendgrid key]{% link _docs/latest/configure/email-notification.md %}.
+  [Configure a sendgrid key](_docs/latest/configure/email-notification.md).
