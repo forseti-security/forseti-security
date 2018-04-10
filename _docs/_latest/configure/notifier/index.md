@@ -2,6 +2,7 @@
 title: Notifier
 order: 300
 ---
+
 # {{ page.title }}
 
 Forseti Notifier can send a variety of notifications to alert you
@@ -28,11 +29,11 @@ to different channels, and in different formats.
 
 ## Configuring Notifier
 
-### Configuring Inventory crawl summary.(TBD)
+### Inventory crawl summary.(TBD)
 
-### Configuring Scanner scan summary. (TBD)
+### Scanner scan summary. (TBD)
 
-### Configuring Violation Notifications
+### Violation Notifications
 
 1. Open `forseti-security/configs/forseti_conf.yaml`.
 1. Navigate to the `notifier` > `resources` section.
@@ -40,40 +41,43 @@ to different channels, and in different formats.
 The following options are available, on a per resource basis. You can mix and
 match any combination of notifiers for each resource.
 
-* `should_notify`: controls whether violation for each resource should be sent.
+* `should_notify`: Controls whether violation for each resource should be sent.
   `true` enables the notification, and `false` disables the notification.
 
-* `name`: the desired notifiers for each resource. The name here matches
-  the actual module name for each notifier in 
+* `name`: The desired notifiers for each resource.  You can specify multiple
+  notifiers for each resource.
+
+  The name here matches the actual module name for each notifier in 
   `forseti-security/google/cloud/forseti/notifier/notifiers`,
   e.g. `email_violations.py`
 
   These notifiers can be:
   1. `email_violations`
-  Email notifications via SendGrid -- This sends violation data to multiple
-  email recipients, as delimited by comma. [Configure a sendgrid key.](- Read more about [configuring Notifier]({% link _docs/v1.1/howto/configure/email-notification.md %}#setting-up-sendgrid).)
+  This emails all the violation data via SendGrid.  Multiple email recipients are
+  delimited by comma.
 
   1. `slack_webhook`
-  Slack webhook -- This invokes a Slack webhook for each violation found. 
+  This sends individual violations to a Slack channel via a Slack webhook.
   Configure a webhook in your organization's Slack settings and set the `webhook_url`.
 
   1. `gcs_violations`
-  Upload to GCS -- This uploads the violation data to a GCS bucket.
+  This uploads all the violation data to a GCS bucket.
 
-* `data_format`: either `csv` (default) or `json`
+* `data_format`: Either `csv` (default) or `json`.
+  Slack only support json type.
 
-### Configuring CSCC Findings
+### CSCC Findings
 
-Forseti violations can now be outputted for integration with
+Forseti violations can be outputted for integration with
 [Cloud Security Command Center](https://cloud.google.com/security-command-center) on GCP.
 
 1. Open `forseti-security/configs/forseti_conf.yaml`.
+
 1. Navigate to the `notifier` > `violation` > `cscc` section.
 
-* `enabled`: controls whether CSCC findings should be sent
+* `enabled`: Controls whether CSCC findings should be sent.
   `true` enables the notification, and `false` disables the notification.
-
-* `gcs_path`: the GCS bucket to upload Forseti violations as CSCC findings
+* `gcs_path`: The GCS bucket to upload Forseti violations as CSCC findings.
   [Sign-up for the Cloud SCC alpha program here!](outputted for integration with Cloud Security Command Center on GCP. Sign-up for the Cloud SCC alpha program here!)
 
 
@@ -101,4 +105,5 @@ the notifier will run on.
 
 ## What's next
 
-- Read more about [enabling Email Notifications]({% link _docs/latest/configure/email-notification.md %}).
+- Read more about
+  [Configure a sendgrid key]({% link _docs/latest/configure/email-notification.md %}).
