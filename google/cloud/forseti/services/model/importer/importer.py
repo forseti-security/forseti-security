@@ -170,7 +170,7 @@ class InventoryImporter(object):
 
         autoflush = self.session.autoflush
         try:
-            self.session.autoflush = False
+            self.session.autoflush = True
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_index_id,
@@ -197,23 +197,19 @@ class InventoryImporter(object):
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
                 self._store_resource(None, last_res_type)
-                self.session.flush()
 
                 for policy in inventory.iter(gcp_type_list,
                                              fetch_dataset_policy=True):
                     item_counter += 1
                     self._convert_dataset_policy(policy)
-                self.session.flush()
 
                 for config in inventory.iter(
                         gcp_type_list, fetch_service_config=True):
                     item_counter += 1
                     self._convert_service_config(config)
-                self.session.flush()
 
                 for resource in inventory.iter(gsuite_type_list):
                     self._store_gsuite_principal(resource)
-                self.session.flush()
 
                 self._store_gsuite_membership_pre()
                 for child, parent in inventory.iter(member_type_list,
@@ -706,7 +702,7 @@ class InventoryImporter(object):
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
             iam_policy_type_name)
-        if not self._is_resource_unique(type_name):
+        if not self._is_resource_unique(iam_policy_type_name):
             return
         self.session.add(
             self.dao.TBL_RESOURCE(
@@ -1097,6 +1093,8 @@ class InventoryImporter(object):
                     self.permission_cache[perm_name] = permission
                 db_permissions.append(self.permission_cache[perm_name])
 
+        if not self._is_role_unique(data['name']):
+            return
         dbrole = self.dao.TBL_ROLE(
             name=data['name'],
             title=data.get('title', ''),
@@ -1146,25 +1144,47 @@ class InventoryImporter(object):
         self.session.add(org)
 
     def _is_resource_unique(self, type_name):
-        """Check to see if the session contains row with
+        """Check to see if the session contains Resource with
         primary key = type_name.
 
         Args:
             type_name (str): The type name (Primary key of the resource table).
 
         Returns:
-            bool: Whether or not session contains row with
+            bool: Whether or not session contains Resource with
                 primary key = type_name.
         """
 
         # one_or_none returns None if the query selects no rows.
         exists = self.session.query(
-            self.dao.TBL_RESOURCE).filter(type_name).one_or_none()
+            self.dao.TBL_RESOURCE).filter(
+                self.dao.TBL_RESOURCE.type_name == type_name).one_or_none()
 
         if exists:
-            LOGGER.error('Duplicate type_name: %s', type_name)
+            LOGGER.warn('Duplicate type_name: %s', type_name)
             return False
+        return True
 
+    def _is_role_unique(self, role_name):
+        """Check to see if the session contains Role with
+        primary key = role_name.
+
+        Args:
+            role_name (str): The role name (Primary key of the role table).
+
+        Returns:
+            bool: Whether or not session contains Role with
+                primary key = role_name.
+        """
+
+        # one_or_none returns None if the query selects no rows.
+        exists = self.session.query(
+            self.dao.TBL_ROLE).filter(
+                self.dao.TBL_ROLE.name == role_name).one_or_none()
+
+        if exists:
+            LOGGER.warn('Duplicate role_name: %s', role_name)
+            return False
         return True
 
     def _add_to_cache(self, resource, dbobj):
