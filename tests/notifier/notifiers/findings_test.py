@@ -77,8 +77,8 @@ class FindingsNotifierTest(ForsetiTestCase):
             }
         ]
 
-        violation_access, _ = scanner_dao_test.populate_db(self.engine)
-        violations = violation_access.list()
+        violation_access, scanner_index_id = scanner_dao_test.populate_db(self.engine)
+        violations = violation_access.list(scanner_index_id=scanner_index_id)
         violations = notifier.convert_to_timestamp(violations)
 
         violations_as_dict = []
