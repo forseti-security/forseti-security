@@ -30,6 +30,7 @@ from sqlalchemy.orm import aliased
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 # pylint: enable=line-too-long
@@ -40,17 +41,6 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
-
-
-class InventoryState(object):
-    """Possible states for inventory."""
-
-    SUCCESS = 'SUCCESS'
-    RUNNING = 'RUNNING'
-    FAILURE = 'FAILURE'
-    PARTIAL_SUCCESS = 'PARTIAL_SUCCESS'
-    TIMEOUT = 'TIMEOUT'
-    CREATED = 'CREATED'
 
 
 class InventoryTypeClass(object):
@@ -121,11 +111,11 @@ class InventoryIndex(BASE):
             id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
             created_at_datetime=created_at_datetime,
             completed_at_datetime=date_time.get_utc_now_datetime(),
-            inventory_status=InventoryState.CREATED,
+            inventory_status=IndexState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
 
-    def complete(self, status=InventoryState.SUCCESS):
+    def complete(self, status=IndexState.SUCCESS):
         """Mark the inventory as completed with a final inventory_status.
 
         Args:
@@ -598,8 +588,7 @@ class Storage(BaseStorage):
             self.session.query(InventoryIndex).filter(
                 InventoryIndex.id == inventory_index_id).filter(
                     InventoryIndex.inventory_status.in_(
-                        [InventoryState.SUCCESS,
-                         InventoryState.PARTIAL_SUCCESS]))
+                        [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]))
             .one())
 
     def _get_resource_rows(self, key):
@@ -666,7 +655,7 @@ class Storage(BaseStorage):
         try:
             self.buffer.flush()
             self.session.rollback()
-            self.inventory_index.complete(status=InventoryState.FAILURE)
+            self.inventory_index.complete(status=IndexState.FAILURE)
             self.session.commit()
         finally:
             self.session_completed = True
