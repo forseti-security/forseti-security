@@ -71,7 +71,7 @@ def populate_db(engine, violations=FAKE_EXPECTED_VIOLATIONS):
     """Populate the db with violations.
 
     Args:
-        tmpfile (str): the temporary file to use for the sqlite database
+        engine (Engine): the database engine to use
         violations (dict): the violations to write to the test database
     """
     mock_service_config = mock.MagicMock()
