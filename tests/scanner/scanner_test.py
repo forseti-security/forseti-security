@@ -19,10 +19,10 @@ from sqlalchemy.orm import sessionmaker
 import unittest
 
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services import db
-from google.cloud.forseti.services.scanner.dao import (
-    ScannerIndex, ScannerState)
+from google.cloud.forseti.services.scanner.dao import ScannerIndex
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
 
@@ -104,7 +104,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         session = Session(bind=mock_service_config.engine)
         db_row = (session.query(ScannerIndex)
                   .filter(ScannerIndex.id == expected_id).one())
-        self.assertEquals(ScannerState.CREATED, db_row.scanner_status)
+        self.assertEquals(IndexState.CREATED, db_row.scanner_status)
         self.assertEquals(utc_now, db_row.created_at_datetime)
 
     @mock.patch(
@@ -131,7 +131,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         session = Session(bind=mock_service_config.engine)
         db_row = (session.query(ScannerIndex)
                   .filter(ScannerIndex.id == scanner_index_id).one())
-        self.assertEquals(ScannerState.SUCCESS, db_row.scanner_status)
+        self.assertEquals(IndexState.SUCCESS, db_row.scanner_status)
         self.assertEquals(end, db_row.completed_at_datetime)
 
 

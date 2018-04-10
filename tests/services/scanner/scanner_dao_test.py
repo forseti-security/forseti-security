@@ -21,10 +21,10 @@ import json
 import mock
 import os
 from sqlalchemy.orm import sessionmaker
-import tempfile
 import unittest
 
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
@@ -354,8 +354,7 @@ class ScannerIndexTest(ForsetiTestCase):
         expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
         self.assertEquals(expected_id, db_row.id)
         self.assertEquals(utc_now, db_row.created_at_datetime)
-        self.assertEquals(
-            scanner_dao.ScannerState.CREATED, db_row.scanner_status)
+        self.assertEquals(IndexState.CREATED, db_row.scanner_status)
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time',
@@ -372,8 +371,7 @@ class ScannerIndexTest(ForsetiTestCase):
         self.assertEquals(expected_id, db_row.id)
         db_row.complete()
         self.assertEquals(end, db_row.completed_at_datetime)
-        self.assertEquals(
-            scanner_dao.ScannerState.SUCCESS, db_row.scanner_status)
+        self.assertEquals(IndexState.SUCCESS, db_row.scanner_status)
 
     def test_scanner_index_add_warning(self):
         """`ScannerIndex` add_warning() works as expected."""
