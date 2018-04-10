@@ -309,4 +309,4 @@ def run_crawler(storage,
         crawler_impl = Crawler(crawler_config)
 
     progresser = crawler_impl.run(resource)
-    return progresser.get_summary()
+    return progresser
