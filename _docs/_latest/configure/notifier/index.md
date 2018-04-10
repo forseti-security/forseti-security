@@ -29,9 +29,9 @@ to different channels, and in different formats.
 
 ## Configuring Notifier
 
-### Inventory summary(TBD)
+### Inventory Summary(TBD)
 
-### Scanner summary (TBD)
+### Scanner Summary (TBD)
 
 ### Violation Notifications
 
