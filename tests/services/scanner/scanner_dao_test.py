@@ -358,16 +358,16 @@ class ScannerDaoTest(ForsetiTestCase):
         mock_date_time.get_utc_now_datetime.side_effect = [
             index1, index1, index2, index2, index3, index3]
 
-        expected_id = index3.strftime(string_formats.TIMESTAMP_MICROS)
+        expected_id = index2.strftime(string_formats.TIMESTAMP_MICROS)
 
         violation_access_cls = scanner_dao.define_violation(self.engine)
         violation_access = violation_access_cls(self.engine)
         with violation_access.violationmaker() as session:
             session.add(scanner_dao.ScannerIndex.create())
+            index2 = scanner_dao.ScannerIndex.create()
+            index2.scanner_status = IndexState.SUCCESS
+            session.add(index2)
             session.add(scanner_dao.ScannerIndex.create())
-            index3 = scanner_dao.ScannerIndex.create()
-            index3.scanner_status = IndexState.SUCCESS
-            session.add(index3)
             session.flush()
             self.assertEquals(
                 expected_id, scanner_dao.last_scanner_index(session).id)
