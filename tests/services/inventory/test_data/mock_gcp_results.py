@@ -381,7 +381,9 @@ CRM_GET_PROJECTS = {
         }],
         FOLDER_ID_PREFIX + "2": [],
         FOLDER_ID_PREFIX + "3": [{
-            "projects": [CRM_GET_PROJECT[PROJECT_ID_PREFIX + "4"]]
+            # Make sure duplicate api response doesn't block data model from building.
+            "projects": [CRM_GET_PROJECT[PROJECT_ID_PREFIX + "4"],
+                         CRM_GET_PROJECT[PROJECT_ID_PREFIX + "4"]]
         }]
     }
 }
