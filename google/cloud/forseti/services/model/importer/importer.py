@@ -21,11 +21,15 @@ from StringIO import StringIO
 import traceback
 import json
 
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
 from google.cloud.forseti.services.inventory.storage import Storage as Inventory
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 class ResourceCache(dict):
@@ -93,7 +97,7 @@ class InventoryImporter(object):
         """Create a Inventory importer which creates a model from the inventory.
 
         Args:
-            session (object): Database session.
+            session (Session): Database session.
             model (Model): Model object.
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
@@ -166,7 +170,7 @@ class InventoryImporter(object):
 
         autoflush = self.session.autoflush
         try:
-            self.session.autoflush = False
+            self.session.autoflush = True
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_index_id,
@@ -193,23 +197,19 @@ class InventoryImporter(object):
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
                 self._store_resource(None, last_res_type)
-                self.session.flush()
 
                 for policy in inventory.iter(gcp_type_list,
                                              fetch_dataset_policy=True):
                     item_counter += 1
                     self._convert_dataset_policy(policy)
-                self.session.flush()
 
                 for config in inventory.iter(
                         gcp_type_list, fetch_service_config=True):
                     item_counter += 1
                     self._convert_service_config(config)
-                self.session.flush()
 
                 for resource in inventory.iter(gsuite_type_list):
                     self._store_gsuite_principal(resource)
-                self.session.flush()
 
                 self._store_gsuite_membership_pre()
                 for child, parent in inventory.iter(member_type_list,
@@ -543,6 +543,8 @@ class InventoryImporter(object):
         data = gae_resource.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             gae_resource)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -563,6 +565,8 @@ class InventoryImporter(object):
         data = bucket.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             bucket)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -584,6 +588,8 @@ class InventoryImporter(object):
         data = cluster.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             cluster)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -606,6 +612,8 @@ class InventoryImporter(object):
             service_config.get_category(),
             parent.type_name)
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
+        if not self._is_resource_unique(sc_type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=sc_res_name,
@@ -623,6 +631,8 @@ class InventoryImporter(object):
         """
         parent, full_res_name, type_name = self._full_resource_name(
             dataset)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -646,6 +656,8 @@ class InventoryImporter(object):
             dataset_policy.get_category(),
             parent.type_name)
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
+        if not self._is_resource_unique(policy_type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=policy_res_name,
@@ -664,6 +676,8 @@ class InventoryImporter(object):
         data = computeproject.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             computeproject)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -688,6 +702,8 @@ class InventoryImporter(object):
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
             iam_policy_type_name)
+        if not self._is_resource_unique(iam_policy_type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=iam_policy_full_res_name,
@@ -706,6 +722,8 @@ class InventoryImporter(object):
         data = image.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             image)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -726,6 +744,8 @@ class InventoryImporter(object):
         data = instancegroup.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instancegroup)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -746,6 +766,8 @@ class InventoryImporter(object):
         data = instancegroupmanager.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instancegroupmanager)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -766,6 +788,8 @@ class InventoryImporter(object):
         data = instancetemplate.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instancetemplate)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -786,6 +810,8 @@ class InventoryImporter(object):
         data = instance.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             instance)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -806,6 +832,8 @@ class InventoryImporter(object):
         data = firewall.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             firewall)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -826,6 +854,8 @@ class InventoryImporter(object):
         data = backendservice.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             backendservice)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -846,6 +876,8 @@ class InventoryImporter(object):
         data = forwardingrule.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             forwardingrule)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -866,6 +898,8 @@ class InventoryImporter(object):
         data = network.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             network)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -886,6 +920,8 @@ class InventoryImporter(object):
         data = subnetwork.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             subnetwork)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -911,6 +947,8 @@ class InventoryImporter(object):
                                              cloudsqlinstance.get_resource_id())
         type_name = to_type_name(cloudsqlinstance.get_resource_type(),
                                  resource_identifier)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -931,6 +969,8 @@ class InventoryImporter(object):
         data = service_account.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -953,6 +993,8 @@ class InventoryImporter(object):
         data = service_account_key.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             service_account_key)
+        if not self._is_resource_unique(type_name):
+            return
         self.session.add(
             self.dao.TBL_RESOURCE(
                 full_name=full_res_name,
@@ -978,6 +1020,8 @@ class InventoryImporter(object):
         else:
             parent, full_res_name, type_name = self._full_resource_name(
                 folder)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -1003,6 +1047,8 @@ class InventoryImporter(object):
         else:
             parent, full_res_name, type_name = self._full_resource_name(
                 project)
+        if not self._is_resource_unique(type_name):
+            return
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
@@ -1047,6 +1093,8 @@ class InventoryImporter(object):
                     self.permission_cache[perm_name] = permission
                 db_permissions.append(self.permission_cache[perm_name])
 
+        if not self._is_role_unique(data['name']):
+            return
         dbrole = self.dao.TBL_ROLE(
             name=data['name'],
             title=data.get('title', ''),
@@ -1058,6 +1106,8 @@ class InventoryImporter(object):
 
         if is_custom:
             parent, full_res_name, type_name = self._full_resource_name(role)
+            if not self._is_resource_unique(type_name):
+                return
             self.session.add(
                 self.dao.TBL_RESOURCE(
                     full_name=full_res_name,
@@ -1079,6 +1129,8 @@ class InventoryImporter(object):
         self.found_root = True
         data = organization.get_resource_data()
         type_name = self._type_name(organization)
+        if not self._is_resource_unique(type_name):
+            return
         org = self.dao.TBL_RESOURCE(
             full_name=to_full_resource_name('', type_name),
             type_name=type_name,
@@ -1090,6 +1142,50 @@ class InventoryImporter(object):
 
         self._add_to_cache(organization, org)
         self.session.add(org)
+
+    def _is_resource_unique(self, type_name):
+        """Check to see if the session contains Resource with
+        primary key = type_name.
+
+        Args:
+            type_name (str): The type name (Primary key of the resource table).
+
+        Returns:
+            bool: Whether or not session contains Resource with
+                primary key = type_name.
+        """
+
+        # one_or_none returns None if the query selects no rows.
+        exists = self.session.query(
+            self.dao.TBL_RESOURCE).filter(
+                self.dao.TBL_RESOURCE.type_name == type_name).one_or_none()
+
+        if exists:
+            LOGGER.warn('Duplicate type_name: %s', type_name)
+            return False
+        return True
+
+    def _is_role_unique(self, role_name):
+        """Check to see if the session contains Role with
+        primary key = role_name.
+
+        Args:
+            role_name (str): The role name (Primary key of the role table).
+
+        Returns:
+            bool: Whether or not session contains Role with
+                primary key = role_name.
+        """
+
+        # one_or_none returns None if the query selects no rows.
+        exists = self.session.query(
+            self.dao.TBL_ROLE).filter(
+                self.dao.TBL_ROLE.name == role_name).one_or_none()
+
+        if exists:
+            LOGGER.warn('Duplicate role_name: %s', role_name)
+            return False
+        return True
 
     def _add_to_cache(self, resource, dbobj):
         """Add a resource to the cache for parent lookup.
