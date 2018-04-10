@@ -170,6 +170,8 @@ class InventoryImporter(object):
 
         autoflush = self.session.autoflush
         try:
+            # Set the autoflush to True, because we are querying the database
+            # in between inserts so we want to make sure nothing is cached.
             self.session.autoflush = True
             item_counter = 0
             last_res_type = None
