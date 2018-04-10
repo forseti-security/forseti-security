@@ -33,6 +33,7 @@ class FindingsNotifierTest(ForsetiTestCase):
         ForsetiTestCase.setUp(self)
         self.maxDiff=None
         self.engine, self.dbfile = create_test_engine_with_file()
+        scanner_dao.initialize(self.engine)
 
     def tearDown(self):
         """Tear down method."""

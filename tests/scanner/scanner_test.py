@@ -15,6 +15,7 @@
 
 from datetime import datetime, timedelta
 import mock
+import os
 from sqlalchemy.orm import sessionmaker
 import unittest
 
@@ -22,8 +23,8 @@ from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services import db
-from google.cloud.forseti.services.scanner.dao import ScannerIndex
-from tests.services.util.db import create_test_engine
+from google.cloud.forseti.services.scanner import dao as scanner_dao
+from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
 
 
@@ -52,6 +53,17 @@ TWO_SCANNERS = {'scanners': [
 ]}
 
 class ScannerRunnerTest(ForsetiTestCase):
+
+    def setUp(self):
+        """Setup method."""
+        ForsetiTestCase.setUp(self)
+        self.engine, self.dbfile = create_test_engine_with_file()
+        scanner_dao.initialize(self.engine)
+
+    def tearDown(self):
+        """Tear down method."""
+        os.unlink(self.dbfile)
+        ForsetiTestCase.tearDown(self)
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine', autospec=True)
@@ -89,7 +101,7 @@ class ScannerRunnerTest(ForsetiTestCase):
     @mock.patch(
         'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
     def test_init_scanner_index(self, mock_service_config, mock_date_time):
-        mock_service_config.engine = create_test_engine()
+        mock_service_config.engine = self.engine
         mock_service_config.sessionmaker = (
             db.create_scoped_sessionmaker(mock_service_config.engine))
         mock_service_config.scoped_session.return_value = (
@@ -102,8 +114,8 @@ class ScannerRunnerTest(ForsetiTestCase):
 
         expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
         session = Session(bind=mock_service_config.engine)
-        db_row = (session.query(ScannerIndex)
-                  .filter(ScannerIndex.id == expected_id).one())
+        db_row = (session.query(scanner_dao.ScannerIndex)
+                  .filter(scanner_dao.ScannerIndex.id == expected_id).one())
         self.assertEquals(IndexState.CREATED, db_row.scanner_status)
         self.assertEquals(utc_now, db_row.created_at_datetime)
 
@@ -117,7 +129,7 @@ class ScannerRunnerTest(ForsetiTestCase):
         # ScannerIndex.create() calls get_utc_now_datetime() twice.
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
-        mock_service_config.engine = create_test_engine()
+        mock_service_config.engine = self.engine
         mock_service_config.sessionmaker = (
             db.create_scoped_sessionmaker(mock_service_config.engine))
         mock_service_config.scoped_session.return_value = (
@@ -129,8 +141,8 @@ class ScannerRunnerTest(ForsetiTestCase):
 
         scanner.mark_scanner_index_complete(mock_service_config)
         session = Session(bind=mock_service_config.engine)
-        db_row = (session.query(ScannerIndex)
-                  .filter(ScannerIndex.id == scanner_index_id).one())
+        db_row = (session.query(scanner_dao.ScannerIndex)
+                  .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
         self.assertEquals(IndexState.SUCCESS, db_row.scanner_status)
         self.assertEquals(end, db_row.completed_at_datetime)
 

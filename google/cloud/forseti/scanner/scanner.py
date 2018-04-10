@@ -31,7 +31,6 @@ def init_scanner_index(service_config):
     Returns:
         str: the id of the 'scanner_index' db row
     """
-    scanner_dao.initialize(service_config.engine)
     with service_config.scoped_session() as session:
         scanner_index = scanner_dao.ScannerIndex.create()
         session.add(scanner_index)

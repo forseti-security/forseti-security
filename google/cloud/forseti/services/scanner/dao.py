@@ -129,6 +129,21 @@ class ScannerIndex(BASE):
         session.flush()
 
 
+def newest_scanner_index(session):
+    """Return the newest `ScannerIndex` row or `None`.
+
+    Args:
+        session (object): session object to work on.
+
+    Returns:
+        object: the newest `ScannerIndex` row or `None`
+    """
+    scanner_index = (
+        session.query(ScannerIndex)
+        .order_by(ScannerIndex.created_at_datetime.desc()).first())
+    return scanner_index
+
+
 def define_violation(dbengine):
     """Defines table class for violations.
 
@@ -245,10 +260,7 @@ def define_violation(dbengine):
                 list: List of Violation row entry objects.
             """
             with self.violationmaker() as session:
-                scanner_index = (
-                    session.query(ScannerIndex)
-                    .order_by(ScannerIndex.created_at_datetime.desc()).first())
-
+                scanner_index = newest_scanner_index(session)
                 if not inventory_index_id:
                     return (
                         session.query(Violation)
