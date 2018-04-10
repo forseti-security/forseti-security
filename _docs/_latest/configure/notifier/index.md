@@ -49,16 +49,17 @@ notifier:
         - resource: cloudsql_acl_violations
           should_notify: true
           pipelines:
-             # Upload violations to GCS.
              - name: gcs_violations_pipeline
                configuration:
-                 # gcs_path should begin with "gs://"
-                 gcs_path: gs://inventoryscanner-henry.appspot.com
+                 gcs_path: gs://path_to_foo_bucket
              - name: email_violations_pipeline
                configuration:
-                 sendgrid_api_key: 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
+                 sendgrid_api_key: foobar_key
                  sender: forseti-notify@forsetisecurity.org
-                 recipient: goldspin@gmail.com
+                 recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
+             - name: slack_webhook_pipeline
+               configuration:
+                 webhook_url: https://hooks.slack.com/services/foobar
 ```
 
 * `should_notify`: Controls whether violation for each resource should be sent.
