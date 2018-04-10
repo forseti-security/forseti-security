@@ -28,7 +28,7 @@ from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.services.util.db import create_test_engine
+from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
 
 Session = sessionmaker()
@@ -67,7 +67,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      }
 ]
 
-def populate_db(tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
+def populate_db(engine, violations=FAKE_EXPECTED_VIOLATIONS):
     """Populate the db with violations.
 
     Args:
@@ -75,10 +75,8 @@ def populate_db(tmpfile=None, violations=FAKE_EXPECTED_VIOLATIONS):
         violations (dict): the violations to write to the test database
     """
     mock_service_config = mock.MagicMock()
-    engine = create_test_engine(tmpfile=tmpfile)
     mock_service_config.engine = engine
-    mock_service_config.sessionmaker = (
-        db.create_scoped_sessionmaker(mock_service_config.engine))
+    mock_service_config.sessionmaker = db.create_scoped_sessionmaker(engine)
     mock_service_config.scoped_session.return_value = (
         mock_service_config.sessionmaker())
     scanner_index_id = scanner.init_scanner_index(mock_service_config)
@@ -101,14 +99,16 @@ class ScannerDaoTest(ForsetiTestCase):
         self.test_violation_full_name = ''
         self.test_inventory_data = ''
         self.test_violation_data = {}
+        self.engine, self.dbfile = create_test_engine_with_file()
 
     def tearDown(self):
         """Tear down method."""
+        os.unlink(self.dbfile)
         ForsetiTestCase.tearDown(self)
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        violation_access, _ = populate_db()
+        violation_access, _ = populate_db(self.engine)
         saved_violations = violation_access.list()
 
         expected_hash_values = [
@@ -161,7 +161,7 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        violation_access, scanner_index_id = populate_db()
+        violation_access, scanner_index_id = populate_db(self.engine)
         saved_violations = violation_access.list()
 
         converted_violations_as_dict = []
@@ -271,81 +271,61 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_only_most_recent_violations_are_listed(self):
         """Only violations from most recent scanner run are listed."""
-        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
-        try:
-            populate_db(tmpfile)
-            populate_db(tmpfile)
-            violation_access, scanner_index_id = populate_db(tmpfile)
-            violations = violation_access.list()
+        populate_db(self.engine)
+        populate_db(self.engine)
+        violation_access, scanner_index_id = populate_db(self.engine)
+        violations = violation_access.list()
 
-            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-            self.assertEquals(expected_number_of_violations, len(violations))
-            for violation in violations:
-                self.assertEquals(
-                    scanner_index_id, violation.scanner_index_id)
-        finally:
-            os.close(fd)
-            os.remove(tmpfile)
+        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+        self.assertEquals(expected_number_of_violations, len(violations))
+        for violation in violations:
+            self.assertEquals(
+                scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_empty_table(self):
         """list() returns `[]` if the `violations` table is empty."""
-        violation_access, _ = populate_db(violations=[])
+        violation_access, _ = populate_db(self.engine, violations=[])
         self.assertEquals([], violation_access.list())
 
     def test_list_with_single_scanner_run_data(self):
         """list() works with violations from a single scanner run."""
-        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
-        try:
-            violation_access, scanner_index_id = populate_db(tmpfile)
-            violations = violation_access.list()
+        violation_access, scanner_index_id = populate_db(self.engine)
+        violations = violation_access.list()
 
-            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-            self.assertEquals(expected_number_of_violations, len(violations))
-            for violation in violations:
-                self.assertEquals(
-                    scanner_index_id, violation.scanner_index_id)
-        finally:
-            os.close(fd)
-            os.remove(tmpfile)
+        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+        self.assertEquals(expected_number_of_violations, len(violations))
+        for violation in violations:
+            self.assertEquals(
+                scanner_index_id, violation.scanner_index_id)
 
     def test_only_most_recent_violations_are_listed_with_index_id(self):
         """Only violations from most recent scanner run are listed."""
-        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
-        try:
-            populate_db(tmpfile)
-            populate_db(tmpfile)
-            violation_access, scanner_index_id = populate_db(tmpfile)
-            violations = violation_access.list(FAKE_INVENTORY_INDEX_ID)
+        populate_db(self.engine)
+        populate_db(self.engine)
+        violation_access, scanner_index_id = populate_db(self.engine)
+        violations = violation_access.list(FAKE_INVENTORY_INDEX_ID)
 
-            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-            self.assertEquals(expected_number_of_violations, len(violations))
-            for violation in violations:
-                self.assertEquals(
-                    scanner_index_id, violation.scanner_index_id)
-        finally:
-            os.close(fd)
-            os.remove(tmpfile)
+        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+        self.assertEquals(expected_number_of_violations, len(violations))
+        for violation in violations:
+            self.assertEquals(
+                scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_empty_table_with_index_id(self):
         """list() returns `[]` if the `violations` table is empty."""
-        violation_access, _ = populate_db(violations=[])
+        violation_access, _ = populate_db(self.engine, violations=[])
         self.assertEquals([], violation_access.list(FAKE_INVENTORY_INDEX_ID))
 
     def test_list_with_single_scanner_run_data_with_index_id(self):
         """list() works with violations from a single scanner run."""
-        fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
-        try:
-            violation_access, scanner_index_id = populate_db(tmpfile)
-            violations = violation_access.list(FAKE_INVENTORY_INDEX_ID)
+        violation_access, scanner_index_id = populate_db(self.engine)
+        violations = violation_access.list(FAKE_INVENTORY_INDEX_ID)
 
-            expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-            self.assertEquals(expected_number_of_violations, len(violations))
-            for violation in violations:
-                self.assertEquals(
-                    scanner_index_id, violation.scanner_index_id)
-        finally:
-            os.close(fd)
-            os.remove(tmpfile)
+        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+        self.assertEquals(expected_number_of_violations, len(violations))
+        for violation in violations:
+            self.assertEquals(
+                scanner_index_id, violation.scanner_index_id)
 
 
 class ScannerIndexTest(ForsetiTestCase):
@@ -354,15 +334,13 @@ class ScannerIndexTest(ForsetiTestCase):
     def setUp(self):
         """Setup method."""
         ForsetiTestCase.setUp(self)
-        self.fd, self.tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
-        self.engine = create_test_engine(tmpfile=self.tmpfile)
+        self.engine, self.dbfile = create_test_engine_with_file()
         scanner_dao.ScannerIndex.__table__.create(bind=self.engine)
         self.session = Session(bind=self.engine)
 
     def tearDown(self):
         """Teardown method."""
-        os.close(self.fd)
-        os.remove(self.tmpfile)
+        os.unlink(self.dbfile)
         ForsetiTestCase.tearDown(self)
 
     @mock.patch(

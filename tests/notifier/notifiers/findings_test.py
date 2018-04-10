@@ -16,12 +16,15 @@
 
 import datetime
 import mock
+import os
 
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import findings
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.scanner import scanner_dao_test
+from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
+
 
 class FindingsNotifierTest(ForsetiTestCase):
 
@@ -29,9 +32,11 @@ class FindingsNotifierTest(ForsetiTestCase):
         """Setup method."""
         ForsetiTestCase.setUp(self)
         self.maxDiff=None
+        self.engine, self.dbfile = create_test_engine_with_file()
 
     def tearDown(self):
         """Tear down method."""
+        os.unlink(self.dbfile)
         ForsetiTestCase.tearDown(self)
 
     @mock.patch('google.cloud.forseti.common.util.date_time.'
@@ -71,8 +76,8 @@ class FindingsNotifierTest(ForsetiTestCase):
             }
         ]
 
-        access, _ = scanner_dao_test.populate_db()
-        violations = access.list()
+        violation_access, _ = scanner_dao_test.populate_db(self.engine)
+        violations = violation_access.list()
         violations = notifier.convert_to_timestamp(violations)
 
         violations_as_dict = []
