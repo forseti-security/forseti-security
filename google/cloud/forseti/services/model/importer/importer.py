@@ -170,9 +170,7 @@ class InventoryImporter(object):
 
         autoflush = self.session.autoflush
         try:
-            # Set the autoflush to True, because we are querying the database
-            # in between inserts so we want to make sure nothing is cached.
-            self.session.autoflush = True
+            self.session.autoflush = False
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_index_id,
@@ -555,8 +553,9 @@ class InventoryImporter(object):
             display_name=data.get('name', ''),
             data=gae_resource.get_resource_data_raw(),
             parent=parent)
+
         self.session.add(resource)
-        self._add_to_cache(gae_resource, resource)
+        self._add_to_cache(resource)
 
     def _convert_bucket(self, bucket):
         """Convert a bucket to a database object.
@@ -578,8 +577,9 @@ class InventoryImporter(object):
             email=data.get('email', ''),
             data=bucket.get_resource_data_raw(),
             parent=parent)
+
         self.session.add(resource)
-        self._add_to_cache(bucket, resource)
+        self._add_to_cache(resource)
 
     def _convert_kubernetes_cluster(self, cluster):
         """Convert an AppEngine resource to a database object.
@@ -600,8 +600,9 @@ class InventoryImporter(object):
             display_name=data.get('name', ''),
             data=cluster.get_resource_data_raw(),
             parent=parent)
+
         self.session.add(resource)
-        self._add_to_cache(cluster, resource)
+        self._add_to_cache(resource)
 
     def _convert_service_config(self, service_config):
         """Convert Kubernetes Service Config to a database object.
@@ -616,14 +617,16 @@ class InventoryImporter(object):
         sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
         if not self._is_resource_unique(sc_type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=sc_res_name,
-                type_name=sc_type_name,
-                name=service_config.get_resource_id(),
-                type=service_config.get_category(),
-                data=service_config.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=sc_res_name,
+            type_name=sc_type_name,
+            name=service_config.get_resource_id(),
+            type=service_config.get_category(),
+            data=service_config.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.
@@ -642,8 +645,9 @@ class InventoryImporter(object):
             type=dataset.get_resource_type(),
             data=dataset.get_resource_data_raw(),
             parent=parent)
+
         self.session.add(resource)
-        self._add_to_cache(dataset, resource)
+        self._add_to_cache(resource)
 
     def _convert_dataset_policy(self, dataset_policy):
         """Convert a dataset policy to a database object.
@@ -660,14 +664,16 @@ class InventoryImporter(object):
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         if not self._is_resource_unique(policy_type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=policy_res_name,
-                type_name=policy_type_name,
-                name=dataset_policy.get_resource_id(),
-                type=dataset_policy.get_category(),
-                data=dataset_policy.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=policy_res_name,
+            type_name=policy_type_name,
+            name=dataset_policy.get_resource_id(),
+            type=dataset_policy.get_category(),
+            data=dataset_policy.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_computeproject(self, computeproject):
         """Convert a computeproject to a database object.
@@ -680,16 +686,18 @@ class InventoryImporter(object):
             computeproject)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=computeproject.get_resource_id(),
-                type=computeproject.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=computeproject.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=computeproject.get_resource_id(),
+            type=computeproject.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=computeproject.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_iam_policy(self, iam_policy):
         """Convert an IAM policy to a database object.
@@ -706,14 +714,16 @@ class InventoryImporter(object):
             iam_policy_type_name)
         if not self._is_resource_unique(iam_policy_type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=iam_policy_full_res_name,
-                type_name=iam_policy_type_name,
-                name=iam_policy.get_resource_id(),
-                type=iam_policy.get_category(),
-                data=iam_policy.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=iam_policy_full_res_name,
+            type_name=iam_policy_type_name,
+            name=iam_policy.get_resource_id(),
+            type=iam_policy.get_category(),
+            data=iam_policy.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_image(self, image):
         """Convert a image to a database object.
@@ -726,16 +736,18 @@ class InventoryImporter(object):
             image)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=image.get_resource_id(),
-                type=image.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=image.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=image.get_resource_id(),
+            type=image.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=image.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_instancegroup(self, instancegroup):
         """Convert a instancegroup to a database object.
@@ -748,16 +760,18 @@ class InventoryImporter(object):
             instancegroup)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=instancegroup.get_resource_id(),
-                type=instancegroup.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=instancegroup.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=instancegroup.get_resource_id(),
+            type=instancegroup.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=instancegroup.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_instancegroupmanager(self, instancegroupmanager):
         """Convert a instancegroupmanager to a database object.
@@ -770,16 +784,18 @@ class InventoryImporter(object):
             instancegroupmanager)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=instancegroupmanager.get_resource_id(),
-                type=instancegroupmanager.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=instancegroupmanager.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=instancegroupmanager.get_resource_id(),
+            type=instancegroupmanager.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=instancegroupmanager.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_instancetemplate(self, instancetemplate):
         """Convert a instancetemplate to a database object.
@@ -792,16 +808,18 @@ class InventoryImporter(object):
             instancetemplate)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=instancetemplate.get_resource_id(),
-                type=instancetemplate.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=instancetemplate.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=instancetemplate.get_resource_id(),
+            type=instancetemplate.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=instancetemplate.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_instance(self, instance):
         """Convert a instance to a database object.
@@ -814,16 +832,18 @@ class InventoryImporter(object):
             instance)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=instance.get_resource_id(),
-                type=instance.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=instance.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=instance.get_resource_id(),
+            type=instance.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=instance.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_firewall(self, firewall):
         """Convert a firewall to a database object.
@@ -836,16 +856,18 @@ class InventoryImporter(object):
             firewall)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=firewall.get_resource_id(),
-                type=firewall.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=firewall.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=firewall.get_resource_id(),
+            type=firewall.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=firewall.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_backendservice(self, backendservice):
         """Convert a backendservice to a database object.
@@ -858,16 +880,18 @@ class InventoryImporter(object):
             backendservice)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=backendservice.get_resource_id(),
-                type=backendservice.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=backendservice.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=backendservice.get_resource_id(),
+            type=backendservice.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=backendservice.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_forwardingrule(self, forwardingrule):
         """Convert a forwarding rule to a database object.
@@ -880,16 +904,18 @@ class InventoryImporter(object):
             forwardingrule)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=forwardingrule.get_resource_id(),
-                type=forwardingrule.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=forwardingrule.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=forwardingrule.get_resource_id(),
+            type=forwardingrule.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=forwardingrule.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_network(self, network):
         """Convert a network to a database object.
@@ -902,16 +928,18 @@ class InventoryImporter(object):
             network)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=network.get_resource_id(),
-                type=network.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=network.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=network.get_resource_id(),
+            type=network.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=network.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_subnetwork(self, subnetwork):
         """Convert a subnetwork to a database object.
@@ -924,16 +952,18 @@ class InventoryImporter(object):
             subnetwork)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=subnetwork.get_resource_id(),
-                type=subnetwork.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=subnetwork.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=subnetwork.get_resource_id(),
+            type=subnetwork.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=subnetwork.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_cloudsqlinstance(self, cloudsqlinstance):
         """Convert a cloudsqlinstance to a database object.
@@ -951,16 +981,19 @@ class InventoryImporter(object):
                                  resource_identifier)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=cloudsqlinstance.get_resource_id(),
-                type=cloudsqlinstance.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=cloudsqlinstance.get_resource_data_raw(),
-                parent=parent))
+
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=cloudsqlinstance.get_resource_id(),
+            type=cloudsqlinstance.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=cloudsqlinstance.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_serviceaccount(self, service_account):
         """Convert a service account to a database object.
@@ -983,7 +1016,7 @@ class InventoryImporter(object):
             data=service_account.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
-        self._add_to_cache(service_account, resource)
+        self._add_to_cache(resource)
 
     def _convert_serviceaccount_key(self, service_account_key):
         """Convert a service account key to a database object.
@@ -997,16 +1030,17 @@ class InventoryImporter(object):
             service_account_key)
         if not self._is_resource_unique(type_name):
             return
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=service_account_key.get_resource_id(),
-                type=service_account_key.get_resource_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=service_account_key.get_resource_data_raw(),
-                parent=parent))
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=service_account_key.get_resource_id(),
+            type=service_account_key.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=service_account_key.get_resource_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(resource)
 
     def _convert_folder(self, folder):
         """Convert a folder to a database object.
@@ -1033,7 +1067,7 @@ class InventoryImporter(object):
             data=folder.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
-        self._add_to_cache(folder, resource)
+        self._add_to_cache(resource)
 
     def _convert_project(self, project):
         """Convert a project to a database object.
@@ -1060,7 +1094,7 @@ class InventoryImporter(object):
             data=project.get_resource_data_raw(),
             parent=parent)
         self.session.add(resource)
-        self._add_to_cache(project, resource)
+        self._add_to_cache(resource)
 
     def _convert_role_pre(self):
         """Executed before roles are handled. Prepares for bulk insert."""
@@ -1110,15 +1144,17 @@ class InventoryImporter(object):
             parent, full_res_name, type_name = self._full_resource_name(role)
             if not self._is_resource_unique(type_name):
                 return
-            self.session.add(
-                self.dao.TBL_RESOURCE(
-                    full_name=full_res_name,
-                    type_name=type_name,
-                    name=role.get_resource_id(),
-                    type=role.get_resource_type(),
-                    display_name=data.get('title'),
-                    data=role.get_resource_data_raw(),
-                    parent=parent))
+            role_resource = self.dao.TBL_RESOURCE(
+                full_name=full_res_name,
+                type_name=type_name,
+                name=role.get_resource_id(),
+                type=role.get_resource_type(),
+                display_name=data.get('title'),
+                data=role.get_resource_data_raw(),
+                parent=parent)
+
+            self._add_to_cache(role_resource)
+            self.session.add(role_resource)
 
     def _convert_organization(self, organization):
         """Convert an organization a database object.
@@ -1142,7 +1178,7 @@ class InventoryImporter(object):
             data=organization.get_resource_data_raw(),
             parent=None)
 
-        self._add_to_cache(organization, org)
+        self._add_to_cache(org)
         self.session.add(org)
 
     def _is_resource_unique(self, type_name):
@@ -1158,9 +1194,7 @@ class InventoryImporter(object):
         """
 
         # one_or_none returns None if the query selects no rows.
-        exists = self.session.query(
-            self.dao.TBL_RESOURCE).filter(
-                self.dao.TBL_RESOURCE.type_name == type_name).one_or_none()
+        exists = type_name in self.resource_cache
 
         if exists:
             LOGGER.warn('Duplicate type_name: %s', type_name)
@@ -1180,26 +1214,23 @@ class InventoryImporter(object):
         """
 
         # one_or_none returns None if the query selects no rows.
-        exists = self.session.query(
-            self.dao.TBL_ROLE).filter(
-                self.dao.TBL_ROLE.name == role_name).one_or_none()
+        exists = role_name in self.role_cache
 
         if exists:
             LOGGER.warn('Duplicate role_name: %s', role_name)
             return False
         return True
 
-    def _add_to_cache(self, resource, dbobj):
+    def _add_to_cache(self, resource):
         """Add a resource to the cache for parent lookup.
 
         Args:
             resource (object): Resource to put in the cache.
-            dbobj (object): Database object.
         """
 
-        type_name = self._type_name(resource)
-        full_res_name = dbobj.full_name
-        self.resource_cache[type_name] = (dbobj, full_res_name)
+        type_name = resource.type_name
+        full_res_name = resource.full_name
+        self.resource_cache[type_name] = (resource, full_res_name)
 
     def _get_parent(self, resource):
         """Return the parent object for a resource from cache.
