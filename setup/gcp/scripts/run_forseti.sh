@@ -46,6 +46,19 @@ forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
 sleep 5s
 
+# TODO: Ultimately we want the inventory create command to block until the model is finished building.
+# link to the issue: https://github.com/GoogleCloudPlatform/forseti-security/issues/1296
+
+# Waiting for models to be finished building.
+GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
+MODEL_STATUS=`eval $GET_MODEL_STATUS`
+
+if [ "$MODEL_STATUS" == "BROKEN" ]
+    then
+        echo "Model is broken, please contact discuss@forsetisecurity.org for support."
+        exit
+fi
+
 # Run model command
 echo "Using model ${MODEL_NAME} to run scanner"
 forseti model use ${MODEL_NAME}
