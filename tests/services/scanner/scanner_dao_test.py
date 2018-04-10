@@ -108,8 +108,8 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        access, _ = populate_db()
-        saved_violations = access.list()
+        violation_access, _ = populate_db()
+        saved_violations = violation_access.list()
 
         expected_hash_values = [
           (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
@@ -161,8 +161,8 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        access, scanner_index_id = populate_db()
-        saved_violations = access.list()
+        violation_access, scanner_index_id = populate_db()
+        saved_violations = violation_access.list()
 
         converted_violations_as_dict = []
         for violation in saved_violations:
@@ -275,8 +275,8 @@ class ScannerDaoTest(ForsetiTestCase):
         try:
             populate_db(tmpfile)
             populate_db(tmpfile)
-            access, scanner_index_id = populate_db(tmpfile)
-            violations = access.list()
+            violation_access, scanner_index_id = populate_db(tmpfile)
+            violations = violation_access.list()
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
@@ -289,15 +289,15 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_list_with_empty_table(self):
         """list() returns `[]` if the `violations` table is empty."""
-        access, _ = populate_db(violations=[])
-        self.assertEquals([], access.list())
+        violation_access, _ = populate_db(violations=[])
+        self.assertEquals([], violation_access.list())
 
     def test_list_with_single_scanner_run_data(self):
         """list() works with violations from a single scanner run."""
         fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
         try:
-            access, scanner_index_id = populate_db(tmpfile)
-            violations = access.list()
+            violation_access, scanner_index_id = populate_db(tmpfile)
+            violations = violation_access.list()
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
@@ -314,8 +314,8 @@ class ScannerDaoTest(ForsetiTestCase):
         try:
             populate_db(tmpfile)
             populate_db(tmpfile)
-            access, scanner_index_id = populate_db(tmpfile)
-            violations = access.list(FAKE_INVENTORY_INDEX_ID)
+            violation_access, scanner_index_id = populate_db(tmpfile)
+            violations = violation_access.list(FAKE_INVENTORY_INDEX_ID)
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
@@ -328,15 +328,15 @@ class ScannerDaoTest(ForsetiTestCase):
 
     def test_list_with_empty_table_with_index_id(self):
         """list() returns `[]` if the `violations` table is empty."""
-        access, _ = populate_db(violations=[])
-        self.assertEquals([], access.list(FAKE_INVENTORY_INDEX_ID))
+        violation_access, _ = populate_db(violations=[])
+        self.assertEquals([], violation_access.list(FAKE_INVENTORY_INDEX_ID))
 
     def test_list_with_single_scanner_run_data_with_index_id(self):
         """list() works with violations from a single scanner run."""
         fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
         try:
-            access, scanner_index_id = populate_db(tmpfile)
-            violations = access.list(FAKE_INVENTORY_INDEX_ID)
+            violation_access, scanner_index_id = populate_db(tmpfile)
+            violations = violation_access.list(FAKE_INVENTORY_INDEX_ID)
 
             expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
             self.assertEquals(expected_number_of_violations, len(violations))
