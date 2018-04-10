@@ -9,29 +9,29 @@ Forseti Notifier can send a variety of notifications to alert you
 of Forseti events. These notifications can be configured to be sent
 to different channels, and in different formats.
 
-## Notification Types
+### Notification Types
 
-  1. Inventory crawl summary.
-  1. Scanner scan summary.
-  1. Violations.
-  1. CSCC findings.
+  1. Inventory summary
+  1. Scanner summary
+  1. Violations
+  1. CSCC findings
   
-## Notification Channels
+### Notification Channels
 
   1. Email
   1. Slack
   1. GCS
 
-## Notification Formats
+### Notification Formats
 
   1. csv (human-readable data)
   1. json (structured data)
 
 ## Configuring Notifier
 
-### Inventory crawl summary.(TBD)
+### Inventory summary.(TBD)
 
-### Scanner scan summary. (TBD)
+### Scanner summary. (TBD)
 
 ### Violation Notifications
 
@@ -47,7 +47,7 @@ match any combination of notifiers for each resource.
 * `name`: The desired notifiers for each resource.  You can specify multiple
   notifiers for each resource.
 
-  The name here matches the actual module name for each notifier in 
+  The name must match the actual module name for each notifier in 
   `forseti-security/google/cloud/forseti/notifier/notifiers`,
   e.g. `email_violations.py`
 
@@ -99,11 +99,14 @@ the notifier will run on.
   # Send the violations from the last successful scanner run.
   $ forseti notifier run
 
-  # Send the violations for the specified notifications
+  # Send the violations by inventory index id.
+  $ forseti notifier run --inventory_index_id
+
+  # Send the violations by scanner index id.
   $ forseti notifier run --inventory_index_id
   ```
 
 ## What's next
 
 - Read more about
-  [Configure a sendgrid key]({% link _docs/latest/configure/email-notification.md %}).
+  [Configure a sendgrid key]{% link _docs/latest/configure/email-notification.md %}.
