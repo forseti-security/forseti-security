@@ -109,4 +109,4 @@ the notifier will run on.
 ## What's next
 
 - Read more about
-  [Configure a sendgrid key](/_docs/latest/configure/email-notification.md).
+  [Configure a sendgrid key]({% link _docs/latest/configure/email-notification.md %}).
