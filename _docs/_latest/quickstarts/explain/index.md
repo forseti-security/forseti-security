@@ -55,5 +55,5 @@ $ forseti-client-XXXX-vm> forseti explainer list_members --prefix test
 
 ## What's next
 
-- Read more about [the concepts of data model]({% link _docs/concepts/models.md %}).
-- Learn about the [complete list of functionalities]({% link _docs/use/cli.md %}) available in Explain.
+- Read more about [the concepts of data model]({% link _docs/latest/concepts/models.md %}).
+- Learn about the [complete list of functionalities]({% link _docs/latest/use/cli.md %}) available in Explain.
