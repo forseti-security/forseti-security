@@ -154,7 +154,7 @@ def run_inventory(service_config,
         background (bool): whether to run the inventory in background
 
     Returns:
-        object: Returns the result of the crawl.
+        QueueProgresser: Returns the result of the crawl.
 
     Raises:
         Exception: Reraises any exception.
@@ -244,10 +244,12 @@ class Inventory(object):
 
                     if not model_name:
                         return result
-                    return run_import(self.config.client(),
-                                      model_name,
-                                      result.inventory_index_id,
-                                      background)
+                    run_import(self.config.client(),
+                               model_name,
+                               result.inventory_index_id,
+                               background)
+                    return result.get_summary()
+
                 except Exception as e:
                     queue.put(e)
                     queue.put(None)
