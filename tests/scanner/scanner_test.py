@@ -139,7 +139,8 @@ class ScannerRunnerTest(ForsetiTestCase):
         mock_service_config.get_scanner_config.return_value = dict(
             scanner_index_id=scanner_index_id)
 
-        scanner.mark_scanner_index_complete(mock_service_config)
+        scanner.mark_scanner_index_complete(
+            mock_service_config, scanner_index_id)
         session = Session(bind=mock_service_config.engine)
         db_row = (session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())

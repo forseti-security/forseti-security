@@ -129,17 +129,19 @@ class ScannerIndex(BASE):
         session.flush()
 
 
-def newest_scanner_index(session):
-    """Return the newest `ScannerIndex` row or `None`.
+def last_scanner_index(session, index_state=IndexState.SUCCESS):
+    """Return last `ScannerIndex` row with the given state or `None`.
 
     Args:
         session (object): session object to work on.
+        index_state (str): we want `ScannerIndex` rows with this state
 
     Returns:
         object: the newest `ScannerIndex` row or `None`
     """
     scanner_index = (
         session.query(ScannerIndex)
+        .filter(ScannerIndex.scanner_status == index_state)
         .order_by(ScannerIndex.created_at_datetime.desc()).first())
     return scanner_index
 
@@ -262,7 +264,7 @@ def define_violation(dbengine):
             """
             with self.violationmaker() as session:
                 if not scanner_index_id:
-                    scanner_index_id = newest_scanner_index(session).id
+                    scanner_index_id = last_scanner_index(session).id
 
                 if not inventory_index_id:
                     return (
