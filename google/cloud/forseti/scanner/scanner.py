@@ -75,7 +75,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
     violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
 
-    scanner_configs['scanner_index_id'] = init_scanner_index(service_config)
+    init_scanner_index(service_config)
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
         None).build()

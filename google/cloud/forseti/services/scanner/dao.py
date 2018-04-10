@@ -250,27 +250,30 @@ def define_violation(dbengine):
 
                     session.add(violation)
 
-        def list(self, inventory_index_id=None):
+        def list(self, inventory_index_id=None, scanner_index_id=None):
             """List all violations from the db table.
 
             Args:
                 inventory_index_id (str): Id of the inventory index.
+                scanner_index_id (str): Id of the scanner index.
 
             Returns:
                 list: List of Violation row entry objects.
             """
             with self.violationmaker() as session:
-                scanner_index = newest_scanner_index(session)
+                if not scanner_index_id:
+                    scanner_index_id = newest_scanner_index(session).id
+
                 if not inventory_index_id:
                     return (
                         session.query(Violation)
-                        .filter(Violation.scanner_index_id == scanner_index.id)
+                        .filter(Violation.scanner_index_id == scanner_index_id)
                         .all())
                 return (
                     session.query(Violation)
                     .filter(and_(
                         Violation.inventory_index_id == inventory_index_id,
-                        Violation.scanner_index_id == scanner_index.id))
+                        Violation.scanner_index_id == scanner_index_id))
                     .all())
 
     base.metadata.create_all(dbengine)
