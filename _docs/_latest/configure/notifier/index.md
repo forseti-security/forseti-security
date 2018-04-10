@@ -29,9 +29,9 @@ to different channels, and in different formats.
 
 ## Configuring Notifier
 
-### Inventory summary.(TBD)
+### Inventory summary(TBD)
 
-### Scanner summary. (TBD)
+### Scanner summary (TBD)
 
 ### Violation Notifications
 
@@ -92,7 +92,7 @@ latest violations from the previous scanner run.
 When using the CLI, you can use flags to specify the violations that
 the notifier will run on.
 
-  1. In the Foseti VM:
+  * In the Foseti VM:
   ```bash
   $ forseti notifier --help
   
