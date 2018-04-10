@@ -1,6 +1,6 @@
 ---
-title: IAM Explain
-order: 202
+title: Explain
+order: 000
 ---
 # {{ page.title }}
 
@@ -10,7 +10,6 @@ test, and develop Cloud Identity and Access Management (Cloud IAM) policies.
 It can enumerate access by resource or member, answer why a principal has access 
 to a certain resource, or offer possible strategies for how to grant a specific 
 resource.
-
 
 ## Running IAM Explain
 
@@ -30,6 +29,24 @@ $ forseti model use <YOUR_MODEL_NAME>
 
 ```bash
 $ forseti explainer list_resources
+```
+
+##### Filter the results and list resources only in a folder
+
+```bash
+$ forseti-client-XXXX-vm> forseti explainer list_resources --prefix organization/1234567890/folder/folder-name
+```
+
+##### List all members in the data model
+
+```bash
+$ forseti-client-XXXX-vm> forseti explainer list_members
+```
+
+##### Filter the results and list members with a prefix match
+
+```bash
+$ forseti-client-XXXX-vm> forseti explainer list_members --prefix test
 ```
 
 ## What's next
