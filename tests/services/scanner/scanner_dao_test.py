@@ -351,14 +351,14 @@ class ScannerDaoTest(ForsetiTestCase):
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
     def test_last_scanner_index(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
-        index1 = datetime.utcnow()
-        index2 = index1 + timedelta(minutes=5)
-        index3 = index1 + timedelta(minutes=7)
+        time1 = datetime.utcnow()
+        time2 = time1 + timedelta(minutes=5)
+        time3 = time1 + timedelta(minutes=7)
         # ScannerIndex.create() calls get_utc_now_datetime() twice.
         mock_date_time.get_utc_now_datetime.side_effect = [
-            index1, index1, index2, index2, index3, index3]
+            time1, time1, time2, time2, time3, time3]
 
-        expected_id = index2.strftime(string_formats.TIMESTAMP_MICROS)
+        expected_id = time2.strftime(string_formats.TIMESTAMP_MICROS)
 
         violation_access_cls = scanner_dao.define_violation(self.engine)
         violation_access = violation_access_cls(self.engine)
@@ -371,6 +371,32 @@ class ScannerDaoTest(ForsetiTestCase):
             session.flush()
             self.assertEquals(
                 expected_id, scanner_dao.last_scanner_index(session).id)
+
+    @mock.patch(
+        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+    def test_last_scanner_index_with_specified_state(self, mock_date_time):
+        """The method under test returns the newest `ScannerIndex` row."""
+        time1 = datetime.utcnow()
+        time2 = time1 + timedelta(minutes=5)
+        time3 = time1 + timedelta(minutes=7)
+        # ScannerIndex.create() calls get_utc_now_datetime() twice.
+        mock_date_time.get_utc_now_datetime.side_effect = [
+            time1, time1, time2, time2, time3, time3]
+
+        expected_id = time1.strftime(string_formats.TIMESTAMP_MICROS)
+
+        violation_access_cls = scanner_dao.define_violation(self.engine)
+        violation_access = violation_access_cls(self.engine)
+        with violation_access.violationmaker() as session:
+            index1 = scanner_dao.ScannerIndex.create()
+            index1.scanner_status = IndexState.FAILURE
+            session.add(index1)
+            session.add(scanner_dao.ScannerIndex.create())
+            session.add(scanner_dao.ScannerIndex.create())
+            session.flush()
+            self.assertEquals(
+                expected_id,
+                scanner_dao.last_scanner_index(session, IndexState.FAILURE).id)
 
 
 class ScannerIndexTest(ForsetiTestCase):
