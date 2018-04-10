@@ -41,6 +41,26 @@ to different channels, and in different formats.
 The following options are available, on a per resource basis. You can mix and
 match any combination of notifiers for each resource.
 
+This example shows adding a email, slack, and gcs notifer on cloudsql violations.
+
+```
+notifier:
+    resources:
+        - resource: cloudsql_acl_violations
+          should_notify: true
+          pipelines:
+             # Upload violations to GCS.
+             - name: gcs_violations_pipeline
+               configuration:
+                 # gcs_path should begin with "gs://"
+                 gcs_path: gs://inventoryscanner-henry.appspot.com
+             - name: email_violations_pipeline
+               configuration:
+                 sendgrid_api_key: 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
+                 sender: forseti-notify@forsetisecurity.org
+                 recipient: goldspin@gmail.com
+```
+
 * `should_notify`: Controls whether violation for each resource should be sent.
   `true` enables the notification, and `false` disables the notification.
 
@@ -74,6 +94,14 @@ Forseti violations can be outputted for integration with
 1. Open `forseti-security/configs/forseti_conf.yaml`.
 
 1. Navigate to the `notifier` > `violation` > `cscc` section.
+
+```
+notifier:
+    violation:
+      cscc:
+        enabled: true
+        gcs_path: gs://inventoryscanner-henry.appspot.com
+```
 
 * `enabled`: Controls whether CSCC findings should be sent.
   `true` enables the notification, and `false` disables the notification.
