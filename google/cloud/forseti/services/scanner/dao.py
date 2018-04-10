@@ -263,20 +263,26 @@ def define_violation(dbengine):
                 list: List of Violation row entry objects.
             """
             with self.violationmaker() as session:
-                if not scanner_index_id:
-                    scanner_index_id = last_scanner_index(session).id
-
-                if not inventory_index_id:
-                    return (
+                query = None
+                if inventory_index_id and scanner_index_id:
+                    query = (
                         session.query(Violation)
-                        .filter(Violation.scanner_index_id == scanner_index_id)
-                        .all())
-                return (
-                    session.query(Violation)
-                    .filter(and_(
-                        Violation.inventory_index_id == inventory_index_id,
-                        Violation.scanner_index_id == scanner_index_id))
-                    .all())
+                        .filter(and_(
+                            Violation.inventory_index_id == inventory_index_id,
+                            Violation.scanner_index_id == scanner_index_id)))
+                elif not inventory_index_id:
+                    query = (
+                        session.query(Violation)
+                        .filter(Violation.scanner_index_id == scanner_index_id))
+                elif not scanner_index_id:
+                    query = (
+                        session.query(Violation)
+                        .filter(
+                            Violation.inventory_index_id == inventory_index_id))
+                else:
+                    query = session.query(Violation)
+
+                return query.all()
 
     base.metadata.create_all(dbengine)
 
