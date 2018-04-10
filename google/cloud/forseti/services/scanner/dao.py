@@ -40,6 +40,9 @@ BASE = declarative_base()
 CURRENT_SCHEMA = 1
 
 
+# pylint: disable=no-member
+
+
 class ScannerIndex(BASE):
     """Represents a scanner run."""
 

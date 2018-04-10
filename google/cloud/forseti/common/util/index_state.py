@@ -14,7 +14,6 @@
 
 """ Common state enum/class for index tables. """
 
-# pylint: disable=no-member
 
 class IndexState(object):
     """Possible states for the inventory/scanner index."""
