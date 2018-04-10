@@ -29,7 +29,7 @@ to different channels, and in different formats.
 
 ## Configuring Notifier
 
-### Inventory Summary(TBD)
+### Inventory Summary (TBD)
 
 ### Scanner Summary (TBD)
 
