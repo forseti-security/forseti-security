@@ -281,6 +281,19 @@ class ScannerDaoTest(ForsetiTestCase):
             self.assertEquals(
                 scanner_index_id, violation.scanner_index_id)
 
+    def test_list_violations_with_given_scanner_index_id(self):
+        """Violations for the given 'scanner_index_id' are listed."""
+        populate_db(self.engine)
+        _, scanner_index_id = populate_db(self.engine)
+        violation_access, _ = populate_db(self.engine)
+        violations = violation_access.list(scanner_index_id=scanner_index_id)
+
+        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
+        self.assertEquals(expected_number_of_violations, len(violations))
+        for violation in violations:
+            self.assertEquals(
+                scanner_index_id, violation.scanner_index_id)
+
     def test_list_with_empty_table(self):
         """list() returns `[]` if the `violations` table is empty."""
         violation_access, _ = populate_db(self.engine, violations=[])
