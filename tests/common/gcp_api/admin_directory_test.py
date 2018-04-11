@@ -87,12 +87,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
 
         with self.assertRaises(client.HttpAccessTokenRefreshError):
             self.ad_api_client.get_groups()
-        mock_logger.error.assert_called_with(
-            'Failed to retrieve group data due to authentication failure. '
-            'Please make sure your forseti_server_config.yaml file contains '
-            'the most updated information and enable G Suite Groups Collection '
-            'if you haven\'t done so. Instructions on how to enable: '
-            'https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html')
+        mock_logger.error.assert_called_with(admin.GSuiteAuthFailureMessage)
 
     def test_get_members(self):
         http_mocks.mock_http_response(fake_admin.FAKE_MEMBERS_LIST_RESPONSE1)
