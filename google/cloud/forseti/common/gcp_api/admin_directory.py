@@ -30,7 +30,7 @@ REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.user.readonly'
 ])
 
-GSuiteAuthFailureMessage = (
+GSUITE_AUTH_FAILURE_MESSAGE = (
     'Failed to retrieve G Suite data due to authentication '
     'failure. Please make sure your forseti_server_config.yaml '
     'file contains the most updated information and enable G '
@@ -227,7 +227,7 @@ class AdminDirectoryClient(object):
             return flattened_results
         except HttpAccessTokenRefreshError as e:
             # Authentication failed, log before raise.
-            LOGGER.error(GSuiteAuthFailureMessage)
+            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
