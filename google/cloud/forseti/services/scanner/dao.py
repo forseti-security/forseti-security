@@ -227,7 +227,9 @@ def define_violation(dbengine):
             """
             with self.violationmaker() as session:
                 if not scanner_index_id:
-                    scanner_index_id = last_scanner_index(session).id
+                    scanner_index = last_scanner_index(
+                        session, index_state=IndexState.CREATED)
+                    scanner_index_id = scanner_index.id
                 created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
                     violation_hash = _create_violation_hash(
