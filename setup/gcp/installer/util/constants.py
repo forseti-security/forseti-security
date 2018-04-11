@@ -157,7 +157,7 @@ RULES_DIR_PATH = os.path.abspath(
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
 
-FORSETI_CONF_PATH = ('{bucket_name}/configs/{installation_type}/'
+FORSETI_CONF_PATH = ('{bucket_name}/configs/'
                      'forseti_conf_{installation_type}.yaml')
 
 DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'

@@ -22,7 +22,7 @@ source /home/ubuntu/forseti_env.sh
 set -x
 
 # Put the config files in place.
-sudo gsutil cp gs://${SCANNER_BUCKET}/configs/server/forseti_conf_server.yaml ${FORSETI_SERVER_CONF}
+sudo gsutil cp gs://${SCANNER_BUCKET}/configs/forseti_conf_server.yaml ${FORSETI_SERVER_CONF}
 sudo gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 
 if [ ! -f "${FORSETI_SERVER_CONF}" ]; then
