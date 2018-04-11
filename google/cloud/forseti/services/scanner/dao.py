@@ -270,17 +270,17 @@ def define_violation(dbengine):
                         .filter(and_(
                             Violation.inventory_index_id == inventory_index_id,
                             Violation.scanner_index_id == scanner_index_id)))
+                elif not (inventory_index_id or scanner_index_id):
+                    query = session.query(Violation)
                 elif not inventory_index_id:
                     query = (
                         session.query(Violation)
                         .filter(Violation.scanner_index_id == scanner_index_id))
-                elif not scanner_index_id:
+                else:
                     query = (
                         session.query(Violation)
                         .filter(
                             Violation.inventory_index_id == inventory_index_id))
-                else:
-                    query = session.query(Violation)
 
                 return query.all()
 
