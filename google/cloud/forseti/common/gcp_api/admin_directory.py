@@ -207,6 +207,7 @@ class AdminDirectoryClient(object):
 
         Raises:
             api_errors.ApiExecutionError: If groups retrieval fails.
+            HttpAccessTokenRefreshError: If the authentication fails.
         """
         try:
             paged_results = self.repository.groups.list(customer=customer_id)
