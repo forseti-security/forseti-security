@@ -216,7 +216,7 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations, inventory_index_id, scanner_index_id):
+        def create(self, violations, inventory_index_id, scanner_index_id=None):
             """Save violations to the db table.
 
             Args:
@@ -226,6 +226,8 @@ def define_violation(dbengine):
                     scanner run.
             """
             with self.violationmaker() as session:
+                if not scanner_index_id:
+                    scanner_index_id = last_scanner_index(session).id
                 created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
                     violation_hash = _create_violation_hash(

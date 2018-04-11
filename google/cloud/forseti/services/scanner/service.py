@@ -56,6 +56,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
         self.service_config = service_config
+        LOGGER.info('initializing scanner DAO tables')
         init_storage(service_config.get_engine())
 
     def Ping(self, request, _):
