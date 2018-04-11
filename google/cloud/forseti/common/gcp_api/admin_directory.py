@@ -15,6 +15,7 @@
 """Wrapper for Admin Directory  API client."""
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
+from oauth2client.client import HttpAccessTokenRefreshError
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
@@ -215,6 +216,16 @@ class AdminDirectoryClient(object):
                          ' flattened_results = %s',
                          customer_id, flattened_results)
             return flattened_results
+        except HttpAccessTokenRefreshError as e:
+            # Authentication failed, log before raise.
+            LOGGER.error(
+                'Failed to retrieve group data due to authentication failure. '
+                'Please make sure your forseti_server_config.yaml file '
+                'contains the most updated information and enable G Suite '
+                'Groups Collection if you haven\'t done so. Instructions on '
+                'how to enable: https://forsetisecurity.org/docs/howto/'
+                'configure/gsuite-group-collection.html')
+            raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
 
