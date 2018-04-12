@@ -39,7 +39,7 @@ if ! [[ -f $FORSETI_SERVER_CONF ]]; then
     exit 1
 fi
 
-SQL_SERVER_LOCAL_ADDRESS="mysql://forseti-security-user@127.0.0.1:${SQL_PORT}"
+SQL_SERVER_LOCAL_ADDRESS="mysql://forseti-user@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
