@@ -72,7 +72,7 @@ class QueueProgresser(Progress):
             resource (Resource): db row of Resource
         """
 
-        self.step = resource.key()
+        self.step = '{}/{}'.format(resource.type(), resource.key())
         self._notify()
 
     def on_warning(self, warning):
