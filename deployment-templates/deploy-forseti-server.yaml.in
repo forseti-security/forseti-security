@@ -36,6 +36,8 @@ resources:
     instance-name: {CLOUDSQL_INSTANCE_NAME}
 - name: forseti_security
   type: cloudsql-database.py
+- name: forseti-security-user
+  type: cloudsql-user.py
 
 # Cloud Storage
 - name: {SCANNER_BUCKET}
