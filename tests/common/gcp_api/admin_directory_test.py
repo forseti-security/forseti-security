@@ -80,6 +80,15 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.ApiExecutionError):
             self.ad_api_client.get_groups()
 
+    @mock.patch.object(admin, 'LOGGER')
+    @mock.patch.object(admin, 'api_helpers')
+    def test_get_groups_raises_http_access_token_refresh_error(self, mock_api_helper, mock_logger):
+        mock_api_helper.flatten_list_results.side_effect = client.HttpAccessTokenRefreshError
+
+        with self.assertRaises(client.HttpAccessTokenRefreshError):
+            self.ad_api_client.get_groups()
+        mock_logger.error.assert_called_with(admin.GSUITE_AUTH_FAILURE_MESSAGE)
+
     def test_get_members(self):
         http_mocks.mock_http_response(fake_admin.FAKE_MEMBERS_LIST_RESPONSE1)
         response = self.ad_api_client.get_group_members('11111')
