@@ -21,6 +21,8 @@ imports:
   name: cloudsql-instance.py
 - path: cloudsql/cloudsql-database.py
   name: cloudsql-database.py
+- path: cloudsql/cloudsql-user.py
+  name: cloudsql-user.py
 - path: compute-engine/server/forseti-instance-server.py
   name: forseti-instance-server.py
 - path: storage/bucket.py
