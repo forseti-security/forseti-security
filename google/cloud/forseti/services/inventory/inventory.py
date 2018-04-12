@@ -104,7 +104,6 @@ class QueueProgresser(Progress):
             object: Progresser in its last state.
         """
 
-        self.final_message = True
         self._notify()
         self._notify_eof()
         return self
