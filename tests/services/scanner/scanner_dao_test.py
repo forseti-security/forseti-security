@@ -527,16 +527,16 @@ class ScannerDaoTest(ForsetiTestCase):
         violations = violation_access.list()
         self.assertEquals([], violations)
 
-    def test_last_scanner_index_with_empty_table(self):
+    def test_get_latest_scanner_id_with_empty_table(self):
         """The method under test returns `None` if the table is empty."""
         violation_access_cls = scanner_dao.define_violation(self.engine)
         violation_access = violation_access_cls(self.engine)
         with violation_access.violationmaker() as session:
-            self.assertIsNone(scanner_dao.last_scanner_index(session))
+            self.assertIsNone(scanner_dao.get_latest_scanner_id(session))
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    def test_last_scanner_index(self, mock_date_time):
+    def test_get_latest_scanner_id(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
@@ -557,11 +557,11 @@ class ScannerDaoTest(ForsetiTestCase):
             session.add(scanner_dao.ScannerIndex.create())
             session.flush()
             self.assertEquals(
-                expected_id, scanner_dao.last_scanner_index(session).id)
+                expected_id, scanner_dao.get_latest_scanner_id(session))
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    def test_last_scanner_index_with_specified_state(self, mock_date_time):
+    def test_get_latest_scanner_id_with_specified_state(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
@@ -583,7 +583,7 @@ class ScannerDaoTest(ForsetiTestCase):
             session.flush()
             self.assertEquals(
                 expected_id,
-                scanner_dao.last_scanner_index(session, IndexState.FAILURE).id)
+                scanner_dao.get_latest_scanner_id(session, IndexState.FAILURE))
 
 
 class ScannerIndexTest(ForsetiTestCase):

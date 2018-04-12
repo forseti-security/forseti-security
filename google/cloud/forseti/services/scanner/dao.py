@@ -129,7 +129,7 @@ class ScannerIndex(BASE):
         session.flush()
 
 
-def last_scanner_index(session, index_state=IndexState.SUCCESS):
+def get_latest_scanner_id(session, index_state=IndexState.SUCCESS):
     """Return last `ScannerIndex` row with the given state or `None`.
 
     Args:
@@ -143,7 +143,7 @@ def last_scanner_index(session, index_state=IndexState.SUCCESS):
         session.query(ScannerIndex)
         .filter(ScannerIndex.scanner_status == index_state)
         .order_by(ScannerIndex.created_at_datetime.desc()).first())
-    return scanner_index
+    return scanner_index.id if scanner_index else None
 
 
 def define_violation(dbengine):
@@ -227,9 +227,8 @@ def define_violation(dbengine):
             """
             with self.violationmaker() as session:
                 if not scanner_index_id:
-                    scanner_index = last_scanner_index(
+                    scanner_index_id = get_latest_scanner_id(
                         session, index_state=IndexState.RUNNING)
-                    scanner_index_id = scanner_index.id
                 created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
                     violation_hash = _create_violation_hash(
