@@ -38,7 +38,7 @@ resources:
     instance-name: {CLOUDSQL_INSTANCE_NAME}
 - name: forseti_security
   type: cloudsql-database.py
-- name: forseti-user
+- name: forseti-db-admin
   type: cloudsql-user.py
 
 # Cloud Storage
