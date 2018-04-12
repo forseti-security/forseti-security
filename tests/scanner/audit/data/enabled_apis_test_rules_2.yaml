@@ -1,0 +1,19 @@
+rules:
+  - name: 'Only allow foo and bar'
+    mode: whitelist
+    resource:
+      - type: folder
+        resource_ids:
+          - '123'
+          - '456'
+    services:
+      - 'foo.googleapis.com'
+      - 'bar.googleapis.com'
+  - name: 'Require bar in folder 123'
+    mode: required
+    resource:
+      - type: folder
+        resource_ids:
+          - '123'
+    services:
+      - 'bar.googleapis.com'
