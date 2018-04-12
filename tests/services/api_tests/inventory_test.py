@@ -87,7 +87,6 @@ class ApiTest(ForsetiTestCase):
             for progress in client.inventory.create(background=False,
                                                     import_as=''):
                 continue
-            self.assertTrue(progress.final_message)
 
             self.assertGreater(len([x for x in client.inventory.list()]),
                                0,
@@ -120,7 +119,6 @@ class ApiTest(ForsetiTestCase):
             for progress in client.inventory.create(background=True,
                                                     import_as=''):
                 continue
-            self.assertTrue(progress.final_message)
 
             while True:
                 # Give background running time to complete.

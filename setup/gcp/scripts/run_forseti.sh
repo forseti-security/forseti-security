@@ -22,7 +22,7 @@ source /home/ubuntu/forseti_env.sh
 set -x
 
 # Put the config files in place.
-sudo gsutil cp gs://${SCANNER_BUCKET}/configs/server/forseti_conf_server.yaml ${FORSETI_SERVER_CONF}
+sudo gsutil cp gs://${SCANNER_BUCKET}/configs/forseti_conf_server.yaml ${FORSETI_SERVER_CONF}
 sudo gsutil cp -r gs://${SCANNER_BUCKET}/rules ${FORSETI_HOME}/
 
 if [ ! -f "${FORSETI_SERVER_CONF}" ]; then
@@ -46,20 +46,9 @@ forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
 sleep 5s
 
-# TODO: Ultimately we want the inventory create command to block until the model is finished building.
-# link to the issue: https://github.com/GoogleCloudPlatform/forseti-security/issues/1296
-
-LOOP_COUNT=0
-MAX_LOOP_COUNT=50
 # Waiting for models to be finished building.
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
-while [ "$MODEL_STATUS" == "CREATED" ] && ((LOOP_COUNT <= MAX_LOOP_COUNT));
-do
-   MODEL_STATUS=`eval $GET_MODEL_STATUS`
-   LOOP_COUNT=$((LOOP_COUNT + 1))
-   sleep 5s
-done
 
 if [ "$MODEL_STATUS" == "BROKEN" ]
     then

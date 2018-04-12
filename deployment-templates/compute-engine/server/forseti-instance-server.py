@@ -44,7 +44,7 @@ mv forseti-security-{release_version} forseti-security
     SCANNER_BUCKET = context.properties['scanner-bucket']
     FORSETI_DB_NAME = context.properties['database-name']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
-    FORSETI_SERVER_CONF = '{}/configs/server/forseti_conf_server.yaml'.format(FORSETI_HOME)
+    FORSETI_SERVER_CONF = '{}/configs/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
     GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
 
@@ -181,9 +181,10 @@ echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | s
 # Rotate gsuite key
 # TODO: consider moving this to the forseti_server
 python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
+chown ubuntu:root $GSUITE_ADMIN_CREDENTIAL_PATH
 
 # Download server configuration from GCS
-gsutil cp gs://{scanner_bucket}/configs/server/forseti_conf_server.yaml {forseti_server_conf}
+gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
 # Start Forseti service depends on vars defined above.
@@ -203,7 +204,7 @@ export PATH=$PATH:/usr/local/bin
 
 # Forseti environment variables
 export FORSETI_HOME=/home/ubuntu/forseti-security
-export FORSETI_SERVER_CONF=$FORSETI_HOME/configs/server/forseti_conf_server.yaml
+export FORSETI_SERVER_CONF=$FORSETI_HOME/configs/forseti_conf_server.yaml
 export SCANNER_BUCKET={scanner_bucket}
 EOF
 )"

@@ -97,7 +97,7 @@ def generate_forseti_conf(template_type, vals, timestamp):
             'configs', template_type, input_template_name))
     forseti_conf_gen = os.path.abspath(
         os.path.join(
-            constants.ROOT_DIR_PATH, 'configs', template_type,
+            constants.ROOT_DIR_PATH, 'configs',
             'forseti_conf_{}_{}.yaml'.format(template_type, timestamp)))
 
     conf_values = utils.sanitize_conf_values(vals)
@@ -157,14 +157,17 @@ def generate_file_from_template(template_path, output_path, template_values):
 
 
 def copy_file_to_destination(file_path, output_path,
-                             is_directory=False, dry_run=False):
+                             is_directory=False,
+                             suppress_output=False,
+                             dry_run=False):
     """Copy the config to the created bucket.
 
     Args:
-        file_path (str): Path to the file
-        output_path (str): Path of the copied file
-        is_directory (bool): Whether or not the input file_path is a directory
-        dry_run (bool): Whether or not the installer is in dry run mode
+        file_path (str): Path to the file.
+        output_path (str): Path of the copied file.
+        is_directory (bool): Whether or not the input file_path is a directory.
+        dry_run (bool): Whether or not the installer is in dry run mode.
+        suppress_output (bool): Suppress output.
 
     Returns:
         bool: True if copy file succeeded, otherwise False.
@@ -178,7 +181,7 @@ def copy_file_to_destination(file_path, output_path,
     else:
         args = ['gsutil', 'cp', file_path, output_path]
 
-    return_code, _, _ = utils.run_command(args)
+    return_code, _, _ = utils.run_command(args, suppress_output=suppress_output)
     if return_code:
         return False
     return True
