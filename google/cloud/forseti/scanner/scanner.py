@@ -103,7 +103,8 @@ def run(model_name=None, progress_queue=None, service_config=None):
         None).build()
 
     # pylint: disable=bare-except
-    succeeded = failed = []
+    succeeded = []
+    failed = []
     for scanner in runnable_scanners:
         try:
             scanner.run()
