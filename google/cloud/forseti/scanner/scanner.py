@@ -14,6 +14,7 @@
 """GCP Resource scanner."""
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner_builder
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 
@@ -33,23 +34,46 @@ def init_scanner_index(service_config):
     """
     with service_config.scoped_session() as session:
         scanner_index = scanner_dao.ScannerIndex.create()
+        scanner_index.scanner_status = IndexState.RUNNING
         session.add(scanner_index)
         session.flush()
         return scanner_index.id
 
 
-def mark_scanner_index_complete(service_config, scanner_index_id):
+def _error_message(failed):
+    """Construct error message for failed scanners.
+
+    Args:
+        failed (list): names of scanners that failed
+
+    Returns:
+        str: error message detailing the scanners that failed
+    """
+    return 'Scanner(s) with errors: %s' % ', '.join(failed)
+
+
+def mark_scanner_index_complete(
+        service_config, scanner_index_id, succeeded, failed):
     """Mark the current 'scanner_index' row as complete.
 
     Args:
         service_config (ServiceConfig): Forseti 2.0 service configs.
         scanner_index_id (str): id of the `ScannerIndex` row to mark
+        succeeded (list): names of scanners that ran successfully
+        failed (list): names of scanners that failed
     """
     with service_config.scoped_session() as session:
         scanner_index = (
             session.query(scanner_dao.ScannerIndex)
             .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
-        scanner_index.complete()
+        if failed and succeeded:
+            scanner_index.complete(IndexState.PARTIAL_SUCCESS)
+        elif not failed:
+            scanner_index.complete(IndexState.SUCCESS)
+        else:
+            scanner_index.complete(IndexState.FAILURE)
+        if failed:
+            scanner_index.set_error(session, _error_message(failed))
         session.add(scanner_index)
         session.flush()
 
@@ -79,6 +103,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
         None).build()
 
     # pylint: disable=bare-except
+    succeeded = failed = []
     for scanner in runnable_scanners:
         try:
             scanner.run()
@@ -89,9 +114,13 @@ def run(model_name=None, progress_queue=None, service_config=None):
                 scanner.__class__.__name__)
             progress_queue.put(log_message)
             LOGGER.error(log_message, exc_info=True)
+            failed.append(scanner.__class__.__name__)
+        else:
+            succeeded.append(scanner.__class__.__name__)
     # pylint: enable=bare-except
     log_message = 'Scan completed!'
-    mark_scanner_index_complete(service_config, scanner_index_id)
+    mark_scanner_index_complete(
+        service_config, scanner_index_id, succeeded, failed)
     progress_queue.put(log_message)
     progress_queue.put(None)
     LOGGER.info(log_message)

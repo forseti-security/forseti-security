@@ -86,8 +86,6 @@ def populate_db(
         mock_service_config.sessionmaker())
     if not scanner_index_id:
         scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id)
     violation_access.create(violations, inventory_index_id, scanner_index_id)
     return violation_access, scanner_index_id
 
@@ -425,8 +423,6 @@ class ScannerDaoTest(ForsetiTestCase):
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
         scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id)
         violation_access.create(
             FAKE_EXPECTED_VIOLATIONS, 'aaa', scanner_index_id)
         violation_access.create(
@@ -449,11 +445,7 @@ class ScannerDaoTest(ForsetiTestCase):
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
         scanner_index_id1 = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id1)
         scanner_index_id2 = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id2)
         violation_access.create(
             FAKE_EXPECTED_VIOLATIONS, 'aaa', scanner_index_id1)
         violation_access.create(
@@ -480,11 +472,7 @@ class ScannerDaoTest(ForsetiTestCase):
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
         sci1 = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, sci1)
         sci2 = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, sci2)
         violation_access.create(FAKE_EXPECTED_VIOLATIONS, 'aaa', sci1)
         violation_access.create(FAKE_EXPECTED_VIOLATIONS, 'bbb', sci1)
         violation_access.create(FAKE_EXPECTED_VIOLATIONS, 'ccc', sci2)
@@ -508,8 +496,6 @@ class ScannerDaoTest(ForsetiTestCase):
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
         scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id)
         violations = violation_access.list(scanner_index_id=scanner_index_id)
         self.assertEquals([], violations)
 
@@ -523,9 +509,7 @@ class ScannerDaoTest(ForsetiTestCase):
             db.create_scoped_sessionmaker(self.engine))
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
-        scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id)
+        scanner.init_scanner_index(mock_service_config)
         violations = violation_access.list('abc')
         self.assertEquals([], violations)
 
@@ -539,9 +523,7 @@ class ScannerDaoTest(ForsetiTestCase):
             db.create_scoped_sessionmaker(self.engine))
         mock_service_config.scoped_session.return_value = (
             mock_service_config.sessionmaker())
-        scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id)
+        scanner.init_scanner_index(mock_service_config)
         violations = violation_access.list()
         self.assertEquals([], violations)
 

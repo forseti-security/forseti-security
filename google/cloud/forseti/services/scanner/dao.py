@@ -118,7 +118,7 @@ class ScannerIndex(BASE):
         session.flush()
 
     def set_error(self, session, message):
-        """Indicate a broken import.
+        """Indicate a broken scanner run.
 
         Args:
             session (object): session object to work on.
@@ -228,7 +228,7 @@ def define_violation(dbengine):
             with self.violationmaker() as session:
                 if not scanner_index_id:
                     scanner_index = last_scanner_index(
-                        session, index_state=IndexState.CREATED)
+                        session, index_state=IndexState.RUNNING)
                     scanner_index_id = scanner_index.id
                 created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
