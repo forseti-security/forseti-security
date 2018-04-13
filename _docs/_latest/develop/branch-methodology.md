@@ -19,7 +19,7 @@ in order to correctly inspect the right code, or create a Pull Request (PR).
 * 2.0-forsetisecurity.org-dev: documentations for Forseti 2.0 website.
 
 Besides these main branches, you will also see other active branches.
-Those branches will be other developer's work-in-progress branches, and can be
+Those branches will be other developer's work-in-progress, and can be
 generally disregarded.
 
 ## Branching Methodology
