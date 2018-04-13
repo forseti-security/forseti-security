@@ -7,6 +7,10 @@ order: 003
 
 This page describes the branches in the Forseti repo and how they're used.
 
+Please note that Forseti 2.0 is the current General Availability (GA) version,
+and where all active feature developments should take place.  Forseti 1.0 is
+on support-basis only, and only bug fixes will be accepted.
+
 ## Branches
 
 The branches listed below are the main branches you'll use to inspect
