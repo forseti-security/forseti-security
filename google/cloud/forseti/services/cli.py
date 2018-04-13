@@ -192,7 +192,7 @@ def define_model_parser(parent):
         help='Create a model')
     create_model_parser.add_argument(
         'source',
-        choices=['empty', 'inventory'],
+        choices=['inventory'],
         help='Source to import from')
     create_model_parser.add_argument(
         'name',
