@@ -36,7 +36,7 @@ to remote.
 1. Create a PR, and base it on the appropriate remote development
 or documentation branch for correct diffing and merging.
 
-1. Once the PR is merged, delete both the remote and local feature branch.
+1. Once the PR is merged, delete both the remote and local feature branches.
 
 ## What's next
 
