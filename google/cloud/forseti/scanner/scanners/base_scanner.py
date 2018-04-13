@@ -21,6 +21,8 @@ import shutil
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util.index_state import IndexState
+from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 
 LOGGER = logger.get_logger(__name__)
@@ -117,7 +119,10 @@ class BaseScanner(object):
 
         violation_access = self.service_config.violation_access(
             self.service_config.engine)
-        violation_access.create(violations, inventory_index_id)
+        with violation_access.violationmaker() as session:
+            scanner_index_id = scanner_dao.get_latest_scanner_id(
+                session, inventory_index_id, index_state=IndexState.RUNNING)
+            violation_access.create(violations, scanner_index_id)
         # TODO: figure out what to do with the errors. For now, just log it.
         LOGGER.debug('Inserted %s rows with %s errors',
                      inserted_row_count, len(violation_errors))

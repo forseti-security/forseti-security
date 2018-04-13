@@ -141,7 +141,8 @@ def run(inventory_index_id, progress_queue, service_config=None):
         with service_config.scoped_session() as session:
             inventory_index_id = (
                 DataAccess.get_latest_inventory_index_id(session))
-            scanner_index_id = scanner_dao.get_latest_scanner_id(session)
+            scanner_index_id = scanner_dao.get_latest_scanner_id(
+                session, inventory_index_id)
             if not scanner_index_id:
                 LOGGER.warn('No scanner index found.')
 
@@ -150,7 +151,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
         service_config.engine)
     violation_access = violation_access_cls(service_config.engine)
     service_config.violation_access = violation_access
-    violations = violation_access.list(inventory_index_id, scanner_index_id)
+    violations = violation_access.list(scanner_index_id)
 
     violations = convert_to_timestamp(violations)
 

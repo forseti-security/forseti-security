@@ -21,19 +21,20 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 LOGGER = logger.get_logger(__name__)
 
 
-def init_scanner_index(service_config):
+def init_scanner_index(service_config, inventory_index_id):
     """Initialize the 'scanner_index' table.
 
     Make sure we have a 'scanner_index' row for the current scanner run.
 
     Args:
         service_config (ServiceConfig): Forseti 2.0 service configs.
+        inventory_index_id (str): Id of the inventory index.
 
     Returns:
         str: the id of the 'scanner_index' db row
     """
     with service_config.scoped_session() as session:
-        scanner_index = scanner_dao.ScannerIndex.create()
+        scanner_index = scanner_dao.ScannerIndex.create(inventory_index_id)
         scanner_index.scanner_status = IndexState.RUNNING
         session.add(scanner_index)
         session.flush()
@@ -97,7 +98,11 @@ def run(model_name=None, progress_queue=None, service_config=None):
     violation_access = scanner_dao.define_violation(service_config.engine)
     service_config.violation_access = violation_access
 
-    scanner_index_id = init_scanner_index(service_config)
+    model_description = (
+        service_config.model_manager.get_description(model_name))
+    inventory_index_id = (
+        model_description.get('source_info').get('inventory_index_id'))
+    scanner_index_id = init_scanner_index(service_config, inventory_index_id)
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
         None).build()

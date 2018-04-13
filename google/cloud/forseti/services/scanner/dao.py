@@ -24,6 +24,7 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import inspect
 from sqlalchemy import Integer
+from sqlalchemy import or_
 from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.orm import sessionmaker
@@ -49,6 +50,7 @@ class ScannerIndex(BASE):
     __tablename__ = 'scanner_index'
 
     id = Column(String(256), primary_key=True)
+    inventory_index_id = Column(String(256))
     created_at_datetime = Column(DateTime())
     completed_at_datetime = Column(DateTime())
     scanner_status = Column(Text())
@@ -79,8 +81,11 @@ class ScannerIndex(BASE):
             self.created_at_datetime)
 
     @classmethod
-    def create(cls):
+    def create(cls, inventory_index_id):
         """Create a new scanner index row.
+
+        Args:
+            inventory_index_id (str): Id of the inventory index.
 
         Returns:
             object: ScannerIndex row object.
@@ -88,6 +93,7 @@ class ScannerIndex(BASE):
         created_at_datetime = cls._utcnow()
         return ScannerIndex(
             id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
+            inventory_index_id=inventory_index_id,
             created_at_datetime=created_at_datetime,
             completed_at_datetime=date_time.get_utc_now_datetime(),
             scanner_status=IndexState.CREATED,
@@ -129,20 +135,37 @@ class ScannerIndex(BASE):
         session.flush()
 
 
-def get_latest_scanner_id(session, index_state=IndexState.SUCCESS):
+def get_latest_scanner_id(session, inventory_index_id, index_state=None):
     """Return last `ScannerIndex` row with the given state or `None`.
+
+    Either return the latest `ScannerIndex` row where the `scanner_status`
+    matches the given `index_state` parameter (if passed) or the latest row
+    that represents a (partially) successful scanner run.
 
     Args:
         session (object): session object to work on.
-        index_state (str): we want `ScannerIndex` rows with this state
+        inventory_index_id (str): Id of the inventory index.
+        index_state (str): we want the latest `ScannerIndex` with this state
 
     Returns:
-        object: the newest `ScannerIndex` row or `None`
+        object: the latest `ScannerIndex` row or `None`
     """
-    scanner_index = (
-        session.query(ScannerIndex)
-        .filter(ScannerIndex.scanner_status == index_state)
-        .order_by(ScannerIndex.created_at_datetime.desc()).first())
+    scanner_index = None
+    if not index_state:
+        scanner_index = (
+            session.query(ScannerIndex)
+            .filter(and_(or_(
+                ScannerIndex.scanner_status == 'SUCCESS',
+                ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
+                ScannerIndex.inventory_index_id == inventory_index_id))
+            .order_by(ScannerIndex.id.desc()).first())
+    else:
+        scanner_index = (
+            session.query(ScannerIndex)
+            .filter(and_(
+                ScannerIndex.scanner_status == index_state,
+                ScannerIndex.inventory_index_id == inventory_index_id))
+            .order_by(ScannerIndex.created_at_datetime.desc()).first())
     return scanner_index.id if scanner_index else None
 
 
@@ -169,7 +192,6 @@ def define_violation(dbengine):
         id = Column(Integer, primary_key=True)
         created_at_datetime = Column(DateTime())
         full_name = Column(String(1024))
-        inventory_index_id = Column(String(256))
         resource_data = Column(Text(16777215))
         resource_id = Column(String(256), nullable=False)
         resource_type = Column(String(256), nullable=False)
@@ -216,19 +238,15 @@ def define_violation(dbengine):
                     expire_on_commit=False),
                 auto_commit=True)
 
-        def create(self, violations, inventory_index_id, scanner_index_id=None):
+        def create(self, violations, scanner_index_id):
             """Save violations to the db table.
 
             Args:
                 violations (list): A list of violations.
-                inventory_index_id (str): Id of the inventory index.
                 scanner_index_id (str): id of the `ScannerIndex` row for this
                     scanner run.
             """
             with self.violationmaker() as session:
-                if not scanner_index_id:
-                    scanner_index_id = get_latest_scanner_id(
-                        session, index_state=IndexState.RUNNING)
                 created_at_datetime = date_time.get_utc_now_datetime()
                 for violation in violations:
                     violation_hash = _create_violation_hash(
@@ -240,7 +258,6 @@ def define_violation(dbengine):
                     violation = Violation(
                         created_at_datetime=created_at_datetime,
                         full_name=violation.get('full_name'),
-                        inventory_index_id=inventory_index_id,
                         resource_data=violation.get('resource_data'),
                         resource_id=violation.get('resource_id'),
                         resource_type=violation.get('resource_type'),
@@ -255,11 +272,10 @@ def define_violation(dbengine):
 
                     session.add(violation)
 
-        def list(self, inventory_index_id=None, scanner_index_id=None):
+        def list(self, scanner_index_id=None):
             """List all violations from the db table.
 
             Args:
-                inventory_index_id (str): Id of the inventory index.
                 scanner_index_id (str): Id of the scanner index.
 
             Returns:
@@ -267,23 +283,12 @@ def define_violation(dbengine):
             """
             with self.violationmaker() as session:
                 query = None
-                if inventory_index_id and scanner_index_id:
-                    query = (
-                        session.query(Violation)
-                        .filter(and_(
-                            Violation.inventory_index_id == inventory_index_id,
-                            Violation.scanner_index_id == scanner_index_id)))
-                elif not (inventory_index_id or scanner_index_id):
-                    query = session.query(Violation)
-                elif not inventory_index_id:
+                if scanner_index_id:
                     query = (
                         session.query(Violation)
                         .filter(Violation.scanner_index_id == scanner_index_id))
                 else:
-                    query = (
-                        session.query(Violation)
-                        .filter(
-                            Violation.inventory_index_id == inventory_index_id))
+                    query = session.query(Violation)
 
                 return query.all()
 

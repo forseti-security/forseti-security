@@ -52,7 +52,7 @@ class Findingsnotifier(object):
                     'resource_type': violation.get('resource_type'),
                     'resource_id': violation.get('resource_id'),
                     'rule_index': violation.get('rule_index'),
-                    'inventory_index_id': violation.get('inventory_index_id'),
+                    'scanner_index_id': violation.get('scanner_index_id'),
                     'resource_data': violation.get('resource_data')
                 }
             }
