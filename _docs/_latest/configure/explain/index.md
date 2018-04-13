@@ -4,7 +4,8 @@ order: 000
 ---
 # {{ page.title }}
 
-This guide describes how to set up Explain for Forseti Security.
+This guide describes how to configure Explain for Forseti Security.
+
 Explain helps you understand the Cloud Identity and Access Management
 (Cloud IAM) policies that affect your Google Cloud Platform (GCP) resources.
 It can enumerate access by resource or member, answer why a principal has access 
@@ -19,39 +20,47 @@ want to use.
 To review the hierarchy of commands and explore Explain functionality, use
 `–help`.
 
+### Creating a data model
+
+Data model is built using the inventory data we created through the Forseti Inventory service.
+
+Instructions on how to run Forseti Inventory can be found [here]({% link _docs/latest/inventory/index.md %}).
+
+Once you have the inventory ready, retrieve the inventory_index_id and use it to create the data model as follows:
+
+```bash
+$ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
+```
+
+### Listing all the data model
+
+```bash
+$ forseti model list
+```
+
 ### Selecting a data model
 
 ```bash
-$ forseti model use <YOUR_MODEL_NAME>
+$ forseti model use <MODEL_NAME>
 ```
 
-### Accessing a data model
+### Querying the data model through Explain
 
-Following are some example commands to list and filter a data model.
+Following are some example commands you can run to query the data model.
 
-#### Listing all resources in the data model
+##### Listing all resources in the data model
 
 ```bash
 $ forseti explainer list_resources
 ```
 
-#### Filter the results and list resources only in a folder
+##### Filter the results and list resources only in a folder
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_resources --prefix organization/1234567890/folder/folder-name
 ```
 
-#### List all members in the data model
-
-```bash
-$ forseti-client-XXXX-vm> forseti explainer list_members
-```
-
-#### Filter the results and list members with a prefix match
-
-```bash
-$ forseti-client-XXXX-vm> forseti explainer list_members --prefix test
-```
+For more advanced Explain commands, please refer to the guide [here]({% link _docs/latest/use/cli.md %}).
 
 ## What's next
 
