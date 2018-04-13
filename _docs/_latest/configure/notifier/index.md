@@ -6,8 +6,8 @@ order: 300
 # {{ page.title }}
 
 Forseti Notifier can send a variety of notifications to alert you
-of Forseti events. These notifications can be configured to be sent
-to different channels, and in different formats.
+of Forseti events. You can configure notifications to send to different
+channels and in different formats.
 
 ### Notification Types
 
@@ -141,6 +141,5 @@ the notifier will run on.
 
 ## What's next
 
-- Read more about
-  Learn how to [set up SendGrid]({% link _docs/latest/configure/email-notification.md %})
+* Learn how to [set up SendGrid]({% link _docs/latest/configure/email-notification.md %})
   to receive email notifications.
