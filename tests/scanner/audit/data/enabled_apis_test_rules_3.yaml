@@ -1,0 +1,19 @@
+rules:
+  - name: 'Valid rule'
+    mode: blacklist
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    services:
+      - 'alpha.googleapis.com'
+      - 'beta.googleapis.com'
+  - name: 'Invalid rule'
+    mode: other
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    services:
+      - 'foo.googleapis.com'
+      - 'bar.googleapis.com'
