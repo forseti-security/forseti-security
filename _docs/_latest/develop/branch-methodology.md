@@ -38,6 +38,6 @@ or documentation branch for correct diffing and merging.
 
 1. Once the PR is merged, delete both the remote and local feature branches.
 
-## What's next
+## What's Next
 
 Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
