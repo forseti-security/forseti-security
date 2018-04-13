@@ -5,38 +5,49 @@ order: 003
 
 #  {{ page.title }}
 
+This page describes the branches in the Forseti repo and how they're used.
+
 ## Branches
 
-There are several important main branches in Forseti repo to know about,
-in order to correctly inspect the right code, or create a Pull Request (PR).
+The branches listed below are the main branches you'll use to inspect
+the correct codebase or create a Pull Request (PR):
 
-* `dev`: development branch for Forseti 1.0.
-* `master`: latest stable code for Forseti 1.0.
+* `dev`: development branch for Forseti 1.0
+* `master`: latest stable release for Forseti 1.0.
 * `forsetisecurity.org`: documentations for Forseti 1.0 website.
 
 * `2.0-dev`: development branch for Forseti 2.0.
-* `2.0-master`: latest stable code for Forseti 2.0.
+* `2.0-master`: latest stable release for Forseti 2.0.
 * `2.0-forsetisecurity.org-dev`: documentations for Forseti 2.0 website.
 
-Besides these main branches, you will also see other active branches.
-Those branches will be other developer's work-in-progress, and can be
-generally disregarded.
+A development branch is the starting point where developers would begin
+to create a new PR and where the PR would be merged into the codebase after
+code review.  Even though there are unit tests, the development branch is still
+considered to be unstable as functional and system tests are not done.
+
+A master branch is a checkpointed code from the development branch that
+has passed functional and system tests, and is considered to be stable and
+suitable for production-use.
+
+Other active branches in the Forseti repo are those created by other developers
+to contribute to Forseti. You can generally disregard any branches that aren't
+explicitly listed above.
 
 ## Branching Methodology
 
-1. Know the Forseti version that you want to make the change.
+The process below outlines how to manage your Forseti branches:
 
-1. Depending on whether you want to make a code change or a documentation change,
-checkout the appropriate development or documentation branch locally,
-sync to remote, and create a local feature branch for your change.
+1. Identify the Forseti version that you want to contribute.
 
-1. Once you are done with your changes, you can push your local feature branch
-to remote. 
+1. Check out the appropriate development or documentation branch locally,
+sync to remote, and then create a local feature branch to contain your change.
 
-1. Create a PR, and base it on the appropriate remote development
-or documentation branch for correct diffing and merging.
+1. When you're finished making changes, push your local feature branch to remote.
 
-1. Once the PR is merged, delete both the remote and local feature branches.
+1. Create a PR, and make sure the review base is on the appropriate remote
+development or documentation branch for correct diffing and merging.
+
+1. After the PR is merged, delete the remote and local feature branches.
 
 ## What's Next
 
