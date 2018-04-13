@@ -23,10 +23,16 @@ exclude: ["Gemfile",
           "client-secrets.json.enc",
           "_config.yml",
           ".travis.yml",
-          "travis/"]
+          "travis/",
+          "scripts/"]
+exclude_from_watch: ["_docs/latest/",
+                     "_data/doc_versions.yml",
+                     "_data/doc_version_index.yml"]
 plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
+  - jekyll-redirect-from
+  - jekyll-responsive-image
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
@@ -43,38 +49,54 @@ collections:
   faq:
     output: false
 
+# Responsive image templates and resizing configuration
+responsive_image:
+  base_path: images
+  output_path_format: images/resized/%{dirname}/%{filename}-%{width}x%{height}.%{extension}
+  template: _includes/responsive_image/template.html
+  sizes:
+    - width: 320
+    - width: 600
+    - width: 800
+    - width: 1000
+    - width: 1400
+  default_quality: 95
+  strip: true
+
+
+
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.
 defaults:
   - scope:
-      path: _docs
+      path: _docs/latest
     values:
-      category: Overview
+      category: Overview (latest)
       layout: docs
   - scope:
-      path: _docs/concepts
+      path: _docs/latest/concepts
     values:
-      category: Concepts
+      category: Concepts (latest)
   - scope:
-      path: _docs/setup
+      path: _docs/latest/setup
     values:
-      category: Setup
+      category: Setup (latest)
   - scope:
-      path: _docs/use
+      path: _docs/latest/use
     values:
-      category: Use
+      category: Use (latest)
   - scope:
-      path: _docs/configure
+      path: _docs/latest/configure
     values:
-      category: Configure
+      category: Configure (latest)
   - scope:
-      path: _docs/develop
+      path: _docs/latest/develop
     values:
-      category: Develop
+      category: Develop (latest)
   - scope:
-      path: _docs/faq
+      path: _docs/latest/faq
     values:
-      category: FAQ
+      category: FAQ (latest)
 # The order of faq categories is defined in _data/faq_categories.yml
   - scope:
       path: _faq/general
@@ -92,3 +114,20 @@ defaults:
       path: _faq/security_implications
     values:
       category: Security implications
+  - scope:
+      path: _docs/v1.1
+    values:
+      category: Overview (v1.1)
+      layout: docs
+  - scope:
+      path: _docs/v1.1/quickstarts
+    values:
+      category: Quickstarts (v1.1)
+  - scope:
+      path: _docs/v1.1/howto
+    values:
+      category: Howtos (v1.1)
+  - scope:
+      path: _docs/v1.1/guides
+    values:
+      category: Guides (v1.1)
