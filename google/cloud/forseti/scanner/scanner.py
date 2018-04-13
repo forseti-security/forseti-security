@@ -21,7 +21,7 @@ from google.cloud.forseti.services.scanner import dao as scanner_dao
 LOGGER = logger.get_logger(__name__)
 
 
-def init_scanner_index(service_config, inventory_index_id):
+def init_scanner_index(session, inventory_index_id):
     """Initialize the 'scanner_index' table.
 
     Make sure we have a 'scanner_index' row for the current scanner run.
@@ -33,12 +33,11 @@ def init_scanner_index(service_config, inventory_index_id):
     Returns:
         str: the id of the 'scanner_index' db row
     """
-    with service_config.scoped_session() as session:
-        scanner_index = scanner_dao.ScannerIndex.create(inventory_index_id)
-        scanner_index.scanner_status = IndexState.RUNNING
-        session.add(scanner_index)
-        session.flush()
-        return scanner_index.id
+    scanner_index = scanner_dao.ScannerIndex.create(inventory_index_id)
+    scanner_index.scanner_status = IndexState.RUNNING
+    session.add(scanner_index)
+    session.flush()
+    return scanner_index.id
 
 
 def _error_message(failed):
@@ -54,7 +53,7 @@ def _error_message(failed):
 
 
 def mark_scanner_index_complete(
-        service_config, scanner_index_id, succeeded, failed):
+        session, scanner_index_id, succeeded, failed):
     """Mark the current 'scanner_index' row as complete.
 
     Args:
@@ -63,20 +62,19 @@ def mark_scanner_index_complete(
         succeeded (list): names of scanners that ran successfully
         failed (list): names of scanners that failed
     """
-    with service_config.scoped_session() as session:
-        scanner_index = (
-            session.query(scanner_dao.ScannerIndex)
-            .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
-        if failed and succeeded:
-            scanner_index.complete(IndexState.PARTIAL_SUCCESS)
-        elif not failed:
-            scanner_index.complete(IndexState.SUCCESS)
-        else:
-            scanner_index.complete(IndexState.FAILURE)
-        if failed:
-            scanner_index.set_error(session, _error_message(failed))
-        session.add(scanner_index)
-        session.flush()
+    scanner_index = (
+        session.query(scanner_dao.ScannerIndex)
+        .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
+    if failed and succeeded:
+        scanner_index.complete(IndexState.PARTIAL_SUCCESS)
+    elif not failed:
+        scanner_index.complete(IndexState.SUCCESS)
+    else:
+        scanner_index.complete(IndexState.FAILURE)
+    if failed:
+        scanner_index.set_error(session, _error_message(failed))
+    session.add(scanner_index)
+    session.flush()
 
 
 def run(model_name=None, progress_queue=None, service_config=None):
@@ -102,7 +100,9 @@ def run(model_name=None, progress_queue=None, service_config=None):
         service_config.model_manager.get_description(model_name))
     inventory_index_id = (
         model_description.get('source_info').get('inventory_index_id'))
-    scanner_index_id = init_scanner_index(service_config, inventory_index_id)
+
+    with violation_access.violationmaker() as session:
+        scanner_index_id = init_scanner_index(session, inventory_index_id)
     runnable_scanners = scanner_builder.ScannerBuilder(
         global_configs, scanner_configs, service_config, model_name,
         None).build()
@@ -125,8 +125,9 @@ def run(model_name=None, progress_queue=None, service_config=None):
             succeeded.append(scanner.__class__.__name__)
     # pylint: enable=bare-except
     log_message = 'Scan completed!'
-    mark_scanner_index_complete(
-        service_config, scanner_index_id, succeeded, failed)
+    with violation_access.violationmaker() as session:
+        mark_scanner_index_complete(
+            session, scanner_index_id, succeeded, failed)
     progress_queue.put(log_message)
     progress_queue.put(None)
     LOGGER.info(log_message)

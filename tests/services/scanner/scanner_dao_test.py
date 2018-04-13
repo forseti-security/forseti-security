@@ -28,17 +28,17 @@ from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+from google.cloud.forseti.services.inventory import storage
 from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
 
-FAKE_INVENTORY_INDEX_ID = 'aaa'
+FAKE_INV_INDEX_ID = 'aaa'
 FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
                         '111111111111111111111111111111111111111111111111111111'
                         '11111111111111111111')
 
-FAKE_EXPECTED_VIOLATIONS = [
-    {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
-     'resource_id': 'fake_firewall_111',
+FAKE_VIOLATIONS = [
+    {'resource_id': 'fake_firewall_111',
      'full_name': 'full_name_111',
      'rule_name': 'disallow_all_ports_111',
      'rule_index': 111,
@@ -50,8 +50,7 @@ FAKE_EXPECTED_VIOLATIONS = [
      'resource_type': 'firewall_rule',
      'resource_data': 'inventory_data_111',
     },
-    {'inventory_index_id': FAKE_INVENTORY_INDEX_ID,
-     'resource_id': 'fake_firewall_222',
+    {'resource_id': 'fake_firewall_222',
      'full_name': 'full_name_222',
      'rule_name': 'disallow_all_ports_222',
      'rule_index': 222,
@@ -65,57 +64,71 @@ FAKE_EXPECTED_VIOLATIONS = [
      }
 ]
 
-def populate_db(
-    engine, violations=FAKE_EXPECTED_VIOLATIONS,
-    inventory_index_id=FAKE_INVENTORY_INDEX_ID,
-    scanner_index_id=None):
-    """Populate the db with violations.
 
-    Args:
-        engine (Engine): the database engine to use
-        violations (dict): the violations to write to the test database
-        inventory_index_id (str): the 'inventory_index_id' to use
-        scanner_index_id (str): the 'scanner_index_id' to use
-    """
-    violation_access_cls = scanner_dao.define_violation(engine)
-    violation_access = violation_access_cls(engine)
-    mock_service_config = mock.MagicMock()
-    mock_service_config.engine = engine
-    mock_service_config.sessionmaker = db.create_scoped_sessionmaker(engine)
-    mock_service_config.scoped_session.return_value = (
-        mock_service_config.sessionmaker())
-    if not scanner_index_id:
-        scanner_index_id = scanner.init_scanner_index(
-            mock_service_config, inventory_index_id)
-    violation_access.create(violations, scanner_index_id)
-    return violation_access, scanner_index_id
-
-
-class ScannerDaoTest(ForsetiTestCase):
-    """Test scanner data access."""
+class DatabaseTest(ForsetiTestCase):
+    """Base class for database centric tests."""
 
     def setUp(self):
         """Setup method."""
         ForsetiTestCase.setUp(self)
+        self.engine, self.dbfile = create_test_engine_with_file()
+        _session_maker = sessionmaker()
+        self.session = _session_maker(bind=self.engine)
+        storage.initialize(self.engine)
+        scanner_dao.initialize(self.engine)
+        self.session.flush()
+        self.violation_access = scanner_dao.ViolationAccess(self.session)
+        self.iidx_id1, self.iidx_id2, self.iidx_id3 = _setup_inv_indices(
+            self.session)
+
+    def tearDown(self):
+        """Teardown method."""
+        os.unlink(self.dbfile)
+        ForsetiTestCase.tearDown(self)
+
+    def populate_db(
+        self, violations=FAKE_VIOLATIONS, inv_index_id=FAKE_INV_INDEX_ID,
+        scanner_index_id=None, succeeded=['IamPolicyScanner'], failed=[]):
+        """Populate the db with violations.
+
+        Args:
+            violations (dict): the violations to write to the test database
+            inv_index_id (str): the inventory index to use
+            scanner_index_id (str): the scanner index to use
+            succeeded (list): names of scanners that ran successfully
+            failed (list): names of scanners that failed
+        """
+        if not scanner_index_id:
+            scanner_index_id = scanner.init_scanner_index(
+                self.session, inv_index_id)
+        self.violation_access.create(violations, scanner_index_id)
+        scanner.mark_scanner_index_complete(
+            self.session, scanner_index_id, succeeded, failed)
+        return scanner_index_id
+
+
+class ScannerDaoTest(DatabaseTest):
+    """Test scanner data access."""
+
+    def setUp(self):
+        """Setup method."""
+        super(ScannerDaoTest, self).setUp()
         self.maxDiff = None
 
         # Used in hashing tests.
         self.test_violation_full_name = ''
         self.test_inventory_data = ''
         self.test_violation_data = {}
-        self.engine, self.dbfile = create_test_engine_with_file()
-        scanner_dao.initialize(self.engine)
 
     def tearDown(self):
         """Tear down method."""
-        os.unlink(self.dbfile)
-        ForsetiTestCase.tearDown(self)
+        super(ScannerDaoTest, self).tearDown()
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        saved_violations = violation_access.list(
-                scanner_index_id=scanner_index_id)
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        saved_violations = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
 
         expected_hash_values = [
           (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
@@ -129,9 +142,12 @@ class ScannerDaoTest(ForsetiTestCase):
                 'violation_data', 'violation_hash', 'resource_data',
                 'created_at_datetime']
 
-        for fake, saved in izip(FAKE_EXPECTED_VIOLATIONS, saved_violations):
+        for fake, saved in izip(FAKE_VIOLATIONS, saved_violations):
             for key in keys:
-                expected_key_value = fake.get(key)
+                if key == 'scanner_index_id':
+                    expected_key_value = fake.get(key, scanner_index_id)
+                else:
+                    expected_key_value = fake.get(key)
                 saved_key_value = getattr(saved, key)
                 if key == 'violation_data':
                     self.assertEquals(
@@ -167,8 +183,8 @@ class ScannerDaoTest(ForsetiTestCase):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        violation_access, scanner_index_id = populate_db(self.engine)
-        saved_violations = violation_access.list(
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        saved_violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
 
         converted_violations_as_dict = []
@@ -212,7 +228,7 @@ class ScannerDaoTest(ForsetiTestCase):
                          converted_violations_as_dict)
 
         self.assertEqual(mock_violation_hash.call_count,
-                         len(FAKE_EXPECTED_VIOLATIONS))
+                         len(FAKE_VIOLATIONS))
 
     def test_create_violation_hash_with_default_algorithm(self):
         """ Test _create_violation_hash. """
@@ -274,247 +290,10 @@ class ScannerDaoTest(ForsetiTestCase):
             self.test_violation_data)
         self.assertEquals(expected_hash, returned_hash)
 
-    def test_only_most_recent_violations_are_listed(self):
-        """Only violations from most recent scanner run are listed."""
-        populate_db(self.engine)
-        populate_db(self.engine)
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
-
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_list_violations_with_given_scanner_index_id(self):
-        """Violations for the given 'scanner_index_id' are listed."""
-        populate_db(self.engine)
-        _, scanner_index_id = populate_db(self.engine)
-        violation_access, _ = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
-
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_list_with_empty_table(self):
-        """list() returns `[]` if the `violations` table is empty."""
-        violation_access, _ = populate_db(self.engine, violations=[])
-        self.assertEquals([], violation_access.list())
-
-    def test_list_with_single_scanner_run_data(self):
-        """list() works with violations from a single scanner run."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
-
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_only_most_recent_violations_are_listed_with_index_id(self):
-        """Only violations from most recent scanner run are listed."""
-        populate_db(self.engine)
-        populate_db(self.engine)
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id)
-
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_list_with_empty_table_with_index_id(self):
-        """list() returns `[]` if the `violations` table is empty."""
-        violation_access, _ = populate_db(self.engine, violations=[])
-        self.assertEquals([], violation_access.list(FAKE_INVENTORY_INDEX_ID))
-
-    def test_list_with_single_scanner_run_data_with_index_id(self):
-        """list() works with violations from a single scanner run."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id)
-
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_list_both_indexes_and_no_inventory_match(self):
-        """list() returns empty result set, 'inventory_index_id' mismatch."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id)
-        self.assertEquals([], violations)
-
-    def test_list_both_indexes_and_no_scanner_match(self):
-        """list() returns empty result set, 'scanner_index_id' mismatch."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list('abc')
-        self.assertEquals([], violations)
-
-    def test_list_both_indexes(self):
-        """list() returns the expected result set."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id)
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_list_both_indexes_multiple_scanner_index(self):
-        """list() returns the expected result set."""
-        violation_access, scanner_index_id = populate_db(self.engine)
-        populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id)
-        expected_number_of_violations = len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(
-                scanner_index_id, violation.scanner_index_id)
-
-    def test_list_with_inventory_index_only(self):
-        """list() returns the expected result set."""
-        violation_access, sci1 = populate_db(self.engine)
-        _, sci2 = populate_db(self.engine)
-        violations = violation_access.list()
-        expected_number_of_violations = 2 * len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertTrue(violation.scanner_index_id in [sci1, sci2])
-
-    def test_multi_list_with_inventory_index_only(self):
-        """list() returns the expected result set."""
-        populate_db(self.engine, inventory_index_id='aaa')
-        _, sci1 = populate_db(self.engine, inventory_index_id='bbb')
-        violation_access, sci2 = populate_db(
-            self.engine, inventory_index_id='bbb')
-        violations = violation_access.list('bbb')
-        expected_number_of_violations = 2 * len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertTrue(violation.scanner_index_id in [sci1, sci2])
-
-    def test_list_with_scanner_index_only(self):
-        """list() returns the expected result set."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        mock_service_config = mock.MagicMock()
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(self.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-        scanner_index_id = scanner.init_scanner_index(
-            mock_service_config, 'aaa')
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, scanner_index_id)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, scanner_index_id)
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
-        expected_number_of_violations = 2 * len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(scanner_index_id, violation.scanner_index_id)
-
-    def test_multi_list_with_scanner_index_only(self):
-        """list() returns the expected result set."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        mock_service_config = mock.MagicMock()
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(self.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-        scanner_index_id1 = scanner.init_scanner_index(
-            mock_service_config, 'aaa')
-        scanner_index_id2 = scanner.init_scanner_index(
-            mock_service_config, 'bbb')
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, scanner_index_id1)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, scanner_index_id1)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, scanner_index_id2)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, scanner_index_id2)
-        violations = violation_access.list(scanner_index_id=scanner_index_id1)
-        expected_number_of_violations = 2 * len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertEquals(scanner_index_id1, violation.scanner_index_id)
-
-    def test_multi_list_with_no_index(self):
-        """list() returns the expected result set."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        mock_service_config = mock.MagicMock()
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(self.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-        sci1 = scanner.init_scanner_index(mock_service_config, 'aaa')
-        sci2 = scanner.init_scanner_index(mock_service_config, 'bbb')
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, sci1)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, sci1)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, sci2)
-        violation_access.create(FAKE_EXPECTED_VIOLATIONS, sci2)
-        violations = violation_access.list()
-        expected_number_of_violations = 4 * len(FAKE_EXPECTED_VIOLATIONS)
-        self.assertEquals(expected_number_of_violations, len(violations))
-        for violation in violations:
-            self.assertTrue(violation.scanner_index_id in [sci1, sci2])
-
-    def test_empty_db_with_scanner_index_only(self):
-        """list() returns the expected result set."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        mock_service_config = mock.MagicMock()
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(self.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-        scanner_index_id = scanner.init_scanner_index(
-            mock_service_config, 'aaa')
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
-        self.assertEquals([], violations)
-
-    def test_empty_db_with_inventory_index_only(self):
-        """list() returns the expected result set."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        mock_service_config = mock.MagicMock()
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(self.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-        scanner.init_scanner_index(mock_service_config, 'abc')
-        violations = violation_access.list('abc')
-        self.assertEquals([], violations)
-
-    def test_empty_db_with_no_index(self):
-        """list() returns the expected result set."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        mock_service_config = mock.MagicMock()
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(self.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-        scanner.init_scanner_index(mock_service_config, 'abc')
-        violations = violation_access.list()
-        self.assertEquals([], violations)
-
     def test_get_latest_scanner_id_with_empty_table(self):
         """The method under test returns `None` if the table is empty."""
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        with violation_access.violationmaker() as session:
-            self.assertIsNone(scanner_dao.get_latest_scanner_id(session, 'aaa'))
+        self.assertIsNone(
+            scanner_dao.get_latest_scanner_id(self.session, 'aaa'))
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
@@ -529,17 +308,14 @@ class ScannerDaoTest(ForsetiTestCase):
 
         expected_id = time2.strftime(string_formats.TIMESTAMP_MICROS)
 
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        with violation_access.violationmaker() as session:
-            session.add(scanner_dao.ScannerIndex.create('aaa'))
-            index2 = scanner_dao.ScannerIndex.create('aaa')
-            index2.scanner_status = IndexState.SUCCESS
-            session.add(index2)
-            session.add(scanner_dao.ScannerIndex.create('aaa'))
-            session.flush()
-            self.assertEquals(
-                expected_id, scanner_dao.get_latest_scanner_id(session, 'aaa'))
+        self.session.add(scanner_dao.ScannerIndex.create('aaa'))
+        index2 = scanner_dao.ScannerIndex.create('aaa')
+        index2.scanner_status = IndexState.SUCCESS
+        self.session.add(index2)
+        self.session.add(scanner_dao.ScannerIndex.create('aaa'))
+        self.session.flush()
+        self.assertEquals(
+            expected_id, scanner_dao.get_latest_scanner_id(self.session, 'aaa'))
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
@@ -554,18 +330,16 @@ class ScannerDaoTest(ForsetiTestCase):
 
         expected_id = time1.strftime(string_formats.TIMESTAMP_MICROS)
 
-        violation_access_cls = scanner_dao.define_violation(self.engine)
-        violation_access = violation_access_cls(self.engine)
-        with violation_access.violationmaker() as session:
-            index1 = scanner_dao.ScannerIndex.create('bbb')
-            index1.scanner_status = IndexState.FAILURE
-            session.add(index1)
-            session.add(scanner_dao.ScannerIndex.create('bbb'))
-            session.add(scanner_dao.ScannerIndex.create('bbb'))
-            session.flush()
-            self.assertEquals(
-                expected_id,
-                scanner_dao.get_latest_scanner_id(session, IndexState.FAILURE))
+        index1 = scanner_dao.ScannerIndex.create('bbb')
+        index1.scanner_status = IndexState.FAILURE
+        self.session.add(index1)
+        self.session.add(scanner_dao.ScannerIndex.create('bbb'))
+        self.session.add(scanner_dao.ScannerIndex.create('bbb'))
+        self.session.flush()
+        self.assertEquals(
+            expected_id,
+            scanner_dao.get_latest_scanner_id(
+                self.session, 'bbb', IndexState.FAILURE))
 
 
 class ScannerIndexTest(ForsetiTestCase):
@@ -625,6 +399,118 @@ class ScannerIndexTest(ForsetiTestCase):
         db_row = scanner_dao.ScannerIndex.create('aaa')
         db_row.set_error(self.session, 'scanner error!')
         self.assertEquals('scanner error!', db_row.scanner_index_errors)
+
+
+@mock.patch(
+    'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+def _setup_inv_indices(session, mock_date_time):
+    """The method under test returns the newest `ScannerIndex` row."""
+    time1 = datetime.utcnow()
+    time2 = time1 + timedelta(minutes=5)
+    time3 = time1 + timedelta(minutes=7)
+    # ScannerIndex.create() calls get_utc_now_datetime() twice.
+    mock_date_time.get_utc_now_datetime.side_effect = [
+        time1, time1, time2, time2, time3, time3]
+
+    iidx1 = storage.InventoryIndex.create()
+    iidx2 = storage.InventoryIndex.create()
+    iidx3 = storage.InventoryIndex.create()
+    session.add(iidx1)
+    session.add(iidx2)
+    session.add(iidx3)
+    session.flush()
+
+    return (
+        time1.strftime(string_formats.TIMESTAMP_MICROS),
+        time2.strftime(string_formats.TIMESTAMP_MICROS),
+        time3.strftime(string_formats.TIMESTAMP_MICROS))
+
+
+class ViolationListTest(DatabaseTest):
+    """Test the Violation.list() method."""
+
+    def test_list_without_indices(self):
+        self.populate_db(inv_index_id=self.iidx_id1)
+        self.populate_db(inv_index_id=self.iidx_id2)
+        actual_data = self.violation_access.list()
+        self.assertEquals(2 * len(FAKE_VIOLATIONS), len(actual_data))
+
+    def test_list_with_inv_index_single_successful_scan(self):
+        self.populate_db(inv_index_id=self.iidx_id1)
+        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+
+    def test_list_with_inv_index_single_failed_scan(self):
+        self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+        self.assertEquals(0, len(actual_data))
+
+    def test_list_with_inv_index_multi_mixed_success_scan(self):
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        for violation in actual_data:
+            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+
+    def test_list_with_inv_index_multi_all_success_scan(self):
+        self.populate_db(inv_index_id=self.iidx_id2)
+        self.populate_db(inv_index_id=self.iidx_id2)
+        actual_data = self.violation_access.list(inv_index_id=self.iidx_id2)
+        self.assertEquals(2 * len(FAKE_VIOLATIONS), len(actual_data))
+
+    def test_list_with_inv_index_multi_all_failed_scan(self):
+        self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+        self.assertEquals(0, len(actual_data))
+
+    def test_list_with_scnr_index_single_successful_scan(self):
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        actual_data = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
+        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        for violation in actual_data:
+            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+
+    def test_list_with_scnr_index_single_failed_scan(self):
+        scanner_index_id = self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
+        self.assertEquals(0, len(actual_data))
+
+    def test_list_with_scnr_index_multi_mixed_success_scan(self):
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
+        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        for violation in actual_data:
+            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+
+    def test_list_with_scnr_index_multi_all_success_scan(self):
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        self.populate_db(inv_index_id=self.iidx_id3)
+        actual_data = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
+        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        for violation in actual_data:
+            self.assertEquals(scanner_index_id, violation.scanner_index_id)
+
+    def test_list_with_scnr_index_multi_all_failed_scan(self):
+        scanner_index_id = self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        self.populate_db(
+            inv_index_id=self.iidx_id2, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
+        self.assertEquals(0, len(actual_data))
 
 
 if __name__ == '__main__':

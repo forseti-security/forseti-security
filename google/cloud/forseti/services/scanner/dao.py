@@ -27,14 +27,12 @@ from sqlalchemy import Integer
 from sqlalchemy import or_
 from sqlalchemy import String
 from sqlalchemy import Text
-from sqlalchemy.orm import sessionmaker
 
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.index_state import IndexState
-from google.cloud.forseti.services import db
 
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
@@ -169,140 +167,110 @@ def get_latest_scanner_id(session, inv_index_id, index_state=None):
     return scanner_index.id if scanner_index else None
 
 
-def define_violation(dbengine):
-    """Defines table class for violations.
+class Violation(BASE):
+    """Row entry for a violation."""
 
-    A violation table will be created on a per-model basis.
+    __tablename__ = 'violations'
 
-    Args:
-        dbengine (engine): sqlalchemy database engine
+    id = Column(Integer, primary_key=True)
+    created_at_datetime = Column(DateTime())
+    full_name = Column(String(1024))
+    resource_data = Column(Text(16777215))
+    resource_id = Column(String(256), nullable=False)
+    resource_type = Column(String(256), nullable=False)
+    rule_index = Column(Integer, default=0)
+    rule_name = Column(String(256))
+    scanner_index_id = Column(String(256))
+    violation_data = Column(Text)
+    violation_hash = Column(String(256))
+    violation_type = Column(String(256), nullable=False)
 
-    Returns:
-        ViolationAcccess: facade for accessing violations.
-    """
-    # TODO: Determine if dbengine is really needed as a method arg here.
-    base = declarative_base()
-    violations_tablename = 'violations'
+    def __repr__(self):
+        """String representation.
 
-    class Violation(base):
-        """Row entry for a violation."""
+        Returns:
+            str: string representation of the Violation row entry.
+        """
+        string = ('<Violation(violation_type={}, resource_type={} '
+                  'rule_name={})>')
+        return string.format(
+            self.violation_type, self.resource_type, self.rule_name)
 
-        __tablename__ = violations_tablename
+class ViolationAccess(object):
+    """Facade for violations, implement APIs against violations table."""
 
-        id = Column(Integer, primary_key=True)
-        created_at_datetime = Column(DateTime())
-        full_name = Column(String(1024))
-        resource_data = Column(Text(16777215))
-        resource_id = Column(String(256), nullable=False)
-        resource_type = Column(String(256), nullable=False)
-        rule_index = Column(Integer, default=0)
-        rule_name = Column(String(256))
-        scanner_index_id = Column(String(256))
-        violation_data = Column(Text)
-        violation_hash = Column(String(256))
-        violation_type = Column(String(256), nullable=False)
+    def __init__(self, session):
+        """Constructor for the Violation Access.
 
-        def __repr__(self):
-            """String representation.
+        Args:
+            dbengine (engine): sqlalchemy database engine
+        """
+        self.session = session
 
-            Returns:
-                str: string representation of the Violation row entry.
-            """
-            string = ('<Violation(violation_type={}, resource_type={} '
-                      'rule_name={})>')
-            return string.format(
-                self.violation_type, self.resource_type, self.rule_name)
+    def create(self, violations, scanner_index_id):
+        """Save violations to the db table.
 
-    class ViolationAccess(object):
-        """Facade for violations, implement APIs against violations table."""
+        Args:
+            violations (list): A list of violations.
+            scanner_index_id (str): id of the `ScannerIndex` row for this
+                scanner run.
+        """
+        created_at_datetime = date_time.get_utc_now_datetime()
+        for violation in violations:
+            violation_hash = _create_violation_hash(
+                violation.get('full_name', ''),
+                violation.get('resource_data', ''),
+                violation.get('violation_data', ''),
+            )
 
-        def __init__(self, dbengine):
-            """Constructor for the Violation Access.
+            violation = Violation(
+                created_at_datetime=created_at_datetime,
+                full_name=violation.get('full_name'),
+                resource_data=violation.get('resource_data'),
+                resource_id=violation.get('resource_id'),
+                resource_type=violation.get('resource_type'),
+                rule_index=violation.get('rule_index'),
+                rule_name=violation.get('rule_name'),
+                scanner_index_id=scanner_index_id,
+                violation_data=json.dumps(
+                    violation.get('violation_data')),
+                violation_hash=violation_hash,
+                violation_type=violation.get('violation_type')
+            )
+            self.session.add(violation)
 
-            Args:
-                dbengine (engine): sqlalchemy database engine
-            """
-            self.engine = dbengine
-            self.violationmaker = self._create_violation_session()
+    def list(self, inv_index_id=None, scanner_index_id=None):
+        """List all violations from the db table.
 
-        def _create_violation_session(self):
-            """Create a session to read from the models table.
+        Args:
+            inv_index_id (str): Id of the inventory index.
+            scanner_index_id (str): Id of the scanner index.
 
-            Returns:
-                ScopedSessionmaker: A scoped session maker that will create
-                    a session that is automatically released.
-            """
-            return db.ScopedSessionMaker(
-                sessionmaker(
-                    bind=self.engine,
-                    expire_on_commit=False),
-                auto_commit=True)
-
-        def create(self, violations, scanner_index_id):
-            """Save violations to the db table.
-
-            Args:
-                violations (list): A list of violations.
-                scanner_index_id (str): id of the `ScannerIndex` row for this
-                    scanner run.
-            """
-            with self.violationmaker() as session:
-                created_at_datetime = date_time.get_utc_now_datetime()
-                for violation in violations:
-                    violation_hash = _create_violation_hash(
-                        violation.get('full_name', ''),
-                        violation.get('resource_data', ''),
-                        violation.get('violation_data', ''),
-                    )
-
-                    violation = Violation(
-                        created_at_datetime=created_at_datetime,
-                        full_name=violation.get('full_name'),
-                        resource_data=violation.get('resource_data'),
-                        resource_id=violation.get('resource_id'),
-                        resource_type=violation.get('resource_type'),
-                        rule_index=violation.get('rule_index'),
-                        rule_name=violation.get('rule_name'),
-                        scanner_index_id=scanner_index_id,
-                        violation_data=json.dumps(
-                            violation.get('violation_data')),
-                        violation_hash=violation_hash,
-                        violation_type=violation.get('violation_type')
-                    )
-
-                    session.add(violation)
-
-        def list(self, inv_index_id=None, scanner_index_id=None):
-            """List all violations from the db table.
-
-            Args:
-                inv_index_id (str): Id of the inventory index.
-                scanner_index_id (str): Id of the scanner index.
-
-            Returns:
-                list: List of Violation row entry objects.
-            """
-            with self.violationmaker() as session:
-                if inv_index_id:
-                    return (
-                        session.query(Violation, ScannerIndex)
-                        .filter(and_(or_(
-                            ScannerIndex.scanner_status == 'SUCCESS',
-                            ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
-                            ScannerIndex.inv_index_id == inv_index_id))
-                        .filter(Violation.scanner_index_id == ScannerIndex.id)
-                        .all())
-                elif scanner_index_id:
-                    return (
-                        session.query(Violation)
-                        .filter(Violation.scanner_index_id == scanner_index_id)
-                        .all())
-                else:
-                    return session.query(Violation).all()
-
-    base.metadata.create_all(dbengine)
-
-    return ViolationAccess
+        Returns:
+            list: List of Violation row entry objects.
+        """
+        if inv_index_id:
+            results = (
+                self.session.query(Violation, ScannerIndex)
+                .filter(and_(or_(
+                    ScannerIndex.scanner_status == 'SUCCESS',
+                    ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
+                    ScannerIndex.inv_index_id == inv_index_id))
+                .filter(Violation.scanner_index_id == ScannerIndex.id)
+                .all())
+            return [v for (v, _) in results]
+        elif scanner_index_id:
+            results = (
+                self.session.query(Violation, ScannerIndex)
+                .filter(and_(or_(
+                    ScannerIndex.scanner_status == 'SUCCESS',
+                    ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
+                    ScannerIndex.id == scanner_index_id))
+                .filter(Violation.scanner_index_id == ScannerIndex.id)
+                .all())
+            return [v for (v, _) in results]
+        else:
+            return self.session.query(Violation).all()
 
 
 # pylint: disable=invalid-name
