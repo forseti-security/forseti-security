@@ -114,7 +114,6 @@ notifier:
 * `gcs_path`: The Cloud Storage bucket to upload Forseti violations as Cloud SCC findings.
   [Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
 
-
 ## Usage
 
 You can invoke Forseti Notifier as part of the scheduled cron job's workflow
