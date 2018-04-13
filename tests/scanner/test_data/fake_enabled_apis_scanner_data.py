@@ -19,23 +19,23 @@ from google.cloud.forseti.scanner.audit import enabled_apis_rules_engine
 
 API_COMPUTE = {
     'serviceName': 'compute.googleapis.com',
-    'producerProjectId': 'google.com:api-project-539346026206'}
+    'producerProjectId': 'compute-producer-project'}
 
 API_LOGGING = {
     'serviceName': 'logging.googleapis.com',
-    'producerProjectId': 'metal-incline-93520'}
+    'producerProjectId': 'logging-producer-project'}
 
 API_MONITORING = {
     'serviceName': 'monitoring.googleapis.com',
-    'producerProjectId': 'google.com:gcm-api-admin'}
+    'producerProjectId': 'monitoring-producer-project'}
 
 API_PUBSUB = {
     'serviceName': 'pubsub.googleapis.com',
-    'producerProjectId': 'cloud-pubsub-billing'}
+    'producerProjectId': 'pubsub-producer-project'}
 
 API_STORAGE = {
     'serviceName': 'storage.googleapis.com',
-    'producerProjectId': 'cloud-storage-producer'}
+    'producerProjectId': 'storage-producer-project'}
 
 ENABLED_APIS_RESOURCES = [
     {

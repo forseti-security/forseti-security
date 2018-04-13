@@ -83,12 +83,12 @@ class EnabledApisScannerTest(ForsetiTestCase):
             ('proj-3', 'project-3-api-data')
         ]
 
-        self.scanner.rules_engine.find_policy_violations.side_effect = [
+        self.scanner.rules_engine.find_violations.side_effect = [
             ['viol-1', 'viol-2'], [], ['viol-3']]
 
         violations = self.scanner._find_violations(enabled_apis_data)
 
-        self.scanner.rules_engine.find_policy_violations.assert_has_calls(
+        self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(proj, data) for proj, data in enabled_apis_data])
 
         self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)

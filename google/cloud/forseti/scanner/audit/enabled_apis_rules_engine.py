@@ -23,8 +23,6 @@ import collections
 import itertools
 import threading
 
-from google.cloud.forseti.common.gcp_type import errors as resource_errors
-from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import relationship
@@ -33,18 +31,14 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
+# Rule violation type.
+VIOLATION_TYPE = 'ENABLED_APIS_VIOLATION'
+
 # Rule Modes.
 _WHITELIST = 'whitelist'
 _BLACKLIST = 'blacklist'
 _REQUIRED = 'required'
 _RULE_MODES = frozenset([_WHITELIST, _BLACKLIST, _REQUIRED])
-
-# Rule violation types.
-_VIOLATION_TYPES = {
-    _WHITELIST: 'ENABLED_APIS_ADDED_VIOLATION',
-    _BLACKLIST: 'ENABLED_APIS_ADDED_VIOLATION',
-    _REQUIRED: 'ENABLED_APIS_REMOVED_VIOLATION',
-}
 
 
 def _check_whitelist_apis(rule_apis=None, enabled_apis=None):
@@ -60,7 +54,11 @@ def _check_whitelist_apis(rule_apis=None, enabled_apis=None):
     Returns:
         list: Enabled APIs NOT found in the whitelist (rule APIs).
     """
-    return [api for api in enabled_apis if api not in rule_apis]
+    violating_apis = []
+    for api in enabled_apis:
+        if api not in rule_apis:
+            violating_apis.append(api)
+    return violating_apis
 
 
 def _check_blacklist_apis(rule_apis=None, enabled_apis=None):
@@ -76,7 +74,11 @@ def _check_blacklist_apis(rule_apis=None, enabled_apis=None):
     Returns:
         list: Enabled APIs found in the blacklist (rule APIs).
     """
-    return [api for api in enabled_apis if api in rule_apis]
+    violating_apis = []
+    for api in enabled_apis:
+        if api in rule_apis:
+            violating_apis.append(api)
+    return violating_apis
 
 
 def _check_required_apis(rule_apis=None, enabled_apis=None):
@@ -92,7 +94,11 @@ def _check_required_apis(rule_apis=None, enabled_apis=None):
     Returns:
         list: Required rule APIs not found enabled by the project.
     """
-    return [api for api in rule_apis if api not in enabled_apis]
+    violating_apis = []
+    for api in rule_apis:
+        if api not in enabled_apis:
+            violating_apis.append(api)
+    return violating_apis
 
 
 class EnabledApisRulesEngine(bre.BaseRulesEngine):
@@ -121,8 +127,7 @@ class EnabledApisRulesEngine(bre.BaseRulesEngine):
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_policy_violations(self, project, enabled_apis,
-                               force_rebuild=False):
+    def find_violations(self, project, enabled_apis, force_rebuild=False):
         """Determine whether enabled APIs violates rules.
 
         Args:
@@ -162,6 +167,12 @@ class EnabledApisRuleBook(bre.BaseRuleBook):
     A project's enabled APIs are evaulated against rules for all ancestor
     resources of that project.
     """
+
+    supported_resource_types = frozenset([
+        'project',
+        'folder',
+        'organization',
+    ])
 
     def __init__(self,
                  global_configs,  # pylint: disable= unused-argument
@@ -281,13 +292,10 @@ class EnabledApisRuleBook(bre.BaseRuleBook):
 
             for resource in resources:
                 resource_ids = resource.get('resource_ids')
-                resource_type = None
-                try:
-                    resource_type = resource_mod.ResourceType.verify(
-                        resource.get('type'))
-                except resource_errors.InvalidResourceTypeError:
+                resource_type = resource.get('type')
+                if resource_type not in self.supported_resource_types:
                     raise audit_errors.InvalidRulesSchemaError(
-                        'Missing resource type in rule {}'.format(rule_index))
+                        'Invalid resource type in rule {}'.format(rule_index))
 
                 if not resource_ids or len(resource_ids) < 1:
                     raise audit_errors.InvalidRulesSchemaError(
@@ -296,14 +304,13 @@ class EnabledApisRuleBook(bre.BaseRuleBook):
                 # For each resource id associated with the rule, create a
                 # mapping of resource => rules.
                 for resource_id in resource_ids:
-                    if resource_id == '*':
-                        # Wild-card rules apply to all projects.
-                        gcp_resource = resource_util.create_resource(
-                            resource_id='*', resource_type='project')
-                    else:
-                        gcp_resource = resource_util.create_resource(
-                            resource_id=resource_id,
-                            resource_type=resource_type)
+                    if resource_id == '*' and resource_type != 'project':
+                        raise audit_errors.InvalidRulesSchemaError(
+                            'Wild-card must use project type in rule {}'.format(
+                                rule_index))
+                    gcp_resource = resource_util.create_resource(
+                        resource_id=resource_id,
+                        resource_type=resource_type)
 
                     rule_def_resource = {
                         'services': services,
@@ -311,7 +318,7 @@ class EnabledApisRuleBook(bre.BaseRuleBook):
                     }
                     rule = Rule(rule_name=rule_def.get('name'),
                                 rule_index=rule_index,
-                                rules=rule_def_resource)
+                                rule=rule_def_resource)
 
                     # If no mapping exists, create it. If the rule isn't in the
                     # mapping, add it.
@@ -343,7 +350,7 @@ class EnabledApisRuleBook(bre.BaseRuleBook):
             for resource_rule in resource_rules:
                 violations = itertools.chain(
                     violations,
-                    resource_rule.find_policy_violations(project, enabled_apis))
+                    resource_rule.find_violations(project, enabled_apis))
 
         return violations
 
@@ -364,18 +371,18 @@ class Rule(object):
         ['resource_type', 'resource_id', 'full_name', 'rule_name', 'rule_index',
          'violation_type', 'apis', 'resource_data'])
 
-    def __init__(self, rule_name, rule_index, rules):
+    def __init__(self, rule_name, rule_index, rule):
         """Initialize.
         Args:
             rule_name (str): Name of the loaded rule.
             rule_index (int): The index of the rule from the rule definitions.
-            rules (dict): The rules from the file.
+            rule (dict): The rule definition from the file.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.rules = rules
+        self.rule = rule
 
-    def find_policy_violations(self, project, enabled_apis):
+    def find_violations(self, project, enabled_apis):
         """Find Enabled API violations in the rule book.
         Args:
             project (gcp_type): The project that these APIs are enabled on.
@@ -384,8 +391,8 @@ class Rule(object):
             namedtuple: Returns RuleViolation named tuple.
         """
 
-        violating_apis = _RULE_MODE_METHODS[self.rules['mode']](
-            rule_apis=self.rules['services'],
+        violating_apis = _RULE_MODE_METHODS[self.rule['mode']](
+            rule_apis=self.rule['services'],
             enabled_apis=enabled_apis)
 
         if violating_apis:
@@ -395,7 +402,7 @@ class Rule(object):
                 full_name=project.full_name,
                 rule_name=self.rule_name,
                 rule_index=self.rule_index,
-                violation_type=_VIOLATION_TYPES[self.rules['mode']],
+                violation_type=VIOLATION_TYPE,
                 apis=tuple(violating_apis),
                 resource_data=project.data
             )

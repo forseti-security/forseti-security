@@ -122,6 +122,8 @@ class InventoryImporter(object):
 
         self.found_root = False
 
+    # pylint: disable=too-many-branches
+    # TODO: refactor run() to have fewer branches.
     def run(self):
         """Runs the import.
 

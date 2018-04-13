@@ -102,7 +102,7 @@ class EnabledApisScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding enabled API violations...')
 
         for project, enabled_apis in enabled_apis_data:
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 project, enabled_apis)
             LOGGER.debug(violations)
             all_violations.extend(violations)
@@ -120,8 +120,10 @@ class EnabledApisScanner(base_scanner.BaseScanner):
             enabled_apis_data = []
 
             for apis in data_access.scanner_iter(session, 'enabled_apis'):
-                enabled_apis = [a['serviceName'] for a in json.loads(apis.data)
-                                if 'serviceName' in a]
+                enabled_apis = []
+                for enabled_api in json.loads(apis.data):
+                    if 'serviceName' in enabled_api:
+                        enabled_apis.append(enabled_api['serviceName'])
 
                 if enabled_apis:
                     enabled_apis_data.append(
