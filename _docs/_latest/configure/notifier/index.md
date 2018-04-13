@@ -41,8 +41,8 @@ follow the steps below:
 1. Open `forseti-security/configs/forseti_conf.yaml`.
 1. Navigate to the `notifier` > `resources` section.
 
-The following options are available, on a per resource basis. You can mix and
-match any combination of notifiers for each resource.
+The following options are available, on a per resource basis. You can use
+any combination of notifiers for each resource.
 
 * `should_notify`: Controls whether violation for each resource should be sent.
   `true` enables the notification, and `false` disables the notification.
