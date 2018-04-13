@@ -12,11 +12,11 @@ in order to correctly inspect the right code, or create a Pull Request (PR).
 
 * dev: development branch for Forseti 1.0.
 * master: latest stable code for Forseti 1.0.
-* forsetisecurity.org: documentations for Forseti 1.0
+* forsetisecurity.org: documentations for Forseti 1.0 website.
 
 * 2.0-dev: development branch for Forseti 2.0.
 * 2.0-master: latest stable code for Forseti 2.0.
-* 2.0-forsetisecurity.org-dev: documentations for Forseti 2.0.
+* 2.0-forsetisecurity.org-dev: documentations for Forseti 2.0 website.
 
 Besides these main branches, you will also see other active branches.
 Those branches will be other developer's work-in-progress branches, and can be
