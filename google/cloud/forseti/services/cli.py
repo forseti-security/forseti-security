@@ -191,16 +191,12 @@ def define_model_parser(parent):
         'create',
         help='Create a model')
     create_model_parser.add_argument(
-        'source',
-        choices=['empty', 'inventory'],
-        help='Source to import from')
-    create_model_parser.add_argument(
         'name',
         help='Human readable name for this model')
     create_model_parser.add_argument(
-        '--id',
+        '--inventory_index_id',
         default='',
-        help='Inventory id to import from, if "inventory" source'
+        help='Inventory id to import from'
     )
     create_model_parser.add_argument(
         '--background',
@@ -664,9 +660,9 @@ def run_model(client, config, output, config_env):
 
     def do_create_model():
         """Create a model."""
-        result = client.new_model(config.source,
+        result = client.new_model('inventory',
                                   config.name,
-                                  config.id,
+                                  config.inventory_index_id,
                                   config.background)
         output.write(result)
 

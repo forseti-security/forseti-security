@@ -178,7 +178,7 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
-        ('model create inventory foo --id 1',
+        ('model create --inventory_index_id 1 foo',
          CLIENT.model.new_model,
          ["inventory", "foo", '1', False],
          {},
