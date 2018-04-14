@@ -255,7 +255,7 @@ class ViolationAccess(object):
                 .filter(and_(or_(
                     ScannerIndex.scanner_status == 'SUCCESS',
                     ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
-                    ScannerIndex.inv_index_id == inv_index_id))
+                    ScannerIndex.inventory_index_id == inv_index_id))
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
             return [v for (v, _) in results]
