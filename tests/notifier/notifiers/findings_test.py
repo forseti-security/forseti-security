@@ -16,14 +16,11 @@
 
 import datetime
 import mock
-import os
 
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import findings
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.scanner import scanner_dao_test
-from tests.services.util.db import create_test_engine_with_file
-from tests.unittest_utils import ForsetiTestCase
 
 
 class FindingsNotifierTest(scanner_dao_test.DatabaseTest):

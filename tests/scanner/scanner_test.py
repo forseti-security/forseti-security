@@ -26,6 +26,7 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
+from tests.services.scanner import scanner_dao_test
 
 
 Session = sessionmaker()
@@ -52,18 +53,15 @@ TWO_SCANNERS = {'scanners': [
     {'name': 'iam_policy', 'enabled': True}
 ]}
 
-class ScannerRunnerTest(ForsetiTestCase):
+class ScannerRunnerTest(scanner_dao_test.DatabaseTest):
 
     def setUp(self):
         """Setup method."""
-        ForsetiTestCase.setUp(self)
-        self.engine, self.dbfile = create_test_engine_with_file()
-        scanner_dao.initialize(self.engine)
+        super(ScannerRunnerTest, self).setUp()
 
     def tearDown(self):
         """Tear down method."""
-        os.unlink(self.dbfile)
-        ForsetiTestCase.tearDown(self)
+        super(ScannerRunnerTest, self).tearDown()
 
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.iam_rules_scanner.iam_rules_engine', autospec=True)
@@ -98,80 +96,48 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
-    def test_init_scanner_index(self, mock_service_config, mock_date_time):
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(mock_service_config.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-
+    def test_init_scanner_index(self, mock_date_time):
         utc_now = datetime.utcnow()
         mock_date_time.get_utc_now_datetime.return_value = utc_now
-
-        scanner.init_scanner_index(mock_service_config)
+        scanner.init_scanner_index(self.session, self.iidx_id3)
 
         expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
-        session = Session(bind=mock_service_config.engine)
-        db_row = (session.query(scanner_dao.ScannerIndex)
+        db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == expected_id).one())
         self.assertEquals(IndexState.RUNNING, db_row.scanner_status)
         self.assertEquals(utc_now, db_row.created_at_datetime)
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
-    def test_mark_scanner_index_complete_no_failures(self, mock_service_config, mock_date_time):
+    def test_mark_scanner_index_complete_no_failures(self, mock_date_time):
         start = datetime.utcnow()
         end = start + timedelta(minutes=5)
         # ScannerIndex.create() calls get_utc_now_datetime() twice.
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(mock_service_config.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-
-        scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        mock_service_config.get_scanner_config.return_value = dict(
-            scanner_index_id=scanner_index_id)
-
+        scanner_index_id = scanner.init_scanner_index(
+            self.session, self.iidx_id2)
         scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id, ['IamPolicyScanner'], [])
-        session = Session(bind=mock_service_config.engine)
-        db_row = (session.query(scanner_dao.ScannerIndex)
+            self.session, scanner_index_id, ['IamPolicyScanner'], [])
+        db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
         self.assertEquals(IndexState.SUCCESS, db_row.scanner_status)
         self.assertEquals(end, db_row.completed_at_datetime)
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
-    def test_mark_scanner_index_complete_only_failures(self, mock_service_config, mock_date_time):
+    def test_mark_scanner_index_complete_only_failures(self, mock_date_time):
         start = datetime.utcnow()
         end = start + timedelta(minutes=5)
         # ScannerIndex.create() calls get_utc_now_datetime() twice.
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(mock_service_config.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
-
-        scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        mock_service_config.get_scanner_config.return_value = dict(
-            scanner_index_id=scanner_index_id)
-
+        scanner_index_id = scanner.init_scanner_index(
+            self.session, self.iidx_id2)
         scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id, [],
+            self.session, scanner_index_id, [],
             ['IamPolicyScanner', 'IapScanner'])
-        session = Session(bind=mock_service_config.engine)
-        db_row = (session.query(scanner_dao.ScannerIndex)
+        db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
         self.assertEquals(IndexState.FAILURE, db_row.scanner_status)
         self.assertEquals(
@@ -181,29 +147,19 @@ class ScannerRunnerTest(ForsetiTestCase):
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
-    def test_mark_scanner_index_complete_with_partial_failures(self, mock_service_config, mock_date_time):
+    def test_mark_scanner_index_complete_with_partial_failures(self, mock_date_time):
         start = datetime.utcnow()
         end = start + timedelta(minutes=5)
         # ScannerIndex.create() calls get_utc_now_datetime() twice.
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
-        mock_service_config.engine = self.engine
-        mock_service_config.sessionmaker = (
-            db.create_scoped_sessionmaker(mock_service_config.engine))
-        mock_service_config.scoped_session.return_value = (
-            mock_service_config.sessionmaker())
 
-        scanner_index_id = scanner.init_scanner_index(mock_service_config)
-        mock_service_config.get_scanner_config.return_value = dict(
-            scanner_index_id=scanner_index_id)
-
+        scanner_index_id = scanner.init_scanner_index(
+            self.session, self.iidx_id1)
         scanner.mark_scanner_index_complete(
-            mock_service_config, scanner_index_id, ['KeVersionScanner'],
+            self.session, scanner_index_id, ['KeVersionScanner'],
             ['IamPolicyScanner', 'IapScanner'])
-        session = Session(bind=mock_service_config.engine)
-        db_row = (session.query(scanner_dao.ScannerIndex)
+        db_row = (self.session.query(scanner_dao.ScannerIndex)
                   .filter(scanner_dao.ScannerIndex.id == scanner_index_id).one())
         self.assertEquals(IndexState.PARTIAL_SUCCESS, db_row.scanner_status)
         self.assertEquals(
