@@ -176,7 +176,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
             for notifier in resource['notifiers']:
                 log_message = (
                     'Running \'{}\' notifier for resource \'{}\''.format(
-                    notifier['name'], resource['resource']))
+                        notifier['name'], resource['resource']))
                 progress_queue.put(log_message)
                 LOGGER.info(log_message)
                 chosen_pipeline = find_notifiers(notifier['name'])
@@ -190,7 +190,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
             notifier.run()
 
         if (notifier_configs.get('violation') and
-            notifier_configs.get('violation').get('findings')):
+                notifier_configs.get('violation').get('findings')):
             findings_configs = notifier_configs.get('violation').get('findings')
             if findings_configs.get('enabled'):
                 findings.Findingsnotifier().run(
