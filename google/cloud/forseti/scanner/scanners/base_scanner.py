@@ -113,18 +113,8 @@ class BaseScanner(object):
         inventory_index_id = (
             model_description.get('source_info').get('inventory_index_id'))
 
-        # TODO: Capture violations errors with the new violation_access.
-        # Add a unit test for the errors.
-        (inserted_row_count, violation_errors) = (0, [])
-
-        violation_access = self.service_config.violation_access(
-            self.service_config.engine)
-        with violation_access.violationmaker() as session:
-            scanner_index_id = scanner_dao.get_latest_scanner_id(
-                session, inventory_index_id, index_state=IndexState.RUNNING)
-            violation_access.create(violations, scanner_index_id)
-        # TODO: figure out what to do with the errors. For now, just log it.
-        LOGGER.debug('Inserted %s rows with %s errors',
-                     inserted_row_count, len(violation_errors))
-
-        return violation_errors
+        violation_access = self.service_config.violation_access
+        scanner_index_id = scanner_dao.get_latest_scanner_id(
+            violation_access.session, inventory_index_id,
+            index_state=IndexState.RUNNING)
+        violation_access.create(violations, scanner_index_id)

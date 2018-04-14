@@ -136,30 +136,25 @@ def run(inventory_index_id, progress_queue, service_config=None):
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
 
-    scanner_index_id = None
-    if not inventory_index_id:
-        with service_config.scoped_session() as session:
+    violations = None
+    with service_config.scoped_session() as session:
+        if not inventory_index_id:
             inventory_index_id = (
                 DataAccess.get_latest_inventory_index_id(session))
-            scanner_index_id = scanner_dao.get_latest_scanner_id(
-                session, inventory_index_id)
-            if not scanner_index_id:
-                LOGGER.warn('No scanner index found.')
+        scanner_index_id = scanner_dao.get_latest_scanner_id(
+            session, inventory_index_id)
+        if not scanner_index_id:
+            LOGGER.warn('No scanner index found.')
 
-    # get violations
-    violation_access_cls = scanner_dao.define_violation(
-        service_config.engine)
-    violation_access = violation_access_cls(service_config.engine)
-    service_config.violation_access = violation_access
-    violations = violation_access.list(scanner_index_id)
+        # get violations
+        violation_access = scanner_dao.ViolationAccess(session)
+        violations = violation_access.list(scanner_index_id)
 
     violations = convert_to_timestamp(violations)
-
     violations_as_dict = []
     for violation in violations:
         violations_as_dict.append(
             scanner_dao.convert_sqlalchemy_object_to_dict(violation))
-
     violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
