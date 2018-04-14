@@ -48,7 +48,7 @@ class ScannerIndex(BASE):
     __tablename__ = 'scanner_index'
 
     id = Column(String(256), primary_key=True)
-    inv_index_id = Column(String(256))
+    inventory_index_id = Column(String(256))
     created_at_datetime = Column(DateTime())
     completed_at_datetime = Column(DateTime())
     scanner_status = Column(Text())
@@ -91,7 +91,7 @@ class ScannerIndex(BASE):
         created_at_datetime = cls._utcnow()
         return ScannerIndex(
             id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
-            inv_index_id=inv_index_id,
+            inventory_index_id=inv_index_id,
             created_at_datetime=created_at_datetime,
             completed_at_datetime=date_time.get_utc_now_datetime(),
             scanner_status=IndexState.CREATED,
@@ -155,14 +155,14 @@ def get_latest_scanner_id(session, inv_index_id, index_state=None):
             .filter(and_(or_(
                 ScannerIndex.scanner_status == 'SUCCESS',
                 ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
-                ScannerIndex.inv_index_id == inv_index_id))
+                ScannerIndex.inventory_index_id == inv_index_id))
             .order_by(ScannerIndex.id.desc()).first())
     else:
         scanner_index = (
             session.query(ScannerIndex)
             .filter(and_(
                 ScannerIndex.scanner_status == index_state,
-                ScannerIndex.inv_index_id == inv_index_id))
+                ScannerIndex.inventory_index_id == inv_index_id))
             .order_by(ScannerIndex.created_at_datetime.desc()).first())
     return scanner_index.id if scanner_index else None
 
