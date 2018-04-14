@@ -39,7 +39,7 @@ BASE = declarative_base()
 CURRENT_SCHEMA = 1
 
 
-# pylint: disable=no-member
+# pylint: disable=bad-continuation
 
 
 class ScannerIndex(BASE):
@@ -203,7 +203,7 @@ class ViolationAccess(object):
         """Constructor for the Violation Access.
 
         Args:
-            dbengine (engine): sqlalchemy database engine
+            session (Session): SQLAlchemy session object.
         """
         self.session = session
 
@@ -269,8 +269,8 @@ class ViolationAccess(object):
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
             return [v for (v, _) in results]
-        else:
-            return self.session.query(Violation).all()
+
+        return self.session.query(Violation).all()
 
 
 # pylint: disable=invalid-name

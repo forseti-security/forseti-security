@@ -104,9 +104,6 @@ class BaseScanner(object):
 
         Args:
             violations (list): A list of violations.
-
-        Returns:
-            list: Violations that encountered an error during insert.
         """
         model_description = (
             self.service_config.model_manager.get_description(self.model_name))

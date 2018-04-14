@@ -27,7 +27,7 @@ def init_scanner_index(session, inventory_index_id):
     Make sure we have a 'scanner_index' row for the current scanner run.
 
     Args:
-        service_config (ServiceConfig): Forseti 2.0 service configs.
+        session (Session): SQLAlchemy session object.
         inventory_index_id (str): Id of the inventory index.
 
     Returns:
@@ -57,7 +57,7 @@ def mark_scanner_index_complete(
     """Mark the current 'scanner_index' row as complete.
 
     Args:
-        service_config (ServiceConfig): Forseti 2.0 service configs.
+        session (Session): SQLAlchemy session object.
         scanner_index_id (str): id of the `ScannerIndex` row to mark
         succeeded (list): names of scanners that ran successfully
         failed (list): names of scanners that failed
