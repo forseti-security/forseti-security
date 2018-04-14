@@ -26,19 +26,16 @@ from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
 
 
-class FindingsNotifierTest(ForsetiTestCase):
+class FindingsNotifierTest(scanner_dao_test.DatabaseTest):
 
     def setUp(self):
         """Setup method."""
-        ForsetiTestCase.setUp(self)
+        super(FindingsNotifierTest, self).setUp()
         self.maxDiff=None
-        self.engine, self.dbfile = create_test_engine_with_file()
-        scanner_dao.initialize(self.engine)
 
     def tearDown(self):
         """Tear down method."""
-        os.unlink(self.dbfile)
-        ForsetiTestCase.tearDown(self)
+        super(FindingsNotifierTest, self).tearDown()
 
     @mock.patch('google.cloud.forseti.common.util.date_time.'
                 'get_utc_now_datetime')
@@ -46,6 +43,7 @@ class FindingsNotifierTest(ForsetiTestCase):
         fake_datetime = datetime.datetime(2010, 8, 28, 10, 20, 30, 0)
         mock_get_utc_now.return_value = fake_datetime
 
+        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id2)
         expected_findings = [
             {'finding_id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff',
              'finding_summary': 'disallow_all_ports_111',
@@ -55,7 +53,7 @@ class FindingsNotifierTest(ForsetiTestCase):
              'finding_time_event': '2010-08-28T10:20:30Z',
              'finding_callback_url': None,
              'finding_properties':
-                 {'inventory_index_id': 'aaa',
+                 {'scanner_index_id': scanner_index_id,
                   'resource_id': 'fake_firewall_111',
                   'resource_data': 'inventory_data_111',
                   'rule_index': 111,
@@ -69,7 +67,7 @@ class FindingsNotifierTest(ForsetiTestCase):
             'finding_time_event': '2010-08-28T10:20:30Z',
             'finding_callback_url': None,
             'finding_properties':
-                {'inventory_index_id': 'aaa',
+                {'scanner_index_id': scanner_index_id,
                  'resource_id': 'fake_firewall_222',
                  'resource_data': 'inventory_data_222',
                  'rule_index': 222,
@@ -77,8 +75,8 @@ class FindingsNotifierTest(ForsetiTestCase):
             }
         ]
 
-        violation_access, scanner_index_id = scanner_dao_test.populate_db(self.engine)
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
+        violations = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
         violations = notifier.convert_to_timestamp(violations)
 
         violations_as_dict = []
