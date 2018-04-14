@@ -74,7 +74,7 @@ class FindingsNotifierTest(scanner_dao_test.DatabaseTest):
 
         violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        violations = notifier.convert_to_timestamp(violations)
+        violations = notifier.convert_to_timestamp(self.session, violations)
 
         violations_as_dict = []
         for violation in violations:

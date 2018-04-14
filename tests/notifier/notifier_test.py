@@ -40,7 +40,7 @@ class NotifierTest(ForsetiTestCase):
                                '2010-06-08T04:05:06Z']
 
         violations_with_converted_timestamp = (
-            notifier.convert_to_timestamp(violations))
+            notifier.convert_to_timestamp(mock.MagicMock(), violations))
 
         converted_timestamps = []
         for i in violations_with_converted_timestamp:

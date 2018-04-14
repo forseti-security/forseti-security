@@ -57,9 +57,10 @@ def find_notifiers(notifier_name):
 # pylint: enable=inconsistent-return-statements
 
 
-def convert_to_timestamp(violations):
+def convert_to_timestamp(session, violations):
     """Convert violation created_at_datetime to timestamp string.
     Args:
+        session (object): session object to work on.
         violations (sqlalchemy_object): List of violations as sqlalchemy
             row/record object with created_at_datetime.
     Returns:
@@ -67,6 +68,7 @@ def convert_to_timestamp(violations):
             created_at_datetime converted to timestamp string.
     """
     for violation in violations:
+        session.expunge(violation)
         violation.created_at_datetime = (
             violation.created_at_datetime.strftime(
                 string_formats.TIMESTAMP_TIMEZONE))
@@ -149,6 +151,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
         # get violations
         violation_access = scanner_dao.ViolationAccess(session)
         violations = violation_access.list(scanner_index_id=scanner_index_id)
+        violations = convert_to_timestamp(session, violations)
         violations_as_dict = []
         for violation in violations:
             violations_as_dict.append(
