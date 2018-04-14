@@ -148,14 +148,13 @@ def run(inventory_index_id, progress_queue, service_config=None):
 
         # get violations
         violation_access = scanner_dao.ViolationAccess(session)
-        violations = violation_access.list(scanner_index_id)
-
-    violations = convert_to_timestamp(violations)
-    violations_as_dict = []
-    for violation in violations:
-        violations_as_dict.append(
-            scanner_dao.convert_sqlalchemy_object_to_dict(violation))
-    violations = scanner_dao.map_by_resource(violations_as_dict)
+        violations = violation_access.list(scanner_index_id=scanner_index_id)
+        violations = convert_to_timestamp(violations)
+        violations_as_dict = []
+        for violation in violations:
+            violations_as_dict.append(
+                scanner_dao.convert_sqlalchemy_object_to_dict(violation))
+        violations = scanner_dao.map_by_resource(violations_as_dict)
 
     for retrieved_v in violations:
         log_message = ('Retrieved {} violations for resource \'{}\''.format(
