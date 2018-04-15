@@ -18,32 +18,46 @@ import tempfile
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers import base_notification
+from google.cloud.forseti.notifier.notifiers.base_notification import (
+    InvalidDataFormatError)
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class GcsInvSummary(base_notification.BaseNotification):
+class GcsInvSummary(object):
     """Upload inventory summary to GCS."""
 
-    def __init__(self, inv_summary, global_configs, notifier_config,
-                 notification_config):
+    def __init__(self, inv_index_id, inv_summary, notifier_config):
         """Initialization.
 
         Args:
+            inv_index_id (str): Inventory index id.
             inv_summary (dict): Inventory summary data.
-            global_configs (dict): Global configurations.
-            notifier_config (dict): Notifier configurations.
-            notification_config (dict): notifier configurations.
+            notifier_config (dict): the configuration for *this* notifier
         """
-        super(GcsInvSummary, self).__init__(
-            None, None, inv_summary, global_configs, notifier_config,
-            notification_config)
+        self.inv_index_id = inv_index_id
         self.inv_summary = inv_summary
+        self.notifier_config = notifier_config
+
+    def _get_output_filename(self, filename_template):
+        """Create the output filename.
+
+        Args:
+            filename_template (string): template to use for the output filename
+
+        Returns:
+            str: The output filename for the inventory summary file.
+        """
+        utc_now_datetime = date_time.get_utc_now_datetime()
+        output_timestamp = utc_now_datetime.strftime(
+            string_formats.TIMESTAMP_TIMEZONE_FILES)
+
+        return filename_template.format(self.inv_index_id, output_timestamp)
 
     def _upload_json(self, gcs_upload_path):
         """Upload inventory summary in json format.
@@ -72,23 +86,20 @@ class GcsInvSummary(base_notification.BaseNotification):
 
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
-        if not self.notification_config['gcs_path'].startswith('gs://'):
+        if not self.notifier_config['gcs_path'].startswith('gs://'):
             return
 
-        data_format = self.notification_config.get('data_format', 'csv')
+        data_format = self.notifier_config.get('data_format', 'csv')
         if data_format not in self.supported_data_formats:
-            raise base_notification.InvalidDataFormatError(
-                'GCS uploader', data_format)
+            raise InvalidDataFormatError('GCS uploader', data_format)
 
         if data_format == 'csv':
             gcs_upload_path = '{}/{}'.format(
-                self.notification_config['gcs_path'],
-                self._get_output_filename(
-                    string_formats.INV_SUMMARY_CSV_FMT))
+                self.notifier_config['gcs_path'],
+                self._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT))
             self._upload_csv(gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
-                self.notification_config['gcs_path'],
-                self._get_output_filename(
-                    string_formats.INV_SUMMARY_JSON_FMT))
+                self.notifier_config['gcs_path'],
+                self._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT))
             self._upload_json(gcs_upload_path)
