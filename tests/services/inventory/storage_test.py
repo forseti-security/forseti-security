@@ -182,6 +182,33 @@ class InventoryIndexTest(ForsetiTestCase):
         self.assertEquals(
             self.fake_utcnow, inv_index_from_db.notified_at_datetime)
 
+    def test_get_summary(self):
+        res_org = ResourceMock('1', {'id': 'test'}, 'organization')
+        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', res_org)
+        res_buc1 = ResourceMock('3', {'id': 'test'}, 'bucket', res_proj1)
+        res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', res_org)
+        res_buc2 = ResourceMock('5', {'id': 'test'}, 'bucket', res_proj2)
+        res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', res_buc2)
+        resources = [
+            res_org, res_proj1, res_buc1, res_proj2, res_buc2, res_obj2]
+
+        storage = Storage(self.session)
+        inv_index_id = storage.open()
+        for resource in resources:
+            storage.write(resource)
+        storage.commit()
+        # add more resource data that belongs to a different inventory index
+        storage = Storage(self.session)
+        storage.open()
+        for resource in resources:
+            storage.write(resource)
+        storage.commit()
+
+        inv_index = self.session.query(InventoryIndex).get(inv_index_id)
+        expected = {'bucket': 2, 'object': 1, 'organization': 1, 'project': 2}
+        inv_summary = inv_index.get_summary(self.session)
+        self.assertEquals(expected, inv_summary)
+
 
 if __name__ == '__main__':
     unittest.main()

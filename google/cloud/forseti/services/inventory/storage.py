@@ -22,6 +22,7 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
+from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy import exists
 from sqlalchemy.ext.declarative import declarative_base
@@ -158,13 +159,20 @@ class InventoryIndex(BASE):
         session.add(self)
         session.flush()
 
-    def get_summary(self):
+    def get_summary(self, session):
         """Generate/return an inventory summary for this inventory index.
+
+        Args:
+            session (object): session object to work on.
 
         Returns:
             dict: a (resource type -> count) dictionary
         """
-        pass
+        column = Inventory.resource_type
+        return dict(
+            session.query(column, func.count(column))
+            .filter(Inventory.inventory_index_id == self.id)
+            .group_by(column).all())
 
     def mark_notified(self, session):
         """Set date/time at which an inventory summary notification went out.
