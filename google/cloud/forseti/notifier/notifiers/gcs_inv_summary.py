@@ -19,7 +19,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers.base_notification import (
-    InvalidDataFormatError)
+    BaseNotification)
 
 
 LOGGER = logger.get_logger(__name__)
@@ -61,8 +61,7 @@ class GcsInvSummary(object):
             return
 
         data_format = self.notifier_config.get('data_format', 'csv')
-        if data_format not in self.supported_data_formats:
-            raise InvalidDataFormatError('GCS uploader', data_format)
+        BaseNotification.check_data_format(data_format)
 
         if data_format == 'csv':
             gcs_upload_path = '{}/{}'.format(

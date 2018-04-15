@@ -85,10 +85,10 @@ def inv_summary_notify(inv_index_id, service_config):
     notifier_config = service_config.get_notifier_config()
     for key in ['inventory', 'summary', 'enabled']:
         if not notifier_config.get(key):
-           return
+            return
         notifier_config = notifier_config.get(key)
-    else:
-        notifier_config = notifier_config.get('inventory').get('summary')
+
+    notifier_config = notifier_config.get('inventory').get('summary')
 
     if not notifier_config.get('gcs_path'):
         LOGGER.error('"gcs_path" not set for inventory summary notifier.')
@@ -96,16 +96,24 @@ def inv_summary_notify(inv_index_id, service_config):
 
     with service_config.scoped_session() as session:
         inv_index = session.query(InventoryIndex).get(inv_index_id)
+        if inv_index.notified_at_datetime:
+            LOGGER.info(
+                'Inventory summary notification already sent (%s).',
+                inv_index.notified_at_datetime)
+            return
+
         summary_data = inv_index.get_summary(session)
         if not summary_data:
             LOGGER.warn('No inventory summary data found.')
             return
+
         inv_summary = []
         for key, value in summary_data.iteritems():
             inv_summary.append(dict(resource_type=key, count=value))
 
         notifier = GcsInvSummary(inv_index_id, inv_summary, notifier_config)
         notifier.run()
+        inv_index.mark_notified(session)
 
 
 def run(inv_index_id, progress_queue, service_config=None):

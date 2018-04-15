@@ -89,3 +89,9 @@ class BaseNotification(object):
         output_filename = filename_template.format(
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
+
+    @classmethod
+    def check_data_format(cls, format):
+        """Raise `InvalidDataFormatError` unless `format` is supported."""
+        if format not in cls.supported_data_formats:
+            raise InvalidDataFormatError('GCS uploader', format)
