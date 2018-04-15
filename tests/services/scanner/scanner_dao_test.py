@@ -26,7 +26,6 @@ import unittest
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
-from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 from google.cloud.forseti.services.inventory import storage
 from tests.services.util.db import create_test_engine_with_file
