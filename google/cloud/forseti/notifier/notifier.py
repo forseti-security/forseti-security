@@ -83,12 +83,17 @@ def inv_summary_notify(inv_index_id, service_config):
         service_config (ServiceConfig): Forseti 2.0 service configs.
     """
     notifier_config = service_config.get_notifier_config()
-    for key in ['inventory', 'summary', 'enabled']:
-        if not notifier_config.get(key):
-            return
-        notifier_config = notifier_config.get(key)
+    if not notifier_config.get('inventory'):
+        return
+
+    if not notifier_config.get('inventory').get('summary'):
+        return
 
     notifier_config = notifier_config.get('inventory').get('summary')
+
+    if not notifier_config.get('enabled'):
+        LOGGER.info('inventory summary notification are off.')
+        return
 
     if not notifier_config.get('gcs_path'):
         LOGGER.error('"gcs_path" not set for inventory summary notifier.')
@@ -162,7 +167,7 @@ def run(inv_index_id, progress_queue, service_config=None):
 
     # build notification notifiers
     notifiers = []
-    for resource in notifier_configs['resources']:
+    for resource in notifier_configs.get('resources', []):
         if violations.get(resource['resource']) is None:
             log_message = 'Resource \'{}\' has no violations'.format(
                 resource['resource'])

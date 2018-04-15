@@ -91,6 +91,26 @@ NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
          'should_notify': True,
          'resource': 'policy_violations'}]}
 
+NOTIFIER_CONFIGS_INV_SUMMARY_CSV_FALSE = {
+    'inventory': {'summary': {'data_format': 'csv',
+                              'enabled': False,
+                              'gcs_path': 'gs://fs-opendata/iv'}}}
+
+NOTIFIER_CONFIGS_INV_SUMMARY_CSV_TRUE = {
+    'inventory': {'summary': {'data_format': 'csv',
+                              'enabled': True,
+                              'gcs_path': 'gs://fs-opendata/iv'}}}
+
+NOTIFIER_CONFIGS_INV_SUMMARY_JSON_FALSE = {
+    'inventory': {'summary': {'data_format': 'json',
+                              'enabled': False,
+                              'gcs_path': 'gs://fs-opendata/iv'}}}
+
+NOTIFIER_CONFIGS_INV_SUMMARY_JSON_TRUE = {
+    'inventory': {'summary': {'data_format': 'json',
+                              'enabled': True,
+                              'gcs_path': 'gs://fs-opendata/iv'}}}
+
 GLOBAL_CONFIGS = {
     'max_bigquery_api_calls_per_100_seconds': 17000,
     'max_cloudbilling_api_calls_per_60_seconds': 300,
