@@ -84,6 +84,7 @@ class InventoryIndex(BASE):
     inventory_index_warnings = Column(Text(16777215))
     inventory_index_errors = Column(Text())
     message = Column(Text())
+    notified_at_datetime = Column(DateTime())
 
     @classmethod
     def _utcnow(cls):
@@ -92,7 +93,6 @@ class InventoryIndex(BASE):
         Returns:
             object: UTC now time object.
         """
-
         return date_time.get_utc_now_datetime()
 
     def __repr__(self):
@@ -101,7 +101,6 @@ class InventoryIndex(BASE):
         Returns:
             str: String representation of the object.
         """
-
         return """<{}(id='{}', version='{}', timestamp='{}')>""".format(
             self.__class__.__name__,
             self.id,
@@ -115,7 +114,6 @@ class InventoryIndex(BASE):
         Returns:
             object: InventoryIndex row object.
         """
-
         created_at_datetime = cls._utcnow()
         return InventoryIndex(
             id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
@@ -131,7 +129,6 @@ class InventoryIndex(BASE):
         Args:
             status (str): Final inventory_status.
         """
-
         self.completed_at_datetime = InventoryIndex._utcnow()
         self.inventory_status = status
 
@@ -142,7 +139,6 @@ class InventoryIndex(BASE):
             session (object): session object to work on.
             warning (str): Warning message
         """
-
         warning_message = '{}\n'.format(warning)
         if not self.inventory_index_warnings:
             self.inventory_index_warnings = warning_message
@@ -158,8 +154,25 @@ class InventoryIndex(BASE):
             session (object): session object to work on.
             message (str): Error message to set.
         """
-
         self.inventory_index_errors = message
+        session.add(self)
+        session.flush()
+
+    def get_summary(self):
+        """Generate/return an inventory summary for this inventory index.
+
+        Returns:
+            dict: a (resource type -> count) dictionary
+        """
+        pass
+
+    def mark_notified(self, session):
+        """Set date/time at which an inventory summary notification went out.
+
+        Args:
+            session (object): session object to work on.
+        """
+        self.notified_at_datetime = date_time.get_utc_now_datetime()
         session.add(self)
         session.flush()
 
@@ -315,7 +328,6 @@ class Inventory(BASE):
         Returns:
             str: A description of inventory_index
         """
-
         return ('<{}(inventory_index_id=\'{}\', resource_id=\'{}\','
                 ' resource_type=\'{}\')>').format(
                     self.__class__.__name__,
@@ -329,7 +341,6 @@ class Inventory(BASE):
         Returns:
             str: resource id.
         """
-
         return self.resource_id
 
     def get_resource_type(self):
@@ -338,7 +349,6 @@ class Inventory(BASE):
         Returns:
             str: resource type.
         """
-
         return self.resource_type
 
     def get_category(self):
@@ -347,7 +357,6 @@ class Inventory(BASE):
         Returns:
             str: resource type class.
         """
-
         return self.category
 
     def get_parent_resource_id(self):
@@ -356,7 +365,6 @@ class Inventory(BASE):
         Returns:
             str: parent key.
         """
-
         return self.parent_resource_id
 
     def get_parent_resource_type(self):
@@ -365,7 +373,6 @@ class Inventory(BASE):
         Returns:
             str: parent type.
         """
-
         return self.parent_resource_type
 
     def get_resource_data(self):
@@ -374,7 +381,6 @@ class Inventory(BASE):
         Returns:
             dict: row's metadata.
         """
-
         return json.loads(self.resource_data)
 
     def get_resource_data_raw(self):
@@ -383,7 +389,6 @@ class Inventory(BASE):
         Returns:
             str: row's raw data.
         """
-
         return self.resource_data
 
     def get_other(self):
@@ -392,7 +397,6 @@ class Inventory(BASE):
         Returns:
             dict: row's other data.
         """
-
         return json.loads(self.other)
 
     def get_inventory_errors(self):
@@ -401,7 +405,6 @@ class Inventory(BASE):
         Returns:
             str: row's error data.
         """
-
         return self.inventory_errors
 
 

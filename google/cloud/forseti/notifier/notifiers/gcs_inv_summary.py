@@ -31,7 +31,7 @@ class GcsInvSummary(base_notification.BaseNotification):
     """Upload inventory summary to GCS."""
 
     def __init__(self, inv_summary, global_configs, notifier_config,
-            notification_config):
+                 notification_config):
         """Initialization.
 
         Args:
