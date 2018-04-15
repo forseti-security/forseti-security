@@ -14,13 +14,9 @@
 
 """Upload inventory summary to GCS."""
 
-import tempfile
-
-from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers.base_notification import (
     InvalidDataFormatError)
@@ -59,31 +55,6 @@ class GcsInvSummary(object):
 
         return filename_template.format(self.inv_index_id, output_timestamp)
 
-    def _upload_json(self, gcs_upload_path):
-        """Upload inventory summary in json format.
-
-        Args:
-            gcs_upload_path (string): the GCS upload path.
-        """
-        with tempfile.NamedTemporaryFile() as tmp_violations:
-            tmp_violations.write(parser.json_stringify(self.inv_summary))
-            tmp_violations.flush()
-            storage_client = storage.StorageClient()
-            storage_client.put_text_file(tmp_violations.name, gcs_upload_path)
-
-    def _upload_csv(self, gcs_upload_path):
-        """Upload inventory summary in csv format.
-
-        Args:
-            gcs_upload_path (string): the GCS upload path.
-        """
-        with csv_writer.write_csv(resource_name='inv_summary',
-                                  data=self.inv_summary,
-                                  write_header=True) as csv_file:
-            LOGGER.info('CSV filename: %s', csv_file.name)
-            storage_client = storage.StorageClient()
-            storage_client.put_text_file(csv_file.name, gcs_upload_path)
-
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
         if not self.notifier_config['gcs_path'].startswith('gs://'):
@@ -97,9 +68,9 @@ class GcsInvSummary(object):
             gcs_upload_path = '{}/{}'.format(
                 self.notifier_config['gcs_path'],
                 self._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT))
-            self._upload_csv(gcs_upload_path)
+            storage.upload_csv(self.inv_summary, gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
                 self.notifier_config['gcs_path'],
                 self._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT))
-            self._upload_json(gcs_upload_path)
+            storage.upload_json(self.inv_summary, gcs_upload_path)
