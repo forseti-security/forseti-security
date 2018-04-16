@@ -259,7 +259,7 @@ class ViolationAccess(object):
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
             return [v for (v, _) in results]
-        elif scanner_index_id:
+        if scanner_index_id:
             results = (
                 self.session.query(Violation, ScannerIndex)
                 .filter(and_(or_(
