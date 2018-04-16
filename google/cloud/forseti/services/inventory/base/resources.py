@@ -21,6 +21,7 @@ import ctypes
 from functools import partial
 import json
 
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -429,6 +430,8 @@ class Organization(Resource):
     def fetch(cls, client, resource_key):
         """Get Organization
 
+        Saves ApiExecutionErrors as warnings.
+
         Args:
             client (object): GCP API client
             resource_key (str): resource key to fetch
@@ -436,8 +439,14 @@ class Organization(Resource):
         Returns:
             Organization: created Organization
         """
-        data = client.fetch_organization(resource_key)
-        return FACTORIES['organization'].create_new(data, root=True)
+        try:
+            data = client.fetch_organization(resource_key)
+            return FACTORIES['organization'].create_new(data, root=True)
+        except api_errors.ApiExecutionError as e:
+            data = {'name': resource_key}
+            resource = FACTORIES['organization'].create_new(data, root=True)
+            resource.add_warning(e)
+            return resource
 
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
@@ -449,7 +458,11 @@ class Organization(Resource):
         Returns:
             dict: organization IAM Policy
         """
-        return client.get_organization_iam_policy(self['name'])
+        try:
+            return client.get_organization_iam_policy(self['name'])
+        except api_errors.ApiExecutionError as e:
+            self.add_warning(e)
+            return None
 
     def key(self):
         """Get key of this resource

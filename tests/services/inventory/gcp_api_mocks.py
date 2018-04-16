@@ -28,15 +28,23 @@ ORGANIZATION_ID = results.ORGANIZATION_ID
 
 # pylint: disable=bad-indentation
 @contextlib.contextmanager
-def mock_gcp():
-    """Mock the GCP API client libraries to return fake data."""
+def mock_gcp(has_org_access=True):
+    """Mock the GCP API client libraries to return fake data.
+
+    Args:
+        has_org_access (bool): If False, API requests on ORGANIZATION_ID will
+            fail with an ApiExecutionError.
+
+    Yields:
+        None
+    """
     ad_patcher = _mock_admin_directory()
     appengine_patcher = _mock_appengine()
     bq_patcher = _mock_bigquery()
     cloudbilling_patcher = _mock_cloudbilling()
     cloudsql_patcher = _mock_cloudsql()
     container_patcher = _mock_container()
-    crm_patcher = _mock_crm()
+    crm_patcher = _mock_crm(has_org_access)
     gce_patcher = _mock_gce()
     gcs_patcher = _mock_gcs()
     iam_patcher = _mock_iam()
@@ -187,8 +195,13 @@ def _mock_container():
     return container_patcher
 
 
-def _mock_crm():
-    """Mock crm client."""
+def _mock_crm(has_org_access):
+    """Mock crm client.
+
+    Args:
+        has_org_access (bool): If False, API requests on ORGANIZATION_ID will
+            fail with an ApiExecutionError.
+    """
 
     def _mock_crm_get_organization(orgid):
         return results.CRM_GET_ORGANIZATION[orgid]
@@ -208,16 +221,27 @@ def _mock_crm():
     def _mock_crm_get_iam_policies(folderid):
         return results.CRM_GET_IAM_POLICIES[folderid]
 
+    def _mock_permission_denied(parentid):
+        response = httplib2.Response(
+            {'status': '403', 'content-type': 'application/json'})
+        content = results.GCP_PERMISSION_DENIED_TEMPLATE.format(id=parentid)
+        error_403 = errors.HttpError(response, content)
+        raise api_errors.ApiExecutionError(parentid, error_403)
+
     crm_patcher = mock.patch(
         MODULE_PATH + 'cloud_resource_manager.CloudResourceManagerClient',
         spec=True)
     mock_crm = crm_patcher.start().return_value
-    mock_crm.get_organization.side_effect = _mock_crm_get_organization
+    if has_org_access:
+        mock_crm.get_organization.side_effect = _mock_crm_get_organization
+        mock_crm.get_org_iam_policies.side_effect = _mock_crm_get_iam_policies
+    else:
+        mock_crm.get_organization.side_effect = _mock_permission_denied
+        mock_crm.get_org_iam_policies.side_effect = _mock_permission_denied
     mock_crm.get_folder.side_effect = _mock_crm_get_folder
     mock_crm.get_folders.side_effect = _mock_crm_get_folders
     mock_crm.get_project.side_effect = _mock_crm_get_project
     mock_crm.get_projects.side_effect = _mock_crm_get_projects
-    mock_crm.get_org_iam_policies.side_effect = _mock_crm_get_iam_policies
     mock_crm.get_folder_iam_policies.side_effect = _mock_crm_get_iam_policies
     mock_crm.get_project_iam_policies.side_effect = _mock_crm_get_iam_policies
 

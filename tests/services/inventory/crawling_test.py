@@ -227,6 +227,63 @@ class CrawlerTest(ForsetiTestCase):
 
         self.assertEqual(expected_counts, result_counts)
 
+    def test_crawling_no_org_access(self):
+        """Crawl with no access to organization, only child projects."""
+
+        config = InventoryConfig(
+            gcp_api_mocks.ORGANIZATION_ID,
+            '',
+            '',
+            {})
+
+        with MemoryStorage() as storage:
+            progresser = NullProgresser()
+            with gcp_api_mocks.mock_gcp(has_org_access=False):
+                run_crawler(storage,
+                            progresser,
+                            config,
+                            parallel=True)
+
+            self.assertEqual(0,
+                             progresser.errors,
+                             'No errors should have occurred')
+
+            result_counts = self._get_resource_counts_from_storage(storage)
+
+        # The crawl should be the same as test_crawling_to_memory_storage, but
+        # without organization iam_policy (needs Org access) or gsuite_*
+        # resources (needs directoryCustomerId from Organization).
+        expected_counts = {
+            'appengine_app': {'resource': 2},
+            'appengine_instance': {'resource': 3},
+            'appengine_service': {'resource': 1},
+            'appengine_version': {'resource': 1},
+            'backendservice': {'resource': 1},
+            'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
+            'cloudsqlinstance': {'resource': 1},
+            'compute_project': {'resource': 2},
+            'dataset': {'dataset_policy': 1, 'resource': 1},
+            'firewall': {'resource': 7},
+            'folder': {'iam_policy': 3, 'resource': 3},
+            'forwardingrule': {'resource': 1},
+            'image': {'resource': 2},
+            'instance': {'resource': 4},
+            'instancegroup': {'resource': 2},
+            'instancegroupmanager': {'resource': 2},
+            'instancetemplate': {'resource': 2},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'network': {'resource': 2},
+            'organization': {'resource': 1},
+            'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
+                        'resource': 4},
+            'role': {'resource': 5},
+            'serviceaccount': {'iam_policy': 2, 'resource': 2},
+            'serviceaccount_key': {'resource': 1},
+            'subnetwork': {'resource': 24},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
 
 if __name__ == '__main__':
     unittest.main()
