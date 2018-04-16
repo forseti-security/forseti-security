@@ -91,7 +91,14 @@ class BaseNotification(object):
         return output_filename
 
     @classmethod
-    def check_data_format(cls, format):
-        """Raise `InvalidDataFormatError` unless `format` is supported."""
-        if format not in cls.supported_data_formats:
-            raise InvalidDataFormatError('GCS uploader', format)
+    def check_data_format(cls, data_format):
+        """Raise `InvalidDataFormatError` unless `data_format` is supported.
+
+        Args:
+            data_format (string): should be either 'csv' or 'json'
+
+        Raises:
+            InvalidDataFormatError: if not valid
+        """
+        if data_format not in cls.supported_data_formats:
+            raise InvalidDataFormatError('GCS uploader', data_format)
