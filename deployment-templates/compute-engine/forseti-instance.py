@@ -159,7 +159,7 @@ $USER_HOME/cloud_sql_proxy -instances={}=tcp:{} &
 # Install Forseti Security.
 cd $USER_HOME
 rm -rf *forseti*
-pip install --upgrade pip
+pip install --upgrade pip==9.0.3
 pip install --upgrade setuptools
 pip install grpcio==1.4.0 grpcio-tools==1.4.0 google-apputils
 
