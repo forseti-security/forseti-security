@@ -27,9 +27,9 @@ Forseti Scanner has default rules that create a [violation]({% link _docs/quicks
   * Your company users (@domain.tld) and all gmail users are allowed to be members of your G Suite groups.
  
 * Cloud Identity and Access Management (Cloud IAM) policies
-  * Only Cloud IAM user and group members in my domain may be granted the role `Organization Admin`.
+  * Only Cloud IAM users and group members in my domain may be granted the role `Organization Admin`.
 
-* Cloud Identity Aware Proxy (Cloud IAP) bypass access
+* Cloud Identity-Aware Proxy (Cloud IAP) bypass access
   * Forbid any Cloud IAP bypasses on all resources in my organization, when Cloud IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
 
