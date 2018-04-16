@@ -133,7 +133,7 @@ class ScannerIndex(BASE):
         session.flush()
 
 
-def get_latest_scanner_index)id(session, inv_index_id, index_state=None):
+def get_latest_scanner_index_id(session, inv_index_id, index_state=None):
     """Return last `ScannerIndex` row with the given state or `None`.
 
     Either return the latest `ScannerIndex` row where the `scanner_status`

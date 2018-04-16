@@ -111,7 +111,7 @@ class BaseScanner(object):
             model_description.get('source_info').get('inventory_index_id'))
 
         violation_access = self.service_config.violation_access
-        scanner_index_id = scanner_dao.get_latest_scanner_index)id(
+        scanner_index_id = scanner_dao.get_latest_scanner_index_id(
             violation_access.session, inventory_index_id,
             index_state=IndexState.RUNNING)
         violation_access.create(violations, scanner_index_id)
