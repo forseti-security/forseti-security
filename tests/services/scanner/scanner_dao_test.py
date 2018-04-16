@@ -289,14 +289,14 @@ class ScannerDaoTest(DatabaseTest):
             self.test_violation_data)
         self.assertEquals(expected_hash, returned_hash)
 
-    def test_get_latest_scanner_id_with_empty_table(self):
+    def test_get_latest_scanner_index)id_with_empty_table(self):
         """The method under test returns `None` if the table is empty."""
         self.assertIsNone(
-            scanner_dao.get_latest_scanner_id(self.session, 'aaa'))
+            scanner_dao.get_latest_scanner_index)id(self.session, 'aaa'))
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    def test_get_latest_scanner_id(self, mock_date_time):
+    def test_get_latest_scanner_index)id(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
@@ -314,11 +314,11 @@ class ScannerDaoTest(DatabaseTest):
         self.session.add(scanner_dao.ScannerIndex.create('aaa'))
         self.session.flush()
         self.assertEquals(
-            expected_id, scanner_dao.get_latest_scanner_id(self.session, 'aaa'))
+            expected_id, scanner_dao.get_latest_scanner_index)id(self.session, 'aaa'))
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    def test_get_latest_scanner_id_with_specified_state(self, mock_date_time):
+    def test_get_latest_scanner_index)id_with_specified_state(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
@@ -337,7 +337,7 @@ class ScannerDaoTest(DatabaseTest):
         self.session.flush()
         self.assertEquals(
             expected_id,
-            scanner_dao.get_latest_scanner_id(
+            scanner_dao.get_latest_scanner_index)id(
                 self.session, 'bbb', IndexState.FAILURE))
 
 
