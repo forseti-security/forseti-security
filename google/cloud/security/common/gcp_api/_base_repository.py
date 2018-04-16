@@ -15,9 +15,10 @@
 """Base GCP client which uses the discovery API."""
 import logging
 import threading
+import httplib2
+
 import googleapiclient
 from googleapiclient import discovery
-import httplib2
 from oauth2client import client
 from ratelimiter import RateLimiter
 from retrying import retry
