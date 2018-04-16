@@ -443,6 +443,7 @@ class Organization(Resource):
             data = client.fetch_organization(resource_key)
             return FACTORIES['organization'].create_new(data, root=True)
         except api_errors.ApiExecutionError as e:
+            LOGGER.warn('Unable to fetch Organization %s: %s', resource_key, e)
             data = {'name': resource_key}
             resource = FACTORIES['organization'].create_new(data, root=True)
             resource.add_warning(e)
