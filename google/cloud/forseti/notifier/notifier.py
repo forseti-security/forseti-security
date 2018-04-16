@@ -147,50 +147,52 @@ def run(inventory_index_id, progress_queue, service_config=None):
             session, inventory_index_id)
         if not scanner_index_id:
             LOGGER.warn('No scanner index found.')
+        else:
+            # get violations
+            violation_access = scanner_dao.ViolationAccess(session)
+            violations = violation_access.list(
+                scanner_index_id=scanner_index_id)
+            violations = convert_to_timestamp(session, violations)
+            violations_as_dict = []
+            for violation in violations:
+                violations_as_dict.append(
+                    scanner_dao.convert_sqlalchemy_object_to_dict(violation))
+            violations = scanner_dao.map_by_resource(violations_as_dict)
 
-        # get violations
-        violation_access = scanner_dao.ViolationAccess(session)
-        violations = violation_access.list(scanner_index_id=scanner_index_id)
-        violations = convert_to_timestamp(session, violations)
-        violations_as_dict = []
-        for violation in violations:
-            violations_as_dict.append(
-                scanner_dao.convert_sqlalchemy_object_to_dict(violation))
-        violations = scanner_dao.map_by_resource(violations_as_dict)
-
-        for retrieved_v in violations:
-            log_message = ('Retrieved {} violations for resource \'{}\''.format(
-                len(violations[retrieved_v]), retrieved_v))
-            LOGGER.info(log_message)
-            progress_queue.put(log_message)
-
-        # build notification notifiers
-        notifiers = []
-        for resource in notifier_configs['resources']:
-            if violations.get(resource['resource']) is None:
-                log_message = 'Resource \'{}\' has no violations'.format(
-                    resource['resource'])
-                progress_queue.put(log_message)
-                LOGGER.info(log_message)
-                continue
-            if not resource['should_notify']:
-                LOGGER.debug('Not notifying for: %s', resource['resource'])
-                continue
-            for notifier in resource['notifiers']:
+            for retrieved_v in violations:
                 log_message = (
-                    'Running \'{}\' notifier for resource \'{}\''.format(
-                        notifier['name'], resource['resource']))
-                progress_queue.put(log_message)
+                    'Retrieved {} violations for resource \'{}\''.format(
+                    len(violations[retrieved_v]), retrieved_v))
                 LOGGER.info(log_message)
-                chosen_pipeline = find_notifiers(notifier['name'])
-                notifiers.append(chosen_pipeline(
-                    resource['resource'], inventory_index_id,
-                    violations[resource['resource']], global_configs,
-                    notifier_configs, notifier['configuration']))
+                progress_queue.put(log_message)
 
-        # Run the notifiers.
-        for notifier in notifiers:
-            notifier.run()
+            # build notification notifiers
+            notifiers = []
+            for resource in notifier_configs['resources']:
+                if violations.get(resource['resource']) is None:
+                    log_message = 'Resource \'{}\' has no violations'.format(
+                        resource['resource'])
+                    progress_queue.put(log_message)
+                    LOGGER.info(log_message)
+                    continue
+                if not resource['should_notify']:
+                    LOGGER.debug('Not notifying for: %s', resource['resource'])
+                    continue
+                for notifier in resource['notifiers']:
+                    log_message = (
+                        'Running \'{}\' notifier for resource \'{}\''.format(
+                            notifier['name'], resource['resource']))
+                    progress_queue.put(log_message)
+                    LOGGER.info(log_message)
+                    chosen_pipeline = find_notifiers(notifier['name'])
+                    notifiers.append(chosen_pipeline(
+                        resource['resource'], inventory_index_id,
+                        violations[resource['resource']], global_configs,
+                        notifier_configs, notifier['configuration']))
+
+            # Run the notifiers.
+            for notifier in notifiers:
+                notifier.run()
 
         if (notifier_configs.get('violation') and
                 notifier_configs.get('violation').get('findings')):
