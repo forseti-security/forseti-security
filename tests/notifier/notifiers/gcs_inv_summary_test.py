@@ -14,12 +14,14 @@
 
 """Tests the GCS inventory summary upload notifier."""
 
+
 import mock
 import unittest
 
 from datetime import datetime
 
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import gcs_inv_summary
 from tests.unittest_utils import ForsetiTestCase
 
@@ -94,6 +96,47 @@ class GcsInvSummaryTest(ForsetiTestCase):
         mock_storage.return_value.put_text_file.assert_called_once_with(
             fake_tmpname, gcs_path)
 
+    @mock.patch(
+        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        autospec=True)
+    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
+    def test_run_with_json(self, mock_write_csv, mock_json_stringify,
+        mock_storage):
+        """Test run() with json file format."""
+        mock_json_stringify.return_value = 'test123'
+
+        config = dict(gcs_path='gs://x', data_format='json')
+        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], config)
+
+        gvp._get_output_filename = mock.MagicMock()
+        gvp.run()
+
+        self.assertTrue(gvp._get_output_filename.called)
+        self.assertEquals(
+            string_formats.INV_SUMMARY_JSON_FMT,
+            gvp._get_output_filename.call_args[0][0])
+        self.assertFalse(mock_write_csv.called)
+        self.assertTrue(mock_json_stringify.called)
+
+    @mock.patch(
+        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        autospec=True)
+    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
+    def test_run_with_invalid_data_format(self, mock_write_csv,
+        mock_json_stringify, mock_storage):
+        """Test run() with json file format."""
+        config = dict(gcs_path='gs://x', data_format='blah')
+        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], config)
+        gvp._get_output_filename = mock.MagicMock()
+
+        with self.assertRaises(base_notification.InvalidDataFormatError):
+            gvp.run()
+
+        self.assertFalse(gvp._get_output_filename.called)
+        self.assertFalse(mock_write_csv.called)
+        self.assertFalse(mock_json_stringify.called)
 
 if __name__ == '__main__':
     unittest.main()

@@ -92,7 +92,7 @@ def inv_summary_notify(inv_index_id, service_config):
     notifier_config = notifier_config.get('inventory').get('summary')
 
     if not notifier_config.get('enabled'):
-        LOGGER.info('inventory summary notification are off.')
+        LOGGER.info('inventory summary notifications are turned off.')
         return
 
     if not notifier_config.get('gcs_path'):
