@@ -52,8 +52,8 @@ sys.path.insert(0, os.path.abspath('google/cloud/security/scanner/scanners'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode'
-    # 'sphinx.ext.napoleon'
+    'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon'
 ]
 
 # napoleon_google_docstring = False
@@ -114,7 +114,7 @@ language = None
 
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
-#add_module_names = True
+add_module_names = False
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
@@ -124,7 +124,7 @@ language = None
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-#modindex_common_prefix = []
+modindex_common_prefix = ['google.cloud.forseti.']
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False
@@ -311,3 +311,18 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+def no_namedtuple_attrib_docstring(app, what, name,
+                                   obj, options, lines):
+    is_namedtuple_docstring = (
+        len(lines) == 1 and
+        lines[0].startswith('Alias for field number')
+    )
+    if is_namedtuple_docstring:
+        # We don't return, so we need to purge in-place
+        del lines[:]
+        
+def setup(app):
+    app.connect(
+        'autodoc-process-docstring',
+        no_namedtuple_attrib_docstring,
+    )

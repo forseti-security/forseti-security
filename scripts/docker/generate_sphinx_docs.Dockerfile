@@ -14,9 +14,10 @@
 
 FROM forseti/build
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -qq -y \
     python-sphinx \
   && rm -rf /var/lib/apt/lists/*
-RUN sphinx-apidoc -F -e -o . google
-COPY conf.py .
+RUN sphinx-apidoc -F -M -e -o . google
+COPY data/conf.py data/index.rst ./
+COPY data/*.html _templates/
 RUN python setup.py build_sphinx

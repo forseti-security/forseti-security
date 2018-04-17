@@ -50,7 +50,7 @@
           possibly, and we do not want the trailing "index.html".
         {% endcomment %}
         {% assign doc_name = page.path | split:"/" | slice:2,999 | join:"/" %}
-        {% assign url_name = page.url | split:"/" | slice:3,999 | join:"/" | remove:"index.html" %}
+        {% assign url_name = page.url | split:"/" | slice:3,999 | join:"/" | remove:"/index.html" %}
         
         {% assign versions = site.data.doc_version_index[doc_name] | unshift:'latest' %}
         {% unless versions %}

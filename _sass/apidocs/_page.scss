@@ -1,0 +1,78 @@
+/* #documentation .section > h1 { 
+  font-size: 30px;
+}
+
+.sig-paren {
+    font-size: larger;
+}*/
+
+#documentation .section[id] {
+  h1 {
+    font-size: 30px;
+  }
+
+  .sig-paren {
+    font-size: larger;
+  }
+
+  code.descname {
+    background-color: transparent;
+    font-weight: bold;
+    /*font-size: 1.2em;*/
+    color: black;
+  }
+
+  dd > p {
+    margin: 10px 0 10px;
+  }
+
+  dl { margin-bottom: 10px; }
+
+  dl.class, dl.function {
+    dd {
+      margin-left: 30px;
+    }
+  }
+
+  table.docutils {
+    border: 0;
+    border-collapse: collapse;
+  }
+
+  table caption span.caption-number {
+      font-style: italic;
+  }
+
+  table caption span.caption-text {
+  }
+
+  table.docutils td, table.docutils th {
+      padding: 1px 8px 1px 5px;
+      border-top: 0;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 1px solid #aaa;
+  }
+
+  table.field-list td, table.field-list th {
+      border: 0 !important;
+  }
+
+  table.footnote td, table.footnote th {
+      border: 0 !important;
+  }
+
+  th {
+      text-align: left;
+      padding-right: 5px;
+  }
+
+  table.citation {
+      border-left: solid 1px gray;
+      margin-left: 1px;
+  }
+
+  table.citation td {
+      border-bottom: none;
+  }
+}
