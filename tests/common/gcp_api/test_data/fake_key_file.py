@@ -19,7 +19,8 @@ FAKE_KEYFILE = b"""
   "client_id": "id123",
   "client_email": "foo@bar.com",
   "private_key_id": "pkid456",
-  "private_key": "s3kr3tz"
+  "private_key": "s3kr3tz",
+  "token_uri": "https://example.com/oauth2/token"
 }
 """
 

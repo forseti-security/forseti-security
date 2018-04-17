@@ -13,10 +13,8 @@
 # limitations under the License.
 
 """Helper functions for API clients."""
-from oauth2client import service_account
-
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-
+from google.oauth2 import service_account
 
 def credential_from_keyfile(keyfile_name, scopes, delegated_account):
     """Build delegated credentials required for accessing the gsuite APIs.
@@ -29,19 +27,20 @@ def credential_from_keyfile(keyfile_name, scopes, delegated_account):
             use.
 
     Returns:
-        OAuth2Credentials: Credentials as built by oauth2client.
+        service_account.Credentials: Credentials as built by
+            google.oauth2.service_account.
 
     Raises:
         api_errors.ApiExecutionError: If fails to build credentials.
     """
     try:
         credentials = (
-            service_account.ServiceAccountCredentials.from_json_keyfile_name(
+            service_account.Credentials.from_service_account_file(
                 keyfile_name, scopes=scopes))
     except (ValueError, KeyError, TypeError, IOError) as e:
         raise api_errors.ApiInitializationError(
             'Error building admin api credential: %s' % e)
-    return credentials.create_delegated(delegated_account)
+    return credentials.with_subject(delegated_account)
 
 
 def flatten_list_results(paged_results, item_key):

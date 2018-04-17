@@ -15,7 +15,8 @@
 """Tests the IAM API client."""
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_iam_responses as fake_iam
@@ -28,13 +29,19 @@ class IamTest(unittest_utils.ForsetiTestCase):
     """Test the IAM Client."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {'max_iam_api_calls_per_second': 10000}
         cls.iam_api_client = iam.IAMClient(global_configs=fake_global_configs)
 
-    @mock.patch.object(client, 'GoogleCredentials')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
         iam_api_client = iam.IAMClient(global_configs={})

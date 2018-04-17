@@ -26,7 +26,7 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 class ApiHelpersTest(unittest_utils.ForsetiTestCase):
     """Test the Base Repository methods."""
 
-    @mock.patch('oauth2client.crypt.Signer.from_string',
+    @mock.patch('google.auth.crypt.rsa.RSASigner.from_string',
                 return_value=object())
     def test_credential_from_keyfile(self, signer_factory):
         """Validate with a valid test credential file."""
@@ -34,7 +34,7 @@ class ApiHelpersTest(unittest_utils.ForsetiTestCase):
         with unittest_utils.create_temp_file(fake_key_file.FAKE_KEYFILE) as f:
             credentials = api_helpers.credential_from_keyfile(
                 f, fake_key_file.FAKE_REQUIRED_SCOPES, test_delegate)
-            self.assertEqual(credentials._kwargs['sub'], test_delegate)
+            self.assertEqual(credentials._subject, test_delegate)
 
     def test_credential_from_keyfile_raises(self):
         """Validate that an invalid credential file raises exception."""
