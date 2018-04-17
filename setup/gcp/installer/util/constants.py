@@ -324,3 +324,13 @@ QUESTION_SHOULD_MIGRATE_FROM_V1 = (
     'Forseti v1 detected, would you like to migrate the '
     'existing configurations to v2? (y/n): '
 )
+
+QUESTION_CONTINUE_IF_AUTHED_USER_IS_NOT_IN_DOMAIN = (
+    '\n'
+    'The currently authenticated user running the installer '
+    'is not in the domain that Forseti is being installed to.\n'
+    'If you wish to continue, you need to grant the compute.osLoginExternalUser '
+    'role to your user on the org level, in order to have ssh access '
+    'to the Forseti client VM.\n'
+    'Would you like to continue? (y/n): '
+)

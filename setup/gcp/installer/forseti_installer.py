@@ -162,6 +162,19 @@ class ForsetiInstaller(object):
 
         return conf_file_path, deployment_tpl_path
 
+    def check_if_authed_user_is_in_current_domain(
+            self, organization_id, authed_user):
+        domain = gcloud.get_domain_from_organization_id(
+            organization_id)
+        if domain not in authed_user:
+            choice = ''
+            while choice != 'y' and choice != 'n':
+                choice = raw_input(
+                    constants.QUESTION_CONTINUE_IF_AUTHED_USER_IS_NOT_IN_DOMAIN)
+            choice = choice.lower()
+            if choice == 'n':
+                sys.exit(1)
+
     def preflight_checks(self):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
@@ -173,6 +186,8 @@ class ForsetiInstaller(object):
                                          self.config.force_no_cloudshell,
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
+        self.check_if_authed_user_is_in_current_domain(
+            self.organization_id, authed_user)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
 
     def create_or_reuse_service_accts(self):
