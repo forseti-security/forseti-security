@@ -20,6 +20,7 @@ import mock
 import os
 import shlex
 import shutil
+import sys
 import StringIO
 import tempfile
 import unittest
@@ -312,7 +313,8 @@ class ImporterTest(ForsetiTestCase):
          {'endpoint': '192.168.0.1:80'}),
         ])
 
-    def test_cli(self, test_cases):
+    @mock.patch('sys.stdout', new_callable=StringIO.StringIO)
+    def test_cli(self, mock_stdout, test_cases):
         """Test if the CLI hits specific client methods."""
         tmp_config = os.path.join(self.test_dir, '.forseti')
         with mock.patch.dict(
