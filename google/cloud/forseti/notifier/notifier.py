@@ -162,7 +162,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
             for retrieved_v in violations:
                 log_message = (
                     'Retrieved {} violations for resource \'{}\''.format(
-                    len(violations[retrieved_v]), retrieved_v))
+                        len(violations[retrieved_v]), retrieved_v))
                 LOGGER.info(log_message)
                 progress_queue.put(log_message)
 
