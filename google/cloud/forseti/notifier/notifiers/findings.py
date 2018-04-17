@@ -37,12 +37,10 @@ class Findingsnotifier(object):
         """
         self.inv_index_id = inv_index_id
 
-    @staticmethod
-    def _transform_to_findings(inv_index_id, violations):
+    def _transform_to_findings(self, violations):
         """Transform forseti violations to findings format.
 
         Args:
-            inv_index_id (str): inventory index ID
             violations (dict): Violations to be uploaded as findings.
 
         Returns:
@@ -59,7 +57,7 @@ class Findingsnotifier(object):
                 'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
-                    'inventory_index_id': inv_index_id,
+                    'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
@@ -89,7 +87,7 @@ class Findingsnotifier(object):
             gcs_path (str): The GCS bucket to upload the findings.
         """
         LOGGER.info('Running findings notification.')
-        findings = self._transform_to_findings(self.inv_index_id, violations)
+        findings = self._transform_to_findings(violations)
 
         with tempfile.NamedTemporaryFile() as tmp_violations:
             tmp_violations.write(parser.json_stringify(findings))

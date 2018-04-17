@@ -129,7 +129,7 @@ class NotifierTest(ForsetiTestCase):
         'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
-    def test_notifications_nonempty_violations_but_no_scanner_index(
+    def test_notifications_are_not_sent_without_valid_scanner_index_id(
         self, mock_dao, mock_find_notifiers, mock_gcs_violations_cls, mock_email_violations_cls):
         """The email/GCS upload notifiers are instantiated/run.
 

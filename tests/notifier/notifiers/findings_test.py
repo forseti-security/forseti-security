@@ -84,8 +84,8 @@ class FindingsNotifierTest(scanner_dao_test.DatabaseTest):
                 scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
         finding_results = (
-            findings.Findingsnotifier._transform_to_findings(
-                'iii', violations_as_dict)
+            findings.Findingsnotifier('iii')._transform_to_findings(
+                violations_as_dict)
         )
 
         self.assertEquals(expected_findings, finding_results)
