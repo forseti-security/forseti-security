@@ -164,6 +164,18 @@ class ForsetiInstaller(object):
 
     def check_if_authed_user_is_in_current_domain(
             self, organization_id, authed_user):
+        """Check if the authed user is in the current domain.
+        
+        If authed user is not in the current domain that Forseti is being
+        installed to, then user needs to be warned to add an additional
+        osLoginExternalUser role, in order to have sshe access to the
+        client VM.
+
+        Args:
+            organization_id (str): Id of the organization.
+            authed_user (str): Email of the user that is currently
+                authenticated in gcloud.
+        """
         domain = gcloud.get_domain_from_organization_id(
             organization_id)
         if domain not in authed_user:
