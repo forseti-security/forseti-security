@@ -24,7 +24,6 @@ from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import inspect
 from sqlalchemy import Integer
-from sqlalchemy import or_
 from sqlalchemy import String
 from sqlalchemy import Text
 
@@ -37,9 +36,7 @@ from google.cloud.forseti.common.util.index_state import IndexState
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
-
-
-# pylint: disable=bad-continuation
+SUCCESS_STATES = [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]
 
 
 class ScannerIndex(BASE):
@@ -152,9 +149,8 @@ def get_latest_scanner_index_id(session, inv_index_id, index_state=None):
     if not index_state:
         scanner_index = (
             session.query(ScannerIndex)
-            .filter(and_(or_(
-                ScannerIndex.scanner_status == 'SUCCESS',
-                ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
+            .filter(and_(
+                ScannerIndex.scanner_status.in_(SUCCESS_STATES),
                 ScannerIndex.inventory_index_id == inv_index_id))
             .order_by(ScannerIndex.id.desc()).first())
     else:
@@ -256,25 +252,23 @@ class ViolationAccess(object):
         if inv_index_id:
             results = (
                 self.session.query(Violation, ScannerIndex)
-                .filter(and_(or_(
-                    ScannerIndex.scanner_status == 'SUCCESS',
-                    ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
+                .filter(and_(
+                    ScannerIndex.scanner_status.in_(SUCCESS_STATES),
                     ScannerIndex.inventory_index_id == inv_index_id))
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
         if scanner_index_id:
             results = (
                 self.session.query(Violation, ScannerIndex)
-                .filter(and_(or_(
-                    ScannerIndex.scanner_status == 'SUCCESS',
-                    ScannerIndex.scanner_status == 'PARTIAL_SUCCESS'),
+                .filter(and_(
+                    ScannerIndex.scanner_status.in_(SUCCESS_STATES),
                     ScannerIndex.id == scanner_index_id))
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
 
         violations = []
-        for v, _ in results:
-            violations.append(v)
+        for violation, _ in results:
+            violations.append(violation)
         return violations
 
 

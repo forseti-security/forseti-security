@@ -159,19 +159,19 @@ def run(inventory_index_id, progress_queue, service_config=None):
             for violation in violations:
                 violations_as_dict.append(
                     scanner_dao.convert_sqlalchemy_object_to_dict(violation))
-            violations = scanner_dao.map_by_resource(violations_as_dict)
+            violation_map = scanner_dao.map_by_resource(violations_as_dict)
 
-            for retrieved_v in violations:
+            for retrieved_v in violation_map:
                 log_message = (
                     'Retrieved {} violations for resource \'{}\''.format(
-                        len(violations[retrieved_v]), retrieved_v))
+                        len(violation_map[retrieved_v]), retrieved_v))
                 LOGGER.info(log_message)
                 progress_queue.put(log_message)
 
             # build notification notifiers
             notifiers = []
             for resource in notifier_configs['resources']:
-                if violations.get(resource['resource']) is None:
+                if violation_map.get(resource['resource']) is None:
                     log_message = 'Resource \'{}\' has no violations'.format(
                         resource['resource'])
                     progress_queue.put(log_message)
@@ -189,7 +189,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
                     chosen_pipeline = find_notifiers(notifier['name'])
                     notifiers.append(chosen_pipeline(
                         resource['resource'], inventory_index_id,
-                        violations[resource['resource']], global_configs,
+                        violation_map[resource['resource']], global_configs,
                         notifier_configs, notifier['configuration']))
 
             # Run the notifiers.
