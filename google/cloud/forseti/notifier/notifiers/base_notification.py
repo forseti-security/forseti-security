@@ -101,4 +101,4 @@ class BaseNotification(object):
             InvalidDataFormatError: if not valid
         """
         if data_format not in cls.supported_data_formats:
-            raise InvalidDataFormatError('GCS uploader', data_format)
+            raise InvalidDataFormatError('Notifier', data_format)
