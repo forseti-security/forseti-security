@@ -51,6 +51,7 @@ class FindingsNotifierTest(scanner_dao_test.DatabaseTest):
              'finding_callback_url': None,
              'finding_properties':
                  {'scanner_index_id': scanner_index_id,
+                  'inventory_index_id': 'iii',
                   'resource_id': 'fake_firewall_111',
                   'resource_data': 'inventory_data_111',
                   'rule_index': 111,
@@ -65,6 +66,7 @@ class FindingsNotifierTest(scanner_dao_test.DatabaseTest):
             'finding_callback_url': None,
             'finding_properties':
                 {'scanner_index_id': scanner_index_id,
+                 'inventory_index_id': 'iii',
                  'resource_id': 'fake_firewall_222',
                  'resource_data': 'inventory_data_222',
                  'rule_index': 222,
@@ -82,8 +84,8 @@ class FindingsNotifierTest(scanner_dao_test.DatabaseTest):
                 scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
         finding_results = (
-            findings.Findingsnotifier()._transform_to_findings(
-                violations_as_dict)
+            findings.Findingsnotifier._transform_to_findings(
+                'iii', violations_as_dict)
         )
 
         self.assertEquals(expected_findings, finding_results)

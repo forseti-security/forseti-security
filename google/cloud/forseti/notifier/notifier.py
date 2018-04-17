@@ -200,7 +200,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
                 notifier_configs.get('violation').get('findings')):
             findings_configs = notifier_configs.get('violation').get('findings')
             if findings_configs.get('enabled'):
-                findings.Findingsnotifier().run(
+                findings.Findingsnotifier(inventory_index_id).run(
                     violations_as_dict, findings_configs.get('gcs_path'))
 
         log_message = 'Notification completed!'
