@@ -50,9 +50,9 @@ class InventorySummaryTest(ForsetiTestCase):
 
         notifier = inventory_summary.InventorySummary('abcd', [], dict())
         actual = notifier._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT)
-        expexted = string_formats.INV_SUMMARY_CSV_FMT.format(
+        expected = string_formats.INV_SUMMARY_CSV_FMT.format(
                 notifier.inv_index_id, expected_timestamp)
-        self.assertEquals(expexted, actual)
+        self.assertEquals(expected, actual)
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.inventory_summary.date_time',
@@ -66,9 +66,9 @@ class InventorySummaryTest(ForsetiTestCase):
 
         notifier = inventory_summary.InventorySummary('abcd', [], dict())
         actual = notifier._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT)
-        expexted = string_formats.INV_SUMMARY_JSON_FMT.format(
+        expected = string_formats.INV_SUMMARY_JSON_FMT.format(
                 notifier.inv_index_id, expected_timestamp)
-        self.assertEquals(expexted, actual)
+        self.assertEquals(expected, actual)
 
     @mock.patch(
         'google.cloud.forseti.common.util.file_uploader.StorageClient',
