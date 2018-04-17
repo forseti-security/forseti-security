@@ -14,7 +14,7 @@
 
 """Upload inventory summary to GCS."""
 
-from google.cloud.forseti.common.gcp_api import file_uploader
+from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats

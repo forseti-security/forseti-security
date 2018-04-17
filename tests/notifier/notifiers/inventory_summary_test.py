@@ -71,7 +71,7 @@ class InventorySummaryTest(ForsetiTestCase):
         self.assertEquals(expexted, actual)
 
     @mock.patch(
-        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        'google.cloud.forseti.common.util.file_uploader.StorageClient',
         autospec=True)
     @mock.patch('tempfile.NamedTemporaryFile')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
@@ -97,7 +97,7 @@ class InventorySummaryTest(ForsetiTestCase):
             fake_tmpname, gcs_path)
 
     @mock.patch(
-        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        'google.cloud.forseti.common.util.file_uploader.StorageClient',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
@@ -120,7 +120,7 @@ class InventorySummaryTest(ForsetiTestCase):
         self.assertTrue(mock_json_stringify.called)
 
     @mock.patch(
-        'google.cloud.forseti.common.gcp_api.storage.StorageClient',
+        'google.cloud.forseti.common.util.file_uploader.StorageClient',
         autospec=True)
     @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
