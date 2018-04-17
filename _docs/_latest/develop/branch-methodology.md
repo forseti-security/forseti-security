@@ -7,9 +7,9 @@ order: 003
 
 This page describes the branches in the Forseti repo and how they're used.
 
-Please note that Forseti 2.0 is the current General Availability (GA) version,
-and where all active feature developments should take place.  Forseti 1.0 is
-on support-basis only, and only bug fixes will be accepted.
+All active feature developments should be completed in the current General
+Availability version, Forseti 2.0. Forseti 1.0 is on support-basis only,
+and only bug fixes will be accepted.
 
 ## Branches
 
@@ -24,14 +24,14 @@ the correct codebase or create a Pull Request (PR):
 * `2.0-master`: latest stable release for Forseti 2.0.
 * `2.0-forsetisecurity.org-dev`: documentations for Forseti 2.0 website.
 
-A development branch is the starting point where developers would begin
-to create a new PR and where the PR would be merged into the codebase after
-code review.  Even though there are unit tests, the development branch is still
-considered to be unstable as functional and system tests are not done.
+A development branch is the starting point where you can create a new PR,
+and where the PR will be merged into the codebase after code review. Although
+there are unit tests, the development branch is still considered to be unstable
+because functional and system tests are not yet complete.
 
-A master branch is a checkpointed code from the development branch that
-has passed functional and system tests, and is considered to be stable and
-suitable for production-use.
+A master branch is checkpointed code from the development branch that
+has passed functional and system tests. The master branch is considered
+to be stable and suitable for production-use.
 
 Other active branches in the Forseti repo are those created by other developers
 to contribute to Forseti. You can generally disregard any branches that aren't
@@ -78,5 +78,5 @@ the appropriate master and dev branch.
 
 ## What's Next
 
-Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
-Learn about Forseti release process (TBD).
+* Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+* Learn about Forseti release process (TBD).
