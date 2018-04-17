@@ -511,6 +511,15 @@ class ViolationListTest(DatabaseTest):
             scanner_index_id=scanner_index_id)
         self.assertEquals(0, len(actual_data))
 
+    def test_list_with_both_indices(self):
+        scanner_index_id = self.populate_db(
+            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+        self.populate_db(
+            inv_index_id=self.iidx_id2, succeeded=[], failed=['IapScanner'])
+        with self.assertRaises(ValueError):
+            self.violation_access.list(
+                inv_index_id='blah', scanner_index_id=scanner_index_id)
+
 
 if __name__ == '__main__':
     unittest.main()
