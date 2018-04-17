@@ -139,7 +139,7 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
         'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
-    def test_no_notifications_for_empty_violations(
+    def test_inventory_summary_is_called(
         self, mock_dao, mock_find_notifiers, mock_inv_summary):
         """No violation notifiers are run if there are no violations.
 
@@ -236,7 +236,7 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.InventorySummary', autospec=True)
-    def test_inv_summary_data_passed(self, mock_notifier):
+    def test_inv_summary_can_run_successfully(self, mock_notifier):
         mock_inv_index = mock.MagicMock()
         mock_inv_index.notified_at_datetime = None
         mock_inv_index.get_summary.return_value = {

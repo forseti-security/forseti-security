@@ -48,10 +48,10 @@ class InventorySummaryTest(ForsetiTestCase):
         expected_timestamp = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        gvp = inventory_summary.InventorySummary('abcd', [], dict())
-        actual = gvp._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT)
+        notifier = inventory_summary.InventorySummary('abcd', [], dict())
+        actual = notifier._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT)
         expexted = string_formats.INV_SUMMARY_CSV_FMT.format(
-                gvp.inv_index_id, expected_timestamp)
+                notifier.inv_index_id, expected_timestamp)
         self.assertEquals(expexted, actual)
 
     @mock.patch(
@@ -64,10 +64,10 @@ class InventorySummaryTest(ForsetiTestCase):
         expected_timestamp = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        gvp = inventory_summary.InventorySummary('abcd', [], dict())
-        actual = gvp._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT)
+        notifier = inventory_summary.InventorySummary('abcd', [], dict())
+        actual = notifier._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT)
         expexted = string_formats.INV_SUMMARY_JSON_FMT.format(
-                gvp.inv_index_id, expected_timestamp)
+                notifier.inv_index_id, expected_timestamp)
         self.assertEquals(expexted, actual)
 
     @mock.patch(
@@ -80,17 +80,17 @@ class InventorySummaryTest(ForsetiTestCase):
         fake_tmpname = 'tmp_name'
         fake_output_name = 'abc'
 
-        gvp = inventory_summary.InventorySummary('abcd', [], dict(gcs_path='gs://x'))
-        gvp._get_output_filename = mock.MagicMock(return_value=fake_output_name)
+        notifier = inventory_summary.InventorySummary('abcd', [], dict(gcs_path='gs://x'))
+        notifier._get_output_filename = mock.MagicMock(return_value=fake_output_name)
         gcs_path = '{}/{}'.format(
-            gvp.notifier_config['gcs_path'], fake_output_name)
+            notifier.notifier_config['gcs_path'], fake_output_name)
 
         mock_tmp_csv = mock.MagicMock()
         mock_tempfile.return_value = mock_tmp_csv
         mock_tmp_csv.name = fake_tmpname
         mock_tmp_csv.write = mock.MagicMock()
 
-        gvp.run()
+        notifier.run()
 
         mock_tmp_csv.write.assert_called()
         mock_storage.return_value.put_text_file.assert_called_once_with(
@@ -107,15 +107,15 @@ class InventorySummaryTest(ForsetiTestCase):
         mock_json_stringify.return_value = 'test123'
 
         config = dict(gcs_path='gs://x', data_format='json')
-        gvp = inventory_summary.InventorySummary('abcd', [], config)
+        notifier = inventory_summary.InventorySummary('abcd', [], config)
 
-        gvp._get_output_filename = mock.MagicMock()
-        gvp.run()
+        notifier._get_output_filename = mock.MagicMock()
+        notifier.run()
 
-        self.assertTrue(gvp._get_output_filename.called)
+        self.assertTrue(notifier._get_output_filename.called)
         self.assertEquals(
             string_formats.INV_SUMMARY_JSON_FMT,
-            gvp._get_output_filename.call_args[0][0])
+            notifier._get_output_filename.call_args[0][0])
         self.assertFalse(mock_write_csv.called)
         self.assertTrue(mock_json_stringify.called)
 
@@ -128,13 +128,13 @@ class InventorySummaryTest(ForsetiTestCase):
         mock_json_stringify, mock_storage):
         """Test run() with json file format."""
         config = dict(gcs_path='gs://x', data_format='blah')
-        gvp = inventory_summary.InventorySummary('abcd', [], config)
-        gvp._get_output_filename = mock.MagicMock()
+        notifier = inventory_summary.InventorySummary('abcd', [], config)
+        notifier._get_output_filename = mock.MagicMock()
 
         with self.assertRaises(base_notification.InvalidDataFormatError):
-            gvp.run()
+            notifier.run()
 
-        self.assertFalse(gvp._get_output_filename.called)
+        self.assertFalse(notifier._get_output_filename.called)
         self.assertFalse(mock_write_csv.called)
         self.assertFalse(mock_json_stringify.called)
 
