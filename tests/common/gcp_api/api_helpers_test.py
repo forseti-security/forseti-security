@@ -34,9 +34,9 @@ class ApiHelpersTest(unittest_utils.ForsetiTestCase):
         google.auth, 'default',
         return_value=(mock.Mock(spec_set=service_account.Credentials),
                       'test-project'))
-    def test_delegated_from_iam_credentials(self, mock_credentials):
+    def test_get_delegated_credential(self, mock_credentials):
         test_delegate = 'user@forseti.testing'
-        credentials = api_helpers.delegated_from_iam_credentials(
+        credentials = api_helpers.get_delegated_credential(
             test_delegate, FAKE_REQUIRED_SCOPES)
         self.assertEqual(credentials._subject, test_delegate)
         self.assertEqual(credentials._scopes, FAKE_REQUIRED_SCOPES)

@@ -168,7 +168,7 @@ class AdminDirectoryClient(object):
                          'using "max_admin_api_calls_per_100_seconds" instead. '
                          'See the sample configuration file for reference.')
 
-        credentials = api_helpers.delegated_from_iam_credentials(
+        credentials = api_helpers.get_delegated_credential(
             global_configs.get('domain_super_admin_email'),
             REQUIRED_SCOPES)
         self.repository = AdminDirectoryRepositoryClient(

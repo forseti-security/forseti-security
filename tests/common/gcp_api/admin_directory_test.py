@@ -32,7 +32,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
 
     @classmethod
     @mock.patch.object(
-        admin.api_helpers, 'delegated_from_iam_credentials',
+        admin.api_helpers, 'get_delegated_credential',
         return_value=mock.Mock(spec_set=credentials.Credentials))
     def setUpClass(cls, mock_admin_credential):
         """Set up."""
@@ -45,7 +45,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
         cls.ad_api_client.repository._use_cached_http = True
 
     @mock.patch.object(
-        admin.api_helpers, 'delegated_from_iam_credentials',
+        admin.api_helpers, 'get_delegated_credential',
         return_value=mock.Mock(spec_set=credentials.Credentials))
     def test_no_quota(self, mock_admin_credential):
         """Verify no rate limiter is used if the configuration is missing."""
@@ -57,7 +57,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
 
     @mock.patch.object(admin, 'LOGGER')
     @mock.patch.object(
-        admin.api_helpers, 'delegated_from_iam_credentials',
+        admin.api_helpers, 'get_delegated_credential',
         return_value=mock.Mock(spec_set=credentials.Credentials))
     def test_deprecated_config(self, mock_admin_credential, mock_logger):
         global_configs = {

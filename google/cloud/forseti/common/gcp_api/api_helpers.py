@@ -21,7 +21,7 @@ from google.oauth2 import service_account
 _TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 
 
-def delegated_from_iam_credentials(delegated_account, scopes):
+def get_delegated_credential(delegated_account, scopes):
     """Build delegated credentials required for accessing the gsuite APIs.
 
     Args:
