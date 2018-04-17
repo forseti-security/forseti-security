@@ -133,7 +133,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifier.inv_summary_notify',
+        'google.cloud.forseti.notifier.notifier.run_inv_summary',
         autospec=True)
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
@@ -150,7 +150,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         Expected outcome:
             The local find_notifiers() function is never called -> no notifiers
             are looked up, istantiated or run.
-            The `inv_summary_notify` function *is* called.
+            The `run_inv_summary` function *is* called.
             """
         mock_dao.map_by_resource.return_value = dict()
         mock_service_cfg = mock.MagicMock()
@@ -164,7 +164,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
     def test_no_inventory_in_config(self, mock_logger):
         mock_service_config = mock.MagicMock()
         mock_service_config.get_notifier_config.return_value = dict()
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_logger.info.called)
         self.assertEquals(
             'No "inventory" configuration for notifier.',
@@ -175,7 +175,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         mock_service_config = mock.MagicMock()
         mock_service_config.get_notifier_config.return_value = dict(
             inventory=dict(blah=1))
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_logger.info.called)
         self.assertEquals(
             'No "inventory summary" configuration for notifier.',
@@ -186,7 +186,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         mock_service_config = mock.MagicMock()
         mock_service_config.get_notifier_config.return_value = dict(
             inventory=dict(summary=dict(enabled=False)))
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_logger.info.called)
         self.assertEquals(
             'Inventory summary notifications are turned off.',
@@ -197,7 +197,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         mock_service_config = mock.MagicMock()
         mock_service_config.get_notifier_config.return_value = dict(
             inventory=dict(summary=dict(enabled=True)))
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_logger.error.called)
         self.assertEquals(
             '"gcs_path" not set for inventory summary notifier.',
@@ -217,7 +217,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         mock_service_config.get_notifier_config.return_value = dict(
             inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
 
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_logger.info.called)
         self.assertEquals(
             'Inventory summary notification already sent (%s).',
@@ -239,7 +239,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         mock_service_config.get_notifier_config.return_value = dict(
             inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
 
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_logger.warn.called)
         self.assertEquals(
             'No inventory summary data found.',
@@ -261,7 +261,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
         mock_service_config.get_notifier_config.return_value = dict(
             inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
 
-        notifier.inv_summary_notify('blah', mock_service_config)
+        notifier.run_inv_summary('blah', mock_service_config)
         self.assertTrue(mock_notifier.called)
         self.assertEquals('blah', mock_notifier.call_args[0][0])
         expected_inv_summary = [

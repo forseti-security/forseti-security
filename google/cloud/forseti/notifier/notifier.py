@@ -74,7 +74,7 @@ def convert_to_timestamp(violations):
     return violations
 
 
-def inv_summary_notify(inv_index_id, service_config):
+def run_inv_summary(inv_index_id, service_config):
     """Emit an inventory summary notification if/as needed.
 
     Args:
@@ -201,7 +201,7 @@ def run(inv_index_id, progress_queue, service_config=None):
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
 
-    inv_summary_notify(inv_index_id, service_config)
+    run_inv_summary(inv_index_id, service_config)
     log_message = 'Notification completed!'
     progress_queue.put(log_message)
     progress_queue.put(None)
