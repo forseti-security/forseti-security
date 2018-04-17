@@ -57,9 +57,6 @@ class InventorySummary(object):
 
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
-        if not self.notifier_config['gcs_path'].startswith('gs://'):
-            return
-
         data_format = self.notifier_config.get('data_format', 'csv')
         BaseNotification.check_data_format(data_format)
 

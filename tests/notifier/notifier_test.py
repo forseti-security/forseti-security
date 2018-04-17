@@ -204,6 +204,17 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
             mock_logger.error.call_args[0][0])
 
     @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
+    def test_inventory_summary_invalid_gcs_path(self, mock_logger):
+        mock_service_config = mock.MagicMock()
+        mock_service_config.get_notifier_config.return_value = dict(
+            inventory=dict(summary=dict(enabled=True, gcs_path='invalid')))
+        notifier.run_inv_summary('blah', mock_service_config)
+        self.assertTrue(mock_logger.error.called)
+        self.assertEquals(
+            'Invalid GCS path: %s', mock_logger.error.call_args[0][0])
+        self.assertEquals('invalid', mock_logger.error.call_args[0][1])
+
+    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
     def test_inventory_summary_no_summary_data(self, mock_logger):
         mock_inv_index = mock.MagicMock()
         mock_inv_index.notified_at_datetime = None

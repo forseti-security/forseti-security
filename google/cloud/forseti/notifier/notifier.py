@@ -100,6 +100,10 @@ def run_inv_summary(inv_index_id, service_config):
         LOGGER.error('"gcs_path" not set for inventory summary notifier.')
         return
 
+    if not notifier_config['gcs_path'].startswith('gs://'):
+        LOGGER.error('Invalid GCS path: %s', notifier_config['gcs_path'])
+        return
+
     with service_config.scoped_session() as session:
         inv_index = session.query(InventoryIndex).get(inv_index_id)
 
