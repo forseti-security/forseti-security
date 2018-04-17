@@ -17,7 +17,8 @@ import unittest
 from googleapiclient import errors
 import mock
 import httplib2
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_appengine_responses as fae
@@ -30,7 +31,10 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
     """Test the AppEngine client."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
@@ -38,7 +42,10 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
         cls.ae_api_client = ae.AppEngineClient(fake_global_configs,
                                                use_rate_limiter=False)
 
-    @mock.patch.object(client, 'GoogleCredentials')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
         ae_api_client = ae.AppEngineClient(global_configs={})
@@ -49,7 +56,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'status': '404',
             'content-type': 'application/json'})
         response.reason = 'Not Found'
-        error = errors.HttpError(response, fae.APP_NOT_FOUND, '')
+        error = errors.HttpError(response, fae.APP_NOT_FOUND, uri='')
         self.assertTrue(ae._is_status_not_found(error))
 
     def test_is_status_not_found_403(self):
@@ -57,7 +64,7 @@ class AppEngineTest(unittest_utils.ForsetiTestCase):
             'status': '403',
             'content-type': 'application/json'})
         response.reason = 'Permission Denied'
-        error = errors.HttpError(response, fae.PERMISSION_DENIED, '')
+        error = errors.HttpError(response, fae.PERMISSION_DENIED, uri='')
         self.assertFalse(ae._is_status_not_found(error))
 
     def test_get_app(self):

@@ -16,7 +16,8 @@
 import json
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_bigquery as fbq
@@ -29,7 +30,10 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
     """Test the Bigquery API Client."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
@@ -37,7 +41,10 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
         cls.bq_api_client = bq.BigQueryClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 
-    @mock.patch.object(client, 'GoogleCredentials')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
         bq_api_client = bq.BigQueryClient(global_configs={})

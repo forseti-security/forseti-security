@@ -16,7 +16,8 @@
 import json
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_crm_responses
@@ -33,7 +34,10 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
     """Test the Cloud Resource Manager API Client."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
@@ -42,7 +46,10 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
             global_configs=fake_global_configs, use_rate_limiter=False)
         cls.project_id = fake_crm_responses.FAKE_PROJECT_ID
 
-    @mock.patch.object(client, 'GoogleCredentials')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
         crm_api_client = crm.CloudResourceManagerClient(global_configs={})
