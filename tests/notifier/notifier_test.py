@@ -204,28 +204,6 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
             mock_logger.error.call_args[0][0])
 
     @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
-    def test_inventory_summary_already_sent(self, mock_logger):
-        mock_inv_index = mock.MagicMock()
-        fake_timestamp = datetime(1965, 4, 8, 15, 16, 17)
-        mock_inv_index.notified_at_datetime = fake_timestamp
-
-        mock_session = mock.MagicMock()
-        mock_session.query.return_value.get.return_value = mock_inv_index
-
-        mock_service_config = mock.MagicMock()
-        mock_service_config.scoped_session.return_value.__enter__.return_value = mock_session
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
-
-        notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_logger.info.called)
-        self.assertEquals(
-            'Inventory summary notification already sent (%s).',
-            mock_logger.info.call_args[0][0])
-        self.assertEquals(
-            fake_timestamp, mock_logger.info.call_args[0][1])
-
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
     def test_inventory_summary_no_summary_data(self, mock_logger):
         mock_inv_index = mock.MagicMock()
         mock_inv_index.notified_at_datetime = None

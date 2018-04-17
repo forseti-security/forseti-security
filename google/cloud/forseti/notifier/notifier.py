@@ -102,11 +102,6 @@ def run_inv_summary(inv_index_id, service_config):
 
     with service_config.scoped_session() as session:
         inv_index = session.query(InventoryIndex).get(inv_index_id)
-        if inv_index.notified_at_datetime:
-            LOGGER.info(
-                'Inventory summary notification already sent (%s).',
-                inv_index.notified_at_datetime)
-            return
 
         summary_data = inv_index.get_summary(session)
         if not summary_data:
