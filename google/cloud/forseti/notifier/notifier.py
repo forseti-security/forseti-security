@@ -20,8 +20,7 @@ import inspect
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import findings
-from google.cloud.forseti.notifier.notifiers.gcs_inv_summary import (
-    GcsInvSummary)
+from google.cloud.forseti.notifier.notifiers.gcs_inv_summary import GcsInvSummary
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
