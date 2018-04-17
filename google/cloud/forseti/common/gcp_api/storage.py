@@ -13,23 +13,19 @@
 # limitations under the License.
 
 """Wrapper for Storage API client."""
-
-
 import json
 import StringIO
-import tempfile
 import urlparse
-
 from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error
 
-from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import _base_repository
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import metadata_server
+from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
