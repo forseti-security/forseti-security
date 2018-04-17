@@ -162,10 +162,11 @@ class ForsetiInstaller(object):
 
         return conf_file_path, deployment_tpl_path
 
-    def check_if_authed_user_is_in_current_domain(
+    @staticmethod
+    def check_if_authed_user_in_domain(
             self, organization_id, authed_user):
         """Check if the authed user is in the current domain.
-        
+
         If authed user is not in the current domain that Forseti is being
         installed to, then user needs to be warned to add an additional
         osLoginExternalUser role, in order to have sshe access to the
@@ -198,7 +199,7 @@ class ForsetiInstaller(object):
                                          self.config.force_no_cloudshell,
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
-        self.check_if_authed_user_is_in_current_domain(
+        self.check_if_authed_user_in_current_domain(
             self.organization_id, authed_user)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
 
