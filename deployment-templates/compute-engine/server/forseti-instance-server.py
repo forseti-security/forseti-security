@@ -158,7 +158,8 @@ sudo apt-get install -y git unzip
 sudo apt-get install -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
-pip install -q --upgrade setuptools pip wheel
+pip install --upgrade pip==9.0.3
+pip install -q --upgrade setuptools wheel
 pip install -q --upgrade -r requirements.txt
 
 # Change the access level of configs/ rules/ and run_forseti.sh

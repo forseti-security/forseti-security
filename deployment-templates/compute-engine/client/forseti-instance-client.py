@@ -127,7 +127,8 @@ rm -rf *forseti*
 cd forseti-security
 
 # Forseti dependencies
-pip install -q --upgrade setuptools pip wheel
+pip install --upgrade pip==9.0.3
+pip install -q --upgrade setuptools wheel
 pip install -q --upgrade -r requirements.txt
 
 # Install Forseti
