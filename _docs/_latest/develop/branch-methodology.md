@@ -49,14 +49,17 @@ The process below outlines how major new X.0.0 versions are managed.
 
 1. We will increment the highest-versioned development branch and create
 a new development branch.
+
 ```2.0-dev --> 3.0-dev```
 
 1. Along the way, we will create the corresponding release candidates branches
 for early user evaluations.
+
 ```3.0-dev --> 3.0-rc1 --> 3.0-rc2```
 
 1. When all the launch gates have been passed, we will create the GA master
 branch.
+
 ```3.0-rc2 --> 3.0-master```
 
 1. After the support period has passed, the previous version dev/master branches
