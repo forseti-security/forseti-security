@@ -7,20 +7,21 @@ order: 003
 
 This page describes the branches in the Forseti repo and how they're used.
 
-All active feature developments should be completed in the current General
-Availability version, Forseti 2.0. Forseti 1.0 is on support-basis only,
-and only bug fixes will be accepted.
+In general, Forseti branches will be prefixed with a version number.
+All active feature developments should be completed in the branch with the
+highest-versioned numbering.  Lower-versioned branches will denote
+support-basis, and only bug fixes will be accepted.
 
 ## Branches
 
 The branches listed below are the main branches you'll use to inspect
-the correct codebase or create a Pull Request (PR):
+the correct codebase or create a Pull Request (PR).
 
-* `dev`: development branch for Forseti 1.0.
+* `dev`: development branch for Forseti 1.0 (deprecated, bug fixes only).
 * `master`: latest stable release for Forseti 1.0.
 * `forsetisecurity.org`: documentations for Forseti 1.0 website.
 
-* `2.0-dev`: development branch for Forseti 2.0.
+* `2.0-dev`: development branch for Forseti 2.0 (GA, active development).
 * `2.0-master`: latest stable release for Forseti 2.0.
 * `2.0-forsetisecurity.org-dev`: documentations for Forseti 2.0 website.
 
