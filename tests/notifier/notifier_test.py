@@ -120,8 +120,8 @@ class NotifierTest(ForsetiTestCase):
         self.assertEquals(1, mock_gcs_violations.run.call_count)
 
 
-class GcsInvSummaryNotifierTest(ForsetiTestCase):
-    """Tests for gcs_inv_summary_notifier."""
+class InventorySummaryNotifierTest(ForsetiTestCase):
+    """Tests for the inventory summary notifier."""
 
     def setUp(self):
         """Setup."""
@@ -224,7 +224,7 @@ class GcsInvSummaryNotifierTest(ForsetiTestCase):
             mock_logger.warn.call_args[0][0])
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifier.GcsInvSummary', autospec=True)
+        'google.cloud.forseti.notifier.notifier.InventorySummary', autospec=True)
     def test_inv_summary_data_passed(self, mock_notifier):
         mock_inv_index = mock.MagicMock()
         mock_inv_index.notified_at_datetime = None

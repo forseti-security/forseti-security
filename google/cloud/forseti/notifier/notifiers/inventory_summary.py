@@ -25,7 +25,7 @@ from google.cloud.forseti.notifier.notifiers.base_notification import (
 LOGGER = logger.get_logger(__name__)
 
 
-class GcsInvSummary(object):
+class InventorySummary(object):
     """Upload inventory summary to GCS."""
 
     def __init__(self, inv_index_id, inv_summary, notifier_config):

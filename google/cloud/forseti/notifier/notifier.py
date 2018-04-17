@@ -20,7 +20,7 @@ import inspect
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import findings
-from google.cloud.forseti.notifier.notifiers.gcs_inv_summary import GcsInvSummary
+from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
@@ -112,7 +112,7 @@ def run_inv_summary(inv_index_id, service_config):
         for key, value in summary_data.iteritems():
             inv_summary.append(dict(resource_type=key, count=value))
 
-        notifier = GcsInvSummary(inv_index_id, inv_summary, notifier_config)
+        notifier = InventorySummary(inv_index_id, inv_summary, notifier_config)
         notifier.run()
         inv_index.mark_notified(session)
 

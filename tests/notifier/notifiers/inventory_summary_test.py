@@ -22,12 +22,12 @@ from datetime import datetime
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
-from google.cloud.forseti.notifier.notifiers import gcs_inv_summary
+from google.cloud.forseti.notifier.notifiers import inventory_summary
 from tests.unittest_utils import ForsetiTestCase
 
 
-class GcsInvSummaryTest(ForsetiTestCase):
-    """Tests for gcs_inv_summary_notifier."""
+class InventorySummaryTest(ForsetiTestCase):
+    """Tests for inventory_summary_notifier."""
 
     def setUp(self):
         """Setup."""
@@ -39,7 +39,7 @@ class GcsInvSummaryTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_inv_summary.date_time',
+        'google.cloud.forseti.notifier.notifiers.inventory_summary.date_time',
         autospec=True)
     def test_get_output_filename(self, mock_date_time):
         """Test_get_output_filename()."""
@@ -48,14 +48,14 @@ class GcsInvSummaryTest(ForsetiTestCase):
         expected_timestamp = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], dict())
+        gvp = inventory_summary.InventorySummary('abcd', [], dict())
         actual = gvp._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT)
         expexted = string_formats.INV_SUMMARY_CSV_FMT.format(
                 gvp.inv_index_id, expected_timestamp)
         self.assertEquals(expexted, actual)
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.gcs_inv_summary.date_time',
+        'google.cloud.forseti.notifier.notifiers.inventory_summary.date_time',
         autospec=True)
     def test_get_output_filename_with_json(self, mock_date_time):
         """Test_get_output_filename()."""
@@ -64,7 +64,7 @@ class GcsInvSummaryTest(ForsetiTestCase):
         expected_timestamp = self.fake_utcnow.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], dict())
+        gvp = inventory_summary.InventorySummary('abcd', [], dict())
         actual = gvp._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT)
         expexted = string_formats.INV_SUMMARY_JSON_FMT.format(
                 gvp.inv_index_id, expected_timestamp)
@@ -80,7 +80,7 @@ class GcsInvSummaryTest(ForsetiTestCase):
         fake_tmpname = 'tmp_name'
         fake_output_name = 'abc'
 
-        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], dict(gcs_path='gs://x'))
+        gvp = inventory_summary.InventorySummary('abcd', [], dict(gcs_path='gs://x'))
         gvp._get_output_filename = mock.MagicMock(return_value=fake_output_name)
         gcs_path = '{}/{}'.format(
             gvp.notifier_config['gcs_path'], fake_output_name)
@@ -107,7 +107,7 @@ class GcsInvSummaryTest(ForsetiTestCase):
         mock_json_stringify.return_value = 'test123'
 
         config = dict(gcs_path='gs://x', data_format='json')
-        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], config)
+        gvp = inventory_summary.InventorySummary('abcd', [], config)
 
         gvp._get_output_filename = mock.MagicMock()
         gvp.run()
@@ -128,7 +128,7 @@ class GcsInvSummaryTest(ForsetiTestCase):
         mock_json_stringify, mock_storage):
         """Test run() with json file format."""
         config = dict(gcs_path='gs://x', data_format='blah')
-        gvp = gcs_inv_summary.GcsInvSummary('abcd', [], config)
+        gvp = inventory_summary.InventorySummary('abcd', [], config)
         gvp._get_output_filename = mock.MagicMock()
 
         with self.assertRaises(base_notification.InvalidDataFormatError):
