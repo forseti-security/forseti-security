@@ -238,9 +238,12 @@ class ViolationAccess(object):
     def list(self, inv_index_id=None, scanner_index_id=None):
         """List all violations from the db table.
 
-        If neither index is passed we return all violations.
-        Otherwise we return the violations associated with
-        the index passed.
+        If
+            * neither index is passed we return all violations.
+            * the `inv_index_id` is passed the violations from all scanner
+              runs for that inventory index will be returned.
+            * the `scanner_index_id` is passed the violations from that
+              specific scanner run will be returned.
 
         NOTA BENE: do *NOT* call this method with both indices!
 
