@@ -249,6 +249,10 @@ class ViolationAccess(object):
         Returns:
             list: List of Violation row entry objects.
         """
+        if not (inv_index_id or scanner_index_id):
+            return self.session.query(Violation).all()
+
+        results = []
         if inv_index_id:
             results = (
                 self.session.query(Violation, ScannerIndex)
@@ -258,7 +262,6 @@ class ViolationAccess(object):
                     ScannerIndex.inventory_index_id == inv_index_id))
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
-            return [v for (v, _) in results]
         if scanner_index_id:
             results = (
                 self.session.query(Violation, ScannerIndex)
@@ -268,9 +271,12 @@ class ViolationAccess(object):
                     ScannerIndex.id == scanner_index_id))
                 .filter(Violation.scanner_index_id == ScannerIndex.id)
                 .all())
-            return [v for (v, _) in results]
 
-        return self.session.query(Violation).all()
+        violations = []
+        for v, _ in results:
+            violations.append(v)
+        return violations
+
 
 
 # pylint: disable=invalid-name
