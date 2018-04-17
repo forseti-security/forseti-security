@@ -168,10 +168,9 @@ class AdminDirectoryClient(object):
                          'using "max_admin_api_calls_per_100_seconds" instead. '
                          'See the sample configuration file for reference.')
 
-        credentials = api_helpers.credential_from_keyfile(
-            global_configs.get('groups_service_account_key_file'),
-            REQUIRED_SCOPES,
-            global_configs.get('domain_super_admin_email'))
+        credentials = api_helpers.delegated_from_iam_credentials(
+            global_configs.get('domain_super_admin_email'),
+            REQUIRED_SCOPES)
         self.repository = AdminDirectoryRepositoryClient(
             credentials=credentials,
             quota_max_calls=max_calls,

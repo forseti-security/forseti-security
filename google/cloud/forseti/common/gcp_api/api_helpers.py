@@ -13,34 +13,48 @@
 # limitations under the License.
 
 """Helper functions for API clients."""
-from google.cloud.forseti.common.gcp_api import errors as api_errors
+import google.auth
+from google.auth import iam
+from google.auth.transport import requests
 from google.oauth2 import service_account
 
-def credential_from_keyfile(keyfile_name, scopes, delegated_account):
+_TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
+
+
+def delegated_from_iam_credentials(delegated_account, scopes):
     """Build delegated credentials required for accessing the gsuite APIs.
 
     Args:
-        keyfile_name (str): The filename to load the json service account key
-            from.
-        scopes (list): The list of required scopes for the service account.
         delegated_account (str): The account to delegate the service account to
             use.
+        scopes (list): The list of required scopes for the service account.
 
     Returns:
         service_account.Credentials: Credentials as built by
             google.oauth2.service_account.
-
-    Raises:
-        api_errors.ApiExecutionError: If fails to build credentials.
     """
-    try:
-        credentials = (
-            service_account.Credentials.from_service_account_file(
-                keyfile_name, scopes=scopes))
-    except (ValueError, KeyError, TypeError, IOError) as e:
-        raise api_errors.ApiInitializationError(
-            'Error building admin api credential: %s' % e)
-    return credentials.with_subject(delegated_account)
+    request = requests.Request()
+
+    # Get the "bootstrap" credentials that will be used to talk to the IAM
+    # API to sign blobs.
+    bootstrap_credentials, _ = google.auth.default()
+
+    # Refresh the boostrap credentials. This ensures that the information about
+    # this account, notably the email, is populated.
+    bootstrap_credentials.refresh(request)
+
+    # Create an IAM signer using the bootstrap credentials.
+    signer = iam.Signer(request,
+                        bootstrap_credentials,
+                        bootstrap_credentials.service_account_email)
+
+    # Create OAuth 2.0 Service Account credentials using the IAM-based signer
+    # and the bootstrap_credential's service account email.
+    delegated_credentials = service_account.Credentials(
+        signer, bootstrap_credentials.service_account_email, _TOKEN_URI,
+        scopes=scopes, subject=delegated_account)
+
+    return delegated_credentials
 
 
 def flatten_list_results(paged_results, item_key):
