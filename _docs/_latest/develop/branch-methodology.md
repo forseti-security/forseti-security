@@ -48,18 +48,15 @@ Z signifies code changes.
 The process below outlines how major new X.0.0 versions are managed.
 
 1. We will increment the highest-versioned development branch and create
-a new development branch.
-
+a new development branch.<br />
 ```2.0-dev --> 3.0-dev```
 
 1. Along the way, we will create the corresponding release candidates branches
-for early user evaluations.
-
+for early user evaluations.<br />
 ```3.0-dev --> 3.0-rc1 --> 3.0-rc2```
 
 1. When all the launch gates have been passed, we will create the GA master
-branch.
-
+branch.<br />
 ```3.0-rc2 --> 3.0-master```
 
 1. After the support period has passed, the previous version dev/master branches
