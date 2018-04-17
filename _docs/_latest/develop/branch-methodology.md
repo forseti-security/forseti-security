@@ -16,7 +16,7 @@ on support-basis only, and only bug fixes will be accepted.
 The branches listed below are the main branches you'll use to inspect
 the correct codebase or create a Pull Request (PR):
 
-* `dev`: development branch for Forseti 1.0
+* `dev`: development branch for Forseti 1.0.
 * `master`: latest stable release for Forseti 1.0.
 * `forsetisecurity.org`: documentations for Forseti 1.0 website.
 
@@ -39,20 +39,44 @@ explicitly listed above.
 
 ## Branching Methodology
 
-The process below outlines how to manage your Forseti branches:
+Forseti versions are denoted with X.Y.Z version numbering schema.
+X signifies architectural changes.
+Y signifies database schema changes.
+Z signifies code changes.
 
-1. Identify the Forseti version that you want to contribute.
+The process below outlines how major new X.0.0 versions are managed.
 
-1. Check out the appropriate development or documentation branch locally,
-sync to remote, and then create a local feature branch to contain your change.
+1. We will increment the highest-versioned development branch and create
+a new development branch.
+```2.0-dev --> 3.0-dev```
 
-1. When you're finished making changes, push your local feature branch to remote.
+1. Along the way, we will create the corresponding release candidates branches
+for early user evaluations.
+```3.0-dev --> 3.0-rc1 --> 3.0-rc2```
 
-1. Create a PR, and make sure the review base is on the appropriate remote
-development or documentation branch for correct diffing and merging.
+1. When all the launch gates have been passed, we will create the GA master
+branch.
+```3.0-rc2 --> 3.0-master```
 
-1. After the PR is merged, delete the remote and local feature branches.
+1. After the support period has passed, the previous version dev/master branches
+are deleted.
+
+The process below outlines how minor new 0.Y.Z point versions are managed.
+
+1. When a new point version is ready to be released, either new 0.Y.0 version
+or new 0.0.Z version, a new release branch will be created from the 
+appropriate dev branch.
+
+1. The release branch will undergo functional and integration testing.
+If any bug is found, a new feature branch is created from the release branch,
+go through code review, and merged back into the release branch.
+
+1. When the release branch is fully qualified, the branch is merged into 
+the appropriate master and dev branch.
+
+1. The release branch is deleted.
 
 ## What's Next
 
 Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+Learn about Forseti release process (TBD).
