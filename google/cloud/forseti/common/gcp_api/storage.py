@@ -24,14 +24,12 @@ from googleapiclient import errors
 from googleapiclient import http
 from httplib2 import HttpLib2Error
 
-from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import metadata_server
-from google.cloud.forseti.common.util import parser
 
 LOGGER = logger.get_logger(__name__)
 
@@ -692,31 +690,3 @@ class StorageClient(object):
                 'objectIamPolicy', e, 'bucket', bucket)
             LOGGER.error(api_exception)
             raise api_exception
-
-
-def upload_json(data, gcs_upload_path):
-    """Upload inventory summary/violation data in json format.
-
-    Args:
-        data (dict): the data to upload
-        gcs_upload_path (string): the GCS upload path.
-    """
-    with tempfile.NamedTemporaryFile() as tmp_violations:
-        tmp_violations.write(parser.json_stringify(data))
-        tmp_violations.flush()
-        storage_client = StorageClient()
-        storage_client.put_text_file(tmp_violations.name, gcs_upload_path)
-
-
-def upload_csv(data, gcs_upload_path):
-    """Upload inventory summary/violation data in csv format.
-
-    Args:
-        data (dict): the data to upload
-        gcs_upload_path (string): the GCS upload path.
-    """
-    with csv_writer.write_csv(
-        resource_name='inv_summary', data=data, write_header=True) as csv_file:
-        LOGGER.info('CSV filename: %s', csv_file.name)
-        storage_client = StorageClient()
-        storage_client.put_text_file(csv_file.name, gcs_upload_path)

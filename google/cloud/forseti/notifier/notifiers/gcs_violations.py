@@ -15,7 +15,7 @@
 """Upload violations to GCS."""
 
 
-from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.gcp_api import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
@@ -42,10 +42,10 @@ class GcsViolations(base_notification.BaseNotification):
                 self.notification_config['gcs_path'],
                 self._get_output_filename(
                     string_formats.VIOLATION_CSV_FMT))
-            storage.upload_csv(self.violations, gcs_upload_path)
+            file_uploader.upload_csv(self.violations, gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
                 self.notification_config['gcs_path'],
                 self._get_output_filename(
                     string_formats.VIOLATION_JSON_FMT))
-            storage.upload_json(self.violations, gcs_upload_path)
+            file_uploader.upload_json(self.violations, gcs_upload_path)

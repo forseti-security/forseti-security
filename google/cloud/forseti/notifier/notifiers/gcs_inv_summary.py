@@ -14,7 +14,7 @@
 
 """Upload inventory summary to GCS."""
 
-from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.gcp_api import file_uploader
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -67,9 +67,9 @@ class GcsInvSummary(object):
             gcs_upload_path = '{}/{}'.format(
                 self.notifier_config['gcs_path'],
                 self._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT))
-            storage.upload_csv(self.inv_summary, gcs_upload_path)
+            file_uploader.upload_csv(self.inv_summary, gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
                 self.notifier_config['gcs_path'],
                 self._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT))
-            storage.upload_json(self.inv_summary, gcs_upload_path)
+            file_uploader.upload_json(self.inv_summary, gcs_upload_path)
