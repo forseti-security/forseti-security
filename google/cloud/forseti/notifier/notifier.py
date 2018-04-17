@@ -146,7 +146,9 @@ def run(inventory_index_id, progress_queue, service_config=None):
         scanner_index_id = scanner_dao.get_latest_scanner_index_id(
             session, inventory_index_id)
         if not scanner_index_id:
-            LOGGER.warn('No scanner index found.')
+            LOGGER.error(
+                'No ((partial) success state) scanner index found for '
+                'inventory index: "%s".', inventory_index_id)
         else:
             # get violations
             violation_access = scanner_dao.ViolationAccess(session)
