@@ -147,7 +147,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
             session, inventory_index_id)
         if not scanner_index_id:
             LOGGER.error(
-                'No ((partial) success state) scanner index found for '
+                'No success or partial success scanner index found for '
                 'inventory index: "%s".', inventory_index_id)
         else:
             # get violations
