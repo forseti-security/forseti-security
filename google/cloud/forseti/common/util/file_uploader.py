@@ -48,8 +48,7 @@ def upload_csv(resource_name, data, gcs_upload_path):
         data (dict): the data to upload
         gcs_upload_path (string): the GCS upload path.
     """
-    with csv_writer.write_csv(
-        resource_name=resource_name, data=data, write_header=True) as csv_file:
+    with csv_writer.write_csv(resource_name, data, True) as csv_file:
         LOGGER.info('CSV filename: %s', csv_file.name)
         storage_client = StorageClient()
         storage_client.put_text_file(csv_file.name, gcs_upload_path)
