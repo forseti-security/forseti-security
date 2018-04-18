@@ -16,7 +16,8 @@ import os
 import tempfile
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_compute_responses as fake_compute
@@ -62,7 +63,9 @@ class ReplayTest(unittest_utils.ForsetiTestCase):
             os.environ[replay.REPLAY_ENVIRONMENT_VAR] = self.record_file
 
         gce_api_client = None
-        with mock.patch.object(client, 'GoogleCredentials', spec=True):
+        mock_creds = mock.Mock(spec_set=credentials.Credentials)
+        with mock.patch.object(google.auth, 'default',
+                               return_value=(mock_creds, 'test-project')):
             gce_api_client = compute.ComputeClient(
                 global_configs=self.fake_global_configs)
 

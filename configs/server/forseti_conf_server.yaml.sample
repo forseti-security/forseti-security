@@ -107,7 +107,7 @@ notifier:
                 webhook_url: ''
 
     violation:
-      findings:
+      cscc:
         enabled:
         # gcs_path should begin with "gs://"
         gcs_path:
