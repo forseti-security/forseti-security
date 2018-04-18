@@ -26,12 +26,12 @@ class CsccNotifierTest(scanner_dao_test.DatabaseTest):
 
     def setUp(self):
         """Setup method."""
-        super(FindingsNotifierTest, self).setUp()
+        super(CsccNotifierTest, self).setUp()
         self.maxDiff=None
 
     def tearDown(self):
         """Tear down method."""
-        super(FindingsNotifierTest, self).tearDown()
+        super(CsccNotifierTest, self).tearDown()
 
     @mock.patch('google.cloud.forseti.common.util.date_time.'
                 'get_utc_now_datetime')
