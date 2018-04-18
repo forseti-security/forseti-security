@@ -20,6 +20,7 @@ import mock
 import os
 import shlex
 import shutil
+import sys
 import StringIO
 import tempfile
 import unittest
@@ -178,7 +179,7 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
-        ('model create inventory foo --id 1',
+        ('model create --inventory_index_id 1 foo',
          CLIENT.model.new_model,
          ["inventory", "foo", '1', False],
          {},
@@ -317,20 +318,24 @@ class ImporterTest(ForsetiTestCase):
         tmp_config = os.path.join(self.test_dir, '.forseti')
         with mock.patch.dict(
             os.environ, {'FORSETI_CLIENT_CONFIG': tmp_config}):
-            for commandline, client_func, func_args,\
-                func_kwargs, config_string, config_expect\
-                    in test_cases:
+            for (commandline, client_func, func_args,
+                    func_kwargs, config_string, config_expect) in test_cases:
                 try:
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
                         json.load(StringIO.StringIO(config_string)))
-                    config = cli.main(
-                        args=args,
-                        config_env=env_config,
-                        client=CLIENT,
-                        parser_cls=MockArgumentParser)
+
+                    # Capture stdout, so it doesn't pollute the test output
+                    with mock.patch('sys.stdout',
+                                    new_callable=StringIO.StringIO):
+                        config = cli.main(
+                            args=args,
+                            config_env=env_config,
+                            client=CLIENT,
+                            parser_cls=MockArgumentParser)
                     if client_func is not None:
-                        client_func.assert_called_with(*func_args, **func_kwargs)
+                        client_func.assert_called_with(*func_args,
+                                                       **func_kwargs)
 
                     # Check attribute values
                     for attribute, value in config_expect.iteritems():

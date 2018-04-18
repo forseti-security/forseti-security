@@ -34,6 +34,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'cloudsql_rules_scanner',
          'class_name': 'CloudSqlAclScanner',
          'rules_filename': 'cloudsql_rules.yaml'},
+    'enabled_apis':
+        {'module_name': 'enabled_apis_scanner',
+         'class_name': 'EnabledApisScanner',
+         'rules_filename': 'enabled_apis_rules.yaml'},
     'firewall_rule':
         {'module_name': 'firewall_rules_scanner',
          'class_name': 'FirewallPolicyScanner',

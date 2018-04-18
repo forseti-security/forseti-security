@@ -59,6 +59,8 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: enabled_apis
+          enabled: true
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
@@ -155,6 +157,22 @@ notifier:
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
         - resource: cloudsql_acl_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
+
+        - resource: enabled_apis_violations
           should_notify: true
           notifiers:
             # Email violations
@@ -267,7 +285,7 @@ notifier:
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
     violation:
-      findings:
+      cscc:
         enabled: false
         # gcs_path should begin with "gs://"
         gcs_path:

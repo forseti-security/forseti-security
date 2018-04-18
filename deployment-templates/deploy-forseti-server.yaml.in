@@ -21,6 +21,8 @@ imports:
   name: cloudsql-instance.py
 - path: cloudsql/cloudsql-database.py
   name: cloudsql-database.py
+- path: cloudsql/cloudsql-user.py
+  name: cloudsql-user.py
 - path: compute-engine/server/forseti-instance-server.py
   name: forseti-instance-server.py
 - path: storage/bucket.py
@@ -36,6 +38,8 @@ resources:
     instance-name: {CLOUDSQL_INSTANCE_NAME}
 - name: forseti_security
   type: cloudsql-database.py
+- name: forseti-db-admin
+  type: cloudsql-user.py
 
 # Cloud Storage
 - name: {SCANNER_BUCKET}

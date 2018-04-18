@@ -26,8 +26,8 @@ from google.cloud.forseti.common.util import string_formats
 LOGGER = logger.get_logger(__name__)
 
 
-class Findingsnotifier(object):
-    """Upload violations to GCS bucket as findings."""
+class CsccNotifier(object):
+    """Upload violations to GCS bucket as CSCC findings."""
 
     def __init__(self, inv_index_id):
         """`Findingsnotifier` initializer.
@@ -78,7 +78,7 @@ class Findingsnotifier(object):
         now_utc = date_time.get_utc_now_datetime()
         output_timestamp = now_utc.strftime(
             string_formats.TIMESTAMP_TIMEZONE)
-        return string_formats.FINDINGS_FILENAME.format(output_timestamp)
+        return string_formats.CSCC_FINDINGS_FILENAME.format(output_timestamp)
 
     def run(self, violations, gcs_path):
         """Generate the temporary json file and upload to GCS.
@@ -86,7 +86,7 @@ class Findingsnotifier(object):
             violations (dict): Violations to be uploaded as findings.
             gcs_path (str): The GCS bucket to upload the findings.
         """
-        LOGGER.info('Running findings notification.')
+        LOGGER.info('Running CSCC findings notification.')
         findings = self._transform_to_findings(violations)
 
         with tempfile.NamedTemporaryFile() as tmp_violations:

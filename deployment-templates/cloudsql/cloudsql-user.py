@@ -11,18 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Fake service account key file."""
 
-FAKE_KEYFILE = b"""
-{
-  "type": "service_account",
-  "client_id": "id123",
-  "client_email": "foo@bar.com",
-  "private_key_id": "pkid456",
-  "private_key": "s3kr3tz"
-}
-"""
+"""Creates a Cloud SQL database template for forseti_inventory."""
 
-FAKE_REQUIRED_SCOPES = frozenset([
-    'https://www.googleapis.com/auth/admin.directory.group.readonly'
-])
+
+def GenerateConfig(context):
+    """Generate configuration."""
+
+    resources = []
+
+    resources.append({
+        'name': context.env['name'],
+        'type': 'sqladmin.v1beta4.user',
+        'properties': {
+            'project': context.env['project'],
+            'instance': '$(ref.cloudsql-instance.name)',
+            'kind': 'sql#user',
+            'name': context.env['name']
+        }
+    })
+
+    return {'resources': resources}
