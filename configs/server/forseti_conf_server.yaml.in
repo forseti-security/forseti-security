@@ -285,7 +285,7 @@ notifier:
                 gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
     violation:
-      findings:
+      cscc:
         enabled: false
         # gcs_path should begin with "gs://"
         gcs_path:

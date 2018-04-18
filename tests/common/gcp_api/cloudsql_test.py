@@ -16,7 +16,8 @@
 import json
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import http_mocks
@@ -29,7 +30,10 @@ class CloudsqlTest(unittest_utils.ForsetiTestCase):
     """Test the CloudSQL Client."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {'max_sqladmin_api_calls_per_100_seconds': 10000}
@@ -37,7 +41,10 @@ class CloudsqlTest(unittest_utils.ForsetiTestCase):
             global_configs=fake_global_configs, use_rate_limiter=False)
         cls.project_id = 111111
 
-    @mock.patch.object(client, 'GoogleCredentials')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
         sql_api_client = cloudsql.CloudsqlClient(global_configs={})
