@@ -42,7 +42,8 @@ class GcsViolations(base_notification.BaseNotification):
                 self.notification_config['gcs_path'],
                 self._get_output_filename(
                     string_formats.VIOLATION_CSV_FMT))
-            file_uploader.upload_csv(self.violations, gcs_upload_path)
+            file_uploader.upload_csv(
+                'violations', self.violations, gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
                 self.notification_config['gcs_path'],

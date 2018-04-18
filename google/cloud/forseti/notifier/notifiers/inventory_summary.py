@@ -64,7 +64,8 @@ class InventorySummary(object):
             gcs_upload_path = '{}/{}'.format(
                 self.notifier_config['gcs_path'],
                 self._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT))
-            file_uploader.upload_csv(self.inv_summary, gcs_upload_path)
+            file_uploader.upload_csv(
+                'inv_summary', self.inv_summary, gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
                 self.notifier_config['gcs_path'],

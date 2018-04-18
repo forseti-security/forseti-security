@@ -40,15 +40,16 @@ def upload_json(data, gcs_upload_path):
         storage_client.put_text_file(tmp_data.name, gcs_upload_path)
 
 
-def upload_csv(data, gcs_upload_path):
+def upload_csv(data, resource_name, gcs_upload_path):
     """Upload inventory summary/violation data in csv format.
 
     Args:
+        resource_name (str): what kind of CSV file are we creating?
         data (dict): the data to upload
         gcs_upload_path (string): the GCS upload path.
     """
     with csv_writer.write_csv(
-        resource_name='inv_summary', data=data, write_header=True) as csv_file:
+        resource_name=resource_name, data=data, write_header=True) as csv_file:
         LOGGER.info('CSV filename: %s', csv_file.name)
         storage_client = StorageClient()
         storage_client.put_text_file(csv_file.name, gcs_upload_path)
