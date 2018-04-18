@@ -19,7 +19,7 @@ import inspect
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers import findings
+from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.notifier.notifiers import email_inventory_snapshot_summary as inv_summary
 from google.cloud.forseti.notifier.notifiers import email_scanner_summary as scanner_summary
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
@@ -193,10 +193,10 @@ def run(inventory_index_id, progress_queue, service_config=None):
         notifier.run()
 
     if (notifier_configs.get('violation') and
-            notifier_configs.get('violation').get('findings').get('enabled')):
-        findings.Findingsnotifier().run(
+            notifier_configs.get('violation').get('cscc').get('enabled')):
+        cscc_notifier.CsccNotifier().run(
             violations_as_dict,
-            notifier_configs.get('violation').get('findings').get('gcs_path'))
+            notifier_configs.get('violation').get('cscc').get('gcs_path'))
 
     log_message = 'Notification completed!'
     progress_queue.put(log_message)

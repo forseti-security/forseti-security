@@ -19,9 +19,9 @@ import unittest
 from googleapiclient import discovery
 from googleapiclient import http
 import mock
-import oauth2client
-from oauth2client import client
-from oauth2client import service_account
+import google.auth
+from google.oauth2 import credentials
+from google.oauth2 import service_account
 
 from tests import unittest_utils
 from google.cloud import forseti as forseti_security
@@ -37,15 +37,17 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         client_id = 'some_client_id'
         client_secret = 'cOuDdkfjxxnv+'
         refresh_token = '1/0/a.df219fjls0'
+        token_uri = 'https://example.com/oauth2/token'
         token_expiry = datetime.datetime.utcnow()
         user_agent = ''
-        return client.OAuth2Credentials(
-            access_token, client_id, client_secret,
-            refresh_token, token_expiry, oauth2client.GOOGLE_TOKEN_URI,
-            user_agent, revoke_uri=oauth2client.GOOGLE_REVOKE_URI,
-            scopes='foo', token_info_uri=oauth2client.GOOGLE_TOKEN_INFO_URI)
+        creds = credentials.Credentials(
+            access_token, refresh_token=refresh_token,
+            token_uri=token_uri, client_id=client_id,
+            client_secret=client_secret, scopes=['foo'])
+        creds.expiry = token_expiry
+        return creds
 
-    @mock.patch('oauth2client.crypt.Signer.from_string',
+    @mock.patch('google.auth.crypt.rsa.RSASigner.from_string',
                 return_value=object())
     def get_test_service_account(self, mock_signer):
         keyfile_dict = {
@@ -53,39 +55,29 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             'client_email': 'test@service.account',
             'private_key': '12345',
             'private_key_id': '12345',
-            'client_id': '123'}
-        credentials = (
-            service_account.ServiceAccountCredentials.from_json_keyfile_dict(
+            'client_id': '123',
+            'token_uri': 'https://example.com/oauth2/token'}
+        creds = (
+            service_account.Credentials.from_service_account_info(
                 keyfile_dict))
-        return credentials
+        return creds
 
-    def test_set_user_agent(self):
+    def test_build_http(self):
         """Verify set user agent sets the user agent correctly."""
-        credentials = self.get_test_credential()
-
-        self.assertEqual('', credentials.user_agent)
-
-        base._set_ua_and_scopes(credentials)
-
-        self.assertTrue(
-            forseti_security.__package_name__ in credentials.user_agent)
-
         http_mock = http.HttpMock()
-        credentials.authorize(http_mock)
+        h = base._build_http(http=http_mock)
 
-        # The user-agent header is set during the request
-        self.assertEqual(None, http_mock.headers)
-
-        _ = http_mock.request('http://test.foo', 'GET')
+        _ = h.request('http://test.foo', 'GET')
         self.assertTrue(
             forseti_security.__package_name__ in
-                http_mock.headers.get('user-agent'))
+                h.headers.get('user-agent'))
 
     def test_set_scopes(self):
-        credentials = self.get_test_service_account()
-        self.assertTrue(credentials.create_scoped_required())
-        credentials = base._set_ua_and_scopes(credentials)
-        self.assertFalse(credentials.create_scoped_required())
+        creds = self.get_test_service_account()
+        self.assertTrue(creds.requires_scopes)
+        scoped_creds = base.with_scopes_if_required(
+            creds, list(base.CLOUD_SCOPES))
+        self.assertFalse(scoped_creds.requires_scopes)
 
     @mock.patch.object(discovery, 'build', autospec=True)
     def test_forseti_supported_api_is_ok(
@@ -222,7 +214,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             result[i] = repo.http
 
         gcp_service_mock = mock.Mock()
-        credentials_mock = mock.Mock(spec=client.Credentials)
+        credentials_mock = mock.Mock(spec=credentials.Credentials)
         repo = base.GCPRepository(
             gcp_service=gcp_service_mock,
             credentials=credentials_mock,
@@ -240,10 +232,9 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
 
         self.assertNotEqual(http_objects[0], http_objects[1])
 
-    @mock.patch('oauth2client.crypt.Signer.from_string',
+    @mock.patch('google.auth.crypt.rsa.RSASigner.from_string',
                 return_value=object())
-    def test_no_cached_http_gets_different_http_objects(self,
-                                                               signer_factory):
+    def test_no_cached_http_gets_different_http_objects(self, signer_factory):
         """Validate that each unique credential gets a unique http object.
 
         At the core of this requirement is the fact that some API's require
@@ -263,7 +254,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
 
         self.assertNotEqual(http_objects[0], http_objects[1])
 
-    @mock.patch('oauth2client.crypt.Signer.from_string',
+    @mock.patch('google.auth.crypt.rsa.RSASigner.from_string',
                 return_value=object())
     def test_use_cached_http_gets_same_http_objects(self, signer_factory):
         """Different clients with the same credential get the same http object.
