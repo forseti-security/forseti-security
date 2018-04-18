@@ -198,7 +198,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
 
         if (notifier_configs.get('violation') and
                 notifier_configs.get('violation').get('cscc').get('enabled')):
-            cscc_notifier.CsccNotifier().run(
+            cscc_notifier.CsccNotifier('inventory_index_id').run(
                 violations_as_dict,
                 notifier_configs.get('violation').get('cscc').get('gcs_path'))
 
