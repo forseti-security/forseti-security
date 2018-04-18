@@ -19,17 +19,36 @@ inventory:
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     api_quota:
-        # The pre-populated values are the defaults from GCP.
-        max_admin_api_calls_per_100_seconds: 1500
-        max_appengine_api_calls_per_second: 20
-        max_bigquery_api_calls_per_100_seconds: 17000
-        max_cloudbilling_api_calls_per_60_seconds: 300
-        max_compute_api_calls_per_second: 20
-        max_container_api_calls_per_100_seconds: 1000
-        max_crm_api_calls_per_100_seconds: 400
-        max_iam_api_calls_per_second: 20
-        max_servicemanagement_api_calls_per_100_seconds: 200
-        max_sqladmin_api_calls_per_100_seconds: 100
+		- api: "admin"
+          max_calls: 14
+          period: 1.0
+        - api: "appengine"
+          max_calls: 18
+          period: 1.0
+        - api: "bigquery"
+          max_calls: 160
+          period: 1.0
+        - api: "cloudbilling"
+          max_calls: 5
+          period: 1.2  # Include some room for retries
+        - api: "compute"
+          max_calls: 18
+          period: 1
+        - api: "container"
+          max_calls: 9
+          period: 1
+        - api: "crm"
+          max_calls: 4
+          period: 1.2
+        - api: "iam"
+          max_calls: 18
+          period: 1
+        - api: "servicemanagement"
+          max_calls: 2
+          period: 1.1
+        - api: "sqladmin"
+          max_calls: 1
+          period: 1.1
 
 
 ##############################################################################
