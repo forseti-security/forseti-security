@@ -40,7 +40,7 @@ def upload_json(data, gcs_upload_path):
         storage_client.put_text_file(tmp_data.name, gcs_upload_path)
 
 
-def upload_csv(data, resource_name, gcs_upload_path):
+def upload_csv(resource_name, data, gcs_upload_path):
     """Upload inventory summary/violation data in csv format.
 
     Args:
