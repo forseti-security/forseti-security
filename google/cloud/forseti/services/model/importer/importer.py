@@ -394,12 +394,9 @@ class InventoryImporter(object):
                 if member in self.member_cache and member not in db_members:
                     db_members.append(self.member_cache[member])
                     continue
-                elif member in self.member_cache:
-                    # member exists in member cache and already added
-                    # to db_members.
-                    continue
 
-                if member not in self.member_cache_policies:
+                if (member not in self.member_cache and
+                        member not in self.member_cache_policies):
                     try:
                         # This is the default case, e.g. 'group/foobar'
                         m_type, name = member.split('/', 1)
