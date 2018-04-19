@@ -27,7 +27,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 def upload_json(data, gcs_upload_path):
-    """Upload inventory summary/violation data in json format.
+    """Upload data in json format.
 
     Args:
         data (dict): the data to upload
@@ -41,7 +41,7 @@ def upload_json(data, gcs_upload_path):
 
 
 def upload_csv(resource_name, data, gcs_upload_path):
-    """Upload inventory summary/violation data in csv format.
+    """Upload data in csv format.
 
     Args:
         resource_name (str): what kind of CSV file are we creating?
