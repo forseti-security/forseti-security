@@ -450,7 +450,6 @@ def serve(endpoint,
             return
 
 
-
 def check_args(args):
     """Make sure the required args are present and valid.
 
