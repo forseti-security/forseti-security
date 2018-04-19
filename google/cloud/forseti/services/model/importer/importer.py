@@ -116,7 +116,8 @@ class InventoryImporter(object):
         self.role_cache = {}
         self.permission_cache = {}
         self.resource_cache = ResourceCache()
-        self._membership_cache = []
+        self.membership = []
+        self.membership_cache = {} # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
 
@@ -282,17 +283,17 @@ class InventoryImporter(object):
         self.session.flush()
 
         # session.execute automatically flushes
-        if self._membership_cache:
+        if self.membership:
             if get_sql_dialect(self.session) == 'sqlite':
                 # SQLite doesn't support bulk insert
-                for item in self._membership_cache:
+                for item in self.membership:
                     stmt = self.dao.TBL_MEMBERSHIP.insert(
                         dict(group_name=item[0],
                              members_name=item[1]))
                     self.session.execute(stmt)
             else:
                 dicts = [dict(group_name=item[0], members_name=item[1])
-                         for item in self._membership_cache]
+                         for item in self.membership]
                 stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
                 self.session.execute(stmt)
 
@@ -342,8 +343,15 @@ class InventoryImporter(object):
                 type=m_type,
                 member_name=name)
 
-        self._membership_cache.append(
-            (group_name(parent), member))
+        parent_group = group_name(parent)
+
+        if parent_group not in self.membership_cache:
+            self.membership_cache[parent_group] = set()
+
+        if member not in self.membership_cache[parent_group]:
+            self.membership_cache[parent_group].add(member)
+            self.membership.append(
+                (group_name(parent), member))
 
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""

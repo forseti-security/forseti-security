@@ -110,10 +110,10 @@ AD_GET_GROUPS = {
         # Duplicate groups
         json.loads(
             AD_GROUP_TEMPLATE.format(
-                id=4, email="a_grp@forseti.test", name="A Group", members=1)),
+                id=1, email="a_grp@forseti.test", name="A Group", members=1)),
         json.loads(
             AD_GROUP_TEMPLATE.format(
-                id=5, email="a_GRP@forseti.test", name="A Group", members=1)),
+                id=4, email="a_GRP@forseti.test", name="A Group", members=1)),
     ]
 }
 
@@ -133,6 +133,10 @@ AD_GET_GROUP_MEMBERS = {
     GROUP_ID_PREFIX + "1": [
         json.loads(
             AD_GROUP_MEMBER_TEMPLATE.format(
+                id=1, email="a_user@forseti.test", type="USER")),
+        # Duplicate group member
+        json.loads(
+            AD_GROUP_MEMBER_TEMPLATE.format(
                 id=1, email="a_user@forseti.test", type="USER"))
     ],
     GROUP_ID_PREFIX + "2": [
@@ -147,11 +151,6 @@ AD_GET_GROUP_MEMBERS = {
         json.loads(
             AD_GROUP_MEMBER_TEMPLATE.format(
                 id=5, email="b_grp@forseti.test", type="GROUP")),
-    ],
-    GROUP_ID_PREFIX + "1": [
-        json.loads(
-            AD_GROUP_MEMBER_TEMPLATE.format(
-                id=1, email="a_user@forseti.test", type="USER"))
     ],
 }
 
