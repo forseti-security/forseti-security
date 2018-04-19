@@ -41,12 +41,9 @@ class ServerTest(ForsetiTestCase):
             log_level='info',
             enable_console_log=False)
 
-        try:
+        with self.assertRaises(SystemExit) as e:
             server.main()
-        except SystemExit as e:
             self.assertEquals(expected_exit_code, e.code)
-        else:
-            self.assertFalse('SystemExit not raised')
 
     @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
     def test_config_file_path_not_specified(self, mock_argparse):
@@ -62,12 +59,27 @@ class ServerTest(ForsetiTestCase):
             log_level='info',
             enable_console_log=False)
 
-        try:
+        with self.assertRaises(SystemExit) as e:
             server.main()
-        except SystemExit as e:
             self.assertEquals(expected_exit_code, e.code)
-        else:
-            self.assertFalse('SystemExit not raised')
+
+    @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
+    def test_config_file_path_non_readable_file(self, mock_argparse):
+        """Test main() with non-readable config file."""
+        expected_exit_code = 3
+        mock_arg_parser = mock.MagicMock()
+        mock_argparse.ArgumentParser.return_value = mock_arg_parser
+        mock_arg_parser.parse_args.return_value = NameSpace(
+            endpoint='[::]:50051',
+            services=['scanner'],
+            forseti_db=None,
+            config_file_path='/this/does/not/exist',
+            log_level='info',
+            enable_console_log=False)
+
+        with self.assertRaises(SystemExit) as e:
+            server.main()
+            self.assertEquals(expected_exit_code, e.code)
 
     @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
     def test_config_file_path_non_existent_file(self, mock_argparse):
@@ -83,13 +95,9 @@ class ServerTest(ForsetiTestCase):
             log_level='info',
             enable_console_log=False)
 
-        try:
+        with self.assertRaises(SystemExit) as e:
             server.main()
-        except SystemExit as e:
             self.assertEquals(expected_exit_code, e.code)
-        else:
-            self.assertFalse('SystemExit not raised')
-
 
 
 if __name__ == '__main__':
