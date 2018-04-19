@@ -450,6 +450,37 @@ def serve(endpoint,
             return
 
 
+
+def check_args(args):
+    """Make sure the required args are present and valid.
+
+    The exit codes are arbitrary and just serve the purpose of facilitating
+    distinction betweeen the various error cases.
+
+    Args:
+        args (dict): the command line args
+
+    Returns:
+        tuple: 2-tuple with an exit code and error message.
+    """
+    if not args['services']:
+        return (1, 'ERROR: please specify at least one service.')
+
+    if not args['config_file_path']:
+        return (2, 'ERROR: please specify the Forseti config file.')
+
+    if not os.path.isfile(args['config_file_path']):
+        return (3, 'ERROR: "%s" is not a file.' % args['config_file_path'])
+
+    if not os.access(args['config_file_path'], os.R_OK):
+        return(4, 'ERROR: "%s" is not readable.' % args['config_file_path'])
+
+    if not args['forseti_db']:
+        return(5, 'ERROR: please specify the Forseti database string.')
+
+    return (0, 'All good!')
+
+
 # pylint: enable=too-many-locals
 
 
@@ -488,31 +519,12 @@ def main():
 
     args = vars(parser.parse_args())
 
-    if not args['services']:
-        sys.stderr.write('ERROR: please specify at least one service.\n\n')
+    exit_code, error_msg = check_args(args)
+
+    if exit_code:
+        sys.stderr.write('%s\n\n' % error_msg)
         parser.print_usage()
-        sys.exit(1)
-
-    if not args['config_file_path']:
-        sys.stderr.write('ERROR: please specify the Forseti config file.\n\n')
-        parser.print_usage()
-        sys.exit(2)
-
-    if not os.path.isfile(args['config_file_path']):
-        sys.stderr.write(
-            'ERROR: "%s" is not a file.\n\n' % args['config_file_path'])
-        sys.exit(3)
-
-    if not os.access(args['config_file_path'], os.R_OK):
-        sys.stderr.write(
-            'ERROR: "%s" is not readable.\n\n' % args['config_file_path'])
-        sys.exit(4)
-
-    if not args['forseti_db']:
-        sys.stderr.write(
-            'ERROR: please specify the Forseti database string.\n\n')
-        parser.print_usage()
-        sys.exit(5)
+        sys.exit(exit_code)
 
     serve(args['endpoint'],
           args['services'],
