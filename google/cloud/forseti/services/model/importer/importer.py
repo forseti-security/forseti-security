@@ -116,8 +116,8 @@ class InventoryImporter(object):
         self.role_cache = {}
         self.permission_cache = {}
         self.resource_cache = ResourceCache()
-        self.membership = []
-        self.membership_cache = {} # Maps group_name to {member_name}
+        self.membership_items = []
+        self.membership_map = {} # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
 
@@ -283,17 +283,17 @@ class InventoryImporter(object):
         self.session.flush()
 
         # session.execute automatically flushes
-        if self.membership:
+        if self.membership_items:
             if get_sql_dialect(self.session) == 'sqlite':
                 # SQLite doesn't support bulk insert
-                for item in self.membership:
+                for item in self.membership_items:
                     stmt = self.dao.TBL_MEMBERSHIP.insert(
                         dict(group_name=item[0],
                              members_name=item[1]))
                     self.session.execute(stmt)
             else:
                 dicts = [dict(group_name=item[0], members_name=item[1])
-                         for item in self.membership]
+                         for item in self.membership_items]
                 stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
                 self.session.execute(stmt)
 
@@ -345,12 +345,12 @@ class InventoryImporter(object):
 
         parent_group = group_name(parent)
 
-        if parent_group not in self.membership_cache:
-            self.membership_cache[parent_group] = set()
+        if parent_group not in self.membership_map:
+            self.membership_map[parent_group] = set()
 
-        if member not in self.membership_cache[parent_group]:
-            self.membership_cache[parent_group].add(member)
-            self.membership.append(
+        if member not in self.membership_map[parent_group]:
+            self.membership_map[parent_group].add(member)
+            self.membership_items.append(
                 (group_name(parent), member))
 
     def _store_iam_policy_pre(self):
