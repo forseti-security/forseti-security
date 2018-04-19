@@ -22,10 +22,11 @@ from concurrent import futures
 from multiprocessing.pool import ThreadPool
 
 import argparse
-import grpc
 import os
 import sys
 import time
+
+import grpc
 
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
