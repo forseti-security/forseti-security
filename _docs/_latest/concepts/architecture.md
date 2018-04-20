@@ -32,12 +32,11 @@ The image below shows how data flows through Forseti:
     Forseti modules.
  3. Scanner compares the data collected by Inventory to the policy rules you
     set.
- 4. **what's happening with the Cloud SQL to GCP connection here?**
- 5. Notifier sends Scanner findings to one or more of the following channels you
+ 4. Notifier sends Scanner findings to one or more of the following channels you
     configure: Cloud Storage, SendGrid, and Slack.
- 6. You use Explain to check your Cloud IAM policies.
- 7. Enforcer uses Google Cloud APIs to make sure policies match your desired
+ 5. You use Explain to check your Cloud IAM policies.
+ 6. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.
- 8. **what's happening with the CLI to GRPC Server connection here?**
- 9. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
+ 7. You use the CLI to query Forseti data via GRPC.
+ 8. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
     in CloudSQL.
