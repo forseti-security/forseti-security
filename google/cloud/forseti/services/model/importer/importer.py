@@ -116,7 +116,8 @@ class InventoryImporter(object):
         self.role_cache = {}
         self.permission_cache = {}
         self.resource_cache = ResourceCache()
-        self._membership_cache = []
+        self.membership_items = []
+        self.membership_map = {} # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
 
@@ -253,11 +254,12 @@ class InventoryImporter(object):
         gsuite_type = principal.get_resource_type()
         data = principal.get_resource_data()
         if gsuite_type == 'gsuite_user':
-            member = 'user/{}'.format(data['primaryEmail'])
+            member = 'user/{}'.format(data['primaryEmail'].lower())
         elif gsuite_type == 'gsuite_group':
-            member = 'group/{}'.format(data['email'])
+            member = 'group/{}'.format(data['email'].lower())
         else:
             raise Exception('Unknown gsuite principal: {}'.format(gsuite_type))
+
         if member not in self.member_cache:
             m_type, name = member.split('/', 1)
             self.member_cache[member] = self.dao.TBL_MEMBER(
@@ -281,17 +283,17 @@ class InventoryImporter(object):
         self.session.flush()
 
         # session.execute automatically flushes
-        if self._membership_cache:
+        if self.membership_items:
             if get_sql_dialect(self.session) == 'sqlite':
                 # SQLite doesn't support bulk insert
-                for item in self._membership_cache:
+                for item in self.membership_items:
                     stmt = self.dao.TBL_MEMBERSHIP.insert(
                         dict(group_name=item[0],
                              members_name=item[1]))
                     self.session.execute(stmt)
             else:
                 dicts = [dict(group_name=item[0], members_name=item[1])
-                         for item in self._membership_cache]
+                         for item in self.membership_items]
                 stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
                 self.session.execute(stmt)
 
@@ -315,7 +317,7 @@ class InventoryImporter(object):
 
             data = child.get_resource_data()
             return '{}/{}'.format(data['type'].lower(),
-                                  data['email'])
+                                  data['email'].lower())
 
         def group_name(parent):
             """Create the type:name representation for a group.
@@ -328,7 +330,7 @@ class InventoryImporter(object):
             """
 
             data = parent.get_resource_data()
-            return 'group/{}'.format(data['email'])
+            return 'group/{}'.format(data['email'].lower())
 
         # Gsuite group members don't have to be part
         # of this domain, so we might see them for
@@ -341,8 +343,15 @@ class InventoryImporter(object):
                 type=m_type,
                 member_name=name)
 
-        self._membership_cache.append(
-            (group_name(parent), member))
+        parent_group = group_name(parent)
+
+        if parent_group not in self.membership_map:
+            self.membership_map[parent_group] = set()
+
+        if member not in self.membership_map[parent_group]:
+            self.membership_map[parent_group].add(member)
+            self.membership_items.append(
+                (group_name(parent), member))
 
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""
@@ -376,13 +385,18 @@ class InventoryImporter(object):
 
             # binding['members'] can have duplicate ids
             members = set(binding['members'])
+            db_members = []
             for member in members:
-                member = member.replace(':', '/', 1)
+                member = member.replace(':', '/', 1).lower()
 
                 # We still might hit external users or groups
                 # that we haven't seen in gsuite.
-                if member not in self.member_cache and \
-                        member not in self.member_cache_policies:
+                if member in self.member_cache and member not in db_members:
+                    db_members.append(self.member_cache[member])
+                    continue
+
+                if (member not in self.member_cache and
+                        member not in self.member_cache_policies):
                     try:
                         # This is the default case, e.g. 'group/foobar'
                         m_type, name = member.split('/', 1)
@@ -394,18 +408,7 @@ class InventoryImporter(object):
                         type=m_type,
                         member_name=name)
                     self.session.add(self.member_cache_policies[member])
-
-            # Get all the member objects to reference
-            # in the binding row
-            db_members = []
-            for member in members:
-                member = member.replace(':', '/', 1)
-                if member not in self.member_cache:
-                    if member not in self.member_cache_policies:
-                        raise KeyError(member)
                     db_members.append(self.member_cache_policies[member])
-                    continue
-                db_members.append(self.member_cache[member])
 
             self.session.add(
                 self.dao.TBL_BINDING(
