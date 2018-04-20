@@ -218,6 +218,8 @@ class ContainerClient(object):
             dict: A serverconfig for a given Compute Engine zone.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/ServerConfig
 
+        An example return value::
+
             {
               "defaultClusterVersion": string,
               "validNodeVersions": [
@@ -266,9 +268,13 @@ class ContainerClient(object):
             list: A list of Cluster dicts.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.zones.clusters#Cluster
 
-            [{"name": "cluster-1", ...}
-             {"name": "cluster-2", ...},
-             {...}]
+        An example return value::
+
+            [
+                {"name": "cluster-1", ...}
+                {"name": "cluster-2", ...},
+                {...}
+            ]
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the

@@ -171,7 +171,7 @@ class IamRuleBook(bre.BaseRuleBook):
     Sample rules (simplified):
 
     mode: whitelist
-    Org 1234, bindings: roles/*, members: user:*@company.com
+    Org 1234, bindings: roles/\*, members: user:\*@company.com
     Project p-a, bindings: roles/owner, members: user:pa-owner@company.com
     Project p-b, bindings: roles/owner, members: user:pb-owner@company.com
 

@@ -21,8 +21,8 @@ def escape_and_globify(pattern_string):
     """Given a pattern string with a glob, create actual regex pattern.
 
     To require > 0 length glob, change the "*" to ".+". This is to handle
-    strings like "*@company.com". (The actual regex would probably be
-    ".*@company.com", except that we don't want to match zero-length
+    strings like "\*@company.com". (The actual regex would probably be
+    ".\*@company.com", except that we don't want to match zero-length
     usernames before the "@".)
 
     Special case the pattern '*' to match 0 or more characters.

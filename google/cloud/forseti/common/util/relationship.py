@@ -37,7 +37,7 @@ def find_ancestors(starting_resource, full_name):
 
     Returns:
         list: A list of GCP resources in ascending order in the resource
-            hierarchy.
+        hierarchy.
     """
     ancestor_resources = [starting_resource]
 

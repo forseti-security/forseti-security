@@ -451,7 +451,7 @@ class DataAccess(object):
 
         Returns:
             InventoryIndex: An expunged entry corresponding the
-                inventory_index_id.
+            inventory_index_id.
 
         Raises:
             Exception: Reraises any exception.
