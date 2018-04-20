@@ -171,7 +171,7 @@ class InventoryImporter(object):
 
         autoflush = self.session.autoflush
         try:
-            self.session.autoflush = False
+            self.session.autoflush = True
             item_counter = 0
             last_res_type = None
             with Inventory(self.session, self.inventory_index_id,
@@ -284,17 +284,10 @@ class InventoryImporter(object):
 
         # session.execute automatically flushes
         if self.membership_items:
-            if get_sql_dialect(self.session) == 'sqlite':
-                # SQLite doesn't support bulk insert
-                for item in self.membership_items:
-                    stmt = self.dao.TBL_MEMBERSHIP.insert(
-                        dict(group_name=item[0],
-                             members_name=item[1]))
-                    self.session.execute(stmt)
-            else:
-                dicts = [dict(group_name=item[0], members_name=item[1])
-                         for item in self.membership_items]
-                stmt = self.dao.TBL_MEMBERSHIP.insert(dicts)
+            for item in self.membership_items:
+                stmt = self.dao.TBL_MEMBERSHIP.insert(
+                    dict(group_name=item[0],
+                         members_name=item[1]))
                 self.session.execute(stmt)
 
     def _store_gsuite_membership(self, parent, child):
