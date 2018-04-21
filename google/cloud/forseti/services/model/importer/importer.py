@@ -54,11 +54,13 @@ class ResourceCache(dict):
 class EmptyImporter(object):
     """Imports an empty model."""
 
-    def __init__(self, session, model, dao, _, *args, **kwargs):
+    def __init__(self, session, readonly_session,
+                 model, dao, _, *args, **kwargs):
         """Create an EmptyImporter which creates an empty stub model.
 
         Args:
             session (object): Database session.
+            readonly_session (Session): Database session (read-only).
             model (str): Model name to create.
             dao (object): Data Access Object from dao.py.
             _ (object): Unused.
@@ -67,6 +69,7 @@ class EmptyImporter(object):
         """
 
         self.session = session
+        self.readonly_session = readonly_session
         self.model = model
         self.dao = dao
 
@@ -236,7 +239,7 @@ class InventoryImporter(object):
                     self._convert_iam_policy(policy)
                     number_of_iam_policy = number_of_iam_policy + 1
                     if not number_of_iam_policy % 500:
-                        self._store_iam_policy_post()
+                        self.session.flush()
 
         except Exception:  # pylint: disable=broad-except
             buf = StringIO()
