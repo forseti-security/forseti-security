@@ -77,10 +77,14 @@ class ImporterTest(ForsetiTestCase):
         self.model_name = self.model_manager.create(name=self.source)
 
         scoped_session, data_access = self.model_manager.get(self.model_name)
-        with scoped_session as session:
 
+        with scoped_session as session:
+            # Sqlite really doesn't like multiple connections, and sqlalchemy
+            # is effectively a connection per session, reusing the same session
+            # for read and write.
             importer_cls = importer.by_source(self.source)
             import_runner = importer_cls(
+                session,
                 session,
                 self.model_manager.model(self.model_name,
                                          expunge=False,

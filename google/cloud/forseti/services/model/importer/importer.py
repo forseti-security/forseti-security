@@ -88,6 +88,7 @@ class InventoryImporter(object):
 
     def __init__(self,
                  session,
+                 readonly_session,
                  model,
                  dao,
                  service_config,
@@ -98,6 +99,7 @@ class InventoryImporter(object):
 
         Args:
             session (Session): Database session.
+            readonly_session (Session): Database session (read-only).
             model (Model): Model object.
             dao (object): Data Access Object from dao.py
             service_config (ServiceConfig): Service configuration.
@@ -106,6 +108,7 @@ class InventoryImporter(object):
             **kwargs (dict): Unused.
         """
 
+        self.readonly_session = readonly_session
         self.session = session
         self.model = model
         self.dao = dao
@@ -130,7 +133,7 @@ class InventoryImporter(object):
             NotImplementedError: If the importer encounters an unknown
                 inventory type.
         """
-
+        # pylint: disable=too-many-branches, too-many-statements
         gcp_type_list = [
             'organization',
             'folder',
@@ -169,12 +172,14 @@ class InventoryImporter(object):
             'gsuite_group_member',
         ]
 
+        autocommit = self.session.autocommit
         autoflush = self.session.autoflush
         try:
+            self.session.autocommit = False
             self.session.autoflush = True
             item_counter = 0
             last_res_type = None
-            with Inventory(self.session, self.inventory_index_id,
+            with Inventory(self.readonly_session, self.inventory_index_id,
                            True) as inventory:
                 root = inventory.get_root()
                 self.model.add_description(json.dumps({
@@ -197,6 +202,9 @@ class InventoryImporter(object):
                     item_counter += 1
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
+                    if not item_counter % 3000:
+                        self.session.flush()
+
                 self._store_resource(None, last_res_type)
 
                 for policy in inventory.iter(gcp_type_list,
@@ -220,12 +228,15 @@ class InventoryImporter(object):
 
                 self.dao.denorm_group_in_group(self.session)
 
+                number_of_iam_policy = 0
                 self._store_iam_policy_pre()
                 for policy in inventory.iter(gcp_type_list,
                                              fetch_iam_policy=True):
                     self._store_iam_policy(policy)
                     self._convert_iam_policy(policy)
-                self._store_iam_policy_post()
+                    number_of_iam_policy = number_of_iam_policy + 1
+                    if not number_of_iam_policy % 500:
+                        self._store_iam_policy_post()
 
         except Exception:  # pylint: disable=broad-except
             buf = StringIO()
@@ -239,6 +250,7 @@ class InventoryImporter(object):
             self.model.set_done(item_counter)
         finally:
             self.session.commit()
+            self.session.autocommit = autocommit
             self.session.autoflush = autoflush
 
     def _store_gsuite_principal(self, principal):
@@ -266,6 +278,7 @@ class InventoryImporter(object):
                 name=member,
                 type=m_type,
                 member_name=name)
+            self.session.add(self.member_cache[member])
 
     def _store_gsuite_membership_pre(self):
         """Prepare storing gsuite memberships."""
@@ -278,16 +291,18 @@ class InventoryImporter(object):
         if not self.member_cache:
             return
 
-        # Store all members before we flush the memberships
-        self.session.add_all(self.member_cache.values())
         self.session.flush()
 
         # session.execute automatically flushes
         if self.membership_items:
-            for item in self.membership_items:
+            if get_sql_dialect(self.session) == 'sqlite':
+                # SQLite doesn't support bulk insert
+                for item in self.membership_items:
+                    stmt = self.dao.TBL_MEMBERSHIP.insert(item)
+                    self.session.execute(stmt)
+            else:
                 stmt = self.dao.TBL_MEMBERSHIP.insert(
-                    dict(group_name=item[0],
-                         members_name=item[1]))
+                    self.membership_items)
                 self.session.execute(stmt)
 
     def _store_gsuite_membership(self, parent, child):
@@ -335,6 +350,7 @@ class InventoryImporter(object):
                 name=member,
                 type=m_type,
                 member_name=name)
+            self.session.add(self.member_cache[member])
 
         parent_group = group_name(parent)
 
@@ -344,7 +360,7 @@ class InventoryImporter(object):
         if member not in self.membership_map[parent_group]:
             self.membership_map[parent_group].add(member)
             self.membership_items.append(
-                (group_name(parent), member))
+                dict(group_name=group_name(parent), members_name=member))
 
     def _store_iam_policy_pre(self):
         """Executed before iam policies are inserted."""
@@ -369,6 +385,7 @@ class InventoryImporter(object):
         """
 
         bindings = policy.get_resource_data().get('bindings', [])
+        policy_type_name = self._type_name(policy)
         for binding in bindings:
             role = binding['role']
             if role not in self.role_cache:
@@ -378,14 +395,14 @@ class InventoryImporter(object):
 
             # binding['members'] can have duplicate ids
             members = set(binding['members'])
-            db_members = []
+            db_members = set()
             for member in members:
                 member = member.replace(':', '/', 1).lower()
 
                 # We still might hit external users or groups
                 # that we haven't seen in gsuite.
                 if member in self.member_cache and member not in db_members:
-                    db_members.append(self.member_cache[member])
+                    db_members.add(self.member_cache[member])
                     continue
 
                 if (member not in self.member_cache and
@@ -401,13 +418,13 @@ class InventoryImporter(object):
                         type=m_type,
                         member_name=name)
                     self.session.add(self.member_cache_policies[member])
-                    db_members.append(self.member_cache_policies[member])
+                    db_members.add(self.member_cache_policies[member])
 
-            self.session.add(
-                self.dao.TBL_BINDING(
-                    resource_type_name=self._type_name(policy),
-                    role_name=role,
-                    members=db_members))
+            binding_object = self.dao.TBL_BINDING(
+                resource_type_name=policy_type_name,
+                role_name=role,
+                members=list(db_members))
+            self.session.add(binding_object)
 
     def _store_resource(self, resource, last_res_type=None):
         """Store an inventory resource in the database.
@@ -701,10 +718,11 @@ class InventoryImporter(object):
         Args:
             iam_policy (object): IAM policy to store.
         """
-        parent, full_res_name = self._get_parent(iam_policy)
+        _, full_res_name = self._get_parent(iam_policy)
+        parent_type_name = self._parent_type_name(iam_policy)
         iam_policy_type_name = to_type_name(
             iam_policy.get_category(),
-            ':'.join(parent.type_name.split('/')))
+            ':'.join(parent_type_name.split('/')))
         iam_policy_full_res_name = to_full_resource_name(
             full_res_name,
             iam_policy_type_name)
@@ -716,7 +734,7 @@ class InventoryImporter(object):
             name=iam_policy.get_resource_id(),
             type=iam_policy.get_category(),
             data=iam_policy.get_resource_data_raw(),
-            parent=parent)
+            parent_type_name=parent_type_name)
 
         self.session.add(resource)
         self._add_to_cache(resource)
@@ -1238,7 +1256,9 @@ class InventoryImporter(object):
             tuple: cached object and full resource name
         """
 
-        return self.resource_cache[self._parent_type_name(resource)]
+        parent_type_name = self._parent_type_name(resource)
+
+        return self.resource_cache[parent_type_name]
 
     def _type_name(self, resource):
         """Return the type/name for that resource.

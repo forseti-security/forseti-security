@@ -15,6 +15,10 @@
 """Database session handling for Forseti Server."""
 
 from sqlalchemy.orm import sessionmaker
+from google.cloud.forseti.common.util import logger
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 class ScopedSession(object):
@@ -97,3 +101,24 @@ def create_scoped_sessionmaker(engine):
         sessionmaker(
             bind=engine),
         auto_commit=True)
+
+
+def _abort_ro():
+    """Method to intercept the flush operation, log a warning
+    message and return."""
+    LOGGER.warn("This session is read-only, no flush is allowed.")
+    return
+
+
+def create_scoped_readonly_session(engine):
+    """Creates a readonly scoped session.
+
+    Args:
+        engine (object): Engine to bind session to.
+
+    Returns:
+        object: Scoped session maker.
+    """
+    session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
+    session.flush = _abort_ro
+    return ScopedSession(session, auto_commit=False)
