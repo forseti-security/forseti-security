@@ -16,31 +16,35 @@
 
 # pylint: disable=line-too-long
 
-import argparse
 
 from abc import ABCMeta, abstractmethod
-from multiprocessing.pool import ThreadPool
-import time
 from concurrent import futures
+from multiprocessing.pool import ThreadPool
+
+import argparse
+import os
+import sys
+import time
+
 import grpc
 
 from google.cloud.forseti.common.util import file_loader
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.client import ClientComposition
-from google.cloud.forseti.services import db
-from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.dao import create_engine
+from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
+from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 
-from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
-STATIC_SERVICE_MAPPING = {
+SERVICE_MAP = {
     'explain': GrpcExplainerFactory,
     'inventory': GrpcInventoryFactory,
     'scanner': GrpcScannerFactory,
@@ -368,7 +372,7 @@ class ServiceConfig(AbstractServiceConfig):
 def serve(endpoint,
           services,
           forseti_db_connect_string,
-          forseti_config_file_path,
+          config_file_path,
           log_level,
           enable_console_log,
           max_workers=32,
@@ -379,7 +383,7 @@ def serve(endpoint,
         endpoint (str): the server channel endpoint
         services (list): services to register on the server
         forseti_db_connect_string (str): Forseti database string
-        forseti_config_file_path (str): Path to Forseti configuration file.
+        config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
         max_workers (int): maximum number of workers for the crawler
@@ -397,14 +401,14 @@ def serve(endpoint,
 
     factories = []
     for service in services:
-        factories.append(STATIC_SERVICE_MAPPING[service])
+        factories.append(SERVICE_MAP[service])
 
     if not factories:
         raise Exception('No services to start.')
 
     try:
         forseti_config = file_loader.read_and_parse_file(
-            forseti_config_file_path)
+            config_file_path)
     except (AttributeError, IOError) as err:
         LOGGER.error('Unable to open Forseti Security config file. '
                      'Please check your path and filename and try '
@@ -446,6 +450,36 @@ def serve(endpoint,
             return
 
 
+def check_args(args):
+    """Make sure the required args are present and valid.
+
+    The exit codes are arbitrary and just serve the purpose of facilitating
+    distinction betweeen the various error cases.
+
+    Args:
+        args (dict): the command line args
+
+    Returns:
+        tuple: 2-tuple with an exit code and error message.
+    """
+    if not args['services']:
+        return (1, 'ERROR: please specify at least one service.')
+
+    if not args['config_file_path']:
+        return (2, 'ERROR: please specify the Forseti config file.')
+
+    if not os.path.isfile(args['config_file_path']):
+        return (3, 'ERROR: "%s" is not a file.' % args['config_file_path'])
+
+    if not os.access(args['config_file_path'], os.R_OK):
+        return(4, 'ERROR: "%s" is not readable.' % args['config_file_path'])
+
+    if not args['forseti_db']:
+        return(5, 'ERROR: please specify the Forseti database string.')
+
+    return (0, 'All good!')
+
+
 # pylint: enable=too-many-locals
 
 
@@ -461,13 +495,15 @@ def main():
         help=('Forseti database string, formatted as '
               '"mysql://<db_user>@<db_host>:<db_port>/<db_name>"'))
     parser.add_argument(
-        '--forseti_config_file_path',
+        '--config_file_path',
         help='Path to Forseti configuration file.')
+    services = sorted(SERVICE_MAP.keys())
     parser.add_argument(
         '--services',
-        nargs='*',
-        default=[],
-        help='Forseti services')
+        nargs='+',
+        choices=services,
+        help=('Forseti services i.e. at least one of: %s.' %
+              ', '.join(services)))
     parser.add_argument(
         '--log_level',
         default='info',
@@ -479,12 +515,20 @@ def main():
         '--enable_console_log',
         action='store_true',
         help='Print log to console.')
+
     args = vars(parser.parse_args())
+
+    exit_code, error_msg = check_args(args)
+
+    if exit_code:
+        sys.stderr.write('%s\n\n' % error_msg)
+        parser.print_usage()
+        sys.exit(exit_code)
 
     serve(args['endpoint'],
           args['services'],
           args['forseti_db'],
-          args['forseti_config_file_path'],
+          args['config_file_path'],
           args['log_level'],
           args['enable_console_log'])
 

@@ -473,6 +473,22 @@ CRM_GET_IAM_POLICIES = {
     "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
 }
 
+GCP_PERMISSION_DENIED_TEMPLATE = """
+{{
+ "error": {{
+  "errors": [
+   {{
+    "domain": "global",
+    "reason": "forbidden",
+    "message": "The caller does not have permission on {id}.",
+   }}
+  ],
+  "code": 403,
+  "message": "The caller does not have permission on {id}."
+ }}
+}}
+"""
+
 # Fields: name, project, ip
 SQL_INSTANCE_TEMPLATE = """
 {{
