@@ -111,8 +111,6 @@ class _CloudBillingProjectsRepository(_base_repository.GCPRepository):
 class CloudBillingClient(object):
     """CloudSQL Client."""
 
-    DEFAULT_QUOTA_PERIOD = 60.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -120,11 +118,13 @@ class CloudBillingClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get(
-            'max_cloudbilling_api_calls_per_60_seconds')
+        cloud_billing_api_config = global_configs.get('cloudbilling')
+        max_calls = cloud_billing_api_config.get('max_calls')
+        quota_period = cloud_billing_api_config.get('period')
+
         self.repository = CloudBillingRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_billing_info(self, project_id):

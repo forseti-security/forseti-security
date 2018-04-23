@@ -608,8 +608,6 @@ class _ComputeSubnetworksRepository(repository_mixins.AggregatedListQueryMixin,
 class ComputeClient(object):
     """Compute Client."""
 
-    DEFAULT_QUOTA_PERIOD = 1.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -617,10 +615,13 @@ class ComputeClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_compute_api_calls_per_second')
+        compute_api_config = global_configs.get('compute')
+        max_calls = compute_api_config.get('max_calls')
+        quota_period = compute_api_config.get('period')
+
         self.repository = ComputeRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
         # Default service object, currently used by enforcer.

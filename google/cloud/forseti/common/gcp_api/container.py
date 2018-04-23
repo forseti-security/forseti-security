@@ -187,8 +187,6 @@ class _ContainerProjectsZonesClustersRepository(
 class ContainerClient(object):
     """Cloud Kubernetes Engine Client."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -196,11 +194,13 @@ class ContainerClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get(
-            'max_container_api_calls_per_100_seconds')
+        container_api_config = global_configs.get('container')
+        max_calls = container_api_config.get('max_calls')
+        quota_period = container_api_config.get('period')
+
         self.repository = ContainerRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_serverconfig(self, project_id, zone=None, location=None):

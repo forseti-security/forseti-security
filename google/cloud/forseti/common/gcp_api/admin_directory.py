@@ -149,8 +149,6 @@ class _AdminDirectoryUsersRepository(
 class AdminDirectoryClient(object):
     """GSuite Admin Directory API Client."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -158,8 +156,9 @@ class AdminDirectoryClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_admin_api_calls_per_100_seconds')
-        quota_period = self.DEFAULT_QUOTA_PERIOD
+        admin_api_config = global_configs.get('admin')
+        max_calls = admin_api_config.get('max_calls')
+        quota_period = admin_api_config.get('period')
         if not max_calls:
             max_calls = global_configs.get('max_admin_api_calls_per_day')
             quota_period = 86400.0

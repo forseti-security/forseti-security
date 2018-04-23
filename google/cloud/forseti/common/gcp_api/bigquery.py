@@ -108,8 +108,6 @@ class _BigQueryDatasetsRepository(
 class BigQueryClient(object):
     """BigQuery Client manager."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -117,10 +115,13 @@ class BigQueryClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_bigquery_api_calls_per_100_seconds')
+        bigquery_api_config = global_configs.get('bigquery')
+        max_calls = bigquery_api_config.get('max_calls')
+        quota_period = bigquery_api_config.get('period')
+
         self.repository = BigQueryRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_bigquery_projectids(self):

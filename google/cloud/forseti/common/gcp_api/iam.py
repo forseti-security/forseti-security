@@ -249,7 +249,6 @@ class _IamRolesRepository(
 class IAMClient(object):
     """IAM Client."""
 
-    DEFAULT_QUOTA_PERIOD = 1.0
     USER_MANAGED = 'USER_MANAGED'
     SYSTEM_MANAGED = 'SYSTEM_MANAGED'
     KEY_TYPES = frozenset([USER_MANAGED, SYSTEM_MANAGED])
@@ -261,10 +260,13 @@ class IAMClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_iam_api_calls_per_second')
+        iam_api_config = global_configs.get('iam')
+        max_calls = iam_api_config.get('max_calls')
+        quota_period = iam_api_config.get('period')
+
         self.repository = IamRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_curated_roles(self, parent=None):
