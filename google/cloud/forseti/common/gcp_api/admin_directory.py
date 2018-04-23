@@ -156,25 +156,23 @@ class AdminDirectoryClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        admin_api_config = global_configs.get('admin')
-        max_calls = admin_api_config.get('max_calls')
-        quota_period = admin_api_config.get('period')
-        if not max_calls:
-            max_calls = global_configs.get('max_admin_api_calls_per_day')
-            quota_period = 86400.0
-            LOGGER.error('Configuration is using a deprecated directive: '
-                         '"max_admin_api_calls_per_day". Please switch to '
-                         'using "max_admin_api_calls_per_100_seconds" instead. '
-                         'See the sample configuration file for reference.')
-
         credentials = api_helpers.get_delegated_credential(
             global_configs.get('domain_super_admin_email'),
             REQUIRED_SCOPES)
-        self.repository = AdminDirectoryRepositoryClient(
-            credentials=credentials,
-            quota_max_calls=max_calls,
-            quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+
+        admin_api_config = global_configs.get('admin')
+        if admin_api_config:
+            max_calls = admin_api_config.get('max_calls')
+            quota_period = admin_api_config.get('period')
+
+            self.repository = AdminDirectoryRepositoryClient(
+                credentials=credentials,
+                quota_max_calls=max_calls,
+                quota_period=quota_period,
+                use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        else:
+            self.repository = AdminDirectoryRepositoryClient(
+                credentials=credentials)
 
     def get_group_members(self, group_key):
         """Get all the members for specified groups.

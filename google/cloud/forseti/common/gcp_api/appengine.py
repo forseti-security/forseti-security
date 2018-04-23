@@ -258,12 +258,15 @@ class AppEngineClient(object):
             **kwargs (dict): The kwargs.
         """
         appengine_api_config = global_configs.get('appengine')
-        max_calls = appengine_api_config.get('max_calls')
-        quota_period = appengine_api_config.get('period')
-        self.repository = AppEngineRepositoryClient(
-            quota_max_calls=max_calls,
-            quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        if appengine_api_config:
+            max_calls = appengine_api_config.get('max_calls')
+            quota_period = appengine_api_config.get('period')
+            self.repository = AppEngineRepositoryClient(
+                quota_max_calls=max_calls,
+                quota_period=quota_period,
+                use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        else:
+            self.repository = AppEngineRepositoryClient()
 
     def get_app(self, project_id):
         """Gets information about an application.

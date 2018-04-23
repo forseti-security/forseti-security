@@ -41,7 +41,7 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'max_crm_api_calls_per_100_seconds': 1000000}
+            'crm': {'max_calls': 4, 'period': 1.2}}
         cls.crm_api_client = crm.CloudResourceManagerClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
         cls.project_id = fake_crm_responses.FAKE_PROJECT_ID

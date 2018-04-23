@@ -119,13 +119,16 @@ class CloudBillingClient(object):
             **kwargs (dict): The kwargs.
         """
         cloud_billing_api_config = global_configs.get('cloudbilling')
-        max_calls = cloud_billing_api_config.get('max_calls')
-        quota_period = cloud_billing_api_config.get('period')
+        if cloud_billing_api_config:
+            max_calls = cloud_billing_api_config.get('max_calls')
+            quota_period = cloud_billing_api_config.get('period')
 
-        self.repository = CloudBillingRepositoryClient(
-            quota_max_calls=max_calls,
-            quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            self.repository = CloudBillingRepositoryClient(
+                quota_max_calls=max_calls,
+                quota_period=quota_period,
+                use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        else:
+            self.repository = CloudBillingRepositoryClient()
 
     def get_billing_info(self, project_id):
         """Gets the billing information for a project.

@@ -616,13 +616,16 @@ class ComputeClient(object):
             **kwargs (dict): The kwargs.
         """
         compute_api_config = global_configs.get('compute')
-        max_calls = compute_api_config.get('max_calls')
-        quota_period = compute_api_config.get('period')
+        if compute_api_config:
+            max_calls = compute_api_config.get('max_calls')
+            quota_period = compute_api_config.get('period')
 
-        self.repository = ComputeRepositoryClient(
-            quota_max_calls=max_calls,
-            quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            self.repository = ComputeRepositoryClient(
+                quota_max_calls=max_calls,
+                quota_period=quota_period,
+                use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        else:
+            self.repository = ComputeRepositoryClient()
 
         # Default service object, currently used by enforcer.
         # TODO: Clean up enforcer so this isn't required.

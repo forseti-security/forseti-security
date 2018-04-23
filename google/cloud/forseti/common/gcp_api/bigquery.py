@@ -116,13 +116,16 @@ class BigQueryClient(object):
             **kwargs (dict): The kwargs.
         """
         bigquery_api_config = global_configs.get('bigquery')
-        max_calls = bigquery_api_config.get('max_calls')
-        quota_period = bigquery_api_config.get('period')
+        if bigquery_api_config:
+            max_calls = bigquery_api_config.get('max_calls')
+            quota_period = bigquery_api_config.get('period')
 
-        self.repository = BigQueryRepositoryClient(
-            quota_max_calls=max_calls,
-            quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            self.repository = BigQueryRepositoryClient(
+                quota_max_calls=max_calls,
+                quota_period=quota_period,
+                use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        else:
+            self.repository = BigQueryRepositoryClient()
 
     def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.

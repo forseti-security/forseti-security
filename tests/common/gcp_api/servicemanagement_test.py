@@ -36,7 +36,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'max_servicemanagement_api_calls_per_100_seconds': 200}
+            'servicemanagement': {'max_calls': 2, 'period': 1.1}}
         cls.sm_api_client = servicemanagement.ServiceManagementClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 
