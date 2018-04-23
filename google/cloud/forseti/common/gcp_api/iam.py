@@ -260,17 +260,13 @@ class IAMClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        iam_api_config = global_configs.get('iam')
-        if iam_api_config:
-            max_calls = iam_api_config.get('max_calls')
-            quota_period = iam_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'iam')
 
-            self.repository = IamRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = IamRepositoryClient()
+        self.repository = IamRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_curated_roles(self, parent=None):
         """Get information about organization roles

@@ -33,16 +33,16 @@ inventory:
           period: 1.2  # Include some room for retries
         compute:
           max_calls: 18
-          period: 1
+          period: 1.0
         container:
           max_calls: 9
-          period: 1
+          period: 1.0
         crm:
           max_calls: 4
           period: 1.2
         iam:
           max_calls: 18
-          period: 1
+          period: 1.0
         servicemanagement:
           max_calls: 2
           period: 1.1

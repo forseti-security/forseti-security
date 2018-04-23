@@ -257,16 +257,13 @@ class AppEngineClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        appengine_api_config = global_configs.get('appengine')
-        if appengine_api_config:
-            max_calls = appengine_api_config.get('max_calls')
-            quota_period = appengine_api_config.get('period')
-            self.repository = AppEngineRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = AppEngineRepositoryClient()
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'appengine')
+
+        self.repository = AppEngineRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_app(self, project_id):
         """Gets information about an application.

@@ -194,17 +194,13 @@ class ContainerClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        container_api_config = global_configs.get('container')
-        if container_api_config:
-            max_calls = container_api_config.get('max_calls')
-            quota_period = container_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'container')
 
-            self.repository = ContainerRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = ContainerRepositoryClient()
+        self.repository = ContainerRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_serverconfig(self, project_id, zone=None, location=None):
         """Gets the serverconfig for a project and zone or location.

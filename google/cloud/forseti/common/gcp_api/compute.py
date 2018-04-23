@@ -615,17 +615,13 @@ class ComputeClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        compute_api_config = global_configs.get('compute')
-        if compute_api_config:
-            max_calls = compute_api_config.get('max_calls')
-            quota_period = compute_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'compute')
 
-            self.repository = ComputeRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = ComputeRepositoryClient()
+        self.repository = ComputeRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
         # Default service object, currently used by enforcer.
         # TODO: Clean up enforcer so this isn't required.

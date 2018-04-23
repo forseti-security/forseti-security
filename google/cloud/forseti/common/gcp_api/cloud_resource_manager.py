@@ -237,17 +237,13 @@ class CloudResourceManagerClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        cloud_rm_api_config = global_configs.get('crm')
-        if cloud_rm_api_config:
-            max_calls = cloud_rm_api_config.get('max_calls')
-            quota_period = cloud_rm_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'crm')
 
-            self.repository = CloudResourceManagerRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = CloudResourceManagerRepositoryClient()
+        self.repository = CloudResourceManagerRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_project(self, project_id):
         """Get all the projects from organization.

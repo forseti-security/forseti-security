@@ -17,6 +17,7 @@ from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 
@@ -118,17 +119,14 @@ class CloudBillingClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        cloud_billing_api_config = global_configs.get('cloudbilling')
-        if cloud_billing_api_config:
-            max_calls = cloud_billing_api_config.get('max_calls')
-            quota_period = cloud_billing_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'cloudbilling')
 
-            self.repository = CloudBillingRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = CloudBillingRepositoryClient()
+        self.repository = CloudBillingRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+
 
     def get_billing_info(self, project_id):
         """Gets the billing information for a project.

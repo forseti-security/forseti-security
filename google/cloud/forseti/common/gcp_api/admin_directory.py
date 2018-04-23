@@ -160,19 +160,14 @@ class AdminDirectoryClient(object):
             global_configs.get('domain_super_admin_email'),
             REQUIRED_SCOPES)
 
-        admin_api_config = global_configs.get('admin')
-        if admin_api_config:
-            max_calls = admin_api_config.get('max_calls')
-            quota_period = admin_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'admin')
 
-            self.repository = AdminDirectoryRepositoryClient(
-                credentials=credentials,
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = AdminDirectoryRepositoryClient(
-                credentials=credentials)
+        self.repository = AdminDirectoryRepositoryClient(
+            credentials=credentials,
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_group_members(self, group_key):
         """Get all the members for specified groups.

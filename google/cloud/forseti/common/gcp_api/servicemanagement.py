@@ -105,17 +105,13 @@ class ServiceManagementClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        servicemanagement_api_config = global_configs.get('servicemanagement')
-        if servicemanagement_api_config:
-            max_calls = servicemanagement_api_config.get('max_calls')
-            quota_period = servicemanagement_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'servicemanagement')
 
-            self.repository = ServiceManagementRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = ServiceManagementRepositoryClient()
+        self.repository = ServiceManagementRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_enabled_apis(self, project_id):
         """Gets the enabled APIs for a project.

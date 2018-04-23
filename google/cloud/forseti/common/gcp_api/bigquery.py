@@ -115,17 +115,13 @@ class BigQueryClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        bigquery_api_config = global_configs.get('bigquery')
-        if bigquery_api_config:
-            max_calls = bigquery_api_config.get('max_calls')
-            quota_period = bigquery_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'bigquery')
 
-            self.repository = BigQueryRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = BigQueryRepositoryClient()
+        self.repository = BigQueryRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_bigquery_projectids(self):
         """Request and page through bigquery projectids.

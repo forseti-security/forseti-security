@@ -89,17 +89,13 @@ class CloudsqlClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        cloud_sql_api_config = global_configs.get('sqladmin')
-        if cloud_sql_api_config:
-            max_calls = cloud_sql_api_config.get('max_calls')
-            quota_period = cloud_sql_api_config.get('period')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'sqladmin')
 
-            self.repository = CloudSqlRepositoryClient(
-                quota_max_calls=max_calls,
-                quota_period=quota_period,
-                use_rate_limiter=kwargs.get('use_rate_limiter', True))
-        else:
-            self.repository = CloudSqlRepositoryClient()
+        self.repository = CloudSqlRepositoryClient(
+            quota_max_calls=max_calls,
+            quota_period=quota_period,
+            use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_instances(self, project_id):
         """Gets all CloudSQL instances for a project.
