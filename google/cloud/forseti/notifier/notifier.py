@@ -90,18 +90,18 @@ def run_inv_summary(inv_index_id, service_config):
         LOGGER.info('No "inventory summary" configuration for notifier.')
         return
 
-    notifier_config = notifier_config.get('inventory').get('summary')
+    inv_summary_config = notifier_config.get('inventory').get('summary')
 
-    if not notifier_config.get('enabled'):
+    if not inv_summary_config.get('enabled'):
         LOGGER.info('Inventory summary notifications are turned off.')
         return
 
-    if not notifier_config.get('gcs_path'):
+    if not inv_summary_config.get('gcs_path'):
         LOGGER.error('"gcs_path" not set for inventory summary notifier.')
         return
 
-    if not notifier_config['gcs_path'].startswith('gs://'):
-        LOGGER.error('Invalid GCS path: %s', notifier_config['gcs_path'])
+    if not inv_summary_config['gcs_path'].startswith('gs://'):
+        LOGGER.error('Invalid GCS path: %s', inv_summary_config['gcs_path'])
         return
 
     with service_config.scoped_session() as session:
@@ -116,7 +116,8 @@ def run_inv_summary(inv_index_id, service_config):
         for key, value in summary_data.iteritems():
             inv_summary.append(dict(resource_type=key, count=value))
 
-        notifier = InventorySummary(inv_index_id, inv_summary, notifier_config)
+        notifier = InventorySummary(
+            inv_index_id, inv_summary, inv_summary_config)
         notifier.run()
         inv_index.mark_notified(session)
 

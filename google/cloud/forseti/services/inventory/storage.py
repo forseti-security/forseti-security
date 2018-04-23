@@ -168,11 +168,11 @@ class InventoryIndex(BASE):
         Returns:
             dict: a (resource type -> count) dictionary
         """
-        column = Inventory.resource_type
+        resource_type = Inventory.resource_type
         return dict(
-            session.query(column, func.count(column))
+            session.query(resource_type, func.count(resource_type))
             .filter(Inventory.inventory_index_id == self.id)
-            .group_by(column).all())
+            .group_by(resource_type).all())
 
     def mark_notified(self, session):
         """Set date/time at which an inventory summary notification went out.

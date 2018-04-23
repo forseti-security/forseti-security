@@ -235,8 +235,9 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
             mock_logger.warn.call_args[0][0])
 
     @mock.patch(
-        'google.cloud.forseti.notifier.notifier.InventorySummary', autospec=True)
-    def test_inv_summary_can_run_successfully(self, mock_notifier):
+        'google.cloud.forseti.notifier.notifier.InventorySummary',
+        autospec=True)
+    def test_inv_summary_can_run_successfully(self, mock_inventory_summary):
         mock_inv_index = mock.MagicMock()
         mock_inv_index.notified_at_datetime = None
         mock_inv_index.get_summary.return_value = {
@@ -251,18 +252,19 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
             inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
 
         notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_notifier.called)
-        self.assertEquals('blah', mock_notifier.call_args[0][0])
+        self.assertTrue(mock_inventory_summary.called)
+        self.assertEquals('blah', mock_inventory_summary.call_args[0][0])
         expected_inv_summary = [
             {'count': 2, 'resource_type': 'project'},
             {'count': 1, 'resource_type': 'organization'},
             {'count': 1, 'resource_type': 'object'},
             {'count': 2, 'resource_type': 'bucket'}]
-        self.assertEquals(expected_inv_summary, mock_notifier.call_args[0][1])
+        self.assertEquals(
+            expected_inv_summary, mock_inventory_summary.call_args[0][1])
         self.assertEquals(
             dict(enabled=True, gcs_path='gs://xx'),
-            mock_notifier.call_args[0][2])
-        self.assertTrue(mock_notifier.return_value.run.called)
+            mock_inventory_summary.call_args[0][2])
+        self.assertTrue(mock_inventory_summary.return_value.run.called)
         self.assertTrue(mock_inv_index.mark_notified.called)
 
 
