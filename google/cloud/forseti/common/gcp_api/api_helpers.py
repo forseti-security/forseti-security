@@ -138,10 +138,10 @@ def get_ratelimiter_config(global_configs, api_name):
         api_name (String): The name of the api.
 
     Returns:
-        (float, float): (Max calls, quota period)
+        float: Max calls
+        float: quota period)
     """
 
     max_calls = global_configs.get(api_name, {}).get('max_calls')
     quota_period = global_configs.get(api_name, {}).get('period')
     return max_calls, quota_period
-
