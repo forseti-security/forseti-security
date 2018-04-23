@@ -19,6 +19,9 @@ inventory:
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     api_quota:
+        # We are not using the max allowed API quota because we wanted to
+        # include some rooms for retries.
+        # Period is in seconds.
         admin:
           max_calls: 14
           period: 1.0
@@ -30,7 +33,7 @@ inventory:
           period: 1.0
         cloudbilling:
           max_calls: 5
-          period: 1.2  # Include some room for retries
+          period: 1.2
         compute:
           max_calls: 18
           period: 1.0
