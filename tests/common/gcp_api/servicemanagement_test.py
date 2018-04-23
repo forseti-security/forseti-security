@@ -45,10 +45,10 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
         return_value=(mock.Mock(spec_set=credentials.Credentials),
                       'test-project'))
     def test_no_quota(self, mock_google_credential):
-        """Verify rate limiter is used even if the configuration is missing."""
+        """Verify rate limiter is None if the configuration is missing."""
         sm_api_client = servicemanagement.ServiceManagementClient(
             global_configs={})
-        self.assertTrue(sm_api_client.repository._rate_limiter)
+        self.assertEqual(None, sm_api_client.repository._rate_limiter)
 
     def test_get_enabled_apis(self):
         """Test that get_enabled_apis returns correctly."""

@@ -19,34 +19,34 @@ inventory:
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     api_quota:
-		- api: "admin"
+        admin:
           max_calls: 14
           period: 1.0
-        - api: "appengine"
+        appengine:
           max_calls: 18
           period: 1.0
-        - api: "bigquery"
+        bigquery:
           max_calls: 160
           period: 1.0
-        - api: "cloudbilling"
+        cloudbilling:
           max_calls: 5
           period: 1.2  # Include some room for retries
-        - api: "compute"
+        compute:
           max_calls: 18
           period: 1
-        - api: "container"
+        container:
           max_calls: 9
           period: 1
-        - api: "crm"
+        crm:
           max_calls: 4
           period: 1.2
-        - api: "iam"
+        iam:
           max_calls: 18
           period: 1
-        - api: "servicemanagement"
+        servicemanagement:
           max_calls: 2
           period: 1.1
-        - api: "sqladmin"
+        sqladmin:
           max_calls: 1
           period: 1.1
 

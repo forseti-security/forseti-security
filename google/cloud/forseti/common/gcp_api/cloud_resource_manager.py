@@ -238,13 +238,16 @@ class CloudResourceManagerClient(object):
             **kwargs (dict): The kwargs.
         """
         cloud_rm_api_config = global_configs.get('crm')
-        max_calls = cloud_rm_api_config.get('max_calls')
-        quota_period = cloud_rm_api_config.get('period')
+        if cloud_rm_api_config:
+            max_calls = cloud_rm_api_config.get('max_calls')
+            quota_period = cloud_rm_api_config.get('period')
 
-        self.repository = CloudResourceManagerRepositoryClient(
-            quota_max_calls=max_calls,
-            quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            self.repository = CloudResourceManagerRepositoryClient(
+                quota_max_calls=max_calls,
+                quota_period=quota_period,
+                use_rate_limiter=kwargs.get('use_rate_limiter', True))
+        else:
+            self.repository = CloudResourceManagerRepositoryClient()
 
     def get_project(self, project_id):
         """Get all the projects from organization.
