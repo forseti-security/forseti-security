@@ -15,13 +15,11 @@
 # rules:
 #   # example rules
 #   - name: Example rule requiring all Cloud Audit logs.
-#     mode: whitelist
 #     resource:
 #       - type: project
 #         resource_ids:
 #           - '*'
-#     service:
-#       - 'allServices'
+#     service: allServices
 #     log_types:
 #       - 'ADMIN_READ'
 #       - 'DATA_READ'
