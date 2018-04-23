@@ -289,9 +289,9 @@ MESSAGE_NO_ORGANIZATION = (
     'creating-managing-organization')
 
 MESSAGE_RUN_FREQUENCY = (
-    'Forseti will run once every 8 hours, you can update the run '
+    'Forseti will run once every 12 hours, you can configure the run '
     'frequency in the server deployment template field "run-frequency"'
-    ' or edit the cron job scheduled on the server VM directly.')
+    ' and update the deployment using the deployment manager.')
 
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (
