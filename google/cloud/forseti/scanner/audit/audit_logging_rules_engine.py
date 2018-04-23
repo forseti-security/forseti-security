@@ -332,8 +332,8 @@ class Rule(object):
             configs = audit_config.service_configs
             # Check log type is enabled for service, either directly or through
             # allServices.
-            if log_type not in configs[service] and log_type not in configs.get(
-                    IamAuditConfig.ALL_SERVICES, {}):
+            if (log_type not in configs.get(service, {}) and log_type not in
+                    configs.get(IamAuditConfig.ALL_SERVICES, {})):
                 # Log type not enabled.
                 yield self.RuleViolation(
                     resource_type=project.type,

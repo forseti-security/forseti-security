@@ -254,6 +254,69 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
         ])
         self.assertEqual(expected_violations, actual_violations)
 
+    def test_project_with_no_configs(self):
+        """Tests rules catch missing log types if a project has no config."""
+        rules_local_path = get_datafile_path(
+            __file__, 'audit_logging_test_valid_rules.yaml')
+        rules_engine = alre.AuditLoggingRulesEngine(
+            rules_file_path=rules_local_path)
+        rules_engine.build_rule_book()
+        # Creates rules for 5 difference resources.
+        self.assertEqual(5, len(rules_engine.rule_book.resource_rules_map))
+
+        # proj-3 needs ADMIN_READ for allServices (user1 & 3 exempted), and all
+        # three log types for cloudsql (no exemptions).
+        service_configs = {}
+        actual_violations = rules_engine.find_violations(
+            self.proj_3, IamAuditConfig(service_configs))
+        expected_violations = set([
+            alre.Rule.RuleViolation(
+                resource_type='project',
+                resource_id='project-3',
+                full_name='organization/234/project/proj-3/',
+                rule_name='Require AUDIT_READ on all services, with exmptions.',
+                rule_index=0,
+                violation_type='AUDIT_LOGGING_VIOLATION',
+                service='allServices',
+                log_type='ADMIN_READ',
+                unexpected_exemptions=None,
+                resource_data='fake_project_data_1233'),
+            alre.Rule.RuleViolation(
+                resource_type='project',
+                resource_id='project-3',
+                full_name='organization/234/project/proj-3/',
+                rule_name='Require all logging for cloudsql.',
+                rule_index=3,
+                violation_type='AUDIT_LOGGING_VIOLATION',
+                service='cloudsql.googleapis.com',
+                log_type='ADMIN_READ',
+                unexpected_exemptions=None,
+                resource_data='fake_project_data_1233'),
+            alre.Rule.RuleViolation(
+                resource_type='project',
+                resource_id='project-3',
+                full_name='organization/234/project/proj-3/',
+                rule_name='Require all logging for cloudsql.',
+                rule_index=3,
+                violation_type='AUDIT_LOGGING_VIOLATION',
+                service='cloudsql.googleapis.com',
+                log_type='DATA_READ',
+                unexpected_exemptions=None,
+                resource_data='fake_project_data_1233'),
+            alre.Rule.RuleViolation(
+                resource_type='project',
+                resource_id='project-3',
+                full_name='organization/234/project/proj-3/',
+                rule_name='Require all logging for cloudsql.',
+                rule_index=3,
+                violation_type='AUDIT_LOGGING_VIOLATION',
+                service='cloudsql.googleapis.com',
+                log_type='DATA_WRITE',
+                unexpected_exemptions=None,
+                resource_data='fake_project_data_1233'),
+        ])
+        self.assertEqual(expected_violations, actual_violations)
+
 
 if __name__ == '__main__':
     unittest.main()
