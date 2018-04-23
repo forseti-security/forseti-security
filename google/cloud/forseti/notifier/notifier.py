@@ -119,7 +119,6 @@ def run_inv_summary(inv_index_id, service_config):
         notifier = InventorySummary(
             inv_index_id, inv_summary, inv_summary_config)
         notifier.run()
-        inv_index.mark_notified(session)
 
 
 def run(inv_index_id, progress_queue, service_config=None):

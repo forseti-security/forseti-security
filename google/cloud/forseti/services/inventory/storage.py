@@ -85,7 +85,6 @@ class InventoryIndex(BASE):
     inventory_index_warnings = Column(Text(16777215))
     inventory_index_errors = Column(Text())
     message = Column(Text())
-    notified_at_datetime = Column(DateTime())
 
     @classmethod
     def _utcnow(cls):
@@ -173,16 +172,6 @@ class InventoryIndex(BASE):
             session.query(resource_type, func.count(resource_type))
             .filter(Inventory.inventory_index_id == self.id)
             .group_by(resource_type).all())
-
-    def mark_notified(self, session):
-        """Set date/time at which an inventory summary notification went out.
-
-        Args:
-            session (object): session object to work on.
-        """
-        self.notified_at_datetime = date_time.get_utc_now_datetime()
-        session.add(self)
-        session.flush()
 
 
 class Inventory(BASE):

@@ -167,21 +167,6 @@ class InventoryIndexTest(ForsetiTestCase):
         os.unlink(self.dbfile)
         ForsetiTestCase.tearDown(self)
 
-    @mock.patch(
-        'google.cloud.forseti.services.inventory.storage.date_time',
-        autospec=True)
-    def test_mark_notified(self, mock_date_time):
-        mock_date_time.get_utc_now_datetime = mock.MagicMock()
-        mock_date_time.get_utc_now_datetime.side_effect = lambda: self.fake_utcnow
-        inv_index = InventoryIndex.create()
-        inv_index_id = inv_index.id
-        self.assertIsNone(inv_index.notified_at_datetime)
-        inv_index.mark_notified(self.session)
-        self.session.expunge(inv_index)
-        inv_index_from_db = self.session.query(InventoryIndex).get(inv_index_id)
-        self.assertEquals(
-            self.fake_utcnow, inv_index_from_db.notified_at_datetime)
-
     def test_get_summary(self):
         res_org = ResourceMock('1', {'id': 'test'}, 'organization')
         res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', res_org)

@@ -217,7 +217,6 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
     @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
     def test_inventory_summary_no_summary_data(self, mock_logger):
         mock_inv_index = mock.MagicMock()
-        mock_inv_index.notified_at_datetime = None
         mock_inv_index.get_summary.return_value = dict()
 
         mock_session = mock.MagicMock()
@@ -239,7 +238,6 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
         autospec=True)
     def test_inv_summary_can_run_successfully(self, mock_inventory_summary):
         mock_inv_index = mock.MagicMock()
-        mock_inv_index.notified_at_datetime = None
         mock_inv_index.get_summary.return_value = {
             'bucket': 2, 'object': 1, 'organization': 1, 'project': 2}
 
@@ -265,7 +263,6 @@ class InventorySummaryNotifierTest(ForsetiTestCase):
             dict(enabled=True, gcs_path='gs://xx'),
             mock_inventory_summary.call_args[0][2])
         self.assertTrue(mock_inventory_summary.return_value.run.called)
-        self.assertTrue(mock_inv_index.mark_notified.called)
 
 
 if __name__ == '__main__':
