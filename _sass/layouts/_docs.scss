@@ -1,4 +1,9 @@
 .docs-nav {
+  @media (min-width: $screen-md-min) {
+    /* Specify only margin-bottom to prevent overriding Bootstrap row margins */
+    margin-bottom: 20px;
+  }
+
   .breadcrumb {
     background: none;
     border-radius: 0;
@@ -11,11 +16,23 @@
       color: $grey-400;
       content: ">\00a0";
     }
+
+    @media (max-width: $screen-xs-max) {
+      margin-bottom: 0;
+    }
   }
 
-  @media (min-width: $screen-sm-min) {
-    /* Specify only margin-bottom to prevent overriding Bootstrap row margins */
-    margin-bottom: 20px;
+  .version-dropdown {
+    text-align: right;
+
+    @media (max-width: $screen-xs-max) {
+      text-align: left;
+      margin-bottom: 10px;
+
+      #version-dropdown > .btn {
+        padding-left: 15px;
+      }
+    }
   }
 }
 
