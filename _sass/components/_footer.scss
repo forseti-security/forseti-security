@@ -8,6 +8,10 @@
   margin-top: 40px;
   padding: 35px 0 35px;
 
+  a {
+    color: $footer-text;
+  }
+
   .left-panel {
     .logo {
       margin-bottom: 20px;
@@ -34,10 +38,6 @@
       padding: 0;
       line-height: 2.2em;
       list-style-type: none;
-
-      a {
-        color: $footer-text;
-      }
 
       .icon::before {
         content: '';
