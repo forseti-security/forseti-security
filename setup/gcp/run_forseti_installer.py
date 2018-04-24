@@ -39,10 +39,8 @@ def install(package_name):
 
 def install_required_packages():
     """Install required packages."""
-    installed_pkgs = [pkg.key for pkg in pip.get_installed_distributions()]
     for package in INSTALLER_REQUIRED_PACKAGES:
-        if package not in installed_pkgs:
-            install(package)
+        install(package)
 
 
 def run():
