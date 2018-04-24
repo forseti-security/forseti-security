@@ -45,9 +45,9 @@ Examples of the next-generation branches:
 ```
 
 After the support period has passed, the next-generation dev and master
-branches will be merged into the `dev/master` branches. And the `N-0-<branches>`
-will be deleted.  This way, `dev/master` are always maintained as the
-canonical branches, and retains all the commit histories.
+branches will be merged into the `dev` and `master` branches. Then, the
+`N.0-<branches>` will be deleted.  This way, `dev` and `master` are always
+maintained as the canonical branches, and all the commit histories are retained.
 
 ### Other Branches
 
@@ -68,14 +68,14 @@ The process below outlines how minor new 0.Y.Z point versions are managed.
 
 1. When a new point version is ready to be released, either new 0.Y.0 version
 or new 0.0.Z version, a new release branch will be created from the 
-appropriate dev branch.
+`dev` branch.
 
 1. The release branch will undergo functional and integration testing.
 If any bug is found, a new feature branch is created from the release branch,
 go through code review, and merged back into the release branch.
 
 1. When the release branch is fully qualified, the branch is merged into 
-the appropriate master and dev branch.
+the `master` and `dev` branch.
 
 1. The release branch is deleted.
 
