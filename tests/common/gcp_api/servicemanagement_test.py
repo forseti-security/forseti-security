@@ -36,7 +36,7 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'max_servicemanagement_api_calls_per_100_seconds': 200}
+            'servicemanagement': {'max_calls': 2, 'period': 1.1}}
         cls.sm_api_client = servicemanagement.ServiceManagementClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 
@@ -45,10 +45,10 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
         return_value=(mock.Mock(spec_set=credentials.Credentials),
                       'test-project'))
     def test_no_quota(self, mock_google_credential):
-        """Verify rate limiter is used even if the configuration is missing."""
+        """Verify rate limiter is None if the configuration is missing."""
         sm_api_client = servicemanagement.ServiceManagementClient(
             global_configs={})
-        self.assertTrue(sm_api_client.repository._rate_limiter)
+        self.assertEqual(None, sm_api_client.repository._rate_limiter)
 
     def test_get_enabled_apis(self):
         """Test that get_enabled_apis returns correctly."""

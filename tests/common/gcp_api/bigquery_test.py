@@ -37,7 +37,7 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'max_bigquery_api_calls_per_100_seconds': 1000000}
+            'bigquery': {'max_calls': 160, 'period': 1}}
         cls.bq_api_client = bq.BigQueryClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 

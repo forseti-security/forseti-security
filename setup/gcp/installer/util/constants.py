@@ -288,6 +288,11 @@ MESSAGE_NO_ORGANIZATION = (
     'https://cloud.google.com/resource-manager/docs/'
     'creating-managing-organization')
 
+MESSAGE_RUN_FREQUENCY = (
+    'Forseti will run once every 12 hours, you can configure the run '
+    'frequency in the server deployment template field "run-frequency" '
+    'and update the deployment using the deployment manager.')
+
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (
     'Enable write access for Forseti? '

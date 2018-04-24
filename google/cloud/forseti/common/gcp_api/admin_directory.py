@@ -149,8 +149,6 @@ class _AdminDirectoryUsersRepository(
 class AdminDirectoryClient(object):
     """GSuite Admin Directory API Client."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -158,19 +156,13 @@ class AdminDirectoryClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_admin_api_calls_per_100_seconds')
-        quota_period = self.DEFAULT_QUOTA_PERIOD
-        if not max_calls:
-            max_calls = global_configs.get('max_admin_api_calls_per_day')
-            quota_period = 86400.0
-            LOGGER.error('Configuration is using a deprecated directive: '
-                         '"max_admin_api_calls_per_day". Please switch to '
-                         'using "max_admin_api_calls_per_100_seconds" instead. '
-                         'See the sample configuration file for reference.')
-
         credentials = api_helpers.get_delegated_credential(
             global_configs.get('domain_super_admin_email'),
             REQUIRED_SCOPES)
+
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'admin')
+
         self.repository = AdminDirectoryRepositoryClient(
             credentials=credentials,
             quota_max_calls=max_calls,
