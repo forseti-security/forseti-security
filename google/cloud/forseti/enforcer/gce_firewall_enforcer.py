@@ -219,7 +219,7 @@ class ComputeFirewallAPI(object):
         Returns:
           A dictionary with three keys, metric, limit and usage.
 
-          Example:
+          An example return value:
           
               {"metric": "FIREWALLS",
                "limit": 100,
