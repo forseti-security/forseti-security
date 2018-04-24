@@ -199,19 +199,16 @@ class InventoryImporter(object):
                     raise Exception(
                         'Cannot import inventory without organization root')
 
-                count = self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(gcp_type_list),
-                    None,
-                    self._store_resource,
-                    None,
-                    3000,
-                    True
-                )
+                last_res_type = None
+                for resource in inventory.iter(gcp_type_list):
+                    item_counter += 1
+                    last_res_type = self._store_resource(resource,
+                                                         last_res_type)
+                    if not item_counter % 3000:
+                        self.session.flush()
+                self._store_resource(None, last_res_type)
 
-                item_counter += count
-
-                count = self.model_action_wrapper(
+                item_counter += self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_dataset_policy=True),
@@ -221,9 +218,7 @@ class InventoryImporter(object):
                     3000
                 )
 
-                item_counter += count
-
-                count = self.model_action_wrapper(
+                item_counter += self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_service_config=True),
@@ -232,8 +227,6 @@ class InventoryImporter(object):
                     None,
                     3000
                 )
-
-                item_counter += count
 
                 self.model_action_wrapper(
                     self.session,
@@ -285,9 +278,8 @@ class InventoryImporter(object):
                              pre_action,
                              action,
                              post_action,
-                             flush_count,
-                             is_resource=False):
-        """Model action wrapper.
+                             flush_count):
+        """Model action wrapper. This is used to reduce code duplication.
 
         Args:
             session (Session): Database session.
@@ -299,27 +291,24 @@ class InventoryImporter(object):
             post_action (func): Action taken after iterating the
                 inventory list.
             flush_count (int): Flush every flush_count times.
-            is_resource (bool): If we are dealing with resources.
+
         Returns:
             int: Number of item iterated.
         """
 
         if pre_action:
             pre_action()
+
         item_counter = 0
-        ret_val = None
         for inventory_data in inventory_iterable:
             item_counter = item_counter + 1
             if isinstance(inventory_data, tuple):
-                ret_val = action(*inventory_data)
-            elif not is_resource:
-                ret_val = action(inventory_data)
+                action(*inventory_data)
             else:
-                ret_val = action(inventory_data, ret_val)
+                action(inventory_data)
             if not item_counter % flush_count:
                 session.flush()
-        if is_resource:
-            action(None, ret_val)
+
         if post_action:
             post_action()
         return item_counter

@@ -13,6 +13,7 @@
 # limitations under the License.
 """Unit Tests: Importer for Forseti Server."""
 
+import mock
 import os
 import shutil
 import tempfile
@@ -25,6 +26,7 @@ from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
+from google.cloud.forseti.services.model.importer.importer import InventoryImporter
 
 FAKE_DATETIME = datetime(2018, 1, 28, 10, 20, 30, 0)
 FAKE_DATETIME_TIMESTAMP = FAKE_DATETIME.strftime(
@@ -116,6 +118,149 @@ class ImporterTest(ForsetiTestCase):
              },
             model_description)
 
+    def test_model_action_wrapper_pre_action_called(self):
+        session = mock.Mock()
+        session.flush = mock.Mock()
+        inventory_iter = []
+        pre = mock.Mock()
+        action = mock.Mock()
+        post = mock.Mock()
+        flush_count = 1
+        InventoryImporter.model_action_wrapper(session,
+                                               inventory_iter,
+                                               pre,
+                                               action,
+                                               post,
+                                               flush_count)
+
+        pre.assert_called_once()
+
+    def test_model_action_wrapper_post_action_called(self):
+        session = mock.Mock()
+        session.flush = mock.Mock()
+        inventory_iter = []
+        pre = mock.Mock()
+        action = mock.Mock()
+        post = mock.Mock()
+        flush_count = 1
+        InventoryImporter.model_action_wrapper(session,
+                                               inventory_iter,
+                                               pre,
+                                               action,
+                                               post,
+                                               flush_count)
+
+        post.assert_called_once()
+
+    def test_model_action_wrapper_invetory_iter_tuple(self):
+        """If inventory iter is of type tuple, it will call the
+        action with the data as positional args."""
+        session = mock.Mock()
+        session.flush = mock.Mock()
+        inventory_iter = [(1, 2)]
+        pre = mock.Mock()
+        action = mock.Mock()
+        post = mock.Mock()
+        flush_count = 1
+        count = InventoryImporter.model_action_wrapper(session,
+                                                       inventory_iter,
+                                                       pre,
+                                                       action,
+                                                       post,
+                                                       flush_count)
+
+        action.assert_called_once_with(1, 2)
+        self.assertEquals(count, 1)
+
+        # pre and post are always called if exists
+        self.assertTrue(pre.called)
+        self.assertTrue(post.called)
+
+        # flush count is 1, flush should be called once since there is 1 item
+        session.flush.assert_called()
+        self.assertEqual(session.flush.call_count, 1)
+
+    def test_model_action_wrapper_multiple_inventory_iter_tuples(self):
+        session = mock.Mock()
+        session.flush = mock.Mock()
+        inventory_iter = [(1, 2), (4, 5)]
+        pre = mock.Mock()
+        action = mock.Mock()
+        post = mock.Mock()
+        flush_count = 1
+        count = InventoryImporter.model_action_wrapper(session,
+                                                       inventory_iter,
+                                                       pre,
+                                                       action,
+                                                       post,
+                                                       flush_count)
+
+        calls = [mock.call(1, 2), mock.call(4, 5)]
+        action.assert_has_calls(calls)
+        self.assertEquals(count, 2)
+
+        # pre and post are always called if exists
+        self.assertTrue(pre.called)
+        self.assertTrue(post.called)
+
+        # flush count is 1, flush should be called twice since there are 2 items
+        session.flush.assert_called()
+        self.assertEqual(session.flush.call_count, 2)
+
+    def test_model_action_wrapper_invetory_iter_value(self):
+        """If inventory iter is not tuple, it will call the
+        action with the data as positional args."""
+        session = mock.Mock()
+        session.flush = mock.Mock()
+        inventory_iter = ['not_tuple']
+        pre = mock.Mock()
+        action = mock.Mock()
+        post = mock.Mock()
+        flush_count = 1
+        count = InventoryImporter.model_action_wrapper(session,
+                                                       inventory_iter,
+                                                       pre,
+                                                       action,
+                                                       post,
+                                                       flush_count)
+
+        action.assert_called_once_with('not_tuple')
+        self.assertEquals(count, 1)
+
+        # pre and post are always called if exists
+        self.assertTrue(pre.called)
+        self.assertTrue(post.called)
+
+        # flush count is 1, flush should be called once since there is 1 item
+        session.flush.assert_called()
+        self.assertEqual(session.flush.call_count, 1)
+
+    def test_model_action_wrapper_multiple_inventory_iter_values(self):
+        session = mock.Mock()
+        session.flush = mock.Mock()
+        inventory_iter = ['data', 'data1']
+        pre = mock.Mock()
+        action = mock.Mock()
+        post = mock.Mock()
+        flush_count = 1
+        count = InventoryImporter.model_action_wrapper(session,
+                                                       inventory_iter,
+                                                       pre,
+                                                       action,
+                                                       post,
+                                                       flush_count)
+
+        calls = [mock.call('data'), mock.call('data1')]
+        action.assert_has_calls(calls)
+        self.assertEquals(count, 2)
+
+        # pre and post are always called if exists
+        self.assertTrue(pre.called)
+        self.assertTrue(post.called)
+
+        # flush count is 1, flush should be called twice since there are 2 items
+        session.flush.assert_called()
+        self.assertEqual(session.flush.call_count, 2)
 
 if __name__ == '__main__':
     unittest.main()

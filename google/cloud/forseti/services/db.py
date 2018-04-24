@@ -103,11 +103,22 @@ def create_scoped_sessionmaker(engine):
         auto_commit=True)
 
 
-def _abort_ro():
-    """Method to intercept the flush operation, log a warning
-    message and return."""
+def _abort_readonly():
+    """Intercept the flush operatio"""
     LOGGER.warn('This session is read-only, no flush is allowed.')
-    return
+
+
+def stub_out_flush_operation(session):
+    """Stub out flush operation.
+
+    Args:
+        session (Session): Session to stub out.
+
+    Returns:
+        Session: The session after stubbed out the flush operation.
+    """
+    session.flush = _abort_readonly
+    return session
 
 
 def create_scoped_readonly_session(engine):
@@ -120,5 +131,5 @@ def create_scoped_readonly_session(engine):
         object: Scoped session maker.
     """
     session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
-    session.flush = _abort_ro
+    session = stub_out_flush_operation(session)
     return ScopedSession(session, auto_commit=False)
