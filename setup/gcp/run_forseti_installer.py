@@ -35,13 +35,14 @@ def install(package_name):
     Args:
         package_name (str): Name of the package to install.
     """
-    return_code, out, err = run_command(
+    return_code, _, err = run_command(
         ['pip', 'install', package_name, '--user'])
 
     if return_code:
-        print "Error installing package {}".format(package_name)
-        print(err)
+        print 'Error installing package {}'.format(package_name)
+        print err
         sys.exit(1)
+
 
 def install_required_packages():
     """Install required packages."""
