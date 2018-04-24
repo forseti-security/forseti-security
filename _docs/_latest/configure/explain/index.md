@@ -24,7 +24,7 @@ To review the hierarchy of commands and explore Explain functionality, use
 
 Data model is built using the inventory data we created through the Forseti Inventory service.
 
-Instructions on how to run Forseti Inventory can be found [here]({% link _docs/latest/inventory/index.md %}).
+Instructions on how to run Forseti Inventory can be found [here]({% link _docs/latest/use/inventory.md %}).
 
 Once you have the inventory ready, retrieve the inventory_index_id and use it to create the data model as follows:
 
