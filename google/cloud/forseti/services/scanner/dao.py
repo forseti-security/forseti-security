@@ -143,7 +143,7 @@ def get_latest_scanner_index_id(session, inv_index_id, index_state=None):
         index_state (str): we want the latest `ScannerIndex` with this state
 
     Returns:
-        object: the latest `ScannerIndex` row or `None`
+        sqlalchemy_object: the latest `ScannerIndex` row or `None`
     """
     scanner_index = None
     if not index_state:
@@ -262,7 +262,7 @@ class ViolationAccess(object):
 
         if (inv_index_id and scanner_index_id):
             raise ValueError(
-                'please call list() with the inventory index XOR the scanner '
+                'Please call list() with the inventory index XOR the scanner '
                 'index, not both.')
 
         results = []

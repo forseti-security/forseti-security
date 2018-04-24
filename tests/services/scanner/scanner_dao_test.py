@@ -77,7 +77,7 @@ class DatabaseTest(ForsetiTestCase):
         scanner_dao.initialize(self.engine)
         self.session.flush()
         self.violation_access = scanner_dao.ViolationAccess(self.session)
-        self.iidx_id1, self.iidx_id2, self.iidx_id3 = _setup_inv_indices(
+        self.inv_index_id1, self.inv_index_id2, self.inv_index_id3 = _setup_inv_indices(
             self.session)
 
     def tearDown(self):
@@ -125,7 +125,7 @@ class ScannerDaoTest(DatabaseTest):
 
     def test_save_violations(self):
         """Test violations can be saved."""
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         saved_violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
 
@@ -182,7 +182,7 @@ class ScannerDaoTest(DatabaseTest):
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
         mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
                                            FAKE_VIOLATION_HASH]
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         saved_violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
 
@@ -318,7 +318,7 @@ class ScannerDaoTest(DatabaseTest):
 
     @mock.patch(
         'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
-    def test_get_latest_scanner_index_id_with_specified_state(self, mock_date_time):
+    def test_get_latest_scanner_index_id_with_failure_state(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
@@ -429,47 +429,47 @@ class ViolationListTest(DatabaseTest):
     """Test the Violation.list() method."""
 
     def test_list_without_indices(self):
-        self.populate_db(inv_index_id=self.iidx_id1)
-        self.populate_db(inv_index_id=self.iidx_id2)
+        self.populate_db(inv_index_id=self.inv_index_id1)
+        self.populate_db(inv_index_id=self.inv_index_id2)
         actual_data = self.violation_access.list()
         self.assertEquals(2 * len(FAKE_VIOLATIONS), len(actual_data))
 
     def test_list_with_inv_index_single_successful_scan(self):
-        self.populate_db(inv_index_id=self.iidx_id1)
-        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+        self.populate_db(inv_index_id=self.inv_index_id1)
+        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
         self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
 
     def test_list_with_inv_index_single_failed_scan(self):
         self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
-        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_inv_index_multi_mixed_success_scan(self):
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
-        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
         self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
         for violation in actual_data:
             self.assertEquals(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_inv_index_multi_all_success_scan(self):
-        self.populate_db(inv_index_id=self.iidx_id2)
-        self.populate_db(inv_index_id=self.iidx_id2)
-        actual_data = self.violation_access.list(inv_index_id=self.iidx_id2)
+        self.populate_db(inv_index_id=self.inv_index_id2)
+        self.populate_db(inv_index_id=self.inv_index_id2)
+        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id2)
         self.assertEquals(2 * len(FAKE_VIOLATIONS), len(actual_data))
 
     def test_list_with_inv_index_multi_all_failed_scan(self):
         self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
         self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
-        actual_data = self.violation_access.list(inv_index_id=self.iidx_id1)
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_scnr_index_single_successful_scan(self):
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
@@ -478,15 +478,15 @@ class ViolationListTest(DatabaseTest):
 
     def test_list_with_scnr_index_single_failed_scan(self):
         scanner_index_id = self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_scnr_index_multi_mixed_success_scan(self):
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
@@ -494,8 +494,8 @@ class ViolationListTest(DatabaseTest):
             self.assertEquals(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_scnr_index_multi_all_success_scan(self):
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id1)
-        self.populate_db(inv_index_id=self.iidx_id3)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
+        self.populate_db(inv_index_id=self.inv_index_id3)
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
@@ -504,18 +504,18 @@ class ViolationListTest(DatabaseTest):
 
     def test_list_with_scnr_index_multi_all_failed_scan(self):
         scanner_index_id = self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
         self.populate_db(
-            inv_index_id=self.iidx_id2, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id2, succeeded=[], failed=['IapScanner'])
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_both_indices(self):
         scanner_index_id = self.populate_db(
-            inv_index_id=self.iidx_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
         self.populate_db(
-            inv_index_id=self.iidx_id2, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id2, succeeded=[], failed=['IapScanner'])
         with self.assertRaises(ValueError):
             self.violation_access.list(
                 inv_index_id='blah', scanner_index_id=scanner_index_id)

@@ -195,11 +195,11 @@ def run(inv_index_id, progress_queue, service_config=None):
             for notifier in notifiers:
                 notifier.run()
 
-        if (notifier_configs.get('violation') and
+            if (notifier_configs.get('violation') and
                 notifier_configs.get('violation').get('cscc').get('enabled')):
-            cscc_notifier.CsccNotifier('inv_index_id').run(
-                violations_as_dict,
-                notifier_configs.get('violation').get('cscc').get('gcs_path'))
+                cscc_notifier.CsccNotifier('inv_index_id').run(
+                    violations_as_dict,
+                    notifier_configs.get('violation').get('cscc').get('gcs_path'))
 
         run_inv_summary(inv_index_id, service_config)
         log_message = 'Notification completed!'
