@@ -36,11 +36,8 @@ sed -i '/<li><a href="sqlalchemy/d' \
   _docs/_latest/develop/reference/_modules/index.html
 sed -i '/<li><a href="namedtuple_/d' index.html \
   _docs/_latest/develop/reference/_modules/index.html
-# sed -ri 's/(\{% .+? %\})/\{% raw %\}\1\{% endraw %\}/' DESCRIPTION.html
 find _docs/_latest/develop/reference/.eggs/ -type f -print0 | xargs -0 \
   sed -ri '/\{\}\}/b; s/(\{\%|\%\}|\{\{|\}\})/\{% raw %\}\1\{% endraw %\}/g'
-# find _docs/_latest/develop/reference/.eggs/ -type f -print0 | xargs -0 \
-#   perl -pi -e 's/(\{\{ .+? \}\})/\{% raw %\}\1\{% endraw %\}/'
 rm -rf \
    _docs/_latest/develop/reference/objects.inv
 
