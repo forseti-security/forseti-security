@@ -311,8 +311,8 @@ class IamPolicyTest(ForsetiTestCase):
                         {
                             'logType': 'DATA_WRITE',
                             'exemptedMembers': [
-                                'user1@org.com',
-                                'user2@org.com'
+                                'user:user1@org.com',
+                                'user:user2@org.com'
                             ]
                         }
                     ]
@@ -333,7 +333,7 @@ class IamPolicyTest(ForsetiTestCase):
             },
             'storage.googleapis.com': {
                 'DATA_READ': set(),
-                'DATA_WRITE': set(['user1@org.com', 'user2@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
             },
         }
 
@@ -393,8 +393,8 @@ class IamPolicyTest(ForsetiTestCase):
                     {
                         'logType': 'DATA_WRITE',
                         'exemptedMembers': [
-                            'user1@org.com',
-                            'user2@org.com'
+                            'user:user1@org.com',
+                            'user:user2@org.com'
                         ]
                     }
                 ]
@@ -407,7 +407,7 @@ class IamPolicyTest(ForsetiTestCase):
             },
             'storage.googleapis.com': {
                 'DATA_READ': set(),
-                'DATA_WRITE': set(['user1@org.com', 'user2@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
             },
         }
         expected_audit_config = IamAuditConfig(expected_service_configs)
@@ -432,38 +432,41 @@ class IamPolicyTest(ForsetiTestCase):
     def test_audit_config_merge_succeeds(self):
         configs1 = {
             'allServices': {
-                'ADMIN_READ': set(['user1@org.com', 'user2@org.com']),
+                'ADMIN_READ': set(['user:user1@org.com', 'user:user2@org.com']),
                 'DATA_READ': set(),
             },
             'storage.googleapis.com': {
                 'DATA_READ': set(),
-                'DATA_WRITE': set(['user1@org.com', 'user2@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
             },
         }
         configs2 = {
             'allServices': {
-                'ADMIN_READ': set(['user2@org.com', 'user3@org.com']),
+                'ADMIN_READ': set(['user:user2@org.com', 'user:user3@org.com']),
                 'DATA_WRITE': set(),
             },
             'cloudsql.googleapis.com': {
                 'DATA_READ': set(),
-                'DATA_WRITE': set(['user1@org.com', 'user2@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
             },
         }
         expected_configs = {
             'allServices': {
                 'ADMIN_READ': set([
-                    'user1@org.com', 'user2@org.com', 'user3@org.com']),
+                    'user:user1@org.com',
+                    'user:user2@org.com',
+                    'user:user3@org.com'
+                ]),
                 'DATA_READ': set(),
                 'DATA_WRITE': set(),
             },
             'cloudsql.googleapis.com': {
                 'DATA_READ': set(),
-                'DATA_WRITE': set(['user1@org.com', 'user2@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
             },
             'storage.googleapis.com': {
                 'DATA_READ': set(),
-                'DATA_WRITE': set(['user1@org.com', 'user2@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
             },
         }
 
@@ -475,7 +478,7 @@ class IamPolicyTest(ForsetiTestCase):
 
         # Modify audit_config2 to make sure merge used a deep copy.
         audit_config2.service_configs['cloudsql.googleapis.com'][
-            'DATA_READ'].add('extra_user@org.com')
+            'DATA_READ'].add('user:extra_user@org.com')
 
         self.assertEqual(expected_audit_config, audit_config1)
 

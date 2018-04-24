@@ -114,13 +114,13 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
                 'DATA_READ': set(),
             },
             'compute.googleapis.com': {
-                'DATA_WRITE': set(['user1@org.com']),
+                'DATA_WRITE': set(['user:user1@org.com']),
             },
             'cloudsql.googleapis.com': {
                 'DATA_WRITE': set(),
             },
             'logging.googleapis.com': {
-                'DATA_READ': set(['log-reader@org.com']),
+                'DATA_READ': set(['user:log-reader@org.com']),
             }
         }
         actual_violations = rules_engine.find_violations(
@@ -192,15 +192,15 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
         # three log types for cloudsql (no exemptions).
         service_configs = {
             'allServices': {
-                'ADMIN_READ': set(['user1@org.com', 'user2@org.com']),
-                'DATA_READ': set(['user1@org.com']),
+                'ADMIN_READ': set(['user:user1@org.com', 'user:user2@org.com']),
+                'DATA_READ': set(['user:user1@org.com']),
             },
             'compute.googleapis.com': {
-                'DATA_WRITE': set(['data-writer@org.com']),
+                'DATA_WRITE': set(['user:data-writer@org.com']),
             },
             'cloudsql.googleapis.com': {
                 'ADMIN_READ': set(),
-                'DATA_READ': set(['user1@org.com', 'user2@org.com']),
+                'DATA_READ': set(['user:user1@org.com', 'user:user2@org.com']),
                 'DATA_WRITE': set(),
             },
         }
@@ -216,7 +216,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
                 violation_type='AUDIT_LOGGING_VIOLATION',
                 service='allServices',
                 log_type='ADMIN_READ',
-                unexpected_exemptions=('user2@org.com',),
+                unexpected_exemptions=('user:user2@org.com',),
                 resource_data='fake_project_data_1233'),
             alre.Rule.RuleViolation(
                 resource_type='project',
@@ -227,7 +227,8 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
                 violation_type='AUDIT_LOGGING_VIOLATION',
                 service='cloudsql.googleapis.com',
                 log_type='DATA_READ',
-                unexpected_exemptions=('user1@org.com', 'user2@org.com'),
+                unexpected_exemptions=('user:user1@org.com',
+                                       'user:user2@org.com'),
                 resource_data='fake_project_data_1233'),
             alre.Rule.RuleViolation(
                 resource_type='project',
@@ -238,7 +239,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
                 violation_type='AUDIT_LOGGING_VIOLATION',
                 service='allServices',
                 log_type='DATA_READ',
-                unexpected_exemptions=('user1@org.com',),
+                unexpected_exemptions=('user:user1@org.com',),
                 resource_data='fake_project_data_1233'),
             alre.Rule.RuleViolation(
                 resource_type='project',
@@ -249,7 +250,8 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
                 violation_type='AUDIT_LOGGING_VIOLATION',
                 service='allServices',
                 log_type='ADMIN_READ',
-                unexpected_exemptions=('user1@org.com', 'user2@org.com'),
+                unexpected_exemptions=('user:user1@org.com',
+                                       'user:user2@org.com'),
                 resource_data='fake_project_data_1233'),
         ])
         self.assertEqual(expected_violations, actual_violations)

@@ -444,7 +444,7 @@ CRM_PROJECT_IAM_POLICY_TEMPLATE = """
    "auditLogConfigs": [
     {{
      "exemptedMembers": [
-      "gcp-reader-12345@p1234.iam.gserviceaccount.com"
+      "user:gcp-reader-12345@p1234.iam.gserviceaccount.com"
      ],
      "logType": "ADMIN_READ"
     }}

@@ -72,7 +72,10 @@ class AuditLoggingScannerTest(ForsetiTestCase):
             {
                 'allServices': {
                     'ADMIN_READ': set([
-                        'user1@org.com', 'user2@org.com', 'user3@org.com']),
+                        'user:user1@org.com',
+                        'user:user2@org.com',
+                        'user:user3@org.com'
+                    ]),
                 },
                 'cloudsql.googleapis.com': {
                     'DATA_READ': set(),
@@ -89,7 +92,7 @@ class AuditLoggingScannerTest(ForsetiTestCase):
                     'DATA_WRITE': set(),
                 },
                 'cloudsql.googleapis.com': {
-                    'ADMIN_READ': set(['user1@org.com']),
+                    'ADMIN_READ': set(['user:user1@org.com']),
                 }
             },
         ]

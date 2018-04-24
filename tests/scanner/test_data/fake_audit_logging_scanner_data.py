@@ -65,8 +65,8 @@ IAM_POLICY_RESOURCES = [
                         {
                             'logType': 'ADMIN_READ',
                             'exemptedMembers': [
-                                'user1@org.com',
-                                'user2@org.com',
+                                'user:user1@org.com',
+                                'user:user2@org.com',
                             ]
                         }
                     ]
@@ -113,8 +113,8 @@ IAM_POLICY_RESOURCES = [
                         {
                             'logType': 'ADMIN_READ',
                             'exemptedMembers': [
-                                'user2@org.com',
-                                'user3@org.com',
+                                'user:user2@org.com',
+                                'user:user3@org.com',
                             ]
                         }
                     ]
@@ -157,7 +157,7 @@ IAM_POLICY_RESOURCES = [
                         {
                             'logType': 'ADMIN_READ',
                             'exemptedMembers': [
-                                'user1@org.com',
+                                'user:user1@org.com',
                             ]
                         },
                     ]
@@ -192,7 +192,8 @@ AUDIT_LOGGING_VIOLATIONS = [
                   violation_type='AUDIT_LOGGING_VIOLATION',
                   service='allServices',
                   log_type='ADMIN_READ',
-                  unexpected_exemptions=('user1@org.com', 'user2@org.com'),
+                  unexpected_exemptions=('user:user1@org.com',
+                                         'user:user2@org.com'),
                   resource_data='proj-2-data'),
     RuleViolation(resource_type='project',
                   resource_id='proj-3',
@@ -218,7 +219,8 @@ FLATTENED_AUDIT_LOGGING_VIOLATIONS = [
             'full_name': 'organization/234/folder/56/project/proj-2/',
             'service': 'allServices',
             'log_type': 'ADMIN_READ',
-            'unexpected_exemptions': ['user1@org.com', 'user2@org.com']
+            'unexpected_exemptions': [
+                'user:user1@org.com', 'user:user2@org.com']
         },
         'resource_data': 'proj-2-data',
     },

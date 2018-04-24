@@ -193,8 +193,8 @@ class AuditLoggingRuleBook(bre.BaseRuleBook):
                   - 'ADMIN_READ'
                   - 'DATA_WRITE'
                 allowed_exemptions:
-                  - 'user1@org.com'
-                  - 'user2@org.com'
+                  - 'user:user1@org.com'
+                  - 'user:user2@org.com'
 
         ... gets parsed into:
 
@@ -210,8 +210,8 @@ class AuditLoggingRuleBook(bre.BaseRuleBook):
                     'DATA_WRITE',
                 ],
                 'allowed_exemptions': [
-                    'user1@org.com',
-                    'user2@org.com',
+                    'user:user1@org.com',
+                    'user:user2@org.com',
                 ]
             }
 
@@ -319,7 +319,7 @@ class Rule(object):
         self.rule = rule
 
     def find_violations(self, project, audit_config):
-        """Find Enabled API violations in the rule book.
+        """Find Cloud Audit Logging violations in the rule book.
         Args:
             project (gcp_type): The project that has this configuation.
             audit_config (IamAuditConfig): The audit config for this project,

@@ -8,8 +8,8 @@ rules:
     log_types:
       - 'ADMIN_READ'
     allowed_exemptions:
-      - 'user1@org.com'
-      - 'user3@org.com'
+      - 'user:user1@org.com'
+      - 'user:user3@org.com'
   - name: 'Require DATA_WRITE logging in folder 56'
     resource:
       - type: folder
@@ -30,8 +30,8 @@ rules:
       - 'DATA_READ'
       - 'DATA_WRITE'
     allowed_exemptions:
-      - 'user1@org.com'
-      - 'user2@org.com'
+      - 'user:user1@org.com'
+      - 'user:user2@org.com'
   - name: 'Require all logging for cloudsql.'
     resource:
       - type: project
