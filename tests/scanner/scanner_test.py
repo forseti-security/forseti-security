@@ -99,7 +99,7 @@ class ScannerRunnerTest(scanner_dao_test.DatabaseTest):
     def test_init_scanner_index(self, mock_date_time):
         utc_now = datetime.utcnow()
         mock_date_time.get_utc_now_datetime.return_value = utc_now
-        scanner.init_scanner_index(self.session, self.iidx_id3)
+        scanner.init_scanner_index(self.session, self.inv_index_id3)
 
         expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
         db_row = (self.session.query(scanner_dao.ScannerIndex)
@@ -116,7 +116,7 @@ class ScannerRunnerTest(scanner_dao_test.DatabaseTest):
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
         scanner_index_id = scanner.init_scanner_index(
-            self.session, self.iidx_id2)
+            self.session, self.inv_index_id2)
         scanner.mark_scanner_index_complete(
             self.session, scanner_index_id, ['IamPolicyScanner'], [])
         db_row = (self.session.query(scanner_dao.ScannerIndex)
@@ -133,7 +133,7 @@ class ScannerRunnerTest(scanner_dao_test.DatabaseTest):
         mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
 
         scanner_index_id = scanner.init_scanner_index(
-            self.session, self.iidx_id2)
+            self.session, self.inv_index_id2)
         scanner.mark_scanner_index_complete(
             self.session, scanner_index_id, [],
             ['IamPolicyScanner', 'IapScanner'])
@@ -155,7 +155,7 @@ class ScannerRunnerTest(scanner_dao_test.DatabaseTest):
 
 
         scanner_index_id = scanner.init_scanner_index(
-            self.session, self.iidx_id1)
+            self.session, self.inv_index_id1)
         scanner.mark_scanner_index_complete(
             self.session, scanner_index_id, ['KeVersionScanner'],
             ['IamPolicyScanner', 'IapScanner'])

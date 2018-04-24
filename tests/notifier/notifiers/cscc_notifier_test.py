@@ -39,7 +39,7 @@ class CsccNotifierTest(scanner_dao_test.DatabaseTest):
         fake_datetime = datetime.datetime(2010, 8, 28, 10, 20, 30, 0)
         mock_get_utc_now.return_value = fake_datetime
 
-        scanner_index_id = self.populate_db(inv_index_id=self.iidx_id2)
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id2)
         expected_findings = [
             {'finding_id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff',
              'finding_summary': 'disallow_all_ports_111',
