@@ -1,5 +1,5 @@
 ---
-title: Forseti Architecture
+title: Architecture
 order: 105
 ---
 
@@ -10,8 +10,8 @@ together.
 
 Forseti gives you tools to understand all the resources you have in Google Cloud
 Platform (GCP). The core Forseti modules work together to provide complete
-information so you can take action to conserve resources, reduce cost, and
-minimize security exposures.
+information so you can take action action to secure resources and minimize
+security risks.
 
  * Inventory regularly collects data from your GCP resources and makes it
    available to other modules.
@@ -34,7 +34,7 @@ The image below shows how data flows through Forseti:
     set.
  4. Notifier sends Scanner findings to one or more of the following channels you
     configure: Cloud Storage, SendGrid, and Slack.
- 5. You use Explain to check your Cloud IAM policies.
+ 5. You use Explain query and understand your Cloud IAM policies.
  6. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.
  7. You use the CLI to query Forseti data via GRPC.
