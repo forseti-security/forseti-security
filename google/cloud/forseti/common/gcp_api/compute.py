@@ -1013,9 +1013,9 @@ class ComputeClient(object):
 
         Returns:
             dict: The quota of a requested metric in a dict.
-            
+
         An example return value:
-        
+
                 {
                   "metric": "FIREWALLS",
                   "limit": 100.0,
