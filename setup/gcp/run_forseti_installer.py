@@ -21,7 +21,7 @@ import argparse
 import datetime
 import site
 
-import pip
+import pip._internal as pip
 
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'
@@ -39,8 +39,10 @@ def install(package_name):
 
 def install_required_packages():
     """Install required packages."""
+    installed_pkgs = [pkg.key for pkg in pip.get_installed_distributions()]
     for package in INSTALLER_REQUIRED_PACKAGES:
-        install(package)
+        if package not in installed_pkgs:
+            install(package)
 
 
 def run():
