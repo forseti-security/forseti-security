@@ -218,7 +218,7 @@ class ContainerClient(object):
             dict: A serverconfig for a given Compute Engine zone.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/ServerConfig
 
-        An example return value::
+        An example return value:
 
             {
               "defaultClusterVersion": string,
@@ -268,7 +268,7 @@ class ContainerClient(object):
             list: A list of Cluster dicts.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.zones.clusters#Cluster
 
-        An example return value::
+        An example return value:
 
             [
                 {"name": "cluster-1", ...}
