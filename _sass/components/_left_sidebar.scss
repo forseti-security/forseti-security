@@ -8,10 +8,12 @@
     padding: 0;
 
     li {
+      margin-bottom: 8px;
+
       & > a {
         color: $grey-800;
         font-size: 14px;
-        line-height: 24px;
+        line-height: 20px;
       }
 
       &.active > a {
