@@ -75,12 +75,13 @@ class CsccNotifierTest(scanner_dao_test.DatabaseTest):
 
         violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        violations = notifier.convert_to_timestamp(self.session, violations)
 
         violations_as_dict = []
         for violation in violations:
             violations_as_dict.append(
                 scanner_dao.convert_sqlalchemy_object_to_dict(violation))
+
+        violations_as_dict = notifier.convert_to_timestamp(violations_as_dict)
 
         finding_results = (
             cscc_notifier.CsccNotifier('iii')._transform_to_findings(

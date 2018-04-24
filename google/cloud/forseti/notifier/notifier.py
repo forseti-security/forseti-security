@@ -57,10 +57,9 @@ def find_notifiers(notifier_name):
 # pylint: enable=inconsistent-return-statements
 
 
-def convert_to_timestamp(session, violations):
+def convert_to_timestamp(violations):
     """Convert violation created_at_datetime to timestamp string.
     Args:
-        session (object): session object to work on.
         violations (sqlalchemy_object): List of violations as sqlalchemy
             row/record object with created_at_datetime.
     Returns:
@@ -68,9 +67,8 @@ def convert_to_timestamp(session, violations):
             created_at_datetime converted to timestamp string.
     """
     for violation in violations:
-        session.expunge(violation)
-        violation.created_at_datetime = (
-            violation.created_at_datetime.strftime(
+        violation['created_at_datetime'] = (
+            violation['created_at_datetime'].strftime(
                 string_formats.TIMESTAMP_TIMEZONE))
 
     return violations
@@ -143,7 +141,7 @@ def run(inv_index_id, progress_queue, service_config=None):
     violations = None
     with service_config.scoped_session() as session:
         if not inv_index_id:
-            inv_index_id = DataAccess.get_latest_inv_index_id(session)
+            inv_index_id = DataAccess.get_latest_inventory_index_id(session)
         scanner_index_id = scanner_dao.get_latest_scanner_index_id(
             session, inv_index_id)
         if not scanner_index_id:
@@ -155,11 +153,11 @@ def run(inv_index_id, progress_queue, service_config=None):
             violation_access = scanner_dao.ViolationAccess(session)
             violations = violation_access.list(
                 scanner_index_id=scanner_index_id)
-            violations = convert_to_timestamp(session, violations)
             violations_as_dict = []
             for violation in violations:
                 violations_as_dict.append(
                     scanner_dao.convert_sqlalchemy_object_to_dict(violation))
+            violations_as_dict = convert_to_timestamp(violations_as_dict)
             violation_map = scanner_dao.map_by_resource(violations_as_dict)
 
             for retrieved_v in violation_map:
