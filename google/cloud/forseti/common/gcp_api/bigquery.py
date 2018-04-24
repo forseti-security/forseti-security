@@ -182,16 +182,16 @@ class BigQueryClient(object):
 
     def get_dataset_access(self, project_id, dataset_id):
         """Return the access portion of the dataset resource object.
-        
+
         Args:
             project_id (str): String representing the project id.
             dataset_id (str): String representing the dataset id.
-        
+
         Returns:
             list: A list of access lists for a given project_id and dataset_id.
 
         An example return value:
-          
+
             [
                 {'role': 'WRITER', 'specialGroup': 'projectWriters'},
                 {'role': 'OWNER', 'specialGroup': 'projectOwners'},
