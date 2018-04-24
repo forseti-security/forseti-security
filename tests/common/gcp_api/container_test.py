@@ -37,7 +37,8 @@ class ContainerTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {'max_container_api_calls_per_100_seconds': 1000}
+        fake_global_configs = {
+            'container': {'max_calls': 9, 'period': 1}}
         cls.container_client = container.ContainerClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
         cls.project_id = fake_container.FAKE_PROJECT_ID
