@@ -19,11 +19,11 @@ import inspect
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers import cscc_notifier
-from google.cloud.forseti.notifier.notifiers import email_inventory_snapshot_summary as inv_summary
-from google.cloud.forseti.notifier.notifiers import email_scanner_summary as scanner_summary
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
+from google.cloud.forseti.notifier.notifiers import cscc_notifier
+from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
 from google.cloud.forseti.services.inventory.storage import DataAccess
+from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
@@ -76,58 +76,60 @@ def convert_to_timestamp(session, violations):
     return violations
 
 
-def process(message):
-    """Process messages about what notifications to send.
+def run_inv_summary(inv_index_id, service_config):
+    """Emit an inventory summary notification if/as needed.
 
     Args:
-        message (dict): Message with payload in dict.
-            The payload will be different depending on the sender
-            of the message.
-
-            Example:
-                {'status': 'foobar_done',
-                 'payload': {}}
+        inv_index_id (str): Inventory index id.
+        service_config (ServiceConfig): Forseti 2.0 service configs.
     """
-    payload = message.get('payload')
-
-    if message.get('status') == 'inventory_done':
-        inv_email_notifier = inv_summary.EmailInventorySnapshotSummary(
-            payload.get('sendgrid_api_key')
-        )
-        inv_email_notifier.run(
-            payload.get('cycle_time'),
-            payload.get('cycle_timestamp'),
-            payload.get('snapshot_cycle_status'),
-            payload.get('notifiers'),
-            payload.get('email_sender'),
-            payload.get('email_recipient')
-        )
+    notifier_config = service_config.get_notifier_config()
+    if not notifier_config.get('inventory'):
+        LOGGER.info('No "inventory" configuration for notifier.')
         return
 
-    if message.get('status') == 'scanner_done':
-        scanner_email_notifier = scanner_summary.EmailScannerSummary(
-            payload.get('sendgrid_api_key')
-        )
-        scanner_email_notifier.run(
-            payload.get('output_csv_name'),
-            payload.get('output_filename'),
-            payload.get('now_utc'),
-            payload.get('all_violations'),
-            payload.get('resource_counts'),
-            payload.get('violation_errors'),
-            payload.get('email_sender'),
-            payload.get('email_recipient'),
-            payload.get('email_description'))
+    if not notifier_config.get('inventory').get('summary'):
+        LOGGER.info('No "inventory summary" configuration for notifier.')
         return
 
+    inv_summary_config = notifier_config.get('inventory').get('summary')
 
-def run(inventory_index_id, progress_queue, service_config=None):
+    if not inv_summary_config.get('enabled'):
+        LOGGER.info('Inventory summary notifications are turned off.')
+        return
+
+    if not inv_summary_config.get('gcs_path'):
+        LOGGER.error('"gcs_path" not set for inventory summary notifier.')
+        return
+
+    if not inv_summary_config['gcs_path'].startswith('gs://'):
+        LOGGER.error('Invalid GCS path: %s', inv_summary_config['gcs_path'])
+        return
+
+    with service_config.scoped_session() as session:
+        inv_index = session.query(InventoryIndex).get(inv_index_id)
+
+        summary_data = inv_index.get_summary(session)
+        if not summary_data:
+            LOGGER.warn('No inventory summary data found.')
+            return
+
+        inv_summary = []
+        for key, value in summary_data.iteritems():
+            inv_summary.append(dict(resource_type=key, count=value))
+
+        notifier = InventorySummary(
+            inv_index_id, inv_summary, inv_summary_config)
+        notifier.run()
+
+
+def run(inv_index_id, progress_queue, service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
-        inventory_index_id (str): Inventory index id.
+        inv_index_id (str): Inventory index id.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
 
@@ -140,15 +142,14 @@ def run(inventory_index_id, progress_queue, service_config=None):
 
     violations = None
     with service_config.scoped_session() as session:
-        if not inventory_index_id:
-            inventory_index_id = (
-                DataAccess.get_latest_inventory_index_id(session))
+        if not inv_index_id:
+            inv_index_id = DataAccess.get_latest_inv_index_id(session)
         scanner_index_id = scanner_dao.get_latest_scanner_index_id(
-            session, inventory_index_id)
+            session, inv_index_id)
         if not scanner_index_id:
             LOGGER.error(
                 'No success or partial success scanner index found for '
-                'inventory index: "%s".', inventory_index_id)
+                'inventory index: "%s".', inv_index_id)
         else:
             # get violations
             violation_access = scanner_dao.ViolationAccess(session)
@@ -188,7 +189,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
                     LOGGER.info(log_message)
                     chosen_pipeline = find_notifiers(notifier['name'])
                     notifiers.append(chosen_pipeline(
-                        resource['resource'], inventory_index_id,
+                        resource['resource'], inv_index_id,
                         violation_map[resource['resource']], global_configs,
                         notifier_configs, notifier['configuration']))
 
@@ -198,10 +199,11 @@ def run(inventory_index_id, progress_queue, service_config=None):
 
         if (notifier_configs.get('violation') and
                 notifier_configs.get('violation').get('cscc').get('enabled')):
-            cscc_notifier.CsccNotifier('inventory_index_id').run(
+            cscc_notifier.CsccNotifier('inv_index_id').run(
                 violations_as_dict,
                 notifier_configs.get('violation').get('cscc').get('gcs_path'))
 
+        run_inv_summary(inv_index_id, service_config)
         log_message = 'Notification completed!'
         progress_queue.put(log_message)
         progress_queue.put(None)
