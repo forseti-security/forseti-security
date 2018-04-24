@@ -44,7 +44,7 @@
 <table style="width: 100%; table-layout: fixed" class="indextable genindextable"><tr>
   {%- for column in entries|slice(1) if column %}
   <td valign="top"><dl>
-    {%- for entryname, (links, subitems) in column %}
+    {%- for entryname, (links, subitems, key) in column %}
       {{ indexentries(entryname, links) }}
       {%- if subitems %}
       <dd><dl>
