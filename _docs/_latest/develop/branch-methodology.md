@@ -5,62 +5,64 @@ order: 003
 
 #  {{ page.title }}
 
-This page describes the branches in the Forseti repo and how they're used.
-
-In general, Forseti branches will be prefixed with a version number.
-All active feature developments should be completed in the branch with the
-highest-versioned numbering.  Lower-versioned branches will denote
-support-basis, and only bug fixes will be accepted.
+This page describes the branches in the Forseti repo and how they're used
+and managed.
 
 ## Branches
 
-The branches listed below are the main branches you'll use to inspect
-the correct codebase or create a Pull Request (PR).
+### General Availability (GA) Branches
 
-* `dev`: development branch for Forseti 1.0 (deprecated, bug fixes only).
-* `master`: latest stable release for Forseti 1.0.
-* `forsetisecurity.org`: documentations for Forseti 1.0 website.
+GA branches are the main branches you'll use to inspect the currently stable,
+production-ready codebase, create a Pull Request (PR), or deploy to production.
 
-* `2.0-dev`: development branch for Forseti 2.0 (GA, active development).
-* `2.0-master`: latest stable release for Forseti 2.0.
-* `2.0-forsetisecurity.org-dev`: documentations for Forseti 2.0 website.
+* `dev`: development branch
+* `master`: latest stable release; suitable for deploy to production
+* `forsetisecurity.org`: documentations for Forseti website.
 
-A development branch is the starting point where you can create a new PR,
+The `dev` branch is the starting point where you can create a new PR,
 and where the PR will be merged into the codebase after code review. Although
 there are unit tests, the development branch is still considered to be unstable
 because functional and system tests are not yet complete.
 
-A master branch is checkpointed code from the development branch that
-has passed functional and system tests. The master branch is considered
+The `master` branch is checkpointed code from the `dev` branch that
+has passed functional and system tests. The `master` branch is considered
 to be stable and suitable for production-use.
+
+### Next-Generation Branches
+
+Branches will be also be created, to contain the development for the
+next-generation of Forseti.  These next-generation branches will be prefixed
+with a version number.
+
+Examples of the next-generation branches:
+```
+* 2.0-dev: development branch
+* 2.0-eap1: early evaluation; end-to-end workflow complete
+* 2.0-rc1: release candidate 1; feature complete
+* 2.0-rc2: release candidate 2; final schema changes
+* 2.0-master: latest stable release; suitable for deploy to production
+* 2.0-forsetisecurity.org-dev: documentations for Forseti website.
+```
+
+After the support period has passed, the next-generation dev and master
+branches will be merged into the `dev/master` branches. And the `N-0-<branches>`
+will be deleted.  This way, `dev/master` are always maintained as the
+canonical branches, and retains all the commit histories.
+
+### Other Branches
 
 Other active branches in the Forseti repo are those created by other developers
 to contribute to Forseti. You can generally disregard any branches that aren't
-explicitly listed above.
+described above.
 
-## Branching Methodology
+## Version Numbering Scheme
 
 Forseti versions are denoted with X.Y.Z version numbering schema.
+```
 X signifies architectural changes.
 Y signifies database schema changes.
 Z signifies code changes.
-
-The process below outlines how major new X.0.0 versions are managed.
-
-1. We will increment the highest-versioned development branch and create
-a new development branch.<br />
-```2.0-dev --> 3.0-dev```
-
-1. Along the way, we will create the corresponding release candidates branches
-for early user evaluations.<br />
-```3.0-dev --> 3.0-rc1 --> 3.0-rc2```
-
-1. When all the launch gates have been passed, we will create the GA master
-branch.<br />
-```3.0-rc2 --> 3.0-master```
-
-1. After the support period has passed, the previous version dev/master branches
-are deleted.
+```
 
 The process below outlines how minor new 0.Y.Z point versions are managed.
 
