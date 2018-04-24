@@ -64,7 +64,7 @@ FAKE_VIOLATIONS = [
 ]
 
 
-class DatabaseTest(ForsetiTestCase):
+class ScannerBaseDbTestCase(ForsetiTestCase):
     """Base class for database centric tests."""
 
     def setUp(self):
@@ -77,8 +77,8 @@ class DatabaseTest(ForsetiTestCase):
         scanner_dao.initialize(self.engine)
         self.session.flush()
         self.violation_access = scanner_dao.ViolationAccess(self.session)
-        self.inv_index_id1, self.inv_index_id2, self.inv_index_id3 = _setup_inv_indices(
-            self.session)
+        self.inv_index_id1, self.inv_index_id2, self.inv_index_id3 = (
+                _setup_inv_indices(self.session))
 
     def tearDown(self):
         """Teardown method."""
@@ -106,7 +106,7 @@ class DatabaseTest(ForsetiTestCase):
         return scanner_index_id
 
 
-class ScannerDaoTest(DatabaseTest):
+class ScannerDaoTest(ScannerBaseDbTestCase):
     """Test scanner data access."""
 
     def setUp(self):
@@ -425,7 +425,7 @@ def _setup_inv_indices(session, mock_date_time):
         time3.strftime(string_formats.TIMESTAMP_MICROS))
 
 
-class ViolationListTest(DatabaseTest):
+class ViolationListTest(ScannerBaseDbTestCase):
     """Test the Violation.list() method."""
 
     def test_list_without_indices(self):

@@ -20,9 +20,10 @@ import mock
 from google.cloud.forseti.notifier import notifier
 from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.services.scanner import scanner_dao_test
+from tests.services.scanner.scanner_dao_test import ScannerBaseDbTestCase
 
-class CsccNotifierTest(scanner_dao_test.DatabaseTest):
+
+class CsccNotifierTest(ScannerBaseDbTestCase):
 
     def setUp(self):
         """Setup method."""

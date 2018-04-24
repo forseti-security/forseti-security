@@ -15,18 +15,14 @@
 
 from datetime import datetime, timedelta
 import mock
-import os
 from sqlalchemy.orm import sessionmaker
 import unittest
 
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
-from google.cloud.forseti.services import db
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.services.util.db import create_test_engine_with_file
-from tests.unittest_utils import ForsetiTestCase
-from tests.services.scanner import scanner_dao_test
+from tests.services.scanner.scanner_dao_test import ScannerBaseDbTestCase
 
 
 Session = sessionmaker()
@@ -53,7 +49,7 @@ TWO_SCANNERS = {'scanners': [
     {'name': 'iam_policy', 'enabled': True}
 ]}
 
-class ScannerRunnerTest(scanner_dao_test.DatabaseTest):
+class ScannerRunnerTest(ScannerBaseDbTestCase):
 
     def setUp(self):
         """Setup method."""
