@@ -282,7 +282,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
-            'rand_minute': random.randint(0, 59)
+            'RAND_MINUTE': random.randint(0, 59)
         }
 
     def get_configuration_values(self):
@@ -417,7 +417,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             super(ForsetiServerInstaller, self).post_install_instructions(
                 deploy_success, forseti_conf_path, bucket_name))
 
-
         instructions.other_messages.append(
             constants.MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS)
 
@@ -429,6 +428,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if not self.config.sendgrid_api_key:
             instructions.other_messages.append(
                 constants.MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS)
+
+        instructions.other_messages.append(constants.MESSAGE_RUN_FREQUENCY)
 
         return instructions
 
