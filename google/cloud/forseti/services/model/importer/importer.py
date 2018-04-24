@@ -199,20 +199,19 @@ class InventoryImporter(object):
                     raise Exception(
                         'Cannot import inventory without organization root')
 
-                count, last_res_type = self.model_action_wrapper(
+                count = self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list),
                     None,
                     self._store_resource,
                     None,
-                    3000
+                    3000,
+                    True
                 )
 
                 item_counter += count
 
-                self._store_resource(None, last_res_type)
-
-                count, _ = self.model_action_wrapper(
+                count = self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_dataset_policy=True),
@@ -224,7 +223,7 @@ class InventoryImporter(object):
 
                 item_counter += count
 
-                count, _ = self.model_action_wrapper(
+                count = self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_service_config=True),
@@ -286,7 +285,8 @@ class InventoryImporter(object):
                              pre_action,
                              action,
                              post_action,
-                             flush_count):
+                             flush_count,
+                             is_resource=False):
         """Model action wrapper.
 
         Args:
@@ -299,9 +299,9 @@ class InventoryImporter(object):
             post_action (func): Action taken after iterating the
                 inventory list.
             flush_count (int): Flush every flush_count times.
+            is_resource (bool): If we are dealing with resources.
         Returns:
             int: Number of item iterated.
-            String: return value from action.
         """
 
         if pre_action:
@@ -312,13 +312,17 @@ class InventoryImporter(object):
             item_counter = item_counter + 1
             if isinstance(inventory_data, tuple):
                 ret_val = action(*inventory_data)
-            else:
+            elif not is_resource:
                 ret_val = action(inventory_data)
-            if item_counter % flush_count:
+            else:
+                ret_val = action(inventory_data, ret_val)
+            if not item_counter % flush_count:
                 session.flush()
+        if is_resource:
+            action(None, ret_val)
         if post_action:
             post_action()
-        return item_counter, ret_val
+        return item_counter
 
     def _store_gsuite_principal(self, principal):
         """Store a gsuite principal such as a group, user or member.
