@@ -35,6 +35,8 @@ def install(package_name):
     Args:
         package_name (str): Name of the package to install.
     """
+    # pip's python api is deprecated, we will run the pip command
+    # through subprocess directly instead.
     return_code, _, err = run_command(
         ['pip', 'install', package_name, '--user'])
 
