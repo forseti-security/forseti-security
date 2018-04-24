@@ -106,7 +106,7 @@ def create_scoped_sessionmaker(engine):
 def _abort_ro():
     """Method to intercept the flush operation, log a warning
     message and return."""
-    LOGGER.warn("This session is read-only, no flush is allowed.")
+    LOGGER.warn('This session is read-only, no flush is allowed.')
     return
 
 

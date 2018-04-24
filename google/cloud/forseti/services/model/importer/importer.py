@@ -15,7 +15,7 @@
 """ Importer implementations. """
 
 # pylint: disable=unused-argument,too-many-instance-attributes
-# pylint: disable=no-self-use,not-callable,too-many-lines,too-many-locals
+# pylint: disable=no-self-use,not-callable,too-many-lines
 
 from StringIO import StringIO
 import traceback
@@ -136,7 +136,6 @@ class InventoryImporter(object):
             NotImplementedError: If the importer encounters an unknown
                 inventory type.
         """
-        # pylint: disable=too-many-branches, too-many-statements
         gcp_type_list = [
             'organization',
             'folder',
@@ -181,7 +180,6 @@ class InventoryImporter(object):
             self.session.autocommit = False
             self.session.autoflush = True
             item_counter = 0
-            last_res_type = None
             with Inventory(self.readonly_session, self.inventory_index_id,
                            True) as inventory:
                 root = inventory.get_root()
@@ -201,46 +199,72 @@ class InventoryImporter(object):
                     raise Exception(
                         'Cannot import inventory without organization root')
 
-                for resource in inventory.iter(gcp_type_list):
-                    item_counter += 1
-                    last_res_type = self._store_resource(resource,
-                                                         last_res_type)
-                    if not item_counter % 3000:
-                        self.session.flush()
+                count, last_res_type = self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(gcp_type_list),
+                    None,
+                    self._store_resource,
+                    None,
+                    3000
+                )
+
+                item_counter += count
 
                 self._store_resource(None, last_res_type)
 
-                for policy in inventory.iter(gcp_type_list,
-                                             fetch_dataset_policy=True):
-                    item_counter += 1
-                    self._convert_dataset_policy(policy)
+                count, _ = self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(gcp_type_list,
+                                   fetch_dataset_policy=True),
+                    None,
+                    self._convert_dataset_policy,
+                    None,
+                    3000
+                )
 
-                for config in inventory.iter(
-                        gcp_type_list, fetch_service_config=True):
-                    item_counter += 1
-                    self._convert_service_config(config)
+                item_counter += count
 
-                for resource in inventory.iter(gsuite_type_list):
-                    self._store_gsuite_principal(resource)
+                count, _ = self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(gcp_type_list,
+                                   fetch_service_config=True),
+                    None,
+                    self._convert_service_config,
+                    None,
+                    3000
+                )
 
-                self._store_gsuite_membership_pre()
-                for child, parent in inventory.iter(member_type_list,
-                                                    with_parent=True):
-                    self._store_gsuite_membership(parent, child)
-                self._store_gsuite_membership_post()
+                item_counter += count
+
+                self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(gsuite_type_list),
+                    None,
+                    self._store_gsuite_principal,
+                    None,
+                    3000
+                )
+
+                self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(member_type_list, with_parent=True),
+                    self._store_gsuite_membership_pre,
+                    self._store_gsuite_membership,
+                    self._store_gsuite_membership_post,
+                    3000
+                )
 
                 self.dao.denorm_group_in_group(self.session)
 
-                number_of_iam_policy = 0
-                self._store_iam_policy_pre()
-                for policy in inventory.iter(gcp_type_list,
-                                             fetch_iam_policy=True):
-                    self._store_iam_policy(policy)
-                    self._convert_iam_policy(policy)
-                    number_of_iam_policy = number_of_iam_policy + 1
-                    if not number_of_iam_policy % 500:
-                        self.session.flush()
-
+                self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(gcp_type_list,
+                                   fetch_iam_policy=True),
+                    self._store_iam_policy_pre,
+                    self._store_iam_policy,
+                    None,
+                    500
+                )
         except Exception:  # pylint: disable=broad-except
             buf = StringIO()
             traceback.print_exc(file=buf)
@@ -255,6 +279,46 @@ class InventoryImporter(object):
             self.session.commit()
             self.session.autocommit = autocommit
             self.session.autoflush = autoflush
+
+    @staticmethod
+    def model_action_wrapper(session,
+                             inventory_iterable,
+                             pre_action,
+                             action,
+                             post_action,
+                             flush_count):
+        """Model action wrapper.
+
+        Args:
+            session (Session): Database session.
+            inventory_iterable (Iterable): Inventory iterable.
+            pre_action (func): Action taken before iterating the
+                inventory list.
+            action (func): Action taken during the iteration of
+                the inventory list.
+            post_action (func): Action taken after iterating the
+                inventory list.
+            flush_count (int): Flush every flush_count times.
+        Returns:
+            int: Number of item iterated.
+            String: return value from action.
+        """
+
+        if pre_action:
+            pre_action()
+        item_counter = 0
+        ret_val = None
+        for inventory_data in inventory_iterable:
+            item_counter = item_counter + 1
+            if isinstance(inventory_data, tuple):
+                ret_val = action(*inventory_data)
+            else:
+                ret_val = action(inventory_data)
+            if item_counter % flush_count:
+                session.flush()
+        if post_action:
+            post_action()
+        return item_counter, ret_val
 
     def _store_gsuite_principal(self, principal):
         """Store a gsuite principal such as a group, user or member.
@@ -308,12 +372,12 @@ class InventoryImporter(object):
                     self.membership_items)
                 self.session.execute(stmt)
 
-    def _store_gsuite_membership(self, parent, child):
+    def _store_gsuite_membership(self, child, parent):
         """Store a gsuite principal such as a group, user or member.
 
         Args:
+            child (object): member item.
             parent (object): parent part of membership.
-            child (object): member item
         """
 
         def member_name(child):
@@ -428,6 +492,7 @@ class InventoryImporter(object):
                 role_name=role,
                 members=list(db_members))
             self.session.add(binding_object)
+        self._convert_iam_policy(policy)
 
     def _store_resource(self, resource, last_res_type=None):
         """Store an inventory resource in the database.
