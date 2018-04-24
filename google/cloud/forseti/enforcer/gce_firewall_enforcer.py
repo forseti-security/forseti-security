@@ -220,7 +220,7 @@ class ComputeFirewallAPI(object):
           A dictionary with three keys, metric, limit and usage.
 
           An example return value:
-          
+
               {"metric": "FIREWALLS",
                "limit": 100,
                "usage": 9}
