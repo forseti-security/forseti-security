@@ -12,7 +12,7 @@ and managed.
 
 ### General Availability (GA) Branches
 
-GA branches are the main branches you'll use to inspect the currently stable,
+GA branches are the main branches you'll use to inspect the currently stable &
 production-ready codebase, create a Pull Request (PR), or deploy to production.
 
 * `dev`: development branch
@@ -41,7 +41,7 @@ Examples of the next-generation branches:
 * 2.0-rc1: release candidate 1; feature complete
 * 2.0-rc2: release candidate 2; final schema changes
 * 2.0-master: latest stable release; suitable for deploy to production
-* 2.0-forsetisecurity.org-dev: documentations for Forseti website.
+* 2.0-forsetisecurity.org: documentations for Forseti website.
 ```
 
 After the support period has passed, the next-generation dev and master
