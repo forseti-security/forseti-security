@@ -34,7 +34,7 @@ Branches will be also be created, to contain the development for the
 next-generation of Forseti.  These next-generation branches will be prefixed
 with a version number.
 
-Examples of the next-generation branches:
+Examples of the next-generation `N.0-<branches>`:
 
 * `2.0-dev`: development branch
 * `2.0-eap1`: early evaluation; end-to-end workflow complete
