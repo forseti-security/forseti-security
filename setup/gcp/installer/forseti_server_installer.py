@@ -471,21 +471,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'gsuite_service_account_key_file',
             'domain_super_admin_email'
         ]
-        global_to_api_quota = [
-            'max_admin_api_calls_per_100_seconds',
-            'max_appengine_api_calls_per_second',
-            'max_bigquery_api_calls_per_100_seconds',
-            'max_cloudbilling_api_calls_per_60_seconds',
-            'max_compute_api_calls_per_second',
-            'max_container_api_calls_per_100_seconds',
-            'max_crm_api_calls_per_100_seconds',
-            'max_iam_api_calls_per_second',
-            'max_servicemanagement_api_calls_per_100_seconds',
-            'max_sqladmin_api_calls_per_100_seconds'
-        ]
 
         new_conf_inventory = new_config['inventory']
-        new_conf_api_quota = new_conf_inventory['api_quota']
 
         old_config_global = ({} if 'global' not in old_config
                              else old_config['global'])
@@ -495,12 +482,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             if v1_field in old_config_global:
                 new_conf_inventory[field] = (old_config_global[v1_field]
                                              or new_conf_inventory[field])
-
-        for field in global_to_api_quota:
-            v1_field = field_names_mapping.get(field, field)
-            if v1_field in old_config_global:
-                new_conf_api_quota[field] = (old_config_global[v1_field]
-                                             or new_conf_api_quota[field])
 
         old_notifier_resources = old_config['notifier']['resources']
         new_notifier_resources = new_config['notifier']['resources']

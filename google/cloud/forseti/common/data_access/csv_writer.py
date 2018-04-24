@@ -350,6 +350,11 @@ INSTANCE_GROUP_MANAGERS_FIELDNAMES = [
     'raw_instance_group_manager',
 ]
 
+INV_SUMMARY_FIELDNAMES = [
+    'resource_type',
+    'count',
+]
+
 ORG_IAM_POLICIES_FIELDNAMES = [
     'org_id',
     'role',
@@ -455,6 +460,7 @@ CSV_FIELDNAME_MAP = {
     'instance_groups': INSTANCE_GROUPS_FIELDNAMES,
     'instance_templates': INSTANCE_TEMPLATES_FIELDNAMES,
     'instance_group_managers': INSTANCE_GROUP_MANAGERS_FIELDNAMES,
+    'inv_summary': INV_SUMMARY_FIELDNAMES,
 
     'org_iam_policies': ORG_IAM_POLICIES_FIELDNAMES,
     'organizations': ORGANIZATIONS_FIELDNAMES,

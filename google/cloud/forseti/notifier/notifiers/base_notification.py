@@ -89,3 +89,16 @@ class BaseNotification(object):
         output_filename = filename_template.format(
             self.resource, self.cycle_timestamp, output_timestamp)
         return output_filename
+
+    @classmethod
+    def check_data_format(cls, data_format):
+        """Raise `InvalidDataFormatError` unless `data_format` is supported.
+
+        Args:
+            data_format (string): should be either 'csv' or 'json'
+
+        Raises:
+            InvalidDataFormatError: if not valid
+        """
+        if data_format not in cls.supported_data_formats:
+            raise InvalidDataFormatError('Notifier', data_format)
