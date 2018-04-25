@@ -254,7 +254,7 @@ class InventoryImporter(object):
                                    fetch_iam_policy=True),
                     self._store_iam_policy_pre,
                     self._store_iam_policy,
-                    None,
+                    self._store_iam_policy_post,
                     500
                 )
         except Exception:  # pylint: disable=broad-except
