@@ -50,7 +50,7 @@ sleep 5s
 # link to the issue: https://github.com/GoogleCloudPlatform/forseti-security/issues/1296
 
 LOOP_COUNT=0
-MAX_LOOP_COUNT=50
+MAX_LOOP_COUNT=1440
 # Waiting for models to be finished building.
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
