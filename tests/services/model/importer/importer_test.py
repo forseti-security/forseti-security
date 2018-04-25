@@ -118,7 +118,7 @@ class ImporterTest(ForsetiTestCase):
              },
             model_description)
 
-    def test_model_action_wrapper_pre_action_called(self):
+    def test_model_action_wrapper_pre_and_post_action_called(self):
         session = mock.Mock()
         session.flush = mock.Mock()
         inventory_iter = []
@@ -132,27 +132,10 @@ class ImporterTest(ForsetiTestCase):
                                                action,
                                                post,
                                                flush_count)
-
         pre.assert_called_once()
-
-    def test_model_action_wrapper_post_action_called(self):
-        session = mock.Mock()
-        session.flush = mock.Mock()
-        inventory_iter = []
-        pre = mock.Mock()
-        action = mock.Mock()
-        post = mock.Mock()
-        flush_count = 1
-        InventoryImporter.model_action_wrapper(session,
-                                               inventory_iter,
-                                               pre,
-                                               action,
-                                               post,
-                                               flush_count)
-
         post.assert_called_once()
 
-    def test_model_action_wrapper_invetory_iter_tuple(self):
+    def test_model_action_wrapper_inventory_iter_tuple(self):
         """If inventory iter is of type tuple, it will call the
         action with the data as positional args."""
         session = mock.Mock()
@@ -170,7 +153,7 @@ class ImporterTest(ForsetiTestCase):
                                                        flush_count)
 
         action.assert_called_once_with(1, 2)
-        self.assertEquals(count, 1)
+        self.assertEquals(1, count)
 
         # pre and post are always called if exists
         self.assertTrue(pre.called)
@@ -197,7 +180,7 @@ class ImporterTest(ForsetiTestCase):
 
         calls = [mock.call(1, 2), mock.call(4, 5)]
         action.assert_has_calls(calls)
-        self.assertEquals(count, 2)
+        self.assertEquals(2, count)
 
         # pre and post are always called if exists
         self.assertTrue(pre.called)
@@ -207,7 +190,7 @@ class ImporterTest(ForsetiTestCase):
         session.flush.assert_called()
         self.assertEqual(session.flush.call_count, 2)
 
-    def test_model_action_wrapper_invetory_iter_value(self):
+    def test_model_action_wrapper_inventory_iter_value(self):
         """If inventory iter is not tuple, it will call the
         action with the data as positional args."""
         session = mock.Mock()
@@ -225,7 +208,7 @@ class ImporterTest(ForsetiTestCase):
                                                        flush_count)
 
         action.assert_called_once_with('not_tuple')
-        self.assertEquals(count, 1)
+        self.assertEquals(1, count)
 
         # pre and post are always called if exists
         self.assertTrue(pre.called)
@@ -252,7 +235,7 @@ class ImporterTest(ForsetiTestCase):
 
         calls = [mock.call('data'), mock.call('data1')]
         action.assert_has_calls(calls)
-        self.assertEquals(count, 2)
+        self.assertEquals(2, count)
 
         # pre and post are always called if exists
         self.assertTrue(pre.called)
