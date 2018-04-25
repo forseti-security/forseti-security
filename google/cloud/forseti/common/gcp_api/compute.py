@@ -981,12 +981,14 @@ class ComputeClient(object):
 
         Returns:
             dict: The quota of a requested metric in a dict.
-                Example:
-                {
-                  "metric": "FIREWALLS",
-                  "limit": 100.0,
-                  "usage": 9.0
-                }
+
+        An example return value:
+
+            {
+              "metric": "FIREWALLS",
+              "limit": 100.0,
+              "usage": 9.0
+            }
 
         Raises:
             KeyError: Metric was not found in the project.
@@ -1011,7 +1013,9 @@ class ComputeClient(object):
 
         Returns:
             dict: The quota of a requested metric in a dict.
-                Example:
+
+        An example return value:
+
                 {
                   "metric": "FIREWALLS",
                   "limit": 100.0,
