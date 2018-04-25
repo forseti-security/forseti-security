@@ -29,6 +29,7 @@ from sqlalchemy import Column
 from sqlalchemy import event
 from sqlalchemy import Integer
 from sqlalchemy import Boolean
+from sqlalchemy import VARCHAR
 from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
@@ -263,8 +264,10 @@ def define_model(model_name, dbengine, model_seed):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
 
-        full_name = Column(String(1024), nullable=False)
-        type_name = Column(String(256), primary_key=True)
+        full_name = Column(String(2048), nullable=False)
+        type_name = Column(VARCHAR(512),
+                           collation='utf8mb4_bin',
+                           primary_key=True)
         name = Column(String(128), nullable=False)
         type = Column(String(64), nullable=False)
         policy_update_counter = Column(Integer, default=0)
@@ -273,7 +276,7 @@ def define_model(model_name, dbengine, model_seed):
         data = Column(Text(16777215))
 
         parent_type_name = Column(
-            String(128),
+            VARCHAR(512, collation='utf8mb4_bin'),
             ForeignKey('{}.type_name'.format(resources_tablename)))
         parent = relationship('Resource', remote_side=[type_name])
         bindings = relationship('Binding', back_populates='resource')
@@ -364,8 +367,9 @@ def define_model(model_name, dbengine, model_seed):
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
 
-        resource_type_name = Column(String(128), ForeignKey(
-            '{}.type_name'.format(resources_tablename)))
+        resource_type_name = Column(
+            VARCHAR(512, collation='utf8mb4_bin'),
+            ForeignKey('{}.type_name'.format(resources_tablename)))
         role_name = Column(String(128), ForeignKey(
             '{}.name'.format(roles_tablename)))
 
