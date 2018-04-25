@@ -1998,6 +1998,13 @@ class ModelManager(object):
         session_maker, data_access = self._get(model)
         return db.ScopedSession(session_maker()), data_access
 
+    def get_readonly_session(self):
+        """Get read-only session.
+
+        Returns:
+            Session: The read-only session."""
+        return db.create_scoped_readonly_session(self.engine)
+
     def _get(self, handle):
         """Get model data by name internal.
 
