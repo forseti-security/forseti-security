@@ -50,13 +50,15 @@ class Modeller(object):
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
         scoped_session, data_access = model_manager.get(model_handle)
+        readonly_session = model_manager.get_readonly_session()
 
         def do_import():
             """Import runnable."""
-            with scoped_session as session:
+            with scoped_session as session, readonly_session as ro_session:
                 importer_cls = importer.by_source(source)
                 import_runner = importer_cls(
                     session,
+                    ro_session,
                     model_manager.model(model_handle, expunge=False),
                     data_access,
                     self.config,
