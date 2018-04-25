@@ -62,6 +62,7 @@ def convert_to_timestamp(violations):
     Args:
         violations (dict): List of violations as dict with
             created_at_datetime.
+
     Returns:
         list: List of violations as dict with created_at_datetime
             converted to timestamp string.
