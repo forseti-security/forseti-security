@@ -60,11 +60,11 @@ def find_notifiers(notifier_name):
 def convert_to_timestamp(violations):
     """Convert violation created_at_datetime to timestamp string.
     Args:
-        violations (sqlalchemy_object): List of violations as sqlalchemy
-            row/record object with created_at_datetime.
+        violations (dict): List of violations as dict with
+            created_at_datetime.
     Returns:
-        list: List of violations as sqlalchemy row/record object with
-            created_at_datetime converted to timestamp string.
+        list: List of violations as dict with created_at_datetime
+            converted to timestamp string.
     """
     for violation in violations:
         violation['created_at_datetime'] = (
@@ -198,7 +198,7 @@ def run(inv_index_id, progress_queue, service_config=None):
             # pylint: disable=line-too-long
             if (notifier_configs.get('violation') and
                     notifier_configs.get('violation').get('cscc').get('enabled')):
-                cscc_notifier.CsccNotifier('inv_index_id').run(
+                cscc_notifier.CsccNotifier(inv_index_id).run(
                     violations_as_dict,
                     notifier_configs.get('violation').get('cscc').get('gcs_path'))
             # pylint: enable=line-too-long
