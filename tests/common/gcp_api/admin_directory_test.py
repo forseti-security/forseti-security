@@ -38,7 +38,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {
             'domain_super_admin_email': 'admin@foo.testing',
-            'max_admin_api_calls_per_100_seconds': 1500}
+            'admin': {'max_calls': 14, 'period': 1}}
         cls.ad_api_client = admin.AdminDirectoryClient(fake_global_configs)
 
         # Override _use_cached_http so we can use mock http response objects
@@ -54,19 +54,6 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
             'domain_super_admin_email': 'admin@foo.testing'}
         ad_api_client = admin.AdminDirectoryClient(global_configs)
         self.assertEqual(None, ad_api_client.repository._rate_limiter)
-
-    @mock.patch.object(admin, 'LOGGER')
-    @mock.patch.object(
-        admin.api_helpers, 'get_delegated_credential',
-        return_value=mock.Mock(spec_set=credentials.Credentials))
-    def test_deprecated_config(self, mock_admin_credential, mock_logger):
-        global_configs = {
-            'groups_service_account_key_file': 'abc.key',
-            'domain_super_admin_email': 'admin@foo.testing',
-            'max_admin_api_calls_per_day': 150000}
-        ad_api_client = admin.AdminDirectoryClient(global_configs)
-        mock_logger.error.assert_called_once()
-        self.assertEqual(ad_api_client.repository._rate_limiter.period, 86400.0)
 
     def test_get_groups(self):
         http_mocks.mock_http_response(fake_admin.FAKE_GROUPS_LIST_RESPONSE)

@@ -36,7 +36,8 @@ class CloudsqlTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {'max_sqladmin_api_calls_per_100_seconds': 10000}
+        fake_global_configs = {
+            'sqladmin': {'max_calls': 1, 'period': 1.1}}
         cls.sql_api_client = cloudsql.CloudsqlClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
         cls.project_id = 111111

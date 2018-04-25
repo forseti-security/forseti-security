@@ -30,10 +30,8 @@ class NotifierTest(ForsetiTestCase):
 
     def test_can_convert_created_at_datetime_to_timestamp_string(self):
         violations = [
-            mock.MagicMock(
-                created_at_datetime=datetime(1999, 12, 25, 1, 2, 3)),
-            mock.MagicMock(
-                created_at_datetime=datetime(2010, 6, 8, 4, 5, 6))
+            dict(created_at_datetime=datetime(1999, 12, 25, 1, 2, 3)),
+            dict(created_at_datetime=datetime(2010, 6, 8, 4, 5, 6))
         ]
 
         expected_timestamps = ['1999-12-25T01:02:03Z',
@@ -44,7 +42,7 @@ class NotifierTest(ForsetiTestCase):
 
         converted_timestamps = []
         for i in violations_with_converted_timestamp:
-            converted_timestamps.append(i.created_at_datetime)
+            converted_timestamps.append(i['created_at_datetime'])
 
         self.assertEquals(expected_timestamps,
                           converted_timestamps)
@@ -118,6 +116,44 @@ class NotifierTest(ForsetiTestCase):
             'policy_violations',
             mock_gcs_violations_cls.call_args[0][0])
         self.assertEquals(1, mock_gcs_violations.run.call_count)
+
+    @mock.patch(
+        ('google.cloud.forseti.notifier.notifiers.email_violations'
+         '.EmailViolations'), autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifiers.gcs_violations.GcsViolations',
+        autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
+    @mock.patch(
+        'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
+    def test_notifications_are_not_sent_without_valid_scanner_index_id(
+        self, mock_dao, mock_find_notifiers, mock_gcs_violations_cls, mock_email_violations_cls):
+        """The email/GCS upload notifiers are instantiated/run.
+
+        Setup:
+            Mock the scanner_dao and make its map_by_resource() function return
+            the VIOLATIONS dict.
+            Make sure that no scanner index with a (SUCCESS, PARTIAL_SUCCESS)
+            completion state is found.
+
+        Expected outcome:
+            The local find_notifiers() function is never called -> no notifiers
+            are looked up, istantiated or run."""
+        mock_dao.get_latest_scanner_index_id.return_value = None
+        mock_service_cfg = mock.MagicMock()
+        mock_service_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
+        mock_service_cfg.get_notifier_config.return_value = fake_violations.NOTIFIER_CONFIGS
+
+        mock_email_violations = mock.MagicMock(spec=email_violations.EmailViolations)
+        mock_email_violations_cls.return_value = mock_email_violations
+        mock_gcs_violations = mock.MagicMock(spec=gcs_violations.GcsViolations)
+        mock_gcs_violations_cls.return_value = mock_gcs_violations
+        mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
+        notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
+
+        self.assertFalse(mock_find_notifiers.called)
+        self.assertFalse(mock_dao.map_by_resource.called)
 
 
 class InventorySummaryNotifierTest(ForsetiTestCase):

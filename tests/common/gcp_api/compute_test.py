@@ -43,7 +43,8 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {'max_compute_api_calls_per_second': 2000}
+        fake_global_configs = {
+            'compute': {'max_calls': 18, 'period': 1}}
         cls.gce_api_client = compute.ComputeClient(
             global_configs=fake_global_configs)
         cls.project_id = fake_compute.FAKE_PROJECT_ID

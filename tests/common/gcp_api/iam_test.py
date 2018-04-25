@@ -35,7 +35,8 @@ class IamTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {'max_iam_api_calls_per_second': 10000}
+        fake_global_configs = {
+            'iam': {'max_calls': 18, 'period': 1}}
         cls.iam_api_client = iam.IAMClient(global_configs=fake_global_configs)
 
     @mock.patch.object(
