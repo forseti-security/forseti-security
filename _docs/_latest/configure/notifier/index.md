@@ -127,32 +127,8 @@ notifier:
 * `gcs_path`: The Cloud Storage bucket to upload Forseti violations as Cloud SCC findings.
   [Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
 
-## Usage
-
-You can invoke Forseti Notifier as part of the scheduled cron job's workflow
-or manually using the Forseti CLI.
-
-When the cron job runs the Notifier, it sends notifications on the
-latest violations from the previous scanner run.
-
-When you use the CLI, you can use flags to specify the violations that
-the notifier will run on.
-
-  * In the Foseti VM:
-  ```bash
-  $ forseti notifier --help
-  
-  # Send the violations from the last successful scanner run.
-  $ forseti notifier run
-
-  # Send the violations by inventory index id.
-  $ forseti notifier run --inventory_index_id <inventory index id>
-
-  # Send the violations by scanner index id.
-  $ forseti notifier run --scanner_index_id <scanner index id>
-  ```
-
 ## What's next
 
 * Learn how to [set up SendGrid]({% link _docs/latest/configure/email-notification.md %})
   to receive email notifications.
+* Learn how to [invoke the Notifier]({% link _docs/latest/use/notifier.md %}).
