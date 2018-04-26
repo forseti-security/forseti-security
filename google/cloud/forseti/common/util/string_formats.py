@@ -19,6 +19,8 @@ FINDINGS_FILENAME = 'forseti_findings_{}.json'
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 VIOLATION_JSON_FMT = 'violations.{}.{}.{}.json'
 VIOLATION_CSV_FMT = 'violations.{}.{}.{}.csv'
+INV_SUMMARY_JSON_FMT = 'inventory_summary.{}.{}.json'
+INV_SUMMARY_CSV_FMT = 'inventory_summary.{}.{}.csv'
 
 # Timestamps.
 # Example: '2018-03-01T21:31:52'
