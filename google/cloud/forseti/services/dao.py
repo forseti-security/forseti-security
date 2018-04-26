@@ -275,8 +275,7 @@ def define_model(model_name, dbengine, model_seed):
         """
         if db_dialect.lower() == 'sqlite':
             return String(column_size)
-        else:
-            return String(column_size, collation='utf8mb4_bin')
+        return String(column_size, collation='utf8mb4_bin')
 
     class Resource(base):
         """Row entry for a GCP resource."""
