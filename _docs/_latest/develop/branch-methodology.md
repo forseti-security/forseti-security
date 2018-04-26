@@ -70,10 +70,10 @@ Y signifies database schema changes.
 Z signifies code changes.
 ```
 
-The process below outlines how minor new 0.Y.Z point versions are managed.
+The process below outlines how minor new .Y.Z point versions are managed.
 
-1. When a new point version is ready to be released, either new 0.Y.0 version
-or new 0.0.Z version, a new release branch will be created from the 
+1. When a new point version is ready to be released, either new .Y version
+or new .Z version, a new release branch will be created from the 
 `dev` branch.
 
 1. The release branch will undergo functional and integration testing.
