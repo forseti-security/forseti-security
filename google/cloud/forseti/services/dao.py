@@ -258,7 +258,21 @@ def define_model(model_name, dbengine, model_seed):
                ForeignKey('{}.name'.format(members_tablename)),
                primary_key=True),
     )
-    db_dialect = dbengine.dialect.name
+
+    def get_string_by_dialect(db_dialect, column_size):
+        """Get Sqlalchemy String by dialect.
+
+        Args:
+            db_dialect (String): The db dialect.
+            column_size (Integer): The size of the column.
+
+        Returns:
+            String: Sqlalchemy String.
+        """
+        if db_dialect.lower() == 'sqlite':
+            return String(column_size)
+        else:
+            return String(column_size, collation='utf8mb4_bin')
 
     # Sqlite doesn't support collation type, need to define different
     # columns for different database engine.
@@ -267,18 +281,11 @@ def define_model(model_name, dbengine, model_seed):
         __tablename__ = resources_tablename
 
         full_name = Column(String(2048), nullable=False)
-        if db_dialect == 'sqlite':
-            type_name = Column(String(512),
-                               primary_key=True)
-            parent_type_name = Column(
-                String(512),
-                ForeignKey('{}.type_name'.format(resources_tablename)))
-        else:
-            type_name = Column(String(512, collation='utf8mb4_bin'),
-                               primary_key=True)
-            parent_type_name = Column(
-                String(512, collation='utf8mb4_bin'),
-                ForeignKey('{}.type_name'.format(resources_tablename)))
+        type_name = Column(get_string_by_dialect(dbengine.dialect.name, 512),
+                           primary_key=True)
+        parent_type_name = Column(
+            get_string_by_dialect(dbengine.dialect.name, 512),
+            ForeignKey('{}.type_name'.format(resources_tablename)))
         name = Column(String(128), nullable=False)
         type = Column(String(64), nullable=False)
         policy_update_counter = Column(Integer, default=0)
@@ -324,14 +331,9 @@ def define_model(model_name, dbengine, model_seed):
         __tablename__ = bindings_tablename
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
-        if db_dialect == 'sqlite':
-            resource_type_name = Column(
-                String(512),
-                ForeignKey('{}.type_name'.format(resources_tablename)))
-        else:
-            resource_type_name = Column(
-                String(512, collation='utf8mb4_bin'),
-                ForeignKey('{}.type_name'.format(resources_tablename)))
+        resource_type_name = Column(
+            get_string_by_dialect(dbengine.dialect.name, 512),
+            ForeignKey('{}.type_name'.format(resources_tablename)))
 
         role_name = Column(String(128), ForeignKey(
             '{}.name'.format(roles_tablename)))
