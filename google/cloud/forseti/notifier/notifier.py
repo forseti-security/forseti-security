@@ -191,7 +191,7 @@ def run(inv_index_id, progress_queue, service_config=None):
 
     if (notifier_configs.get('violation') and
             notifier_configs.get('violation').get('findings').get('enabled')):
-        findings.Findingnotifier().run(
+        findings.Findingsnotifier().run(
             violations_as_dict,
             notifier_configs.get('violation').get('findings').get('gcs_path'))
 
