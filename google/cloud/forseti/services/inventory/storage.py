@@ -515,6 +515,24 @@ class DataAccess(object):
             inventory_index.id)
         return inventory_index.id
 
+    @classmethod
+    def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name
+            cls, session, cutoff_datetime):
+        """Get all inventory index entries older than the cutoff.
+
+        Args:
+            session (object): Database session
+            cutoff_datetime (datetime): The cutoff point to find any
+                older inventory index entries.
+
+        Returns:
+            list: InventoryIndex
+        """
+
+        inventory_indexes = session.query(InventoryIndex).filter(
+            InventoryIndex.created_at_datetime < cutoff_datetime).all()
+        session.expunge_all()
+        return inventory_indexes
 
 def initialize(engine):
     """Create all tables in the database if not existing.

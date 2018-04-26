@@ -148,6 +148,22 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         return inventory_pb2.DeleteReply(
             inventory=inventory_pb_from_object(inventory_index))
 
+    def Purge(self, request, _):
+        """Purge desired inventory data.
+
+        Args:
+            request (object): gRPC request object.
+            _ (object): Unused
+
+        Returns:
+            object: gRPC reply object.
+        """
+
+        result = self.inventory.purge(request.retention_days)
+
+        return inventory_pb2.PurgeReply(
+            result=result)
+
 
 class GrpcInventoryFactory(object):
     """Factory class for Inventory service gRPC interface"""
