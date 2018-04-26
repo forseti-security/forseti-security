@@ -44,11 +44,11 @@ then into N.N-master, then into dev, and finally master.
 
 An example of this workflow is described below for version 2.0:
 
-2.0-dev: A daily development branch.
-2.0-eap1: A branch used for Early Access testing.
-2.0-rc1: A possible release candidate.
-2.0-rc2: A second release candidate with additional changes.
-2.0-master: latest stable release; suitable for deploy to production
+* 2.0-dev: A daily development branch.
+* 2.0-eap1: A branch used for Early Access testing.
+* 2.0-rc1: A possible release candidate.
+* 2.0-rc2: A second release candidate with additional changes.
+* 2.0-master: latest stable release; suitable for deploy to production
 
 After the support period has passed, the next-generation dev and master
 branches will be merged into the `dev` and `master` branches. Then, the
