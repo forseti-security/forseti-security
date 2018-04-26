@@ -261,7 +261,11 @@ def define_model(model_name, dbengine, model_seed):
 
     def get_string_by_dialect(db_dialect, column_size):
         """Get Sqlalchemy String by dialect.
+        Sqlite doesn't support collation type, need to define different
+        column types for different database engine.
 
+        This is used to make MySQL column case sensitive by adding
+        an encoding type.
         Args:
             db_dialect (String): The db dialect.
             column_size (Integer): The size of the column.
@@ -274,8 +278,6 @@ def define_model(model_name, dbengine, model_seed):
         else:
             return String(column_size, collation='utf8mb4_bin')
 
-    # Sqlite doesn't support collation type, need to define different
-    # columns for different database engine.
     class Resource(base):
         """Row entry for a GCP resource."""
         __tablename__ = resources_tablename
