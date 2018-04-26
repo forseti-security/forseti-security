@@ -1,0 +1,48 @@
+#documentation {
+  h1 {
+    margin-bottom: 18px;
+  }
+
+  h2 {
+    line-height: 30px;
+    margin-top: 24px;
+    margin-bottom: 18px;
+  }
+
+  h3 {
+    font-size: 22px;
+    line-height: 24px;
+    margin-top: 18px;
+    margin-bottom: 18px;
+  }
+
+  p {
+    margin-bottom: 18px;
+  }
+
+  li p {
+    margin-bottom: 6px;
+  }
+
+  p + ul, p + ol {
+    margin-top: -6px;
+  }
+
+  ul, ol {
+    margin-top: 12px;
+    margin-bottom: 12px;
+
+    li {
+      margin-bottom: 3px;
+    }
+  }
+
+  ul ul, ol ol, ol ul, ul ol {
+    margin-top: 0;
+    margin-bottom: 6px;
+  }
+
+  table {
+    margin-bottom: 18px;
+  }
+}
