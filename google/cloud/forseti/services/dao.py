@@ -29,7 +29,6 @@ from sqlalchemy import Column
 from sqlalchemy import event
 from sqlalchemy import Integer
 from sqlalchemy import Boolean
-from sqlalchemy import VARCHAR
 from sqlalchemy import String
 from sqlalchemy import Sequence
 from sqlalchemy import ForeignKey
@@ -265,8 +264,7 @@ def define_model(model_name, dbengine, model_seed):
         __tablename__ = resources_tablename
 
         full_name = Column(String(2048), nullable=False)
-        type_name = Column(VARCHAR(512),
-                           collation='utf8mb4_bin',
+        type_name = Column(String(512),
                            primary_key=True)
         name = Column(String(128), nullable=False)
         type = Column(String(64), nullable=False)
@@ -276,7 +274,7 @@ def define_model(model_name, dbengine, model_seed):
         data = Column(Text(16777215))
 
         parent_type_name = Column(
-            VARCHAR(512, collation='utf8mb4_bin'),
+            String(512),
             ForeignKey('{}.type_name'.format(resources_tablename)))
         parent = relationship('Resource', remote_side=[type_name])
         bindings = relationship('Binding', back_populates='resource')
@@ -366,9 +364,8 @@ def define_model(model_name, dbengine, model_seed):
         __tablename__ = bindings_tablename
         id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
                     primary_key=True)
-
         resource_type_name = Column(
-            VARCHAR(512, collation='utf8mb4_bin'),
+            String(512),
             ForeignKey('{}.type_name'.format(resources_tablename)))
         role_name = Column(String(128), ForeignKey(
             '{}.name'.format(roles_tablename)))
@@ -443,6 +440,28 @@ def define_model(model_name, dbengine, model_seed):
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
         TBL_MEMBERSHIP = group_members
+
+        @classmethod
+        def update_resource_table(cls, db_dialect):
+            """Update the resource table according to the db diablect.
+            The reason why this is needed is because MySQL and SQLite don't
+            share the same collation type and we need to specify the collation
+            type in MySQL in order to make the column case sensitive.
+
+            Args:
+                db_dialect (String): MySQL or SQLite.
+            """
+
+            if db_dialect.lower() != 'sqlite':
+                Resource.type_name = Column(
+                    String(512, collation='utf8mb4_bin'),
+                    primary_key=True)
+                Resource.parent_type_name = Column(
+                    String(512, collation='utf8mb4_bin'),
+                    ForeignKey('{}.type_name'.format(resources_tablename)))
+                Binding.resource_type_name = Column(
+                    String(512, collation='utf8mb4_bin'),
+                    ForeignKey('{}.type_name'.format(resources_tablename)))
 
         @classmethod
         def delete_all(cls, engine):
@@ -1911,6 +1930,8 @@ def define_model(model_name, dbengine, model_seed):
             return session.query(Member).filter(Member.name == name).all()
 
     base.metadata.create_all(dbengine)
+    db_dialect = dbengine.dialect.name
+    ModelAccess.update_resource_table(db_dialect)
     return sessionmaker(bind=dbengine), ModelAccess
 
 
