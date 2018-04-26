@@ -259,176 +259,103 @@ def define_model(model_name, dbengine, model_seed):
                primary_key=True),
     )
     db_dialect = dbengine.dialect.name
-    if db_dialect == 'sqlite':
-        # Sqlite doesn't support collation type, need to define different
-        # columns for different database engine.
-        class Resource(base):
-            """Row entry for a GCP resource."""
-            __tablename__ = resources_tablename
 
-            full_name = Column(String(2048), nullable=False)
+    # Sqlite doesn't support collation type, need to define different
+    # columns for different database engine.
+    class Resource(base):
+        """Row entry for a GCP resource."""
+        __tablename__ = resources_tablename
+
+        full_name = Column(String(2048), nullable=False)
+        if db_dialect == 'sqlite':
             type_name = Column(String(512),
                                primary_key=True)
-            name = Column(String(128), nullable=False)
-            type = Column(String(64), nullable=False)
-            policy_update_counter = Column(Integer, default=0)
-            display_name = Column(String(256), default='')
-            email = Column(String(256), default='')
-            data = Column(Text(16777215))
-
             parent_type_name = Column(
                 String(512),
                 ForeignKey('{}.type_name'.format(resources_tablename)))
-            parent = relationship('Resource', remote_side=[type_name])
-            bindings = relationship('Binding', back_populates='resource')
-
-            def increment_update_counter(self):
-                """Increments counter for this object's db updates.
-                """
-                self.policy_update_counter += 1
-
-            def get_etag(self):
-                """Return the etag for this resource.
-
-                Returns:
-                    str: etag to avoid race condition when set policy
-                """
-                serialized_ctr = struct.pack('>I', self.policy_update_counter)
-                msg = binascii.hexlify(serialized_ctr)
-                msg += self.full_name
-                return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
-
-            def __repr__(self):
-                """String representation.
-
-                Returns:
-                    str: Resource represented as
-                        (full_name='{}', name='{}' type='{}')
-                """
-                return '<Resource(full_name={}, name={} type={})>'.format(
-                    self.full_name, self.name, self.type)
-
-        class Binding(base):
-            """Row for a binding between resource, roles and members."""
-
-            __tablename__ = bindings_tablename
-            id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
-                        primary_key=True)
-            resource_type_name = Column(
-                String(512),
-                ForeignKey('{}.type_name'.format(resources_tablename)))
-            role_name = Column(String(128), ForeignKey(
-                '{}.name'.format(roles_tablename)))
-
-            resource = relationship('Resource', remote_side=[resource_type_name])
-            role = relationship('Role', remote_side=[role_name])
-
-            members = relationship('Member',
-                                   secondary=binding_members,
-                                   back_populates='bindings')
-
-            def __repr__(self):
-                """String Representation
-
-                Returns:
-                    str: Binding represented as
-                        (id='{}', role='{}', resource='{}' members='{}')
-                """
-                fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
-                return fmt_s.format(
-                    self.id,
-                    self.role_name,
-                    self.resource_type_name,
-                    self.members)
-
-    else:
-        class Resource(base):
-            """Row entry for a GCP resource."""
-            __tablename__ = resources_tablename
-
-            full_name = Column(String(2048), nullable=False)
-            # The collation type is used here to allow the String column
-            # to be case sensitive.
+        else:
             type_name = Column(String(512, collation='utf8mb4_bin'),
                                primary_key=True)
-            name = Column(String(128), nullable=False)
-            type = Column(String(64), nullable=False)
-            policy_update_counter = Column(Integer, default=0)
-            display_name = Column(String(256), default='')
-            email = Column(String(256), default='')
-            data = Column(Text(16777215))
-
-            # The collation type is used here to allow the String column
-            # to be case sensitive.
             parent_type_name = Column(
                 String(512, collation='utf8mb4_bin'),
                 ForeignKey('{}.type_name'.format(resources_tablename)))
-            parent = relationship('Resource', remote_side=[type_name])
-            bindings = relationship('Binding', back_populates='resource')
+        name = Column(String(128), nullable=False)
+        type = Column(String(64), nullable=False)
+        policy_update_counter = Column(Integer, default=0)
+        display_name = Column(String(256), default='')
+        email = Column(String(256), default='')
+        data = Column(Text(16777215))
 
-            def increment_update_counter(self):
-                """Increments counter for this object's db updates.
-                """
-                self.policy_update_counter += 1
+        parent = relationship('Resource', remote_side=[type_name])
+        bindings = relationship('Binding', back_populates='resource')
 
-            def get_etag(self):
-                """Return the etag for this resource.
+        def increment_update_counter(self):
+            """Increments counter for this object's db updates.
+            """
+            self.policy_update_counter += 1
 
-                Returns:
-                    str: etag to avoid race condition when set policy
-                """
-                serialized_ctr = struct.pack('>I', self.policy_update_counter)
-                msg = binascii.hexlify(serialized_ctr)
-                msg += self.full_name
-                return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
+        def get_etag(self):
+            """Return the etag for this resource.
 
-            def __repr__(self):
-                """String representation.
+            Returns:
+                str: etag to avoid race condition when set policy
+            """
+            serialized_ctr = struct.pack('>I', self.policy_update_counter)
+            msg = binascii.hexlify(serialized_ctr)
+            msg += self.full_name
+            return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
 
-                Returns:
-                    str: Resource represented as
-                        (full_name='{}', name='{}' type='{}')
-                """
-                return '<Resource(full_name={}, name={} type={})>'.format(
-                    self.full_name, self.name, self.type)
+        def __repr__(self):
+            """String representation.
 
-        class Binding(base):
-            """Row for a binding between resource, roles and members."""
-
-            __tablename__ = bindings_tablename
-            id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
-                        primary_key=True)
-            # The collation type is used here to allow the String column
-            # to be case sensitive.
-            resource_type_name = Column(
-                String(512, collation='utf8mb4_bin'),
-                ForeignKey('{}.type_name'.format(resources_tablename)))
-            role_name = Column(String(128), ForeignKey(
-                '{}.name'.format(roles_tablename)))
-
-            resource = relationship('Resource', remote_side=[resource_type_name])
-            role = relationship('Role', remote_side=[role_name])
-
-            members = relationship('Member',
-                                   secondary=binding_members,
-                                   back_populates='bindings')
-
-            def __repr__(self):
-                """String Representation
-
-                Returns:
-                    str: Binding represented as
-                        (id='{}', role='{}', resource='{}' members='{}')
-                """
-                fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
-                return fmt_s.format(
-                    self.id,
-                    self.role_name,
-                    self.resource_type_name,
-                    self.members)
+            Returns:
+                str: Resource represented as
+                    (full_name='{}', name='{}' type='{}')
+            """
+            return '<Resource(full_name={}, name={} type={})>'.format(
+                self.full_name, self.name, self.type)
 
     Resource.children = relationship(
         'Resource', order_by=Resource.full_name, back_populates='parent')
+
+    class Binding(base):
+        """Row for a binding between resource, roles and members."""
+
+        __tablename__ = bindings_tablename
+        id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
+                    primary_key=True)
+        if db_dialect == 'sqlite':
+            resource_type_name = Column(
+                String(512),
+                ForeignKey('{}.type_name'.format(resources_tablename)))
+        else:
+            resource_type_name = Column(
+                String(512, collation='utf8mb4_bin'),
+                ForeignKey('{}.type_name'.format(resources_tablename)))
+
+        role_name = Column(String(128), ForeignKey(
+            '{}.name'.format(roles_tablename)))
+
+        resource = relationship('Resource', remote_side=[resource_type_name])
+        role = relationship('Role', remote_side=[role_name])
+
+        members = relationship('Member',
+                               secondary=binding_members,
+                               back_populates='bindings')
+
+        def __repr__(self):
+            """String Representation
+
+            Returns:
+                str: Binding represented as
+                    (id='{}', role='{}', resource='{}' members='{}')
+            """
+            fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
+            return fmt_s.format(
+                self.id,
+                self.role_name,
+                self.resource_type_name,
+                self.members)
 
     class Member(base):
         """Row entry for a policy member."""
