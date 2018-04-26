@@ -10,10 +10,10 @@ and managed.
 
 ## Branches
 
-### General Availability (GA) Branches
+### Main Branches
 
-GA branches are the main branches you'll use to inspect the currently stable &
-production-ready codebase, create a Pull Request (PR), or deploy to production.
+These are the branches that the Forseti Security project team use
+to do development, make releases, and build the website.
 
 * `dev`: development branch
 * `master`: latest stable release; suitable for deploy to production
@@ -21,32 +21,38 @@ production-ready codebase, create a Pull Request (PR), or deploy to production.
 
 The `dev` branch is the starting point where you can create a new PR,
 and where the PR will be merged into the codebase after code review. Although
-there are unit tests, the development branch is still considered to be unstable
-because functional and system tests are not yet complete.
+there are unit tests, the `dev` branch is still considered to be
+unreliable because things can change before they're merged into the `master`
+branch.
 
 The `master` branch is checkpointed code from the `dev` branch that
-has passed functional and system tests. The `master` branch is considered
+has passed QA and integration testing. The `master` branch is considered
 to be stable and suitable for production-use.
 
 ### Next-Generation Branches
 
-Branches will be also be created, to contain the development for the
-next-generation of Forseti.  These next-generation branches will be prefixed
+Branches will be also be created, to develop the next-generation
+of Forseti Security. These next-generation branches will be prefixed
 with a version number.
 
-Examples of the next-generation `N.0-<branches>`:
+Typically, the team will begin with a N.N-dev branch.  Once the the code reaches
+a point for Early Access, the team will create and announce an eap branch,
+e.g. N.N-eap1. Upon completion of an EAP phase the team will create
+Release Candidates and encourage testing, e.g. N.N-rc1. Once all testing
+requirements are satisfied the team will merge the completed code into N.N-dev
+then into N.N-master, then into dev, and finally master.
 
-* `2.0-dev`: development branch
-* `2.0-eap1`: early evaluation; end-to-end workflow complete
-* `2.0-rc1`: release candidate 1; feature complete
-* `2.0-rc2`: release candidate 2; final schema changes
-* `2.0-master`: latest stable release; suitable for deploy to production
-* `2.0-forsetisecurity.org`: documentations for Forseti website.
+An example of this workflow is described below for version 2.0:
 
+2.0-dev: A daily development branch.
+2.0-eap1: A branch used for Early Access testing.
+2.0-rc1: A possible release candidate.
+2.0-rc2: A second release candidate with additional changes.
+2.0-master: latest stable release; suitable for deploy to production
 
 After the support period has passed, the next-generation dev and master
 branches will be merged into the `dev` and `master` branches. Then, the
-`N.0-<branches>` will be deleted.  This way, `dev` and `master` are always
+`N.N-<name>` will be deleted. This way, `dev` and `master` are always
 maintained as the canonical branches, and all the commit histories are retained.
 
 ### Other Branches
