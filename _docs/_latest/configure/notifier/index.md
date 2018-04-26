@@ -5,16 +5,15 @@ order: 300
 
 # {{ page.title }}
 
-Forseti Notifier can send a variety of notifications to alert you
+Notifier can send a variety of notifications to alert you
 of Forseti events. You can configure notifications to send to different
 channels and in different formats.
 
 ### Notification Types
 
-  1. Inventory summary
-  1. Scanner summary
-  1. Violations
-  1. Cloud Security Command Center (Cloud SCC) findings
+  1. Inventory summary: Count of the resources added in the latest inventory crawl.
+  1. Violations: Individual violations that have been found from the latest scanner run. 
+  1. Cloud Security Command Center (Cloud SCC) findings: Violations converted to Cloud SCC findings format, that's ingestable by Cloud SCC.
   
 ### Notification Channels
 
@@ -24,14 +23,29 @@ channels and in different formats.
 
 ### Notification Formats
 
-  1. Human-readable data: .csv
+  1. Human-readable data: CSV
   1. Structured data: JSON
 
 ## Configuring Notifier
 
-### Inventory Summary (TBD)
+### Inventory Summary
 
-### Scanner Summary (TBD)
+This is a count of what resources have been crawled into Inventory,
+and outputted to Cloud Storage bucket.
+
+```yaml
+notifier:
+    inventory:
+      summary:
+        enabled: true
+        data_format: csv
+        gcs_path: gs://path_to_foo_bucket
+```
+
+  `true` enables the notification, and `false` disables the notification.
+* `data_format`: either `csv` or `json`
+* `gcs_path`: The Cloud Storage bucket to upload the inventory summary.
+
 
 ### Violation Notifications
 
@@ -41,13 +55,13 @@ follow the steps below:
 1. Open `forseti-security/configs/forseti_conf.yaml`.
 1. Navigate to the `notifier` > `resources` section.
 
-The following options are available, on a per resource basis. You can use
+On a per-resources basis, the following options are available. You can use
 any combination of notifiers for each resource.
 
-* `should_notify`: Controls whether violation for each resource should be sent.
+* `should_notify`: Whether a violation for each resource should be sent.
   `true` enables the notification, and `false` disables the notification.
 
-* `name`: The name of the notifier you want for each resource.  You can specify
+* `name`: The name of the notifier you want for each resource. You can specify
   multiple notifiers for each resource.
 
   The name must match the actual module name for each notifier in 
@@ -56,7 +70,7 @@ any combination of notifiers for each resource.
 
   These notifiers can be:
   1. `email_violations`
-  This emails all the violation data via SendGrid.  Multiple email recipients are
+  This emails all the violation data via SendGrid. Multiple email recipients are
   delimited by comma.
 
   1. `slack_webhook`
@@ -84,7 +98,7 @@ notifier:
              - name: email_violations_pipeline
                configuration:
                  sendgrid_api_key: foobar_key
-                 sender: forseti-notify@forsetisecurity.org
+                 sender: forseti-notify@mycompany.org
                  recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
              - name: slack_webhook_pipeline
                configuration:
@@ -93,8 +107,7 @@ notifier:
 
 ### Cloud SCC Findings
 
-Forseti violations can be output for integration with
-[Cloud SCC](https://cloud.google.com/security-command-center) on Google Cloud
+Violations can be shared with [Cloud Security Command Center](https://cloud.google.com/security-command-center) on Google Cloud
 Platform (GCP).
 
 1. Open `forseti-security/configs/forseti_conf.yaml`.
@@ -106,10 +119,10 @@ notifier:
     violation:
       cloud_scc:
         enabled: true
-        gcs_path: gs://inventoryscanner-henry.appspot.com
+        gcs_path: gs://<path to your GCS bucket>
 ```
 
-* `enabled`: Controls whether Cloud SCC findings should be sent.
+* `enabled`: Whether Cloud SCC findings should be sent.
   `true` enables the notification, and `false` disables the notification.
 * `gcs_path`: The Cloud Storage bucket to upload Forseti violations as Cloud SCC findings.
   [Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
