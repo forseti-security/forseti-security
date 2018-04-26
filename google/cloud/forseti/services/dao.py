@@ -258,52 +258,174 @@ def define_model(model_name, dbengine, model_seed):
                ForeignKey('{}.name'.format(members_tablename)),
                primary_key=True),
     )
+    db_dialect = dbengine.dialect.name
+    if db_dialect == 'sqlite':
+        # Sqlite doesn't support collation type, need to define different
+        # columns for different database engine.
+        class Resource(base):
+            """Row entry for a GCP resource."""
+            __tablename__ = resources_tablename
 
-    class Resource(base):
-        """Row entry for a GCP resource."""
-        __tablename__ = resources_tablename
+            full_name = Column(String(2048), nullable=False)
+            type_name = Column(String(512),
+                               primary_key=True)
+            name = Column(String(128), nullable=False)
+            type = Column(String(64), nullable=False)
+            policy_update_counter = Column(Integer, default=0)
+            display_name = Column(String(256), default='')
+            email = Column(String(256), default='')
+            data = Column(Text(16777215))
 
-        full_name = Column(String(2048), nullable=False)
-        type_name = Column(String(512),
-                           primary_key=True)
-        name = Column(String(128), nullable=False)
-        type = Column(String(64), nullable=False)
-        policy_update_counter = Column(Integer, default=0)
-        display_name = Column(String(256), default='')
-        email = Column(String(256), default='')
-        data = Column(Text(16777215))
+            parent_type_name = Column(
+                String(512),
+                ForeignKey('{}.type_name'.format(resources_tablename)))
+            parent = relationship('Resource', remote_side=[type_name])
+            bindings = relationship('Binding', back_populates='resource')
 
-        parent_type_name = Column(
-            String(512),
-            ForeignKey('{}.type_name'.format(resources_tablename)))
-        parent = relationship('Resource', remote_side=[type_name])
-        bindings = relationship('Binding', back_populates='resource')
+            def increment_update_counter(self):
+                """Increments counter for this object's db updates.
+                """
+                self.policy_update_counter += 1
 
-        def increment_update_counter(self):
-            """Increments counter for this object's db updates.
-            """
-            self.policy_update_counter += 1
+            def get_etag(self):
+                """Return the etag for this resource.
 
-        def get_etag(self):
-            """Return the etag for this resource.
+                Returns:
+                    str: etag to avoid race condition when set policy
+                """
+                serialized_ctr = struct.pack('>I', self.policy_update_counter)
+                msg = binascii.hexlify(serialized_ctr)
+                msg += self.full_name
+                return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
 
-            Returns:
-                str: etag to avoid race condition when set policy
-            """
-            serialized_ctr = struct.pack('>I', self.policy_update_counter)
-            msg = binascii.hexlify(serialized_ctr)
-            msg += self.full_name
-            return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
+            def __repr__(self):
+                """String representation.
 
-        def __repr__(self):
-            """String representation.
+                Returns:
+                    str: Resource represented as
+                        (full_name='{}', name='{}' type='{}')
+                """
+                return '<Resource(full_name={}, name={} type={})>'.format(
+                    self.full_name, self.name, self.type)
 
-            Returns:
-                str: Resource represented as
-                    (full_name='{}', name='{}' type='{}')
-            """
-            return '<Resource(full_name={}, name={} type={})>'.format(
-                self.full_name, self.name, self.type)
+        class Binding(base):
+            """Row for a binding between resource, roles and members."""
+
+            __tablename__ = bindings_tablename
+            id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
+                        primary_key=True)
+            resource_type_name = Column(
+                String(512),
+                ForeignKey('{}.type_name'.format(resources_tablename)))
+            role_name = Column(String(128), ForeignKey(
+                '{}.name'.format(roles_tablename)))
+
+            resource = relationship('Resource', remote_side=[resource_type_name])
+            role = relationship('Role', remote_side=[role_name])
+
+            members = relationship('Member',
+                                   secondary=binding_members,
+                                   back_populates='bindings')
+
+            def __repr__(self):
+                """String Representation
+
+                Returns:
+                    str: Binding represented as
+                        (id='{}', role='{}', resource='{}' members='{}')
+                """
+                fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
+                return fmt_s.format(
+                    self.id,
+                    self.role_name,
+                    self.resource_type_name,
+                    self.members)
+
+    else:
+        class Resource(base):
+            """Row entry for a GCP resource."""
+            __tablename__ = resources_tablename
+
+            full_name = Column(String(2048), nullable=False)
+            # The collation type is used here to allow the String column
+            # to be case sensitive.
+            type_name = Column(String(512, collation='utf8mb4_bin'),
+                               primary_key=True)
+            name = Column(String(128), nullable=False)
+            type = Column(String(64), nullable=False)
+            policy_update_counter = Column(Integer, default=0)
+            display_name = Column(String(256), default='')
+            email = Column(String(256), default='')
+            data = Column(Text(16777215))
+
+            # The collation type is used here to allow the String column
+            # to be case sensitive.
+            parent_type_name = Column(
+                String(512, collation='utf8mb4_bin'),
+                ForeignKey('{}.type_name'.format(resources_tablename)))
+            parent = relationship('Resource', remote_side=[type_name])
+            bindings = relationship('Binding', back_populates='resource')
+
+            def increment_update_counter(self):
+                """Increments counter for this object's db updates.
+                """
+                self.policy_update_counter += 1
+
+            def get_etag(self):
+                """Return the etag for this resource.
+
+                Returns:
+                    str: etag to avoid race condition when set policy
+                """
+                serialized_ctr = struct.pack('>I', self.policy_update_counter)
+                msg = binascii.hexlify(serialized_ctr)
+                msg += self.full_name
+                return hmac.new(model_seed.encode('utf-8'), msg).hexdigest()
+
+            def __repr__(self):
+                """String representation.
+
+                Returns:
+                    str: Resource represented as
+                        (full_name='{}', name='{}' type='{}')
+                """
+                return '<Resource(full_name={}, name={} type={})>'.format(
+                    self.full_name, self.name, self.type)
+
+        class Binding(base):
+            """Row for a binding between resource, roles and members."""
+
+            __tablename__ = bindings_tablename
+            id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
+                        primary_key=True)
+            # The collation type is used here to allow the String column
+            # to be case sensitive.
+            resource_type_name = Column(
+                String(512, collation='utf8mb4_bin'),
+                ForeignKey('{}.type_name'.format(resources_tablename)))
+            role_name = Column(String(128), ForeignKey(
+                '{}.name'.format(roles_tablename)))
+
+            resource = relationship('Resource', remote_side=[resource_type_name])
+            role = relationship('Role', remote_side=[role_name])
+
+            members = relationship('Member',
+                                   secondary=binding_members,
+                                   back_populates='bindings')
+
+            def __repr__(self):
+                """String Representation
+
+                Returns:
+                    str: Binding represented as
+                        (id='{}', role='{}', resource='{}' members='{}')
+                """
+                fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
+                return fmt_s.format(
+                    self.id,
+                    self.role_name,
+                    self.resource_type_name,
+                    self.members)
 
     Resource.children = relationship(
         'Resource', order_by=Resource.full_name, back_populates='parent')
@@ -358,39 +480,6 @@ def define_model(model_name, dbengine, model_seed):
                 self.parent,
                 self.member)
 
-    class Binding(base):
-        """Row for a binding between resource, roles and members."""
-
-        __tablename__ = bindings_tablename
-        id = Column(Integer, Sequence('{}_id_seq'.format(bindings_tablename)),
-                    primary_key=True)
-        resource_type_name = Column(
-            String(512),
-            ForeignKey('{}.type_name'.format(resources_tablename)))
-        role_name = Column(String(128), ForeignKey(
-            '{}.name'.format(roles_tablename)))
-
-        resource = relationship('Resource', remote_side=[resource_type_name])
-        role = relationship('Role', remote_side=[role_name])
-
-        members = relationship('Member',
-                               secondary=binding_members,
-                               back_populates='bindings')
-
-        def __repr__(self):
-            """String Representation
-
-            Returns:
-                str: Binding represented as
-                    (id='{}', role='{}', resource='{}' members='{}')
-            """
-            fmt_s = '<Binding(id={}, role={}, resource={} members={})>'
-            return fmt_s.format(
-                self.id,
-                self.role_name,
-                self.resource_type_name,
-                self.members)
-
     class Role(base):
         """Row entry for an IAM role."""
 
@@ -440,28 +529,6 @@ def define_model(model_name, dbengine, model_seed):
         TBL_ROLE = Role
         TBL_RESOURCE = Resource
         TBL_MEMBERSHIP = group_members
-
-        @classmethod
-        def update_resource_table(cls, db_dialect):
-            """Update the resource table according to the db diablect.
-            The reason why this is needed is because MySQL and SQLite don't
-            share the same collation type and we need to specify the collation
-            type in MySQL in order to make the column case sensitive.
-
-            Args:
-                db_dialect (String): MySQL or SQLite.
-            """
-
-            if db_dialect.lower() != 'sqlite':
-                Resource.type_name = Column(
-                    String(512, collation='utf8mb4_bin'),
-                    primary_key=True)
-                Resource.parent_type_name = Column(
-                    String(512, collation='utf8mb4_bin'),
-                    ForeignKey('{}.type_name'.format(resources_tablename)))
-                Binding.resource_type_name = Column(
-                    String(512, collation='utf8mb4_bin'),
-                    ForeignKey('{}.type_name'.format(resources_tablename)))
 
         @classmethod
         def delete_all(cls, engine):
@@ -1930,8 +1997,6 @@ def define_model(model_name, dbengine, model_seed):
             return session.query(Member).filter(Member.name == name).all()
 
     base.metadata.create_all(dbengine)
-    db_dialect = dbengine.dialect.name
-    ModelAccess.update_resource_table(db_dialect)
     return sessionmaker(bind=dbengine), ModelAccess
 
 
