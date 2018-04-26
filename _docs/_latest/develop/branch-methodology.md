@@ -5,7 +5,7 @@ order: 003
 
 #  {{ page.title }}
 
-This page describes the branches in the Forseti repo and how they're used
+This page describes the branches in the Forseti repositorys and how they're used
 and managed.
 
 ## Branches
