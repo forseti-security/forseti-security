@@ -52,7 +52,7 @@ An example of this workflow is described below for version 2.0:
 
 After the support period has passed, the next-generation dev and master
 branches will be merged into the `dev` and `master` branches. Then, the
-`N.N-<name>` will be deleted. This way, `dev` and `master` are always
+`N.N-<name>` branches will be deleted. This way, `dev` and `master` are always
 maintained as the canonical branches, and all the commit histories are retained.
 
 ### Other Branches
