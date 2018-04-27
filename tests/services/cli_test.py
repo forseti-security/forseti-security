@@ -383,7 +383,7 @@ class RunExplainerTest(ForsetiTestCase):
 
 
 class MainTest(ForsetiTestCase):
-    def test_value_error_raised(self):
+    def test_main_with_value_error_raised(self):
         mock_client = mock.MagicMock()
         mock_parser = mock.MagicMock()
         mock_config_env = mock.MagicMock()
@@ -399,6 +399,22 @@ class MainTest(ForsetiTestCase):
             cli.main([], mock_config_env, mock_client)
             mock_parser.error.assert_called_with(
                 'please specify either a role or a role prefix')
+
+    def test_main_without_value_error_raised(self):
+        mock_client = mock.MagicMock()
+        mock_parser = mock.MagicMock()
+        mock_config_env = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = ['r1', 'r2']
+        mock_config.role_prefixes = None
+        mock_config.out_format = 'text'
+        mock_config.service = 'explainer'
+        with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
+            mock_create_parser.return_value = mock_parser
+            mock_parser.parse_args.return_value = mock_config
+            cli.main([], mock_config_env, mock_client)
+            mock_parser.error.assert_not_called()
 
 
 if __name__ == '__main__':
