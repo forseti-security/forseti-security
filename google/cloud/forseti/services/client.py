@@ -338,7 +338,7 @@ class InventoryClient(ForsetiClient):
         """Purge all inventory data older than the retention days.
 
         Args:
-            retention_days (str): Days of inventory tables to retain.
+            retention_days (str): Days of inventory data to retain.
 
         Returns:
             proto: the returned proto message of purge inventory.

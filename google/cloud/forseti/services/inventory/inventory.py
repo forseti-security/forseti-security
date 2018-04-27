@@ -339,6 +339,7 @@ class Inventory(object):
 
         purged_inventory_indexes = []
         for inventory_index in inventory_indexes_to_purge:
+            _ = self.delete(inventory_index.id)
             purged_inventory_indexes.append(inventory_index.id)
 
         purged_inventory_indexes_as_str = ', '.join(purged_inventory_indexes)
