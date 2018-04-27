@@ -90,7 +90,6 @@ class PurgeInventoryTest(ForsetiTestCase):
             
         return session      
 
-
     def get_inventory_api(self):
 
         mock_config = mock.MagicMock()
