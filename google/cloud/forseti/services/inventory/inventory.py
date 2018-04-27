@@ -319,17 +319,17 @@ class Inventory(object):
         Returns:
             str: Purge result.
         """
-        LOGGER.debug('retention_days is: %s', retention_days)
+        LOGGER.info('retention_days is: %s', retention_days)
 
         if retention_days < 0:
             result_message = 'Purge is disabled.  Nothing will be purged.'
-            LOGGER.debug(result_message)
+            LOGGER.info(result_message)
             return result_message
 
         utc_now = date_time.get_utc_now_datetime()
         cutoff_datetime = (
             utc_now - datetime.timedelta(days=retention_days))
-        LOGGER.debug('Cut-off datetime to start purging is: %s',
+        LOGGER.info('Cut-off datetime to start purging is: %s',
                      cutoff_datetime)
 
         with self.config.scoped_session() as session:
@@ -339,7 +339,7 @@ class Inventory(object):
 
         if not inventory_indexes_to_purge:
             result_message = 'No inventory to be purged.'
-            LOGGER.debug(result_message)
+            LOGGER.info(result_message)
             return result_message
 
         purged_inventory_indexes = []
@@ -352,6 +352,6 @@ class Inventory(object):
         result_message = (
             'Inventory data from these inventory indexes have '
             'been purged: {}').format(purged_inventory_indexes_as_str)
-        LOGGER.debug(result_message)
+        LOGGER.info(result_message)
 
         return result_message
