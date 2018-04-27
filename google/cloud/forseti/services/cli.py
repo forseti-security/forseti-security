@@ -811,6 +811,8 @@ def run_explainer(client, config, output, _):
 
     def do_query_access_by_authz():
         """Query access by role or permission"""
+        if not any([config.role, config.permission]):
+            raise ValueError('please specify either a role or a permission')
         for access in (
                 client.query_access_by_permissions(config.role,
                                                    config.permission,

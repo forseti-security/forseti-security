@@ -366,23 +366,19 @@ class RunExplainerTest(ForsetiTestCase):
             'please specify either a role or a role prefix',
             ctxt.exception.message)
 
-    def test_list_permissions_with_a_role(self):
+    def test_query_access_by_authz_with_no_role_and_no_permission(self):
         client = mock.MagicMock()
         config = mock.MagicMock()
-        config.action = 'list_permissions'
-        config.roles = ['r1']
-        config.role_prefixes = None
+        config.action = 'access_by_authz'
+        config.role = None
+        config.permission = None
         output = mock.MagicMock()
-        cli.run_explainer(client, config, output, mock.MagicMock())
+        with self.assertRaises(ValueError) as ctxt:
+            cli.run_explainer(client, config, output, mock.MagicMock())
+        self.assertEquals(
+            'please specify either a role or a permission',
+            ctxt.exception.message)
 
-    def test_list_permissions_with_a_role_prefix(self):
-        client = mock.MagicMock()
-        config = mock.MagicMock()
-        config.action = 'list_permissions'
-        config.roles = None
-        config.role_prefixes = ['rp1']
-        output = mock.MagicMock()
-        cli.run_explainer(client, config, output, mock.MagicMock())
 
 
 if __name__ == '__main__':
