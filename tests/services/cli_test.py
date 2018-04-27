@@ -354,31 +354,51 @@ class ImporterTest(ForsetiTestCase):
 
 class RunExplainerTest(ForsetiTestCase):
     def test_list_permissions_no_roles_and_no_role_prefixes(self):
-        client = mock.MagicMock()
-        config = mock.MagicMock()
-        config.action = 'list_permissions'
-        config.roles = None
-        config.role_prefixes = None
-        output = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = None
+        mock_config.role_prefixes = None
+        mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
-            cli.run_explainer(client, config, output, mock.MagicMock())
+            cli.run_explainer(
+                mock_client, mock_config, mock_output, mock.MagicMock())
         self.assertEquals(
             'please specify either a role or a role prefix',
             ctxt.exception.message)
 
     def test_query_access_by_authz_with_no_role_and_no_permission(self):
-        client = mock.MagicMock()
-        config = mock.MagicMock()
-        config.action = 'access_by_authz'
-        config.role = None
-        config.permission = None
-        output = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'access_by_authz'
+        mock_config.role = None
+        mock_config.permission = None
+        mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
-            cli.run_explainer(client, config, output, mock.MagicMock())
+            cli.run_explainer(
+                mock_client, mock_config, mock_output, mock.MagicMock())
         self.assertEquals(
             'please specify either a role or a permission',
             ctxt.exception.message)
 
+
+class MainTest(ForsetiTestCase):
+    def test_value_error_raised(self):
+        mock_client = mock.MagicMock()
+        mock_parser = mock.MagicMock()
+        mock_config_env = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = None
+        mock_config.role_prefixes = None
+        mock_config.out_format = 'text'
+        mock_config.service = 'explainer'
+        with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
+            mock_create_parser.return_value = mock_parser
+            mock_parser.parse_args.return_value = mock_config
+            cli.main([], mock_config_env, mock_client)
+            mock_parser.error.assert_called_with(
+                'please specify either a role or a role prefix')
 
 
 if __name__ == '__main__':
