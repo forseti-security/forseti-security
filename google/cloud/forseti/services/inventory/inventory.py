@@ -330,7 +330,7 @@ class Inventory(object):
         cutoff_datetime = (
             utc_now - datetime.timedelta(days=retention_days))
         LOGGER.info('Cut-off datetime to start purging is: %s',
-                     cutoff_datetime)
+                    cutoff_datetime)
 
         with self.config.scoped_session() as session:
             inventory_indexes_to_purge = (
