@@ -32,13 +32,14 @@ class DefaultParser(ArgumentParser):
     error message, it will print the help message (-h).
     """
 
-    def error(self, message):
+    def error(self, message=None):
         """This method will be triggered when error occurred.
 
         Args:
-            _ (str): Error message.
+            message (str): Error message.
         """
-        sys.stderr.write('Argument error: %s.\n' % message)
+        if message:
+            sys.stderr.write('Argument error: %s.\n' % message)
         self.print_usage()
         sys.exit(2)
 
@@ -760,7 +761,11 @@ def run_explainer(client, config, output, _):
         output.write(result)
 
     def do_list_permissions():
-        """List permissions by roles or role prefixes."""
+        """List permissions by roles or role prefixes.
+
+        Raises:
+            ValueError: if neither a role nor a role prefix is set
+        """
         if not any([config.roles, config.role_prefixes]):
             raise ValueError('please specify either a role or a role prefix')
         result = client.query_permissions_by_roles(config.roles,
@@ -810,7 +815,11 @@ def run_explainer(client, config, output, _):
         output.write(result)
 
     def do_query_access_by_authz():
-        """Query access by role or permission"""
+        """Query access by role or permission
+
+        Raises:
+            ValueError: if neither a role nor a permission is set
+        """
         if not any([config.role, config.permission]):
             raise ValueError('please specify either a role or a permission')
         for access in (
