@@ -32,12 +32,13 @@ class DefaultParser(ArgumentParser):
     error message, it will print the help message (-h).
     """
 
-    def error(self, _):
+    def error(self, message):
         """This method will be triggered when error occurred.
 
         Args:
             _ (str): Error message.
         """
+        sys.stderr.write('Argument error: %s.\n' % message)
         self.print_usage()
         sys.exit(2)
 
@@ -761,7 +762,7 @@ def run_explainer(client, config, output, _):
     def do_list_permissions():
         """List permissions by roles or role prefixes."""
         if not any([config.roles, config.role_prefixes]):
-            raise ValueError('Please specify either a role or a role prefix')
+            raise ValueError('please specify either a role or a role prefix')
         result = client.query_permissions_by_roles(config.roles,
                                                    config.role_prefixes)
         output.write(result)
@@ -1008,7 +1009,10 @@ def main(args,
     if not services:
         services = SERVICES
     output = outputs[config.out_format]()
-    services[config.service](client, config, output, config_env)
+    try:
+        services[config.service](client, config, output, config_env)
+    except ValueError as e:
+        parser.error(e.message)
     return config
 
 
