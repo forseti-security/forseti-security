@@ -153,10 +153,6 @@ class PurgeInventoryTest(ForsetiTestCase):
         inventory_api = self.get_inventory_api()
         inventory_api.purge(retention_days=30)
 
-        #test777 = session.query(InventoryIndex).get('one_day_old')
-        #print test777
-        #print '11111' * 80
-        
         inventory_indices = session.query(InventoryIndex).all()
         self.assertEquals(3, len(inventory_indices))
 
