@@ -321,6 +321,11 @@ class Inventory(object):
         """
         LOGGER.debug('retention_days is: %s', retention_days)
 
+        if retention_days < 0:
+            result_message = 'Purge is disabled.  Nothing will be purged.'
+            LOGGER.debug(result_message)
+            return result_message
+
         utc_now = date_time.get_utc_now_datetime()
         cutoff_datetime = (
             utc_now - datetime.timedelta(days=retention_days))
