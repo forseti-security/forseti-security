@@ -354,6 +354,7 @@ class ImporterTest(ForsetiTestCase):
 
 class RunExplainerTest(ForsetiTestCase):
     def test_list_permissions_no_roles_and_no_role_prefixes(self):
+        ignored = mock.MagicMock()
         mock_client = mock.MagicMock()
         mock_config = mock.MagicMock()
         mock_config.action = 'list_permissions'
@@ -361,13 +362,33 @@ class RunExplainerTest(ForsetiTestCase):
         mock_config.role_prefixes = None
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
-            cli.run_explainer(
-                mock_client, mock_config, mock_output, mock.MagicMock())
+            cli.run_explainer(mock_client, mock_config, mock_output, ignored)
         self.assertEquals(
             'please specify either a role or a role prefix',
             ctxt.exception.message)
 
+    def test_list_permissions_with_role_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = ['r1']
+        mock_config.role_prefixes = None
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
+    def test_list_permissions_with_role_prefix_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = []
+        mock_config.role_prefixes = ['rp1']
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
     def test_query_access_by_authz_with_no_role_and_no_permission(self):
+        ignored = mock.MagicMock()
         mock_client = mock.MagicMock()
         mock_config = mock.MagicMock()
         mock_config.action = 'access_by_authz'
@@ -375,11 +396,30 @@ class RunExplainerTest(ForsetiTestCase):
         mock_config.permission = None
         mock_output = mock.MagicMock()
         with self.assertRaises(ValueError) as ctxt:
-            cli.run_explainer(
-                mock_client, mock_config, mock_output, mock.MagicMock())
+            cli.run_explainer(mock_client, mock_config, mock_output, ignored)
         self.assertEquals(
             'please specify either a role or a permission',
             ctxt.exception.message)
+
+    def test_query_access_by_authz_with_role_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'access_by_authz'
+        mock_config.role = ['role']
+        mock_config.permission = None
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
+    def test_query_access_by_authz_with_permission_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'access_by_authz'
+        mock_config.role = []
+        mock_config.permission = ['permission']
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
 
 
 class MainTest(ForsetiTestCase):
