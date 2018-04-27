@@ -760,6 +760,8 @@ def run_explainer(client, config, output, _):
 
     def do_list_permissions():
         """List permissions by roles or role prefixes."""
+        if not any([config.roles, config.role_prefixes]):
+            raise ValueError('Please specify either a role or a role prefix')
         result = client.query_permissions_by_roles(config.roles,
                                                    config.role_prefixes)
         output.write(result)

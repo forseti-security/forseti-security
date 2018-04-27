@@ -352,5 +352,20 @@ class ImporterTest(ForsetiTestCase):
                         e.message))
 
 
+class RunExplainerTest(ForsetiTestCase):
+    def test_list_permissions_no_roles_and_no_role_prefixes(self):
+        client = mock.MagicMock()
+        config = mock.MagicMock()
+        config.action = 'list_permissions'
+        config.roles = None
+        config.role_prefixes = None
+        output = mock.MagicMock()
+        with self.assertRaises(ValueError) as ctxt:
+            cli.run_explainer(client, config, output, mock.MagicMock())
+        self.assertEquals(
+            'Please specify either a role or a role prefix',
+            ctxt.exception.message)
+
+
 if __name__ == '__main__':
     unittest.main()
