@@ -293,7 +293,7 @@ class AppEngineClient(object):
 
         Returns:
             dict: A Service resource dict for a given project_id and
-                service_id.
+            service_id.
         """
         try:
             results = self.repository.app_services.get(
@@ -339,7 +339,7 @@ class AppEngineClient(object):
 
         Returns:
             dict: A Version resource dict for a given project_id and
-                service_id.
+            service_id.
         """
         try:
             results = self.repository.service_versions.get(
@@ -389,7 +389,7 @@ class AppEngineClient(object):
 
         Returns:
             dict: An Instance resource dict for a given project_id,
-                service_id and version_id.
+            service_id and version_id.
         """
         try:
             results = self.repository.version_instances.get(

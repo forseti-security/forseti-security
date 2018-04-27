@@ -111,8 +111,8 @@ class BatchFirewallEnforcer(object):
 
         Returns:
           enforcer_log_pb2.EnforcerLog: The EnforcerLog proto for the last run,
-              including individual results for each project, and a summary of
-              all results.
+          including individual results for each project, and a summary of all
+          results.
         """
         if self._dry_run:
             LOGGER.info('Simulating changes')

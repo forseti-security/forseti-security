@@ -67,7 +67,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
 
         Returns:
             RuleViolation: A rule violation tuple with all data about the
-                forwarding rule that didnt pass a white list
+            forwarding rule that didnt pass a white list
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()

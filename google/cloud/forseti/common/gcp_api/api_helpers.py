@@ -31,7 +31,7 @@ def get_delegated_credential(delegated_account, scopes):
 
     Returns:
         service_account.Credentials: Credentials as built by
-            google.oauth2.service_account.
+        google.oauth2.service_account.
     """
     request = requests.Request()
 

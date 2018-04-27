@@ -129,12 +129,14 @@ class BigQueryClient(object):
         Returns:
             list: A list of project_ids enabled for bigquery.
 
+            If there are no project_ids enabled for bigquery an empty list will
+            be returned.
+
+        An example return value:
+
             ['project-id',
              'project-id',
              '...']
-
-            If there are no project_ids enabled for bigquery an empty list will
-            be returned.
         """
         try:
             results = self.repository.projects.list(
@@ -158,7 +160,9 @@ class BigQueryClient(object):
             project_id (str): String representing the project id.
 
         Returns:
-            list: A list of datasetReference objects for a given project_id.
+            list: A list of datasetReference objects for a given project_id
+
+        An example return value:
 
             [{'datasetId': 'dataset-id',
               'projectId': 'project-id'},
@@ -185,10 +189,15 @@ class BigQueryClient(object):
 
         Returns:
             list: A list of access lists for a given project_id and dataset_id.
-            [{'role': 'WRITER', 'specialGroup': 'projectWriters'},
-             {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-             {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
-             {'role': 'READER', 'specialGroup': 'projectReaders'}]
+
+        An example return value:
+
+            [
+                {'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+                {'role': 'READER', 'specialGroup': 'projectReaders'}
+            ]
         """
         try:
             results = self.repository.datasets.get(resource=project_id,
