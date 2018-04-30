@@ -265,7 +265,8 @@ class InventoryImporter(object):
             member = 'group/{}'.format(data['email'])
         else:
             raise Exception('Unknown gsuite principal: {}'.format(gsuite_type))
-        if member not in self.member_cache:
+        if member not in self.member_cache and \
+            member not in self.member_cache_policies:
             m_type, name = member.split('/', 1)
             self.member_cache[member] = self.dao.TBL_MEMBER(
                 name=member,
@@ -341,7 +342,8 @@ class InventoryImporter(object):
         # of this domain, so we might see them for
         # the first time here.
         member = member_name(child)
-        if member not in self.member_cache:
+        if member not in self.member_cache and \
+            member not in self.member_cache_policies:
             m_type, name = member.split('/', 1)
             self.member_cache[member] = self.dao.TBL_MEMBER(
                 name=member,
