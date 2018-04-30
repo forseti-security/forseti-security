@@ -208,7 +208,7 @@ class Inventory(object):
         """Initialize
 
         Args:
-            config (object): ServiceConfig in server
+            config (ServiceConfig): ServiceConfig in server
         """
         self.config = config
         init_storage(self.config.get_engine())
@@ -324,8 +324,8 @@ class Inventory(object):
         if not retention_days:
             LOGGER.info('retention_days is not specified.  Will use '
                         'configuration default.')
-            retention_days = self.config.inventory_config.retention_days
-
+            retention_days = (
+                self.config.inventory_config.get_retention_days_configs())
         retention_days = int(retention_days)
 
         if retention_days < 0:

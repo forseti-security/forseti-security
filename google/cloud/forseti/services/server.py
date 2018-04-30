@@ -112,7 +112,7 @@ class AbstractServiceConfig(object):
         raise NotImplementedError()
 
 
-class AbstractInventoryConfig(object):
+class AbstractInventoryConfig(dict):
     """Abstract base class for service configuration. This class
     is used to implement dependency injection for the gRPC services."""
 
