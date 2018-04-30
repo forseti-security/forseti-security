@@ -299,7 +299,6 @@ class Inventory(BASE):
             new_row (Inventory): the Inventory row of the new resource
 
         """
-
         self.category = new_row.category
         self.resource_id = new_row.resource_id
         self.resource_type = new_row.resource_type
