@@ -322,7 +322,7 @@ class Inventory(object):
         LOGGER.info('retention_days is: %s', retention_days)
 
         if not retention_days:
-            LOGGER.info('Client did not specify retention_days.  Will use '
+            LOGGER.info('retention_days is not specified.  Will use '
                         'configuration default.')
             retention_days = self.config.inventory_config.retention_days
 
