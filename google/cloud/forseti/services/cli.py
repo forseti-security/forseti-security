@@ -80,6 +80,13 @@ def define_inventory_parser(parent):
         'id',
         help='Inventory id to delete')
 
+    purge_inventory_parser = action_subparser.add_parser(
+        'purge',
+        help='Purge all inventory data older than the retention days.')
+    purge_inventory_parser.add_argument(
+        'retention_days',
+        help='Number of days to retain the data.')
+
     _ = action_subparser.add_parser(
         'list',
         help='List all inventory')
@@ -727,11 +734,17 @@ def run_inventory(client, config, output, _):
         result = client.delete(config.id)
         output.write(result)
 
+    def do_purge_inventory():
+        """Purge all inventory data older than the retention days."""
+        result = client.purge(config.retention_days)
+        output.write(result)
+
     actions = {
         'create': do_create_inventory,
         'list': do_list_inventory,
         'get': do_get_inventory,
-        'delete': do_delete_inventory}
+        'delete': do_delete_inventory,
+        'purge': do_purge_inventory}
 
     actions[config.action]()
 
