@@ -129,6 +129,8 @@ class InventoryImporter(object):
 
         self.found_root = False
 
+    # pylint: disable=too-many-branches
+    # TODO: refactor run() to have fewer branches.
     def run(self):
         """Runs the import.
 
@@ -224,6 +226,16 @@ class InventoryImporter(object):
                                    fetch_service_config=True),
                     None,
                     self._convert_service_config,
+                    None,
+                    3000
+                )
+
+                self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(gcp_type_list,
+                                   fetch_enabled_apis=True),
+                    None,
+                    self._convert_enabled_apis,
                     None,
                     3000
                 )
@@ -723,6 +735,30 @@ class InventoryImporter(object):
         self.session.add(resource)
         self._add_to_cache(resource)
 
+    def _convert_enabled_apis(self, enabled_apis):
+        """Convert a description of enabled APIs to a database object.
+
+        Args:
+            enabled_apis (object): Enabled APIs description to store.
+        """
+        parent, full_res_name = self._get_parent(enabled_apis)
+        apis_type_name = to_type_name(
+            enabled_apis.get_category(),
+            ':'.join(parent.type_name.split('/')))
+        apis_res_name = to_full_resource_name(full_res_name, apis_type_name)
+        if not self._is_resource_unique(apis_type_name):
+            return
+        resource = self.dao.TBL_RESOURCE(
+            full_name=apis_res_name,
+            type_name=apis_type_name,
+            name=enabled_apis.get_resource_id(),
+            type=enabled_apis.get_category(),
+            data=enabled_apis.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource)
+
     def _convert_dataset_policy(self, dataset_policy):
         """Convert a dataset policy to a database object.
 
@@ -796,6 +832,7 @@ class InventoryImporter(object):
             type=iam_policy.get_category(),
             data=iam_policy.get_resource_data_raw(),
             parent_type_name=parent_type_name)
+
 
         self.session.add(resource)
         self._add_to_cache(resource)

@@ -62,7 +62,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'content-type': 'application/json'
         })
         response_403.reason = 'Failed'
-        self.error_403 = project_enforcer.errors.HttpError(response_403, '', '')
+        self.error_403 = project_enforcer.errors.HttpError(response_403, '',
+                                                           uri='')
 
         # used in get_firewalls_quota
         self.gce_service.projects().get().execute.return_value = {}
@@ -767,7 +768,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
                               'projects?pendingDeletion=true to undelete the '
                               'project.')
         error_deleted_403 = project_enforcer.errors.HttpError(deleted_403, '',
-                                                              '')
+                                                              uri='')
 
         self.gce_service.firewalls().list().execute.side_effect = (
             error_deleted_403)
@@ -802,7 +803,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
         })
         deleted_400.reason = 'Invalid value for project: %s' % self.project
         error_deleted_400 = project_enforcer.errors.HttpError(deleted_400, '',
-                                                              '')
+                                                              uri='')
 
         self.gce_service.firewalls().list().execute.side_effect = (
             error_deleted_400)
@@ -842,7 +843,7 @@ class ProjectEnforcerTest(ForsetiTestCase):
             'wait a few minutes for the action to propagate to our systems and '
             'retry.')
         error_api_disabled_403 = project_enforcer.errors.HttpError(
-            api_disabled_403, '', '')
+            api_disabled_403, '', uri='')
 
         self.gce_service.firewalls().list().execute.side_effect = (
             error_api_disabled_403)

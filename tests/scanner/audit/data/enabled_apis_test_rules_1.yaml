@@ -1,0 +1,31 @@
+rules:
+  - name: 'Only allow foo bar baz'
+    mode: whitelist
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    services:
+      - 'foo.googleapis.com'
+      - 'bar.googleapis.com'
+      - 'baz.googleapis.com'
+  - name: 'Allow qux in organization 234'
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - '234'
+    services:
+      - 'foo.googleapis.com'
+      - 'bar.googleapis.com'
+      - 'baz.googleapis.com'
+      - 'qux.googleapis.com'
+  - name: 'Disallow bar in some projects'
+    mode: blacklist
+    resource:
+      - type: project
+        resource_ids:
+          - 'project-1'
+          - 'project-2'
+    services:
+      - 'bar.googleapis.com'

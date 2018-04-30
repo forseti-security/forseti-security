@@ -15,6 +15,7 @@
 """Wrapper for Admin Directory  API client."""
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
+from google.auth.exceptions import RefreshError
 
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
@@ -29,6 +30,14 @@ REQUIRED_SCOPES = frozenset([
     'https://www.googleapis.com/auth/admin.directory.user.readonly'
 ])
 
+GSUITE_AUTH_FAILURE_MESSAGE = (
+    'Failed to retrieve G Suite data due to authentication '
+    'failure. Please make sure your forseti_server_config.yaml '
+    'file contains the most updated information and enable G '
+    'Suite Groups Collection if you haven\'t done so. Instructions'
+    ' on how to enable: https://forsetisecurity.org/docs/howto/'
+    'configure/gsuite-group-collection.html')
+
 
 class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
     """Admin Directory API Respository Client."""
@@ -41,7 +50,7 @@ class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
         """Constructor.
 
         Args:
-            credentials (object): An oauth2client credentials object. The admin
+            credentials (object): An google.auth credentials object. The admin
                 directory API needs a service account credential with delegated
                 super admin role.
             quota_max_calls (int): Allowed requests per <quota_period> for the
@@ -140,8 +149,6 @@ class _AdminDirectoryUsersRepository(
 class AdminDirectoryClient(object):
     """GSuite Admin Directory API Client."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -149,20 +156,13 @@ class AdminDirectoryClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_admin_api_calls_per_100_seconds')
-        quota_period = self.DEFAULT_QUOTA_PERIOD
-        if not max_calls:
-            max_calls = global_configs.get('max_admin_api_calls_per_day')
-            quota_period = 86400.0
-            LOGGER.error('Configuration is using a deprecated directive: '
-                         '"max_admin_api_calls_per_day". Please switch to '
-                         'using "max_admin_api_calls_per_100_seconds" instead. '
-                         'See the sample configuration file for reference.')
+        credentials = api_helpers.get_delegated_credential(
+            global_configs.get('domain_super_admin_email'),
+            REQUIRED_SCOPES)
 
-        credentials = api_helpers.credential_from_keyfile(
-            global_configs.get('groups_service_account_key_file'),
-            REQUIRED_SCOPES,
-            global_configs.get('domain_super_admin_email'))
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'admin')
+
         self.repository = AdminDirectoryRepositoryClient(
             credentials=credentials,
             quota_max_calls=max_calls,
@@ -206,6 +206,7 @@ class AdminDirectoryClient(object):
 
         Raises:
             api_errors.ApiExecutionError: If groups retrieval fails.
+            RefreshError: If the authentication fails.
         """
         try:
             paged_results = self.repository.groups.list(customer=customer_id)
@@ -215,6 +216,10 @@ class AdminDirectoryClient(object):
                          ' flattened_results = %s',
                          customer_id, flattened_results)
             return flattened_results
+        except RefreshError as e:
+            # Authentication failed, log before raise.
+            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
+            raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
 
@@ -234,6 +239,7 @@ class AdminDirectoryClient(object):
 
         Raises:
             api_errors.ApiExecutionError: If groups retrieval fails.
+            RefreshError: If the authentication fails.
         """
         try:
             paged_results = self.repository.users.list(customer=customer_id,
@@ -244,5 +250,9 @@ class AdminDirectoryClient(object):
                          ' flattened_results = %s',
                          customer_id, flattened_results)
             return flattened_results
+        except RefreshError as e:
+            # Authentication failed, log before raise.
+            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
+            raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('users', e)

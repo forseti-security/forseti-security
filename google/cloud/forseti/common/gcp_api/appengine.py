@@ -249,7 +249,6 @@ class AppEngineClient(object):
 
     https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps
     """
-    DEFAULT_QUOTA_PERIOD = 1.0
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -258,10 +257,12 @@ class AppEngineClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_appengine_api_calls_per_second')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'appengine')
+
         self.repository = AppEngineRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_app(self, project_id):
@@ -292,7 +293,7 @@ class AppEngineClient(object):
 
         Returns:
             dict: A Service resource dict for a given project_id and
-                service_id.
+            service_id.
         """
         try:
             results = self.repository.app_services.get(
@@ -338,7 +339,7 @@ class AppEngineClient(object):
 
         Returns:
             dict: A Version resource dict for a given project_id and
-                service_id.
+            service_id.
         """
         try:
             results = self.repository.service_versions.get(
@@ -388,7 +389,7 @@ class AppEngineClient(object):
 
         Returns:
             dict: An Instance resource dict for a given project_id,
-                service_id and version_id.
+            service_id and version_id.
         """
         try:
             results = self.repository.version_instances.get(

@@ -124,7 +124,7 @@ class ProjectEnforcer(object):
 
         Returns:
             enforcer_log_pb2.ProjectResult: A proto with details on the status
-                of the enforcement and an audit log with any changes made.
+            of the enforcement and an audit log with any changes made.
         """
         if networks:
             networks = sorted(networks)

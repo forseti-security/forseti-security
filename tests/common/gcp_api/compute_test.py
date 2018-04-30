@@ -15,7 +15,8 @@
 """Tests the Compute client."""
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 import parameterized
 
 from tests import unittest_utils
@@ -36,15 +37,22 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
     """Test the Compute client."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def setUpClass(cls, mock_google_credential):
         """Set up."""
-        fake_global_configs = {'max_compute_api_calls_per_second': 2000}
+        fake_global_configs = {
+            'compute': {'max_calls': 18, 'period': 1}}
         cls.gce_api_client = compute.ComputeClient(
             global_configs=fake_global_configs)
         cls.project_id = fake_compute.FAKE_PROJECT_ID
 
-    @mock.patch.object(client, 'GoogleCredentials')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
         gce_api_client = compute.ComputeClient(global_configs={})

@@ -18,31 +18,28 @@ import unittest
 import mock
 
 from tests import unittest_utils
-from tests.common.gcp_api.test_data import fake_key_file
+import google.auth
+from google.auth.compute_engine import credentials as service_account
 from google.cloud.forseti.common.gcp_api import api_helpers
-from google.cloud.forseti.common.gcp_api import errors as api_errors
+
+FAKE_REQUIRED_SCOPES = frozenset([
+    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+])
 
 
 class ApiHelpersTest(unittest_utils.ForsetiTestCase):
     """Test the Base Repository methods."""
 
-    @mock.patch('oauth2client.crypt.Signer.from_string',
-                return_value=object())
-    def test_credential_from_keyfile(self, signer_factory):
-        """Validate with a valid test credential file."""
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=service_account.Credentials),
+                      'test-project'))
+    def test_get_delegated_credential(self, mock_credentials):
         test_delegate = 'user@forseti.testing'
-        with unittest_utils.create_temp_file(fake_key_file.FAKE_KEYFILE) as f:
-            credentials = api_helpers.credential_from_keyfile(
-                f, fake_key_file.FAKE_REQUIRED_SCOPES, test_delegate)
-            self.assertEqual(credentials._kwargs['sub'], test_delegate)
-
-    def test_credential_from_keyfile_raises(self):
-        """Validate that an invalid credential file raises exception."""
-        with unittest_utils.create_temp_file(b'{}') as f:
-            with self.assertRaises(api_errors.ApiInitializationError):
-                api_helpers.credential_from_keyfile(
-                    f, fake_key_file.FAKE_REQUIRED_SCOPES,
-                    'user@forseti.testing')
+        credentials = api_helpers.get_delegated_credential(
+            test_delegate, FAKE_REQUIRED_SCOPES)
+        self.assertEqual(credentials._subject, test_delegate)
+        self.assertEqual(credentials._scopes, FAKE_REQUIRED_SCOPES)
 
 
 if __name__ == '__main__':

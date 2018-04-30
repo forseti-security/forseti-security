@@ -282,7 +282,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
-            'rand_minute': random.randint(0, 59)
+            'RAND_MINUTE': random.randint(0, 59)
         }
 
     def get_configuration_values(self):
@@ -417,7 +417,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             super(ForsetiServerInstaller, self).post_install_instructions(
                 deploy_success, forseti_conf_path, bucket_name))
 
-
         instructions.other_messages.append(
             constants.MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS)
 
@@ -429,6 +428,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if not self.config.sendgrid_api_key:
             instructions.other_messages.append(
                 constants.MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS)
+
+        instructions.other_messages.append(constants.MESSAGE_RUN_FREQUENCY)
 
         return instructions
 
@@ -470,21 +471,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'gsuite_service_account_key_file',
             'domain_super_admin_email'
         ]
-        global_to_api_quota = [
-            'max_admin_api_calls_per_100_seconds',
-            'max_appengine_api_calls_per_second',
-            'max_bigquery_api_calls_per_100_seconds',
-            'max_cloudbilling_api_calls_per_60_seconds',
-            'max_compute_api_calls_per_second',
-            'max_container_api_calls_per_100_seconds',
-            'max_crm_api_calls_per_100_seconds',
-            'max_iam_api_calls_per_second',
-            'max_servicemanagement_api_calls_per_100_seconds',
-            'max_sqladmin_api_calls_per_100_seconds'
-        ]
 
         new_conf_inventory = new_config['inventory']
-        new_conf_api_quota = new_conf_inventory['api_quota']
 
         old_config_global = ({} if 'global' not in old_config
                              else old_config['global'])
@@ -494,12 +482,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             if v1_field in old_config_global:
                 new_conf_inventory[field] = (old_config_global[v1_field]
                                              or new_conf_inventory[field])
-
-        for field in global_to_api_quota:
-            v1_field = field_names_mapping.get(field, field)
-            if v1_field in old_config_global:
-                new_conf_api_quota[field] = (old_config_global[v1_field]
-                                             or new_conf_api_quota[field])
 
         old_notifier_resources = old_config['notifier']['resources']
         new_notifier_resources = new_config['notifier']['resources']

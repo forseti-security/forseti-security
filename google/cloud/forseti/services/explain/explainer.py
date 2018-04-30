@@ -138,7 +138,7 @@ class Explainer(object):
 
         Returns:
             list: list of tuples,
-                  (overgranting,[(role_name,member_name,resource_name)])
+            (overgranting,[(role_name,member_name,resource_name)])
         """
 
         LOGGER.debug('Explaining how to grant access to a member,'
@@ -167,9 +167,9 @@ class Explainer(object):
 
         Returns:
             tuples: (bindings, member_graph, resource_type_names)
-                bindings, the bindings to grant the access
-                member_graph, the graph to have member included in the binding
-                resource_type_names, the resource tree
+            bindings, the bindings to grant the access
+            member_graph, the graph to have member included in the binding
+            resource_type_names, the resource tree
         """
 
         LOGGER.debug('Explaining why the member has access to a resource,'
