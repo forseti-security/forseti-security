@@ -95,7 +95,8 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -153,7 +154,8 @@ class CrawlerTest(ForsetiTestCase):
             'folders/1032',
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -190,7 +192,8 @@ class CrawlerTest(ForsetiTestCase):
             'projects/1041',
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -234,7 +237,8 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()

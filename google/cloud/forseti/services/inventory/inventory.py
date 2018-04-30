@@ -208,7 +208,7 @@ class Inventory(object):
         """Initialize
 
         Args:
-            config (object): ServiceConfig in server
+            config (ServiceConfig): ServiceConfig in server
         """
         self.config = config
         init_storage(self.config.get_engine())
@@ -314,12 +314,19 @@ class Inventory(object):
         """Purge the gcp_inventory data that's older than the retention days.
 
         Args:
-            retention_days (int): Days of inventory tables to retain.
+            retention_days (string): Days of inventory tables to retain.
 
         Returns:
             str: Purge result.
         """
         LOGGER.info('retention_days is: %s', retention_days)
+
+        if not retention_days:
+            LOGGER.info('retention_days is not specified.  Will use '
+                        'configuration default.')
+            retention_days = (
+                self.config.inventory_config.retention_days)
+        retention_days = int(retention_days)
 
         if retention_days < 0:
             result_message = 'Purge is disabled.  Nothing will be purged.'

@@ -87,7 +87,7 @@ message DeleteReply {
 }
 
 message PurgeRequest {
-  int32 retention_days = 1;
+  string retention_days = 1;
 }
 
 message PurgeReply {
