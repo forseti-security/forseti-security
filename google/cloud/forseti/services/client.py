@@ -334,6 +334,20 @@ class InventoryClient(ForsetiClient):
             id=inventory_index_id)
         return self.stub.Delete(request)
 
+    def purge(self, retention_days):
+        """Purge all inventory data older than the retention days.
+
+        Args:
+            retention_days (str): Days of inventory data to retain.
+
+        Returns:
+            proto: the returned proto message of purge inventory.
+        """
+
+        request = inventory_pb2.PurgeRequest(
+            retention_days=int(retention_days))
+        return self.stub.Purge(request)
+
     def list(self):
         """Lists all available inventory.
 
