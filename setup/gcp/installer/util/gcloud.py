@@ -219,7 +219,8 @@ def grant_server_svc_acct_roles(enable_write,
 
     roles = {
         '%ss' % access_target: access_target_roles,
-        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER
+        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER,
+        'service_accounts': constants.SVC_ACCT_ROLES,
     }
 
     return _grant_svc_acct_roles(
@@ -282,6 +283,10 @@ def _grant_roles(roles_map, target_id, project_id,
         resource_args = constants.RESOURCE_TYPE_ARGS_MAP[resource_type]
         if resource_type == 'forseti_project':
             resource_id = project_id
+        elif resource_type == 'service_accounts':
+            # The role 'iam.serviceAccountTokenCreator' is needed by the
+            # service account on itself therefore self assigning the role.
+            resource_id = gcp_service_account
         else:
             resource_id = target_id
 

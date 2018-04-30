@@ -294,8 +294,6 @@ def run_crawler(storage,
     """
 
     client_config = config.get_api_quota_configs()
-    client_config['groups_service_account_key_file'] = (
-        config.get_gsuite_sa_path())
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
     root_id = config.get_root_resource_id()

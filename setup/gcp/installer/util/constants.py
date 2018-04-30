@@ -104,8 +104,7 @@ PROJECT_IAM_ROLES_SERVER = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
     'roles/cloudsql.client',
-    'roles/logging.logWriter',
-    'roles/iam.serviceAccountTokenCreator'
+    'roles/logging.logWriter'
 ]
 
 PROJECT_IAM_ROLES_CLIENT = [
@@ -114,7 +113,7 @@ PROJECT_IAM_ROLES_CLIENT = [
 ]
 
 SVC_ACCT_ROLES = [
-    'roles/iam.serviceAccountKeyAdmin'
+    'roles/iam.serviceAccountTokenCreator'
 ]
 
 # Required APIs

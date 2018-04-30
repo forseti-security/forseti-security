@@ -41,15 +41,6 @@ class InventoryConfig(AbstractInventoryConfig):
 
         raise NotImplementedError()
 
-    def get_gsuite_sa_path(self):
-        """Return the gsuite service account path.
-
-        Returns:
-            str: Gsuite service account path.
-        """
-
-        raise NotImplementedError()
-
     def get_gsuite_admin_email(self):
         """Return the gsuite admin email to use.
 

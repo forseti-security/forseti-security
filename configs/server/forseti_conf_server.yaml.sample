@@ -15,7 +15,6 @@ inventory:
     root_resource_id: ROOT_RESOURCE_ID
 
     # gsuite
-    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: DOMAIN_SUPER_ADMIN_EMAIL
 
     api_quota:
