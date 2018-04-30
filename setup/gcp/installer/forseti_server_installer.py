@@ -440,7 +440,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         new_conf_inventory = new_config['inventory']
 
         old_config_global = ({} if 'global' not in old_config
-        else old_config['global'])
+                             else old_config['global'])
 
         for field in global_to_inventory:
             if field in old_config_global:
