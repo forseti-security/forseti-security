@@ -39,6 +39,10 @@ sleep 10s
 # Set the output format to json
 forseti config format json
 
+# Purge inventory.
+# Use retention_days from configuration yaml file.
+forseti inventory purge
+
 # Run inventory command
 MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."

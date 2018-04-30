@@ -345,7 +345,7 @@ class InventoryClient(ForsetiClient):
         """
 
         request = inventory_pb2.PurgeRequest(
-            retention_days=int(retention_days))
+            retention_days=retention_days)
         return self.stub.Purge(request)
 
     def list(self):
