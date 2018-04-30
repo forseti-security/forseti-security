@@ -239,7 +239,7 @@ class AuditLoggingRuleBook(bre.BaseRuleBook):
                     raise audit_errors.InvalidRulesSchemaError(
                         'Invalid resource type in rule {}'.format(rule_index))
 
-                if not resource_ids or len(resource_ids) < 1:
+                if not resource_ids:
                     raise audit_errors.InvalidRulesSchemaError(
                         'Missing resource ids in rule {}'.format(rule_index))
 
