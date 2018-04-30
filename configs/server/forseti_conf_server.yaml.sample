@@ -145,4 +145,4 @@ notifier:
         # gcs_path should begin with "gs://"
         # data_format may be one of: csv (the default) or json
         data_format: csv
-        gcs_path: gs://{INV_SUMMARY_BUCKET}/inv_summary
+        gcs_path:

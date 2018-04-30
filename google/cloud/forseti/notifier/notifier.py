@@ -34,7 +34,6 @@ LOGGER = logger.get_logger(__name__)
 # pylint: disable=inconsistent-return-statements
 def find_notifiers(notifier_name):
     """Get the first class in the given sub module
-
     Args:
         notifier_name (str): Name of the notifier.
     Return:
@@ -124,14 +123,11 @@ def run_inv_summary(inv_index_id, service_config):
 
 def run(inv_index_id, progress_queue, service_config=None):
     """Run the notifier.
-
     Entry point when the notifier is run as a library.
-
     Args:
         inv_index_id (str): Inventory index id.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
-
     Returns:
         int: Status code.
     """
