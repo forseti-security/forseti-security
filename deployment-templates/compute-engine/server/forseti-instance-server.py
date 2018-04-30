@@ -46,7 +46,6 @@ mv forseti-security-{release_version} forseti-security
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     FORSETI_SERVER_CONF = '{}/configs/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
-    GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
 
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
@@ -56,8 +55,7 @@ mv forseti-security-{release_version} forseti-security
     EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
         context.properties['db-port'],
         CLOUDSQL_CONN_STRING,
-        FORSETI_DB_NAME,
-        GSUITE_ADMIN_CREDENTIAL_PATH)
+        FORSETI_DB_NAME)
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
@@ -177,12 +175,6 @@ python setup.py install
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
-
-# Rotate gsuite key
-# TODO: consider moving this to the forseti_server
-python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
-chown ubuntu:root $GSUITE_ADMIN_CREDENTIAL_PATH
-
 # Download server configuration from GCS
 gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
@@ -234,8 +226,6 @@ echo "Execution of startup script finished"
 
     # Env variables for Forseti
     export_forseti_vars=EXPORT_FORSETI_VARS,
-
-    gsuite_service_acct=context.properties['service-account-gsuite'],
 
     # Forseti run frequency
     run_frequency=RUN_FREQUENCY,

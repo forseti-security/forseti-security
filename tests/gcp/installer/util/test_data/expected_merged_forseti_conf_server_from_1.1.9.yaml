@@ -33,7 +33,6 @@ inventory:
     root_resource_id: organizations/12345677890
 
     # gsuite access
-    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: test@forseti_test_gmail.com
 
     api_quota:

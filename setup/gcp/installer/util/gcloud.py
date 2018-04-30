@@ -176,18 +176,16 @@ def grant_client_svc_acct_roles(project_id,
 
     # Forseti client doesn't have target id and gsuite account.
     target_id = ''
-    gsuite_account = ''
 
     return _grant_svc_acct_roles(
-        target_id, project_id, gsuite_account,
-        gcp_service_account, user_can_grant_roles, roles)
+        target_id, project_id, gcp_service_account,
+        user_can_grant_roles, roles)
 
 
 def grant_server_svc_acct_roles(enable_write,
                                 access_target,
                                 target_id,
                                 project_id,
-                                gsuite_service_account,
                                 gcp_service_account,
                                 user_can_grant_roles):
     """Grant the following IAM roles to GCP service account.
@@ -205,7 +203,6 @@ def grant_server_svc_acct_roles(enable_write,
         access_target (str): Access target, either org, folder or project
         target_id (str): Id of the access_target
         project_id (str): GCP Project Id
-        gsuite_service_account (str): GSuite service account email
         gcp_service_account (str): GCP service account email
         user_can_grant_roles (bool): Whether or not user has
                                         access to grant roles
@@ -222,18 +219,16 @@ def grant_server_svc_acct_roles(enable_write,
 
     roles = {
         '%ss' % access_target: access_target_roles,
-        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER,
-        'service_accounts': constants.SVC_ACCT_ROLES,
+        'forseti_project': constants.PROJECT_IAM_ROLES_SERVER
     }
 
     return _grant_svc_acct_roles(
-        target_id, project_id, gsuite_service_account,
-        gcp_service_account, user_can_grant_roles, roles)
+        target_id, project_id, gcp_service_account,
+        user_can_grant_roles, roles)
 
 
 def _grant_svc_acct_roles(target_id,
                           project_id,
-                          gsuite_service_account,
                           gcp_service_account,
                           user_can_grant_roles,
                           roles):
@@ -242,7 +237,6 @@ def _grant_svc_acct_roles(target_id,
     Args:
         target_id (str): Id of the access_target
         project_id (str): GCP Project Id
-        gsuite_service_account (str): GSuite service account email
         gcp_service_account (str): GCP service account email
         user_can_grant_roles (bool): Whether or not user has
                                         access to grant roles
@@ -252,7 +246,6 @@ def _grant_svc_acct_roles(target_id,
     """
 
     grant_roles_cmds = _grant_roles(roles, target_id, project_id,
-                                    gsuite_service_account,
                                     gcp_service_account,
                                     user_can_grant_roles)
 
@@ -268,7 +261,7 @@ def _grant_svc_acct_roles(target_id,
 
 
 def _grant_roles(roles_map, target_id, project_id,
-                 gsuite_service_account, gcp_service_account,
+                 gcp_service_account,
                  user_can_grant_roles):
     """Assign the corresponding roles to users.
 
@@ -276,7 +269,6 @@ def _grant_roles(roles_map, target_id, project_id,
         roles_map (dict): A list of roles to assign
         target_id (str): Id of the access_target
         project_id (str): GCP Project Id
-        gsuite_service_account (str): Gsuite service account email
         gcp_service_account (str): GCP service account email
         user_can_grant_roles (bool): Whether or not user has
                                      access to grant roles
@@ -290,8 +282,6 @@ def _grant_roles(roles_map, target_id, project_id,
         resource_args = constants.RESOURCE_TYPE_ARGS_MAP[resource_type]
         if resource_type == 'forseti_project':
             resource_id = project_id
-        elif resource_type == 'service_accounts':
-            resource_id = gsuite_service_account
         else:
             resource_id = target_id
 
