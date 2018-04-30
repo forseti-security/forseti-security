@@ -325,7 +325,7 @@ class Inventory(object):
             LOGGER.info('retention_days is not specified.  Will use '
                         'configuration default.')
             retention_days = (
-                self.config.inventory_config.get_retention_days_configs())
+                self.config.inventory_config.retention_days)
         retention_days = int(retention_days)
 
         if retention_days < 0:
