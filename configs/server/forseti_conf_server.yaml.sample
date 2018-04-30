@@ -31,6 +31,11 @@ inventory:
         max_servicemanagement_api_calls_per_100_seconds: 200
         max_sqladmin_api_calls_per_100_seconds: 100
 
+    # Number of days to retain inventory data: 
+    #  -1 : (default) keep all previous data forever
+    #   0 : delete all previous inventory data before running
+    retention_days: -1
+
 ##############################################################################
 
 scanner:

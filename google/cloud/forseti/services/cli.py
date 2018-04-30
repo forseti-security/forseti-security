@@ -85,7 +85,11 @@ def define_inventory_parser(parent):
         help='Purge all inventory data older than the retention days.')
     purge_inventory_parser.add_argument(
         'retention_days',
-        help='Number of days to retain the data.')
+        default=None,
+        nargs='?',
+        help=('Optional.  Number of days to retain the data. If not '
+              'specified, then the value in forseti config yaml file will '
+              'be used.'))
 
     _ = action_subparser.add_parser(
         'list',

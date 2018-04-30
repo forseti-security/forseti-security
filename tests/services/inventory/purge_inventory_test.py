@@ -97,7 +97,7 @@ class PurgeInventoryTest(ForsetiTestCase):
         mock_config.scoped_session.return_value = self.scoped_sessionmaker()
 
         return InventoryApi(mock_config)
-        
+
     @mock.patch(
         'google.cloud.forseti.services.inventory.inventory.date_time',
         autospec=True)
@@ -109,7 +109,7 @@ class PurgeInventoryTest(ForsetiTestCase):
             datetime(2010, 12, 31))
 
         inventory_api = self.get_inventory_api()
-        inventory_api.purge(retention_days=0)
+        inventory_api.purge(retention_days='0')
 
         inventory_indices = session.query(InventoryIndex).all()
         self.assertEquals(0, len(inventory_indices))
@@ -128,7 +128,28 @@ class PurgeInventoryTest(ForsetiTestCase):
             datetime(2010, 12, 31))
 
         inventory_api = self.get_inventory_api()
-        inventory_api.purge(retention_days=-1)
+        inventory_api.purge(retention_days='-1')
+
+        inventory_indices = session.query(InventoryIndex).all()
+        self.assertEquals(3, len(inventory_indices))
+
+        resources = session.query(Inventory).all()
+        self.assertEquals(6, len(resources))
+
+
+    @mock.patch(
+        'google.cloud.forseti.services.inventory.inventory.date_time',
+        autospec=True)
+    def test_purge_uses_configuration_value(self, mock_date_time):
+        """Test purge uses configuration value."""
+
+        session = self.populate_data()
+        mock_date_time.get_utc_now_datetime.return_value = (
+            datetime(2010, 12, 31))
+
+        inventory_api = self.get_inventory_api()
+        inventory_api.config.inventory_config.retention_days = -1
+        inventory_api.purge(retention_days=None)
 
         inventory_indices = session.query(InventoryIndex).all()
         self.assertEquals(3, len(inventory_indices))
@@ -151,7 +172,7 @@ class PurgeInventoryTest(ForsetiTestCase):
             datetime(2010, 12, 31))
 
         inventory_api = self.get_inventory_api()
-        inventory_api.purge(retention_days=30)
+        inventory_api.purge(retention_days='30')
 
         inventory_indices = session.query(InventoryIndex).all()
         self.assertEquals(3, len(inventory_indices))
@@ -171,7 +192,7 @@ class PurgeInventoryTest(ForsetiTestCase):
             datetime(2010, 12, 31))
 
         inventory_api = self.get_inventory_api()
-        inventory_api.purge(retention_days=5)
+        inventory_api.purge(retention_days='5')
        
         inventory_indices = session.query(InventoryIndex).all()
         self.assertEquals(1, len(inventory_indices))
