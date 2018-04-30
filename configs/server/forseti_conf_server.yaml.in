@@ -187,8 +187,6 @@ notifier:
                 sendgrid_api_key: {SENDGRID_API_KEY}
                 sender: {EMAIL_SENDER}
                 recipient: {EMAIL_RECIPIENT}
-<<<<<<< HEAD
-=======
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
@@ -205,7 +203,6 @@ notifier:
                 sendgrid_api_key: {SENDGRID_API_KEY}
                 sender: {EMAIL_SENDER}
                 recipient: {EMAIL_RECIPIENT}
->>>>>>> 36a17946c6fa38e7f63e458f9a85e1e80024dfbf
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
