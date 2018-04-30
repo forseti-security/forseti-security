@@ -430,6 +430,22 @@ class ForsetiServerInstaller(ForsetiInstaller):
             old_config (dict): Old configuration.
             new_config (dict): New configuration.
         """
+        # pylint: disable=too-many-locals
+        # Some fields have been renamed from v1 to v2
+        # This is a map to map names from v2 back to v1
+        global_to_inventory = [
+            'domain_super_admin_email'
+        ]
+
+        new_conf_inventory = new_config['inventory']
+
+        old_config_global = ({} if 'global' not in old_config
+        else old_config['global'])
+
+        for field in global_to_inventory:
+            if field in old_config_global:
+                new_conf_inventory[field] = (old_config_global[field]
+                                             or new_conf_inventory[field])
 
         old_notifier_resources = old_config['notifier']['resources']
         new_notifier_resources = new_config['notifier']['resources']
