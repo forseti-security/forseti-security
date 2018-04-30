@@ -119,8 +119,7 @@ def get_network_name_from_url(network_url):
 
     Args:
       network_url: str - the fully qualified network url, such as
-        (https://www.googleapis.com/compute/v1/projects/'
-        'my-proj/global/networks/my-network')
+        ('<root>/compute/v1/projects/my-proj/global/networks/my-network')
 
     Returns:
       str - the network name, my-network in the previous example
@@ -220,10 +219,11 @@ class ComputeFirewallAPI(object):
         Returns:
           A dictionary with three keys, metric, limit and usage.
 
-          Example:
-          {"metric": "FIREWALLS",
-           "limit": 100,
-           "usage": 9}
+          An example return value:
+
+              {"metric": "FIREWALLS",
+               "limit": 100,
+               "usage": 9}
         """
         request = self.gce_service.projects().get(
             project=project, fields='quotas')

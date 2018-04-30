@@ -157,7 +157,7 @@ RULES_DIR_PATH = os.path.abspath(
 FORSETI_SRC_PATH = os.path.join(
     ROOT_DIR_PATH, 'google', 'cloud', 'forseti')
 
-FORSETI_CONF_PATH = ('{bucket_name}/configs/{installation_type}/'
+FORSETI_CONF_PATH = ('{bucket_name}/configs/'
                      'forseti_conf_{installation_type}.yaml')
 
 DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'
@@ -287,6 +287,11 @@ MESSAGE_NO_ORGANIZATION = (
     'Refer to the following documentation for more information.\n\n'
     'https://cloud.google.com/resource-manager/docs/'
     'creating-managing-organization')
+
+MESSAGE_RUN_FREQUENCY = (
+    'Forseti will run once every 12 hours, you can configure the run '
+    'frequency in the server deployment template field "run-frequency" '
+    'and update the deployment using the deployment manager.')
 
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (

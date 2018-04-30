@@ -20,6 +20,7 @@ import mock
 import os
 import shlex
 import shutil
+import sys
 import StringIO
 import tempfile
 import unittest
@@ -178,7 +179,7 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
-        ('model create inventory foo --id 1',
+        ('model create --inventory_index_id 1 foo',
          CLIENT.model.new_model,
          ["inventory", "foo", '1', False],
          {},
@@ -317,20 +318,24 @@ class ImporterTest(ForsetiTestCase):
         tmp_config = os.path.join(self.test_dir, '.forseti')
         with mock.patch.dict(
             os.environ, {'FORSETI_CLIENT_CONFIG': tmp_config}):
-            for commandline, client_func, func_args,\
-                func_kwargs, config_string, config_expect\
-                    in test_cases:
+            for (commandline, client_func, func_args,
+                    func_kwargs, config_string, config_expect) in test_cases:
                 try:
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
                         json.load(StringIO.StringIO(config_string)))
-                    config = cli.main(
-                        args=args,
-                        config_env=env_config,
-                        client=CLIENT,
-                        parser_cls=MockArgumentParser)
+
+                    # Capture stdout, so it doesn't pollute the test output
+                    with mock.patch('sys.stdout',
+                                    new_callable=StringIO.StringIO):
+                        config = cli.main(
+                            args=args,
+                            config_env=env_config,
+                            client=CLIENT,
+                            parser_cls=MockArgumentParser)
                     if client_func is not None:
-                        client_func.assert_called_with(*func_args, **func_kwargs)
+                        client_func.assert_called_with(*func_args,
+                                                       **func_kwargs)
 
                     # Check attribute values
                     for attribute, value in config_expect.iteritems():
@@ -345,6 +350,111 @@ class ImporterTest(ForsetiTestCase):
                     self.fail('Argument parser failed on {}, {}'.format(
                         commandline,
                         e.message))
+
+
+class RunExplainerTest(ForsetiTestCase):
+    def test_list_permissions_no_roles_and_no_role_prefixes(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = None
+        mock_config.role_prefixes = None
+        mock_output = mock.MagicMock()
+        with self.assertRaises(ValueError) as ctxt:
+            cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+        self.assertEquals(
+            'please specify either a role or a role prefix',
+            ctxt.exception.message)
+
+    def test_list_permissions_with_role_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = ['r1']
+        mock_config.role_prefixes = None
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
+    def test_list_permissions_with_role_prefix_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = []
+        mock_config.role_prefixes = ['rp1']
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
+    def test_query_access_by_authz_with_no_role_and_no_permission(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'access_by_authz'
+        mock_config.role = None
+        mock_config.permission = None
+        mock_output = mock.MagicMock()
+        with self.assertRaises(ValueError) as ctxt:
+            cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+        self.assertEquals(
+            'please specify either a role or a permission',
+            ctxt.exception.message)
+
+    def test_query_access_by_authz_with_role_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'access_by_authz'
+        mock_config.role = ['role']
+        mock_config.permission = None
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
+    def test_query_access_by_authz_with_permission_specified(self):
+        ignored = mock.MagicMock()
+        mock_client = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'access_by_authz'
+        mock_config.role = []
+        mock_config.permission = ['permission']
+        mock_output = mock.MagicMock()
+        cli.run_explainer(mock_client, mock_config, mock_output, ignored)
+
+
+class MainTest(ForsetiTestCase):
+    def test_main_with_value_error_raised(self):
+        mock_client = mock.MagicMock()
+        mock_parser = mock.MagicMock()
+        mock_config_env = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = None
+        mock_config.role_prefixes = None
+        mock_config.out_format = 'text'
+        mock_config.service = 'explainer'
+        with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
+            mock_create_parser.return_value = mock_parser
+            mock_parser.parse_args.return_value = mock_config
+            cli.main([], mock_config_env, mock_client)
+            mock_parser.error.assert_called_with(
+                'please specify either a role or a role prefix')
+
+    def test_main_without_value_error_raised(self):
+        mock_client = mock.MagicMock()
+        mock_parser = mock.MagicMock()
+        mock_config_env = mock.MagicMock()
+        mock_config = mock.MagicMock()
+        mock_config.action = 'list_permissions'
+        mock_config.roles = ['r1', 'r2']
+        mock_config.role_prefixes = None
+        mock_config.out_format = 'text'
+        mock_config.service = 'explainer'
+        with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
+            mock_create_parser.return_value = mock_parser
+            mock_parser.parse_args.return_value = mock_config
+            cli.main([], mock_config_env, mock_client)
+            mock_parser.error.assert_not_called()
 
 
 if __name__ == '__main__':

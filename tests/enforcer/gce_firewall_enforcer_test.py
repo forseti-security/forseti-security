@@ -1184,7 +1184,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
             'content-type': 'application/json'
         })
         response.reason = 'Duplicate Rule'
-        error_409 = fe.errors.HttpError(response, '', '')
+        error_409 = fe.errors.HttpError(response, '', uri='')
 
         insert_function = mock.Mock(side_effect=error_409)
 

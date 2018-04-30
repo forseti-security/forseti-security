@@ -31,6 +31,7 @@ VIOLATION_RESOURCES = {
     'BLACKLIST_VIOLATION': 'blacklist_violations',
     'BUCKET_VIOLATION': 'buckets_acl_violations',
     'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
+    'ENABLED_APIS_VIOLATION': 'enabled_apis_violations',
     'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',
     'FIREWALL_BLACKLIST_VIOLATION': 'firewall_rule_violations',
     'FIREWALL_MATCHES_VIOLATION': 'firewall_rule_violations',

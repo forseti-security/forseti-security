@@ -22,9 +22,9 @@ WORKDIR /forseti-security/
 # Install Forseti Security dependencies.
 # This should stay in sync with the deployment script used on the host machine in
 #   deployment-templates/compute-engine/forseti-instance.py
-RUN pip install -q --upgrade pip==9.0.3 1> /dev/null
-RUN pip install -q --upgrade setuptools wheel 1> /dev/null
 
+RUN pip install -q --upgrade pip==9.0.3
+RUN pip install -q --upgrade setuptools wheel 1> /dev/null
 RUN pip install -q --upgrade -r requirements.txt 1> /dev/null
 
 # Install Forseti Security.

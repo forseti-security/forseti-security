@@ -30,6 +30,7 @@ class InventorySummary(object):
 
     def __init__(self, inv_index_id, inv_summary, notifier_config):
         """Initialization.
+
         Args:
             inv_index_id (str): Inventory index id.
             inv_summary (dict): Inventory summary data.
@@ -41,8 +42,10 @@ class InventorySummary(object):
 
     def _get_output_filename(self, filename_template):
         """Create the output filename.
+
         Args:
             filename_template (string): template to use for the output filename
+
         Returns:
             str: The output filename for the inventory summary file.
         """

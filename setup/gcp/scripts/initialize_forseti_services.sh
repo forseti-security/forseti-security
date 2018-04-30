@@ -39,12 +39,12 @@ if ! [[ -f $FORSETI_SERVER_CONF ]]; then
     exit 1
 fi
 
-SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
+SQL_SERVER_LOCAL_ADDRESS="mysql://forseti-db-admin@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
 FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
-FORSETI_COMMAND+=" --forseti_config_file ${FORSETI_SERVER_CONF}"
+FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"

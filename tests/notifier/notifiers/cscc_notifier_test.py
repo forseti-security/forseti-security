@@ -12,27 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the findings notification notifier."""
+"""Tests the CSCC notification notifier."""
 
 import datetime
 import mock
 
 from google.cloud.forseti.notifier import notifier
-from google.cloud.forseti.notifier.notifiers import findings
+from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.services.scanner import scanner_dao_test
-from tests.unittest_utils import ForsetiTestCase
+from tests.services.scanner.scanner_dao_test import ScannerBaseDbTestCase
 
-class FindingsNotifierTest(ForsetiTestCase):
+
+class CsccNotifierTest(ScannerBaseDbTestCase):
 
     def setUp(self):
         """Setup method."""
-        ForsetiTestCase.setUp(self)
+        super(CsccNotifierTest, self).setUp()
         self.maxDiff=None
 
     def tearDown(self):
         """Tear down method."""
-        ForsetiTestCase.tearDown(self)
+        super(CsccNotifierTest, self).tearDown()
 
     @mock.patch('google.cloud.forseti.common.util.date_time.'
                 'get_utc_now_datetime')
@@ -40,6 +40,7 @@ class FindingsNotifierTest(ForsetiTestCase):
         fake_datetime = datetime.datetime(2010, 8, 28, 10, 20, 30, 0)
         mock_get_utc_now.return_value = fake_datetime
 
+        scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id2)
         expected_findings = [
             {'finding_id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff',
              'finding_summary': 'disallow_all_ports_111',
@@ -49,7 +50,8 @@ class FindingsNotifierTest(ForsetiTestCase):
              'finding_time_event': '2010-08-28T10:20:30Z',
              'finding_callback_url': None,
              'finding_properties':
-                 {'inventory_index_id': 'aaa',
+                 {'scanner_index_id': scanner_index_id,
+                  'inventory_index_id': 'iii',
                   'resource_id': 'fake_firewall_111',
                   'resource_data': 'inventory_data_111',
                   'rule_index': 111,
@@ -63,7 +65,8 @@ class FindingsNotifierTest(ForsetiTestCase):
             'finding_time_event': '2010-08-28T10:20:30Z',
             'finding_callback_url': None,
             'finding_properties':
-                {'inventory_index_id': 'aaa',
+                {'scanner_index_id': scanner_index_id,
+                 'inventory_index_id': 'iii',
                  'resource_id': 'fake_firewall_222',
                  'resource_data': 'inventory_data_222',
                  'rule_index': 222,
@@ -71,16 +74,18 @@ class FindingsNotifierTest(ForsetiTestCase):
             }
         ]
 
-        violations = scanner_dao_test.populate_db().list()
-        violations = notifier.convert_to_timestamp(violations)
+        violations = self.violation_access.list(
+            scanner_index_id=scanner_index_id)
 
         violations_as_dict = []
         for violation in violations:
             violations_as_dict.append(
                 scanner_dao.convert_sqlalchemy_object_to_dict(violation))
 
+        violations_as_dict = notifier.convert_to_timestamp(violations_as_dict)
+
         finding_results = (
-            findings.Findingsnotifier()._transform_to_findings(
+            cscc_notifier.CsccNotifier('iii')._transform_to_findings(
                 violations_as_dict)
         )
 

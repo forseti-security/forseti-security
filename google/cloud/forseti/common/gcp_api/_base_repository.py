@@ -15,12 +15,15 @@
 """Base GCP client which uses the discovery API."""
 import logging
 import threading
+import google_auth_httplib2
 import googleapiclient
+from googleapiclient.http import set_user_agent
 from googleapiclient import discovery
 import httplib2
-from oauth2client import client
 from ratelimiter import RateLimiter
 from retrying import retry
+import google.auth
+from google.auth.credentials import with_scopes_if_required
 
 from google.cloud import forseti as forseti_security
 from google.cloud.forseti.common.gcp_api import _supported_apis
@@ -28,6 +31,7 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
+import google.oauth2.credentials
 
 CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
@@ -86,31 +90,24 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     return discovery.build(**discovery_kwargs)
 
 
-def _set_ua_and_scopes(credentials):
-    """Set custom Forseti user agent and add cloud scopes on credential object.
+def _build_http(http=None):
+    """Set custom Forseti user agent and timeouts on a new http object.
 
     Args:
-        credentials (client.OAuth2Credentials): The credentials object used to
-            authenticate all http requests.
+        http (object): An instance of httplib2.Http, or compatible, used for
+            testing.
 
     Returns:
-        client.OAuth2Credentials: The credentials object with the user agent
-            attribute set or updated.
+        httplib2.Http: An http object with the forseti user agent set.
     """
-    if isinstance(credentials, client.OAuth2Credentials):
-        user_agent = credentials.user_agent
-        if (not user_agent or
-                forseti_security.__package_name__ not in user_agent):
+    if not http:
+        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
+    user_agent = 'Python-httplib2/{} (gzip), {}/{}'.format(
+        httplib2.__version__,
+        forseti_security.__package_name__,
+        forseti_security.__version__)
 
-            credentials.user_agent = (
-                'Python-httplib2/{} (gzip), {}/{}'.format(
-                    httplib2.__version__,
-                    forseti_security.__package_name__,
-                    forseti_security.__version__))
-        if (isinstance(credentials, client.GoogleCredentials) and
-                credentials.create_scoped_required()):
-            credentials = credentials.create_scoped(list(CLOUD_SCOPES))
-    return credentials
+    return set_user_agent(http, user_agent)
 
 
 class BaseRepositoryClient(object):
@@ -142,8 +139,9 @@ class BaseRepositoryClient(object):
         if not credentials:
             # Only share the http object when using the default credentials.
             self._use_cached_http = True
-            credentials = client.GoogleCredentials.get_application_default()
-        self._credentials = _set_ua_and_scopes(credentials)
+            credentials, _ = google.auth.default()
+        self._credentials = with_scopes_if_required(credentials,
+                                                    list(CLOUD_SCOPES))
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()
@@ -285,16 +283,18 @@ class GCPRepository(object):
         """A thread local instance of httplib2.Http.
 
         Returns:
-            httplib2.Http: An Http instance authorized by the credentials.
+            google_auth_httplib2.AuthorizedHttp: An Http instance authorized by
+                the credentials.
         """
         if self._use_cached_http and hasattr(self._local, 'http'):
             return self._local.http
 
-        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
-        self._credentials.authorize(http=http)
+        authorized_http = google_auth_httplib2.AuthorizedHttp(
+            self._credentials, http=_build_http())
+
         if self._use_cached_http:
-            self._local.http = http
-        return http
+            self._local.http = authorized_http
+        return authorized_http
 
     def _build_request(self, verb, verb_arguments):
         """Builds HttpRequest object.

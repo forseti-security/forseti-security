@@ -18,11 +18,10 @@
 import os
 import sys
 
+from setup.util import build_protos
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
-
-from setup.util import build_protos
 
 import google.cloud.forseti
 
@@ -39,6 +38,8 @@ REQUIRED_PACKAGES = [
     'anytree>=2.1.4',
     'futures>=3.0.5',
     'google-api-python-client>=1.6.1',
+    'google-auth>=1.4.1',
+    'google-auth-httplib2>=0.0.3',
     'Jinja2>=2.9.5',
     'MySQL-python>=1.2.5',
     'netaddr>=0.7.19',

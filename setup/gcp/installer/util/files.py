@@ -97,7 +97,7 @@ def generate_forseti_conf(template_type, vals, timestamp):
             'configs', template_type, input_template_name))
     forseti_conf_gen = os.path.abspath(
         os.path.join(
-            constants.ROOT_DIR_PATH, 'configs', template_type,
+            constants.ROOT_DIR_PATH, 'configs',
             'forseti_conf_{}_{}.yaml'.format(template_type, timestamp)))
 
     conf_values = utils.sanitize_conf_values(vals)

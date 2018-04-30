@@ -16,7 +16,8 @@
 
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests.common.gcp_api.test_data import http_mocks
 from tests.unittest_utils import ForsetiTestCase
@@ -48,7 +49,10 @@ class FileLoaderTest(ForsetiTestCase):
         with self.assertRaises(errors.InvalidParserTypeError):
             file_loader._get_filetype_parser('path/to/file.yaml', 'asdf')
 
-    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_read_file_from_gcs_json(self, mock_default_credential):
         """Test read_file_from_gcs for json."""
         mock_responses = [
@@ -61,7 +65,10 @@ class FileLoaderTest(ForsetiTestCase):
 
         self.assertEqual(expected_dict, return_dict)
 
-    @mock.patch.object(client.GoogleCredentials, 'get_application_default')
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     def test_read_file_from_gcs_yaml(self, mock_default_credential):
         """Test read_file_from_gcs for yaml."""
         mock_responses = [

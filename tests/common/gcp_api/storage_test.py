@@ -15,7 +15,8 @@
 """Tests the Storage client."""
 import unittest
 import mock
-from oauth2client import client
+import google.auth
+from google.oauth2 import credentials
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
@@ -29,7 +30,10 @@ class StorageTest(unittest_utils.ForsetiTestCase):
     """Test the StorageClient."""
 
     @classmethod
-    @mock.patch.object(client, 'GoogleCredentials', spec=True)
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
     @mock.patch.object(metadata_server, 'get_project_id', spec=True)
     @mock.patch.object(metadata_server, 'can_reach_metadata_server', spec=True)
     def setUpClass(cls, mock_reach_metadata, mock_get_project_id,

@@ -15,7 +15,7 @@
 """Common formatting methods."""
 
 # Filename patterns.
-FINDINGS_FILENAME = 'forseti_findings_{}.json'
+CSCC_FINDINGS_FILENAME = 'forseti_findings_{}.json'
 SCANNER_OUTPUT_CSV_FMT = 'scanner_output_base.{}.csv'
 VIOLATION_JSON_FMT = 'violations.{}.{}.{}.json'
 VIOLATION_CSV_FMT = 'violations.{}.{}.{}.csv'

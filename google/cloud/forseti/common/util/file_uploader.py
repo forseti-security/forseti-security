@@ -28,6 +28,7 @@ LOGGER = logger.get_logger(__name__)
 
 def upload_json(data, gcs_upload_path):
     """Upload data in json format.
+
     Args:
         data (dict): the data to upload
         gcs_upload_path (string): the GCS upload path.
@@ -41,6 +42,7 @@ def upload_json(data, gcs_upload_path):
 
 def upload_csv(resource_name, data, gcs_upload_path):
     """Upload data in csv format.
+
     Args:
         resource_name (str): what kind of CSV file are we creating?
         data (dict): the data to upload

@@ -16,11 +16,17 @@
 
 # pylint: disable=line-too-long,broad-except
 
+import datetime
 from Queue import Queue
 
+from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 class Progress(object):
@@ -72,7 +78,7 @@ class QueueProgresser(Progress):
             resource (Resource): db row of Resource
         """
 
-        self.step = resource.key()
+        self.step = '{}/{}'.format(resource.type(), resource.key())
         self._notify()
 
     def on_warning(self, warning):
@@ -104,7 +110,6 @@ class QueueProgresser(Progress):
             object: Progresser in its last state.
         """
 
-        self.final_message = True
         self._notify()
         self._notify_eof()
         return self
@@ -154,7 +159,7 @@ def run_inventory(service_config,
         background (bool): whether to run the inventory in background
 
     Returns:
-        object: Returns the result of the crawl.
+        QueueProgresser: Returns the result of the crawl.
 
     Raises:
         Exception: Reraises any exception.
@@ -242,12 +247,13 @@ class Inventory(object):
                         progresser,
                         background)
 
-                    if not model_name:
-                        return result
-                    return run_import(self.config.client(),
-                                      model_name,
-                                      result.inventory_index_id,
-                                      background)
+                    if model_name:
+                        run_import(self.config.client(),
+                                   model_name,
+                                   result.inventory_index_id,
+                                   background)
+                    return result.get_summary()
+
                 except Exception as e:
                     queue.put(e)
                     queue.put(None)
@@ -303,3 +309,49 @@ class Inventory(object):
         with self.config.scoped_session() as session:
             result = DataAccess.delete(session, inventory_id)
             return result
+
+    def purge(self, retention_days):
+        """Purge the gcp_inventory data that's older than the retention days.
+
+        Args:
+            retention_days (int): Days of inventory tables to retain.
+
+        Returns:
+            str: Purge result.
+        """
+        LOGGER.info('retention_days is: %s', retention_days)
+
+        if retention_days < 0:
+            result_message = 'Purge is disabled.  Nothing will be purged.'
+            LOGGER.info(result_message)
+            return result_message
+
+        utc_now = date_time.get_utc_now_datetime()
+        cutoff_datetime = (
+            utc_now - datetime.timedelta(days=retention_days))
+        LOGGER.info('Cut-off datetime to start purging is: %s',
+                    cutoff_datetime)
+
+        with self.config.scoped_session() as session:
+            inventory_indexes_to_purge = (
+                DataAccess.get_inventory_indexes_older_than_cutoff(
+                    session, cutoff_datetime))
+
+        if not inventory_indexes_to_purge:
+            result_message = 'No inventory to be purged.'
+            LOGGER.info(result_message)
+            return result_message
+
+        purged_inventory_indexes = []
+        for inventory_index in inventory_indexes_to_purge:
+            _ = self.delete(inventory_index.id)
+            purged_inventory_indexes.append(inventory_index.id)
+
+        purged_inventory_indexes_as_str = ', '.join(purged_inventory_indexes)
+
+        result_message = (
+            'Inventory data from these inventory indexes have '
+            'been purged: {}').format(purged_inventory_indexes_as_str)
+        LOGGER.info(result_message)
+
+        return result_message
