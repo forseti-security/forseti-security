@@ -34,6 +34,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
+VIOLATION_TYPE = 'IAM_POLICY_VIOLATION'
+
 
 def _check_whitelist_members(rule_members=None, policy_members=None):
     """Whitelist: Check that policy members ARE in rule members.
@@ -584,9 +586,6 @@ class ResourceRules(object):
         Yields:
             iterable: A generator of RuleViolations.
         """
-        violation_type = scanner_rules.VIOLATION_TYPE.get(
-            rule.mode,
-            scanner_rules.VIOLATION_TYPE['UNSPECIFIED'])
         found_role = False
         violating_bindings = {}
         # If the rule's binding role is found in the policy,
@@ -617,7 +616,7 @@ class ResourceRules(object):
                     full_name=resource.full_name,
                     rule_name=rule.rule_name,
                     rule_index=rule.rule_index,
-                    violation_type=violation_type,
+                    violation_type=VIOLATION_TYPE,
                     role=role_name,
                     members=tuple(members),
                     resource_data=resource.data)
@@ -633,9 +632,6 @@ class ResourceRules(object):
         Yields:
             iterable: A generator of RuleViolations.
         """
-        violation_type = scanner_rules.VIOLATION_TYPE.get(
-            rule.mode,
-            scanner_rules.VIOLATION_TYPE['UNSPECIFIED'])
         for policy_binding in policy_bindings:
             for rule_binding in rule.bindings:
                 # If the rule's role pattern matches the policy binding's
@@ -654,7 +650,7 @@ class ResourceRules(object):
                         full_name=resource.full_name,
                         rule_name=rule.rule_name,
                         rule_index=rule.rule_index,
-                        violation_type=violation_type,
+                        violation_type=VIOLATION_TYPE,
                         role=policy_binding.role_name,
                         members=tuple(violating_members),
                         resource_data=resource.data)

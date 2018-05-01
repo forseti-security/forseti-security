@@ -179,7 +179,7 @@ VIOLATIONS = {
              'member': 'user:ghi@example.com',
              'role': 'roles/storage.objectAdmin'},
          'violation_hash': '15fda93a6fdd32d867064677cf07686f79b',
-         'violation_type': 'ADDED'},
+         'violation_type': 'iam_policy_violations'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
          'id': 2L,
@@ -202,4 +202,4 @@ VIOLATIONS = {
              'member': 'user:jkl@example.com',
              'role': 'roles/storage.admin'},
          'violation_hash': 'f93745f39163060ceee17385b4677b91746',
-         'violation_type': 'ADDED'}]}
+         'violation_type': 'iam_policy_violations'}]}

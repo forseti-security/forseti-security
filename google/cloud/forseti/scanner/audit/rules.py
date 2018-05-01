@@ -158,11 +158,3 @@ RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'full_name',
                             'rule_name', 'rule_index', 'violation_type',
                             'role', 'members', 'resource_data'])
-
-# Rule violation types.
-VIOLATION_TYPE = {
-    'whitelist': 'ADDED',
-    'blacklist': 'ADDED',
-    'required': 'REMOVED',
-    'UNSPECIFIED': 'UNSPECIFIED'
-}
