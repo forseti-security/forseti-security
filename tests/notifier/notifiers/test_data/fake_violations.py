@@ -15,7 +15,7 @@
 
 NOTIFIER_CONFIGS = {
     'resources': [
-        {'resource': 'policy_violations',
+        {'resource': 'iam_policy_violations',
          'notifiers': [
              {'name': 'email_violations',
               'configuration': {
@@ -35,7 +35,7 @@ NOTIFIER_CONFIGS_GCS_JSON = {
                 'data_format': 'json'},
              'name': 'gcs_violations'}],
          'should_notify': True,
-         'resource': 'policy_violations'}]}
+         'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_GCS_DEFAULT = {
     'resources': [
@@ -44,7 +44,7 @@ NOTIFIER_CONFIGS_GCS_DEFAULT = {
                 'gcs_path': 'gs://fs-violations/scanner_violations'},
              'name': 'gcs_violations'}],
          'should_notify': True,
-         'resource': 'policy_violations'}]}
+         'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT = {
     'resources': [
@@ -54,7 +54,7 @@ NOTIFIER_CONFIGS_GCS_INVALID_DATA_FORMAT = {
                 'data_format': 'xxx-invalid'},
              'name': 'gcs_violations'}],
          'should_notify': True,
-         'resource': 'policy_violations'}]}
+         'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_EMAIL_JSON = {
     'resources': [
@@ -66,7 +66,7 @@ NOTIFIER_CONFIGS_EMAIL_JSON = {
                 'data_format': 'json'},
              'name': 'email_violations'}],
          'should_notify': True,
-         'resource': 'policy_violations'}]}
+         'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
     'resources': [
@@ -77,7 +77,7 @@ NOTIFIER_CONFIGS_EMAIL_DEFAULT = {
                 'sender': 'cd@ex.com'},
              'name': 'email_violations'}],
          'should_notify': True,
-         'resource': 'policy_violations'}]}
+         'resource': 'iam_policy_violations'}]}
 
 NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
     'resources': [
@@ -89,7 +89,7 @@ NOTIFIER_CONFIGS_EMAIL_INVALID_DATA_FORMAT = {
                 'data_format': 'xyz-invalid'},
              'name': 'email_violations'}],
          'should_notify': True,
-         'resource': 'policy_violations'}]}
+         'resource': 'iam_policy_violations'}]}
 
 GLOBAL_CONFIGS = {
     'max_bigquery_api_calls_per_100_seconds': 17000,
@@ -156,7 +156,7 @@ VIOLATIONS = {
              'role': 'roles/storage.admin'},
          'violation_hash': 'f93745f39163060ceee17385b4677b91746382',
          'violation_type': 'IAP_VIOLATION'}],
-    'policy_violations': [
+    'iam_policy_violations': [
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
          'id': 1L,
@@ -179,7 +179,7 @@ VIOLATIONS = {
              'member': 'user:ghi@example.com',
              'role': 'roles/storage.objectAdmin'},
          'violation_hash': '15fda93a6fdd32d867064677cf07686f79b',
-         'violation_type': 'iam_policy_violations'},
+         'violation_type': 'IAM_POLICY_VIOLATION'},
         {'created_at_datetime': '2018-03-16T09:29:52Z',
          'full_name': 'o/5/g/f/4/g/f/9/g/p/be-p1-196611/bucket/be-1-ext/',
          'id': 2L,
@@ -202,4 +202,4 @@ VIOLATIONS = {
              'member': 'user:jkl@example.com',
              'role': 'roles/storage.admin'},
          'violation_hash': 'f93745f39163060ceee17385b4677b91746',
-         'violation_type': 'iam_policy_violations'}]}
+         'violation_type': 'IAM_POLICY_VIOLATION'}]}
