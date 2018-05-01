@@ -625,6 +625,10 @@ GCE_GET_PROJECT = {
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
                 num=2, id="project2", projnum=PROJECT_ID_PREFIX + "1")),
+    "project3":
+        json.loads(
+            GCE_PROJECT_TEMPLATE.format(
+                num=2, id="project3", projnum=PROJECT_ID_PREFIX + "3")),
 }
 
 # Fields: id, name, project, num, ip, external_ip, network, template,
@@ -1590,7 +1594,12 @@ IAM_GET_SERVICEACCOUNTS = {
         json.loads(
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project2", num=PROJECT_ID_PREFIX + "2", id=2)),
-    ]
+    ],
+    "project3": [
+        json.loads(
+            SERVICEACCOUNT_TEMPLATE.format(
+                project="project3", num=PROJECT_ID_PREFIX + "3", id=3)),
+    ],
 }
 
 SERVICEACCOUNT_IAM_POLICY = """
@@ -1606,6 +1615,25 @@ SERVICEACCOUNT_IAM_POLICY = """
 }
 """
 
+SERVICEACCOUNT_IAM_POLICY_1 = """
+{
+ "bindings": [
+  {
+   "role": "roles/appengine.codeViewer",
+   "members": [
+    "user:abc_user@forseti.test"
+   ]
+  },
+  {
+   "role": "roles/appengine.appViewer",
+   "members": [
+    "user:abc_user@forseti.test"
+   ]
+  }
+ ]
+}
+"""
+
 SERVICEACCOUNT_EMPTY_IAM_POLICY = """
 {
  "etag": "ACAB"
@@ -1614,10 +1642,12 @@ SERVICEACCOUNT_EMPTY_IAM_POLICY = """
 
 SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS["project1"][0]["name"]
 SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS["project2"][0]["name"]
+SERVICEACCOUNT3 = IAM_GET_SERVICEACCOUNTS["project3"][0]["name"]
 
 IAM_GET_SERVICEACCOUNT_IAM_POLICY = {
     SERVICEACCOUNT1: json.loads(SERVICEACCOUNT_IAM_POLICY),
     SERVICEACCOUNT2: json.loads(SERVICEACCOUNT_EMPTY_IAM_POLICY),
+    SERVICEACCOUNT3: json.loads(SERVICEACCOUNT_IAM_POLICY_1),
 }
 
 # Fields: sa_name, id

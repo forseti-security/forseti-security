@@ -102,6 +102,11 @@ class ImporterTest(ForsetiTestCase):
                 self.assertFalse(
                         len(filter(None, policy.full_name.split('/'))) % 2)
 
+        # Make sure binding_members table is populated properly when there are users with multiple
+        # roles in different projects.
+        access_list = data_access.query_access_by_member(session, 'user/abc_user@forseti.test', [])
+        self.assertEqual(2, len(access_list))
+
         model = self.model_manager.model(self.model_name)
         model_description = self.model_manager.get_description(self.model_name)
 
