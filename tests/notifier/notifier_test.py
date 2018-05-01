@@ -113,7 +113,7 @@ class NotifierTest(ForsetiTestCase):
 
         self.assertEquals(1, mock_gcs_violations_cls.call_count)
         self.assertEquals(
-            'policy_violations',
+            'iam_policy_violations',
             mock_gcs_violations_cls.call_args[0][0])
         self.assertEquals(1, mock_gcs_violations.run.call_count)
 
