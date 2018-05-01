@@ -43,6 +43,7 @@ class IamPolicy(object):
 
     def __init__(self):
         """Initialize."""
+        self.audit_configs = None
         self.bindings = []
 
     @classmethod
@@ -63,6 +64,9 @@ class IamPolicy(object):
 
         policy.bindings = [IamPolicyBinding.create_from(b)
                            for b in policy_json.get('bindings', [])]
+        if 'auditConfigs' in policy_json:
+            policy.audit_configs = IamAuditConfig.create_from(
+                policy_json.get('auditConfigs'))
 
         return policy
 
@@ -77,7 +81,8 @@ class IamPolicy(object):
         """
         if not isinstance(other, type(self)):
             return NotImplemented
-        return self.bindings == other.bindings
+        return (self.bindings == other.bindings and
+                self.audit_configs == other.audit_configs)
 
     def __ne__(self, other):
         """Tests inequality of IamPolicy.
@@ -96,6 +101,9 @@ class IamPolicy(object):
         Returns:
             str: Representation of IamPolicy
         """
+        if self.audit_configs:
+            return 'IamPolicy: <bindings={}, audit_configs={}>'.format(
+                self.bindings, self.audit_configs)
         return 'IamPolicy: <bindings={}>'.format(self.bindings)
 
     def is_empty(self):
@@ -341,3 +349,98 @@ class IamPolicyMember(object):
                 (self.type == other_member.type and
                  self.name_pattern.match(other_member.name)) or
                 self._is_matching_domain(other_member))
+
+class IamAuditConfig(object):
+    """IAM Audit Config.
+
+    Captures the mapping from service to log type to exempted members for a
+    project, folder or organization.
+    """
+
+    ALL_SERVICES = 'allServices'
+    VALID_LOG_TYPES = frozenset(['AUDIT_READ', 'DATA_READ', 'DATA_WRITE'])
+
+    def __init__(self, service_configs):
+        """Initialize.
+
+        Args:
+            service_configs (dict): A dictionary mapping service names to
+                dictionaries mapping log types to sets of exempeted members.
+        """
+        self.service_configs = service_configs
+
+    def __eq__(self, other):
+        """Tests equality of IamAuditConfig.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: Whether objects are equal.
+        """
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return self.service_configs == other.service_configs
+
+    def __ne__(self, other):
+        """Tests inequality of IamAuditConfig.
+
+        Args:
+            other (object): Object to compare.
+
+        Returns:
+            bool: Whether objects are not equal.
+        """
+        return not self == other
+
+    def __repr__(self):
+        """String representation of IamAuditConfig.
+
+        Returns:
+            str: The representation of IamAuditConfig.
+        """
+        return 'IamAuditConfig: <service_configs={}>'.format(
+            self.service_configs)
+
+    @classmethod
+    def create_from(cls, audit_configs_list):
+        """Creates an IamAuditConfig from a list of auditConfig dicts.
+
+        Args:
+            audit_configs_list (list): A list of auditConfigs for each service.
+
+        Returns:
+            IamAuditConfig: A new IamAuditConfig created with the service audit
+                configs.
+        """
+        service_configs = {}
+        for audit_config in audit_configs_list:
+            service_name = audit_config.get('service')
+            log_configs = {}
+            for log_config in audit_config.get('auditLogConfigs'):
+                log_configs[log_config.get('logType')] = set(
+                    log_config.get('exemptedMembers', []))
+            if not service_name or not log_configs or None in log_configs:
+                raise errors.InvalidIamAuditConfigError(
+                    'Invalid IAM audit config: {}'.format(audit_config))
+            service_configs[service_name] = log_configs
+        return cls(service_configs)
+
+    def merge_configs(self, other):
+        """Adds `other` audit configs to mine, combining exempted member.
+
+        Use case: merging audit configs from ancestor IAM policies.
+
+        Args:
+            other (IamAuditConfig): the other IAM audit configs
+        """
+        if not isinstance(other, type(self)):
+            raise errors.InvalidIamAuditConfigError(
+                'Cannot merge, other is not of type \'IamAuditConfig\'')
+        for service_name, log_configs in other.service_configs.iteritems():
+            if service_name not in self.service_configs:
+                self.service_configs[service_name] = {}
+            service_config = self.service_configs[service_name]
+            for log_type, exemptions in log_configs.iteritems():
+                service_config[log_type] = exemptions.union(service_config.get(
+                    log_type, set()))
