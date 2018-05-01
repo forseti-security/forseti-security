@@ -77,18 +77,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         print('Forseti will be granted write access and required roles to: '
               '{}'.format(self.resource_root_id))
 
-    def create_or_reuse_service_accts(self):
-        """Create or reuse service accounts."""
-        super(ForsetiServerInstaller, self).create_or_reuse_service_accts()
-        gsuite_service_acct_email, gsuite_service_acct_name = (
-            self.format_gsuite_service_acct_id())
-        self.gsuite_service_acct_email = gcloud.create_or_reuse_service_acct(
-            'GSuite Service Account',
-            gsuite_service_acct_name,
-            gsuite_service_acct_email,
-            self.config.advanced_mode,
-            self.config.dry_run)
-
     def prompt_v1_configs_migration(self):
         """Ask the user if they want to migrate conf/rule files
         from v1 to v2."""
@@ -148,7 +136,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.access_target,
                 self.target_id,
                 self.project_id,
-                self.gsuite_service_acct_email,
                 self.gcp_service_acct_email,
                 self.user_can_grant_roles)
 
@@ -280,7 +267,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'SCANNER_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
-            'GSUITE_SERVICE_ACCOUNT': self.gsuite_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
             'RAND_MINUTE': random.randint(0, 59)
         }
@@ -382,22 +368,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.config.notification_recipient_email = raw_input(
                     constants.QUESTION_NOTIFICATION_RECIPIENT_EMAIL).strip()
 
-    def format_gsuite_service_acct_id(self):
-        """Format the gsuite service account id.
-
-        Returns:
-            str: GSuite service account email.
-            str: GSuite service account name.
-        """
-        service_account_email, service_account_name = (
-            utils.generate_service_acct_info(
-                'gsuite',
-                self.config.installation_type,
-                self.config.timestamp,
-                self.project_id))
-
-        return service_account_email, service_account_name
-
     def post_install_instructions(self, deploy_success,
                                   forseti_conf_path, bucket_name):
         """Show post-install instructions.
@@ -463,12 +433,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         # pylint: disable=too-many-locals
         # Some fields have been renamed from v1 to v2
         # This is a map to map names from v2 back to v1
-        field_names_mapping = {
-            'gsuite_service_account_key_file':
-                'groups_service_account_key_file'}
-
         global_to_inventory = [
-            'gsuite_service_account_key_file',
             'domain_super_admin_email'
         ]
 
@@ -478,9 +443,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
                              else old_config['global'])
 
         for field in global_to_inventory:
-            v1_field = field_names_mapping.get(field, field)
-            if v1_field in old_config_global:
-                new_conf_inventory[field] = (old_config_global[v1_field]
+            if field in old_config_global:
+                new_conf_inventory[field] = (old_config_global[field]
                                              or new_conf_inventory[field])
 
         old_notifier_resources = old_config['notifier']['resources']

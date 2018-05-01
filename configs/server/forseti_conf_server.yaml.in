@@ -15,7 +15,6 @@ inventory:
     root_resource_id: {ROOT_RESOURCE_ID}
 
     # gsuite access
-    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     api_quota:
@@ -322,4 +321,4 @@ notifier:
         # gcs_path should begin with "gs://"
         # data_format may be one of: csv (the default) or json
         data_format: csv
-        gcs_path:
+        gcs_path: gs://{SCANNER_BUCKET}/inv_summary

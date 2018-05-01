@@ -113,7 +113,7 @@ PROJECT_IAM_ROLES_CLIENT = [
 ]
 
 SVC_ACCT_ROLES = [
-    'roles/iam.serviceAccountKeyAdmin'
+    'roles/iam.serviceAccountTokenCreator'
 ]
 
 # Required APIs

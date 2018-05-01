@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """ GCP Installer.
-
 This has been tested with python 2.7.
 """
 
@@ -31,7 +30,6 @@ INSTALLER_REQUIRED_PACKAGES = [
 
 def install(package_name):
     """Install package.
-
     Args:
         package_name (str): Name of the package to install.
     """
@@ -123,6 +121,7 @@ def run():
         forseti_setup = ForsetiClientInstaller(client_config)
 
     forseti_setup.run_setup()
+
 
 if __name__ == '__main__':
     run()
