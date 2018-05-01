@@ -428,6 +428,41 @@ CRM_PROJECT_IAM_POLICY_TEMPLATE = """
 }}
 """
 
+CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES = """
+{{
+ "version": 1,
+ "bindings": [
+  {{
+   "role": "roles/editor",
+   "members": [
+    "serviceAccount:{id}@cloudservices.gserviceaccount.com",
+    "serviceAccount:{id}-compute@developer.gserviceaccount.com",
+    "serviceAccount:{id}@cloudservices.gserviceaccount.com"
+   ]
+  }},
+  {{
+   "role": "roles/owner",
+   "members": [
+    "group:c_grp@forseti.test",
+    "user:a_user@forseti.test"
+   ]
+  }},
+  {{
+   "role": "roles/appengine.codeViewer",
+   "members": [
+    "user:abc_user@forseti.test"
+   ]
+  }},
+  {{
+   "role": "roles/appengine.appViewer",
+   "members": [
+    "user:abc_user@forseti.test"
+   ]
+  }}
+ ]
+}}
+"""
+
 CRM_PROJECT_IAM_POLICY_DUP_MEMBER = """
 {{
  "version": 1,
@@ -486,7 +521,7 @@ CRM_GET_IAM_POLICIES = {
     "folders/" + FOLDER_ID_PREFIX + "3": json.loads(CRM_FOLDER_IAM_POLICY),
     "project1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
     "project2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
-    "project3": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=3)),
+    "project3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
     "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
 }
 
@@ -1595,11 +1630,6 @@ IAM_GET_SERVICEACCOUNTS = {
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project2", num=PROJECT_ID_PREFIX + "2", id=2)),
     ],
-    "project3": [
-        json.loads(
-            SERVICEACCOUNT_TEMPLATE.format(
-                project="project3", num=PROJECT_ID_PREFIX + "3", id=3)),
-    ],
 }
 
 SERVICEACCOUNT_IAM_POLICY = """
@@ -1615,25 +1645,6 @@ SERVICEACCOUNT_IAM_POLICY = """
 }
 """
 
-SERVICEACCOUNT_IAM_POLICY_1 = """
-{
- "bindings": [
-  {
-   "role": "roles/appengine.codeViewer",
-   "members": [
-    "user:abc_user@forseti.test"
-   ]
-  },
-  {
-   "role": "roles/appengine.appViewer",
-   "members": [
-    "user:abc_user@forseti.test"
-   ]
-  }
- ]
-}
-"""
-
 SERVICEACCOUNT_EMPTY_IAM_POLICY = """
 {
  "etag": "ACAB"
@@ -1642,12 +1653,10 @@ SERVICEACCOUNT_EMPTY_IAM_POLICY = """
 
 SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS["project1"][0]["name"]
 SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS["project2"][0]["name"]
-SERVICEACCOUNT3 = IAM_GET_SERVICEACCOUNTS["project3"][0]["name"]
 
 IAM_GET_SERVICEACCOUNT_IAM_POLICY = {
     SERVICEACCOUNT1: json.loads(SERVICEACCOUNT_IAM_POLICY),
     SERVICEACCOUNT2: json.loads(SERVICEACCOUNT_EMPTY_IAM_POLICY),
-    SERVICEACCOUNT3: json.loads(SERVICEACCOUNT_IAM_POLICY_1),
 }
 
 # Fields: sa_name, id
