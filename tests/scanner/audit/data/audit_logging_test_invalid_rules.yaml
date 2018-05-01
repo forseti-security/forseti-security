@@ -1,0 +1,16 @@
+rules:
+  - name: 'Valid rule'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    service: 'allServices'
+    log_types:
+          - AUDIT_READ
+          - DATA_WRITE
+  - name: 'Invalid rule - no log_types'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    service: 'compute.googleapis.com'

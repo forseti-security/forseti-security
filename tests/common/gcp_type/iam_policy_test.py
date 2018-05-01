@@ -17,8 +17,10 @@
 import unittest
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.gcp_type.errors import InvalidIamAuditConfigError
 from google.cloud.forseti.common.gcp_type.errors import InvalidIamPolicyBindingError
 from google.cloud.forseti.common.gcp_type.errors import InvalidIamPolicyMemberError
+from google.cloud.forseti.common.gcp_type.iam_policy import IamAuditConfig
 from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicy
 from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyBinding
 from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyMember
@@ -271,6 +273,7 @@ class IamPolicyTest(ForsetiTestCase):
         actual_roles = [b.role_name for b in iam_policy.bindings]
         actual_members = [_get_member_list(b.members)
                           for b in iam_policy.bindings]
+        actual_audit_configs = iam_policy.audit_configs
 
         expected_roles = ['roles/editor', 'roles/viewer']
         expected_members = [['user:abc@company.com'],
@@ -279,6 +282,64 @@ class IamPolicyTest(ForsetiTestCase):
 
         self.assertEqual(expected_roles, actual_roles)
         self.assertEqual(expected_members, actual_members)
+        self.assertIsNone(actual_audit_configs)
+
+    def test_policy_create_from_with_audit_configs(self):
+        """Test IamPolicy creation with auditConfigs."""
+        policy_json = {
+            'bindings': [
+                {
+                    'role': 'roles/editor',
+                    'members': ['user:abc@company.com']
+                },
+            ],
+            'auditConfigs': [
+                {
+                    'service': 'allServices',
+                    'auditLogConfigs': [
+                        {
+                            'logType': 'ADMIN_READ',
+                        }
+                    ]
+                },
+                {
+                    'service': 'storage.googleapis.com',
+                    'auditLogConfigs': [
+                        {
+                            'logType': 'DATA_READ',
+                        },
+                        {
+                            'logType': 'DATA_WRITE',
+                            'exemptedMembers': [
+                                'user:user1@org.com',
+                                'user:user2@org.com'
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        iam_policy = IamPolicy.create_from(policy_json)
+        actual_roles = [b.role_name for b in iam_policy.bindings]
+        actual_members = [_get_member_list(b.members)
+                          for b in iam_policy.bindings]
+        actual_audit_configs = iam_policy.audit_configs.service_configs
+
+        expected_roles = ['roles/editor']
+        expected_members = [['user:abc@company.com']]
+        expected_audit_configs = {
+            'allServices': {
+                'ADMIN_READ': set(),
+            },
+            'storage.googleapis.com': {
+                'DATA_READ': set(),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
+            },
+        }
+
+        self.assertEqual(expected_roles, actual_roles)
+        self.assertEqual(expected_members, actual_members)
+        self.assertEqual(expected_audit_configs, actual_audit_configs)
 
     def test_empty_policy_has_zero_length_bindings(self):
         """Test that an empty policy has no bindings."""
@@ -311,6 +372,115 @@ class IamPolicyTest(ForsetiTestCase):
         member = IamPolicyMember.create_from('domain:xyz.edu')
         other = IamPolicyMember.create_from('user:u AT xyz DOT edu')
         self.assertFalse(member._is_matching_domain(other))
+
+    # Test IamAuditConfig
+    def test_audit_config_create_from_is_correct(self):
+        audit_configs_json = [
+            {
+                'service': 'allServices',
+                'auditLogConfigs': [
+                    {
+                        'logType': 'DATA_READ',
+                    }
+                ]
+            },
+            {
+                'service': 'storage.googleapis.com',
+                'auditLogConfigs': [
+                    {
+                        'logType': 'DATA_READ',
+                    },
+                    {
+                        'logType': 'DATA_WRITE',
+                        'exemptedMembers': [
+                            'user:user1@org.com',
+                            'user:user2@org.com'
+                        ]
+                    }
+                ]
+            }
+        ]
+        audit_config = IamAuditConfig.create_from(audit_configs_json)
+        expected_service_configs = {
+            'allServices': {
+                'DATA_READ': set(),
+            },
+            'storage.googleapis.com': {
+                'DATA_READ': set(),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
+            },
+        }
+        expected_audit_config = IamAuditConfig(expected_service_configs)
+
+        self.assertEqual(expected_service_configs, audit_config.service_configs)
+        self.assertEqual(expected_audit_config, audit_config)
+
+    def test_audit_config_create_from_bad_config(self):
+        # Log configs without a service service name.
+        audit_configs_json = [
+            {
+                'auditLogConfigs': [
+                    {
+                        'logType': 'DATA_READ',
+                    }
+                ]
+            },
+        ]
+        with self.assertRaises(InvalidIamAuditConfigError):
+            audit_config = IamAuditConfig.create_from(audit_configs_json)
+
+    def test_audit_config_merge_succeeds(self):
+        configs1 = {
+            'allServices': {
+                'ADMIN_READ': set(['user:user1@org.com', 'user:user2@org.com']),
+                'DATA_READ': set(),
+            },
+            'storage.googleapis.com': {
+                'DATA_READ': set(),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
+            },
+        }
+        configs2 = {
+            'allServices': {
+                'ADMIN_READ': set(['user:user2@org.com', 'user:user3@org.com']),
+                'DATA_WRITE': set(),
+            },
+            'cloudsql.googleapis.com': {
+                'DATA_READ': set(),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
+            },
+        }
+        expected_configs = {
+            'allServices': {
+                'ADMIN_READ': set([
+                    'user:user1@org.com',
+                    'user:user2@org.com',
+                    'user:user3@org.com'
+                ]),
+                'DATA_READ': set(),
+                'DATA_WRITE': set(),
+            },
+            'cloudsql.googleapis.com': {
+                'DATA_READ': set(),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
+            },
+            'storage.googleapis.com': {
+                'DATA_READ': set(),
+                'DATA_WRITE': set(['user:user1@org.com', 'user:user2@org.com']),
+            },
+        }
+
+        audit_config1 = IamAuditConfig(configs1)
+        audit_config2 = IamAuditConfig(configs2)
+        expected_audit_config = IamAuditConfig(expected_configs)
+
+        audit_config1.merge_configs(audit_config2)
+
+        # Modify audit_config2 to make sure merge used a deep copy.
+        audit_config2.service_configs['cloudsql.googleapis.com'][
+            'DATA_READ'].add('user:extra_user@org.com')
+
+        self.assertEqual(expected_audit_config, audit_config1)
 
 
 if __name__ == '__main__':

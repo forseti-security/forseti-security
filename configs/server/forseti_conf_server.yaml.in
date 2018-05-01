@@ -76,6 +76,8 @@ scanner:
     # Enable the scanners as default to true when integrated for Forseti 2.0.
 
     scanners:
+        - name: audit_logging
+          enabled: true
         - name: bigquery
           enabled: true
         - name: blacklist
@@ -132,6 +134,22 @@ notifier:
               configuration:
                 data_format: json  # slack only supports json
                 webhook_url: ''
+
+        - resource: audit_logging_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
         - resource: blacklist_violations
           should_notify: true

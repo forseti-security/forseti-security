@@ -29,6 +29,11 @@ class InvalidIamPolicyError(Error):
     pass
 
 
+class InvalidIamAuditConfigError(Error):
+    """Error for invalid IAM Audit Configs."""
+    pass
+
+
 class InvalidIamPolicyBindingError(Error):
     """Error for invalid IAM policy bindings."""
     pass
