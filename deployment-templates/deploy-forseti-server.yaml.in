@@ -53,7 +53,7 @@ resources:
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
-    image-family: ubuntu-1604-lts
+    image-family: ubuntu-1804-lts
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
