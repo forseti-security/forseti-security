@@ -12,7 +12,7 @@ and varying formats alerting you to events in your environment.
 
   * Inventory Summary: Count of the resources added in the latest inventory crawl.
   * Violation Notifications: Individual violations that have been found from the latest scanner run. 
-  * Cloud SCC Findings: Violations converted to Cloud SCC (Cloud Security Command Center) findings format, that's ingestable by Cloud SCC.
+  * Cloud SCC Findings: Violations converted to [Cloud SCC (Cloud Security Command Center)](https://cloud.google.com/security-command-center/) findings format, that's ingestable by Cloud SCC.
   
 ## Notification Channels
 
@@ -83,11 +83,11 @@ The notification channels can be any of the following.
 * `slack_webhook`
   * **Description**: This sends individual violations to a Slack channel via a Slack webhook.
   * **Valid values**: String
+  * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
 
 * `gcs_violations`
   * **Description**: This uploads all violations to a Cloud Storage bucket.
   * **Valid values**: String
-  * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
 
 The configuration fields can be specified as follows.
 
@@ -106,11 +106,11 @@ The configuration fields can be specified as follows.
   * **Valid values**: String
 
 * `sender`:
-  * **Description**: The sender of the email.
+  * **Description**: The email address of the sender of the email.
   * **Valid values**: String
 
 * `recipient`:
-  * **Description**: The recipients of the email.
+  * **Description**: The email addresses of the recipients of the email.
   * **Valid values**: String
   * **Note**: Multiple email recipients as delimited by comma, such as: `john@mycompany.com,jane@mycompany.com`.
 
