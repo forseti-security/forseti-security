@@ -137,7 +137,9 @@ notifier:
 ### Cloud SCC Findings
 
 Violations can be shared with [Cloud Security Command Center](https://cloud.google.com/security-command-center) on Google Cloud
-Platform (GCP). [Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
+Platform (GCP).
+
+[Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
 
 1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
 
