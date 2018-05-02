@@ -54,11 +54,11 @@ follow the steps below
 
 ```yaml
 notifier:
-    inventory:
-      summary:
-        enabled: true
-        data_format: csv
-        gcs_path: gs://path_to_foo_bucket
+  inventory:
+    summary:
+      enabled: true
+      data_format: csv
+      gcs_path: gs://path_to_foo_bucket
 ```
 
 ### Violation Notifications
@@ -78,7 +78,7 @@ any combination of notifiers for each resource.
 
 * `name`
   * **Description**: The name of the notifier you want for each resource.
-  * **Valid values**: The name must match the actual module name for each notifier in [forseti-security/google/cloud/forseti/notifier/notifiers](https://github.com/GoogleCloudPlatform/forseti-security/tree/2.0-dev/google/cloud/forseti/notifier/notifiers), such as `email_violations.py`
+  * **Valid values**: The name must match the actual module name for each notifier in [forseti-security/google/cloud/forseti/notifier/notifiers](https://github.com/GoogleCloudPlatform/forseti-security/tree/2.0-dev/google/cloud/forseti/notifier/notifiers), such as `email_violations`, or `slack_webhook`.
   * **Note: You can specify multiple notifiers for each resource.
 
 * `data_format`
@@ -114,24 +114,24 @@ and Cloud Storage notifier for Cloud SQL violations.
 
 ```yaml
 notifier:
-    resources:
-        - resource: cloudsql_acl_violations
-          should_notify: true
-          notifiers:
-             - name: gcs_violations
-               configuration:
-                 data_format: csv
-                 gcs_path: gs://path_to_foo_bucket
-             - name: email_violations
-               configuration:
-                 data_format: csv
-                 sendgrid_api_key: foobar_key
-                 sender: forseti-notify@mycompany.org
-                 recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
-             - name: slack_webhook
-               configuration:
-                 data_format: json
-                 webhook_url: https://hooks.slack.com/services/foobar
+  resources:
+    - resource: cloudsql_acl_violations
+      should_notify: true
+      notifiers:
+        - name: gcs_violations
+          configuration:
+            data_format: csv
+            gcs_path: gs://path_to_foo_bucket
+        - name: email_violations
+          configuration:
+            data_format: csv
+            sendgrid_api_key: foobar_key
+            sender: forseti-notify@mycompany.org
+            recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
+        - name: slack_webhook
+          configuration:
+            data_format: json
+            webhook_url: https://hooks.slack.com/services/foobar
 ```
 
 ### Cloud SCC Findings
@@ -156,10 +156,10 @@ The following options are available.
 
 ```yaml
 notifier:
-    violation:
-      cloud_scc:
-        enabled: true
-        gcs_path: gs://<path to your GCS bucket>
+  violation:
+    cloud_scc:
+      enabled: true
+      gcs_path: gs://<path to your GCS bucket>
 ```
 
 ## What's next
