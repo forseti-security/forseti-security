@@ -8,19 +8,19 @@ order: 300
 Notifier can dispatch a variety of messages through various channels
 and varying formats alerting you to events in your environment.
 
-### Notification Types
+## Notification Types
 
   * Inventory Summary: Count of the resources added in the latest inventory crawl.
   * Violation Notifications: Individual violations that have been found from the latest scanner run. 
   * Cloud SCC Findings: Violations converted to Cloud SCC (Cloud Security Command Center) findings format, that's ingestable by Cloud SCC.
   
-### Notification Channels
+## Notification Channels
 
   * Email
   * Slack
   * Cloud Storage
 
-### Notification Formats
+## Notification Formats
 
   * Human-readable data: CSV
   * Structured data: JSON
@@ -30,7 +30,14 @@ and varying formats alerting you to events in your environment.
 ### Inventory Summary
 
 This is a count of what resources have been crawled into inventory,
-and outputted to Cloud Storage bucket.
+and outputted to a Cloud Storage bucket.
+
+To configure how you want Notifier to send the Inventory Summary,
+follow the steps below
+
+1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
+
+1. Navigate to the `notifier` > `inventory` > `summary` section.
 
 ```yaml
 notifier:
@@ -48,10 +55,10 @@ notifier:
 
 ### Violation Notifications
 
-To select how you want Notifier to send violation notifications,
+To configure how you want Notifier to send violation notifications,
 follow the steps below:
 
-1. Open `forseti-security/configs/forseti_conf.yaml`.
+1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
 1. Navigate to the `notifier` > `resources` section.
 
 On a per-resources basis, the following options are available. You can use
@@ -68,18 +75,49 @@ any combination of notifiers for each resource.
   such as `email_violations.py`
 
 The notification channels can be any of the following.
+
 * `email_violations`
-This emails all the violation data via SendGrid. Multiple email recipients are
-delimited by comma, such as: `john@mycompany.com,jane@mycompany.com`.
+  * **Description**: This emails all the violation data via SendGrid. 
+  * **Valid values**: String
 
 * `slack_webhook`
-This sends individual violations to a Slack channel via a Slack webhook.
+  * **Description**: This sends individual violations to a Slack channel via a Slack webhook.
+  * **Valid values**: String
 
 * `gcs_violations`
-  This uploads all violations to a Cloud Storage bucket.
+  * **Description**: This uploads all violations to a Cloud Storage bucket.
+  * **Valid values**: String
+  * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
 
-* `data_format`: Either `csv` (default) or `JSON`.
-  Slack only supports json type.
+The configuration fields can be specified as follows.
+
+* `data_format`:
+  * **Description**: The format of the data generated for a given violation.
+  * **Valid values**: one of valid `csv` or `json`
+  * **Note**: Slack only supports the `json` type
+
+* `gcs_path`:
+  * **Description**: The path to a Cloud Storage bucket.
+  * **Valid values**: String
+  * **Note**: Must start with `gs://`.
+
+* `sendgrid_api_key`:
+  * **Description**: The key used to authorize requests to SendGrid.
+  * **Valid values**: String
+
+* `sender`:
+  * **Description**: The sender of the email.
+  * **Valid values**: String
+
+* `recipient`:
+  * **Description**: The recipients of the email.
+  * **Valid values**: String
+  * **Note**: Multiple email recipients as delimited by comma, such as: `john@mycompany.com,jane@mycompany.com`.
+
+* `webhook_url`:
+  * **Description**: The url of the Slack channel to receive the notification. 
+  * **Valid values**: String
+  * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
 
 The following example shows how to update a `.yaml` file to add email, Slack,
 and Cloud Storage notifier for Cloud SQL violations:
@@ -90,16 +128,19 @@ notifier:
         - resource: cloudsql_acl_violations
           should_notify: true
           notifiers:
-             - name: gcs_violations_pipeline
+             - name: gcs_violations
                configuration:
+                 data_format: csv
                  gcs_path: gs://path_to_foo_bucket
-             - name: email_violations_pipeline
+             - name: email_violations
                configuration:
+                 data_format: csv
                  sendgrid_api_key: foobar_key
                  sender: forseti-notify@mycompany.org
                  recipient: foo@gmail.com,bar@gmail.com,baz@gmail.com
-             - name: slack_webhook_pipeline
+             - name: slack_webhook
                configuration:
+                 data_format: json
                  webhook_url: https://hooks.slack.com/services/foobar
 ```
 
@@ -108,7 +149,7 @@ notifier:
 Violations can be shared with [Cloud Security Command Center](https://cloud.google.com/security-command-center) on Google Cloud
 Platform (GCP).
 
-1. Open `forseti-security/configs/forseti_conf.yaml`.
+1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
 
 1. Navigate to the `notifier` > `violation` > `cloud_scc` section.
 
