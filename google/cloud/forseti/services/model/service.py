@@ -80,10 +80,12 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
                                            request.name,
                                            request.id,
                                            request.background)
+        created_at_str = self._get_model_created_at_datetime_str(model)
         reply = model_pb2.CreateModelReply(model=model_pb2.ModelSimplified(
             name=model.name,
             handle=model.handle,
             status=model.state,
+            createdAt=created_at_str,
             description=model.description))
         return reply
 
@@ -115,9 +117,11 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         models = self.modeller.list_model()
         for model in models:
+            created_at_str = self._get_model_created_at_datetime_str(model)
             yield model_pb2.ModelSimplified(name=model.name,
                                             handle=model.handle,
                                             status=model.state,
+                                            createdAt=created_at_str,
                                             description=model.description,
                                             message=model.message)
 
@@ -133,15 +137,28 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
 
         model = self.modeller.get_model(request.identifier)
-
+        created_at_str = self._get_model_created_at_datetime_str(model)
         if model:
             return model_pb2.ModelDetails(name=model.name,
                                           handle=model.handle,
                                           status=model.state,
+                                          createdAt=created_at_str,
                                           description=model.description,
                                           message=model.message,
                                           warnings=model.warnings)
         return model_pb2.ModelDetails()
+
+    def _get_model_created_at_datetime_str(self, model):
+        """Get model created_at datetime in string format.
+        Example return value: '2011-11-03 18:21:26'
+
+        Args:
+            model (Model): Model dao object.
+
+        Return:
+            str: created_at datetime in string format.
+        """
+        return model.created_at_datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 class GrpcModellerFactory(object):
