@@ -151,8 +151,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
     @staticmethod
     def _get_model_created_at_str(model):
-        """Get model created_at datetime in string format.
-        Example return value: '2011-11-03 18:21:26'
+        """Get model created_at datetime in human readable string format.
 
         Args:
             model (Model): Model dao object.
