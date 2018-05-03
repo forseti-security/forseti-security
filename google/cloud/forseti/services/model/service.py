@@ -14,6 +14,7 @@
 
 """Forseti Server model gRPC service."""
 
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.model import modeller
@@ -159,7 +160,8 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         Return:
             str: created_at datetime in string format.
         """
-        return model.created_at_datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        return model.created_at_datetime.now().strftime(
+            string_formats.DEFAULT_FORSETI_HUMAN_TIMESTAMP)
 
 
 class GrpcModellerFactory(object):
