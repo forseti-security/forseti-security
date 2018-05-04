@@ -1234,7 +1234,7 @@ class FirewallEnforcer(object):
                 LOGGER.error(
                     'Error changing firewall rule %s for project %s: %s',
                     rule.get('name', ''), self.project, e)
-                error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)
+                error_str = 'Rule: %s\tError: %s' % (rule.get('name', ''), e)
                 change_errors.append(error_str)
                 failed_rules.append(rule)
                 if self.operation_sema:

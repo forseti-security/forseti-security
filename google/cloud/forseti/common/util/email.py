@@ -127,10 +127,10 @@ class EmailUtil(object):
             raise util_errors.EmailSendError
 
         if response.status_code == 202:
-            LOGGER.info('Email accepted for delivery:\n%s',
+            LOGGER.info('Email accepted for delivery:\t%s',
                         email_subject)
         else:
-            LOGGER.error('Unable to send email:\n%s\n%s\n%s\n%s',
+            LOGGER.error('Unable to send email:\t%s\t%s\t%s\t%s',
                          email_subject, response.status_code,
                          response.body, response.headers)
             raise util_errors.EmailSendError

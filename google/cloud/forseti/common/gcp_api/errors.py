@@ -32,7 +32,7 @@ class ApiExecutionError(Error):
     """Error for API executions."""
 
     CUSTOM_ERROR_MESSAGE = (
-        'GCP API Error: unable to get {0} from GCP:\n{1}\n{2}')
+        'GCP API Error: unable to get {0} from GCP:\t{1}\t{2}')
 
     def __init__(self, resource_name, e,
                  resource_key=None, resource_value=None):
@@ -57,7 +57,7 @@ class ApiNotEnabledError(Error):
     """The requested API is not enabled on this project."""
 
     CUSTOM_ERROR_MESSAGE = ('GCP API Error; API not enabled, turn it on at '
-                            '{0}:\n{1}')
+                            '{0}:\t{1}')
 
     def __init__(self, error_url, e):
         """Initialize.
