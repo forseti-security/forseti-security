@@ -210,8 +210,11 @@ USER=ubuntu
 # to the lock file and fail because the file is already locked by the previous process.
 # The -n flag in flock will fail the process right away when the process is not able to acquire the lock so we won't
 # queue up the jobs.
+# If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
 
-(echo "{run_frequency} /usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
+(echo "{run_frequency} /usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh || 
+    echo "Warning: previous cron job 'run_forseti.sh' is still running and the new cron job is attempting to run, 
+        exiting..." 2>&1 | logger) | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"
