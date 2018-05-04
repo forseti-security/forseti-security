@@ -203,7 +203,16 @@ EOF
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
 USER=ubuntu
-(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
+
+# Use flock to prevent rerun of the same cron job when the previous job is still running.
+# If the lock file does not exist under the tmp directory, it will create the file and put a lock on top of the file.
+# When the previous cron job is not finished and the new one is trying to run, it will attempt to acquire the lock
+# to the lock file and fail because the file is already locked by the previous process.
+# The -n flag in flock will fail the process right away when the process is not able to acquire the lock so we won't
+# queue up the jobs.
+# If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
+
+(echo "{run_frequency} (/usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"
