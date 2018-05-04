@@ -171,6 +171,7 @@ class InventoryIndex(BASE):
         return dict(
             session.query(resource_type, func.count(resource_type))
             .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
             .group_by(resource_type).all())
 
 
