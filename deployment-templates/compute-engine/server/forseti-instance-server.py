@@ -212,9 +212,7 @@ USER=ubuntu
 # queue up the jobs.
 # If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
 
-(echo "{run_frequency} /usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh || 
-    echo "Warning: previous cron job 'run_forseti.sh' is still running and the new cron job is attempting to run, 
-        exiting..." 2>&1 | logger) | crontab -u $USER -
+(echo "{run_frequency} /usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh || echo \"Warning: previous cron job 'run_forseti.sh' is still running and the new cron job is attempting to run, exiting...\" 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"
