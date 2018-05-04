@@ -36,10 +36,11 @@ from tests.services.util.db import create_test_engine_with_file
 
 class ResourceMock(Resource):
 
-    def __init__(self, key, data, res_type, parent=None, warning=[]):
+    def __init__(self, key, data, res_type, category, parent=None, warning=[]):
         self._key = key
         self._data = data
         self._res_type = res_type
+        self._catetory = category
         self._parent = parent if parent else self
         self._warning = warning
         self._timestamp = self._utcnow()
@@ -168,12 +169,21 @@ class InventoryIndexTest(ForsetiTestCase):
         ForsetiTestCase.tearDown(self)
 
     def test_get_summary(self):
-        res_org = ResourceMock('1', {'id': 'test'}, 'organization')
-        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', res_org)
-        res_buc1 = ResourceMock('3', {'id': 'test'}, 'bucket', res_proj1)
-        res_proj2 = ResourceMock('4', {'id': 'test'}, 'project', res_org)
-        res_buc2 = ResourceMock('5', {'id': 'test'}, 'bucket', res_proj2)
-        res_obj2 = ResourceMock('6', {'id': 'test'}, 'object', res_buc2)
+        res_org = ResourceMock('1', {'id': 'test'}, 'organization', 'resource')
+        res_proj1 = ResourceMock('2', {'id': 'test'}, 'project', 'resource',
+                                 res_org)
+        res_proj1 = ResourceMock('3', {'id': 'test'}, 'project', 'iam_policy',
+                                 res_org)
+        res_proj1 = ResourceMock('4', {'id': 'test'}, 'project', 'billing_info',
+                                 res_org)
+        res_buc1 = ResourceMock('5', {'id': 'test'}, 'bucket', 'resource',
+                                res_proj1)
+        res_proj2 = ResourceMock('6', {'id': 'test'}, 'project', 'resource',
+                                 res_org)
+        res_buc2 = ResourceMock('7', {'id': 'test'}, 'bucket', 'resource',
+                                res_proj2)
+        res_obj2 = ResourceMock('8', {'id': 'test'}, 'object', 'resource',
+                                res_buc2)
         resources = [
             res_org, res_proj1, res_buc1, res_proj2, res_buc2, res_obj2]
 
