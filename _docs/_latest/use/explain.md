@@ -12,9 +12,15 @@ It can enumerate access by resource or member, answer why a principal has access
 to a certain resource, or offer possible strategies for how to grant a specific 
 resource.
 
+## Before you begin
+
+To run Explain, you'll need the following:
+
+* Data collected by [Inventory]({% link _docs/latest/use/inventory.md %})
+
 ## Running Explain
 
-Before you start using Explain, you'll first select the data model you
+Before you start using Explain, you'll first create and select the data model you
 want to use.
 
 To review the hierarchy of commands and explore Explain functionality, use
@@ -22,17 +28,14 @@ To review the hierarchy of commands and explore Explain functionality, use
 
 ### Creating a data model
 
-Data model is built using the inventory data we created through the Forseti Inventory service.
-
-Instructions on how to run Forseti Inventory can be found [here]({% link _docs/latest/use/inventory.md %}).
-
-Once you have the inventory ready, retrieve the inventory_index_id and use it to create the data model as follows:
+Get the inventory_index_id and use it to create the data model by running
+the following command:
 
 ```bash
 $ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
-### Listing all the data model
+### Listing data models
 
 ```bash
 $ forseti model list
@@ -44,17 +47,17 @@ $ forseti model list
 $ forseti model use <MODEL_NAME>
 ```
 
-### Querying the data model through Explain
+### Using Explain to query the data model
 
 Following are some example commands you can run to query the data model.
 
-#### Listing all resources in the data model
+#### Listing resources in the data model
 
 ```bash
 $ forseti explainer list_resources
 ```
 
-Filter the results and list resources only in a folder
+You can also the results and list resources only in a folder:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_resources --prefix organization/1234567890/folder/folder-name
@@ -66,7 +69,7 @@ $ forseti-client-XXXX-vm> forseti explainer list_resources --prefix organization
 $ forseti-client-XXXX-vm> forseti explainer list_members
 ```
 
-Filter the results and list members with a prefix match
+You can also filter the results and list members with a prefix match:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_members --prefix test
@@ -78,19 +81,18 @@ $ forseti-client-XXXX-vm> forseti explainer list_members --prefix test
 $ forseti-client-XXXX-vm> forseti explainer list_roles
 ```
 
-Filter the results by prefix
+You can also filter the results by prefix:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_roles --prefix roles/
 ```
-
-Returned results will contain only predefined roles
+Returned results will contain only predefined roles.
 
 Common filters include the following:
 
-`--prefix 'roles/iam'` returns results that only contain predefined roles related to Cloud IAM
+`--prefix 'roles/iam'` returns results that only contain predefined roles related to Cloud IAM.
 
-`--prefix 'organizations'` returns results that only contain custom roles defined on the organization level
+`--prefix 'organizations'` returns results that only contain custom roles defined on the organization level.
 
 #### List permissions contained in a role/roles in the data model
 
@@ -98,17 +100,17 @@ Common filters include the following:
 $ forseti-client-XXXX-vm> forseti explainer list_permissions --roles <ROLE1> <ROLE2>
 ```
 
-For example:
+For example, the following query lists permissions contained in `roles/iam.roleAdmin` and `roles/resourcemanager.projectMover`:
+
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_permissions --roles roles/iam.roleAdmin roles/resourcemanager.projectMover
 ```
-The above query will list permissions contained in `roles/iam.roleAdmin` and `roles/resourcemanager.projectMover`
 
+The following query lists individual permissions in each predefined Cloud IAM role:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_permissions --role_prefixes roles/iam
 ```
-The above query will list permissions in each predefined roles related to Cloud IAM individually
 
 #### Get policies on a resource
 
@@ -117,85 +119,79 @@ $ forseti-client-XXXX-vm> forseti explainer get_policy <RESOURCE_NAME>
 ```
 Example values for `<RESOURCE_NAME>` are the `project/<PROJECT_ID>` and `organization/<ORGANIZATION_ID>`.
 
-Important note: Cloud SQL Instance have slightly different syntax.
-For Cloud SQL Instance the syntax is of the format `cloudsqlinstance/project_id:cloudsqlinstance_name`
+Cloud SQL Instance use a different format as follows:
+
+`cloudsqlinstance/project_id:cloudsqlinstance_name`
 
 For example:
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer get_policy cloudsqlinstance/sample-project-123:my-sql-instance
 ```
 
-#### Test if a member has permission on a resource, or if a tuple <resource, permission, member> is granted
+#### Test permissions
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer check_policy <RESOURCE_NAME> <PERMISSION_NAME> <MEMEBER_NAME>
 ```
 
-For example:
+For example, the following query returns True or False to indicate if the member has permissions on the resource:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer check_policy organizations/1234567890 iam.roles.get user/user1@gmail.com
 ```
 
-The above query returns True or False to indicate if the  member has permission on the resource.
-
-#### List all resources that can be accessed by a member by a direct binding
+#### List member access
+The following command lists all resources that can be accessed by a member by a direct binding:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer access_by_member user/<USER_NAME>
 ```
-By default, resource_expansion is not performed. For example, `user/foo` has `roles/owner` on the `organization/1234567890` and no other policies. 
 
-Without resource expansion, a command like the one above will only show `organization/1234567890`
+By default, resource_expansion is not performed. For example, `user/foo` has `roles/owner` on the `organization/1234567890` and no other policies. The above command will only show `organization/1234567890`.
 
-To enable resource expansion pass in the argument `--expand_resource true`
+To enable resource expansion pass in the argument `--expand_resource true`. Forseti will perform resource expansion and list all resources accessible by `user/<USER_NAME>` through a direct or indirect binding.
 
-Example:
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_member user/<USER_NAME> --expand_resource true
 ```
+ 
+With resource expansion enabled, the example above will return `organizations/1234567890` and all folders, projects, VMs, and other resources in it.
 
-Forseti will perform resource expansion and list all resources accessible by `user/<USER_NAME>` through a direct or indirect binding. 
-With resource expansion enabled, the example above will return `organizations/1234567890` and all folders/projects/vms/... in it.
-
-To constrain the result to a certain type of permission
+To constrain the result to a certain type of permission, use the following command:
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_member user/<USER_NAME> iam.roles.get
 ```
 
-The above query will list all resources that can be accessed by the member with a binding of `iam.roles.get`
+The above query will list all resources that can be accessed by the member with a binding of `iam.roles.get`.
 
-#### List all members that can access a resource by a direct binding
+#### List resource permissions
+
+The following command lists all members that can access a resource by a direct binding:
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME>
 ```
 
-Similar to `access_by_member` command, group expansion is not performed by default.
-
-For example, `group/bar` has `roles/owner` on the `organization/1234567890` and no other policies. Without group expansion, the following example will only show `group/bar`.
+Similar to the `access_by_member` command, group expansion is not performed by default. For example, `group/bar` has `roles/owner` on the `organization/1234567890` and no other policies. Without group expansion, the following example will only return `group/bar`:
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource organizations/1234567890
 ```
 
-To enable group expansion pass in the `--expand_group` argument
+To enable group expansion pass in the `--expand_group` argument. Forseti will perform group expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true 
 ```
 
-Forseti will perform group expansion and list all members that can access the resource even if the access is granted because a member is in a group.
-
 With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo` is a member in `group/bar`.
 
-To constrain the result to a certain type of permission, pass in the permission
+To constrain the result to a certain type of permission, pass in the permission:
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION> 
 ```
-
 
 #### Access member or resource by permission
 
@@ -225,7 +221,8 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_authz --expand_group
 $ forseti-client-XXXX-vm> forseti explainer access_by_authz --expand_resource
 ```
 
-#### Understand why a member has a permission to a resource
+#### View permission source
+Understand why a member has a permission to a resource
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer why_granted <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
