@@ -57,7 +57,7 @@ Following are some example commands you can run to query the data model.
 $ forseti explainer list_resources
 ```
 
-You can also the results and list resources only in a folder:
+You can also filter the results and list resources only in a folder:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_resources --prefix organization/1234567890/folder/folder-name
@@ -94,7 +94,9 @@ Common filters include the following:
 
 `--prefix 'organizations'` returns results that only contain custom roles defined on the organization level.
 
-#### List permissions contained in a role/roles in the data model
+#### List permissions
+
+The following command lists the permissions contained by roles in the data model:
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_permissions --roles <ROLE1> <ROLE2>
@@ -119,7 +121,7 @@ $ forseti-client-XXXX-vm> forseti explainer get_policy <RESOURCE_NAME>
 ```
 Example values for `<RESOURCE_NAME>` are the `project/<PROJECT_ID>` and `organization/<ORGANIZATION_ID>`.
 
-Cloud SQL Instance use a different format as follows:
+Cloud SQL Instance uses a different format as follows:
 
 `cloudsqlinstance/project_id:cloudsqlinstance_name`
 
