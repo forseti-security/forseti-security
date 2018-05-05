@@ -45,7 +45,13 @@ def get_logger(module_name):
         logger: An instance of the configured logger.
     """
     # TODO: Move this into a configuration file.
-    syslog_handler = logging.handlers.SysLogHandler()
+    #
+    # Actually, write to local /var/log/syslog with the address parameter.
+    # rsyslogd will convert \n to #012 in syslog, so log lines are not cut off
+    # in stackdriver.
+    # Next step is to figure out fluentd's multiline parser to handle the
+    # newline correctly in syslog, for proper display in stackdriver.
+    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
     syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
