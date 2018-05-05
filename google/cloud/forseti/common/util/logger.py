@@ -55,9 +55,9 @@ def get_logger(module_name):
     # newline correctly in syslog, for proper display in stackdriver.
     is_travis = 'TRAVIS' in os.environ
     if is_travis:
-        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
-    else:
         syslog_handler = logging.handlers.SysLogHandler()
+    else:
+        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
     syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
