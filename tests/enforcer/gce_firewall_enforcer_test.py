@@ -1197,7 +1197,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
             insert_function, test_rules)
         self.assertSameStructure(test_rules, failures)
         self.assertListEqual([], successes)
-        error_str = 'Rule: %s\nError: %s' % (
+        error_str = 'Rule: %s\tError: %s' % (
             test_rules[0].get('name', ''),
             error_409)
         self.assertListEqual([error_str], change_errors)

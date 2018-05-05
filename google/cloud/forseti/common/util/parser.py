@@ -65,8 +65,8 @@ def format_timestamp(timestamp_str, datetime_formatter):
         formatted_timestamp = (
             dateutil_parser.parse(timestamp_str).strftime(datetime_formatter))
     except (TypeError, ValueError) as e:
-        LOGGER.warn('Unable to parse/format timestamp: %s\n,'
-                    ' datetime_formatter: %s\n%s',
+        LOGGER.warn('Unable to parse/format timestamp: %s\t,'
+                    ' datetime_formatter: %s\t%s',
                     timestamp_str, datetime_formatter, e)
         formatted_timestamp = None
     return formatted_timestamp

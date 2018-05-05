@@ -107,13 +107,14 @@ class FirewallRule(object):
         Returns:
           str: A string representation of FirewallRule.
         """
+        # Using \t separator so stackdriver won't drop newlines.
         string = ('FirewallRule('
-                  'project_id=%s\n'
-                  'name=%s\n'
-                  'network=%s\n'
-                  'priority=%s\n'
-                  'direction=%s\n'
-                  'action=%s\n') % (self.project_id,
+                  'project_id=%s\t'
+                  'name=%s\t'
+                  'network=%s\t'
+                  'priority=%s\t'
+                  'direction=%s\t'
+                  'action=%s\t') % (self.project_id,
                                     self.name,
                                     self.network,
                                     self._priority,
@@ -129,7 +130,7 @@ class FirewallRule(object):
                 ('targetServiceAccounts', self._target_service_accounts),
         ]:
             if value:
-                string += '%s=%s\n' % (field_name, value)
+                string += '%s=%s\t' % (field_name, value)
         return string.strip()
 
     @staticmethod

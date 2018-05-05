@@ -23,7 +23,7 @@ class Error(Exception):
 class MySQLError(Error):
     """Error for mysql exceptions."""
 
-    CUSTOM_ERROR_MESSAGE = 'Error with MySQL for {0}:\n{1}'
+    CUSTOM_ERROR_MESSAGE = 'Error with MySQL for {0}:\t{1}'
 
     def __init__(self, resource_name, e):
         """Initialize.
@@ -44,7 +44,7 @@ class NoResultsError(Error):
 class CSVFileError(Exception):
     """Error for csv file."""
 
-    CUSTOM_ERROR_MESSAGE = 'Unable to create csv file for {0}:\n{1}'
+    CUSTOM_ERROR_MESSAGE = 'Unable to create csv file for {0}:\t{1}'
 
     def __init__(self, resource_name, e):
         """Initialize.

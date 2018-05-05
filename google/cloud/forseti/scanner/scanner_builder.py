@@ -62,7 +62,7 @@ class ScannerBuilder(object):
                 try:
                     module = importlib.import_module(module_name)
                 except (ImportError, TypeError, ValueError) as e:
-                    LOGGER.error('Unable to import %s\n%s', module_name, e)
+                    LOGGER.error('Unable to import %s\t%s', module_name, e)
                     continue
 
                 class_name = (
@@ -72,7 +72,7 @@ class ScannerBuilder(object):
                 try:
                     scanner_class = getattr(module, class_name)
                 except AttributeError:
-                    LOGGER.error('Unable to instantiate %s\n%s',
+                    LOGGER.error('Unable to instantiate %s\t%s',
                                  class_name, sys.exc_info()[0])
                     continue
 
@@ -88,7 +88,7 @@ class ScannerBuilder(object):
                                   .get(scanner.get('name'))
                                   .get('rules_filename'))
                 rules = '{}/{}'.format(rules_path, rules_filename)
-                LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
+                LOGGER.info('Initializing the rules engine:\tUsing rules: %s',
                             rules)
 
                 scanner = scanner_class(self.global_configs,

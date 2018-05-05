@@ -54,12 +54,12 @@ def get_datetime_from_string(string, string_format):
         result = datetime.strptime(string, string_format)
     except TypeError as e:
         LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
+                     '%s\tError: %s',
                      string, string_format, e)
         raise DateTimeTypeConversionError
     except ValueError as e:
         LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
+                     '%s\tError: %s',
                      string, string_format, e)
         raise DateTimeValueConversionError
 
