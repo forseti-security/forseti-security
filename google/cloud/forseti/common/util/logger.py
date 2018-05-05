@@ -53,9 +53,10 @@ def get_logger(module_name):
     # in stackdriver.
     # Next step is to figure out fluentd's multiline parser to handle the
     # newline correctly in syslog, for proper display in stackdriver.
-    if os.path.exists('/dev/log'):
+    # Docker on travis does not have syslog path.
+    if os.path.exists('/dev/log'):  # ubuntu
         syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
-    elif os.path.exists('/var/run/syslog'):
+    elif os.path.exists('/var/run/syslog'):  # mac
         syslog_handler = logging.handlers.SysLogHandler(
             address='/var/run/syslog')
     else:
