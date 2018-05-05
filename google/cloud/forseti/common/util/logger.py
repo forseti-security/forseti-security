@@ -53,15 +53,7 @@ def get_logger(module_name):
     # in stackdriver.
     # Next step is to figure out fluentd's multiline parser to handle the
     # newline correctly in syslog, for proper display in stackdriver.
-    print '----------------------'
-    print os.environ
-    logging.info(os.environ)
-    print '----------------------'
-    is_travis = 'TRAVIS' in os.environ
-    if is_travis:
-        syslog_handler = logging.handlers.SysLogHandler()
-    else:
-        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
     syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
