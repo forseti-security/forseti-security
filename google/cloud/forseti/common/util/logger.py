@@ -55,6 +55,7 @@ def get_logger(module_name):
     # newline correctly in syslog, for proper display in stackdriver.
     print '----------------------'
     print os.environ
+    logging.info(os.environ)
     print '----------------------'
     is_travis = 'TRAVIS' in os.environ
     if is_travis:
