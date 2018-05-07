@@ -43,6 +43,18 @@ The bucket scanner depends on the following Forseti Inventory pipelines:
 - `load_projects_buckets_pipeline`
 - `load_projects_buckets_acls_pipeline`
 
+## Cloud Audit Logging scanner
+
+Cloud Audit Logging can be configured to save Admin Activity and Data Access for
+GCP services. The audit log configurations for a project, folder or organization
+specify which logs should be saved along with members who are exempted from
+having their accesses logged. The audit logging scanner detects if any projects
+are missing a required audit log, or have extra exempted members.
+
+For examples of how to define scanner rules for Cloud Audit Logging, see the
+[audit_logging_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/audit_logging_rules.yaml)
+rule file.
+
 ## Cloud SQL Networks scanner
 
 Cloud SQL instances can be configured to grant external networks access. The
@@ -57,6 +69,16 @@ rule file.
 The cloudsql scanner depends on the following Forseti Inventory pipelines:
 
 - `load_projects_cloudsql_pipeline`
+
+## Enabled APIs scanner
+
+The Enabled APIs scanner detects that a project has appropriate APIs enabled. It
+supports whitelisting supported APIs, blacklisting unsupported APIs, and
+specifying required APIs that must be enabled.
+
+For examples of how to define scanner rules for Enabled APIs, see the
+[enabled_apis_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/enabled_apis_rules.yaml)
+rule file.
 
 ## Load Balancer Forwarding Rules scanner
 
