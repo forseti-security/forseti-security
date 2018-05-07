@@ -1,6 +1,6 @@
 ---
 title: Google Cloud Platform Resource Coverage
-order: 4
+order: 1
 ---
 {::options auto_ids="false" /}
 
