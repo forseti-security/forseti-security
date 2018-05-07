@@ -278,11 +278,12 @@ def define_explainer_parser(parent):
 
     list_resource_parser = action_subparser.add_parser(
         'list_resources',
-        help='List resources by prefix')
+        help='List resources')
     list_resource_parser.add_argument(
         '--prefix',
         default='',
-        help='Resource prefix to filter for')
+        help='Resource full name prefix to filter for '
+             '(e.g. organization/1234567890/folder/my-folder-id)')
 
     list_members_parser = action_subparser.add_parser(
         'list_members',
