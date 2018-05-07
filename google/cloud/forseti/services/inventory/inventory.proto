@@ -29,6 +29,7 @@ service Inventory {
 
   rpc Delete(DeleteRequest) returns (DeleteReply) {}
 
+  rpc Purge(PurgeRequest) returns (PurgeReply) {}
 }
 
 message PingRequest {
@@ -83,4 +84,12 @@ message DeleteRequest {
 
 message DeleteReply {
   InventoryIndex inventory = 1;
+}
+
+message PurgeRequest {
+  string retention_days = 1;
+}
+
+message PurgeReply {
+  string result = 1;
 }

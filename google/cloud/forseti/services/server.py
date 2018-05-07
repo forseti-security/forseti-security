@@ -150,6 +150,15 @@ class AbstractInventoryConfig(dict):
 
         raise NotImplementedError()
 
+    def get_retention_days_configs(self):
+        """Returns the days of inventory data to retain.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+
+        raise NotImplementedError()
+
     def get_service_config(self):
         """Returns the service config.
 
@@ -168,6 +177,7 @@ class InventoryConfig(AbstractInventoryConfig):
                  gsuite_sa_path,
                  gsuite_admin_email,
                  api_quota_configs,
+                 retention_days,
                  *args,
                  **kwargs):
         """Initialize
@@ -177,6 +187,7 @@ class InventoryConfig(AbstractInventoryConfig):
             gsuite_sa_path (str): Path to G Suite service account private keyfile
             gsuite_admin_email (str): G Suite admin email
             api_quota_configs (dict): API quota configs
+            retention_days (int): Days of inventory tables to retain.
             args: args when creating InventoryConfig
             kwargs: kwargs when creating InventoryConfig
         """
@@ -187,6 +198,7 @@ class InventoryConfig(AbstractInventoryConfig):
         self.gsuite_sa_path = gsuite_sa_path
         self.gsuite_admin_email = gsuite_admin_email
         self.api_quota_configs = api_quota_configs
+        self.retention_days = retention_days
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -223,6 +235,15 @@ class InventoryConfig(AbstractInventoryConfig):
         """
 
         return self.api_quota_configs
+
+    def get_retention_days_configs(self):
+        """Returns the days of inventory data to retain.
+
+        Returns:
+            int: The days of inventory data to retain.
+        """
+
+        return self.retention_days
 
     def get_service_config(self):
         """Return the attached service configuration.
@@ -416,7 +437,8 @@ def serve(endpoint,
         forseti_inventory_config.get('root_resource_id', ''),
         forseti_inventory_config.get('gsuite_service_account_key_file', ''),
         forseti_inventory_config.get('domain_super_admin_email', ''),
-        forseti_inventory_config.get('api_quota', {}))
+        forseti_inventory_config.get('api_quota', {}),
+        forseti_inventory_config.get('retention_days', -1))
 
     # TODO: Create Config classes to store scanner and notifier configs.
     forseti_scanner_config = forseti_config.get('scanner', {})
