@@ -199,9 +199,9 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME> <
 
 #### Access member or resource by permission
 
-You can specify a permission, such as `p`, and list `<members, resource, role>` pairs that have a relation.
+You can specify a permission, such as `iam.serviceAccounts.get`, and list all the `<members, resource, role>` that have a relation.
 
-For instance a that role contains permission p and member has permission p on resource.
+The tuple `<members, resource, role>` contains the members with role that contains permission `iam.serviceAccounts.get` on the resource.
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.serviceAccounts.get
@@ -219,10 +219,10 @@ With `access_by_authz` you can also specify role instead of permission
 
 ```
 # With G Suite Group expansion
-$ forseti-client-XXXX-vm> forseti explainer access_by_authz --expand_group
+$ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.serviceAccounts.get --expand_group
 
 # With resource expansion.
-$ forseti-client-XXXX-vm> forseti explainer access_by_authz --expand_resource
+$ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.serviceAccounts.get --expand_resource
 ```
 
 #### Understand why a member has a permission to a resource
@@ -233,7 +233,7 @@ $ forseti-client-XXXX-vm> forseti explainer why_granted <MEMBER_NAME> <RESOURCE_
 
 Example values for `<MEMBER_NAME>`, `user/user1@gmail.com`, `serviceAccount/service1@domain.com`
 
-#### Understand why a member doesn’t have a permission on a resource
+#### Understand how to grant a member permission to a resource
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer why_denied <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
