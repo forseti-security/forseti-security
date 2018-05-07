@@ -113,7 +113,7 @@ PROJECT_IAM_ROLES_CLIENT = [
 ]
 
 SVC_ACCT_ROLES = [
-    'roles/iam.serviceAccountKeyAdmin'
+    'roles/iam.serviceAccountTokenCreator'
 ]
 
 # Required APIs
@@ -287,6 +287,18 @@ MESSAGE_NO_ORGANIZATION = (
     'Refer to the following documentation for more information.\n\n'
     'https://cloud.google.com/resource-manager/docs/'
     'creating-managing-organization')
+
+MESSAGE_RUN_FREQUENCY = (
+    'Forseti will run once every 12 hours, you can configure the run '
+    'frequency in the server deployment template field "run-frequency" '
+    'and update the deployment using the deployment manager.')
+
+MESSAGE_DEPLOYMENT_ERROR = (
+    'Error occurred during the deployment, please check the Forseti '
+    'FAQ for more information '
+    '(https://forsetisecurity.org/faq/#installation-and-deployment),'
+    ' exiting...'
+)
 
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (

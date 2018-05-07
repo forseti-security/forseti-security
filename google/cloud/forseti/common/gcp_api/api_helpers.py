@@ -31,7 +31,7 @@ def get_delegated_credential(delegated_account, scopes):
 
     Returns:
         service_account.Credentials: Credentials as built by
-            google.oauth2.service_account.
+        google.oauth2.service_account.
     """
     request = requests.Request()
 
@@ -128,3 +128,20 @@ def flatten_aggregated_list_results(paged_results, item_key):
             for item in items_for_grouping.get(item_key, []):
                 items.append(item)
     return items
+
+
+def get_ratelimiter_config(global_configs, api_name):
+    """Get rate limiter configuration.
+
+    Args:
+        global_configs (dict): Global configurations.
+        api_name (String): The name of the api.
+
+    Returns:
+        float: Max calls
+        float: quota period)
+    """
+
+    max_calls = global_configs.get(api_name, {}).get('max_calls')
+    quota_period = global_configs.get(api_name, {}).get('period')
+    return max_calls, quota_period

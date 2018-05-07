@@ -13,15 +13,15 @@
 # limitations under the License.
 
 """ GCP Installer.
-
 This has been tested with python 2.7.
 """
 
 import argparse
 import datetime
 import site
+import sys
 
-import pip
+from installer.util.utils import run_command
 
 INSTALLER_REQUIRED_PACKAGES = [
     'ruamel.yaml'
@@ -30,19 +30,24 @@ INSTALLER_REQUIRED_PACKAGES = [
 
 def install(package_name):
     """Install package.
-
     Args:
         package_name (str): Name of the package to install.
     """
-    pip.main(['install', package_name, '--user'])
+    # pip's python api is deprecated, we will run the pip command
+    # through subprocess directly instead.
+    return_code, _, err = run_command(
+        ['pip', 'install', package_name, '--user'])
+
+    if return_code:
+        print 'Error installing package {}'.format(package_name)
+        print err
+        sys.exit(1)
 
 
 def install_required_packages():
     """Install required packages."""
-    installed_pkgs = [pkg.key for pkg in pip.get_installed_distributions()]
     for package in INSTALLER_REQUIRED_PACKAGES:
-        if package not in installed_pkgs:
-            install(package)
+        install(package)
 
 
 def run():
@@ -116,6 +121,7 @@ def run():
         forseti_setup = ForsetiClientInstaller(client_config)
 
     forseti_setup.run_setup()
+
 
 if __name__ == '__main__':
     run()

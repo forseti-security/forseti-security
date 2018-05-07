@@ -32,12 +32,14 @@ class DefaultParser(ArgumentParser):
     error message, it will print the help message (-h).
     """
 
-    def error(self, _):
+    def error(self, message=None):
         """This method will be triggered when error occurred.
 
         Args:
-            _ (str): Error message.
+            message (str): Error message.
         """
+        if message:
+            sys.stderr.write('Argument error: %s.\n' % message)
         self.print_usage()
         sys.exit(2)
 
@@ -79,6 +81,17 @@ def define_inventory_parser(parent):
     delete_inventory_parser.add_argument(
         'id',
         help='Inventory id to delete')
+
+    purge_inventory_parser = action_subparser.add_parser(
+        'purge',
+        help='Purge all inventory data older than the retention days.')
+    purge_inventory_parser.add_argument(
+        'retention_days',
+        default=None,
+        nargs='?',
+        help=('Optional.  Number of days to retain the data. If not '
+              'specified, then the value in forseti config yaml file will '
+              'be used.'))
 
     _ = action_subparser.add_parser(
         'list',
@@ -265,11 +278,12 @@ def define_explainer_parser(parent):
 
     list_resource_parser = action_subparser.add_parser(
         'list_resources',
-        help='List resources by prefix')
+        help='List resources')
     list_resource_parser.add_argument(
         '--prefix',
         default='',
-        help='Resource prefix to filter for')
+        help='Resource full name prefix to filter for '
+             '(e.g. organization/1234567890/folder/my-folder-id)')
 
     list_members_parser = action_subparser.add_parser(
         'list_members',
@@ -723,11 +737,17 @@ def run_inventory(client, config, output, _):
         result = client.delete(config.id)
         output.write(result)
 
+    def do_purge_inventory():
+        """Purge all inventory data older than the retention days."""
+        result = client.purge(config.retention_days)
+        output.write(result)
+
     actions = {
         'create': do_create_inventory,
         'list': do_list_inventory,
         'get': do_get_inventory,
-        'delete': do_delete_inventory}
+        'delete': do_delete_inventory,
+        'purge': do_purge_inventory}
 
     actions[config.action]()
 
@@ -759,7 +779,13 @@ def run_explainer(client, config, output, _):
         output.write(result)
 
     def do_list_permissions():
-        """List permissions by roles or role prefixes."""
+        """List permissions by roles or role prefixes.
+
+        Raises:
+            ValueError: if neither a role nor a role prefix is set
+        """
+        if not any([config.roles, config.role_prefixes]):
+            raise ValueError('please specify either a role or a role prefix')
         result = client.query_permissions_by_roles(config.roles,
                                                    config.role_prefixes)
         output.write(result)
@@ -807,7 +833,13 @@ def run_explainer(client, config, output, _):
         output.write(result)
 
     def do_query_access_by_authz():
-        """Query access by role or permission"""
+        """Query access by role or permission
+
+        Raises:
+            ValueError: if neither a role nor a permission is set
+        """
+        if not any([config.role, config.permission]):
+            raise ValueError('please specify either a role or a permission')
         for access in (
                 client.query_access_by_permissions(config.role,
                                                    config.permission,
@@ -1006,7 +1038,10 @@ def main(args,
     if not services:
         services = SERVICES
     output = outputs[config.out_format]()
-    services[config.service](client, config, output, config_env)
+    try:
+        services[config.service](client, config, output, config_env)
+    except ValueError as e:
+        parser.error(e.message)
     return config
 
 

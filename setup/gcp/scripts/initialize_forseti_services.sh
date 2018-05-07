@@ -13,14 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Try to guess if a user has invoked this unexpectedly, and print info.
-if [[ -z "${GSUITE_ADMIN_CREDENTIAL_PATH}" ]]; then
-    echo "This script is a piece of the Forseti deployment infrastructure."
-    echo "It is meant to be run from the Forseti VM that gets deployed by"
-    echo "Deployment Manager. This script expects either root or"
-    echo "unauthenticated sudo privileges on the target VM."
-fi
-
 set -o errexit
 set -o nounset
 
@@ -30,10 +22,7 @@ set -o nounset
 echo "Cloud SQL Instance Connection string: ${SQL_INSTANCE_CONN_STRING}"
 echo "SQL port: ${SQL_PORT}"
 echo "Forseti DB name: ${FORSETI_DB_NAME}"
-if ! [[ -f $GSUITE_ADMIN_CREDENTIAL_PATH ]]; then
-    echo "Could not find gsuite admin credentials." >&2
-    exit 1
-fi
+
 if ! [[ -f $FORSETI_SERVER_CONF ]]; then
     echo "Could not find the configuration file: ${FORSETI_SERVER_CONF}." >&2
     exit 1
@@ -44,7 +33,7 @@ FORSETI_SERVICES="explain inventory model scanner notifier"
 
 FORSETI_COMMAND="$(which forseti_server) --endpoint '[::]:50051'"
 FORSETI_COMMAND+=" --forseti_db ${SQL_SERVER_LOCAL_ADDRESS}/${FORSETI_DB_NAME}"
-FORSETI_COMMAND+=" --forseti_config_file ${FORSETI_SERVER_CONF}"
+FORSETI_COMMAND+=" --config_file_path ${FORSETI_SERVER_CONF}"
 FORSETI_COMMAND+=" --services ${FORSETI_SERVICES}"
 
 SQL_PROXY_COMMAND="$(which cloud_sql_proxy)"

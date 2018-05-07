@@ -73,6 +73,12 @@ AD_GET_USERS = {
         json.loads(
             AD_USER_TEMPLATE.format(
                 id=3, email="c_user@forseti.test", name="C User")),
+        json.loads(
+            # Note: SQLite's varchar is case sensitive and MySQL is not
+            # so this test case is not useful while running SQLite.
+            # This is here for future reference.
+            AD_USER_TEMPLATE.format(
+                id=4, email="a_USER@forseti.test", name="A User")),
     ]
 }
 
@@ -101,6 +107,13 @@ AD_GET_GROUPS = {
         json.loads(
             AD_GROUP_TEMPLATE.format(
                 id=3, email="c_grp@forseti.test", name="C Group", members=2)),
+        # Duplicate groups
+        json.loads(
+            AD_GROUP_TEMPLATE.format(
+                id=1, email="a_grp@forseti.test", name="A Group", members=1)),
+        json.loads(
+            AD_GROUP_TEMPLATE.format(
+                id=4, email="a_GRP@forseti.test", name="A Group", members=1)),
     ]
 }
 
@@ -120,6 +133,10 @@ AD_GET_GROUP_MEMBERS = {
     GROUP_ID_PREFIX + "1": [
         json.loads(
             AD_GROUP_MEMBER_TEMPLATE.format(
+                id=1, email="a_user@forseti.test", type="USER")),
+        # Duplicate group member
+        json.loads(
+            AD_GROUP_MEMBER_TEMPLATE.format(
                 id=1, email="a_user@forseti.test", type="USER"))
     ],
     GROUP_ID_PREFIX + "2": [
@@ -134,7 +151,7 @@ AD_GET_GROUP_MEMBERS = {
         json.loads(
             AD_GROUP_MEMBER_TEMPLATE.format(
                 id=5, email="b_grp@forseti.test", type="GROUP")),
-    ]
+    ],
 }
 
 # Fields: project
@@ -407,6 +424,33 @@ CRM_PROJECT_IAM_POLICY_TEMPLATE = """
     "user:a_user@forseti.test"
    ]
   }}
+ ],
+ "auditConfigs": [
+  {{
+   "auditLogConfigs": [
+    {{
+     "logType": "ADMIN_READ"
+    }},
+    {{
+     "logType": "DATA_WRITE"
+    }},
+    {{
+     "logType": "DATA_READ"
+    }}
+   ],
+   "service": "allServices"
+  }},
+  {{
+   "auditLogConfigs": [
+    {{
+     "exemptedMembers": [
+      "user:gcp-reader-12345@p1234.iam.gserviceaccount.com"
+     ],
+     "logType": "ADMIN_READ"
+    }}
+   ],
+   "service": "cloudsql.googleapis.com"
+  }}
  ]
 }}
 """
@@ -457,6 +501,16 @@ CRM_ORG_IAM_POLICY = """
    "members": [
     "user:a_user@forseti.test"
    ]
+  }
+ ],
+ "auditConfigs": [
+  {
+   "auditLogConfigs": [
+    {
+     "logType": "ADMIN_READ"
+    }
+   ],
+   "service": "allServices"
   }
  ]
 }

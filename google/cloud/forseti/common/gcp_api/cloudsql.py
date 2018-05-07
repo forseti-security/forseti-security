@@ -82,8 +82,6 @@ class _CloudSqlInstancesRepository(
 class CloudsqlClient(object):
     """CloudSQL Client."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -91,10 +89,12 @@ class CloudsqlClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get('max_sqladmin_api_calls_per_100_seconds')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'sqladmin')
+
         self.repository = CloudSqlRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_instances(self, project_id):

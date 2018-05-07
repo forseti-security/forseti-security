@@ -46,18 +46,15 @@ mv forseti-security-{release_version} forseti-security
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     FORSETI_SERVER_CONF = '{}/configs/forseti_conf_server.yaml'.format(FORSETI_HOME)
 
-    GSUITE_ADMIN_CREDENTIAL_PATH = '/home/ubuntu/gsuite_key.json'
 
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
         'export SQL_INSTANCE_CONN_STRING="{1}"\n'
-        'export FORSETI_DB_NAME="{2}"\n'
-        'export GSUITE_ADMIN_CREDENTIAL_PATH="{3}"\n')
+        'export FORSETI_DB_NAME="{2}"\n')
     EXPORT_INITIALIZE_VARS = EXPORT_INITIALIZE_VARS.format(
         context.properties['db-port'],
         CLOUDSQL_CONN_STRING,
-        FORSETI_DB_NAME,
-        GSUITE_ADMIN_CREDENTIAL_PATH)
+        FORSETI_DB_NAME)
 
     EXPORT_FORSETI_VARS = (
         'export FORSETI_HOME={forseti_home}\n'
@@ -65,8 +62,7 @@ mv forseti-security-{release_version} forseti-security
         ).format(forseti_home=FORSETI_HOME,
                  forseti_server_conf=FORSETI_SERVER_CONF)
 
-    RUN_FREQUENCY = context.properties['run-frequency'].format(
-        rand_minute=random.randint(0, 59))
+    RUN_FREQUENCY = context.properties['run-frequency']
 
     resources = []
 
@@ -123,6 +119,7 @@ exec 2>&1
 # Ubuntu update.
 sudo apt-get update -y
 sudo apt-get upgrade -y
+sudo apt-get update && sudo apt-get --assume-yes install google-cloud-sdk
 
 USER_HOME=/home/ubuntu
 
@@ -178,12 +175,6 @@ python setup.py install
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
-
-# Rotate gsuite key
-# TODO: consider moving this to the forseti_server
-python $FORSETI_HOME/setup/gcp/util/rotate_gsuite_key.py {gsuite_service_acct} $GSUITE_ADMIN_CREDENTIAL_PATH
-chown ubuntu:root $GSUITE_ADMIN_CREDENTIAL_PATH
-
 # Download server configuration from GCS
 gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
@@ -212,7 +203,16 @@ EOF
 echo "$FORSETI_ENV" > $USER_HOME/forseti_env.sh
 
 USER=ubuntu
-(echo "{run_frequency} $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh") | crontab -u $USER -
+
+# Use flock to prevent rerun of the same cron job when the previous job is still running.
+# If the lock file does not exist under the tmp directory, it will create the file and put a lock on top of the file.
+# When the previous cron job is not finished and the new one is trying to run, it will attempt to acquire the lock
+# to the lock file and fail because the file is already locked by the previous process.
+# The -n flag in flock will fail the process right away when the process is not able to acquire the lock so we won't
+# queue up the jobs.
+# If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
+
+(echo "{run_frequency} (/usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"
@@ -235,8 +235,6 @@ echo "Execution of startup script finished"
 
     # Env variables for Forseti
     export_forseti_vars=EXPORT_FORSETI_VARS,
-
-    gsuite_service_acct=context.properties['service-account-gsuite'],
 
     # Forseti run frequency
     run_frequency=RUN_FREQUENCY,

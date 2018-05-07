@@ -61,6 +61,7 @@ message ModelSimplified {
   string status = 3;
   string description = 4;
   string message = 5;
+  string createdAt = 6;
 }
 
 message GetModelRequest {
@@ -74,6 +75,7 @@ message ModelDetails {
   string description = 4;
   string message = 5;
   string warnings = 6;
+  string createdAt = 7;
 }
 
 message PingRequest {

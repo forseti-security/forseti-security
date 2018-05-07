@@ -25,14 +25,12 @@ VIOLATION_MAP = {
 }
 
 VIOLATION_RESOURCES = {
-    'ADDED': 'policy_violations',
-    'REMOVED': 'policy_violations',
+    'AUDIT_LOGGING_VIOLATION': 'audit_logging_violations',
     'BIGQUERY_VIOLATION': 'bigquery_acl_violations',
     'BLACKLIST_VIOLATION': 'blacklist_violations',
     'BUCKET_VIOLATION': 'buckets_acl_violations',
     'CLOUD_SQL_VIOLATION': 'cloudsql_acl_violations',
-    'ENABLED_APIS_ADDED_VIOLATION': 'enabled_apis_violations',
-    'ENABLED_APIS_REMOVED_VIOLATION': 'enabled_apis_violations',
+    'ENABLED_APIS_VIOLATION': 'enabled_apis_violations',
     'FORWARDING_RULE_VIOLATION': 'forwarding_rule_violations',
     'FIREWALL_BLACKLIST_VIOLATION': 'firewall_rule_violations',
     'FIREWALL_MATCHES_VIOLATION': 'firewall_rule_violations',
@@ -40,6 +38,7 @@ VIOLATION_RESOURCES = {
     'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
     'GROUP_VIOLATION': 'groups_violations',
     'KE_VERSION_VIOLATION': 'ke_version_violations',
+    'IAM_POLICY_VIOLATION': 'iam_policy_violations',
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
         'instance_network_interface_violations'),

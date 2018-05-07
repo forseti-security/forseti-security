@@ -14,12 +14,9 @@
 
 """Upload violations to GCS."""
 
-import tempfile
 
-from google.cloud.forseti.common.data_access import csv_writer
-from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 
@@ -29,31 +26,6 @@ LOGGER = logger.get_logger(__name__)
 
 class GcsViolations(base_notification.BaseNotification):
     """Upload violations to GCS."""
-
-    def _upload_json(self, gcs_upload_path):
-        """Upload violations in json format.
-
-        Args:
-            gcs_upload_path (string): the GCS upload path.
-        """
-        with tempfile.NamedTemporaryFile() as tmp_violations:
-            tmp_violations.write(parser.json_stringify(self.violations))
-            tmp_violations.flush()
-            storage_client = storage.StorageClient()
-            storage_client.put_text_file(tmp_violations.name, gcs_upload_path)
-
-    def _upload_csv(self, gcs_upload_path):
-        """Upload violations in csv format.
-
-        Args:
-            gcs_upload_path (string): the GCS upload path.
-        """
-        with csv_writer.write_csv(resource_name='violations',
-                                  data=self.violations,
-                                  write_header=True) as csv_file:
-            LOGGER.info('CSV filename: %s', csv_file.name)
-            storage_client = storage.StorageClient()
-            storage_client.put_text_file(csv_file.name, gcs_upload_path)
 
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
@@ -70,10 +42,11 @@ class GcsViolations(base_notification.BaseNotification):
                 self.notification_config['gcs_path'],
                 self._get_output_filename(
                     string_formats.VIOLATION_CSV_FMT))
-            self._upload_csv(gcs_upload_path)
+            file_uploader.upload_csv(
+                'violations', self.violations, gcs_upload_path)
         else:
             gcs_upload_path = '{}/{}'.format(
                 self.notification_config['gcs_path'],
                 self._get_output_filename(
                     string_formats.VIOLATION_JSON_FMT))
-            self._upload_json(gcs_upload_path)
+            file_uploader.upload_json(self.violations, gcs_upload_path)

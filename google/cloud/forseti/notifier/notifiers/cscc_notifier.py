@@ -29,11 +29,20 @@ LOGGER = logger.get_logger(__name__)
 class CsccNotifier(object):
     """Upload violations to GCS bucket as CSCC findings."""
 
-    @staticmethod
-    def _transform_to_findings(violations):
+    def __init__(self, inv_index_id):
+        """`Findingsnotifier` initializer.
+
+        Args:
+            inv_index_id (str): inventory index ID
+        """
+        self.inv_index_id = inv_index_id
+
+    def _transform_to_findings(self, violations):
         """Transform forseti violations to findings format.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
+
         Returns:
             list: violations in findings format; each violation is a dict.
         """
@@ -48,12 +57,13 @@ class CsccNotifier(object):
                 'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
-                    'violation_data': violation.get('violation_data'),
-                    'resource_type': violation.get('resource_type'),
+                    'inventory_index_id': self.inv_index_id,
+                    'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
+                    'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
-                    'inventory_index_id': violation.get('inventory_index_id'),
-                    'resource_data': violation.get('resource_data')
+                    'scanner_index_id': violation.get('scanner_index_id'),
+                    'violation_data': violation.get('violation_data')
                 }
             }
             findings.append(finding)

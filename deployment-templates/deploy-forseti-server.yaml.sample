@@ -54,14 +54,13 @@ resources:
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
-    image-family: ubuntu-1604-lts
+    image-family: ubuntu-1804-lts
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
     service-account: SERVICE_ACCOUNT_GCP
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    service-account-gsuite: SERVICE_ACCOUNT_GSUITE
 
     scanner-bucket: SCANNER_BUCKET
     database-name: forseti_security

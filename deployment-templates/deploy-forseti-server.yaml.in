@@ -53,14 +53,13 @@ resources:
   properties:
     # GCE instance properties
     image-project: ubuntu-os-cloud
-    image-family: ubuntu-1604-lts
+    image-family: ubuntu-1804-lts
     instance-type: n1-standard-2
     zone: $(ref.cloudsql-instance.region)-c
 
     service-account: {GCP_SERVER_SERVICE_ACCOUNT}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    service-account-gsuite: {GSUITE_SERVICE_ACCOUNT}
 
     scanner-bucket: {SCANNER_BUCKET}
     database-name: forseti_security
@@ -92,5 +91,5 @@ resources:
     # WARNING: only change if you know exactly what you're doing!
     # This is the Forseti crontab schedule.
     # The default is "run at some random minute 0-59 (configured in
-    # forseti-instance-server.py), every other hour".
-    run-frequency: "{rand_minute} */2 * * *"
+    # forseti-instance-server.py), every 12 hour".
+    run-frequency: "{RAND_MINUTE} */12 * * *"

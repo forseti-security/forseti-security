@@ -14,6 +14,7 @@
 
 """Forseti Server model gRPC service."""
 
+from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.model import model_pb2
 from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.model import modeller
@@ -80,10 +81,12 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
                                            request.name,
                                            request.id,
                                            request.background)
+        created_at_str = self._get_model_created_at_str(model)
         reply = model_pb2.CreateModelReply(model=model_pb2.ModelSimplified(
             name=model.name,
             handle=model.handle,
             status=model.state,
+            createdAt=created_at_str,
             description=model.description))
         return reply
 
@@ -115,9 +118,11 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         models = self.modeller.list_model()
         for model in models:
+            created_at_str = self._get_model_created_at_str(model)
             yield model_pb2.ModelSimplified(name=model.name,
                                             handle=model.handle,
                                             status=model.state,
+                                            createdAt=created_at_str,
                                             description=model.description,
                                             message=model.message)
 
@@ -133,15 +138,29 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
 
         model = self.modeller.get_model(request.identifier)
-
+        created_at_str = self._get_model_created_at_str(model)
         if model:
             return model_pb2.ModelDetails(name=model.name,
                                           handle=model.handle,
                                           status=model.state,
+                                          createdAt=created_at_str,
                                           description=model.description,
                                           message=model.message,
                                           warnings=model.warnings)
         return model_pb2.ModelDetails()
+
+    @staticmethod
+    def _get_model_created_at_str(model):
+        """Get model created_at datetime in human readable string format.
+
+        Args:
+            model (Model): Model dao object.
+
+        Return:
+            str: created_at datetime in string format.
+        """
+        return model.created_at_datetime.now().strftime(
+            string_formats.DEFAULT_FORSETI_HUMAN_TIMESTAMP)
 
 
 class GrpcModellerFactory(object):

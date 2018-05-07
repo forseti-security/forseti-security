@@ -33,21 +33,39 @@ inventory:
     root_resource_id: organizations/12345677890
 
     # gsuite access
-    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: test@forseti_test_gmail.com
 
     api_quota:
-        # The pre-populated values are the defaults from GCP.
-        max_admin_api_calls_per_100_seconds: 8888
-        max_appengine_api_calls_per_second: 88
-        max_bigquery_api_calls_per_100_seconds: 1
-        max_cloudbilling_api_calls_per_60_seconds: 2
-        max_compute_api_calls_per_second: 3
-        max_container_api_calls_per_100_seconds: 1000
-        max_crm_api_calls_per_100_seconds: 4
-        max_iam_api_calls_per_second: 5
-        max_servicemanagement_api_calls_per_100_seconds: 200
-        max_sqladmin_api_calls_per_100_seconds: 7
+        admin:
+          max_calls: 14
+          period: 1.0
+        appengine:
+          max_calls: 18
+          period: 1.0
+        bigquery:
+          max_calls: 160
+          period: 1.0
+        cloudbilling:
+          max_calls: 5
+          period: 1.2  # Include some room for retries
+        compute:
+          max_calls: 18
+          period: 1
+        container:
+          max_calls: 9
+          period: 1
+        crm:
+          max_calls: 4
+          period: 1.2
+        iam:
+          max_calls: 18
+          period: 1
+        servicemanagement:
+          max_calls: 2
+          period: 1.1
+        sqladmin:
+          max_calls: 1
+          period: 1.1
 
 ##############################################################################
 

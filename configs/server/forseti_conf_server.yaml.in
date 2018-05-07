@@ -15,22 +15,47 @@ inventory:
     root_resource_id: {ROOT_RESOURCE_ID}
 
     # gsuite access
-    gsuite_service_account_key_file: /home/ubuntu/gsuite_key.json
     domain_super_admin_email: {DOMAIN_SUPER_ADMIN_EMAIL}
 
     api_quota:
-        # The pre-populated values are the defaults from GCP.
-        max_admin_api_calls_per_100_seconds: 1500
-        max_appengine_api_calls_per_second: 20
-        max_bigquery_api_calls_per_100_seconds: 17000
-        max_cloudbilling_api_calls_per_60_seconds: 300
-        max_compute_api_calls_per_second: 20
-        max_container_api_calls_per_100_seconds: 1000
-        max_crm_api_calls_per_100_seconds: 400
-        max_iam_api_calls_per_second: 20
-        max_servicemanagement_api_calls_per_100_seconds: 200
-        max_sqladmin_api_calls_per_100_seconds: 100
+        # We are not using the max allowed API quota because we wanted to
+        # include some rooms for retries.
+        # Period is in seconds.
+        admin:
+          max_calls: 14
+          period: 1.0
+        appengine:
+          max_calls: 18
+          period: 1.0
+        bigquery:
+          max_calls: 160
+          period: 1.0
+        cloudbilling:
+          max_calls: 5
+          period: 1.2
+        compute:
+          max_calls: 18
+          period: 1.0
+        container:
+          max_calls: 9
+          period: 1.0
+        crm:
+          max_calls: 4
+          period: 1.2
+        iam:
+          max_calls: 18
+          period: 1.0
+        servicemanagement:
+          max_calls: 2
+          period: 1.1
+        sqladmin:
+          max_calls: 1
+          period: 1.1
 
+    # Number of days to retain inventory data: 
+    #  -1 : (default) keep all previous data forever
+    #   0 : delete all previous inventory data before running
+    retention_days: -1
 
 ##############################################################################
 
@@ -51,6 +76,8 @@ scanner:
     # Enable the scanners as default to true when integrated for Forseti 2.0.
 
     scanners:
+        - name: audit_logging
+          enabled: true
         - name: bigquery
           enabled: true
         - name: blacklist
@@ -83,7 +110,7 @@ notifier:
     # For every resource type you can set up a notification pipeline
     # to send alerts for every violation found
     resources:
-        - resource: policy_violations
+        - resource: iam_policy_violations
           should_notify: true
           notifiers:
             # Email violations
@@ -107,6 +134,22 @@ notifier:
               configuration:
                 data_format: json  # slack only supports json
                 webhook_url: ''
+
+        - resource: audit_logging_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{SCANNER_BUCKET}/scanner_violations
 
         - resource: blacklist_violations
           should_notify: true
@@ -289,3 +332,11 @@ notifier:
         enabled: false
         # gcs_path should begin with "gs://"
         gcs_path:
+
+    inventory:
+      summary:
+        enabled: false
+        # gcs_path should begin with "gs://"
+        # data_format may be one of: csv (the default) or json
+        data_format: csv
+        gcs_path: gs://{SCANNER_BUCKET}/inv_summary

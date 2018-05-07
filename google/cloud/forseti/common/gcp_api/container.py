@@ -187,8 +187,6 @@ class _ContainerProjectsZonesClustersRepository(
 class ContainerClient(object):
     """Cloud Kubernetes Engine Client."""
 
-    DEFAULT_QUOTA_PERIOD = 100.0
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
@@ -196,11 +194,12 @@ class ContainerClient(object):
             global_configs (dict): Global configurations.
             **kwargs (dict): The kwargs.
         """
-        max_calls = global_configs.get(
-            'max_container_api_calls_per_100_seconds')
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            global_configs, 'container')
+
         self.repository = ContainerRepositoryClient(
             quota_max_calls=max_calls,
-            quota_period=self.DEFAULT_QUOTA_PERIOD,
+            quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_serverconfig(self, project_id, zone=None, location=None):
@@ -217,6 +216,8 @@ class ContainerClient(object):
         Returns:
             dict: A serverconfig for a given Compute Engine zone.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/ServerConfig
+
+        An example return value:
 
             {
               "defaultClusterVersion": string,
@@ -266,9 +267,13 @@ class ContainerClient(object):
             list: A list of Cluster dicts.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1/projects.zones.clusters#Cluster
 
-            [{"name": "cluster-1", ...}
-             {"name": "cluster-2", ...},
-             {...}]
+        An example return value:
+
+            [
+                {"name": "cluster-1", ...}
+                {"name": "cluster-2", ...},
+                {...}
+            ]
 
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the

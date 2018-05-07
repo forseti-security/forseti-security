@@ -95,7 +95,8 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -124,9 +125,9 @@ class CrawlerTest(ForsetiTestCase):
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
             'forwardingrule': {'resource': 1},
-            'gsuite_group': {'resource': 3},
+            'gsuite_group': {'resource': 4},
             'gsuite_group_member': {'resource': 1},
-            'gsuite_user': {'resource': 3},
+            'gsuite_user': {'resource': 4},
             'gsuite_user_member': {'resource': 3},
             'image': {'resource': 2},
             'instance': {'resource': 4},
@@ -153,7 +154,8 @@ class CrawlerTest(ForsetiTestCase):
             'folders/1032',
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -190,7 +192,8 @@ class CrawlerTest(ForsetiTestCase):
             'projects/1041',
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -234,7 +237,8 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             '',
-            {})
+            {},
+            '')
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()

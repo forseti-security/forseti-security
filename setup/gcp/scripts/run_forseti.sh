@@ -39,6 +39,10 @@ sleep 10s
 # Set the output format to json
 forseti config format json
 
+# Purge inventory.
+# Use retention_days from configuration yaml file.
+forseti inventory purge
+
 # Run inventory command
 MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
 echo "Running Forseti inventory."
@@ -46,7 +50,6 @@ forseti inventory create --import_as ${MODEL_NAME}
 echo "Finished running Forseti inventory."
 sleep 5s
 
-# Waiting for models to be finished building.
 GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
 MODEL_STATUS=`eval $GET_MODEL_STATUS`
 

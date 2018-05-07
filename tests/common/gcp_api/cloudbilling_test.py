@@ -36,7 +36,7 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
     def setUpClass(cls, mock_google_credential):
         """Set up."""
         fake_global_configs = {
-            'max_cloudbilling_api_calls_per_60_seconds': 10000}
+            'cloudbilling': {'max_calls': 5, 'period': 1.2}}
         cls.billing_api_client = cloudbilling.CloudBillingClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
         cls.project_id = fake_cloudbilling.FAKE_PROJECT_ID

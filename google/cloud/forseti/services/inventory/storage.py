@@ -22,6 +22,7 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import Integer
 from sqlalchemy import and_
+from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy import exists
 from sqlalchemy.ext.declarative import declarative_base
@@ -30,6 +31,7 @@ from sqlalchemy.orm import aliased
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 # pylint: enable=line-too-long
@@ -40,17 +42,6 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
-
-
-class InventoryState(object):
-    """Possible states for inventory."""
-
-    SUCCESS = 'SUCCESS'
-    RUNNING = 'RUNNING'
-    FAILURE = 'FAILURE'
-    PARTIAL_SUCCESS = 'PARTIAL_SUCCESS'
-    TIMEOUT = 'TIMEOUT'
-    CREATED = 'CREATED'
 
 
 class InventoryTypeClass(object):
@@ -92,7 +83,6 @@ class InventoryIndex(BASE):
         Returns:
             object: UTC now time object.
         """
-
         return date_time.get_utc_now_datetime()
 
     def __repr__(self):
@@ -101,7 +91,6 @@ class InventoryIndex(BASE):
         Returns:
             str: String representation of the object.
         """
-
         return """<{}(id='{}', version='{}', timestamp='{}')>""".format(
             self.__class__.__name__,
             self.id,
@@ -115,23 +104,21 @@ class InventoryIndex(BASE):
         Returns:
             object: InventoryIndex row object.
         """
-
         created_at_datetime = cls._utcnow()
         return InventoryIndex(
             id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
             created_at_datetime=created_at_datetime,
             completed_at_datetime=date_time.get_utc_now_datetime(),
-            inventory_status=InventoryState.CREATED,
+            inventory_status=IndexState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
 
-    def complete(self, status=InventoryState.SUCCESS):
+    def complete(self, status=IndexState.SUCCESS):
         """Mark the inventory as completed with a final inventory_status.
 
         Args:
             status (str): Final inventory_status.
         """
-
         self.completed_at_datetime = InventoryIndex._utcnow()
         self.inventory_status = status
 
@@ -142,7 +129,6 @@ class InventoryIndex(BASE):
             session (object): session object to work on.
             warning (str): Warning message
         """
-
         warning_message = '{}\n'.format(warning)
         if not self.inventory_index_warnings:
             self.inventory_index_warnings = warning_message
@@ -158,10 +144,25 @@ class InventoryIndex(BASE):
             session (object): session object to work on.
             message (str): Error message to set.
         """
-
         self.inventory_index_errors = message
         session.add(self)
         session.flush()
+
+    def get_summary(self, session):
+        """Generate/return an inventory summary for this inventory index.
+
+        Args:
+            session (object): session object to work on.
+
+        Returns:
+            dict: a (resource type -> count) dictionary
+        """
+        resource_type = Inventory.resource_type
+        return dict(
+            session.query(resource_type, func.count(resource_type))
+            .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
+            .group_by(resource_type).all())
 
 
 class Inventory(BASE):
@@ -299,7 +300,6 @@ class Inventory(BASE):
             new_row (Inventory): the Inventory row of the new resource
 
         """
-
         self.category = new_row.category
         self.resource_id = new_row.resource_id
         self.resource_type = new_row.resource_type
@@ -315,7 +315,6 @@ class Inventory(BASE):
         Returns:
             str: A description of inventory_index
         """
-
         return ('<{}(inventory_index_id=\'{}\', resource_id=\'{}\','
                 ' resource_type=\'{}\')>').format(
                     self.__class__.__name__,
@@ -329,7 +328,6 @@ class Inventory(BASE):
         Returns:
             str: resource id.
         """
-
         return self.resource_id
 
     def get_resource_type(self):
@@ -338,7 +336,6 @@ class Inventory(BASE):
         Returns:
             str: resource type.
         """
-
         return self.resource_type
 
     def get_category(self):
@@ -347,7 +344,6 @@ class Inventory(BASE):
         Returns:
             str: resource type class.
         """
-
         return self.category
 
     def get_parent_resource_id(self):
@@ -356,7 +352,6 @@ class Inventory(BASE):
         Returns:
             str: parent key.
         """
-
         return self.parent_resource_id
 
     def get_parent_resource_type(self):
@@ -365,7 +360,6 @@ class Inventory(BASE):
         Returns:
             str: parent type.
         """
-
         return self.parent_resource_type
 
     def get_resource_data(self):
@@ -374,7 +368,6 @@ class Inventory(BASE):
         Returns:
             dict: row's metadata.
         """
-
         return json.loads(self.resource_data)
 
     def get_resource_data_raw(self):
@@ -383,7 +376,6 @@ class Inventory(BASE):
         Returns:
             str: row's raw data.
         """
-
         return self.resource_data
 
     def get_other(self):
@@ -392,7 +384,6 @@ class Inventory(BASE):
         Returns:
             dict: row's other data.
         """
-
         return json.loads(self.other)
 
     def get_inventory_errors(self):
@@ -401,7 +392,6 @@ class Inventory(BASE):
         Returns:
             str: row's error data.
         """
-
         return self.inventory_errors
 
 
@@ -451,7 +441,7 @@ class DataAccess(object):
 
         Returns:
             InventoryIndex: An expunged entry corresponding the
-                inventory_index_id.
+            inventory_index_id.
 
         Raises:
             Exception: Reraises any exception.
@@ -525,6 +515,24 @@ class DataAccess(object):
             inventory_index.id)
         return inventory_index.id
 
+    @classmethod
+    def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name
+            cls, session, cutoff_datetime):
+        """Get all inventory index entries older than the cutoff.
+
+        Args:
+            session (object): Database session
+            cutoff_datetime (datetime): The cutoff point to find any
+                older inventory index entries.
+
+        Returns:
+            list: InventoryIndex
+        """
+
+        inventory_indexes = session.query(InventoryIndex).filter(
+            InventoryIndex.created_at_datetime < cutoff_datetime).all()
+        session.expunge_all()
+        return inventory_indexes
 
 def initialize(engine):
     """Create all tables in the database if not existing.
@@ -598,8 +606,7 @@ class Storage(BaseStorage):
             self.session.query(InventoryIndex).filter(
                 InventoryIndex.id == inventory_index_id).filter(
                     InventoryIndex.inventory_status.in_(
-                        [InventoryState.SUCCESS,
-                         InventoryState.PARTIAL_SUCCESS]))
+                        [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]))
             .one())
 
     def _get_resource_rows(self, key):
@@ -666,7 +673,7 @@ class Storage(BaseStorage):
         try:
             self.buffer.flush()
             self.session.rollback()
-            self.inventory_index.complete(status=InventoryState.FAILURE)
+            self.inventory_index.complete(status=IndexState.FAILURE)
             self.session.commit()
         finally:
             self.session_completed = True

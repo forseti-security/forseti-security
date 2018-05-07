@@ -64,7 +64,7 @@ ENABLED_APIS_VIOLATIONS = [
                   full_name='organization/234/project/proj-1/',
                   rule_name='Test whitelist',
                   rule_index=0,
-                  violation_type='ENABLED_APIS_ADDED_VIOLATION',
+                  violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_STORAGE['serviceName']],
                   resource_data='project-1-data'),
     RuleViolation(resource_type='project',
@@ -72,7 +72,7 @@ ENABLED_APIS_VIOLATIONS = [
                   full_name='organization/234/project/proj-2/',
                   rule_name='Test whitelist',
                   rule_index=0,
-                  violation_type='ENABLED_APIS_ADDED_VIOLATION',
+                  violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_STORAGE['serviceName']],
                   resource_data='project-2-data'),
     RuleViolation(resource_type='project',
@@ -80,7 +80,7 @@ ENABLED_APIS_VIOLATIONS = [
                   full_name='organization/234/folder/333/project/proj-3/',
                   rule_name='Test whitelist',
                   rule_index=0,
-                  violation_type='ENABLED_APIS_ADDED_VIOLATION',
+                  violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_PUBSUB['serviceName'], API_STORAGE['serviceName']],
                   resource_data='project-3-data'),
     # Rule 1 blacklists PUBSUB.
@@ -89,7 +89,7 @@ ENABLED_APIS_VIOLATIONS = [
                   full_name='organization/234/folder/333/project/proj-3/',
                   rule_name='Test blacklist',
                   rule_index=1,
-                  violation_type='ENABLED_APIS_ADDED_VIOLATION',
+                  violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_PUBSUB['serviceName']],
                   resource_data='project-3-data'),
     # Rule 2 requires LOGGING and MONITORING.
@@ -98,7 +98,7 @@ ENABLED_APIS_VIOLATIONS = [
                   full_name='organization/234/project/proj-2/',
                   rule_name='Test required list',
                   rule_index=2,
-                  violation_type='ENABLED_APIS_REMOVED_VIOLATION',
+                  violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_MONITORING['serviceName']],
                   resource_data='project-2-data'),
 ]
@@ -110,7 +110,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
         'full_name': 'organization/234/project/proj-1/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
-        'violation_type': 'ENABLED_APIS_ADDED_VIOLATION',
+        'violation_type': 'ENABLED_APIS_VIOLATION',
         'violation_data': {
             'api_name': 'storage.googleapis.com',
             'full_name': 'organization/234/project/proj-1/'
@@ -123,7 +123,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
         'full_name': 'organization/234/project/proj-2/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
-        'violation_type': 'ENABLED_APIS_ADDED_VIOLATION',
+        'violation_type': 'ENABLED_APIS_VIOLATION',
         'violation_data': {
             'api_name': 'storage.googleapis.com',
             'full_name': 'organization/234/project/proj-2/'
@@ -136,7 +136,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
-        'violation_type': 'ENABLED_APIS_ADDED_VIOLATION',
+        'violation_type': 'ENABLED_APIS_VIOLATION',
         'violation_data': {
             'api_name': 'pubsub.googleapis.com',
             'full_name': 'organization/234/folder/333/project/proj-3/'
@@ -149,7 +149,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
-        'violation_type': 'ENABLED_APIS_ADDED_VIOLATION',
+        'violation_type': 'ENABLED_APIS_VIOLATION',
         'violation_data': {
             'api_name': 'storage.googleapis.com',
             'full_name': 'organization/234/folder/333/project/proj-3/'
@@ -162,7 +162,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test blacklist',
         'rule_index': 1,
-        'violation_type': 'ENABLED_APIS_ADDED_VIOLATION',
+        'violation_type': 'ENABLED_APIS_VIOLATION',
         'violation_data': {
             'api_name': 'pubsub.googleapis.com',
             'full_name': 'organization/234/folder/333/project/proj-3/'
@@ -175,7 +175,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
         'full_name': 'organization/234/project/proj-2/',
         'rule_name': 'Test required list',
         'rule_index': 2,
-        'violation_type': 'ENABLED_APIS_REMOVED_VIOLATION',
+        'violation_type': 'ENABLED_APIS_VIOLATION',
         'violation_data': {
             'api_name': 'monitoring.googleapis.com',
             'full_name': 'organization/234/project/proj-2/'

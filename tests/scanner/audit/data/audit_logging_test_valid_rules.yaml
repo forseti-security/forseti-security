@@ -1,0 +1,45 @@
+rules:
+  - name: 'Require AUDIT_READ on all services, with exmptions.'
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    service: 'allServices'
+    log_types:
+      - 'ADMIN_READ'
+    allowed_exemptions:
+      - 'user:user1@org.com'
+      - 'user:user3@org.com'
+  - name: 'Require DATA_WRITE logging in folder 56'
+    resource:
+      - type: folder
+        resource_ids:
+          - '56'
+    service: 'allServices'
+    log_types:
+      - 'DATA_WRITE'
+  - name: 'Require all logging for compute, with exemptions.'
+    resource:
+      - type: project
+        resource_ids:
+          - 'proj-1'
+          - 'proj-2'
+    service: 'compute.googleapis.com'
+    log_types:
+      - 'ADMIN_READ'
+      - 'DATA_READ'
+      - 'DATA_WRITE'
+    allowed_exemptions:
+      - 'user:user1@org.com'
+      - 'user:user2@org.com'
+  - name: 'Require all logging for cloudsql.'
+    resource:
+      - type: project
+        resource_ids:
+          - 'proj-1'
+          - 'proj-3'
+    service: 'cloudsql.googleapis.com'
+    log_types:
+      - 'ADMIN_READ'
+      - 'DATA_READ'
+      - 'DATA_WRITE'

@@ -16,10 +16,11 @@
 
 from Queue import Queue
 
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner
+from google.cloud.forseti.services.scanner.dao import initialize as init_storage
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
@@ -55,6 +56,8 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
         self.service_config = service_config
+        LOGGER.info('initializing scanner DAO tables')
+        init_storage(service_config.get_engine())
 
     def Ping(self, request, _):
         """Provides the capability to check for service availability.

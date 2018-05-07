@@ -61,7 +61,7 @@ def create_resource(resource_id, resource_type, **kwargs):
 
     Returns:
         Resource: The new Resource based on the type, if supported,
-            otherwise None.
+        otherwise None.
     """
     if resource_type not in _RESOURCE_TYPE_MAP:
         return None
