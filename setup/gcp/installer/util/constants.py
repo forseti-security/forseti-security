@@ -295,7 +295,9 @@ MESSAGE_RUN_FREQUENCY = (
 
 MESSAGE_DEPLOYMENT_ERROR = (
     'Error occurred during the deployment, please check the Forseti '
-    'FAQ for more information (https://forsetisecurity.org/faq/), exiting...'
+    'FAQ for more information '
+    '(https://forsetisecurity.org/faq/#installation-and-deployment),'
+    ' exiting...'
 )
 
 # Questions templates
