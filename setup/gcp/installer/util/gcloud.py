@@ -830,11 +830,9 @@ def check_deployment_status(deployment_name, status):
         ['gcloud', 'deployment-manager', 'deployments', 'describe',
          deployment_name, '--format=json'])
 
-    deployment_err_msg = 'Error occurred during the deployment, exiting...'
-
     if return_code:
         print(err)
-        print(deployment_err_msg)
+        print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
 
     deployment_info = json.loads(out)
@@ -847,7 +845,7 @@ def check_deployment_status(deployment_name, status):
 
     if deployment_error:
         print(deployment_error)
-        print(deployment_err_msg)
+        print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
 
     return deployment_status == status.value

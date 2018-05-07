@@ -293,6 +293,11 @@ MESSAGE_RUN_FREQUENCY = (
     'frequency in the server deployment template field "run-frequency" '
     'and update the deployment using the deployment manager.')
 
+MESSAGE_DEPLOYMENT_ERROR = (
+    'Error occurred during the deployment, please check the Forseti '
+    'FAQ for more information (https://forsetisecurity.org/faq/), exiting...'
+)
+
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (
     'Enable write access for Forseti? '
