@@ -104,6 +104,42 @@ For more information, refer to the
 [BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/objectAccessControls#resource)
 documentation.
 
+## Cloud Audit Logging rules
+
+```yaml
+rules:
+  - name: sample audit logging rule for data access logging
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    service: 'storage.googleapis.com'
+    log_types:
+      - 'DATA_READ'
+      - 'DATA_WRITE'
+    allowed_exemptions:
+      - 'user:user1@MYDOMAIN.com'
+      - 'user:user2@MYDOMAIN.com'
+ ```
+
+- **name**: The description of your rule.
+- **resource**: The resource under which the projects reside.
+- **type**: A string of one of the following values:
+  - **organization**
+  - **folder**
+  - **project**
+- **resource_ids**: The resource IDs to which the rule applies. If resource
+  type is `project` then an id of `'*'` applies the rule to all projects.
+- **service**: The service on which logs must be enabled. The special value of
+  `allServices` denotes audit logs for all services.
+- **log_types**: The required log types. Each string is one of the following
+  values:
+  - **AUDIT_READ**
+  - **DATA_READ**
+  - **DATA_WRITE**
+- **allowed_exemptions**: (optional) A list of allowed exemptions in the audit
+  logs for this service.
+
 ## Cloud SQL rules
 
 ```yaml
@@ -151,6 +187,40 @@ your datasets. When you set a value of `*` for `special_group`, `user_email`,
 `domain`, and `group_email`, Scanner checks to make sure that no entities can
 access your datasets. If you specify any other value, Scanner only checks to
 make sure that the entity you specified doesn't have access.
+
+## Enabled APIs rules
+
+```yaml
+rules:
+  - name: sample enabled APIs whitelist rule
+    mode: whitelist
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    services:
+      - 'bigquery-json.googleapis.com'
+      - 'compute.googleapis.com'
+      - 'logging.googleapis.com'
+      - 'monitoring.googleapis.com'
+      - 'pubsub.googleapis.com'
+      - 'storage-api.googleapis.com'
+      - 'storage-component.googleapis.com'
+ ```
+
+- **name**: The description of your rule.
+- **mode**: A string of one of the following values:
+  - **whitelist**: Allow only the APIs listed in `services`.
+  - **blacklist**: Block the APIs listed in `services`.
+  - **required**: All APIs listed in `services` must be enabled.
+- **resource**: The resource under which the projects reside.
+- **type**: A string of one of the following values:
+  - **organization**
+  - **folder**
+  - **project**
+- **resource_ids**: The resource IDs to which the rule applies. If resource
+  type is `project` then an id of `'*'` applies the rule to all projects.
+- **services**: The list of services to whitelist/blacklist/require.
 
 ## Forwarding rules
 
