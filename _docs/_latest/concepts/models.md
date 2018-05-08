@@ -26,9 +26,11 @@ created successfully, before the Scanner or the Explainer can be used.
 
 ## Tables
 
-Each set of data models are stored in its own set of tables, which are tied
-to each other by specific relationships.  At any given time, multiple set
-of tables can exist, either created by the cron job, or by other users.
+Each set of data models are stored in its own set of tables, which are named
+with the `<model_handle>_<table_name>` and are tied to each other by specific
+relationships.  At any given time, multiple set of tables can exist,
+either created by the cron job, or by other users. The table sets are
+listed in the `models` table.  
 
 ### binding_members
 
