@@ -75,6 +75,8 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
 
         # If there is no forwarding rules defined in the rule file then no
         # forwarding rule is violated.
+        # TODO: Maybe we can move this up a level so we don't have to go
+        # through the iteration process.
         if not resource_rules:
             return None
 
