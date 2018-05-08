@@ -24,7 +24,7 @@ interested in isn't listed, please open an issue or contribute!
 | [Compute Engine Instance Groups](https://cloud.google.com/compute/docs/reference/latest/instanceGroups#resource) | Done | Done | TODO |
 | [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) | Done | Done | TODO |
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) | Done | Done | TODO |
-| [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) | Done | TODO | Done |
+| [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) | Done | Done | Done |
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) | Done | Done | TODO |
 | [Folders Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) | Done | Done | TODO |
 | [Google Kubernetes Engine Configurations](https://cloud.google.com/kubernetes-engine/docs/reference/rest) | Done | Done | TODO |
