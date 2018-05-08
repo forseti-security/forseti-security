@@ -73,6 +73,11 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
             self.build_rule_book()
         resource_rules = self.rule_book.get_resource_rules()
 
+        # If there is no forwarding rules defined in the rule file then no
+        # forwarding rule is violated.
+        if not resource_rules:
+            return None
+
         # If your fwd rule matches at least 1 rule in rulebook return None
         # else your fwd rule violates the rulebook and will return a violation
         for rule in resource_rules:
