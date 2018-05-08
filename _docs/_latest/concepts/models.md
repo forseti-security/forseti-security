@@ -11,8 +11,8 @@ The data model is an additional pool of data that is relational in nature,
 and is created from the flat json data in inventory, that's captured from GCP
 API responses. With the relational data, we can more easily see the
 relationships and the inheritances between resources, as well as being able
-to query for them.  One example is see all the accesses that a service account
-may have, across all the projects.
+to query for them.  One example is to see all the accesses that a service
+account may have, across all the projects.
 
 Another important concept to keep in mind is that the data models are not meant
 to be persistent. The data models need to be created before use, and then
@@ -32,22 +32,23 @@ of tables can exist, either created by the cron job, or by other users.
 
 ### binding_members
 
-This table contains information about a the member name, and an binging id
-of what it's bound to in the `bindings` table.
+This table contains information about members, and the `binding_id` of what
+it's bound to in the `bindings` table.
 
 ### bindings
 
-This table contains information about the the binding id for a resource,
+This table contains information about the binding id for a resource,
 and a role.
 
-Thus by combining this with `binding_members` table, we can see what
-resources that a member has access to, and with which roles.
+Thus by combining this with `binding_members` table, we can see who has
+access to what resources, and with which roles.
 
 ### group_in_group
 
 This table contains information about how groups are nested in other groups.
-Each row contains a group and its parent group.  If a group is not nested,
-then it will not be in this table.
+Each row contains a group and its parent group.
+
+If a group is not nested, then it will not be in this table.
 
 ### group_members
 
