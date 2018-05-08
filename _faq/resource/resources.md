@@ -15,7 +15,9 @@ interested in isn't listed, please open an issue or contribute!
 | [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) | Done | Done | TODO |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) | Done | Done | TODO |
 | [BucketAccessControls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) | Done | Done | TODO |
-| [Bucket IAM ](https://cloud.google.com/storage/docs/access-control/iam-reference) | Done | Done | TODO |
+| [Bucket IAM](https://cloud.google.com/storage/docs/access-control/iam-reference) | Done | Done | TODO |
+| [Cloud APIs Configuration](https://cloud.google.com/apis/) | Done | Done | TODO |
+| [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) | Done | Done | TODO |
 | [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) | Done | Done | TODO |
 | [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/latest/backendServices#resource) | Done | Done | TODO |
 | [Compute Engine Instances](https://cloud.google.com/compute/docs/reference/latest/instances#resource) | Done | Done | TODO |
