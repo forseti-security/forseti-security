@@ -27,7 +27,8 @@ exclude: ["Gemfile",
           "scripts/"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
-                     "_data/doc_version_index.yml"]
+                     "_data/doc_version_index.yml",
+                     ".sass-cache/"]
 plugins:
   - jekyll-sitemap
   - jekyll-github-metadata
