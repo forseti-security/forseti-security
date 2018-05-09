@@ -1,0 +1,42 @@
+.news-title {
+  border-bottom: 1px solid $grey-300;
+  font-weight: bold;
+  margin-bottom: 0;
+  padding-bottom: 20px;
+}
+
+.news-post {
+  margin-top: 24px;
+
+  .meta-information {
+    dt {
+      color: $grey-400;
+      font-size: 80%;
+    }
+
+    dd {
+      margin-bottom: 12px;
+    }
+  }
+
+  .content > *:first-child {
+    margin-top: 0;
+  }
+}
+
+.news-item {
+  padding: 12px 0;
+
+  .published-date {
+    color: $grey-400;
+    margin-bottom: 6px;
+  }
+
+  .title {
+    margin-top: 0;
+  }
+
+  .excerpt {
+    margin-bottom: 24px;
+  }
+}
