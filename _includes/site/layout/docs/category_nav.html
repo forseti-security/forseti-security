@@ -1,7 +1,7 @@
 <div class="left-sidebar">
   {% include site/get_docs_for_category.liquid category=page.category %}
 
-  {% assign ordered_docs = category_docs | sort:"order" %}
+  {% assign ordered_docs = category_docs | where_exp:"doc", "doc.order != nil" | sort:"order" %}
   {% assign category_root_url = ordered_docs[0].url %}
 
   {% comment %}
