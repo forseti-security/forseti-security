@@ -1,0 +1,13 @@
+.genindextable {
+  td {
+    word-wrap: break-word;
+  }
+
+  dd > dl {
+    margin: 0 0 0 24px;
+
+    & > dt {
+      font-weight: 300;
+    }
+  }
+}
