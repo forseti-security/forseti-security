@@ -2,7 +2,7 @@
 title: Collecting and Storing New Data in Forseti Inventory
 order: 205
 ---
-#  {{ page.title }}
+# {{ page.title }}
 
 This page describes how to modify Forseti Inventory to collect and store new
 data types.

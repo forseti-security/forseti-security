@@ -1,8 +1,8 @@
 ---
-title: Using Forseti Notifier
+title: Notifier
 order: 003
 ---
-# { page.title }
+# {{ page.title }}
 
 This page describes how the Notifier is used and run.
 

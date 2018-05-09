@@ -2,6 +2,7 @@
 title: Configuring Inventory
 order: 002
 ---
+
 # {{ page.title }}
 
 This page describes how to configure Forseti Inventory. Forseti

@@ -1,6 +1,6 @@
 ---
-title: Using Enforcer
-order: 103
+title: Enforcer
+order: 002
 ---
 # {{ page.title }}
 

@@ -1,8 +1,8 @@
 ---
-title: Using Forseti Inventory
-order: 002
+title: Inventory
+order: 000
 ---
-# { page.title }
+# {{ page.title }}
 
 Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
 resources. Forseti Scanner and Enforcer use Inventory data to perform operations.
@@ -13,4 +13,4 @@ you installed Forseti in a virtualenv, activate the virtualenv first.
 To display Inventory flag options, run `forseti_inventory --helpshort`.
 
 ## What's next
-- Learn about [configuring Inventory]({% link _docs/configure/inventory/index.md %}).
+- Learn about [configuring Inventory]({% link _docs/latest/configure/inventory/index.md %}).

@@ -1,8 +1,8 @@
 ---
-title: Using Forseti CLI
+title: Command line interface (CLI)
 order: 001
 ---
-# { page.title }
+# {{ page.title }}
 
 TODO
 
