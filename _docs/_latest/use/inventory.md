@@ -2,6 +2,7 @@
 title: Inventory
 order: 000
 ---
+
 # {{ page.title }}
 
 Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
