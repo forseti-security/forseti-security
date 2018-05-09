@@ -16,15 +16,16 @@
 
 import json
 
-from sqlalchemy import Column
-from sqlalchemy import Text
-from sqlalchemy import String
-from sqlalchemy import DateTime
-from sqlalchemy import Integer
 from sqlalchemy import and_
-from sqlalchemy import func
-from sqlalchemy import or_
+from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy import exists
+from sqlalchemy import func
+from sqlalchemy import Index
+from sqlalchemy import Integer
+from sqlalchemy import or_
+from sqlalchemy import String
+from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
@@ -180,6 +181,20 @@ class Inventory(BASE):
     parent_resource_id = Column(Text)
     other = Column(Text)
     inventory_errors = Column(Text)
+
+    __table_args__ = (
+        Index('idx_category_resource',
+              'inventory_index_id',
+              'category',
+              'resource_type'),
+        Index('idx_resource_type_id',
+              'inventory_index_id',
+              'resource_type',
+              'resource_id'),
+        Index('idx_parent_resource_type_id',
+              'inventory_index_id',
+              'parent_resource_type',
+              'parent_resource_id'))
 
     @classmethod
     def from_resource(cls, index, resource):
