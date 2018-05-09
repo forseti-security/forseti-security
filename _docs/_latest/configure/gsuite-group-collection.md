@@ -2,6 +2,7 @@
 title: Enabling GSuite Google Groups Collection
 order: 204
 ---
+
 #  {{ page.title }}
 
 This page describes how to enable the data collection of G Suite Google Groups for
