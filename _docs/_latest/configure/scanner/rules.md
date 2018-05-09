@@ -2,7 +2,9 @@
 title: Defining Rules
 order: 103
 ---
+
 # {{ page.title }}
+
 This page describes how to define rules for Forseti Scanner.
 
 ## Defining custom rules

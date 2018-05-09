@@ -5,6 +5,10 @@ hide:
   right_sidebar: true
 ---
 
+# {{ page.title }} 
+
+---
+
 | **[Contributing to Forseti]({% link _docs/latest/develop/contributing.md %})** |
 | :---------------------------------------------------------------------------- |
 | Learn about the process to contribute to Forseti, including how style guidelines and how to submit a pull request. |

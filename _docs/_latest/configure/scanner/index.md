@@ -2,6 +2,7 @@
 title: Scanner
 order: 101
 ---
+
 # {{ page.title }}
 
 This quickstart describes how to get started with Forseti Scanner. Forseti
