@@ -1,5 +1,5 @@
 <div class="row docs-nav">
-  <div class="col-md-8">
+  <div class="col-sm-8">
     <ul class="nav nav-tabs visible-md-block visible-lg-block">
       {% assign release_version = page.path | split:"/" | slice:1 | first %}
       {% for tab in site.data.doc_categories[release_version] %}
@@ -16,7 +16,7 @@
       <li class="active">{{ page.category }}</li>
     </ol>
   </div>
-  <div class="col-md-4 text-right">
+  <div class="col-sm-4 version-dropdown">
     <div class="btn-group" id="version-dropdown" style="margin-top: 1px; margin-bottom: 0; margin-right: 30px">
       <a data-target="#version-dropdown" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
         {{ release_version }}
@@ -50,7 +50,7 @@
           possibly, and we do not want the trailing "index.html".
         {% endcomment %}
         {% assign doc_name = page.path | split:"/" | slice:2,999 | join:"/" %}
-        {% assign url_name = page.url | split:"/" | slice:3,999 | join:"/" | remove:"index.html" %}
+        {% assign url_name = page.url | split:"/" | slice:3,999 | join:"/" | remove:"/index.html" %}
         
         {% assign versions = site.data.doc_version_index[doc_name] | unshift:'latest' %}
         {% unless versions %}

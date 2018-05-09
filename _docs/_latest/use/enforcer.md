@@ -1,21 +1,21 @@
 ---
-title: Enforcer
-order: 201
+title: Using Enforcer
+order: 103
 ---
 # {{ page.title }}
 
-This page describes how to get started with Forseti Enforcer. Forseti
-Enforcer compares policy files that define the desired state of a resource
+This page describes how to get started with Forseti Enforcer. Enforcer
+compares policy files that define the desired state of a resource
 against the current state of the resource. If it finds any differences in
-policy, Forseti Enforcer makes changes using Google Cloud APIs.
+policy, Enforcer makes changes using Google Cloud APIs.
 
-Forseti Enforcer code currently supports Compute Engine firewall rules.
+Enforcer code currently supports Compute Engine firewall rules.
 Additional enforcement endpoints are in development.
 
 ## Before you begin
 
 Forseti Enforcer requires write permissions for the resources that it manages.
-When you install Forseti using the installer, a service account is created and
+When you setup Forseti using the installer, a service account is created and
 granted write access to update firewalls on any project in your organization.
 
 If you did not use the installer, you did not enable enforcer during
@@ -28,7 +28,10 @@ the following permissions:
   - The cloud-platform or compute API scope on the instance that's running
     Forseti Enforcer.
 
-## Defining policies
+## Using Forseti Enforcer
+To use Forseti Enforcer, you'll define policies in a JSON formatted rule list,
+and then run the `forseti_enforcer` tool referencing a local or Cloud Storage
+policy file.
 
 Forseti Enforcer policy files are JSON formatted rule lists that apply to a
 project. Each rule must include all required fields, based on the rule
@@ -71,7 +74,7 @@ that only allows:
         "name": "allow-health-check"
    },
    {
-        "sourceRanges": ["10.128.0.0/9"],
+        "sourceRanges": ["10.0.0.0/8"],
         "description": "Allow internal only",
         "direction": "INGRESS",
         "allowed": [
@@ -91,9 +94,9 @@ that only allows:
   }]
   ```
 
-## Running Forseti Enforcer
+### Running Enforcer
 
-### Use a local policy file
+#### Use a local policy file
 
 To run Forseti Enforcer with a local policy file, run the following command on
 the server instance:
@@ -103,9 +106,9 @@ the server instance:
       --policy_file path/to/policy.json
   ```
 
-### Use a Google Cloud Storage policy file
+#### Use a Cloud Storage policy file
 
-To run Forseti Enforcer with a policy file stored in Google Cloud Storage,
+To run Forseti Enforcer with a policy file stored in Cloud Storage,
 such as `gs://my-project-id/firewall-policies/default.json`, run the following
 command on the server instance:
 

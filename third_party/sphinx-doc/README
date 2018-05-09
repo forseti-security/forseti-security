@@ -1,0 +1,11 @@
+Background
+==========
+
+This empty third-party directory provides a marker for the sphinx-doc LICENSE.
+
+We make use of customized Sphinx Jinja templates when generating our Sphinx
+documentation. You can find these files under: ./scripts/docker/data/
+
+Futhermore, the files must exist under that directory to be apart of the Docker
+context when building.
+
