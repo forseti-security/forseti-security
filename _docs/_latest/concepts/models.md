@@ -26,7 +26,7 @@ created successfully, before the Scanner or the Explainer can be used.
 
 ## Tables
 
-Each set of data models are stored in its own set of tables, which are named
+Data models are stored in its own set of tables, which are named
 with the `<model_handle>_<table_name>` and are tied to each other by specific
 relationships.  At any given time, multiple set of tables can exist,
 either created by the cron job, or by other users. The table sets are
@@ -34,13 +34,13 @@ listed in the `models` table.
 
 ### binding_members
 
-This table contains information about members, and the `binding_id` of what
-it's bound to in the `bindings` table.
+This table is a join table that connects `members` table with the `bindings`
+table, thus making it possible to know what resources each member can access.
 
 ### bindings
 
-This table contains information about the binding id for a resource,
-and a role.
+This table contains information about what resource and what role are
+associated for a `binding_id`.
 
 Thus by combining this with `binding_members` table, we can see who has
 access to what resources, and with which roles.
