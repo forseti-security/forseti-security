@@ -1,5 +1,5 @@
 ---
-title: Forseti Installation
+title: Installation
 order: 001
 ---
 

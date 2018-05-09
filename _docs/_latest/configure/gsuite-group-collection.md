@@ -2,6 +2,7 @@
 title: Enabling GSuite Google Groups Collection
 order: 204
 ---
+
 #  {{ page.title }}
 
 This page describes how to enable the data collection of G Suite Google Groups for
@@ -14,10 +15,6 @@ service account just for this functionality. Read more about
 [domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount?hl=en_US#delegatingauthority).
 
 ### Create a service account
-
-**Note:** If you used the setup wizard to setup Forseti, it already creates a G Suite 
-service account. You can go directly to the 
-[next section]({% link _docs/latest/configure/gsuite-group-collection.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
 
 1. Go to
    [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts){:target="_blank"}
