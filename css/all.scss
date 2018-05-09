@@ -16,6 +16,7 @@ $baseurl: '{{ site.baseurl }}';
 @import "components/footer";
 @import "layouts/homepage";
 @import "layouts/docs";
+@import "layouts/news";
 @import "layouts/releases";
 @import "layouts/404";
 @import "apidocs/base";
