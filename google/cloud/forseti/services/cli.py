@@ -27,6 +27,8 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
+# pylint: disable=too-many-lines
+
 class DefaultParser(ArgumentParser):
     """Default parser, when error is triggered, instead of printing
     error message, it will print the help message (-h).

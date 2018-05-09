@@ -327,7 +327,7 @@ class ServiceConfig(AbstractServiceConfig):
             str: Error message.
         """
 
-        forseti_config, err_msg = self._read_from_config()
+        forseti_config, err_msg = self._read_from_config(config_file_path)
 
         if not forseti_config:
             # if forseti_config is empty, there is nothing to update.
@@ -446,8 +446,6 @@ class ServiceConfig(AbstractServiceConfig):
 
 
 # pylint: enable=too-many-instance-attributes
-
-# pylint: disable=too-many-locals
 def serve(endpoint,
           services,
           forseti_db_connect_string,

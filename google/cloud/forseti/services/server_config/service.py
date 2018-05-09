@@ -48,15 +48,18 @@ class GrpcServiceConfig(server_config_pb2_grpc.ServerConfigServicer):
 
         return server_config_pb2.PingReply(data=request.data)
 
-    def GetLogLevel(self, *_):
+    def GetLogLevel(self, request, _):
         """Get Log level.
 
         Args:
-            _ (tuple): Unused args.
+            request (PingRequest): The ping request.
+            _ (object): Context of the request.
 
         Returns:
             GetLogLevelReply: The GetLogLevelReply grpc object.
         """
+        del request
+
         log_level = logging.getLevelName(LOGGER.getEffectiveLevel())
 
         LOGGER.info('Retrieving log level, log_level = %s',
@@ -80,7 +83,7 @@ class GrpcServiceConfig(server_config_pb2_grpc.ServerConfigServicer):
             LOGGER.info('Setting log level, log_level = %s',
                         request.log_level)
             logger.set_logger_level(logger.LOGLEVELS[request.log_level])
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             err_msg = e.message
 
         success = not err_msg

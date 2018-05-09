@@ -145,7 +145,8 @@ class ServerConfigClient(ForsetiClient):
         self.stub = server_config_pb2_grpc.ServerConfigStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Server Config' service is available by performing a ping.
+        """Checks if the 'Server Config' service is available by
+        performing a ping.
 
         Returns:
             bool: whether the service is available
