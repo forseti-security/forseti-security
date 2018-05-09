@@ -1,0 +1,17 @@
+---
+layout: default
+---
+<h1 class="news-title">{{ page.title }}</h1>
+<div class="news-post row">
+  <div class="content col-md-9">
+    {{ content }}
+  </div>
+  <div class="meta-information col-md-2">
+    <dl>
+      <dt>Written By</dt>
+      <dd>{{ page.author }}</dd>
+      <dt>Published On</dt>
+      <dd>{{ page.date | date_to_long_string }}</dd>
+    </dl>
+  </div>
+</div>

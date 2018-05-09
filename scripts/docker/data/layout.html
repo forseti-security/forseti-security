@@ -1,0 +1,21 @@
+---
+layout: docs
+{% if pagename == 'index' -%}
+title: "API Reference"
+order: 900
+{% else %}{% if pagename == 'py-modindex' %}
+title: "Module Index"
+order: 901
+{% else %}{% if pagename == 'genindex' %}
+title: "Index"
+order: 902
+{% else %}
+title: "{{ title|striptags|e }}{{ titlesuffix }}"
+{% endif %}
+{% endif %}
+{% endif %}
+hide:
+  right_sidebar: true
+---
+{% block body %}
+{% endblock %}
