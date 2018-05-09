@@ -23,8 +23,5 @@ latest violations from the previous scanner run.
 
   # Send the violations by inventory index id.
   $ forseti notifier run --inventory_index_id <inventory index id>
-
-  # Send the violations by scanner index id.
-  $ forseti notifier run --scanner_index_id <scanner index id>
   ```
   
