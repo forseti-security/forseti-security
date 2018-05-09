@@ -5,6 +5,8 @@ hide:
   right_sidebar: true
 ---
 
+# {{ page.title }}
+
 After you **[Set up Forseti]({% link _docs/latest/setup/index.md %})**,
 use these guides to configure features.
 
@@ -38,6 +40,3 @@ use these guides to configure features.
 | :---------------------------------------------------------------------------- |
 | Enable the data collection of G Suite Google Groups for processing by Forseti Inventory. G Suite Groups Collection helps you make sure the right people are in the right group, and is required for Explain. |
 
-| **[Export Summary Notifications]({% link _docs/latest/configure/export-summary-notifications.md %})** |
-| :---------------------------------------------------------------------------- |
-| Create an AppScript to find, parse, and upload the summary email that's dispatched from Forseti Security to BigQuery. The script runs at the time you select to export details from the Forseti notification email. |

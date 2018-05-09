@@ -4,6 +4,7 @@ hide:
   left_sidebar: true
   right_sidebar: true
 ---
+
 # {{ page.title }}
 
 Here are some frequently asked questions about Forseti Security.
