@@ -19,7 +19,7 @@ service account just for this functionality. Read more about
 service account. 
 
 1. Go to
-   [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
+   [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts){:target="_blank"}
    and click **Create service account**.
 
 1. On the **Create service account** dialog that appears, set up your service account:
