@@ -28,6 +28,8 @@ from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
+from google.cloud.forseti.services.server_config import server_config_pb2
+from google.cloud.forseti.services.server_config import server_config_pb2_grpc
 from google.cloud.forseti.services.utils import oneof
 
 
@@ -108,10 +110,10 @@ class ScannerClient(ForsetiClient):
         self.stub = scanner_pb2_grpc.ScannerStub(config['channel'])
 
     def is_available(self):
-        """Checks if the 'Inventory' service is available by performing a ping.
+        """Checks if the 'Scanner' service is available by performing a ping.
 
         Returns:
-            bool: whether the "Inventory" service is available
+            bool: whether the service is available
         """
 
         data = binascii.hexlify(os.urandom(16))
@@ -127,6 +129,65 @@ class ScannerClient(ForsetiClient):
         request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
                              metadata=self.metadata())
+
+
+class ServerConfigClient(ForsetiClient):
+    """Server configuration service allows the client to update the
+    server configuration."""
+
+    def __init__(self, config):
+        """Initialize
+
+        Args:
+            config (ClientConfig): the client config object
+        """
+        super(ServerConfigClient, self).__init__(config)
+        self.stub = server_config_pb2_grpc.ServerConfigStub(config['channel'])
+
+    def is_available(self):
+        """Checks if the 'Server Config' service is available by performing a ping.
+
+        Returns:
+            bool: whether the service is available
+        """
+
+        data = binascii.hexlify(os.urandom(16))
+        echo = self.stub.Ping(server_config_pb2.PingRequest(data=data)).data
+        return echo == data
+
+    def get_log_level(self):
+        """Gets the current log level.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_config_pb2.GetLogLevelRequest()
+        return self.stub.GetLogLevel(request)
+
+    def set_log_level(self, log_level):
+        """Sets the log level.
+
+        Args:
+            log_level (str): The updated log level.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_config_pb2.SetLogLevelRequest(log_level=log_level)
+        return self.stub.SetLogLevel(request)
+
+    def reload_server_configuration(self, config_file_path=None):
+        """Reload the server configuration.
+
+        Args:
+            config_file_path (str): Forseti configuration file path.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_config_pb2.ReloadConfigurationRequest(
+            config_file_path=config_file_path)
+        return self.stub.ReloadServerConfiguration(request)
 
 
 class NotifierClient(ForsetiClient):
@@ -651,12 +712,13 @@ class ClientComposition(object):
         self.scanner = ScannerClient(self.config)
         self.notifier = NotifierClient(self.config)
         self.model = ModelClient(self.config)
-
+        self.server_config = ServerConfigClient(self.config)
         self.clients = [self.explain,
                         self.inventory,
                         self.scanner,
                         self.notifier,
-                        self.model]
+                        self.model,
+                        self.server_config]
 
         if ping:
             if not all([c.is_available() for c in self.clients]):

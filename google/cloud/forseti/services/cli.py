@@ -162,6 +162,64 @@ def define_config_parser(parent):
         help='Configure the CLI output format')
 
 
+def define_server_config_parser(parent):
+    """Define the server config service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser(
+        'server_config',
+        help='Server config service')
+
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    set_config_parser = action_subparser.add_parser(
+        'set',
+        help='Set server configuration.')
+
+    set_config_subparser = set_config_parser.add_subparsers(
+        title='resource',
+        dest='resource')
+
+    set_log_level = set_config_subparser.add_parser(
+        'log_level',
+        help='Log level of the server.'
+    )
+
+    set_log_level.add_argument(
+        'log_level',
+        choices=['debug', 'info', 'warning', 'error'])
+
+
+    get_config_parser = action_subparser.add_parser(
+        'get',
+        help='Get server configuration.')
+
+    get_config_subparser = get_config_parser.add_subparsers(
+        title='resource',
+        dest='resource')
+
+    _ = get_config_subparser.add_parser(
+        'log_level',
+        help='Log level of the server.'
+    )
+
+    reload_config_parser = action_subparser.add_parser(
+        'reload_configuration',
+        help='Reload server configuration.')
+
+    reload_config_parser.add_argument(
+        'config_file_path',
+        nargs='?',
+        type=str,
+        help='Forseti configuration file path.'
+    )
+
+
 def define_model_parser(parent):
     """Define the model service parser.
 
@@ -505,6 +563,7 @@ def create_parser(parser_cls, config_env):
     define_model_parser(service_subparsers)
     define_scanner_parser(service_subparsers)
     define_notifier_parser(service_subparsers)
+    define_server_config_parser(service_subparsers)
     return main_parser
 
 
@@ -621,6 +680,46 @@ def run_scanner(client, config, output, _):
         'run': do_run}
 
     actions[config.action]()
+
+
+def run_server_config(client, config, output, _):
+    """Run scanner commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+            _ (object): Configuration environment.
+    """
+
+    client = client.server_config
+
+    def do_get_log_level():
+        """Get the log level of the server."""
+        output.write(client.get_log_level())
+
+    def do_set_log_level():
+        """Set the log level of the server."""
+        output.write(client.set_log_level(config.log_level))
+
+    def do_reload_configuration():
+        """Reload the configuration of the server."""
+        output.write(client.reload_server_configuration(
+            config.config_file_path))
+
+    actions = {
+        'get': {
+            'log_level': do_get_log_level
+        },
+        'set': {
+            'log_level': do_set_log_level
+        },
+        'reload_configuration': do_reload_configuration
+    }
+
+    if config.action in ['get', 'set']:
+        actions[config.action][config.resource]()
+    else:
+        actions[config.action]()
 
 
 def run_notifier(client, config, output, _):
@@ -875,6 +974,7 @@ SERVICES = {
     'model': run_model,
     'scanner': run_scanner,
     'notifier': run_notifier,
+    'server_config': run_server_config
 }
 
 
