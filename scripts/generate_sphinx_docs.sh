@@ -32,7 +32,7 @@ trap 'rm -rf "${TEMP_SOURCE_DIRECTORY}"' EXIT
 #   TEMP_SOURCE_DIRECTORY
 #######################################
 function checkout_python_source_to_temp_directory() {
-    git --work-tree="${TEMP_SOURCE_DIRECTORY}" checkout "${BUILD_FROM_PYTHON_SOURCE_BRANCH}" .
+    git --work-tree="${TEMP_SOURCE_DIRECTORY}" checkout "origin/${BUILD_FROM_PYTHON_SOURCE_BRANCH}" .
 
     # Update git's index since checking out to a worktree in a separate
     # directory changes the contents of git's index in the current working
