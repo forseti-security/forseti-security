@@ -129,7 +129,7 @@ class InventoryImporter(object):
 
         self.found_root = False
 
-    # pylint-disable=too-many-statements
+    # pylint: disable=too-many-statements
     def run(self):
         """Runs the import.
 
@@ -292,7 +292,7 @@ class InventoryImporter(object):
             self.session.commit()
             self.session.autocommit = autocommit
             self.session.autoflush = autoflush
-    # pylint-enable=too-many-statements
+    # pylint: enable=too-many-statements
 
     @staticmethod
     def model_action_wrapper(session,
