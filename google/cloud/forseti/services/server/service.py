@@ -96,11 +96,13 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         """Reload Server Configuration.
 
         Args:
-            request (ReloadServerConfigurationRequest): The grpc request object.
+            request (ReloadServerConfigurationRequest): The grpc request
+                object.
             _ (object): Context of the request.
 
         Returns:
-            ReloadServerConfigurationReply: The ReloadConfigurationReply grpc object.
+            ReloadServerConfigurationReply: The ReloadConfigurationReply
+                grpc object.
         """
 
         LOGGER.info('Reloading server configurations')

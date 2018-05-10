@@ -222,8 +222,10 @@ def define_server_parser(parent):
         'config_file_path',
         nargs='?',
         type=str,
-        help=('Forseti configuration file path. If not specified,'
-             ' the default path will be used.')
+        help=('Forseti configuration file path. If not specified, '
+              'the default path will be used. Note: Please specify '
+              'a path that the server has access to (e.g. a path in '
+              'the server vm or a gcs path starts with gs://).')
     )
 
 
