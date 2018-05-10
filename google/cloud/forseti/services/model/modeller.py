@@ -49,6 +49,7 @@ class Modeller(object):
 
         model_manager = self.config.model_manager
         model_handle = model_manager.create(name=name)
+        LOGGER.debug('Created model_handle: %s', model_handle)
         scoped_session, data_access = model_manager.get(model_handle)
         readonly_session = model_manager.get_readonly_session()
 
@@ -56,6 +57,7 @@ class Modeller(object):
             """Import runnable."""
             with scoped_session as session, readonly_session as ro_session:
                 importer_cls = importer.by_source(source)
+                LOGGER.debug('Importer class: %s', importer_cls)
                 import_runner = importer_cls(
                     session,
                     ro_session,
@@ -66,8 +68,10 @@ class Modeller(object):
                 import_runner.run()
 
         if background:
+            LOGGER.debug('Running importer in background.')
             self.config.run_in_background(do_import)
         else:
+            LOGGER.debug('Running importer in foreground.')
             do_import()
         return model_manager.model(model_handle, expunge=True)
 
