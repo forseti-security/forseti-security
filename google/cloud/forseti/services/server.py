@@ -41,7 +41,7 @@ from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
-from google.cloud.forseti.services.server_config.service import GrpcServerConfigFactory
+from google.cloud.forseti.services.server.service import GrpcServerConfigFactory
 
 
 LOGGER = logger.get_logger(__name__)
@@ -52,7 +52,7 @@ SERVICE_MAP = {
     'scanner': GrpcScannerFactory,
     'notifier': GrpcNotifierFactory,
     'model': GrpcModellerFactory,
-    'server_config': GrpcServerConfigFactory
+    'server': GrpcServerConfigFactory
 }
 
 
@@ -278,10 +278,12 @@ class ServiceConfig(AbstractServiceConfig):
         self.endpoint = endpoint
 
         self.forseti_config_file_path = forseti_config_file_path
+
         self.inventory_config = None
         self.scanner_config = None
         self.notifier_config = None
         self.global_config = None
+        self.forseti_config = None
 
         self.update_lock = threading.RLock()
 
@@ -337,7 +339,9 @@ class ServiceConfig(AbstractServiceConfig):
             # Lock before performing the update to avoid multiple updates
             # at the same time.
 
-            # Setting up configurations
+            self.forseti_config = forseti_config
+
+            # Setting up individual configurations
             forseti_inventory_config = forseti_config.get('inventory', {})
             inventory_config = InventoryConfig(
                 forseti_inventory_config.get('root_resource_id', ''),
@@ -362,6 +366,15 @@ class ServiceConfig(AbstractServiceConfig):
 
             self.global_config = forseti_global_config
         return True, err_msg
+
+    def get_forseti_config(self):
+        """Get the Forseti config.
+
+        Returns:
+            dict: Forseti config.
+        """
+
+        return self.forseti_config
 
     def get_inventory_config(self):
         """Get the inventory config.
@@ -484,7 +497,7 @@ def serve(endpoint,
         raise Exception('No services to start.')
 
     # Server config service is always started.
-    factories.append(SERVICE_MAP['server_config'])
+    factories.append(SERVICE_MAP['server'])
 
     config = ServiceConfig(
         forseti_config_file_path=config_file_path,

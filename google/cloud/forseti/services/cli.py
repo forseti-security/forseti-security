@@ -164,7 +164,7 @@ def define_config_parser(parent):
         help='Configure the CLI output format')
 
 
-def define_server_config_parser(parent):
+def define_server_parser(parent):
     """Define the server config service parser.
 
     Args:
@@ -172,53 +172,58 @@ def define_server_config_parser(parent):
     """
 
     service_parser = parent.add_parser(
-        'server_config',
+        'server',
         help='Server config service')
 
     action_subparser = service_parser.add_subparsers(
         title='action',
         dest='action')
 
-    set_config_parser = action_subparser.add_parser(
-        'set',
-        help='Set server configuration.')
-
-    set_config_subparser = set_config_parser.add_subparsers(
-        title='resource',
-        dest='resource')
-
-    set_log_level = set_config_subparser.add_parser(
+    log_level_parser = action_subparser.add_parser(
         'log_level',
-        help='Log level of the server.'
+        help='Log level of the server.')
+
+    log_level_subparser = log_level_parser.add_subparsers(
+        title='subaction',
+        dest='subaction')
+
+    set_log_level = log_level_subparser.add_parser(
+        'set',
+        help='Set the log level of the server.'
     )
 
     set_log_level.add_argument(
         'log_level',
         choices=['debug', 'info', 'warning', 'error'])
 
-
-    get_config_parser = action_subparser.add_parser(
+    _ = log_level_subparser.add_parser(
         'get',
-        help='Get server configuration.')
+        help='Get the log level of the server.')
 
-    get_config_subparser = get_config_parser.add_subparsers(
-        title='resource',
-        dest='resource')
+    config_parser = action_subparser.add_parser(
+        'configuration',
+        help='Server configuration.')
 
-    _ = get_config_subparser.add_parser(
-        'log_level',
-        help='Log level of the server.'
+    config_subparser = config_parser.add_subparsers(
+        title='subaction',
+        dest='subaction')
+
+    _ = config_subparser.add_parser(
+        'get',
+        help='Get the server configuration.'
     )
 
-    reload_config_parser = action_subparser.add_parser(
-        'reload_configuration',
-        help='Reload server configuration.')
+    reload_config = config_subparser.add_parser(
+        'reload',
+        help='Load the server configuration.'
+    )
 
-    reload_config_parser.add_argument(
+    reload_config.add_argument(
         'config_file_path',
         nargs='?',
         type=str,
-        help='Forseti configuration file path.'
+        help=('Forseti configuration file path. If not specified,'
+             ' the default path will be used.')
     )
 
 
@@ -565,7 +570,7 @@ def create_parser(parser_cls, config_env):
     define_model_parser(service_subparsers)
     define_scanner_parser(service_subparsers)
     define_notifier_parser(service_subparsers)
-    define_server_config_parser(service_subparsers)
+    define_server_parser(service_subparsers)
     return main_parser
 
 
@@ -684,7 +689,7 @@ def run_scanner(client, config, output, _):
     actions[config.action]()
 
 
-def run_server_config(client, config, output, _):
+def run_server(client, config, output, _):
     """Run scanner commands.
         Args:
             client (iam_client.ClientComposition): client to use for requests.
@@ -708,20 +713,22 @@ def run_server_config(client, config, output, _):
         output.write(client.reload_server_configuration(
             config.config_file_path))
 
+    def do_get_configuration():
+        """Get the configuration of the server."""
+        output.write(client.get_server_configuration())
+
     actions = {
-        'get': {
-            'log_level': do_get_log_level
+        'log_level': {
+            'get': do_get_log_level,
+            'set': do_set_log_level
         },
-        'set': {
-            'log_level': do_set_log_level
-        },
-        'reload_configuration': do_reload_configuration
+        'configuration': {
+            'get': do_get_configuration,
+            'reload': do_reload_configuration
+        }
     }
 
-    if config.action in ['get', 'set']:
-        actions[config.action][config.resource]()
-    else:
-        actions[config.action]()
+    actions[config.action][config.subaction]()
 
 
 def run_notifier(client, config, output, _):
@@ -976,7 +983,7 @@ SERVICES = {
     'model': run_model,
     'scanner': run_scanner,
     'notifier': run_notifier,
-    'server_config': run_server_config
+    'server': run_server
 }
 
 

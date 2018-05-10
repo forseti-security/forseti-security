@@ -14,17 +14,20 @@
 
 syntax = "proto3";
 
-package server_config;
+package server;
 
-service ServerConfig {
+service Server {
   rpc Ping(PingRequest) returns (PingReply) {}
 
   rpc GetLogLevel(GetLogLevelRequest) returns (GetLogLevelReply) {}
 
   rpc SetLogLevel(SetLogLevelRequest) returns (SetLogLevelReply) {}
 
-  rpc ReloadServerConfiguration(ReloadConfigurationRequest)
-    returns (ReloadConfigurationReply) {}
+  rpc GetServerConfiguration(GetServerConfigurationRequest)
+    returns (GetServerConfigurationReply) {}
+
+  rpc ReloadServerConfiguration(ReloadServerConfigurationRequest)
+    returns (ReloadServerConfigurationReply) {}
 }
 
 message SetLogLevelRequest {
@@ -42,11 +45,18 @@ message GetLogLevelReply {
 
 message GetLogLevelRequest {}
 
-message ReloadConfigurationRequest {
+
+message GetServerConfigurationRequest {}
+
+message GetServerConfigurationReply {
+  string configuration = 1;
+}
+
+message ReloadServerConfigurationRequest {
   string config_file_path = 1;
 }
 
-message ReloadConfigurationReply {
+message ReloadServerConfigurationReply {
   bool success = 1;
   string error_message = 2;
 }

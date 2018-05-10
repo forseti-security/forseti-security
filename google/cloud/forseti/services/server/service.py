@@ -14,17 +14,18 @@
 
 """Server Config gRPC service. """
 
+import json
 import logging
 
-from google.cloud.forseti.services.server_config import server_config_pb2
-from google.cloud.forseti.services.server_config import server_config_pb2_grpc
+from google.cloud.forseti.services.server import server_pb2
+from google.cloud.forseti.services.server import server_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class GrpcServiceConfig(server_config_pb2_grpc.ServerConfigServicer):
+class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
     """Service Config gRPC implementation."""
 
     def __init__(self, service_config):
@@ -46,7 +47,7 @@ class GrpcServiceConfig(server_config_pb2_grpc.ServerConfigServicer):
             PingReply: The response to the ping request.
         """
 
-        return server_config_pb2.PingReply(data=request.data)
+        return server_pb2.PingReply(data=request.data)
 
     def GetLogLevel(self, request, _):
         """Get Log level.
@@ -65,7 +66,7 @@ class GrpcServiceConfig(server_config_pb2_grpc.ServerConfigServicer):
         LOGGER.info('Retrieving log level, log_level = %s',
                     log_level)
 
-        return server_config_pb2.GetLogLevelReply(log_level=log_level)
+        return server_pb2.GetLogLevelReply(log_level=log_level)
 
     def SetLogLevel(self, request, _):
         """Set log level.
@@ -88,27 +89,44 @@ class GrpcServiceConfig(server_config_pb2_grpc.ServerConfigServicer):
 
         success = not err_msg
 
-        return server_config_pb2.SetLogLevelReply(success=success,
-                                                  error_message=err_msg)
+        return server_pb2.SetLogLevelReply(success=success,
+                                           error_message=err_msg)
 
     def ReloadServerConfiguration(self, request, _):
         """Reload Server Configuration.
 
         Args:
-            request (ReloadConfigurationRequest): The grpc request object.
+            request (ReloadServerConfigurationRequest): The grpc request object.
             _ (object): Context of the request.
 
         Returns:
-            ReloadConfigurationReply: The ReloadConfigurationReply grpc object.
+            ReloadServerConfigurationReply: The ReloadConfigurationReply grpc object.
         """
 
         LOGGER.info('Reloading server configurations')
         success, err_msg = self.service_config.update_configuration(
             request.config_file_path)
 
-        return server_config_pb2.ReloadConfigurationReply(
+        return server_pb2.ReloadServerConfigurationReply(
             success=success,
             error_message=err_msg)
+
+    def GetServerConfiguration(self, request, _):
+        """Get Server Configuration.
+
+        Args:
+            request (GetServerConfigurationRequest): The grpc request object.
+            _ (object): Context of the request.
+
+        Returns:
+            GetServerConfigurationReply: The ReloadConfigurationReply grpc object.
+        """
+
+        LOGGER.info('Getting server configurations')
+        forseti_config = self.service_config.get_forseti_config()
+
+        return server_pb2.GetServerConfigurationReply(
+            configuration=json.dumps(forseti_config))
 
 
 class GrpcServerConfigFactory(object):
@@ -132,6 +150,6 @@ class GrpcServerConfigFactory(object):
              object: The service object.
         """
         service = GrpcServiceConfig(service_config=self.config)
-        server_config_pb2.add_ServerConfigServicer_to_server(service, server)
+        server_pb2.add_ServerServicer_to_server(service, server)
         LOGGER.info('Service %s created and registered', service)
         return service

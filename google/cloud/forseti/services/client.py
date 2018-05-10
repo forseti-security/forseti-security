@@ -28,8 +28,8 @@ from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-from google.cloud.forseti.services.server_config import server_config_pb2
-from google.cloud.forseti.services.server_config import server_config_pb2_grpc
+from google.cloud.forseti.services.server import server_pb2
+from google.cloud.forseti.services.server import server_pb2_grpc
 from google.cloud.forseti.services.utils import oneof
 
 
@@ -132,8 +132,7 @@ class ScannerClient(ForsetiClient):
 
 
 class ServerConfigClient(ForsetiClient):
-    """Server configuration service allows the client to update the
-    server configuration."""
+    """Allows the client to update the server configuration."""
 
     def __init__(self, config):
         """Initialize
@@ -142,7 +141,7 @@ class ServerConfigClient(ForsetiClient):
             config (ClientConfig): the client config object
         """
         super(ServerConfigClient, self).__init__(config)
-        self.stub = server_config_pb2_grpc.ServerConfigStub(config['channel'])
+        self.stub = server_pb2_grpc.ServerStub(config['channel'])
 
     def is_available(self):
         """Checks if the 'Server Config' service is available by
@@ -153,7 +152,7 @@ class ServerConfigClient(ForsetiClient):
         """
 
         data = binascii.hexlify(os.urandom(16))
-        echo = self.stub.Ping(server_config_pb2.PingRequest(data=data)).data
+        echo = self.stub.Ping(server_pb2.PingRequest(data=data)).data
         return echo == data
 
     def get_log_level(self):
@@ -162,7 +161,7 @@ class ServerConfigClient(ForsetiClient):
         Returns:
             proto: the returned proto message.
         """
-        request = server_config_pb2.GetLogLevelRequest()
+        request = server_pb2.GetLogLevelRequest()
         return self.stub.GetLogLevel(request)
 
     def set_log_level(self, log_level):
@@ -174,7 +173,7 @@ class ServerConfigClient(ForsetiClient):
         Returns:
             proto: the returned proto message.
         """
-        request = server_config_pb2.SetLogLevelRequest(log_level=log_level)
+        request = server_pb2.SetLogLevelRequest(log_level=log_level)
         return self.stub.SetLogLevel(request)
 
     def reload_server_configuration(self, config_file_path=None):
@@ -186,9 +185,18 @@ class ServerConfigClient(ForsetiClient):
         Returns:
             proto: the returned proto message.
         """
-        request = server_config_pb2.ReloadConfigurationRequest(
+        request = server_pb2.ReloadServerConfigurationRequest(
             config_file_path=config_file_path)
         return self.stub.ReloadServerConfiguration(request)
+
+    def get_server_configuration(self):
+        """Get the server configuration.
+
+        Returns:
+            proto: the returned proto message.
+        """
+        request = server_pb2.GetServerConfigurationRequest()
+        return self.stub.GetServerConfiguration(request)
 
 
 class NotifierClient(ForsetiClient):
