@@ -815,6 +815,9 @@ def get_domain_from_organization_id(organization_id):
 def check_deployment_status(deployment_name, status):
     """Check the status of a deployment.
 
+    If there is any error occurred during the deployment, it will
+    exit the application.
+
     Args:
         deployment_name (str): Deployment name.
         status (DeploymentStatus): Status of the deployment.
@@ -829,11 +832,20 @@ def check_deployment_status(deployment_name, status):
 
     if return_code:
         print(err)
-        print('There is something wrong with the deployment, exiting...')
+        print(constants.MESSAGE_DEPLOYMENT_ERROR)
         sys.exit(1)
 
     deployment_info = json.loads(out)
 
-    current_status = deployment_info['deployment']['operation']['status']
+    deployment_operation = deployment_info['deployment']['operation']
 
-    return current_status == status.value
+    deployment_status = deployment_operation['status']
+
+    deployment_error = deployment_operation.get('error', {})
+
+    if deployment_error:
+        print(deployment_error)
+        print(constants.MESSAGE_DEPLOYMENT_ERROR)
+        sys.exit(1)
+
+    return deployment_status == status.value

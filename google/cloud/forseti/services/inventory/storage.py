@@ -16,15 +16,16 @@
 
 import json
 
-from sqlalchemy import Column
-from sqlalchemy import Text
-from sqlalchemy import String
-from sqlalchemy import DateTime
-from sqlalchemy import Integer
 from sqlalchemy import and_
-from sqlalchemy import func
-from sqlalchemy import or_
+from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy import exists
+from sqlalchemy import func
+from sqlalchemy import Index
+from sqlalchemy import Integer
+from sqlalchemy import or_
+from sqlalchemy import String
+from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
@@ -180,6 +181,20 @@ class Inventory(BASE):
     parent_resource_id = Column(Text)
     other = Column(Text)
     inventory_errors = Column(Text)
+
+    __table_args__ = (
+        Index('idx_category_resource',
+              'inventory_index_id',
+              'category',
+              'resource_type'),
+        Index('idx_resource_type_id',
+              'inventory_index_id',
+              'resource_type',
+              'resource_id'),
+        Index('idx_parent_resource_type_id',
+              'inventory_index_id',
+              'parent_resource_type',
+              'parent_resource_id'))
 
     @classmethod
     def from_resource(cls, index, resource):
@@ -417,7 +432,7 @@ class BufferedDbWriter(object):
         """
 
         self.buffer.append(obj)
-        if self.buffer >= self.max_size:
+        if len(self.buffer) >= self.max_size:
             self.flush()
 
     def flush(self):
@@ -879,13 +894,16 @@ class Storage(BaseStorage):
         Returns:
             object: A row in gcp_inventory of the root
         """
-        return self.session.query(Inventory).filter(
+        root = self.session.query(Inventory).filter(
             and_(
                 Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.resource_id == Inventory.parent_resource_id,
                 Inventory.resource_type == Inventory.parent_resource_type,
                 Inventory.category == InventoryTypeClass.RESOURCE
             )).first()
+
+        LOGGER.debug('Root resource: %s', root)
+        return root
 
     def type_exists(self,
                     type_list=None):
