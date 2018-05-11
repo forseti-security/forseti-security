@@ -161,6 +161,7 @@ pip install -q --upgrade -r requirements.txt
 
 # Setup Forseti logging
 touch /var/log/forseti.log
+chown ubuntu:root /var/log/forseti.log 
 mv {forseti_home}/configs/logging/fluentd/forseti.conf /etc/google-fluentd/config.d/forseti.conf
 mv {forseti_home}/configs/logrotate/forseti /etc/logrotate.d/forseti
 # TODO: see what the actual permissions are on testing, and dial it down
