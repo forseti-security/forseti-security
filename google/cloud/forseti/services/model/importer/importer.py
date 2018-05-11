@@ -335,7 +335,7 @@ class InventoryImporter(object):
 
             if not idx % flush_count:
                 # Flush database every flush_count resources
-                LOGGER.debug('Flushing write session: %s.', item_counter)
+                LOGGER.debug('Flushing write session: %s.', idx)
                 session.flush()
 
         if post_action:
