@@ -125,6 +125,7 @@ class StorageTest(ForsetiTestCase):
             _ = storage.open()
             for resource in resources:
                 storage.write(resource)
+            storage.buffer.flush()
             self.assertEqual(3,
                              len(self.reduced_inventory(
                                  storage,

@@ -392,7 +392,7 @@ class BufferedDbWriter(object):
         """
 
         self.buffer.append(obj)
-        if self.buffer >= self.max_size:
+        if len(self.buffer) >= self.max_size:
             self.flush()
 
     def flush(self):
@@ -886,7 +886,7 @@ class Storage(BaseStorage):
         """
         # Comparison to None needed to compare to Null in SQL.
         # pylint: disable=singleton-comparison
-        return self.session.query(Inventory).filter(
+        root = self.session.query(Inventory).filter(
             and_(
                 Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.parent_id == None,
@@ -896,6 +896,9 @@ class Storage(BaseStorage):
                                              'project'])
             )).first()
         # pylint: enable=singleton-comparison
+
+        LOGGER.debug('Root resource: %s', root)
+        return root
 
     def type_exists(self,
                     type_list=None):
