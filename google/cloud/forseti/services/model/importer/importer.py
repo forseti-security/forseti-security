@@ -129,6 +129,7 @@ class InventoryImporter(object):
 
         self.found_root = False
 
+    # pylint: disable=too-many-statements
     def run(self):
         """Runs the import.
 
@@ -183,7 +184,7 @@ class InventoryImporter(object):
             with Inventory(self.readonly_session, self.inventory_index_id,
                            True) as inventory:
                 root = inventory.get_root()
-                self.model.add_description(json.dumps({
+                description = {
                     'source': 'inventory',
                     'source_info': {
                         'inventory_index_id': inventory.inventory_index.id},
@@ -191,11 +192,15 @@ class InventoryImporter(object):
                     'pristine': True,
                     'gsuite_enabled': inventory.type_exists(
                         ['gsuite_group', 'gsuite_user'])
-                }))
+                }
+                LOGGER.debug('Model description: %s', description)
+                self.model.add_description(json.dumps(description))
 
                 if root.get_resource_type() in ['organization']:
+                    LOGGER.debug('Root resource is organization: %s', root)
                     self.found_root = True
                 if not self.found_root:
+                    LOGGER.debug('Root resource is not organization: %s.', root)
                     raise Exception(
                         'Cannot import inventory without organization root')
 
@@ -205,8 +210,12 @@ class InventoryImporter(object):
                     last_res_type = self._store_resource(resource,
                                                          last_res_type)
                     if not item_counter % 3000:
+                        LOGGER.debug('Flushing model write session: %s',
+                                     item_counter)
                         self.session.flush()
+                LOGGER.debug('Start storing resources into models.')
                 self._store_resource(None, last_res_type)
+                LOGGER.debug('Finished storing resources into models.')
 
                 item_counter += self.model_action_wrapper(
                     self.session,
@@ -271,15 +280,19 @@ class InventoryImporter(object):
             traceback.print_exc(file=buf)
             buf.seek(0)
             message = buf.read()
+            LOGGER.debug('Importer has an exception: %s', message)
             self.model.set_error(message)
         else:
+            LOGGER.debug('Set model status.')
             self.model.add_warning(
                 inventory.inventory_index.inventory_index_warnings)
             self.model.set_done(item_counter)
         finally:
+            LOGGER.debug('Finished running importer.')
             self.session.commit()
             self.session.autocommit = autocommit
             self.session.autoflush = autoflush
+    # pylint: enable=too-many-statements
 
     @staticmethod
     def model_action_wrapper(session,
@@ -304,7 +317,7 @@ class InventoryImporter(object):
         Returns:
             int: Number of item iterated.
         """
-
+        LOGGER.debug('Performing model action: %s', action)
         if pre_action:
             pre_action()
 
@@ -316,6 +329,7 @@ class InventoryImporter(object):
             else:
                 action(inventory_data)
             if not item_counter % flush_count:
+                LOGGER.debug('Flushing write session: %s.', item_counter)
                 session.flush()
 
         if post_action:
