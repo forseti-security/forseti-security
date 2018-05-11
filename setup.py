@@ -44,13 +44,14 @@ REQUIRED_PACKAGES = [
     'MySQL-python>=1.2.5',
     'netaddr>=0.7.19',
     'PyYAML>=3.12',
+    'pygraph>=0.2.1',
+    'pytz>=2018'
     'ratelimiter>=1.1.0',
     'retrying>=1.3.3',
     'requests[security]>=2.18.4',
     'sendgrid>=3.6.3',
-    'pygraph>=0.2.1',
-    'unicodecsv>=0.14.1',
     'simple-crypt>=4.1.7',
+    'unicodecsv>=0.14.1',
     # Setup related.
     'google-apputils>=0.4.2',
     'grpcio',

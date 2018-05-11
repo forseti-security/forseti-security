@@ -18,48 +18,49 @@ from datetime import datetime
 
 import mock
 import unittest
+from datetime import datetime
+import pytz
 
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util.date_time import DateTimeValueConversionError
-from google.cloud.forseti.common.util.date_time import DateTimeTypeConversionError
+from google.cloud.forseti.common.util import string_formats
 from tests.unittest_utils import ForsetiTestCase
 
 
 class DateTimeTest(ForsetiTestCase):
     """Test Folder resource."""
 
-    def setUp(self):
-        pass
+    def test_get_datetime_from_string(self):
+        test_string = "2018-01-01T00:00:00Z"
+        result = date_time.get_datetime_from_string(
+            test_string, string_formats.TIMESTAMP_TIMEZONE)
+        expected_result = datetime(2018, 1, 1, 0, 0, 0)
+        self.assertEqual(expected_result, result)
 
-    def get_utc_now_timestamp_human_is_a_string(self):
-        """Ensure the get_utc_now_timestamp* functions return strings."""
+    def test_get_utc_now_timestamp_human(self):
+        # 2018/01/01 00:00:00.123456 UTC
+        mock_date = datetime(
+            2018, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.utc)
+        result = date_time.get_utc_now_timestamp_human(mock_date)
+        expected_result = "01 January 2018 - 00:00:00"
+        self.assertEqual(expected_result, result)
 
-        response_type = type(date_time.get_utc_now_timestamp())
-        self.assertIsInstance(response_type, '')
+    def test_get_utc_now_timestamp(self):
+        # 2018/01/01 00:00:00.123456 UTC
+        mock_date = datetime(
+            2018, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.utc)
+        result = date_time.get_utc_now_timestamp(mock_date)
+        expected_result = "2018-01-01T00:00:00Z"
+        self.assertEqual(expected_result, result)
 
-        response_type = type(date_time.get_utc_now_timestamp_human())
-        self.assertIsInstance(response_type, '')
+    def test_get_utc_now_microtimestamp(self):
+        # 2018/01/01 00:00:00.123456 UTC
+        mock_date = datetime(
+            2018, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.utc)
+        result = date_time.get_utc_now_microtimestamp(mock_date)
+        # Expected timestamp = 1514764800 * 1000000 + 123456
+        expected_result = 1514764800123456
+        self.assertEqual(expected_result, result)
 
-    def get_utc_now_datetime_returns_datetime(self):
-        """Ensure that get_utc_now_datetime returns a datetime object."""
-        response_type = date_time.get_utc_now_datetime()
-        self.assertIsInstance(response_type, type(datetime))
-
-    @mock.patch.object(datetime, 'strptime')
-    def get_datetime_from_string_should_raise(self, mock_datetime):
-        """Ensure that get_datetime_from string raises correctly."""
-
-        mock_datetime.side_effect = [TypeError, ValueError]
-
-        with self.assertRaises(DateTimeTypeConversionError):
-            date_time.get_datetime_from_string('','')
-
-        mock_datetime.assert_called_once_with('', '')
-
-        with self.assertRaises(DateTimeValueConversionError):
-            date_time.get_datetime_from_string('','')
-
-        mock_datetime.assert_once_with('', '')
 
 if __name__ == '__main__':
     unittest.main()
