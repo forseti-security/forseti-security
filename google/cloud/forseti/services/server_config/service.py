@@ -22,8 +22,6 @@ from google.cloud.forseti.services.server_config import server_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
 
-# pylint: disable=no-member
-
 LOGGER = logger.get_logger(__name__)
 
 
@@ -155,6 +153,6 @@ class GrpcServerConfigFactory(object):
              object: The service object.
         """
         service = GrpcServiceConfig(service_config=self.config)
-        server_pb2.add_ServerServicer_to_server(service, server)
+        server_pb2_grpc.add_ServerServicer_to_server(service, server)
         LOGGER.info('Service %s created and registered', service)
         return service
