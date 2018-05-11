@@ -8,7 +8,7 @@ This page lists the Google Cloud Platform (GCP) scanners that currently have
 coverage in Forseti or are planned to have coverage. If a resource you're
 interested in isn't listed, please open an issue or contribute!
 
-You can find the details of each of the scanners [here]({% link _docs/_latest/configure/scanner/descriptions.md %})
+You can find the details of each of the scanners [here]({% link _docs/latest/configure/scanner/descriptions.md %})
 
 {: .table .table-striped}
 | Scanner                                | 
