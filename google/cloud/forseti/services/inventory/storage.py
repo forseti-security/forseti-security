@@ -432,7 +432,7 @@ class BufferedDbWriter(object):
         """
 
         self.buffer.append(obj)
-        if self.buffer >= self.max_size:
+        if len(self.buffer) >= self.max_size:
             self.flush()
 
     def flush(self):
@@ -894,13 +894,16 @@ class Storage(BaseStorage):
         Returns:
             object: A row in gcp_inventory of the root
         """
-        return self.session.query(Inventory).filter(
+        root = self.session.query(Inventory).filter(
             and_(
                 Inventory.inventory_index_id == self.inventory_index.id,
                 Inventory.resource_id == Inventory.parent_resource_id,
                 Inventory.resource_type == Inventory.parent_resource_type,
                 Inventory.category == InventoryTypeClass.RESOURCE
             )).first()
+
+        LOGGER.debug('Root resource: %s', root)
+        return root
 
     def type_exists(self,
                     type_list=None):

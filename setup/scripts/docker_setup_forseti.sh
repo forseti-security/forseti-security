@@ -17,8 +17,8 @@
 if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
     echo "Force removing any running containers... "
-    if [ $(docker ps -a -q) ]; then
-        docker -l error rm -f $(docker ps -a -q)
+    if [[ $(docker ps -a -q) ]]; then
+        docker -l error rm -f $(docker ps -a -q | xargs)
     fi
 fi
 
