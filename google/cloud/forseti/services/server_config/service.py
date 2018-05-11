@@ -22,6 +22,8 @@ from google.cloud.forseti.services.server_config import server_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
 
+# pylint: disable=no-member
+
 LOGGER = logger.get_logger(__name__)
 
 
@@ -121,7 +123,8 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
             _ (object): Context of the request.
 
         Returns:
-            GetServerConfigurationReply: The ReloadConfigurationReply grpc object.
+            GetServerConfigurationReply: The ReloadConfigurationReply
+                grpc object.
         """
 
         LOGGER.info('Getting server configurations')
