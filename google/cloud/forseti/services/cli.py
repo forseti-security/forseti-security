@@ -27,6 +27,8 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
+# pylint: disable=too-many-lines
+
 class DefaultParser(ArgumentParser):
     """Default parser, when error is triggered, instead of printing
     error message, it will print the help message (-h).
@@ -160,6 +162,71 @@ def define_config_parser(parent):
         'name',
         choices=['json', 'text'],
         help='Configure the CLI output format')
+
+
+def define_server_parser(parent):
+    """Define the server config service parser.
+
+    Args:
+        parent (argparser): Parent parser to hook into.
+    """
+
+    service_parser = parent.add_parser(
+        'server',
+        help='Server config service')
+
+    action_subparser = service_parser.add_subparsers(
+        title='action',
+        dest='action')
+
+    log_level_parser = action_subparser.add_parser(
+        'log_level',
+        help='Log level of the server.')
+
+    log_level_subparser = log_level_parser.add_subparsers(
+        title='subaction',
+        dest='subaction')
+
+    set_log_level = log_level_subparser.add_parser(
+        'set',
+        help='Set the log level of the server.'
+    )
+
+    set_log_level.add_argument(
+        'log_level',
+        choices=['debug', 'info', 'warning', 'error'])
+
+    _ = log_level_subparser.add_parser(
+        'get',
+        help='Get the log level of the server.')
+
+    config_parser = action_subparser.add_parser(
+        'configuration',
+        help='Server configuration.')
+
+    config_subparser = config_parser.add_subparsers(
+        title='subaction',
+        dest='subaction')
+
+    _ = config_subparser.add_parser(
+        'get',
+        help='Get the server configuration.'
+    )
+
+    reload_config = config_subparser.add_parser(
+        'reload',
+        help='Load the server configuration.'
+    )
+
+    reload_config.add_argument(
+        'config_file_path',
+        nargs='?',
+        type=str,
+        help=('Forseti configuration file path. If not specified, '
+              'the default path will be used. Note: Please specify '
+              'a path that the server has access to (e.g. a path in '
+              'the server vm or a gcs path starts with gs://).')
+    )
 
 
 def define_model_parser(parent):
@@ -505,6 +572,7 @@ def create_parser(parser_cls, config_env):
     define_model_parser(service_subparsers)
     define_scanner_parser(service_subparsers)
     define_notifier_parser(service_subparsers)
+    define_server_parser(service_subparsers)
     return main_parser
 
 
@@ -621,6 +689,48 @@ def run_scanner(client, config, output, _):
         'run': do_run}
 
     actions[config.action]()
+
+
+def run_server(client, config, output, _):
+    """Run scanner commands.
+        Args:
+            client (iam_client.ClientComposition): client to use for requests.
+            config (object): argparser namespace to use.
+            output (Output): output writer to use.
+            _ (object): Configuration environment.
+    """
+
+    client = client.server_config
+
+    def do_get_log_level():
+        """Get the log level of the server."""
+        output.write(client.get_log_level())
+
+    def do_set_log_level():
+        """Set the log level of the server."""
+        output.write(client.set_log_level(config.log_level))
+
+    def do_reload_configuration():
+        """Reload the configuration of the server."""
+        output.write(client.reload_server_configuration(
+            config.config_file_path))
+
+    def do_get_configuration():
+        """Get the configuration of the server."""
+        output.write(client.get_server_configuration())
+
+    actions = {
+        'log_level': {
+            'get': do_get_log_level,
+            'set': do_set_log_level
+        },
+        'configuration': {
+            'get': do_get_configuration,
+            'reload': do_reload_configuration
+        }
+    }
+
+    actions[config.action][config.subaction]()
 
 
 def run_notifier(client, config, output, _):
@@ -875,6 +985,7 @@ SERVICES = {
     'model': run_model,
     'scanner': run_scanner,
     'notifier': run_notifier,
+    'server': run_server
 }
 
 
