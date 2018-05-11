@@ -1,0 +1,7 @@
+/var/log/forseti.log {
+  daily
+  rotate 30
+  missingok
+  notifempty
+  create 640 ubuntu root
+}
