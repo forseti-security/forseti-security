@@ -25,10 +25,11 @@ import os
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 
-# "[forseti-security]" is the used as the marker by multiline parser
-# to determine the first line of a log record that spans multiple lines.
-# So if this is changed here, update "format_firstline" in the parser config.
-SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
+# %(asctime)s is used as the marker by multiline parser to determine
+# the first line of a log record that spans multiple lines.
+# So if this is moved or changed here, update "format_firstline" in the logging
+# parser config.
+SYSLOG_LOG_FMT = ('%(asctime)s [forseti-security] %(levelname)s '
                   '%(name)s(%(funcName)s): %(message).1024s')
 LOGGERS = {}
 LOGLEVELS = {
