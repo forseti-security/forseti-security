@@ -432,7 +432,7 @@ class BufferedDbWriter(object):
         """
 
         self.buffer.append(obj)
-        if self.buffer >= self.max_size:
+        if len(self.buffer) >= self.max_size:
             self.flush()
 
     def flush(self):
