@@ -162,8 +162,8 @@ pip install -q --upgrade -r requirements.txt
 # Setup Forseti logging
 touch /var/log/forseti.log
 chown ubuntu:root /var/log/forseti.log 
-mv {forseti_home}/configs/logging/fluentd/forseti.conf /etc/google-fluentd/config.d/forseti.conf
-mv {forseti_home}/configs/logrotate/forseti /etc/logrotate.d/forseti
+cp {forseti_home}/configs/logging/fluentd/forseti.conf /etc/google-fluentd/config.d/forseti.conf
+cp {forseti_home}/configs/logrotate/forseti /etc/logrotate.d/forseti
 
 # Change the access level of configs/ rules/ and run_forseti.sh
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
