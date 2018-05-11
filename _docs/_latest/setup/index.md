@@ -1,9 +1,12 @@
 ---
-title: Setup 
+title: Setup Forseti
 order: 000
 hide:
   right_sidebar: true
 ---
+
+# {{ page.title }}
+
 Start using Forseti Security to improve the security of your Google Cloud
 Platform (GCP) environments.
 

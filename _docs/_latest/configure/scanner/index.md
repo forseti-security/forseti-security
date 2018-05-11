@@ -2,6 +2,7 @@
 title: Scanner
 order: 101
 ---
+
 # {{ page.title }}
 
 This page describes how to get started with Forseti Scanner. Forseti
@@ -25,8 +26,8 @@ To run Forseti Scanner, follow the process below:
 
   1. Activate any virtualenv you're using for your Forseti installation,
      if applicable (e.g. if you're running in a dev environment).
-     
-  1. Run the [inventory data import]({% link _docs/latest/configure/inventory/index.md %}#executing-the-inventory-loader) 
+
+  1. Run the [inventory data import]({% link _docs/latest/configure/inventory/index.md %})
      first, to make sure the data for scanning is available and up-to-date.
 
   1. Run the scanners:

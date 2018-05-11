@@ -4,6 +4,9 @@ order: 000
 hide:
   right_sidebar: true
 ---
+
+# {{ page.title }}
+
 Learn about core Forseti concepts, how it works, information
 architecture, and best practices.
 
