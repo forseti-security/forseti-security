@@ -1,22 +1,29 @@
 ---
-title: Using Forseti CLI
+title: Command line interface (CLI)
 order: 001
 ---
-# { page.title }
 
-TODO
+# {{ page.title }}
 
-## Notifier
+Forseti 2.0 provides a convenient CLI (commandline interface) client
+that can be used to operate the various functionalities in Forseti:
+build inventory, create models, use explain, perform scanning, and
+send notifications.
 
-  ```bash
-  $ forseti notifier --help
-  
-  # Send the violations from the last successful scanner run.
-  $ forseti notifier run
+## Access
 
-  # Send the violations by inventory index id.
-  $ forseti notifier run --inventory_index_id <inventory index id>
+CLI users can be non-admin users, and should not have access to the highly
+elevated privileges that Forseti is permissioned with. So to prevent CLI users
+from gaining Forseti's privilege, the CLI is deployed to its own VM,
+and communicates with the Server via gRPC.  
 
-  # Send the violations by scanner index id.
-  $ forseti notifier run --scanner_index_id <scanner index id>
-  ```
+Access to the CLI VM is managed by [OS Login](https://cloud.google.com/compute/docs/instances/managing-instance-access) roles.
+
+* Users in the internal domain must be granted `compute.osLogin` role.
+* Users from external domains must be granted `compute.osLoginExternalUser` role. 
+
+Once granted these roles, CLI users will then gain SSH access to the CLI VM.
+
+## What's Next
+
+See the left-bar to learn how to use the CLI commands for specific components. 
