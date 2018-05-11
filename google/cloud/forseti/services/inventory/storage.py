@@ -172,10 +172,10 @@ class Inventory(BASE):
     inventory_errors = Column(Text)
 
     __table_args__ = (
-        Index('idx_category_resource',
+        Index('idx_resource_category',
               'inventory_index_id',
-              'category',
-              'resource_type'),
+              'resource_type',
+              'category'),
         Index('idx_parent_id',
               'parent_id'))
 
@@ -611,18 +611,18 @@ class Storage(BaseStorage):
         else:
             return rows
 
-    def _has_resource(self, resource):
+    def _get_resource_id(self, resource):
         """Checks if a resource exists already in the inventory.
 
         Args:
             resource (object): Resource object to check against the db.
 
         Returns:
-            bool: True if resource already in inventory, else false.
+            int: The resource id of the existing resource, else 0.
         """
 
         try:
-            rows = self.session.query(Inventory.id).filter(
+            row = self.session.query(Inventory.id).filter(
                 and_(
                     Inventory.inventory_index_id == self.inventory_index.id,
                     Inventory.category == Categories.resource,
@@ -630,12 +630,12 @@ class Storage(BaseStorage):
                     Inventory.resource_id == resource.key(),
                 )).one()
 
-            if rows:
-                return True
+            if row:
+                return row.id
         except NoResultFound:
             pass
 
-        return False
+        return 0
 
     def open(self, handle=None):
         """Open the storage, potentially create a new index.
@@ -722,7 +722,9 @@ class Storage(BaseStorage):
         if self.readonly:
             raise Exception('Opened storage readonly')
 
-        if self._has_resource(resource):
+        previous_id = self._get_resource_id(resource)
+        if previous_id:
+            resource.set_inventory_key(previous_id)
             self.update(resource)
             return
 
