@@ -41,7 +41,7 @@ from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
-from google.cloud.forseti.services.server.service import GrpcServerConfigFactory
+from google.cloud.forseti.services.server_config.service import GrpcServerConfigFactory
 
 
 LOGGER = logger.get_logger(__name__)

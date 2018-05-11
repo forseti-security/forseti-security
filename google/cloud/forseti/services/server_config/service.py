@@ -17,8 +17,8 @@
 import json
 import logging
 
-from google.cloud.forseti.services.server import server_pb2
-from google.cloud.forseti.services.server import server_pb2_grpc
+from google.cloud.forseti.services.server_config import server_pb2
+from google.cloud.forseti.services.server_config import server_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
 

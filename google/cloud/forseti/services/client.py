@@ -28,8 +28,8 @@ from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-from google.cloud.forseti.services.server import server_pb2
-from google.cloud.forseti.services.server import server_pb2_grpc
+from google.cloud.forseti.services.server_config import server_pb2
+from google.cloud.forseti.services.server_config import server_pb2_grpc
 from google.cloud.forseti.services.utils import oneof
 
 
