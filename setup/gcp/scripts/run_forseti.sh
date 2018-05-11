@@ -30,8 +30,8 @@ if [ ! -f "${FORSETI_SERVER_CONF}" ]; then
     exit 1
 fi
 
-# Restart the service to pull in the latest conf settings
-sudo systemctl restart forseti.service
+# Reload the server configuration settings
+forseti server configuration reload
 
 # Wait until the service is started
 sleep 10s

@@ -94,7 +94,6 @@ class CrawlerTest(ForsetiTestCase):
         config = InventoryConfig(
             gcp_api_mocks.ORGANIZATION_ID,
             '',
-            '',
             {},
             '')
 
@@ -153,7 +152,6 @@ class CrawlerTest(ForsetiTestCase):
         config = InventoryConfig(
             'folders/1032',
             '',
-            '',
             {},
             '')
 
@@ -190,7 +188,6 @@ class CrawlerTest(ForsetiTestCase):
 
         config = InventoryConfig(
             'projects/1041',
-            '',
             '',
             {},
             '')
@@ -235,7 +232,6 @@ class CrawlerTest(ForsetiTestCase):
 
         config = InventoryConfig(
             gcp_api_mocks.ORGANIZATION_ID,
-            '',
             '',
             {},
             '')
