@@ -51,7 +51,7 @@ def get_logger(module_name):
         logger: An instance of the configured logger.
     """
 
-    if os.path.exists('/var/log/forseti.log'):  # deployed to ubuntu on GCE
+    if os.path.exists('/var/log/forseti.log'):  # ubuntu on GCE
         default_log_handler = logging.FileHandler('/var/log/forseti.log')
     else:
         default_log_handler = logging.handlers.SysLogHandler()
