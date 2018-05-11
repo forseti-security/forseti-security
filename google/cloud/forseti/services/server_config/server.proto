@@ -35,7 +35,7 @@ message SetLogLevelRequest {
 }
 
 message SetLogLevelReply {
-  bool success = 1;
+  bool is_success = 1;
   string error_message = 2;
 }
 
@@ -57,7 +57,7 @@ message ReloadServerConfigurationRequest {
 }
 
 message ReloadServerConfigurationReply {
-  bool success = 1;
+  bool is_success = 1;
   string error_message = 2;
 }
 

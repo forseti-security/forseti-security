@@ -89,9 +89,9 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         except Exception as e:  # pylint: disable=broad-except
             err_msg = e.message
 
-        success = not err_msg
+        is_success = not err_msg
 
-        return server_pb2.SetLogLevelReply(success=success,
+        return server_pb2.SetLogLevelReply(is_success=is_success,
                                            error_message=err_msg)
 
     def ReloadServerConfiguration(self, request, _):
@@ -108,11 +108,11 @@ class GrpcServiceConfig(server_pb2_grpc.ServerServicer):
         """
 
         LOGGER.info('Reloading server configurations')
-        success, err_msg = self.service_config.update_configuration(
+        is_success, err_msg = self.service_config.update_configuration(
             request.config_file_path)
 
         return server_pb2.ReloadServerConfigurationReply(
-            success=success,
+            is_success=is_success,
             error_message=err_msg)
 
     def GetServerConfiguration(self, request, _):
