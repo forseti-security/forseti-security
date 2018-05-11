@@ -24,6 +24,10 @@ import os
 
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
+
+# "[forseti-security]" is the used as the marker by multiline parser
+# to determine the first line of a log record that spans multiple lines.
+# So if this is changed here, update "format_firstline" in the parser config.
 SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
                   '%(name)s(%(funcName)s): %(message).1024s')
 LOGGERS = {}
@@ -46,25 +50,16 @@ def get_logger(module_name):
     Returns:
         logger: An instance of the configured logger.
     """
-    # TODO: Move this into a configuration file.
-    #
-    # Actually, write to local /var/log/syslog with the address parameter.
-    # rsyslogd will convert \n to #012 in syslog, so log lines are not cut off
-    # in stackdriver.
-    # Next step is to figure out fluentd's multiline parser to handle the
-    # newline correctly in syslog, for proper display in stackdriver.
-    # Docker on travis does not have syslog path.
-    if os.path.exists('/dev/log'):  # ubuntu
-        syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
-    elif os.path.exists('/var/run/syslog'):  # mac
-        syslog_handler = logging.handlers.SysLogHandler(
-            address='/var/run/syslog')
+
+    if os.path.exists('/var/log/forseti.log'):  # deployed to ubuntu on GCE
+        default_log_handler = logging.FileHandler('/var/log/forseti.log')
     else:
-        syslog_handler = logging.handlers.SysLogHandler()
-    syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
+        default_log_handler = logging.handlers.SysLogHandler()
+
+    default_log_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
-    logger_instance.addHandler(syslog_handler)
+    logger_instance.addHandler(default_log_handler)
     logger_instance.setLevel(LOGLEVEL)
 
     if LOG_TO_CONSOLE:

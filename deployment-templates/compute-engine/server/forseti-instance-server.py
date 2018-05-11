@@ -159,6 +159,13 @@ pip install --upgrade pip==9.0.3
 pip install -q --upgrade setuptools wheel
 pip install -q --upgrade -r requirements.txt
 
+# Setup Forseti logging
+touch /var/log/forseti.log
+mv {forseti_home}/configs/logging/fluentd/forseti.conf /etc/google-fluentd/config.d/forseti.conf
+mv {forseti_home}/configs/logrotate/forseti /etc/logrotate.d/forseti
+# TODO: see what the actual permissions are on testing, and dial it down
+# target: -rw-r--r-- 1 root root
+
 # Change the access level of configs/ rules/ and run_forseti.sh
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
 
