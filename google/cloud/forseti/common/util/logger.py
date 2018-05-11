@@ -63,7 +63,6 @@ def get_logger(module_name):
         default_log_handler = logging.handlers.SysLogHandler()
         default_log_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
-    logging.addLevelName(logging.INFO, 'Info')
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(default_log_handler)
     logger_instance.setLevel(LOGLEVEL)
