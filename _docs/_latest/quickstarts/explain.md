@@ -1,7 +1,8 @@
 ---
 title: Explain
-order: 000
+order: 004
 ---
+
 # {{ page.title }}
 
 This guide describes how to set up Explain for Forseti Security.
