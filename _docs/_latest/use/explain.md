@@ -35,12 +35,6 @@ the following command:
 $ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
-### Listing data models
-
-```bash
-$ forseti model list
-```
-
 ### Selecting a data model
 
 ```bash
