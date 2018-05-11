@@ -13,8 +13,10 @@
 # limitations under the License.
 """Unit Tests: Forseti Server."""
 
-import unittest
 import mock
+import os
+import unittest
+
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services import server
 
@@ -26,6 +28,9 @@ class NameSpace(object):
 
 class ServerTest(ForsetiTestCase):
     """Test Forseti Server."""
+
+    TEST_RESOURCE_DIR_PATH = os.path.join(
+        os.path.dirname(__file__), 'test_data')
 
     @mock.patch('google.cloud.forseti.services.server.ModelManager', mock.MagicMock())
     @mock.patch('google.cloud.forseti.services.server.create_engine')
@@ -51,7 +56,8 @@ class ServerTest(ForsetiTestCase):
     def test_server_config_update_good_default_bad_update_path(self, test_patch):
         test_patch.return_value = None
 
-        config_file_path = 'test_data/forseti_conf_server.yaml'
+        config_file_path = os.path.join(self.TEST_RESOURCE_DIR_PATH,
+                                        'forseti_conf_server.yaml')
         db_conn_str = ''
         endpoint = ''
         config = server.ServiceConfig(config_file_path, db_conn_str, endpoint)
@@ -89,20 +95,21 @@ class ServerTest(ForsetiTestCase):
             # All the scanners are set to true in the default config file.
             self.assertTrue(scanner.get('enabled'))
 
-
     @mock.patch('google.cloud.forseti.services.server.ModelManager', mock.MagicMock())
     @mock.patch('google.cloud.forseti.services.server.create_engine')
     def test_server_config_update_good_default_and_update_path(self, test_patch):
         test_patch.return_value = None
 
-        config_file_path = 'test_data/forseti_conf_server.yaml'
+        config_file_path = os.path.join(self.TEST_RESOURCE_DIR_PATH,
+                                        'forseti_conf_server.yaml')
         db_conn_str = ''
         endpoint = ''
         config = server.ServiceConfig(config_file_path, db_conn_str, endpoint)
 
         _, _ = config.update_configuration()
 
-        new_config_file_path = 'test_data/forseti_conf_server_new.yaml'
+        new_config_file_path = os.path.join(self.TEST_RESOURCE_DIR_PATH,
+                                            'forseti_conf_server_new.yaml')
 
         is_success, err_msg = config.update_configuration(new_config_file_path)
 
