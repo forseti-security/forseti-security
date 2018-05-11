@@ -25,7 +25,7 @@ import os
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 
-SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
+SYSLOG_LOG_FMT = ('%(levelname)s [forseti-security] '
                   '%(name)s(%(funcName)s): %(message).1024s')
 
 # %(asctime)s is used as the marker by multiline parser to determine
@@ -63,6 +63,7 @@ def get_logger(module_name):
         default_log_handler = logging.handlers.SysLogHandler()
         default_log_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
+    logging.addLevelName(logging.INFO, 'Info')
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(default_log_handler)
     logger_instance.setLevel(LOGLEVEL)
