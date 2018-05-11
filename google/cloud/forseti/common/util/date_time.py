@@ -16,7 +16,6 @@
 
 import calendar
 from datetime import datetime
-import pytz
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -74,7 +73,7 @@ def get_utc_now_datetime():
     Returns:
           datetime: A datetime object representing utcnow().
     """
-    return datetime.utcnow().replace(tzinfo=pytz.utc)
+    return datetime.utcnow()
 
 
 def get_utc_now_timestamp_human(date=None):
