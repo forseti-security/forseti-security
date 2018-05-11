@@ -25,12 +25,16 @@ import os
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 
+SYSLOG_LOG_FMT = ('[forseti-security] %(levelname)s '
+                  '%(name)s(%(funcName)s): %(message).1024s')
+
 # %(asctime)s is used as the marker by multiline parser to determine
 # the first line of a log record that spans multiple lines.
 # So if this is moved or changed here, update "format_firstline" in the logging
 # parser config.
-SYSLOG_LOG_FMT = ('%(asctime)s [forseti-security] %(levelname)s '
-                  '%(name)s(%(funcName)s): %(message).1024s')
+FORSETI_LOG_FMT = '%(asctime)s ' + SYSLOG_LOG_FMT
+
+
 LOGGERS = {}
 LOGLEVELS = {
     'debug': logging.DEBUG,
@@ -54,10 +58,10 @@ def get_logger(module_name):
 
     if os.path.exists('/var/log/forseti.log'):  # ubuntu on GCE
         default_log_handler = logging.FileHandler('/var/log/forseti.log')
+        default_log_handler.setFormatter(logging.Formatter(FORSETI_LOG_FMT))
     else:
         default_log_handler = logging.handlers.SysLogHandler()
-
-    default_log_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
+        default_log_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
 
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(default_log_handler)
