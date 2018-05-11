@@ -23,7 +23,7 @@ import os
 from sqlalchemy.orm import sessionmaker
 import unittest
 
-from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner import dao as scanner_dao
@@ -195,7 +195,7 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
             {'full_name': u'full_name_111',
              'id': 1,
              'resource_data': u'inventory_data_111',
-             'scanner_index_id': u'%s' % scanner_index_id,
+             'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_111',
              'resource_type': u'firewall_rule',
              'rule_index': 111,
@@ -207,7 +207,7 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
             {'full_name': u'full_name_222',
              'id': 2,
              'resource_data': u'inventory_data_222',
-             'scanner_index_id': u'%s' % scanner_index_id,
+             'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_222',
              'resource_type': u'firewall_rule',
              'rule_index': 222,
@@ -292,53 +292,48 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
     def test_get_latest_scanner_index_id_with_empty_table(self):
         """The method under test returns `None` if the table is empty."""
         self.assertIsNone(
-            scanner_dao.get_latest_scanner_index_id(self.session, 'aaa'))
+            scanner_dao.get_latest_scanner_index_id(self.session, 123))
 
-    @mock.patch(
-        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+    @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_get_latest_scanner_index_id(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
         time3 = time1 + timedelta(minutes=7)
-        # ScannerIndex.create() calls get_utc_now_datetime() twice.
-        mock_date_time.get_utc_now_datetime.side_effect = [
-            time1, time1, time2, time2, time3, time3]
+        mock_date_time.side_effect = [time1, time2, time3]
 
-        expected_id = time2.strftime(string_formats.TIMESTAMP_MICROS)
+        expected_id = date_time.get_utc_now_microtimestamp(time2)
 
-        self.session.add(scanner_dao.ScannerIndex.create('aaa'))
-        index2 = scanner_dao.ScannerIndex.create('aaa')
+        self.session.add(scanner_dao.ScannerIndex.create(expected_id))
+        index2 = scanner_dao.ScannerIndex.create(expected_id)
         index2.scanner_status = IndexState.SUCCESS
         self.session.add(index2)
-        self.session.add(scanner_dao.ScannerIndex.create('aaa'))
+        self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.flush()
         self.assertEquals(
-            expected_id, scanner_dao.get_latest_scanner_index_id(self.session, 'aaa'))
+            expected_id, scanner_dao.get_latest_scanner_index_id(
+                self.session, expected_id))
 
-    @mock.patch(
-        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+    @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_get_latest_scanner_index_id_with_failure_state(self, mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
         time3 = time1 + timedelta(minutes=7)
-        # ScannerIndex.create() calls get_utc_now_datetime() twice.
-        mock_date_time.get_utc_now_datetime.side_effect = [
-            time1, time1, time2, time2, time3, time3]
+        mock_date_time.side_effect = [time1, time2, time3]
 
-        expected_id = time1.strftime(string_formats.TIMESTAMP_MICROS)
+        expected_id = date_time.get_utc_now_microtimestamp(time1)
 
-        index1 = scanner_dao.ScannerIndex.create('bbb')
+        index1 = scanner_dao.ScannerIndex.create(expected_id)
         index1.scanner_status = IndexState.FAILURE
         self.session.add(index1)
-        self.session.add(scanner_dao.ScannerIndex.create('bbb'))
-        self.session.add(scanner_dao.ScannerIndex.create('bbb'))
+        self.session.add(scanner_dao.ScannerIndex.create(expected_id))
+        self.session.add(scanner_dao.ScannerIndex.create(expected_id))
         self.session.flush()
         self.assertEquals(
             expected_id,
             scanner_dao.get_latest_scanner_index_id(
-                self.session, 'bbb', IndexState.FAILURE))
+                self.session, expected_id, IndexState.FAILURE))
 
 
 class ScannerIndexTest(ForsetiTestCase):
@@ -357,29 +352,27 @@ class ScannerIndexTest(ForsetiTestCase):
         os.unlink(self.dbfile)
         ForsetiTestCase.tearDown(self)
 
-    @mock.patch(
-        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+    @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_scanner_index_create(self, mock_date_time):
         """`ScannerIndex` create() works as expected."""
         utc_now = datetime.utcnow()
-        mock_date_time.get_utc_now_datetime.return_value = utc_now
-        db_row = scanner_dao.ScannerIndex.create('aaa')
-        expected_id = utc_now.strftime(string_formats.TIMESTAMP_MICROS)
+        mock_date_time.return_value = utc_now
+        expected_id = date_time.get_utc_now_microtimestamp(utc_now)
+        db_row = scanner_dao.ScannerIndex.create(expected_id)
         self.assertEquals(expected_id, db_row.id)
         self.assertEquals(utc_now, db_row.created_at_datetime)
         self.assertEquals(IndexState.CREATED, db_row.scanner_status)
 
-    @mock.patch(
-        'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+    @mock.patch.object(date_time, 'get_utc_now_datetime')
     def test_scanner_index_complete(self, mock_date_time):
         """`ScannerIndex` complete() works as expected."""
         start = datetime.utcnow()
         end = start + timedelta(minutes=5)
         # ScannerIndex.create() calls get_utc_now_datetime() twice.
-        mock_date_time.get_utc_now_datetime.side_effect = [start, start, end]
+        mock_date_time.side_effect = [start, end]
+        expected_id = date_time.get_utc_now_microtimestamp(start)
 
-        db_row = scanner_dao.ScannerIndex.create('aaa')
-        expected_id = start.strftime(string_formats.TIMESTAMP_MICROS)
+        db_row = scanner_dao.ScannerIndex.create(expected_id)
         self.assertEquals(expected_id, db_row.id)
         db_row.complete()
         self.assertEquals(end, db_row.completed_at_datetime)
@@ -400,16 +393,13 @@ class ScannerIndexTest(ForsetiTestCase):
         self.assertEquals('scanner error!', db_row.scanner_index_errors)
 
 
-@mock.patch(
-    'google.cloud.forseti.services.scanner.dao.date_time', autospec=True)
+@mock.patch.object(date_time, 'get_utc_now_datetime')
 def _setup_inv_indices(session, mock_date_time):
     """The method under test returns the newest `ScannerIndex` row."""
     time1 = datetime.utcnow()
     time2 = time1 + timedelta(minutes=5)
     time3 = time1 + timedelta(minutes=7)
-    # ScannerIndex.create() calls get_utc_now_datetime() twice.
-    mock_date_time.get_utc_now_datetime.side_effect = [
-        time1, time1, time2, time2, time3, time3]
+    mock_date_time.side_effect = [time1, time2, time3]
 
     iidx1 = storage.InventoryIndex.create()
     iidx2 = storage.InventoryIndex.create()
@@ -419,10 +409,7 @@ def _setup_inv_indices(session, mock_date_time):
     session.add(iidx3)
     session.flush()
 
-    return (
-        time1.strftime(string_formats.TIMESTAMP_MICROS),
-        time2.strftime(string_formats.TIMESTAMP_MICROS),
-        time3.strftime(string_formats.TIMESTAMP_MICROS))
+    return (iidx1.id, iidx2.id, iidx3.id)
 
 
 class ViolationListTest(ScannerBaseDbTestCase):
