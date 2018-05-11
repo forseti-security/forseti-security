@@ -166,6 +166,7 @@ cp {forseti_home}/configs/logging/fluentd/forseti.conf /etc/google-fluentd/confi
 cp {forseti_home}/configs/logging/logrotate/forseti /etc/logrotate.d/forseti
 chmod 644 /etc/logrotate.d/forseti
 service google-fluentd restart
+logrotate /etc/logrotate.conf
 
 # Change the access level of configs/ rules/ and run_forseti.sh
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
