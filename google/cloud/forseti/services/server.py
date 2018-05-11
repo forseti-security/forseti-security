@@ -172,7 +172,6 @@ class InventoryConfig(AbstractInventoryConfig):
 
     def __init__(self,
                  root_resource_id,
-                 gsuite_sa_path,
                  gsuite_admin_email,
                  api_quota_configs,
                  retention_days,
@@ -182,7 +181,6 @@ class InventoryConfig(AbstractInventoryConfig):
 
         Args:
             root_resource_id (str): Root resource to start crawling from
-            gsuite_sa_path (str): Path to G Suite service account private keyfile
             gsuite_admin_email (str): G Suite admin email
             api_quota_configs (dict): API quota configs
             retention_days (int): Days of inventory tables to retain.
@@ -193,7 +191,6 @@ class InventoryConfig(AbstractInventoryConfig):
         super(InventoryConfig, self).__init__(*args, **kwargs)
         self.service_config = None
         self.root_resource_id = root_resource_id
-        self.gsuite_sa_path = gsuite_sa_path
         self.gsuite_admin_email = gsuite_admin_email
         self.api_quota_configs = api_quota_configs
         self.retention_days = retention_days
@@ -345,8 +342,6 @@ class ServiceConfig(AbstractServiceConfig):
             forseti_inventory_config = forseti_config.get('inventory', {})
             inventory_config = InventoryConfig(
                 forseti_inventory_config.get('root_resource_id', ''),
-                forseti_inventory_config.get('gsuite_service_account_key_file',
-                                             ''),
                 forseti_inventory_config.get('domain_super_admin_email', ''),
                 forseti_inventory_config.get('api_quota', {}),
                 forseti_inventory_config.get('retention_days', -1))
