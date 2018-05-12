@@ -30,7 +30,6 @@ from sqlalchemy import String
 from sqlalchemy import Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm.exc import NoResultFound
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
@@ -620,20 +619,16 @@ class Storage(BaseStorage):
         Returns:
             int: The resource id of the existing resource, else 0.
         """
+        row = self.session.query(Inventory.id).filter(
+            and_(
+                Inventory.inventory_index_id == self.inventory_index.id,
+                Inventory.category == Categories.resource,
+                Inventory.resource_type == resource.type(),
+                Inventory.resource_id == resource.key(),
+            )).one_or_none()
 
-        try:
-            row = self.session.query(Inventory.id).filter(
-                and_(
-                    Inventory.inventory_index_id == self.inventory_index.id,
-                    Inventory.category == Categories.resource,
-                    Inventory.resource_type == resource.type(),
-                    Inventory.resource_id == resource.key(),
-                )).one()
-
-            if row:
-                return row.id
-        except NoResultFound:
-            pass
+        if row:
+            return row.id
 
         return 0
 
@@ -718,7 +713,6 @@ class Storage(BaseStorage):
         Raises:
             Exception: If storage was opened readonly.
         """
-
         if self.readonly:
             raise Exception('Opened storage readonly')
 
