@@ -116,7 +116,7 @@ def get_utc_now_microtimestamp(date=None):
     return micros + utc_now.microsecond
 
 
-def get_datetime_from_microtimestamp(microtimestamp):
+def get_date_from_microtimestamp(microtimestamp):
     """Get a datetime object from a 64bit timestamp.
 
     Args:

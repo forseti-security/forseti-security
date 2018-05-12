@@ -57,12 +57,12 @@ class DateTimeTest(ForsetiTestCase):
         expected_result = 1514764800123456
         self.assertEqual(expected_result, result)
 
-    def test_get_datetime_from_microtimestamp(self):
+    def test_get_date_from_microtimestamp(self):
         # Timestamp = 1514764800 * 1000000 + 123456
         mock_timestamp = 1514764800123456
         # 2018/01/01 00:00:00.123456
         expected_result = datetime(2018, 1, 1, 0, 0, 0, 123456)
-        result = date_time.get_datetime_from_microtimestamp(mock_timestamp)
+        result = date_time.get_date_from_microtimestamp(mock_timestamp)
         self.assertEqual(expected_result, result)
 
 

@@ -103,8 +103,7 @@ class EmailViolations(base_notification.BaseNotification):
             unicode: Email template content rendered with
                 the provided variables.
         """
-        timestamp = date_time.get_datetime_from_microtimestamp(
-            self.cycle_timestamp)
+        timestamp = date_time.get_date_from_microtimestamp(self.cycle_timestamp)
         pretty_timestamp = timestamp.strftime(string_formats.TIMESTAMP_READABLE)
         email_content = self.mail_util.render_from_template(
             'notification_summary.jinja', {
