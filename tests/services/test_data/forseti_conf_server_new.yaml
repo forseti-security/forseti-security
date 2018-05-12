@@ -1,0 +1,187 @@
+global:
+
+    # Remove or comment out the email properties if you do not want Forseti to
+    # send email notifications.
+    email_recipient: ""
+    email_sender: ""
+    sendgrid_api_key: ""
+
+##############################################################################
+
+inventory:
+
+    # Root resource to start crawling from, formatted as
+    # <resource_type>/<resource_id>, (e.g. "organizations/12345677890")
+    root_resource_id: organizations/660570133860
+
+    # gsuite access
+    gsuite_service_account_key_file:
+    domain_super_admin_email:
+
+    api_quota:
+        # The pre-populated values are the defaults from GCP.
+        max_admin_api_calls_per_100_seconds: 1500
+        max_appengine_api_calls_per_second: 20
+        max_bigquery_api_calls_per_100_seconds: 17000
+        max_cloudbilling_api_calls_per_60_seconds: 300
+        max_compute_api_calls_per_second: 20
+        max_container_api_calls_per_100_seconds: 1000
+        max_crm_api_calls_per_100_seconds: 400
+        max_iam_api_calls_per_second: 20
+        max_servicemanagement_api_calls_per_100_seconds: 200
+        max_sqladmin_api_calls_per_100_seconds: 100
+
+##############################################################################
+
+scanner:
+
+    # Output path (do not include filename).
+    # If GCS location, the format of the path should be:
+    # gs://bucket-name/path/for/output
+    # output_path: gs://forseti-server_config-5911/scanner_violations
+
+    # Rules path (do not include filename).
+    # If GCS location, the format of the path should be:
+    # gs://bucket-name/path/for/rules_path
+    # if no rules_path is specified, rules are
+    # searched in /path/to/forseti_security/rules/
+    rules_path: /usr/local/google/home/joecheuk/Desktop/virtualEnv/forseti-security/rules
+
+    # Enable the scanners as default to true when integrated for Forseti 2.0.
+
+    scanners:
+        - name: bigquery
+          enabled: false
+        - name: blacklist
+          enabled: false
+        - name: bucket_acl
+          enabled: false
+        - name: cloudsql_acl
+          enabled: false
+        - name: firewall_rule
+          enabled: false
+        - name: forwarding_rule
+          enabled: false
+        - name: group
+          enabled: false
+        - name: iam_policy
+          enabled: false
+        - name: iap
+          enabled: false
+        - name: instance_network_interface
+          enabled: false
+        - name: ke_version_scanner
+          enabled: false
+
+##############################################################################
+
+notifier:
+
+    # For every resource type you can set up a notification notifier
+    # to send alerts for every violation found
+    resources:
+        - resource: policy_violations
+          should_notify: false
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: ""
+                sender: ""
+                recipient: ""
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+            # Slack webhook notifier.
+            # Create an incoming webhook in your organization's Slack setting, located at:
+            # https://[your_org].slack.com/apps/manage/custom-integrations
+            # Add the provided URL in the configuration below in `webhook_url`.
+            - name: slack_webhook_notifier
+              configuration:
+                webhook_url: ''
+
+        - resource: blacklist_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: bigquery_acl_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: buckets_acl_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+            - name: slack_webhook
+              configuration:
+                webhook_url: 'https://hooks.slack.com/services/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'
+
+        - resource: cloudsql_acl_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: firewall_rule_violations
+          should_notify: false
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: forwarding_rule_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: ke_version_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: groups_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations
+
+        - resource: instance_network_interface_violations
+          should_notify: true
+          notifiers:
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server_config-5911/scanner_violations

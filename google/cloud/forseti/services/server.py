@@ -24,6 +24,7 @@ from multiprocessing.pool import ThreadPool
 import argparse
 import os
 import sys
+import threading
 import time
 
 import grpc
@@ -40,6 +41,7 @@ from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
+from google.cloud.forseti.services.server_config.service import GrpcServerConfigFactory
 
 
 LOGGER = logger.get_logger(__name__)
@@ -50,6 +52,7 @@ SERVICE_MAP = {
     'scanner': GrpcScannerFactory,
     'notifier': GrpcNotifierFactory,
     'model': GrpcModellerFactory,
+    'server': GrpcServerConfigFactory
 }
 
 
@@ -169,7 +172,6 @@ class InventoryConfig(AbstractInventoryConfig):
 
     def __init__(self,
                  root_resource_id,
-                 gsuite_sa_path,
                  gsuite_admin_email,
                  api_quota_configs,
                  retention_days,
@@ -179,7 +181,6 @@ class InventoryConfig(AbstractInventoryConfig):
 
         Args:
             root_resource_id (str): Root resource to start crawling from
-            gsuite_sa_path (str): Path to G Suite service account private keyfile
             gsuite_admin_email (str): G Suite admin email
             api_quota_configs (dict): API quota configs
             retention_days (int): Days of inventory tables to retain.
@@ -190,7 +191,6 @@ class InventoryConfig(AbstractInventoryConfig):
         super(InventoryConfig, self).__init__(*args, **kwargs)
         self.service_config = None
         self.root_resource_id = root_resource_id
-        self.gsuite_sa_path = gsuite_sa_path
         self.gsuite_admin_email = gsuite_admin_email
         self.api_quota_configs = api_quota_configs
         self.retention_days = retention_days
@@ -255,19 +255,13 @@ class ServiceConfig(AbstractServiceConfig):
     """Implements composed dependency injection to Forseti Server services."""
 
     def __init__(self,
-                 inventory_config,
-                 scanner_config,
-                 notifier_config,
-                 global_config,
+                 forseti_config_file_path,
                  forseti_db_connect_string,
                  endpoint):
         """Initialize
 
         Args:
-            inventory_config (InventoryConfig): the inventory_config
-            scanner_config (dict): Scanner configurations
-            notifier_config (dict): Notifier configurations
-            global_config (dict): Global configurations
+            forseti_config_file_path (str): Path to Forseti configuration file.
             forseti_db_connect_string (str): Forseti database string
             endpoint (str): server endpoint
         """
@@ -280,12 +274,102 @@ class ServiceConfig(AbstractServiceConfig):
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
 
-        self.inventory_config = inventory_config
-        self.inventory_config.set_service_config(self)
+        self.forseti_config_file_path = forseti_config_file_path
 
-        self.scanner_config = scanner_config
-        self.notifier_config = notifier_config
-        self.global_config = global_config
+        self.inventory_config = None
+        self.scanner_config = None
+        self.notifier_config = None
+        self.global_config = None
+        self.forseti_config = None
+
+        self.update_lock = threading.RLock()
+
+    def _read_from_config(self, config_file_path=None):
+        """Read from the forseti configuration file.
+
+        Args:
+            config_file_path (str): Forseti server config file path.
+
+        Returns:
+            dict: Forseti server configuration.
+            str: Error message.
+        """
+
+        # if config_file_path is not passed in, we will use the default
+        # configuration path that was passed in during the initialization
+        # of the server.
+        forseti_config_path = config_file_path or self.forseti_config_file_path
+
+        forseti_config = {}
+
+        err_msg = ''
+
+        try:
+            forseti_config = file_loader.read_and_parse_file(
+                forseti_config_path)
+        except (AttributeError, IOError) as err:
+            err_msg = ('Unable to open Forseti Security config file. '
+                       'Please check your path and filename and try '
+                       'again. Error: {}').format(err)
+            LOGGER.error(err_msg)
+
+        return forseti_config, err_msg
+
+    def update_configuration(self, config_file_path=None):
+        """Update the inventory, scanner, global and notifier configurations.
+
+        Args:
+            config_file_path (str): Forseti server config file path.
+
+        Returns:
+            bool: Whether or not configuration has been updated.
+            str: Error message.
+        """
+
+        forseti_config, err_msg = self._read_from_config(config_file_path)
+
+        if not forseti_config:
+            # if forseti_config is empty, there is nothing to update.
+            return False, err_msg
+
+        with self.update_lock:
+            # Lock before performing the update to avoid multiple updates
+            # at the same time.
+
+            self.forseti_config = forseti_config
+
+            # Setting up individual configurations
+            forseti_inventory_config = forseti_config.get('inventory', {})
+            inventory_config = InventoryConfig(
+                forseti_inventory_config.get('root_resource_id', ''),
+                forseti_inventory_config.get('domain_super_admin_email', ''),
+                forseti_inventory_config.get('api_quota', {}),
+                forseti_inventory_config.get('retention_days', -1))
+
+            # TODO: Create Config classes to store scanner and notifier configs.
+            forseti_scanner_config = forseti_config.get('scanner', {})
+
+            forseti_notifier_config = forseti_config.get('notifier', {})
+
+            forseti_global_config = forseti_config.get('global', {})
+
+            self.inventory_config = inventory_config
+            self.inventory_config.set_service_config(self)
+
+            self.scanner_config = forseti_scanner_config
+            self.notifier_config = forseti_notifier_config
+
+            self.global_config = forseti_global_config
+        return True, err_msg
+
+    def get_forseti_config(self):
+        """Get the Forseti config.
+
+        Returns:
+            dict: Forseti config.
+        """
+
+        return self.forseti_config
 
     def get_inventory_config(self):
         """Get the inventory config.
@@ -370,8 +454,6 @@ class ServiceConfig(AbstractServiceConfig):
 
 
 # pylint: enable=too-many-instance-attributes
-
-# pylint: disable=too-many-locals
 def serve(endpoint,
           services,
           forseti_db_connect_string,
@@ -409,36 +491,14 @@ def serve(endpoint,
     if not factories:
         raise Exception('No services to start.')
 
-    try:
-        forseti_config = file_loader.read_and_parse_file(
-            config_file_path)
-    except (AttributeError, IOError) as err:
-        LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try '
-                     'again. Error: %s', err)
+    # Server config service is always started.
+    factories.append(SERVICE_MAP['server'])
 
-    # Setting up configurations
-    forseti_inventory_config = forseti_config.get('inventory', {})
-    inventory_config = InventoryConfig(
-        forseti_inventory_config.get('root_resource_id', ''),
-        forseti_inventory_config.get('gsuite_service_account_key_file', ''),
-        forseti_inventory_config.get('domain_super_admin_email', ''),
-        forseti_inventory_config.get('api_quota', {}),
-        forseti_inventory_config.get('retention_days', -1))
-
-    # TODO: Create Config classes to store scanner and notifier configs.
-    forseti_scanner_config = forseti_config.get('scanner', {})
-
-    forseti_notifier_config = forseti_config.get('notifier', {})
-
-    forseti_global_config = forseti_config.get('global', {})
-
-    config = ServiceConfig(inventory_config=inventory_config,
-                           scanner_config=forseti_scanner_config,
-                           notifier_config=forseti_notifier_config,
-                           global_config=forseti_global_config,
-                           forseti_db_connect_string=forseti_db_connect_string,
-                           endpoint=endpoint)
+    config = ServiceConfig(
+        forseti_config_file_path=config_file_path,
+        forseti_db_connect_string=forseti_db_connect_string,
+        endpoint=endpoint)
+    config.update_configuration()
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers))
     for factory in factories:
