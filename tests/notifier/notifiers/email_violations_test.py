@@ -168,7 +168,7 @@ class EmailViolationsTest(ForsetiTestCase):
         notifier_config = fake_violations.NOTIFIER_CONFIGS_EMAIL_JSON
         notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
         resource = 'policy_violations'
-        cycle_timestamp = '2018-03-24T00:49:02.891287'
+        cycle_timestamp = '1514764800123456'
         mock_json_stringify.return_value = 'test123'
         evp = email_violations.EmailViolations(
             resource,
@@ -201,7 +201,7 @@ class EmailViolationsTest(ForsetiTestCase):
         notifier_config = fake_violations.NOTIFIER_CONFIGS_EMAIL_DEFAULT
         notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
         resource = 'policy_violations'
-        cycle_timestamp = '2018-03-24T00:49:02.891287'
+        cycle_timestamp = '1514764800123456'
         mock_json_stringify.return_value = 'test123'
         evp = email_violations.EmailViolations(
             resource,
