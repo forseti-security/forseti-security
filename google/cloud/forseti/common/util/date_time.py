@@ -114,3 +114,15 @@ def get_utc_now_microtimestamp(date=None):
     utc_now = date or get_utc_now_datetime()
     micros = calendar.timegm(utc_now.utctimetuple()) * 1000000
     return micros + utc_now.microsecond
+
+
+def get_datetime_from_microtimestamp(microtimestamp):
+    """Get a datetime object from a 64bit timestamp.
+
+    Args:
+        microtimestamp (int): A timestamp to be converted.
+
+    Returns:
+        datetime: The converted datetime object
+    """
+    return datetime.utcfromtimestamp(microtimestamp/float(1000000.0))

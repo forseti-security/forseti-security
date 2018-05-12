@@ -19,7 +19,6 @@ from datetime import datetime
 import mock
 import unittest
 from datetime import datetime
-import pytz
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
@@ -37,28 +36,33 @@ class DateTimeTest(ForsetiTestCase):
         self.assertEqual(expected_result, result)
 
     def test_get_utc_now_timestamp_human(self):
-        # 2018/01/01 00:00:00.123456 UTC
-        mock_date = datetime(
-            2018, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.utc)
+        # 2018/01/01 00:00:00.123456
+        mock_date = datetime(2018, 1, 1, 0, 0, 0, 123456)
         result = date_time.get_utc_now_timestamp_human(mock_date)
         expected_result = "01 January 2018 - 00:00:00"
         self.assertEqual(expected_result, result)
 
     def test_get_utc_now_timestamp(self):
-        # 2018/01/01 00:00:00.123456 UTC
-        mock_date = datetime(
-            2018, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.utc)
+        # 2018/01/01 00:00:00.123456
+        mock_date = datetime(2018, 1, 1, 0, 0, 0, 123456)
         result = date_time.get_utc_now_timestamp(mock_date)
         expected_result = "2018-01-01T00:00:00Z"
         self.assertEqual(expected_result, result)
 
     def test_get_utc_now_microtimestamp(self):
-        # 2018/01/01 00:00:00.123456 UTC
-        mock_date = datetime(
-            2018, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.utc)
+        # 2018/01/01 00:00:00.123456
+        mock_date = datetime(2018, 1, 1, 0, 0, 0, 123456)
         result = date_time.get_utc_now_microtimestamp(mock_date)
         # Expected timestamp = 1514764800 * 1000000 + 123456
         expected_result = 1514764800123456
+        self.assertEqual(expected_result, result)
+
+    def test_get_datetime_from_microtimestamp(self):
+        # Timestamp = 1514764800 * 1000000 + 123456
+        mock_timestamp = 1514764800123456
+        # 2018/01/01 00:00:00.123456
+        expected_result = datetime(2018, 1, 1, 0, 0, 0, 123456)
+        result = date_time.get_datetime_from_microtimestamp(mock_timestamp)
         self.assertEqual(expected_result, result)
 
 
