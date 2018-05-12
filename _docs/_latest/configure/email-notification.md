@@ -1,7 +1,8 @@
 ---
-title: Enabling Email Notifications
+title: Email
 order: 203
 ---
+
 #  {{ page.title }}
 
 Forseti Security can send email notifications using the SendGrid API. SendGrid

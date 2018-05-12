@@ -16,11 +16,10 @@ service account just for this functionality. Read more about
 ### Create a service account
 
 **Note:** If you used the setup wizard to setup Forseti, it already creates a G Suite 
-service account. You can go directly to the 
-[next section]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
+service account. 
 
 1. Go to
-   [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts)
+   [Cloud Platform Console Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts){:target="_blank"}
    and click **Create service account**.
 
 1. On the **Create service account** dialog that appears, set up your service account:
