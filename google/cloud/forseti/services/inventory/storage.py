@@ -23,7 +23,6 @@ from sqlalchemy import exists
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
-
 from sqlalchemy import or_
 from sqlalchemy import String
 from sqlalchemy import Text

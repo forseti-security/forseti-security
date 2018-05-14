@@ -157,15 +157,6 @@ class AbstractInventoryConfig(dict):
 
         raise NotImplementedError()
 
-    def get_retention_days_configs(self):
-        """Returns the days of inventory data to retain.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-
-        raise NotImplementedError()
-
     def get_service_config(self):
         """Returns the service config.
 
