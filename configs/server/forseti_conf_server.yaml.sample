@@ -57,11 +57,6 @@ inventory:
     #   0 : delete all previous inventory data before running
     retention_days: -1
 
-    # Number of days to retain inventory data: 
-    #  -1 : (default) keep all previous data forever
-    #   0 : delete all previous inventory data before running
-    retention_days: -1
-
 ##############################################################################
 
 scanner:
