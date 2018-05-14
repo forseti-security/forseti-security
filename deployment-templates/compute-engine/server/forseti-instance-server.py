@@ -162,7 +162,6 @@ pip install -q --upgrade -r requirements.txt
 # Setup Forseti logging
 touch /var/log/forseti.log
 chown ubuntu:root /var/log/forseti.log
-
 cp {forseti_home}/configs/logging/fluentd/forseti.conf /etc/google-fluentd/config.d/forseti.conf
 cp {forseti_home}/configs/logging/logrotate/forseti /etc/logrotate.d/forseti
 chmod 644 /etc/logrotate.d/forseti
