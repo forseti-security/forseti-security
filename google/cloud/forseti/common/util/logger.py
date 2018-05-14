@@ -46,6 +46,18 @@ LOGLEVEL = logging.INFO
 LOG_TO_CONSOLE = False
 
 
+def _create_syslog_handler():
+    """Create the syslog handler.
+
+    Returns:
+        handler: A configured syslog handler.
+    """
+
+    syslog_handler = logging.handlers.SysLogHandler()
+    syslog_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
+    return syslog_handler
+
+
 def get_logger(module_name):
     """Setup the logger.
 
@@ -57,11 +69,16 @@ def get_logger(module_name):
     """
 
     if os.path.exists('/var/log/forseti.log'):  # ubuntu on GCE
-        default_log_handler = logging.FileHandler('/var/log/forseti.log')
-        default_log_handler.setFormatter(logging.Formatter(FORSETI_LOG_FMT))
+        try:
+            default_log_handler = logging.FileHandler('/var/log/forseti.log')
+            default_log_handler.setFormatter(logging.Formatter(FORSETI_LOG_FMT))
+        # users of CLI on server vm can not write to /var/log/forseti.log
+        except IOError:
+            # pylint:disable=redefined-variable-type
+            default_log_handler = _create_syslog_handler()
+            # pylint:enable=redefined-variable-type
     else:
-        default_log_handler = logging.handlers.SysLogHandler()
-        default_log_handler.setFormatter(logging.Formatter(SYSLOG_LOG_FMT))
+        default_log_handler = _create_syslog_handler()
 
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(default_log_handler)
