@@ -41,8 +41,13 @@ class ResourceMock(Resource):
         self._data = data
         self._res_type = res_type
         self._catetory = category
-        self._parent = parent if parent else self
+        if parent:
+            self._parent = parent
+            parent.add_contains(self)
+        else:
+            self._parent = self
         self._warning = warning
+        self._contains = []
         self._timestamp = self._utcnow()
         self._inventory_key = None
 
@@ -54,6 +59,9 @@ class ResourceMock(Resource):
 
     def parent(self):
         return self._parent
+
+    def add_contains(self, other):
+        self._contains.append(other)
 
 
 class StorageTest(ForsetiTestCase):
