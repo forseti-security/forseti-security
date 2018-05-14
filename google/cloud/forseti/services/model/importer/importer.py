@@ -512,7 +512,7 @@ class InventoryImporter(object):
                         type=m_type,
                         member_name=name)
                     self.session.add(self.member_cache_policies[member])
-                    db_members.add(self.member_cache_policies[member])
+                db_members.add(self.member_cache_policies[member])
 
             binding_object = self.dao.TBL_BINDING(
                 resource_type_name=policy_type_name,
