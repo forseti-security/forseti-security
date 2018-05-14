@@ -724,12 +724,17 @@ class Storage(BaseStorage):
 
         rows = Inventory.from_resource(self.inventory_index, resource)
 
-        # Insert the resource row to get the inventory id, buffer other rows.
         for row in rows:
             if row.category == Categories.resource:
-                self.session.add(row)
-                self.session.flush()
-                resource.set_inventory_key(row.id)
+                if len(rows) > 1 or resource.contains_children():
+                    # Force flush to insert the resource row in order to get the
+                    # inventory id value. This is used to tie child resources
+                    # and related data back to the parent resource row.
+                    self.session.add(row)
+                    self.session.flush()
+                    resource.set_inventory_key(row.id)
+                else:
+                    self.buffer.add(row)
             else:
                 row.parent_id = resource.inventory_key()
                 self.buffer.add(row)
