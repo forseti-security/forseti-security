@@ -50,7 +50,6 @@ class TestServiceConfig(MockServerConfig):
         self.workers = ThreadPool(10)
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
-                                                '',
                                                 {},
                                                 '')
 

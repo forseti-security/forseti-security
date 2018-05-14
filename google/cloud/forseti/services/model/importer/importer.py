@@ -336,6 +336,47 @@ class InventoryImporter(object):
             post_action()
         return item_counter
 
+    @staticmethod
+    def model_action_wrapper(session,
+                             inventory_iterable,
+                             pre_action,
+                             action,
+                             post_action,
+                             flush_count):
+        """Model action wrapper. This is used to reduce code duplication.
+
+        Args:
+            session (Session): Database session.
+            inventory_iterable (Iterable): Inventory iterable.
+            pre_action (func): Action taken before iterating the
+                inventory list.
+            action (func): Action taken during the iteration of
+                the inventory list.
+            post_action (func): Action taken after iterating the
+                inventory list.
+            flush_count (int): Flush every flush_count times.
+
+        Returns:
+            int: Number of item iterated.
+        """
+
+        if pre_action:
+            pre_action()
+
+        item_counter = 0
+        for inventory_data in inventory_iterable:
+            item_counter = item_counter + 1
+            if isinstance(inventory_data, tuple):
+                action(*inventory_data)
+            else:
+                action(inventory_data)
+            if not item_counter % flush_count:
+                session.flush()
+
+        if post_action:
+            post_action()
+        return item_counter
+
     def _store_gsuite_principal(self, principal):
         """Store a gsuite principal such as a group, user or member.
 
@@ -501,7 +542,7 @@ class InventoryImporter(object):
                         type=m_type,
                         member_name=name)
                     self.session.add(self.member_cache_policies[member])
-                    db_members.add(self.member_cache_policies[member])
+                db_members.add(self.member_cache_policies[member])
 
             binding_object = self.dao.TBL_BINDING(
                 resource_type_name=policy_type_name,

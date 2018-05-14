@@ -184,6 +184,7 @@ python setup.py install
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 
+
 # Download server configuration from GCS
 gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server_conf}
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
