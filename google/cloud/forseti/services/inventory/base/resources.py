@@ -209,14 +209,6 @@ class Resource(object):
         """
         return self._inventory_key
 
-    def contains_children(self):
-        """If resource may have children, returns True, else returns False.
-
-        Returns:
-            bool: True if resource may contain child resource, else False.
-        """
-        return bool(self._contains)
-
     def type(self):
         """Get type of this resource
 
