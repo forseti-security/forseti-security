@@ -29,6 +29,8 @@ fi
 
 bundle exec htmlproofer --check-img-http --check-opengraph --check-html \
 --check-favicon --report-missing-names --report-script-embeds \
---url-ignore "/GoogleCloudPlatform/forseti-security/edit/" ./_www/www
+--url-ignore '/GoogleCloudPlatform/forseti-security/edit/' \
+--file-ignore '/develop/reference/' \
+./_www/www
 
 exit ${return_code}
