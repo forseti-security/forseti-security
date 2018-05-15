@@ -8,7 +8,7 @@ title: About
 Forseti Security is a collection of community-driven, open-source tools to help you improve the
 security of your Google Cloud Platform (GCP) environments. Forseti consists of core modules that
 you can enable, configure, and execute independently of each other. Community contributors are also
-developingadd-on modules to offer unique capabilities. Forseti’s core modules work together, and
+developing add-on modules to offer unique capabilities. Forseti’s core modules work together, and
 provide a foundation that others can build upon.
 
 Get started with
@@ -35,7 +35,7 @@ changes.
 ### [Inventory]({% link _docs/latest/configure/inventory/index.md %})
 
 Inventory saves an inventory snapshot of your GCP resources to Cloud SQL, so you have a historical
-record of what was in your cloud. With this,  you can understand all the resources you have in GCP
+record of what was in your cloud. With this, you can understand all the resources you have in GCP
 and take action to conserve resources, reduce cost, and minimize security exposure. Inventory can
 be configured to run as often as you want, and send email notifications when it updates your
 resource snapshot
