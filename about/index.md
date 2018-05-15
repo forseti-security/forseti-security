@@ -1,50 +1,49 @@
 ---
 layout: default
-title: Forseti Concepts
+title: About
 ---
 
 # {{ page.title }}
 
-Forseti Security is a collection of community-driven, open-source tools to help
-you improve the security of your Google Cloud Platform (GCP) environments.
-Forseti includes core modules that you can enable, configure, and execute
-independently of each other. Community contributors can also develop add-on
-modules to offer unique capabilities. Forseti's core modules work together to
-provide their respective features, and provide a foundation that addons can
-build upon.
+Forseti Security is a collection of community-driven, open-source tools to help you improve the
+security of your Google Cloud Platform (GCP) environments. Forseti consists of core modules that
+you can enable, configure, and execute independently of each other. Community contributors are also
+developingadd-on modules to offer unique capabilities. Forseti’s core modules work together, and
+provide a foundation that others can build upon.
 
 Get started with
 [Forseti Security]({% link _docs/latest/configure/configuring-forseti.md %}).
 
 ## When to use Forseti Security
 
-Use Forseti Security when you want to monitor your GCP resources to ensure that
-role-based access controls are set as you intended. Forseti Security can notify
-you if policies change unexpectedly and work automatically to keep your access
-policies in a known state. By using Forseti Security's modules together, you can
-make sure that there isn't any unauthorized access to your GCP resources.
+Forseti Security makes sense when you need Security at Scale. It’s easy to monitor a few resources
+in one or two projects, but at some point manual checking does not work anymore. If you want to
+systematically monitor your GCP resources to ensure that access controls are set as you intended,
+Forseti will allow creating rule-based policies to codify your security stance. Then, if something
+changes unexpectedly, action will be taken including notifying you, and possibly automatically
+reverting to a known state. 
+
+Taken as a whole, Forseti allows you to ensure your security is governed by consistent,
+intelligible rules.
 
 ## How Forseti Security works
 
-When you install Forseti Security, you can configure and deploy core Forseti
-Security modules. The core Forseti Security modules work together to take a
-snapshot of your GCP resources, monitor those resources, and notify you of
-access policy changes.
+When you install Forseti Security, you deploy the core Forseti Security modules and configure them
+to take a snapshot of your GCP resources, monitor those resources, and notify you of access policy
+changes.
 
 ### [Inventory]({% link _docs/latest/configure/inventory/index.md %})
 
-Inventory saves an hourly snapshot of your GCP resources to Cloud SQL, so you
-have a historical record of what was in your cloud. Using Inventory, you can
-understand all the resources you have in GCP and take action to conserve
-resources, reduce cost, and minimize security exposure. When configured,
-Inventory can run on a custom basis and send email notifications when it updates
-your resource snapshot.
+Inventory saves an inventory snapshot of your GCP resources to Cloud SQL, so you have a historical
+record of what was in your cloud. With this,  you can understand all the resources you have in GCP
+and take action to conserve resources, reduce cost, and minimize security exposure. Inventory can
+be configured to run as often as you want, and send email notifications when it updates your
+resource snapshot
 
 ### [Scanner]({% link _docs/latest/configure/scanner/index.md %})
 
-Scanner uses the information collected by Forseti Inventory to regularly compare
-role-based access policies for your GCP resources. Scanner applies rules to
-audit the following resources in GCP:
+Scanner uses the information collected by Forseti Inventory to regularly compare role-based access
+policies for your GCP resources. Scanner applies rules to audit GCP resources like the following:
 
   * Cloud Identity and Access Management (Cloud IAM) policies for Organizations,
     Folders, and Projects
@@ -52,46 +51,36 @@ audit the following resources in GCP:
   * BigQuery dataset ACLs
   * Cloud SQL authorized networks
 
-When you specify users, groups, and domains that are allowed, mandatory, or
-excluded from resources, Scanner helps make sure your access policies stay
-consistent. If it finds any access policies that don't match your Scanner Rules,
-it saves those rule violations to Cloud SQL or, when configured, to a Google
-Cloud Storage bucket. This helps protect you against unsafe or unintentional
-changes. When configured, Scanner can send email notifications when it runs.
+With Scanner, you can specify users, groups, and domains that are allowed, mandatory, or excluded
+from resources and ensure that these access policies stay consistent. If it finds any access
+policies that don’t match your Scanner rules, it can save those rule violations to Cloud SQL or to
+Cloud Storage. This helps protect you against unsafe or unintentional changes.
 
 ### [Enforcer]({% link _docs/latest/configure/enforcer/index.md %})
 
-Enforcer uses policies you create to compare the current state of your Compute
-Engine firewall to the desired state. Policies can apply to individual projects
-or you can use an organization default policy. Enforcer is an on-demand
-command-line tool that compares policies as a batch over all managed projects or
-against one or more projects. If it finds any differences in policy, Enforcer
-uses Google Cloud APIs to make changes and displays output of the results.
+Enforcer uses policies you create to compare the current state of your Compute Engine firewall to
+the desired state. Enforcer is an on-demand command-line tool that compares policies in batch mode
+over all managed projects or against selected projects. If it finds any differences in policy,
+Enforcer uses Google Cloud APIs to make changes and displays the output of the results. Policies
+can apply to individual projects or you can use an organization default policy.
 
-Following are some ways you might want to use Enforcer:
-Helps you monitor inventoried GCP resources like Cloud IAM,
-BigQuery datasets, Cloud Storage bucket ACLs, and
-[more]({% link _docs/latest/concepts/resources.md %})
-to ensure that role-based access controls are set as you intended, by
-notifying you when specific policies change unexpectedly.
+The tool can also:
 
-  * One-time enforcement of firewall policies on a single project.
-  * Alert on changes to your expected firewall policy.
-  * Roll back firewall policies if there's a problem.
+* Provide one-time enforcement of firewall policies on a single project
+* Roll back firewall policies
+
 
 ### [Explain]({% link _docs/latest/configure/explain/index.md %})
 
-Use an addon module like Explain to understand your Cloud Identity and
-Access Management (Cloud IAM) access policies in context of your groups and
-resources. Explain can help you understand the following:
+The Explain add-on module provides visibility into your Cloud Identity and Access Management
+(Cloud IAM) policies. Explain can help you understand:
 
-Who has access to what resource and how that user can interact with the
-resource. Why a principal has permission on a resource, or why they don't have a
-permission and how to fix it. What roles grant a permission and which roles
-aren't in sync with recent changes.
+* Who has access to what resources and how that user can interact with the resource
+* Why a principal has permission on a resource, or why they don’t have a permission and how to fix
+it
+* What roles grant a permission and which roles aren’t in sync with recent changes
 
 ### [Email Notifications]({% link _docs/latest/configure/email-notification.md %})
 
-When configured, Forseti Security can send email notifications for Inventory and
-Scanner using the SendGrid API. SendGrid is currently the only supported email
-provider.
+When configured, Forseti Security can send email notifications for Inventory and Scanner using the
+SendGrid API. SendGrid is currently the only supported email provider.
