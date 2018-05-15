@@ -16,8 +16,8 @@ so you can easily run them.
 | :-----------------------------------|:-------------------------------------- |
 | Don't use [primitive roles](https://cloud.google.com/iam/docs/understanding-roles#primitive_roles) in Cloud IAM policies, and never grant primitive roles on an organization. | Primitive roles give an identity a lot of power. By using custom roles, you apply the Principle of Least Privilege and limit user access to only the resources they need. |
 | Don't grant an entire domain access to resources in a Cloud IAM policy. | Granting access to an entire domain is usually too broad. Use groups to manage access instead. |
-| Protect your organization from external identities: <ul><li>Don't give organization-level permissions to anyone outside your organization.</li><li>Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to monitor all external identities in your organization.</li></ul> | Scanning for external identities helps stop untrusted users from getting access to your resources. |
-| Protect your resources from external identities: <ul><li>Add external users to Cloud IAM policies as individual users.</li><li>Don't add outside users to groups.</li></ul> | When you add external users directly to a Cloud IAM policy, it's easier to audit their activities and do lifecycle management. |
+| Protect your organization from external identities: {::nomarkdown}<ul><li>Don't give organization-level permissions to anyone outside your organization.</li><li>{:/}Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to monitor all external identities in your organization.{::nomarkdown}</li></ul>{:/} | Scanning for external identities helps stop untrusted users from getting access to your resources. |
+| Protect your resources from external identities: {::nomarkdown}<ul><li>Add external users to Cloud IAM policies as individual users.</li><li>Don't add outside users to groups.</li></ul>{:/} | When you add external users directly to a Cloud IAM policy, it's easier to audit their activities and do lifecycle management. |
 
 ## Service accounts
 
@@ -50,7 +50,7 @@ so you can easily run them.
 
 | Best practice                       | Rationale                              |
 | :-----------------------------------|:-------------------------------------- |
-| It's best to keep data private in general: <ul><li>Don't allow datasets to be publicly readable or writable.</li><li>Don't share datasets with outside entities.</li></ul> | By limiting access to datasets, you prevent malicious external actors from changing or adding data. |
+| It's best to keep data private in general: {::nomarkdown}<ul><li>Don't allow datasets to be publicly readable or writable.</li><li>Don't share datasets with outside entities.</li></ul>{:/} | By limiting access to datasets, you prevent malicious external actors from changing or adding data. |
 
 ## Cloud SQL
 
