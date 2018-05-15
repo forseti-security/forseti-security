@@ -145,7 +145,7 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_member user/<USER_NAME>
 
 By default, resource_expansion is not performed. For example, `user/foo` has `roles/owner` on the `organization/1234567890` and no other policies. The above command will only show `organization/1234567890`.
 
-To enable resource expansion pass in the argument `--expand_resource true`. Forseti will perform resource expansion and list all resources accessible by `user/<USER_NAME>` through a direct or indirect binding.
+To enable resource expansion, pass in the argument `--expand_resource true`. Forseti will perform resource expansion and list all resources that can be accessed by `user/<USER_NAME>` through a direct or indirect binding.
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_member user/<USER_NAME> --expand_resource true
@@ -175,7 +175,7 @@ Similar to the `access_by_member` command, group expansion is not performed by d
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource organizations/1234567890
 ```
 
-To enable group expansion pass in the `--expand_group` argument. Forseti will perform group expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
+To enable group expansion, pass in the `--expand_group` argument. Forseti will perform group expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true 
@@ -193,7 +193,7 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME> <
 
 You can specify a permission, such as `iam.serviceAccounts.get`, and list all the `<members, resource, role>` that have a relation.
 
-The tuple `<members, resource, role>` contains the members with role that contains permission `iam.serviceAccounts.get` on the resource.
+The tuple `<members, resource, role>` contains the members with a role that contains permission `iam.serviceAccounts.get` on the resource.
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.serviceAccounts.get
@@ -207,7 +207,7 @@ Role roles/owner
 
 These results mean that resource `resource1` has a policy to grant `roles/owner` to `member1` and `member2`
 
-With `access_by_authz` you can also specify role instead of permission 
+With `access_by_authz` you can also specify a role instead of a permission:
 
 ```
 # With G Suite Group expansion
@@ -218,7 +218,7 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.ser
 ```
 
 #### View permission source
-Understand why a member has a permission to a resource
+Understand why a member has a permission to a resource:
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer why_granted <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
@@ -261,10 +261,10 @@ strategies {
 ...
 ```
 
-This binding doesn't work directly on the target member and resource. Instead, the binding applies to groups that contain the target member or resources that contain the target resource. In the example above, overgranting equals 1 to indicate that the binding could grant unnecessary privileges.
+This binding doesn't work directly on the target member and resource. Instead, the binding applies to groups that contain the target member, or resources that contain the target resource. In the example above, overgranting equals 1 to indicate that the binding could grant unnecessary privileges.
 
 
 ## What's next
 
-- Read more about [the concepts of data model]({% link _docs/latest/concepts/models.md %}).
+- Read more about [data model concepts]({% link _docs/latest/concepts/models.md %}).
 - Learn about the [complete list of functionalities]({% link _docs/latest/use/cli.md %}) available in Explain.
