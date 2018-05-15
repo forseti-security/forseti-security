@@ -7,7 +7,7 @@ order: 102
 
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can configure Scanner to execute multiple scanners in
-the same run. Learn about [configuring Scanner]({% link _docs/configure/scanner/index.md %}).
+the same run. Learn about [configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 
 ## BigQuery dataset ACL scanner
 
@@ -16,7 +16,7 @@ The BigQuery scanner supports a blacklist mode, to ensure unauthorized users
 don't gain access to your datasets.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
-[`bigquery_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bigquery_rules.yaml)
+[`bigquery_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/bigquery_rules.yaml)
 rule file.
 
 ## Blacklist scanner
@@ -29,7 +29,7 @@ all of the VM instances in your environment and determines if any VMs
 with external IP addresses are on a specific blacklist you've configured.
 
 For examples of how to define scanner rules, see the
-[`blacklist_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/blacklist_rules.yaml) rule file.
+[`blacklist_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/blacklist_rules.yaml) rule file.
 
 ## Bucket ACL scanner
 
@@ -38,7 +38,7 @@ Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
 to ensure unauthorized users don't gain access to your Cloud Storage bucket.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
-[`bucket_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/bucket_rules.yaml) rule file.
+[`bucket_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/bucket_rules.yaml) rule file.
 
 ## Cloud Audit Logging scanner
 
@@ -49,7 +49,7 @@ having their accesses logged. The audit logging scanner detects if any projects
 are missing a required audit log, or have extra exempted members.
 
 For examples of how to define scanner rules for Cloud Audit Logging, see the
-[audit_logging_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/audit_logging_rules.yaml)
+[audit_logging_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/audit_logging_rules.yaml)
 rule file.
 
 ## Cloud SQL Networks scanner
@@ -60,7 +60,7 @@ gain access to your Cloud SQL instances.
 
 For examples of how to define scanner rules for your Cloud SQL instances, see
 the
-[`cloudsql_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/cloudsql_rules.yaml)
+[`cloudsql_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/cloudsql_rules.yaml)
 rule file.
 
 ## Enabled APIs scanner
@@ -70,7 +70,7 @@ supports whitelisting supported APIs, blacklisting unsupported APIs, and
 specifying required APIs that must be enabled.
 
 For examples of how to define scanner rules for Enabled APIs, see the
-[enabled_apis_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/enabled_apis_rules.yaml)
+[enabled_apis_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/enabled_apis_rules.yaml)
 rule file.
 
 ## Firewall Rules scanner
@@ -80,7 +80,7 @@ desired traffic into and out of your network. The firewall rules scanner can
 ensure that all your network's firewalls are properly configured.
 
 For examples of how to define scanner rules for your firewall rules scanner, see the
-[`firewall_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/firewall_rules.yaml)
+[`firewall_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/firewall_rules.yaml)
 rule file.
 
 ## Load Balancer Forwarding Rules scanner
@@ -91,7 +91,7 @@ whitelist mode, to ensure each forwarding rule only directs to the intended
 target instances.
 
 For examples of how to define scanner rules for your forwarding rules, see the
-[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/forwarding_rules.yaml)
+[`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/forwarding_rules.yaml)
 rule file.
 
 ## Groups scanner
@@ -102,7 +102,7 @@ The group scanner supports a whitelist mode, to make sure that only authorized
 users are members of your G Suite group.
 
 For examples of how to define scanner rules for your G Suite groups, see the
-[`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/group_rules.yaml)
+[`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/group_rules.yaml)
 rule file.
 
 ## IAM policy scanner (organization resources)
@@ -116,7 +116,7 @@ supports the following:
  - Access to specific organization, folder, or project resource types.
 
 For examples of how to define scanner rules for Cloud IAM policies, see the
-[`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iam_rules.yaml)
+[`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/iam_rules.yaml)
 rule file.
 
 ## IAP scanner
@@ -128,7 +128,7 @@ rules are properly configured and prevents the introduction of other network
 paths that bypass the normal load balancer to instance flow.
 
 For examples of how to define scanner rules for Cloud IAP, see the
-[`iap_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/iap_rules.yaml)
+[`iap_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/iap_rules.yaml)
 rule file.
 
 ## Instance Network Interface scanner
@@ -139,7 +139,7 @@ all your VM instances in your environment, and determines if any VMs with
 external IP addresses are outside of the trusted networks.
 
 For examples of how to define scanner rules for network interfaces, see the 
-[`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/instance_network_interface_rules.yaml)
+[`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/instance_network_interface_rules.yaml)
 rule file.
 
 ## Kubernetes Engine Version scanner
@@ -149,5 +149,5 @@ vulnerabilities, or lack of support.  The KE version scanner can ensure your
 Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the
-[`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/rules/ke_rules.yaml)
+[`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/ke_rules.yaml)
 file.

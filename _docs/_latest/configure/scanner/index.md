@@ -22,7 +22,7 @@ For information about how to create a model, please refers to the model creation
 [Explain]({ % link _docs/lastest/configure/explain/index.md }).
 
 To configure which scanners to run, see 
-[Configuring Forseti: Configuring Scanner]({% link _docs/howto/configure/configuring-forseti.md %}#configuring-scanner).
+[Configuring Forseti: Configuring Scanner]({% link _docs/latest/configure/configuring-forseti.md %}#configuring-scanner).
 
 
 #### Selecting a data model
@@ -39,12 +39,12 @@ $ forseti scanner run
 
 Scanner produces violations and stores them in the violation table in the database. 
 To receive notifications for violations, run the 
-[Forseti Notifier]({% link _docs/configure/notifier/index.md %}).
+[Forseti Notifier]({% link _docs/latest/configure/notifier/index.md %}).
 
 ## What's next
 
-- Read more about [configuring Scanner]({% link _docs/configure/scanner/index.md %}).
-- Learn about the [different scanners]({% link _docs/quickstarts/scanner/descriptions.md %}) available in Forseti.
-- Learn about [defining rules]({% link _docs/quickstarts/scanner/rules.md %}).
-- Read about how Scanner outputs [policy violations]({% link _docs/quickstarts/scanner/policy-violations.md %}).
-- Read more about [the concepts of data model]({% link _docs/concepts/models.md %}).
+- Read more about [configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
+- Learn about the [different scanners]({% link _docs/latest/configure/scanner/descriptions.md %}) available in Forseti.
+- Learn about [defining rules]({% link _docs/latest/configure/scanner/rules.md %}).
+- Read about how Scanner outputs [policy violations]({% link _docs/latest/configure/scanner/policy-violations.md %}).
+- Read more about [the concepts of data model]({% link _docs/latest/concepts/models.md %}).
