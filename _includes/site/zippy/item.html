@@ -1,0 +1,14 @@
+<div class="panel panel-default" data-no-toc>
+  <div class="panel-heading">
+    <h4 class="panel-title">
+      <a data-toggle="collapse" href="#zippy-{{ include.uid }}">
+        {{ include.title }}
+      </a>
+    </h4>
+  </div>
+  <div id="zippy-{{ include.uid }}" class="panel-collapse collapse">
+    <div class="panel-body">
+      {{ include.content | liquify | markdownify }}
+    </div>
+  </div>
+</div>

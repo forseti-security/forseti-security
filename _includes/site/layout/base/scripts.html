@@ -1,6 +1,12 @@
 <script src="{{ site.baseurl }}/third_party/anchor-js/anchor.min.js"></script>
 <script type="text/javascript">
-  var selector = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'dt'].map(function(s) {
+  var elements = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'dt'];
+
+  var noTocSelector = elements.map(function(s) {
+    return '[data-no-toc] ' + s;
+  }).join(', ');
+
+  var anchorSelector = elements.map(function(s) {
     return s + '[id]';
   }).join(', ');
 
@@ -9,7 +15,11 @@
     icon: ''
   };
 
-  anchors.add(selector);
+  document.querySelectorAll(noTocSelector).forEach(function(e) {
+    e.removeAttribute('id');
+  });
+
+  anchors.add(anchorSelector);
 </script>
 
 <script type="text/javascript">
