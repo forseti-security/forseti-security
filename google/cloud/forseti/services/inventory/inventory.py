@@ -250,7 +250,7 @@ class Inventory(object):
                     if model_name:
                         run_import(self.config.client(),
                                    model_name,
-                                   result.inventory_index_id,
+                                   str(result.inventory_index_id),
                                    background)
                     return result.get_summary()
 
