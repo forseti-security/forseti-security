@@ -28,10 +28,6 @@ use these guides to configure features.
 | :---------------------------------------------------------------------------- |
 | Configure Enforcer to automatically correct policy discrepancies. Enforcer uses policies you create to compare the current state of your Compute Engine firewall to the desired state and uses Google Cloud APIs to make changes if it finds any differences. |
 
-| **[Configuring Explain]({% link _docs/latest/configure/explain/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Configure Explain to help you understand, test, and develop Cloud Identity and Access Management (Cloud IAM) policies. |
-
 | **[Enabling Email Notifications]({% link _docs/latest/configure/email-notification.md %})** |
 | :---------------------------------------------------------------------------- |
 | Enable Forseti email notifications using the SendGrid API. SendGrid is the suggested free email service provider for Google Cloud Platform (GCP). |
