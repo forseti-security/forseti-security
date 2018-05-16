@@ -34,12 +34,18 @@ def inventory_pb_from_object(inventory_index):
         object: proto message of InventoryIndex
     """
 
+    # complete_timestamp is None before the inventory finished.
+    complete_timestamp = (
+        timestamp.Timestamp().FromDatetime(
+            inventory_index.completed_at_datetime)
+        if inventory_index.completed_at_datetime
+        else inventory_index.completed_at_datetime)
+
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
         start_timestamp=timestamp.Timestamp().FromDatetime(
             inventory_index.created_at_datetime),
-        complete_timestamp=timestamp.Timestamp().FromDatetime(
-            inventory_index.completed_at_datetime),
+        complete_timestamp=complete_timestamp,
         schema_version=inventory_index.schema_version,
         count_objects=inventory_index.counter,
         status=inventory_index.inventory_status,
