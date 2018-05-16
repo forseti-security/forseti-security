@@ -18,8 +18,6 @@ Engine vulnerability scanning. Learn more about
 ## Running Forseti Scanner
 
 Forseti Scanner works on a data model, so before you start using Scanner, you'll select a model to use. 
-For information about how to create a model, please refers to the model creation section in 
-[Explain]({ % link _docs/lastest/configure/explain/index.md }).
 
 To configure which scanners to run, see 
 [Configuring Forseti: Configuring Scanner]({% link _docs/latest/configure/configuring-forseti.md %}#configuring-scanner).

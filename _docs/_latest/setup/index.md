@@ -31,7 +31,3 @@ Platform (GCP) environments.
 | **[Enforcer]({% link _docs/latest/configure/enforcer/index.md %})** |
 | :---------------------------------------------------------------------------- |
 | Set up Enforcer to automatically correct policy discrepancies. Enforcer uses policies you create to compare the current state of your Compute Engine firewall to the desired state and uses Google Cloud APIs to make changes if it finds any differences. |
-
-| **[Explain]({% link _docs/latest/configure/explain/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Set up Explain to help you understand, test, and develop Cloud Identity and Access Management (Cloud IAM) policies. |
