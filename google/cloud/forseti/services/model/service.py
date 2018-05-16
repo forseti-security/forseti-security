@@ -139,8 +139,8 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
 
         model = self.modeller.get_model(request.identifier)
-        created_at_str = self._get_model_created_at_str(model)
         if model:
+            created_at_str = self._get_model_created_at_str(model)
             return model_pb2.ModelDetails(name=model.name,
                                           handle=model.handle,
                                           status=model.state,
