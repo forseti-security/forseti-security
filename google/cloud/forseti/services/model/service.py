@@ -160,7 +160,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         Return:
             str: created_at datetime in string format.
         """
-        return model.created_at_datetime.now().strftime(
+        return model.created_at_datetime.strftime(
             string_formats.DEFAULT_FORSETI_HUMAN_TIMESTAMP)
 
 
