@@ -64,7 +64,7 @@ def _issue_http_request(method, path, headers):
         http_client.request(method, path, headers=headers)
         return http_client.getresponse()
     except (socket.error, httplib.HTTPException) as e:
-        LOGGER.error('Error with request: %s', e)
+        LOGGER.debug('Error with request: %s', e)
         raise errors.MetadataServerHttpError
 
 
