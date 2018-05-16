@@ -48,10 +48,18 @@
 <!-- Copy to clipboard -->
 <script src="{{ site.baseurl }}/third_party/clipboard-js/clipboard.min.js"></script>
 
+<!-- Lightbox -->
+<script src="{{ site.baseurl }}/third_party/lightbox/dist/js/lightbox.min.js"></script>
+
 <script type="text/javascript">
   $(document).ready(function() {
     $("#toc").toc({ title: '', listType: 'ul', showSpeed: 0 });
     $.material.init();
+    lightbox.option({
+      fadeDuration: 0,
+      imageFadeDuration: 150,
+      resizeDuration: 150
+    });
 
     populate_search_input();
     generate_copy_code_buttons();
