@@ -7,22 +7,12 @@ order: 105
 
 When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.
 
-Some Scanners provide the capability to save violations as a CSV. This CSV can be
-just a local file, uploaded automatically to a Cloud Storage bucket, or sent as an 
-email notification. To specify a local or Cloud Storage
-output location for the CSV, edit the `forseti_conf.yaml` file as follows:
+Scanner can save violations as a CSV and send an email notification or upload it
+automatically to a Cloud Storage bucket. To specify the Cloud Storage output
+location for the CSV, edit the `notifier` section in the `forseti_server_conf.yaml`
+file. To learn more, see
+[Configuring Notifier]({% link _docs/latest/configure/notifier/index.md %})
 
-```
-# Output path (do not include filename).
-# If GCS location, the format of the path should be:
-# gs://bucket-name/path/for/output
-output_path: OUTPUT_PATH
-```
+Below is an example of scanner violation output:
 
-All violations are saved to a new violations table in the Cloud SQL database
-by default, for every scanner batch run, using the database configurations that
-are already in place. The violations table name includes the snapshot timestamp
-and you can query the table for each kind of policy violation. Below is an
-example of scanner violation output:
-
-{% responsive_image path: images/docs/quickstarts/scanner-output.png alt: "scanner violation output table" %}
+![scanner violation output table](/images/docs/quickstarts/scanner-output.png)
