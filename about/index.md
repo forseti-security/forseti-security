@@ -70,7 +70,7 @@ The tool can also:
 * Roll back firewall policies
 
 
-### [Explain]({% link _docs/latest/configure/explain/index.md %})
+### [Explain]({% link _docs/latest/use/explain.md %})
 
 The Explain add-on module provides visibility into your Cloud Identity and Access Management
 (Cloud IAM) policies. Explain can help you understand:
