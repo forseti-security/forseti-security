@@ -478,6 +478,10 @@ def serve(endpoint,
         Exception: No services to start
     """
 
+    import os
+    print os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '')
+
+
     # Configuring log level for the application
     logger.set_logger_level_from_config(log_level)
 

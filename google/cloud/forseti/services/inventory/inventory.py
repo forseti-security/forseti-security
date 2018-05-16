@@ -277,7 +277,7 @@ class Inventory(object):
         Yields:
             object: Inventory metadata
         """
-
+        LOGGER.info('hello srini')
         with self.config.scoped_session() as session:
             for item in DataAccess.list(session):
                 yield item
