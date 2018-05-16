@@ -224,9 +224,12 @@ Understand why a member has a permission to a resource:
 $ forseti-client-XXXX-vm> forseti explainer why_granted <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
 ```
 
-Example values for `<MEMBER_NAME>`, `user/user1@gmail.com`, `serviceAccount/service1@domain.com`
+Example values for `<MEMBER_NAME>` are `user/user1@gmail.com` or `serviceAccount/service1@domain.com`
 
-The result will show you all bindings that grant such access, and for each binding `<resource, role, [member1, member2]>`, forseti will tell you how the resource hierarchy link to your target resource and how a group in the binding link to your target member.
+The result shows all bindings that grant the permission you specified. For each binding `<resource, role, [member1, member2]>`, Forseti returns how the resource hierarchy links to your target resource, and how a group in the binding links to your target member.
+
+In the following example, user `user/abc@gmail.com` has permission `iam.serviceAccounts.get`
+on resource `organization/1234567890` because the user has the role `roles/iam.securityReviewer` on resource `organization/1234567890`.
 
 ```
 forseti explainer why_granted user/abc@gmail.com organization/1234567890 --permission iam.serviceAccounts.get
@@ -242,17 +245,13 @@ resource_ancestors: "organization/1234567890"
 
 ```
 
-The example above shows that user `user/abc@gmail.com` has permission `iam.serviceAccounts.get` on resource `organization/1234567890` 
-because the user is assigned with role `roles/iam.securityReviewer` on resource `organization/1234567890`.
-
-
 #### Grant a member permission to a resource
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer why_denied <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
 ```
 
-The result will list any potential bindings to add.
+The result will list any potential bindings you can add to grant the required permission. The following example result shows that to access resource `resource_bar`, user `member_foo` needs role `roles/baz_role` on the resource or its parent. The result also shows that the user gets the role if you add them to the group `group_foo_parent`, which already has the required permission.
 
 ```
 strategies { 
@@ -281,8 +280,7 @@ strategies {
 ...
 ```
 
-This binding doesn't work directly on the target member and resource. Instead, the binding applies to groups that contain the target member, or resources that contain the target resource. In the example above, overgranting equals 1 to indicate that the binding could grant unnecessary privileges.
-
+In the example above, overgranting equals 1 to indicate a binding that could grant unnecessary privileges. This means that the binding doesn't work directly on the target member and resource. Instead, the binding applies to groups that contain the target member, or resources that contain the target resource.
 
 ## What's next
 
