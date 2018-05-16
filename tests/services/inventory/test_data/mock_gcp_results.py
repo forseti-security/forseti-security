@@ -455,6 +455,40 @@ CRM_PROJECT_IAM_POLICY_TEMPLATE = """
 }}
 """
 
+CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES = """
+{{
+ "version": 1,
+ "bindings": [
+  {{
+   "role": "roles/editor",
+   "members": [
+    "serviceAccount:{id}@cloudservices.gserviceaccount.com",
+    "serviceAccount:{id}-compute@developer.gserviceaccount.com"
+   ]
+  }},
+  {{
+   "role": "roles/owner",
+   "members": [
+    "group:c_grp@forseti.test",
+    "user:a_user@forseti.test"
+   ]
+  }},
+  {{
+   "role": "roles/appengine.codeViewer",
+   "members": [
+    "user:abc_user@forseti.test"
+   ]
+  }},
+  {{
+   "role": "roles/appengine.appViewer",
+   "members": [
+    "user:abc_user@forseti.test"
+   ]
+  }}
+ ]
+}}
+"""
+
 CRM_PROJECT_IAM_POLICY_DUP_MEMBER = """
 {{
  "version": 1,
@@ -523,7 +557,7 @@ CRM_GET_IAM_POLICIES = {
     "folders/" + FOLDER_ID_PREFIX + "3": json.loads(CRM_FOLDER_IAM_POLICY),
     "project1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
     "project2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
-    "project3": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=3)),
+    "project3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
     "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
 }
 
@@ -678,6 +712,10 @@ GCE_GET_PROJECT = {
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
                 num=2, id="project2", projnum=PROJECT_ID_PREFIX + "1")),
+    "project3":
+        json.loads(
+            GCE_PROJECT_TEMPLATE.format(
+                num=3, id="project3", projnum=PROJECT_ID_PREFIX + "3")),
 }
 
 # Fields: id, name, project, num, ip, external_ip, network, template,
@@ -1643,7 +1681,7 @@ IAM_GET_SERVICEACCOUNTS = {
         json.loads(
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project2", num=PROJECT_ID_PREFIX + "2", id=2)),
-    ]
+    ],
 }
 
 SERVICEACCOUNT_IAM_POLICY = """
