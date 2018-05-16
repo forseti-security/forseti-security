@@ -10,6 +10,10 @@
     display: inline-block;
     margin: 0 0 25px;
 
+    @media (max-width: $screen-sm-max) {
+      max-width: 50%;
+    }
+
     @media (min-width: $screen-md-min) {
       left: -235px;
       margin: 0 0 -85px;
@@ -21,6 +25,10 @@
     color: $white;
     font-size: 46px;
     font-weight: bold;
+
+    @media (max-width: $screen-sm-max) {
+      font-size: 36px;
+    }
   }
 
   .project-subtitle {
@@ -34,6 +42,10 @@
 
 .promo-rows {
   margin: 50px 0;
+
+  @media (max-width: $screen-sm-max) {
+    margin: 0 0 50px 0;
+  }
 }
 
 .promo-row {
@@ -51,7 +63,7 @@
   @media (max-width: $screen-xs-max) {
     .promo-image img {
       margin: 0 auto;
-      max-width: 55%;
+      max-width: 45%;
     }
   }
 }
