@@ -114,7 +114,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         Yields:
             object: Each Inventory API object.
         """
-
         for inventory_index in self.inventory.list():
             yield inventory_pb_from_object(inventory_index)
 
