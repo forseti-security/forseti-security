@@ -226,7 +226,27 @@ $ forseti-client-XXXX-vm> forseti explainer why_granted <MEMBER_NAME> <RESOURCE_
 
 Example values for `<MEMBER_NAME>`, `user/user1@gmail.com`, `serviceAccount/service1@domain.com`
 
-#### Understand how to grant a member permission to a resource
+The result will show you all bindings that grant such access, and for each binding `<resource, role, [member1, member2]>`, forseti will tell you how the resource hierarchy link to your target resource and how a group in the binding link to your target member.
+
+```
+forseti explainer why_granted user/abc@gmail.com organization/1234567890 --permission iam.serviceAccounts.get
+bindings {
+  member: "user/abc@gmail.com"
+  resource: "organization/1234567890"
+  role: "roles/iam.securityReviewer"
+}
+memberships {
+  member: "user/abc@gmail.com"
+}
+resource_ancestors: "organization/1234567890"
+
+```
+
+The example above shows that user `user/abc@gmail.com` has permission `iam.serviceAccounts.get` on resource `organization/1234567890` 
+because the user is assigned with role `roles/iam.securityReviewer` on resource `organization/1234567890`.
+
+
+#### Grant a member permission to a resource
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer why_denied <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
