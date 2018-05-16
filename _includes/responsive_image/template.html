@@ -10,7 +10,7 @@
     {% assign indentation = indentation | append:"  " %}  
   {% endfor %}
 {% endif %}
-{{ indentation }}<img class="img-responsive" src="/{{ path }}" srcset="{{ srcset | strip_newlines }}/{{ original.path }} {{original.width}}w" alt="{{ alt }}" sizes="(max-width: 991px) 100vw, 60vw" />
+{{ indentation }}<a href="/{{ path }}" data-lightbox="{{ path }}" data-alt="{{ alt }}"><img class="img-responsive" src="/{{ path }}" srcset="{{ srcset | strip_newlines }}/{{ original.path }} {{original.width}}w" alt="{{ alt }}" sizes="(max-width: 991px) 100vw, 60vw" /></a>
 {% comment %}
   Due to the way Jekyll handles includes, we must explicitly parameterize the
   level of indentation. There's no way to include a template at the contextually
