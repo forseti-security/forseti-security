@@ -264,7 +264,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         return {
             'CLOUDSQL_REGION': self.config.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
-            'SCANNER_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
@@ -283,7 +283,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
-            'SCANNER_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
         }

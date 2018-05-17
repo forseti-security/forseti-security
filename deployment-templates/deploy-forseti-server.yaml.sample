@@ -18,8 +18,8 @@
 #  - CLOUDSQL_INSTANCE_NAME (if creating a new deployment, make sure to
 #    change this variable to something else because Cloud SQL instance
 #    names cannot be used after deletion for up to 7 days)
-#  - SCANNER_BUCKET (Cloud Storage section)
-#  - SCANNER_BUCKET (Compute Engine section)
+#  - FORSETI_BUCKET (Cloud Storage section)
+#  - FORSETI_BUCKET (Compute Engine section)
 
 imports:
 - path: cloudsql/cloudsql-instance.py
@@ -43,7 +43,7 @@ resources:
   type: cloudsql-database.py
 
 # Cloud Storage
-- name: SCANNER_BUCKET
+- name: FORSETI_BUCKET
   type: bucket.py
   properties:
     location: us
@@ -62,7 +62,7 @@ resources:
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
 
-    scanner-bucket: SCANNER_BUCKET
+    scanner-bucket: FORSETI_BUCKET
     database-name: forseti_security
 
     # --- Forseti version

@@ -140,8 +140,8 @@ notifier:
 
     inventory:
       summary:
-        enabled: false
+        enabled: true
         # gcs_path should begin with "gs://"
         # data_format may be one of: csv (the default) or json
         data_format: csv
-        gcs_path: gs://{SCANNER_BUCKET}/inv_summary
+        gcs_path: gs://{FORSETI_BUCKET}/inventory_summary

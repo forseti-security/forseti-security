@@ -84,7 +84,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
         """
         bucket_name = self.generate_bucket_name()
         return {
-            'SCANNER_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_CLIENT_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),

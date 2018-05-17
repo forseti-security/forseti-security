@@ -25,7 +25,7 @@ imports:
 resources:
 
 # Cloud Storage
-- name: SCANNER_BUCKET
+- name: FORSETI_BUCKET
   type: bucket.py
   properties:
     location: us
