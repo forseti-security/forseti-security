@@ -5,7 +5,7 @@ order: 007
 
 # {{ page.title }}
 
-Forseti Config is a tool for you to set the configuration of the CLI.
+Forseti Config lets you set the configuration of the CLI.
 
 You can learn more about the client-server architecture of Forseti [here]({% link _docs/latest/concepts/architecture.md %}).
 
