@@ -25,7 +25,7 @@ imports:
 resources:
 
 # Cloud Storage
-- name: {SCANNER_BUCKET}
+- name: {FORSETI_BUCKET}
   type: bucket.py
   properties:
     location: {BUCKET_LOCATION}
@@ -43,7 +43,7 @@ resources:
     service-account: {GCP_CLIENT_SERVICE_ACCOUNT}
     service-account-scopes:
       - https://www.googleapis.com/auth/cloud-platform
-    gcs-bucket: {SCANNER_BUCKET}
+    gcs-bucket: {FORSETI_BUCKET}
 
     # --- Forseti version
     # Use either branch-name or release-version, but NOT both.
