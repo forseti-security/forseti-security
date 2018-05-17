@@ -21,9 +21,9 @@ from StringIO import StringIO
 from contextlib import contextmanager
 
 import mock
-from setup.gcp.installer.util import gcloud
+from install.gcp.installer.util import gcloud
 
-from setup.gcp.installer.util import utils
+from install.gcp.installer.util import utils
 from tests.unittest_utils import ForsetiTestCase
 
 FAKE_PROJECT = 'fake-project'
@@ -95,8 +95,8 @@ class GcloudTest(ForsetiTestCase):
         utils.run_command = mock.MagicMock()
         self.gcloud_min_ver_formatted = '.'.join([str(d) for d in GCLOUD_MIN_VERSION])
 
-    @mock.patch('setup.gcp.installer.util.gcloud.constants.GCLOUD_MIN_VERSION', GCLOUD_MIN_VERSION)
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.constants.GCLOUD_MIN_VERSION', GCLOUD_MIN_VERSION)
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_check_proper_gcloud(self, test_patch):
         """Test check_proper_gcloud() works with proper version/alpha."""
         test_patch.return_value = (
@@ -110,7 +110,7 @@ class GcloudTest(ForsetiTestCase):
             output = out.getvalue()[:len(output_head)]
             self.assertEqual(output_head, output)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_check_proper_gcloud_failed_command(self, test_patch):
         """Test check_proper_gcloud() exits when command fails."""
         test_patch.return_value = (
@@ -125,7 +125,7 @@ class GcloudTest(ForsetiTestCase):
                 output = out.getvalue()[:len(output_head)]
                 self.assertEqual(output_head, output)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_check_proper_gcloud_low_version(self, test_patch):
         """Test check_proper_gcloud() exits with low gcloud version."""
         test_patch.return_value = (
@@ -141,7 +141,7 @@ class GcloudTest(ForsetiTestCase):
                 gcloud.check_proper_gcloud()
                 output = out.getvalue()[:len(output_head)]
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_check_proper_gcloud_no_alpha(self, test_patch):
         """Test check_proper_gcloud() exits with no alpha components."""
         test_patch.return_value = (
@@ -158,7 +158,7 @@ class GcloudTest(ForsetiTestCase):
                 output = out.getvalue()[:len(output_head)]
                 self.assertEqual(output_head, output)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_gcloud_info_works_nocloudshell(self, test_patch):
         """Test gcloud_info()."""
         test_patch.return_value = (
@@ -171,7 +171,7 @@ class GcloudTest(ForsetiTestCase):
             output = out.getvalue().strip()
             self.assertEqual('Read gcloud info: Success', output)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_gcloud_info_cmd_fails(self, test_patch):
         """Test gcloud_info() exits when command fails."""
         test_patch.return_value = (
@@ -183,7 +183,7 @@ class GcloudTest(ForsetiTestCase):
             with captured_output():
                 gcloud.check_proper_gcloud()
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_gcloud_info_json_fails(self, test_patch):
         """Test gcloud_info() exits when json output fails."""
         test_patch.return_value = (
@@ -195,7 +195,7 @@ class GcloudTest(ForsetiTestCase):
             with captured_output():
                 gcloud.get_gcloud_info()
 
-    @mock.patch('setup.gcp.installer.util.gcloud.check_proper_gcloud')
+    @mock.patch('install.gcp.installer.util.gcloud.check_proper_gcloud')
     def test_check_cloudshell_no_flag_no_cloudshell(self, test_patch):
         """Test check_cloudshell() when no cloudshell and no flag to bypass."""
         test_patch.return_value = {}
@@ -206,7 +206,7 @@ class GcloudTest(ForsetiTestCase):
                 gcloud.verify_gcloud_information(
                     'id', 'user', force_no_cloudshell, is_dev_shell)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_lookup_organization(self, test_patch):
         """Test lookup_organization().
 
@@ -248,7 +248,7 @@ class GcloudTest(ForsetiTestCase):
             output = all_output[-1][:len(output_head)]
             self.assertEqual(output_head, output)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     def test_choose_organization_no_org(self, test_patch):
         """Test choose_organization()."""
         # No orgs
@@ -257,7 +257,7 @@ class GcloudTest(ForsetiTestCase):
             target_id = gcloud.choose_organization()
             self.assertEqual(None, target_id)
 
-    @mock.patch('setup.gcp.installer.util.gcloud.utils.run_command')
+    @mock.patch('install.gcp.installer.util.gcloud.utils.run_command')
     @mock.patch('__builtin__.raw_input')
     def test_choose_organization_has_org(self, mock_rawinput, test_patch):
         """Test choose_organization()."""

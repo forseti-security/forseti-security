@@ -16,7 +16,7 @@
 
 import unittest
 
-import setup.gcp.installer.util.utils as utils
+import install.gcp.installer.util.utils as utils
 
 from tests.unittest_utils import ForsetiTestCase
 
