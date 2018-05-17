@@ -289,7 +289,8 @@ MESSAGE_NO_ORGANIZATION = (
     'creating-managing-organization')
 
 MESSAGE_RUN_FREQUENCY = (
-    'Forseti will run once every 12 hours, you can configure the run '
+    'Forseti will run once every 2 hours, a new run will not start until '
+    'the previous run is completed. You can configure the run '
     'frequency in the server deployment template field "run-frequency" '
     'and update the deployment using the deployment manager.')
 
