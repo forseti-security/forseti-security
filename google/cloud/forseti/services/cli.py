@@ -15,10 +15,11 @@
 """Forseti CLI."""
 
 from argparse import ArgumentParser
-import grpc
 import json
 import os
 import sys
+
+import grpc
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
