@@ -1,6 +1,6 @@
 ---
 title: Explain
-order: 000
+order: 006
 ---
 # {{ page.title }}
 
@@ -45,7 +45,7 @@ $ forseti model use <MODEL_NAME>
 
 Following are some example commands you can run to query the data model.
 
-#### Listing resources in the data model
+### Listing resources in the data model
 
 ```bash
 $ forseti explainer list_resources
@@ -57,7 +57,7 @@ You can also filter the results and list resources only in a folder:
 $ forseti-client-XXXX-vm> forseti explainer list_resources --prefix organization/1234567890/folder/folder-name
 ```
 
-#### List all members in the data model
+### List all members in the data model
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_members
@@ -69,7 +69,7 @@ You can also filter the results and list members with a prefix match:
 $ forseti-client-XXXX-vm> forseti explainer list_members --prefix test
 ```
 
-#### List all roles in the data model
+### List all roles in the data model
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer list_roles
@@ -88,7 +88,7 @@ Common filters include the following:
 
 `--prefix 'organizations'` returns results that only contain custom roles defined on the organization level.
 
-#### List permissions
+### List permissions
 
 The following command lists the permissions contained by roles in the data model:
 
@@ -108,7 +108,7 @@ The following query lists individual permissions in each predefined Cloud IAM ro
 $ forseti-client-XXXX-vm> forseti explainer list_permissions --role_prefixes roles/iam
 ```
 
-#### Get policies on a resource
+### Get policies on a resource
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer get_policy <RESOURCE_NAME>
@@ -124,7 +124,7 @@ For example:
 $ forseti-client-XXXX-vm> forseti explainer get_policy cloudsqlinstance/sample-project-123:my-sql-instance
 ```
 
-#### Test permissions
+### Test permissions
 
 ```bash
 $ forseti-client-XXXX-vm> forseti explainer check_policy <RESOURCE_NAME> <PERMISSION_NAME> <MEMEBER_NAME>
@@ -136,7 +136,7 @@ For example, the following query returns True or False to indicate if the member
 $ forseti-client-XXXX-vm> forseti explainer check_policy organizations/1234567890 iam.roles.get user/user1@gmail.com
 ```
 
-#### List member access
+### List member access
 The following command lists all resources that can be accessed by a member by a direct binding:
 
 ```bash
@@ -161,7 +161,7 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_member user/<USER_NAME> ia
 
 The above query will list all resources that can be accessed by the member with a binding of `iam.roles.get`.
 
-#### List resource permissions
+### List resource permissions
 
 The following command lists all members that can access a resource by a direct binding:
 
@@ -189,7 +189,7 @@ To constrain the result to a certain type of permission, pass in the permission:
 $ forseti-client-XXXX-vm> forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION> 
 ```
 
-#### Access member or resource by permission
+### Access member or resource by permission
 
 You can specify a permission, such as `iam.serviceAccounts.get`, and list all the `<members, resource, role>` that have a relation.
 
@@ -217,7 +217,7 @@ $ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.ser
 $ forseti-client-XXXX-vm> forseti explainer access_by_authz --permission iam.serviceAccounts.get --expand_resource
 ```
 
-#### View permission source
+### View permission source
 Understand why a member has a permission to a resource:
 
 ```
@@ -245,7 +245,7 @@ resource_ancestors: "organization/1234567890"
 
 ```
 
-#### Grant a member permission to a resource
+### Grant a member permission to a resource
 
 ```
 $ forseti-client-XXXX-vm> forseti explainer why_denied <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>

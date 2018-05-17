@@ -1,6 +1,6 @@
 ---
 title: Notifier
-order: 003
+order: 005
 ---
 
 # {{ page.title }}
@@ -18,7 +18,7 @@ latest violations from the previous scanner run.
   ```bash
   $ forseti notifier --help
   
-  # Send the violations from the last successful scanner run.
+  google_cloud_platform_resource_scanner
   $ forseti notifier run
 
   # Send the violations by inventory index id.

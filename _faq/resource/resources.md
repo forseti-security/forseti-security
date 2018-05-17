@@ -1,5 +1,5 @@
 ---
-title: Google Cloud Platform Resource Coverage
+title: Resource Coverage
 order: 1
 ---
 {::options auto_ids="false" /}

@@ -1,6 +1,6 @@
 ---
-title: Google Cloud Platform Enforcer Coverage
-order: 1
+title: Enforcer Coverage
+order: 3
 ---
 {::options auto_ids="false" /}
 
