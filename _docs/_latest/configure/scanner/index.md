@@ -15,7 +15,7 @@ Forseti Scanner is different from the Cloud Security Scanner, which does App
 Engine vulnerability scanning. Learn more about
 [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
 
-You can learn how to run the Forseti Scanner [here]({% link _docs/latest/use/index.md %}).
+You can learn how to run the [Forseti Scanner]{% link _docs/latest/use/index.md %}).
 
 ## What's next
 

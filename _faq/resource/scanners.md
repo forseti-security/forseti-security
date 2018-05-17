@@ -1,6 +1,6 @@
 ---
-title: Google Cloud Platform Scanner Coverage
-order: 1
+title: Scanner Coverage
+order: 2
 ---
 {::options auto_ids="false" /}
 
