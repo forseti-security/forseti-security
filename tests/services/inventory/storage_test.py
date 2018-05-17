@@ -43,7 +43,9 @@ class ResourceMock(Resource):
         self._catetory = category
         self._parent = parent if parent else self
         self._warning = warning
+        self._contains = []
         self._timestamp = self._utcnow()
+        self._inventory_key = None
 
     def type(self):
         return self._res_type

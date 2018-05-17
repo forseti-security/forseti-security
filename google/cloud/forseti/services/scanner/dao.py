@@ -18,19 +18,19 @@ from collections import defaultdict
 import hashlib
 import json
 
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import and_
+from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import inspect
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.index_state import IndexState
 
 LOGGER = logger.get_logger(__name__)
@@ -44,8 +44,8 @@ class ScannerIndex(BASE):
 
     __tablename__ = 'scanner_index'
 
-    id = Column(String(256), primary_key=True)
-    inventory_index_id = Column(String(256))
+    id = Column(BigInteger, primary_key=True)
+    inventory_index_id = Column(BigInteger)
     created_at_datetime = Column(DateTime())
     completed_at_datetime = Column(DateTime())
     scanner_status = Column(Text())
@@ -53,15 +53,6 @@ class ScannerIndex(BASE):
     scanner_index_warnings = Column(Text(16777215))
     scanner_index_errors = Column(Text())
     message = Column(Text())
-
-    @classmethod
-    def _utcnow(cls):
-        """Return current time in utc.
-
-        Returns:
-            object: UTC now time object.
-        """
-        return date_time.get_utc_now_datetime()
 
     def __repr__(self):
         """Object string representation.
@@ -85,12 +76,12 @@ class ScannerIndex(BASE):
         Returns:
             object: ScannerIndex row object.
         """
-        created_at_datetime = cls._utcnow()
+        utc_now = date_time.get_utc_now_datetime()
+        micro_timestamp = date_time.get_utc_now_microtimestamp(utc_now)
         return ScannerIndex(
-            id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
+            id=micro_timestamp,
             inventory_index_id=inv_index_id,
-            created_at_datetime=created_at_datetime,
-            completed_at_datetime=date_time.get_utc_now_datetime(),
+            created_at_datetime=utc_now,
             scanner_status=IndexState.CREATED,
             schema_version=CURRENT_SCHEMA)
 
@@ -100,7 +91,7 @@ class ScannerIndex(BASE):
         Args:
             status (str): Final scanner_status.
         """
-        self.completed_at_datetime = ScannerIndex._utcnow()
+        self.completed_at_datetime = date_time.get_utc_now_datetime()
         self.scanner_status = status
 
     def add_warning(self, session, warning):
@@ -176,7 +167,7 @@ class Violation(BASE):
     resource_type = Column(String(256), nullable=False)
     rule_index = Column(Integer, default=0)
     rule_name = Column(String(256))
-    scanner_index_id = Column(String(256))
+    scanner_index_id = Column(BigInteger)
     violation_data = Column(Text)
     violation_hash = Column(String(256))
     violation_type = Column(String(256), nullable=False)
@@ -208,7 +199,7 @@ class ViolationAccess(object):
 
         Args:
             violations (list): A list of violations.
-            scanner_index_id (str): id of the `ScannerIndex` row for this
+            scanner_index_id (int): id of the `ScannerIndex` row for this
                 scanner run.
         """
         created_at_datetime = date_time.get_utc_now_datetime()
@@ -249,7 +240,7 @@ class ViolationAccess(object):
 
         Args:
             inv_index_id (str): Id of the inventory index.
-            scanner_index_id (str): Id of the scanner index.
+            scanner_index_id (int): Id of the scanner index.
 
         Returns:
             list: List of Violation row entry objects.

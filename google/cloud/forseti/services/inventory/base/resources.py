@@ -14,7 +14,7 @@
 
 """ Crawler implementation for gcp resources. """
 
-# pylint: disable=no-self-use,unused-argument
+# pylint: disable=no-self-use,unused-argument,too-many-public-methods
 # pylint: disable=too-many-lines, too-many-instance-attributes
 
 import ctypes
@@ -156,6 +156,7 @@ class Resource(object):
         self._warning = []
         self._enabled_service_names = None
         self._timestamp = self._utcnow()
+        self._inventory_key = None
 
     @staticmethod
     def _utcnow():
@@ -191,6 +192,22 @@ class Resource(object):
             value (str): value to set on this resource
         """
         self._data[key] = value
+
+    def set_inventory_key(self, key):
+        """Set the inventory unique id for the resource.
+
+        Args:
+            key (int): The unique id for the resource from the storage.
+        """
+        self._inventory_key = key
+
+    def inventory_key(self):
+        """Gets the inventory key for this resource, if set.
+
+        Returns:
+            int: The unique id for the resource in storage.
+        """
+        return self._inventory_key
 
     def type(self):
         """Get type of this resource
