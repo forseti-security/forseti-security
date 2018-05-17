@@ -85,21 +85,6 @@ class MetadataServerTest(ForsetiTestCase):
                 'Error: {}'.format(str(e)))
 
     @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
-    def test_can_reach_metadata_server_with_error_response(self, mock_meta_req):
-        """Test can_reach_metadata_server returns Falise with an
-        invalid response.
-
-        Setup:
-            * Have httplib raise socket.error.
-
-        Expected results:
-            * A False result.
-        """
-        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
-        actual_response = metadata_server.can_reach_metadata_server()
-        self.assertFalse(actual_response)
-
-    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
     def test_get_value_for_attribute_with_exception(self, mock_meta_req):
         """Test get_value_for_attribute returns correctly.
 
