@@ -28,6 +28,10 @@ if ! [[ -f $FORSETI_SERVER_CONF ]]; then
     exit 1
 fi
 
+# We had issue creating DB user through deployment template, if the issue is
+# resolved in the future, we should create a forseti db user instead of using
+# root.
+# https://github.com/GoogleCloudPlatform/forseti-security/issues/921
 SQL_SERVER_LOCAL_ADDRESS="mysql://root@127.0.0.1:${SQL_PORT}"
 FORSETI_SERVICES="explain inventory model scanner notifier"
 
