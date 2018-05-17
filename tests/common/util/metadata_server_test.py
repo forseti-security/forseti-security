@@ -79,7 +79,7 @@ class MetadataServerTest(ForsetiTestCase):
             _metadata.ping(first_param)
         except Exception as e:
             # The ping method is either not available in the module or the
-            # parameter has been changed.
+            # signature has been changed.
             self.fail(
                 '_metadata.ping() in compute engine module has been modified. '
                 'Error: {}'.format(str(e)))
