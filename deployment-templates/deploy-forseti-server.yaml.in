@@ -92,4 +92,4 @@ resources:
     # This is the Forseti crontab schedule.
     # The default is "run at some random minute 0-59 (configured in
     # forseti-instance-server.py), every 12 hour".
-    run-frequency: "{RAND_MINUTE} */12 * * *"
+    run-frequency: "{RAND_MINUTE} */2 * * *"
