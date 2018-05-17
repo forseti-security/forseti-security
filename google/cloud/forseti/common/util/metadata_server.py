@@ -20,6 +20,9 @@ The metadata server is only accessible on GCE.
 import httplib
 import socket
 
+from google.auth.compute_engine import _metadata
+from google.auth.transport import requests
+
 from google.cloud.forseti.common.util import errors
 from google.cloud.forseti.common.util import logger
 
@@ -77,14 +80,8 @@ def can_reach_metadata_server():
     Returns:
         bool: True if metadata server can be reached, False otherwise.
     """
-    path = '/computeMetadata/v1/instance/id'
-    response = None
-    try:
-        response = _issue_http_request(
-            HTTP_GET, path, REQUIRED_METADATA_HEADER)
-    except errors.MetadataServerHttpError:
-        pass
-    return response and response.status == HTTP_SUCCESS
+    can_reach = _metadata.ping(requests.Request())
+    return can_reach
 
 
 def get_value_for_attribute(attribute):
