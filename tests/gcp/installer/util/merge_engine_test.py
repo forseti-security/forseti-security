@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for setup/gcp/installer/util/merge_engine.py."""
+"""Tests for install/gcp/installer/util/merge_engine.py."""
 
 import unittest
 
-import setup.gcp.installer.util.merge_engine as merge_engine
+import install.gcp.installer.util.merge_engine as merge_engine
 
 from tests.unittest_utils import ForsetiTestCase
 

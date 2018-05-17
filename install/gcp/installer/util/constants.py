@@ -228,7 +228,7 @@ MESSAGE_NO_CLOUD_SHELL = (
     '4) Set your project using '
     '"gcloud config project set <PROJECT_ID>".\n'
     '5) Run this setup again, with the --no-cloudshell flag, '
-    'i.e.\n\n\tpython setup/installer.py --no-cloudshell\n')
+    'i.e.\n\n\tpython install/gcp_installer.py --no-cloudshell\n')
 
 MESSAGE_FORSETI_CONFIGURATION_GENERATED = (
     'Forseti configuration file(s) has been generated.\n\n'
@@ -289,7 +289,8 @@ MESSAGE_NO_ORGANIZATION = (
     'creating-managing-organization')
 
 MESSAGE_RUN_FREQUENCY = (
-    'Forseti will run once every 12 hours, you can configure the run '
+    'Forseti will run once every 2 hours, a new run will not start until '
+    'the previous run is completed. You can configure the run '
     'frequency in the server deployment template field "run-frequency" '
     'and update the deployment using the deployment manager.')
 
