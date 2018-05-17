@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-""" Inventory storage implementation. """
+"""Inventory storage implementation."""
 
 import json
+import enum
 
 from sqlalchemy import and_
+from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
+from sqlalchemy import Enum
 from sqlalchemy import exists
 from sqlalchemy import func
 from sqlalchemy import Index
@@ -31,13 +33,10 @@ from sqlalchemy.orm import aliased
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
 # pylint: enable=line-too-long
-
-# pylint: disable=too-many-instance-attributes
 
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
@@ -45,20 +44,18 @@ CURRENT_SCHEMA = 1
 PER_YIELD = 1024
 
 
-class InventoryTypeClass(object):
-    """Inventory Type Classes."""
+class Categories(enum.Enum):
+    """Inventory Categories."""
+    resource = 1
+    iam_policy = 2
+    gcs_policy = 3
+    dataset_policy = 4
+    billing_info = 5
+    enabled_apis = 6
+    kubernetes_service_config = 7
 
-    RESOURCE = 'resource'
-    IAM_POLICY = 'iam_policy'
-    GCS_POLICY = 'gcs_policy'
-    DATASET_POLICY = 'dataset_policy'
-    BILLING_INFO = 'billing_info'
-    ENABLED_APIS = 'enabled_apis'
-    SERVICE_CONFIG = 'kubernetes_service_config'
 
-    SUPPORTED_TYPECLASS = frozenset(
-        [RESOURCE, IAM_POLICY, GCS_POLICY, DATASET_POLICY, BILLING_INFO,
-         ENABLED_APIS, SERVICE_CONFIG])
+SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
 
 
 class InventoryIndex(BASE):
@@ -66,25 +63,16 @@ class InventoryIndex(BASE):
 
     __tablename__ = 'inventory_index'
 
-    id = Column(String(256), primary_key=True)
-    created_at_datetime = Column(DateTime())
-    completed_at_datetime = Column(DateTime())
-    inventory_status = Column(Text())
-    schema_version = Column(Integer())
-    progress = Column(Text())
-    counter = Column(Integer())
+    id = Column(BigInteger, primary_key=True)
+    created_at_datetime = Column(DateTime)
+    completed_at_datetime = Column(DateTime)
+    inventory_status = Column(Text)
+    schema_version = Column(Integer)
+    progress = Column(Text)
+    counter = Column(Integer)
     inventory_index_warnings = Column(Text(16777215))
-    inventory_index_errors = Column(Text())
-    message = Column(Text())
-
-    @classmethod
-    def _utcnow(cls):
-        """Return current time in utc.
-
-        Returns:
-            object: UTC now time object.
-        """
-        return date_time.get_utc_now_datetime()
+    inventory_index_errors = Column(Text)
+    message = Column(Text)
 
     def __repr__(self):
         """Object string representation.
@@ -105,11 +93,12 @@ class InventoryIndex(BASE):
         Returns:
             object: InventoryIndex row object.
         """
-        created_at_datetime = cls._utcnow()
+        utc_now = date_time.get_utc_now_datetime()
+        micro_timestamp = date_time.get_utc_now_microtimestamp(utc_now)
         return InventoryIndex(
-            id=created_at_datetime.strftime(string_formats.TIMESTAMP_MICROS),
-            created_at_datetime=created_at_datetime,
-            completed_at_datetime=date_time.get_utc_now_datetime(),
+            id=micro_timestamp,
+            created_at_datetime=utc_now,
+            completed_at_datetime=None,
             inventory_status=IndexState.CREATED,
             schema_version=CURRENT_SCHEMA,
             counter=0)
@@ -120,7 +109,7 @@ class InventoryIndex(BASE):
         Args:
             status (str): Final inventory_status.
         """
-        self.completed_at_datetime = InventoryIndex._utcnow()
+        self.completed_at_datetime = date_time.get_utc_now_datetime()
         self.inventory_status = status
 
     def add_warning(self, session, warning):
@@ -172,29 +161,22 @@ class Inventory(BASE):
     __tablename__ = 'gcp_inventory'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    inventory_index_id = Column(String(256))
-    resource_type = Column(Text)
-    category = Column(Text)
+    inventory_index_id = Column(BigInteger)
+    category = Column(Enum(Categories))
+    resource_type = Column(String(255))
     resource_id = Column(Text)
     resource_data = Column(Text(16777215))
-    parent_resource_type = Column(Text)
-    parent_resource_id = Column(Text)
+    parent_id = Column(Integer)
     other = Column(Text)
     inventory_errors = Column(Text)
 
     __table_args__ = (
-        Index('idx_category_resource',
-              'inventory_index_id',
-              'category',
-              'resource_type'),
-        Index('idx_resource_type_id',
+        Index('idx_resource_category',
               'inventory_index_id',
               'resource_type',
-              'resource_id'),
-        Index('idx_parent_resource_type_id',
-              'inventory_index_id',
-              'parent_resource_type',
-              'parent_resource_id'))
+              'category'),
+        Index('idx_parent_id',
+              'parent_id'))
 
     @classmethod
     def from_resource(cls, index, resource):
@@ -219,12 +201,11 @@ class Inventory(BASE):
 
         rows = [Inventory(
             inventory_index_id=index.id,
-            category=InventoryTypeClass.RESOURCE,
+            category=Categories.resource,
             resource_id=resource.key(),
             resource_type=resource.type(),
             resource_data=json.dumps(resource.data(), sort_keys=True),
-            parent_resource_id=None if not parent else parent.key(),
-            parent_resource_type=None if not parent else parent.type(),
+            parent_id=None if not parent else parent.inventory_key(),
             other=other,
             inventory_errors=resource.get_warning())]
 
@@ -232,12 +213,10 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    category=InventoryTypeClass.IAM_POLICY,
+                    category=Categories.iam_policy,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(iam_policy, sort_keys=True),
-                    parent_resource_id=resource.key(),
-                    parent_resource_type=resource.type(),
                     other=other,
                     inventory_errors=None))
 
@@ -245,12 +224,10 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    category=InventoryTypeClass.GCS_POLICY,
+                    category=Categories.gcs_policy,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(gcs_policy, sort_keys=True),
-                    parent_resource_id=resource.key(),
-                    parent_resource_type=resource.type(),
                     other=other,
                     inventory_errors=None))
 
@@ -258,12 +235,10 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    category=InventoryTypeClass.DATASET_POLICY,
+                    category=Categories.dataset_policy,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(dataset_policy, sort_keys=True),
-                    parent_resource_id=resource.key(),
-                    parent_resource_type=resource.type(),
                     other=other,
                     inventory_errors=None))
 
@@ -271,12 +246,10 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    category=InventoryTypeClass.BILLING_INFO,
+                    category=Categories.billing_info,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(billing_info, sort_keys=True),
-                    parent_resource_id=resource.key(),
-                    parent_resource_type=resource.type(),
                     other=other,
                     inventory_errors=None))
 
@@ -284,12 +257,10 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    category=InventoryTypeClass.ENABLED_APIS,
+                    category=Categories.enabled_apis,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(enabled_apis, sort_keys=True),
-                    parent_resource_id=resource.key(),
-                    parent_resource_type=resource.type(),
                     other=other,
                     inventory_errors=None))
 
@@ -297,12 +268,10 @@ class Inventory(BASE):
             rows.append(
                 Inventory(
                     inventory_index_id=index.id,
-                    category=InventoryTypeClass.SERVICE_CONFIG,
+                    category=Categories.kubernetes_service_config,
                     resource_id=resource.key(),
                     resource_type=resource.type(),
                     resource_data=json.dumps(service_config, sort_keys=True),
-                    parent_resource_id=resource.key(),
-                    parent_resource_type=resource.type(),
                     other=other,
                     inventory_errors=None))
 
@@ -319,8 +288,6 @@ class Inventory(BASE):
         self.resource_id = new_row.resource_id
         self.resource_type = new_row.resource_type
         self.resource_data = new_row.resource_data
-        self.parent_resource_id = new_row.parent_resource_id
-        self.parent_resource_type = new_row.parent_resource_type
         self.other = new_row.other
         self.inventory_errors = new_row.inventory_errors
 
@@ -354,28 +321,20 @@ class Inventory(BASE):
         return self.resource_type
 
     def get_category(self):
-        """Get the row's resource type class.
+        """Get the row's data category.
 
         Returns:
-            str: resource type class.
+            str: data category.
         """
-        return self.category
+        return self.category.name
 
-    def get_parent_resource_id(self):
-        """Get the row's parent key.
+    def get_parent_id(self):
+        """Get the row's parent id.
 
         Returns:
-            str: parent key.
+            int: parent id.
         """
-        return self.parent_resource_id
-
-    def get_parent_resource_type(self):
-        """Get the row's parent type.
-
-        Returns:
-            str: parent type.
-        """
-        return self.parent_resource_type
+        return self.parent_id
 
     def get_resource_data(self):
         """Get the row's metadata.
@@ -528,7 +487,7 @@ class DataAccess(object):
         LOGGER.info(
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
-        return inventory_index.id
+        return str(inventory_index.id)
 
     @classmethod
     def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name
@@ -624,11 +583,12 @@ class Storage(BaseStorage):
                         [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]))
             .one())
 
-    def _get_resource_rows(self, key):
+    def _get_resource_rows(self, key, resource_type):
         """ Get the rows in the database for a certain resource
 
         Args:
             key (str): The key of the resource
+            resource_type (str): The type of the resource
 
         Returns:
             object: The inventory db rows of the resource,
@@ -638,16 +598,39 @@ class Storage(BaseStorage):
             Exception: if there is no such row or more than one.
         """
 
-        qry = (
-            self.session.query(Inventory)
-            .filter(Inventory.inventory_index_id == self.inventory_index.id)
-            .filter(Inventory.resource_id == key))
-        rows = qry.all()
+        rows = self.session.query(Inventory).filter(
+            and_(
+                Inventory.inventory_index_id == self.inventory_index.id,
+                Inventory.resource_id == key,
+                Inventory.resource_type == resource_type
+            )).all()
 
         if not rows:
             raise Exception('Resource {} not found in the table'.format(key))
         else:
             return rows
+
+    def _get_resource_id(self, resource):
+        """Checks if a resource exists already in the inventory.
+
+        Args:
+            resource (object): Resource object to check against the db.
+
+        Returns:
+            int: The resource id of the existing resource, else 0.
+        """
+        row = self.session.query(Inventory.id).filter(
+            and_(
+                Inventory.inventory_index_id == self.inventory_index.id,
+                Inventory.category == Categories.resource,
+                Inventory.resource_type == resource.type(),
+                Inventory.resource_id == resource.key(),
+            )).one_or_none()
+
+        if row:
+            return row.id
+
+        return 0
 
     def open(self, handle=None):
         """Open the storage, potentially create a new index.
@@ -730,13 +713,29 @@ class Storage(BaseStorage):
         Raises:
             Exception: If storage was opened readonly.
         """
-
         if self.readonly:
             raise Exception('Opened storage readonly')
 
+        previous_id = self._get_resource_id(resource)
+        if previous_id:
+            resource.set_inventory_key(previous_id)
+            self.update(resource)
+            return
+
         rows = Inventory.from_resource(self.inventory_index, resource)
+
         for row in rows:
-            self.buffer.add(row)
+            if row.category == Categories.resource:
+                # Force flush to insert the resource row in order to get the
+                # inventory id value. This is used to tie child resources
+                # and related data back to the parent resource row and to
+                # check for duplicate resources.
+                self.session.add(row)
+                self.session.flush()
+                resource.set_inventory_key(row.id)
+            else:
+                row.parent_id = resource.inventory_key()
+                self.buffer.add(row)
 
         self.inventory_index.counter += len(rows)
 
@@ -757,17 +756,19 @@ class Storage(BaseStorage):
 
         try:
             new_rows = Inventory.from_resource(self.inventory_index, resource)
-            old_rows = self._get_resource_rows(resource.key())
+            old_rows = self._get_resource_rows(
+                resource.key(), resource.type())
 
-            new_dict = {row.category: row for row in new_rows}
-            old_dict = {row.category: row for row in old_rows}
+            new_dict = {row.category.name: row for row in new_rows}
+            old_dict = {row.category.name: row for row in old_rows}
 
-            for category in InventoryTypeClass.SUPPORTED_TYPECLASS:
+            for category in SUPPORTED_CATEGORIES:
                 if category in new_dict:
                     if category in old_dict:
                         old_dict[category].copy_inplace(
                             new_dict[category])
                     else:
+                        new_dict[category].parent_id = resource.inventory_key()
                         self.session.add(new_dict[category])
             self.session.commit()
         except Exception as e:
@@ -801,7 +802,6 @@ class Storage(BaseStorage):
             raise Exception('Opened storage readonly')
         self.inventory_index.add_warning(self.session, message)
 
-    # pylint: disable=too-many-locals
     def iter(self,
              type_list=None,
              fetch_iam_policy=False,
@@ -831,50 +831,41 @@ class Storage(BaseStorage):
 
         if fetch_iam_policy:
             filters.append(
-                Inventory.category == InventoryTypeClass.IAM_POLICY)
+                Inventory.category == Categories.iam_policy)
 
         elif fetch_gcs_policy:
             filters.append(
-                Inventory.category == InventoryTypeClass.GCS_POLICY)
+                Inventory.category == Categories.gcs_policy)
 
         elif fetch_dataset_policy:
             filters.append(
-                Inventory.category ==
-                InventoryTypeClass.DATASET_POLICY)
+                Inventory.category == Categories.dataset_policy)
 
         elif fetch_billing_info:
             filters.append(
-                Inventory.category ==
-                InventoryTypeClass.BILLING_INFO)
+                Inventory.category == Categories.billing_info)
 
         elif fetch_enabled_apis:
             filters.append(
-                Inventory.category ==
-                InventoryTypeClass.ENABLED_APIS)
+                Inventory.category == Categories.enabled_apis)
 
         elif fetch_service_config:
             filters.append(
-                Inventory.category ==
-                InventoryTypeClass.SERVICE_CONFIG)
+                Inventory.category == Categories.kubernetes_service_config)
 
         else:
             filters.append(
-                Inventory.category == InventoryTypeClass.RESOURCE)
+                Inventory.category == Categories.resource)
 
         if type_list:
             filters.append(Inventory.resource_type.in_(type_list))
 
         if with_parent:
             parent_inventory = aliased(Inventory)
-            p_key = parent_inventory.resource_id
-            p_type = parent_inventory.resource_type
+            p_id = parent_inventory.id
             base_query = (
                 self.session.query(Inventory, parent_inventory)
-                .filter(and_(
-                    Inventory.parent_resource_id == p_key,
-                    Inventory.parent_resource_type == p_type,
-                    parent_inventory.inventory_index_id ==
-                    self.inventory_index.id)))
+                .filter(Inventory.parent_id == p_id))
         else:
             base_query = self.session.query(Inventory)
 
@@ -886,21 +877,24 @@ class Storage(BaseStorage):
         for row in base_query.yield_per(PER_YIELD):
             yield row
 
-    # pylint: enable=too-many-locals
-
     def get_root(self):
         """get the resource root from the inventory
 
         Returns:
             object: A row in gcp_inventory of the root
         """
+        # Comparison to None needed to compare to Null in SQL.
+        # pylint: disable=singleton-comparison
         root = self.session.query(Inventory).filter(
             and_(
                 Inventory.inventory_index_id == self.inventory_index.id,
-                Inventory.resource_id == Inventory.parent_resource_id,
-                Inventory.resource_type == Inventory.parent_resource_type,
-                Inventory.category == InventoryTypeClass.RESOURCE
+                Inventory.parent_id == None,
+                Inventory.category == Categories.resource,
+                Inventory.resource_type.in_(['organization',
+                                             'folder',
+                                             'project'])
             )).first()
+        # pylint: enable=singleton-comparison
 
         LOGGER.debug('Root resource: %s', root)
         return root
@@ -917,7 +911,7 @@ class Storage(BaseStorage):
         """
         return self.session.query(exists().where(and_(
             Inventory.inventory_index_id == self.inventory_index.id,
-            Inventory.category == InventoryTypeClass.RESOURCE,
+            Inventory.category == Categories.resource,
             Inventory.resource_type.in_(type_list)
         ))).scalar()
 

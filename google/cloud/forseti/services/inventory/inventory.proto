@@ -41,7 +41,7 @@ message PingReply {
 }
 
 message Progress {
-  string id = 1;
+  int64 id = 1;
   bool final_message = 2;
   string step = 3;
   int32 warnings = 4;
@@ -60,7 +60,7 @@ message ListRequest {
 }
 
 message InventoryIndex {
-  string id = 1;
+  int64 id = 1;
   google.protobuf.Timestamp start_timestamp = 2;
   google.protobuf.Timestamp complete_timestamp = 3;
   int32 schema_version = 4;
@@ -71,7 +71,7 @@ message InventoryIndex {
 }
 
 message GetRequest {
-  string id = 1;
+  int64 id = 1;
 }
 
 message GetReply {
@@ -79,7 +79,7 @@ message GetReply {
 }
 
 message DeleteRequest {
-  string id = 1;
+  int64 id = 1;
 }
 
 message DeleteReply {

@@ -14,6 +14,7 @@
 
 """Common utility functions regarding date and time."""
 
+import calendar
 from datetime import datetime
 
 from google.cloud.forseti.common.util import logger
@@ -75,21 +76,53 @@ def get_utc_now_datetime():
     return datetime.utcnow()
 
 
-def get_utc_now_timestamp_human():
+def get_utc_now_timestamp_human(date=None):
     """Get a human formatted str representing utcnow()
+
+    Args:
+        date (datetime): A datetime object representing current time in UTC.
 
     Returns:
           str: A timestamp in the classes default timestamp format.
     """
-    utc_now = get_utc_now_datetime()
+    utc_now = date or get_utc_now_datetime()
     return utc_now.strftime(string_formats.DEFAULT_FORSETI_HUMAN_TIMESTAMP)
 
 
-def get_utc_now_timestamp():
+def get_utc_now_timestamp(date=None):
     """Get a formatted str representing utcnow()
+
+    Args:
+        date (datetime): A datetime object representing current time in UTC.
 
     Returns:
           str: A timestamp in the classes default timestamp format.
     """
-    utc_now = get_utc_now_datetime()
+    utc_now = date or get_utc_now_datetime()
     return utc_now.strftime(string_formats.DEFAULT_FORSETI_TIMESTAMP)
+
+
+def get_utc_now_microtimestamp(date=None):
+    """Get a 64bit int representing the current time to the millisecond.
+
+    Args:
+        date (datetime): A datetime object representing current time in UTC.
+
+    Returns:
+        int: A epoch timestamp including microseconds.
+    """
+    utc_now = date or get_utc_now_datetime()
+    micros = calendar.timegm(utc_now.utctimetuple()) * 1000000
+    return micros + utc_now.microsecond
+
+
+def get_date_from_microtimestamp(microtimestamp):
+    """Get a datetime object from a 64bit timestamp.
+
+    Args:
+        microtimestamp (int): A timestamp to be converted.
+
+    Returns:
+        datetime: The converted datetime object
+    """
+    return datetime.utcfromtimestamp(microtimestamp/float(1000000.0))

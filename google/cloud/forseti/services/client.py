@@ -380,7 +380,7 @@ class InventoryClient(ForsetiClient):
         """Returns all information about a particular inventory.
 
         Args:
-            inventory_index_id (str): the index id of the inventory to query.
+            inventory_index_id (int): the index id of the inventory to query.
 
         Returns:
             proto: the returned proto message of get inventory.
