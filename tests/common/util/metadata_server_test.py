@@ -20,6 +20,9 @@ import mock
 import socket
 import unittest
 
+from google.auth.compute_engine import _metadata
+from google.auth.transport import requests
+
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util import metadata_server
 from google.cloud.forseti.common.util import errors
@@ -64,37 +67,22 @@ class MetadataServerTest(ForsetiTestCase):
         returned_object = metadata_server._obtain_http_client()
         self.assertIsInstance(returned_object, httplib.HTTPConnection)
 
-    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
-    def test_can_reach_metadata_server_with_valid_response(self, mock_meta_req):
-        """Test can_reach_metadata_server returns True with a valid response.
-
-        Setup:
-            * Have httplib return a valid response and response.status.
+    def test_compute_engine_metadata_ping_callable_with_expected_params(self):
+        """Test the _metadata.ping() method in compute engine module is callable
+        with the expected parameters.
 
         Expected results:
-            * A True result.
+            * A Boolean result.
         """
-        with mock.patch('httplib.HTTPResponse') as mock_http_resp:
-            mock_http_resp.return_value.status = httplib.OK
-            mock_meta_req.side_effect = mock_http_resp
-            actual_response = metadata_server.can_reach_metadata_server()
-
-        self.assertTrue(actual_response)
-
-    @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
-    def test_can_reach_metadata_server_with_error_response(self, mock_meta_req):
-        """Test can_reach_metadata_server returns Falise with an
-        invalid response.
-
-        Setup:
-            * Have httplib raise socket.error.
-
-        Expected results:
-            * A False result.
-        """
-        mock_meta_req.side_effect = _MockMetadataServerHttpError('Unreachable')
-        actual_response = metadata_server.can_reach_metadata_server()
-        self.assertFalse(actual_response)
+        first_param = requests.Request()
+        try:
+            _metadata.ping(first_param)
+        except Exception as e:
+            # The ping method is either not available in the module or the
+            # signature has been changed.
+            self.fail(
+                '_metadata.ping() in compute engine module has been modified. '
+                'Error: {}'.format(str(e)))
 
     @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
     def test_get_value_for_attribute_with_exception(self, mock_meta_req):

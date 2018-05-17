@@ -152,7 +152,7 @@ cd forseti-security
 sudo apt-get install -y git unzip
 
 # Forseti host dependencies
-sudo apt-get install -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs)
+sudo apt-get install -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs)
 
 # Forseti dependencies
 pip install --upgrade pip==9.0.3
@@ -169,7 +169,7 @@ service google-fluentd restart
 logrotate /etc/logrotate.conf
 
 # Change the access level of configs/ rules/ and run_forseti.sh
-chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/setup/gcp/scripts/run_forseti.sh
+chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/install/gcp/scripts/run_forseti.sh
 
 # Install Forseti
 python setup.py install
@@ -189,7 +189,7 @@ gsutil cp gs://{scanner_bucket}/configs/forseti_conf_server.yaml {forseti_server
 gsutil cp -r gs://{scanner_bucket}/rules {forseti_home}/
 
 # Start Forseti service depends on vars defined above.
-bash ./setup/gcp/scripts/initialize_forseti_services.sh
+bash ./install/gcp/scripts/initialize_forseti_services.sh
 
 echo "Starting services."
 systemctl start cloudsqlproxy
@@ -221,7 +221,7 @@ USER=ubuntu
 # queue up the jobs.
 # If the cron job failed the acquire lock on the process, it will log a warning message to syslog.
 
-(echo "{run_frequency} (/usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/setup/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+(echo "{run_frequency} (/usr/bin/flock -n /tmp/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"

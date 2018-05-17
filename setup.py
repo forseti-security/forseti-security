@@ -18,7 +18,7 @@
 import os
 import sys
 
-from setup.util import build_protos
+from install.util import build_protos
 from setuptools import find_packages
 from setuptools import setup
 from setuptools.command.install import install
