@@ -16,9 +16,9 @@
 
 from argparse import ArgumentParser
 import json
-import grpc
 import os
 import sys
+import grpc
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
@@ -28,21 +28,33 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
-def handle_grpc_error(cli_function):
+def handle_grpc_error(wrapped):
+    """A decorator that handles `grpc` exceptions.
+
+    Args:
+        wrapped: the wrapped function
+
+    Returns:
+        the wrapper function
+    """
+
     def wrapper(*args, **kwargs):
+        """Handle `grpc` exceptions.
+
+        Print a nice error message and exit with a non-zero exit code in case a
+        grpc exception is raised.
+
+        Args:
+            args: positional arguments for the wrapped function
+            kwargs: keyword arguments for the wrapped function
+        """
         try:
-            cli_function(*args, **kwargs)
-        except grpc.RpcError as e:
-            if e.code() == grpc.StatusCode.UNAVAILABLE:
-                sys.stderr.write(
-                    'Forseti server unavailable. '
-                    'Please check and try again.\n')
-                sys.exit(1)
-            else:
-                sys.stderr.write(
-                    'An error occured while communicating to the Forseti '
-                    'server.\nPlease check and try again.\n')
-                sys.exit(2)
+            wrapped(*args, **kwargs)
+        except grpc.RpcError:
+            sys.stderr.write(
+                'Error communicating to the Forseti server.\n'
+                'Please check and try again.\n')
+            sys.exit(1)
 
     return wrapper
 
