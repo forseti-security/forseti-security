@@ -16,6 +16,7 @@
 from argparse import ArgumentParser
 from copy import copy
 import json
+import grpc
 import mock
 import os
 import shlex
@@ -455,6 +456,32 @@ class MainTest(ForsetiTestCase):
             mock_parser.parse_args.return_value = mock_config
             cli.main([], mock_config_env, mock_client)
             mock_parser.error.assert_not_called()
+
+
+class HandleGrpcErrorTest(ForsetiTestCase):
+    def test_no_exception_raised(self):
+        def wrapped():
+            return 42
+        wrapper = cli.handle_grpc_error(wrapped)
+        with mock.patch.object(cli.sys, "exit") as mock_exit:
+            wrapper()
+            self.assertFalse(mock_exit.called)
+
+    def test_non_grpc_exception_raised(self):
+        def wrapped():
+            raise Exception('We do not care about this')
+        wrapper = cli.handle_grpc_error(wrapped)
+        with self.assertRaises(Exception):
+            wrapper()
+
+    def test_grpc_exception_raised(self):
+        def wrapped():
+            raise grpc.RpcError('We handle this')
+        wrapper = cli.handle_grpc_error(wrapped)
+        with mock.patch.object(cli.sys, "exit") as mock_exit:
+            wrapper()
+            self.assertTrue(mock_exit.called)
+            assert mock_exit.call_args[0][0] == 1
 
 
 if __name__ == '__main__':
