@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:18.04
+""" Forseti Installer.
 
-# Expose our source so we can read in dependencies.
-ADD . /forseti-security/
-WORKDIR /forseti-security/
+A stub to call install/gcp/gcp_installer.py which installs into GCP.
+"""
+from gcp import gcp_installer
 
-# Install host dependencies.
-RUN apt-get update -qq 1> /dev/null
-RUN apt-get install -qq -y $(cat setup/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null
-RUN rm -rf /var/lib/apt/lists/*
 
-# Install the CloudSDK for `gcloud`.
-RUN curl -sSL https://sdk.cloud.google.com 1> /dev/null | bash
+if __name__ == '__main__':
+    gcp_installer.run()
