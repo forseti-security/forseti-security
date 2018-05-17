@@ -15,4 +15,4 @@
 
 echo "Running pylint... "
 
-docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ setup/"
+docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ install/"

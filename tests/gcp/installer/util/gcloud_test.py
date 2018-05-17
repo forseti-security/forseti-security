@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for setup/gcp/installer/util/gcloud.py."""
+"""Tests for install/gcp/installer/util/gcloud.py."""
 
 import json
 import sys

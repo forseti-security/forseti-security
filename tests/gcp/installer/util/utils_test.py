@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for setup/gcp/installer/util/utils.py."""
+"""Tests for install/gcp/installer/util/utils.py."""
 
 import unittest
 
