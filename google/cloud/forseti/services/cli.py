@@ -15,6 +15,7 @@
 """Forseti CLI."""
 
 from argparse import ArgumentParser
+import grpc
 import json
 import os
 import sys
@@ -1153,6 +1154,13 @@ def main(args,
         services[config.service](client, config, output, config_env)
     except ValueError as e:
         parser.error(e.message)
+    except grpc.RpcError:
+        print('Error communicating to the Forseti server.\n'
+              'Please check the status of the server and make sure it\'s '
+              'running.\n'
+              'If you are accessing from a client VM, make sure the '
+              '`server_ip` field inside the client configuration file in '
+              'the Forseti client GCS bucket contains the right IP address.\n')
     return config
 
 
