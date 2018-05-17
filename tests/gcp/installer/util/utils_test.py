@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for setup/gcp/installer/util/utils.py."""
+"""Tests for install/gcp/installer/util/utils.py."""
 
 import unittest
 
-import setup.gcp.installer.util.utils as utils
+import install.gcp.installer.util.utils as utils
 
 from tests.unittest_utils import ForsetiTestCase
 

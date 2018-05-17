@@ -24,7 +24,7 @@ import json
 import os
 import sys
 
-from setup.gcp.installer.util import utils
+from install.gcp.installer.util import utils
 
 
 def run():
