@@ -18,6 +18,7 @@ from argparse import ArgumentParser
 import json
 import os
 import sys
+import grpc
 from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
@@ -25,6 +26,37 @@ from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+
+
+def handle_grpc_error(wrapped):
+    """A decorator that handles `grpc` exceptions.
+
+    Args:
+        wrapped: the wrapped function
+
+    Returns:
+        the wrapper function
+    """
+
+    def wrapper(*args, **kwargs):
+        """Handle `grpc` exceptions.
+
+        Print a nice error message and exit with a non-zero exit code in case a
+        grpc exception is raised.
+
+        Args:
+            args: positional arguments for the wrapped function
+            kwargs: keyword arguments for the wrapped function
+        """
+        try:
+            wrapped(*args, **kwargs)
+        except grpc.RpcError:
+            sys.stderr.write(
+                'Error communicating to the Forseti server.\n'
+                'Please check and try again.\n')
+            sys.exit(1)
+
+    return wrapper
 
 
 # pylint: disable=too-many-lines
@@ -611,6 +643,7 @@ class JsonOutput(Output):
         print MessageToJson(obj)
 
 
+@handle_grpc_error
 def run_config(_, config, output, config_env):
     """Run config commands.
         Args:
@@ -669,6 +702,7 @@ def run_config(_, config, output, config_env):
     actions[config.action]()
 
 
+@handle_grpc_error
 def run_scanner(client, config, output, _):
     """Run scanner commands.
         Args:
@@ -691,6 +725,7 @@ def run_scanner(client, config, output, _):
     actions[config.action]()
 
 
+@handle_grpc_error
 def run_server(client, config, output, _):
     """Run scanner commands.
         Args:
@@ -733,6 +768,7 @@ def run_server(client, config, output, _):
     actions[config.action][config.subaction]()
 
 
+@handle_grpc_error
 def run_notifier(client, config, output, _):
     """Run notifier commands.
         Args:
@@ -755,6 +791,7 @@ def run_notifier(client, config, output, _):
     actions[config.action]()
 
 
+@handle_grpc_error
 def run_model(client, config, output, config_env):
     """Run model commands.
         Args:
@@ -814,6 +851,7 @@ def run_model(client, config, output, config_env):
     actions[config.action]()
 
 
+@handle_grpc_error
 def run_inventory(client, config, output, _):
     """Run inventory commands.
         Args:
@@ -862,6 +900,7 @@ def run_inventory(client, config, output, _):
     actions[config.action]()
 
 
+@handle_grpc_error
 def run_explainer(client, config, output, _):
     """Run explain commands.
         Args:
