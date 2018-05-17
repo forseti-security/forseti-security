@@ -19,3 +19,27 @@ access Forseti Security.
 | **[Inventory]({% link _docs/latest/use/inventory.md %})** |
 | :---------------------------------------------------------------------------- |
 | Using third party tools to query raw Forseti Inventory data. |
+
+| **[Model]({% link _docs/latest/use/model.md %})** |
+| :---------------------------------------------------------------------------- |
+| Building the Forseti Model. |
+
+| **[Scanner]({% link _docs/latest/use/scanner.md %})** |
+| :---------------------------------------------------------------------------- |
+| Using the Forseti Scanner to scan inventory data. |
+
+| **[Notifier]({% link _docs/latest/use/notifier.md %})** |
+| :---------------------------------------------------------------------------- |
+| Using the Forseti Notifier to send notifications. |
+
+| **[Explainer]({% link _docs/latest/use/explain.md %})** |
+| :---------------------------------------------------------------------------- |
+| Using the Forseti Explainer to query the data model. |
+
+| **[Server]({% link _docs/latest/use/server.md %})** |
+| :---------------------------------------------------------------------------- |
+| Using the Forseti Server to update server configuration. |
+
+| **[Config]({% link _docs/latest/use/config.md %})** |
+| :---------------------------------------------------------------------------- |
+| Using the Forseti Config to update CLI configuration. |

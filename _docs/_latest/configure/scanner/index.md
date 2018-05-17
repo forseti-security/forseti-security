@@ -15,29 +15,7 @@ Forseti Scanner is different from the Cloud Security Scanner, which does App
 Engine vulnerability scanning. Learn more about
 [Cloud Security Scanner](https://cloud.google.com/security-scanner/).
 
-## Running Forseti Scanner
-
-Forseti Scanner works on a data model, so before you start using Scanner, you'll select a model to use. 
-
-To configure which scanners to run, see 
-[Configuring Forseti: Configuring Scanner]({% link _docs/latest/configure/configuring-forseti.md %}#configuring-scanner).
-
-
-#### Selecting a data model
-
-```bash
-$ forseti model use <YOUR_MODEL_NAME>
-```
-
-#### Running the scanner
-
-```bash
-$ forseti scanner run
-```
-
-Scanner produces violations and stores them in the violation table in the database. 
-To receive notifications for violations, run the 
-[Forseti Notifier]({% link _docs/latest/configure/notifier/index.md %}).
+You can learn how to run the Forseti Scanner [here]({% link _docs/latest/use/index.md %}).
 
 ## What's next
 
