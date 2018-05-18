@@ -1166,8 +1166,7 @@ def main(args,
                   'the Forseti client GCS bucket contains the right IP '
                   'address.\n')
         else:
-            print('Error occurred on the server side, message: {}'.format(
-                e.details()))
+            print('Error occurred on the server side, message: {}'.format(e))
     return config
 
 
