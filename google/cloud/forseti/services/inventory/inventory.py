@@ -188,7 +188,7 @@ def run_import(client, model_name, inventory_index_id, background):
     Args:
         client (object): Api client to use.
         model_name (str): Model name to create.
-        inventory_index_id (str): Inventory index to source.
+        inventory_index_id (int64): Inventory index to source.
         background (bool): If the import should run in background.
 
     Returns:
@@ -250,7 +250,7 @@ class Inventory(object):
                     if model_name:
                         run_import(self.config.client(),
                                    model_name,
-                                   str(result.inventory_index_id),
+                                   result.inventory_index_id,
                                    background)
                     return result.get_summary()
 
@@ -353,7 +353,7 @@ class Inventory(object):
         purged_inventory_indexes = []
         for inventory_index in inventory_indexes_to_purge:
             _ = self.delete(inventory_index.id)
-            purged_inventory_indexes.append(inventory_index.id)
+            purged_inventory_indexes.append(str(inventory_index.id))
 
         purged_inventory_indexes_as_str = ', '.join(purged_inventory_indexes)
 

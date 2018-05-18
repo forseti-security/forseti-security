@@ -326,7 +326,7 @@ def define_notifier_parser(parent):
 
     create_notifier_parser.add_argument(
         '--inventory_index_id',
-        default=None,
+        default=0,
         help=('Id of the inventory index to send violation notifications. '
               'If this is not specified, then the last inventory index id '
               'will be used.')
@@ -748,7 +748,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(config.inventory_index_id):
+        for progress in client.run(int(config.inventory_index_id)):
             output.write(progress)
 
     actions = {
@@ -788,7 +788,7 @@ def run_model(client, config, output, config_env):
         """Create a model."""
         result = client.new_model('inventory',
                                   config.name,
-                                  config.inventory_index_id,
+                                  int(config.inventory_index_id),
                                   config.background)
         output.write(result)
 
@@ -841,12 +841,12 @@ def run_inventory(client, config, output, _):
 
     def do_get_inventory():
         """Get an inventory."""
-        result = client.get(config.id)
+        result = client.get(int(config.id))
         output.write(result)
 
     def do_delete_inventory():
         """Delete an inventory."""
-        result = client.delete(config.id)
+        result = client.delete(int(config.id))
         output.write(result)
 
     def do_purge_inventory():

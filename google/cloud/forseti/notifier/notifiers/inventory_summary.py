@@ -32,7 +32,7 @@ class InventorySummary(object):
         """Initialization.
 
         Args:
-            inv_index_id (str): Inventory index id.
+            inv_index_id (int64): Inventory index id.
             inv_summary (dict): Inventory summary data.
             notifier_config (dict): the configuration for *this* notifier
         """
@@ -53,7 +53,8 @@ class InventorySummary(object):
         output_timestamp = utc_now_datetime.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        return filename_template.format(self.inv_index_id, output_timestamp)
+        return filename_template.format(str(self.inv_index_id),
+                                        output_timestamp)
 
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""

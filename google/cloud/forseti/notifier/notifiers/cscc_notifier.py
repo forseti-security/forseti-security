@@ -33,7 +33,7 @@ class CsccNotifier(object):
         """`Findingsnotifier` initializer.
 
         Args:
-            inv_index_id (str): inventory index ID
+            inv_index_id (int64): inventory index ID
         """
         self.inv_index_id = inv_index_id
 
@@ -57,7 +57,7 @@ class CsccNotifier(object):
                 'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
-                    'inventory_index_id': self.inv_index_id,
+                    'inventory_index_id': str(self.inv_index_id),
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
