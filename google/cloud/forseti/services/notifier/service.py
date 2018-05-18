@@ -94,7 +94,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         """Run notifier.
 
         Args:
-            inventory_index_id (str): Inventory index id.
+            inventory_index_id (int64): Inventory index id.
             progress_queue (Queue): Progress queue.
         """
         try:

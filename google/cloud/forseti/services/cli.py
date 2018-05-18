@@ -326,7 +326,7 @@ def define_notifier_parser(parent):
 
     create_notifier_parser.add_argument(
         '--inventory_index_id',
-        default=None,
+        default=0,
         help=('Id of the inventory index to send violation notifications. '
               'If this is not specified, then the last inventory index id '
               'will be used.')
