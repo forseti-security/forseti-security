@@ -40,7 +40,7 @@ class EmailViolations(base_notification.BaseNotification):
 
         Args:
             resource (str): Violation resource name.
-            inventory_index_id (int64): Snapshot timestamp.
+            inventory_index_id (int64): Inventory index id.
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
