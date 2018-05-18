@@ -32,11 +32,11 @@ class InventorySummary(object):
         """Initialization.
 
         Args:
-            inv_index_id (str): Inventory index id.
+            inv_index_id (int64): Inventory index id.
             inv_summary (dict): Inventory summary data.
             notifier_config (dict): the configuration for *this* notifier
         """
-        self.inv_index_id = inv_index_id
+        self.inv_index_id = str(inv_index_id)
         self.inv_summary = inv_summary
         self.notifier_config = notifier_config
 

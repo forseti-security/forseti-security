@@ -226,7 +226,7 @@ class NotifierClient(ForsetiClient):
         """Runs the notifier.
 
         Args:
-            inventory_index_id (int): Inventory Index Id.
+            inventory_index_id (int64): Inventory Index Id.
 
         Returns:
             proto: the returned proto message.
@@ -394,7 +394,7 @@ class InventoryClient(ForsetiClient):
         """Delete an inventory.
 
         Args:
-            inventory_index_id (int): the index id of the inventory to delete.
+            inventory_index_id (int64): the index id of the inventory to delete.
 
         Returns:
             proto: the returned proto message of delete inventory.

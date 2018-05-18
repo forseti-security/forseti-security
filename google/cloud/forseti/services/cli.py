@@ -748,7 +748,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(config.inventory_index_id):
+        for progress in client.run(int(config.inventory_index_id)):
             output.write(progress)
 
     actions = {
@@ -788,7 +788,7 @@ def run_model(client, config, output, config_env):
         """Create a model."""
         result = client.new_model('inventory',
                                   config.name,
-                                  long(config.inventory_index_id),
+                                  int(config.inventory_index_id),
                                   config.background)
         output.write(result)
 
@@ -841,12 +841,12 @@ def run_inventory(client, config, output, _):
 
     def do_get_inventory():
         """Get an inventory."""
-        result = client.get(long(config.id))
+        result = client.get(int(config.id))
         output.write(result)
 
     def do_delete_inventory():
         """Delete an inventory."""
-        result = client.delete(long(config.id))
+        result = client.delete(int(config.id))
         output.write(result)
 
     def do_purge_inventory():

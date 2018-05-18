@@ -78,7 +78,7 @@ def run_inv_summary(inv_index_id, service_config):
     """Emit an inventory summary notification if/as needed.
 
     Args:
-        inv_index_id (str): Inventory index id.
+        inv_index_id (int64): Inventory index id.
         service_config (ServiceConfig): Forseti 2.0 service configs.
     """
     notifier_config = service_config.get_notifier_config()
@@ -125,7 +125,7 @@ def run(inv_index_id, progress_queue, service_config=None):
     """Run the notifier.
     Entry point when the notifier is run as a library.
     Args:
-        inv_index_id (str): Inventory index id.
+        inv_index_id (int64): Inventory index id.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
     Returns:
@@ -144,7 +144,7 @@ def run(inv_index_id, progress_queue, service_config=None):
         if not scanner_index_id:
             LOGGER.error(
                 'No success or partial success scanner index found for '
-                'inventory index: "%s".', inv_index_id)
+                'inventory index: "%s".', str(inv_index_id))
         else:
             # get violations
             violation_access = scanner_dao.ViolationAccess(session)

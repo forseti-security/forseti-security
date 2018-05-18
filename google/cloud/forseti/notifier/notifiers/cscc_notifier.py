@@ -33,9 +33,9 @@ class CsccNotifier(object):
         """`Findingsnotifier` initializer.
 
         Args:
-            inv_index_id (str): inventory index ID
+            inv_index_id (int64): inventory index ID
         """
-        self.inv_index_id = inv_index_id
+        self.inv_index_id = str(inv_index_id)
 
     def _transform_to_findings(self, violations):
         """Transform forseti violations to findings format.

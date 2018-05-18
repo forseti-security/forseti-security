@@ -24,7 +24,7 @@ service Notifier {
 }
 
 message RunRequest {
-  string inventory_index_id = 1;
+  int64 inventory_index_id = 1;
 }
 
 message Progress {

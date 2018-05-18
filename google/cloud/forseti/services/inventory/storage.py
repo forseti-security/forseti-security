@@ -475,7 +475,7 @@ class DataAccess(object):
             session (object): Database session
 
         Returns:
-            str: inventory index id
+            int64: inventory index id
         """
 
         inventory_index = (
@@ -487,7 +487,7 @@ class DataAccess(object):
         LOGGER.info(
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
-        return str(inventory_index.id)
+        return inventory_index.id
 
     @classmethod
     def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name

@@ -33,21 +33,21 @@ TEMP_DIR = '/tmp'
 class EmailViolations(base_notification.BaseNotification):
     """Email notifier to perform notifications"""
 
-    def __init__(self, resource, cycle_timestamp,
+    def __init__(self, resource, inventory_index_id,
                  violations, global_configs, notifier_config,
                  notification_config):
         """Initialization.
 
         Args:
             resource (str): Violation resource name.
-            cycle_timestamp (str): Snapshot timestamp.
+            inventory_index_id (int64): Snapshot timestamp.
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
             notification_config (dict): notifier configurations.
         """
         super(EmailViolations, self).__init__(resource,
-                                              cycle_timestamp,
+                                              inventory_index_id,
                                               violations,
                                               global_configs,
                                               notifier_config,
@@ -104,7 +104,7 @@ class EmailViolations(base_notification.BaseNotification):
                 the provided variables.
         """
         timestamp = date_time.get_date_from_microtimestamp(
-            int(self.cycle_timestamp))
+            self.inventory_index_id)
         pretty_timestamp = timestamp.strftime(string_formats.TIMESTAMP_READABLE)
         email_content = self.mail_util.render_from_template(
             'notification_summary.jinja', {
