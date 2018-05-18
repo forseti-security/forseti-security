@@ -118,21 +118,21 @@ class ImporterTest(ForsetiTestCase):
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
-         ['1'],
+         [1],
          {},
          '{}',
          {'endpoint': 'localhost:50051'}),
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
-         ['1'],
+         [1],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
         ('--endpoint 10.0.0.1:8080 inventory delete 1',
          CLIENT.inventory.delete,
-         ['1'],
+         [1],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '10.0.0.1:8080'}),
@@ -146,7 +146,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('inventory get 1',
          CLIENT.inventory.get,
-         ['1'],
+         [1],
          {},
          '{}',
          {}),
@@ -181,7 +181,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('model create --inventory_index_id 1 foo',
          CLIENT.model.new_model,
-         ["inventory", "foo", '1', False],
+         ["inventory", "foo", 1, False],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
@@ -286,7 +286,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('notifier run --inventory_index_id 88',
          CLIENT.scanner.run,
-         ['88'],
+         [88],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
