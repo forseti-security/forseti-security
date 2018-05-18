@@ -527,7 +527,8 @@ class Storage(BaseStorage):
 
         Args:
             session (object): db session
-            existing_id (int64): The inventory id if wants to open an existing one
+            existing_id (int64): The inventory id if wants to open an existing
+                inventory.
             readonly (bool): whether to keep the inventory read-only
         """
         self.session = session
