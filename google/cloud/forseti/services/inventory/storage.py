@@ -508,6 +508,7 @@ class DataAccess(object):
         session.expunge_all()
         return inventory_indexes
 
+
 def initialize(engine):
     """Create all tables in the database if not existing.
 
@@ -521,12 +522,12 @@ def initialize(engine):
 class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
-    def __init__(self, session, existing_id=None, readonly=False):
+    def __init__(self, session, existing_id=0, readonly=False):
         """Initialize
 
         Args:
             session (object): db session
-            existing_id (str): The inventory id if wants to open an existing one
+            existing_id (int64): The inventory id if wants to open an existing one
             readonly (bool): whether to keep the inventory read-only
         """
         self.session = session

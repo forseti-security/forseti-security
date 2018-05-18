@@ -37,7 +37,7 @@ class Modeller(object):
         Args:
             source (str): The source of the model, \"inventory\" or \"empty\"
             name (str): Model name to instantiate.
-            inventory_index_id (int): Inventory id to import from
+            inventory_index_id (int64): Inventory id to import from
             background (bool): Whether to run the model creation in background
 
         Returns:

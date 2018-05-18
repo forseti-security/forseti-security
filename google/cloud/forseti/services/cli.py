@@ -788,7 +788,7 @@ def run_model(client, config, output, config_env):
         """Create a model."""
         result = client.new_model('inventory',
                                   config.name,
-                                  config.inventory_index_id,
+                                  long(config.inventory_index_id),
                                   config.background)
         output.write(result)
 
@@ -841,12 +841,12 @@ def run_inventory(client, config, output, _):
 
     def do_get_inventory():
         """Get an inventory."""
-        result = client.get(config.id)
+        result = client.get(long(config.id))
         output.write(result)
 
     def do_delete_inventory():
         """Delete an inventory."""
-        result = client.delete(config.id)
+        result = client.delete(long(config.id))
         output.write(result)
 
     def do_purge_inventory():
