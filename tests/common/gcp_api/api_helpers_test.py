@@ -24,8 +24,9 @@ from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
 
 
-FAKE_REQUIRED_SCOPES = 'https://www.googleapis.com/auth/admin.directory.group.readonly'
-
+FAKE_REQUIRED_SCOPES = frozenset([
+    'https://www.googleapis.com/auth/admin.directory.group.readonly'
+])
 
 class ApiHelpersTest(unittest_utils.ForsetiTestCase):
     """Test the Base Repository methods."""
