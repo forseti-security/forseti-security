@@ -347,11 +347,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Ask user for specific install values."""
         utils.print_banner('Configuring GSuite Admin Information')
 
-        print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
         # If no GSuite superadmin email is entered, Forseti will not
         # be able to retrieve GSuite data but the rest of the functionality
         # will remain the same.
         if not self.config.gsuite_superadmin_email:
+            print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
             self.config.gsuite_superadmin_email = raw_input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
