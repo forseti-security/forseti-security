@@ -206,7 +206,7 @@ MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS = (
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'To read G Suite Groups and Users data, '
     'please provide a G Suite super admin email address. '
-    'This step is NOT optional.')
+    'This step is optional.')
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
