@@ -13,10 +13,15 @@
 # limitations under the License.
 
 """Helper functions for API clients."""
+
 import google.auth
 from google.auth import iam
+from google.auth.credentials import with_scopes_if_required
 from google.auth.transport import requests
 from google.oauth2 import service_account
+
+from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
+
 
 _TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 
@@ -38,6 +43,10 @@ def get_delegated_credential(delegated_account, scopes):
     # Get the "bootstrap" credentials that will be used to talk to the IAM
     # API to sign blobs.
     bootstrap_credentials, _ = google.auth.default()
+
+    bootstrap_credentials = with_scopes_if_required(
+        bootstrap_credentials,
+        list(CLOUD_SCOPES))
 
     # Refresh the boostrap credentials. This ensures that the information about
     # this account, notably the email, is populated.
