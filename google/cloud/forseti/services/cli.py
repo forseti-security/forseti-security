@@ -1167,6 +1167,8 @@ def main(args,
                   'address.\n')
         else:
             print('Error occurred on the server side, message: {}'.format(e))
+    except Exception as e:  # pylint: disable=broad-except
+        print ('Error occurred, message: {}'.format(e.message))
     return config
 
 
