@@ -418,3 +418,17 @@ been modified... and so on.
 
 We break this cycle by including these files in the build, but excluding them
 from triggering a new build on watch.
+
+## Release Process
+
+When releasing a new major version of Forseti Security's library, it's expected that a new version of the documentation will be created as well. This version of the documentation will be a snapshot of the *latest* version.
+
+To create this new documentation version locally, you must:
+
+1. Fully clone the forseti-security repository with tags
+2. Run `./scripts/sync_latest_version.sh`
+3. Create a new commit and push to forseti-security repository
+
+All tags must be present locally for `./scripts/sync_latest_version.sh` to pickup the latest release version.
+
+After this is done, a commit can be created and deployed as normal. The new release will exist under `_docs/vX.X/...`.
