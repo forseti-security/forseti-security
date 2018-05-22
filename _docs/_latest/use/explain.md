@@ -224,7 +224,7 @@ on resource `my-project-123` because the user has the role `roles/iam.securityRe
 Member `user/abc@gmail.com` also has a membership in group `group/my-group-123@gmail.com`.
 
 ```
-forseti explainer why_granted user/abc@gmail.com project/1234567890 --permission iam.serviceAccounts.get
+forseti explainer why_granted user/abc@gmail.com project/my-project-123 --permission iam.serviceAccounts.get
 bindings {
   member: "user/abc@gmail.com"
   resource: "organization/1234567890"
