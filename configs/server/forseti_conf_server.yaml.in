@@ -77,7 +77,7 @@ scanner:
 
     scanners:
         - name: audit_logging
-          enabled: true
+          enabled: false
         - name: bigquery
           enabled: true
         - name: blacklist
@@ -87,11 +87,11 @@ scanner:
         - name: cloudsql_acl
           enabled: true
         - name: enabled_apis
-          enabled: true
+          enabled: false
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
-          enabled: true
+          enabled: false
         - name: group
           enabled: true
         - name: iam_policy
@@ -99,7 +99,7 @@ scanner:
         - name: iap
           enabled: true
         - name: instance_network_interface
-          enabled: true
+          enabled: false
         - name: ke_version_scanner
           enabled: true
 
