@@ -19,8 +19,8 @@ import json
 import os
 import sys
 
-from google.protobuf.json_format import MessageToJson
 import grpc
+from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
 from google.cloud.forseti.services.client import ModelNotSetError
@@ -1167,7 +1167,7 @@ def main(args,
                   'the Forseti client GCS bucket contains the right IP '
                   'address.\n')
         else:
-            print('Error occurred on the server side, message: {}'.format(e))
+            print 'Error occurred on the server side, message: {}'.format(e)
     except ModelNotSetError:
         print ('Model must be specified before running this command. '
                'You can specify a model to use with command '
