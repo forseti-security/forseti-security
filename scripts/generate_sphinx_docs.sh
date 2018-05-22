@@ -51,7 +51,7 @@ function checkout_python_source_to_temp_directory() {
 #######################################
 function build_python_source_in_docker() {
     pushd $TEMP_SOURCE_DIRECTORY
-      ./setup/scripts/docker_setup_forseti.sh
+      ./install/scripts/docker_setup_forseti.sh
     popd
 }
 
