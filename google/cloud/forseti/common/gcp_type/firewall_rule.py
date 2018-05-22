@@ -145,6 +145,14 @@ class FirewallRule(object):
         Returns:
           FirewallRule: A FirewallRule created from the input dictionary.
         """
+        if firewall_dict.get('creationTimestamp'):
+            creation_time = parser.format_timestamp(
+                parser.json_stringify(
+                    firewall_dict.get('creationTimestamp')),
+                string_formats.TIMESTAMP_MYSQL_DATETIME_FORMAT)
+        else:
+            creation_time = None
+
         in_dict = {
             'firewall_rule_id': firewall_dict.get('id'),
             'firewall_rule_name': firewall_dict.get('name'),
@@ -173,9 +181,7 @@ class FirewallRule(object):
                 firewall_dict.get('denied')),
             'firewall_rule_self_link': parser.json_stringify(
                 firewall_dict.get('selfLink')),
-            'firewall_rule_create_time': parser.format_timestamp(
-                parser.json_stringify(firewall_dict.get('creationTimestamp')),
-                string_formats.TIMESTAMP_MYSQL_DATETIME_FORMAT),
+            'firewall_rule_create_time': creation_time,
         }
         if project_id:
             in_dict['project_id'] = project_id
