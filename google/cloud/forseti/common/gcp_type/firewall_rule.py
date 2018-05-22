@@ -146,6 +146,11 @@ class FirewallRule(object):
           FirewallRule: A FirewallRule created from the input dictionary.
         """
         if firewall_dict.get('creationTimestamp'):
+            # When we are creating firewall rule gcp objects from the firewall
+            # rules we defined in the firewall_rules.yaml file, the creation
+            # timestamp is not part of the rule in the yaml file and if the
+            # creation timestamp does not exist, we shouldn't call the parse
+            # function with the empty field.
             creation_time = parser.format_timestamp(
                 parser.json_stringify(
                     firewall_dict.get('creationTimestamp')),
