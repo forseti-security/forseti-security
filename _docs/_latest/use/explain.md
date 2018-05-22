@@ -229,10 +229,11 @@ Example values for `<MEMBER_NAME>` are `user/user1@gmail.com` or `serviceAccount
 The result shows all bindings that grant the permission you specified. For each binding `<resource, role, [member1, member2]>`, Forseti returns how the resource hierarchy links to your target resource, and how a group in the binding links to your target member.
 
 In the following example, user `user/abc@gmail.com` has permission `iam.serviceAccounts.get`
-on resource `organization/1234567890` because the user has the role `roles/iam.securityReviewer` on resource `organization/1234567890`.
+on resource `my-project-123` because the user has the role `roles/iam.securityReviewer` on resource `organization/1234567890`.
+Member `user/abc@gmail.com` also has a membership in group `group/my-group-123@gmail.com`.
 
 ```
-forseti explainer why_granted user/abc@gmail.com organization/1234567890 --permission iam.serviceAccounts.get
+forseti explainer why_granted user/abc@gmail.com project/1234567890 --permission iam.serviceAccounts.get
 bindings {
   member: "user/abc@gmail.com"
   resource: "organization/1234567890"
@@ -240,7 +241,9 @@ bindings {
 }
 memberships {
   member: "user/abc@gmail.com"
+  parents: "group/my-group-123@gmail.com"
 }
+resource_ancestors: "project/my-project-123"
 resource_ancestors: "organization/1234567890"
 
 ```
