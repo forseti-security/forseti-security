@@ -115,15 +115,6 @@ $ forseti-client-XXXX-vm> forseti explainer get_policy <RESOURCE_NAME>
 ```
 Example values for `<RESOURCE_NAME>` are the `project/<PROJECT_ID>` and `organization/<ORGANIZATION_ID>`.
 
-Cloud SQL Instance uses a different format as follows:
-
-`cloudsqlinstance/project_id:cloudsqlinstance_name`
-
-For example:
-```bash
-$ forseti-client-XXXX-vm> forseti explainer get_policy cloudsqlinstance/sample-project-123:my-sql-instance
-```
-
 ### Test permissions
 
 ```bash
