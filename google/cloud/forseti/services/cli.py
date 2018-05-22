@@ -23,6 +23,7 @@ from google.protobuf.json_format import MessageToJson
 import grpc
 
 from google.cloud.forseti.services import client as iam_client
+from google.cloud.forseti.services.client import ModelNotSetError
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 
@@ -1167,8 +1168,10 @@ def main(args,
                   'address.\n')
         else:
             print('Error occurred on the server side, message: {}'.format(e))
-    except Exception as e:  # pylint: disable=broad-except
-        print ('Error occurred, message: {}'.format(e.message))
+    except ModelNotSetError:
+        print ('Model must be specified before running this command. '
+               'You can specify a model to use with command '
+               '"forseti model use <MODEL_NAME>".')
     return config
 
 

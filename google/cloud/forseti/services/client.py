@@ -35,6 +35,9 @@ from google.cloud.forseti.services.utils import oneof
 
 # pylint: disable=too-many-instance-attributes
 
+class ModelNotSetError(Exception):
+    pass
+
 
 def require_model(f):
     """Decorator to perform check that the model handle exists in the service.
@@ -61,7 +64,7 @@ def require_model(f):
         """
         if args[0].config.handle():
             return f(*args, **kwargs)
-        raise Exception('API requires model to be set.')
+        raise ModelNotSetError('API requires model to be set.')
     return wrapper
 
 
