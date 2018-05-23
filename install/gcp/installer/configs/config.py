@@ -53,6 +53,6 @@ class Config(object):
         if not self.identifier:
             message = self.datetimestamp + organization_id
 
-            hash = hashlib.sha1(message.encode("UTF-8")).hexdigest()
+            hashed_message = hashlib.sha1(message.encode('UTF-8')).hexdigest()
 
-            self.identifier = hash[:7]
+            self.identifier = hashed_message[:7]
