@@ -47,6 +47,9 @@ class Config(object):
 
         Hash the timestamp and organization id and take the first 7 characters.
 
+        Lowercase is needed because some resource name are not allowed to have
+        uppercase.
+
         Args:
             organization_id (str): Organization id.
         """
@@ -55,4 +58,4 @@ class Config(object):
 
             hashed_message = hashlib.sha1(message.encode('UTF-8')).hexdigest()
 
-            self.identifier = hashed_message[:7]
+            self.identifier = hashed_message[:7].lower()
