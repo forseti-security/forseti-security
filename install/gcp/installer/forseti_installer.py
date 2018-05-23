@@ -198,6 +198,7 @@ class ForsetiInstaller(object):
                                          self.config.force_no_cloudshell,
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
+        self.config.generate_identifier(self.organization_id)
         self.check_if_authed_user_in_domain(
             self.organization_id, authed_user)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
