@@ -27,6 +27,7 @@ from google.cloud.forseti.services.client import ModelNotSetError
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 
+
 LOGGER = logger.get_logger(__name__)
 
 
@@ -1128,15 +1129,15 @@ class DefaultConfig(dict):
         self[key] = self.DEFAULT[key]
 
 
-def main(args,
-         config_env,
+def main(args=None,
+         config_env=None,
          client=None,
          outputs=None,
          parser_cls=DefaultParser,
          services=None):
     """Main function.
     Args:
-        args (list): Command line arguments without argv[0].
+        args (list): CLI arguments.
         config_env (obj): Configuration environment.
         client (obj): API client to use.
         outputs (list): Supported output formats.
@@ -1146,8 +1147,10 @@ def main(args,
     Returns:
         object: Environment configuration.
     """
+    config_env = config_env or DefaultConfigParser.load()
     parser = create_parser(parser_cls, config_env)
     config = parser.parse_args(args)
+
     if not client:
         client = iam_client.ClientComposition(config.endpoint)
     client.switch_model(config.use_model)
@@ -1193,5 +1196,4 @@ def get_config_path():
 
 
 if __name__ == '__main__':
-    ENV_CONFIG = DefaultConfigParser.load()
-    main(sys.argv[1:], ENV_CONFIG)
+    main()
