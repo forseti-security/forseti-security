@@ -56,6 +56,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Pre-flight checks for server instance."""
 
         super(ForsetiServerInstaller, self).preflight_checks()
+        self.config.generate_cloudsql_instance()
         self.get_email_settings()
         gcloud.enable_apis(self.config.dry_run)
         forseti_v1_name = None
