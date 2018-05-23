@@ -1129,13 +1129,15 @@ class DefaultConfig(dict):
         self[key] = self.DEFAULT[key]
 
 
-def main(config_env=None,
+def main(args=None,
+         config_env=None,
          client=None,
          outputs=None,
          parser_cls=DefaultParser,
          services=None):
     """Main function.
     Args:
+        args (list): CLI arguments.
         config_env (obj): Configuration environment.
         client (obj): API client to use.
         outputs (list): Supported output formats.
@@ -1147,7 +1149,7 @@ def main(config_env=None,
     """
     config_env = config_env or DefaultConfigParser.load()
     parser = create_parser(parser_cls, config_env)
-    config = parser.parse_args()
+    config = parser.parse_args(args)
 
     if not client:
         client = iam_client.ClientComposition(config.endpoint)
