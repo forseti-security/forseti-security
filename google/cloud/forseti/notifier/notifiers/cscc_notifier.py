@@ -16,6 +16,8 @@
 
 import tempfile
 
+from googleapiclient.errors import HttpError
+
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
@@ -99,5 +101,9 @@ class CsccNotifier(object):
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
-                storage_client.put_text_file(
-                    tmp_violations.name, gcs_upload_path)
+                try:
+                    storage_client.put_text_file(
+                        tmp_violations.name, gcs_upload_path)
+                except HttpError as e:
+                    LOGGER.error('Unable to save CSCC in bucket %s:\n%s',
+                                 gcs_upload_path, e.content)
