@@ -56,6 +56,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """Pre-flight checks for server instance."""
 
         super(ForsetiServerInstaller, self).preflight_checks()
+        self.config.generate_cloudsql_instance()
         self.get_email_settings()
         gcloud.enable_apis(self.config.dry_run)
         forseti_v1_name = None
@@ -142,7 +143,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # Waiting for VM to be initialized.
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
-                self.config.timestamp)
+                self.config.identifier)
             self.wait_until_vm_initialized(instance_name)
 
             # Create firewall rules.
@@ -251,7 +252,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             str: Firewall rule name.
         """
-        return '{}-{}'.format(rule_name, self.config.timestamp)
+        return '{}-{}'.format(rule_name, self.config.identifier)
 
     def get_deployment_values(self):
         """Get deployment values.
