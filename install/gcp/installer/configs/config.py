@@ -50,11 +50,14 @@ class Config(object):
         Lowercase is needed because some resource name are not allowed to have
         uppercase.
 
+        The reason why we need to use the hash as the identifier is to ensure
+        global uniqueness of the bucket names.
+
         Args:
             organization_id (str): Organization id.
         """
         if not self.identifier:
-            message = self.datetimestamp + organization_id
+            message = organization_id + self.datetimestamp
 
             hashed_message = hashlib.sha1(message.encode('UTF-8')).hexdigest()
 
