@@ -694,8 +694,6 @@ class InventoryImporter(object):
         data = cluster.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
             cluster)
-        cluster_name = data.get('name', {})
-        full_res_name = '{}/{}'.format(full_res_name, cluster_name)
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
