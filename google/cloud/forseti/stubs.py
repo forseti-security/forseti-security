@@ -39,6 +39,5 @@ def RunForsetiServer():
 
 def RunForsetiCli():
     """Run Forseti CLI."""
-    import sys
     import google.cloud.forseti.services.cli as forseti_cli
     forseti_cli.main()
