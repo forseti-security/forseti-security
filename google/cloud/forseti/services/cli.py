@@ -416,15 +416,12 @@ def define_explainer_parser(parent):
     explain_granted_parser.add_argument(
         'resource',
         help='Resource to query')
-
     explain_granted_group = (
         explain_granted_parser.add_mutually_exclusive_group())
-
     explain_granted_group.add_argument(
         '--role',
         default=None,
         help='Query for a role')
-
     explain_granted_group.add_argument(
         '--permission',
         default=None,
@@ -441,10 +438,8 @@ def define_explainer_parser(parent):
         'resources',
         nargs='+',
         help='Resource to query')
-
     explain_denied_group = (
         explain_denied_parser.add_mutually_exclusive_group())
-
     explain_denied_group.add_argument(
         '--roles',
         nargs='*',
