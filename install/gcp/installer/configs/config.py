@@ -15,6 +15,7 @@
 """Forseti installer config object."""
 
 import datetime
+import hashlib
 
 
 class Config(object):
@@ -31,7 +32,7 @@ class Config(object):
 
         self.datetimestamp = (kwargs.get('datetimestamp') or
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
-        self.timestamp = self.datetimestamp[-4:]
+        self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
@@ -40,3 +41,18 @@ class Config(object):
         self.dry_run = bool(kwargs.get('dry_run'))
         self.bucket_location = kwargs.get('gcs_location')
         self.installation_type = None
+
+    def generate_identifier(self, organization_id):
+        """Generate resource unique identifier.
+
+        Hash the timestamp and organization id and take the first 7 characters.
+
+        Args:
+            organization_id (str): Organization id.
+        """
+        if not self.identifier:
+            message = self.datetimestamp + organization_id
+
+            hash = hashlib.sha1(message.encode("UTF-8")).hexdigest()
+
+            self.identifier = hash[:7]

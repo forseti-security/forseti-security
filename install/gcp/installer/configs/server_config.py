@@ -30,7 +30,7 @@ class ServerConfig(Config):
         self.installation_type = 'server'
         self.cloudsql_instance = '{}-{}-db-{}'.format('forseti',
                                                       self.installation_type,
-                                                      self.timestamp)
+                                                      self.identifier)
         self.cloudsql_region = kwargs.get('cloudsql_region')
 
         # forseti_conf_server.yaml.in properties

@@ -142,7 +142,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # Waiting for VM to be initialized.
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
-                self.config.timestamp)
+                self.config.identifier)
             self.wait_until_vm_initialized(instance_name)
 
             # Create firewall rules.
@@ -251,7 +251,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         Returns:
             str: Firewall rule name.
         """
-        return '{}-{}'.format(rule_name, self.config.timestamp)
+        return '{}-{}'.format(rule_name, self.config.identifier)
 
     def get_deployment_values(self):
         """Get deployment values.
