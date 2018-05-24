@@ -1,18 +1,21 @@
-// This is a Cloud Function Script to upload inventory summary to bigquery.
-// Documentation on how to use Cloud Function can be found here:
-// https://cloud.google.com/functions/
+/*
+This script is contributed by Antoine Castex <antoine-castex>
 
-// Here is the package:
-//{
-//  "name": "function-from-gcs-to-bq",
-//  "version": "0.0.1",
-//  "dependencies": {
-//    "@google-cloud/bigquery": "1.2.0",
-//    "@google-cloud/storage": "1.2.1",
-//    "parse-json": "4.0.0"
-//  }
-//}
+This is a Cloud Function Script to upload inventory summary to bigquery.
+Documentation on how to use Cloud Function can be found here:
+https://cloud.google.com/functions/
 
+Here is the package:
+{
+  "name": "function-from-gcs-to-bq",
+  "version": "0.0.1",
+  "dependencies": {
+    "@google-cloud/bigquery": "1.2.0",
+    "@google-cloud/storage": "1.2.1",
+    "parse-json": "4.0.0"
+  }
+}
+*/
 
 exports.getData = (event) => {
   console.log("--- BEGIN ---")
