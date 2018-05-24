@@ -1058,14 +1058,23 @@ class DefaultConfig(dict):
         Returns:
             str: Forseti server endpoint
         """
+        default_env_variable = 'FORSETI_CLIENT_CONFIG'
         try:
-            conf_path = os.environ['FORSETI_CLIENT_CONFIG']
+            conf_path = os.environ[default_env_variable]
             configs = file_loader.read_and_parse_file(conf_path)
             server_ip = configs.get('server_ip')
             if server_ip:
                 return '{}:50051'.format(server_ip)
-        except (KeyError, IOError) as err:
-            LOGGER.warn(err)
+        except KeyError:
+            LOGGER.info('Unable to read environment variable: %s, will use '
+                        'the default endpoint instead, endpoint: %s',
+                        default_env_variable,
+                        self.DEFAULT_ENDPOINT)
+        except IOError:
+            LOGGER.info('Unable to open file: %s, will use the default '
+                        'endpoint instead, endpoint: %s',
+                        conf_path,
+                        self.DEFAULT_ENDPOINT)
 
         return self.DEFAULT_ENDPOINT
 
