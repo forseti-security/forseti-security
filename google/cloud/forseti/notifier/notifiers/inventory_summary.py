@@ -118,9 +118,15 @@ class InventorySummary(object):
         email_subject = 'Inventory Summary: {0}'.format(
             self.inventory_index_id)
 
+        inventory_index_datetime = (
+            date_time.get_date_from_microtimestamp(self.inventory_index_id))
+        timestamp = inventory_index_datetime.strftime(
+            string_formats.DEFAULT_FORSETI_TIMESTAMP)
+
         email_content = email_util.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
+             'timestamp': timestamp,
              'summary_data': summary_data})
 
         try:
