@@ -660,9 +660,9 @@ class Storage(BaseStorage):
             self.inventory_index = self._open(existing_id)
         else:
             self.inventory_index = self._create()
+            self.session.commit() # commit only on create.
 
         self.opened = True
-        self.session.commit()
         if not self.readonly:
             self.session.begin_nested()
         return self.inventory_index.id
