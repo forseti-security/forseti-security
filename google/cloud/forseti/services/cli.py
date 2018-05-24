@@ -465,8 +465,7 @@ def define_explainer_parser(parent):
         help='Permissions to query for')
     query_access_by_member.add_argument(
         '--expand_resources',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand the resource hierarchy')
 
     query_access_by_authz = action_subparser.add_parser(
@@ -484,13 +483,11 @@ def define_explainer_parser(parent):
         help='Role to query')
     query_access_by_authz.add_argument(
         '--expand_groups',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand groups to their members')
     query_access_by_authz.add_argument(
         '--expand_resources',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand resources to their children')
 
     query_access_by_resource = action_subparser.add_parser(
@@ -506,8 +503,7 @@ def define_explainer_parser(parent):
         help='Permissions to query for')
     query_access_by_resource.add_argument(
         '--expand_groups',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand groups to their members')
 
 
