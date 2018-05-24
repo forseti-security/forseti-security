@@ -153,9 +153,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
                     notifier_configs.get('violation').get('cscc').get('gcs_path'))
             # pylint: enable=line-too-long
 
-        inventory_summary_notifier = (
-            InventorySummary(service_config, inventory_index_id))
-        inventory_summary_notifier.run()
+        InventorySummary(service_config, inventory_index_id).run()
 
         log_message = 'Notification completed!'
         progress_queue.put(log_message)
