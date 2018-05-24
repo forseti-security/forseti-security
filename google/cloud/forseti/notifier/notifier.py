@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Notifier service."""
+"""Notifier runer."""
 
 import importlib
 import inspect
@@ -23,7 +23,6 @@ from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotifi
 from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
 from google.cloud.forseti.services.inventory.storage import DataAccess
-from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 # pylint: enable=line-too-long
 
@@ -91,7 +90,8 @@ def run(inventory_index_id, progress_queue, service_config=None):
     violations = None
     with service_config.scoped_session() as session:
         if not inventory_index_id:
-            inventory_index_id = DataAccess.get_latest_inventory_index_id(session)
+            inventory_index_id = (
+                DataAccess.get_latest_inventory_index_id(session))
         scanner_index_id = scanner_dao.get_latest_scanner_index_id(
             session, inventory_index_id)
         if not scanner_index_id:
