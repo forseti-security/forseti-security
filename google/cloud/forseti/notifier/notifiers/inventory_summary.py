@@ -11,15 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Upload inventory summary to GCS."""
 
-from google.cloud.forseti.common.util import file_uploader
+from googleapiclient.errors import HttpError
+
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import email
+from google.cloud.forseti.common.util import errors as util_errors
+from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers.base_notification import (
-    BaseNotification)
+from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
+from google.cloud.forseti.services.inventory.storage import InventoryIndex
 
 
 LOGGER = logger.get_logger(__name__)
@@ -28,17 +31,17 @@ LOGGER = logger.get_logger(__name__)
 class InventorySummary(object):
     """Upload inventory summary to GCS."""
 
-    def __init__(self, inv_index_id, inv_summary, notifier_config):
+    def __init__(self, service_config, inventory_index_id):
         """Initialization.
 
         Args:
             inv_index_id (int64): Inventory index id.
-            inv_summary (dict): Inventory summary data.
-            notifier_config (dict): the configuration for *this* notifier
+            service_config (ServiceConfig): Forseti 2.0 service configs.
         """
-        self.inv_index_id = inv_index_id
-        self.inv_summary = inv_summary
-        self.notifier_config = notifier_config
+        self.service_config = service_config
+        self.inventory_index_id = inventory_index_id
+
+        self.notifier_config = self.service_config.get_notifier_config()
 
     def _get_output_filename(self, filename_template):
         """Create the output filename.
@@ -53,22 +56,114 @@ class InventorySummary(object):
         output_timestamp = utc_now_datetime.strftime(
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
-        return filename_template.format(str(self.inv_index_id),
+        return filename_template.format(str(self.inventory_index_id),
                                         output_timestamp)
+
+    def _upload_to_gcs(self, summary_data):
+        LOGGER.debug('Uploading inventory summary data to GCS.')
+        gcs_summary_config = (
+            self.notifier_config.get('inventory').get('gcs_summary'))
+
+        if not gcs_summary_config.get('gcs_path'):
+            LOGGER.error('"gcs_path" not set for inventory summary notifier.')
+            return
+    
+        if not gcs_summary_config['gcs_path'].startswith('gs://'):
+            LOGGER.error('Invalid GCS path: %s', gcs_summary_config['gcs_path'])
+            return
+
+        data_format = gcs_summary_config.get('data_format', 'csv')
+        BaseNotification.check_data_format(data_format)
+
+        try:
+            if data_format == 'csv':
+                gcs_upload_path = '{}/{}'.format(
+                    gcs_summary_config.get('gcs_path'),
+                    self._get_output_filename(
+                        string_formats.INVENTORY_SUMMARY_CSV_FMT))
+                file_uploader.upload_csv(
+                    'inv_summary', summary_data, gcs_upload_path)
+            else:
+                gcs_upload_path = '{}/{}'.format(
+                    self.notifier_config['gcs_path'],
+                    self._get_output_filename(
+                        string_formats.INVENTORY_SUMMARY_JSON_FMT))
+                file_uploader.upload_json(summary_data, gcs_upload_path)
+        except HttpError as e:
+            LOGGER.error('Unable to upload inventory summary in bucket %s:\n%s',
+                         gcs_upload_path, e.content)
+
+
+    def _send_email(self, summary_data):
+        LOGGER.debug('Sending inventory summary by email.')
+
+        email_summary_config = (
+            self.notifier_config.get('inventory').get('email_summary'))
+
+        email_util = email.EmailUtil(
+            email_summary_config.get('sendgrid_api_key'))
+
+        email_subject = 'Inventory Summary: {0}'.format(
+            self.inventory_index_id)
+
+        email_content = email_util.render_from_template(
+            'inventory_summary.jinja',
+            {'inventory_index_id': self.inventory_index_id,
+             'summary_data': summary_data})
+
+        try:
+            email_util.send(
+                email_sender=email_summary_config.get('sender'),
+                email_recipient=email_summary_config.get('recipient'),
+                email_subject=email_subject,
+                email_content=email_content,
+                content_type='text/html')
+            LOGGER.debug('Inventory summary sent successfully by email.')
+        except util_errors.EmailSendError:
+            LOGGER.error('Unable to send inventory summary email')
+
+    def _get_summary_data(self):
+        LOGGER.debug('Getting inventory summary data.')
+        with self.service_config.scoped_session() as session:
+            inventory_index = (
+                session.query(InventoryIndex).get(self.inventory_index_id))
+    
+            summary = inventory_index.get_summary(session)
+            if not summary:
+                LOGGER.warn('No inventory summary data found for inventory '
+                            'index id: %s.', self.inventory_index_id)
+                return
+    
+            summary_data = []
+            for key, value in summary.iteritems():
+                summary_data.append(dict(resource_type=key, count=value))
+            return summary_data
 
     def run(self):
         """Generate the temporary (CSV xor JSON) file and upload to GCS."""
-        data_format = self.notifier_config.get('data_format', 'csv')
-        BaseNotification.check_data_format(data_format)
 
-        if data_format == 'csv':
-            gcs_upload_path = '{}/{}'.format(
-                self.notifier_config['gcs_path'],
-                self._get_output_filename(string_formats.INV_SUMMARY_CSV_FMT))
-            file_uploader.upload_csv(
-                'inv_summary', self.inv_summary, gcs_upload_path)
-        else:
-            gcs_upload_path = '{}/{}'.format(
-                self.notifier_config['gcs_path'],
-                self._get_output_filename(string_formats.INV_SUMMARY_JSON_FMT))
-            file_uploader.upload_json(self.inv_summary, gcs_upload_path)
+        inventory_summary_config = self.notifier_config.get('inventory')
+        if not inventory_summary_config:
+            LOGGER.info('No inventory configuration for notifier.')
+            return
+
+        is_gcs_summary_enabled = (
+            inventory_summary_config.get('gcs_summary').get('enabled'))
+        is_email_summary_enabled = (
+            inventory_summary_config.get('email_summary').get('enabled'))
+
+        if not is_gcs_summary_enabled and not is_email_summary_enabled:
+            LOGGER.info('All inventory summaries are disabled.')
+            return
+
+        summary_data = self._get_summary_data()
+
+        if not summary_data:
+            LOGGER.warn('No inventory summary data found for inventory '
+                        'index id: %s.', self.inventory_index_id)
+
+        if is_gcs_summary_enabled:
+            self._upload_to_gcs(summary_data)
+
+        if is_email_summary_enabled:
+            self._send_email(summary_data)

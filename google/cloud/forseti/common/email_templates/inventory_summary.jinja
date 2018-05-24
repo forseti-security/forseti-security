@@ -17,27 +17,19 @@ limitations under the License.
 <!doctype html>
 <html>
 <body>
-    Timestamp: {{ snapshot_timestamp }}; {{ snapshot_time }}<br>
-    Status Summary: {{ status_summary }}<br>
+    inventory_status_id: {{ inventory_index_id }}<br>
     <br>
     <table>
         <col width="250">
         <col width="150">
-        <col width="150">
         <tr>
             <th align="left">Resource Name</th>
-            <th align="left">Status</th>
-            <th align="left"># in Snapshot</th>
+            <th align="left">Count</th>
         </tr>
-        {% for pipeline in pipelines %}
+        {% for data in summary_data %}
         <tr>
-            <td>{{ pipeline.RESOURCE_NAME }}</td>
-            <td>{{ pipeline.status }}</td>
-            {% if pipeline.count is not none %}
-              <td>{{ pipeline.count }}</td>
-            {% else %}
-              <td>Unknown</td>
-            {% endif %}
+            <td>{{ data.resource_type }}</td>
+            <td>{{ data.count }}</td>
         </tr>
         {% endfor %}
     </table>
