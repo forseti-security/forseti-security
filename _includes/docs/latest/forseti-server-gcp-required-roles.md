@@ -20,6 +20,3 @@
  **Granted on the Service Account level**
  
  * `roles/iam.serviceAccountTokenCreator`
- 
-The most up to date list can be found
-[here](https://github.com/GoogleCloudPlatform/forseti-security/master/install/gcp/installer/util/constants.pyL88)
