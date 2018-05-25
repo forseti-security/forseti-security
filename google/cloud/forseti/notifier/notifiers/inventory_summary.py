@@ -72,7 +72,7 @@ class InventorySummary(object):
             self.notifier_config.get('inventory').get('gcs_summary'))
 
         if not gcs_summary_config.get('gcs_path'):
-            LOGGER.error('"gcs_path" not set for inventory summary notifier.')
+            LOGGER.error('gcs_path not set for inventory summary notifier.')
             return
 
         if not gcs_summary_config['gcs_path'].startswith('gs://'):

@@ -20,6 +20,7 @@ import unittest
 
 from datetime import datetime
 
+from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import inventory_summary
@@ -37,7 +38,7 @@ class InventorySummaryTest(ForsetiTestCase):
     def tearDown(self):
         """Tear down method."""
         ForsetiTestCase.tearDown(self)
-    '''
+
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.inventory_summary.date_time',
         autospec=True)
@@ -79,7 +80,8 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier = inventory_summary.InventorySummary(mock_service_config,
                                                       'abcd')
 
-        actual_filename = notifier._get_output_filename(string_formats.INVENTORY_SUMMARY_JSON_FMT)
+        actual_filename = notifier._get_output_filename(
+            string_formats.INVENTORY_SUMMARY_JSON_FMT)
         expected_filename = string_formats.INVENTORY_SUMMARY_JSON_FMT.format(
                 notifier.inventory_index_id, expected_timestamp)
         self.assertEquals(expected_filename, actual_filename)
@@ -102,7 +104,8 @@ class InventorySummaryTest(ForsetiTestCase):
 
         notifier = inventory_summary.InventorySummary(mock_service_config,
                                                       'abcd')
-        notifier._get_output_filename = mock.MagicMock(return_value=fake_output_name)
+        notifier._get_output_filename = mock.MagicMock(
+            return_value=fake_output_name)
 
         gcs_path = '{}/{}'.format('gs://abcd', fake_output_name)
 
@@ -138,7 +141,8 @@ class InventorySummaryTest(ForsetiTestCase):
 
         notifier = inventory_summary.InventorySummary(mock_service_config,
                                                       'abcd')
-        notifier._get_output_filename = mock.MagicMock(return_value=fake_output_name)
+        notifier._get_output_filename = mock.MagicMock(
+            return_value=fake_output_name)
 
         notifier._upload_to_gcs([{}])
 
@@ -175,115 +179,159 @@ class InventorySummaryTest(ForsetiTestCase):
         self.assertFalse(mock_write_csv.called)
         self.assertFalse(mock_json_stringify.called)
 
-    '''
+    @mock.patch('google.cloud.forseti.common.util.file_uploader.StorageClient', autospec=True)
+    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
+    @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
+    def test_gcs_path_is_not_set_in_config(self, mock_logger, mock_write_csv,
+        mock_json_stringify, mock_storage):
+        """Test run() with json file format."""
 
+        mock_service_config = mock.MagicMock()
+        mock_service_config.get_notifier_config.return_value = {
+            'inventory': {'gcs_summary': {'enabled': True,
+                                          'data_format': 'blah'}}}
 
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier._get_output_filename = mock.MagicMock()
 
-    '''
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
+        notifier._upload_to_gcs([{}])
+
+        self.assertTrue(mock_logger.error.called)
+        self.assertEquals(
+            'gcs_path not set for inventory summary notifier.',
+            mock_logger.error.call_args[0][0])
+
+    @mock.patch('google.cloud.forseti.common.util.file_uploader.StorageClient', autospec=True)
+    @mock.patch('google.cloud.forseti.common.util.parser.json_stringify')
+    @mock.patch('google.cloud.forseti.common.data_access.csv_writer.write_csv')
+    @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
+    def test_inventory_summary_invalid_gcs_path(self, mock_logger, mock_write_csv,
+        mock_json_stringify, mock_storage):
+        mock_service_config = mock.MagicMock()
+        mock_service_config.get_notifier_config.return_value = {
+            'inventory': {'gcs_summary': {'enabled': True,
+                                          'data_format': 'blah',
+                                          'gcs_path': 'blah'}}}
+
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier._get_output_filename = mock.MagicMock()
+
+        notifier._upload_to_gcs([{}])
+
+        self.assertTrue(mock_logger.error.called)
+        self.assertTrue('Invalid GCS path' in mock_logger.error.call_args[0][0])
+
+    @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
     def test_no_inventory_in_config(self, mock_logger):
         mock_service_config = mock.MagicMock()
         mock_service_config.get_notifier_config.return_value = dict()
-        notifier.run_inv_summary('blah', mock_service_config)
+
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier.run()
+
         self.assertTrue(mock_logger.info.called)
         self.assertEquals(
-            'No "inventory" configuration for notifier.',
+            'No inventory configuration for notifier.',
             mock_logger.info.call_args[0][0])
 
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
+    @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
     def test_no_inventory_summary_in_config(self, mock_logger):
-        mock_service_config = mock.MagicMock()
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(blah=1))
-        notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_logger.info.called)
-        self.assertEquals(
-            'No "inventory summary" configuration for notifier.',
-            mock_logger.info.call_args[0][0])
 
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
+        mock_service_config = mock.MagicMock()
+        mock_service_config.get_notifier_config.return_value = {
+            'inventory': {'blah': 'blah blah'}}
+
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier.run()
+
+        self.assertTrue(
+            ('unable to get inventory summary configuration'
+             in mock_logger.error.call_args[0][0]))
+
+    @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
     def test_inventory_summary_not_enabled_in_config(self, mock_logger):
         mock_service_config = mock.MagicMock()
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(summary=dict(enabled=False)))
-        notifier.run_inv_summary('blah', mock_service_config)
+        mock_service_config.get_notifier_config.return_value = {
+            'inventory': {'gcs_summary': {'enabled': False},
+                          'email_summary': {'enabled': False}}}
+
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier.run()
+
         self.assertTrue(mock_logger.info.called)
         self.assertEquals(
-            'Inventory summary notifications are turned off.',
+            'All inventory summaries are disabled.',
             mock_logger.info.call_args[0][0])
 
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
-    def test_inventory_summary_gcs_path_not_set_in_config(self, mock_logger):
-        mock_service_config = mock.MagicMock()
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(summary=dict(enabled=True)))
-        notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_logger.error.called)
-        self.assertEquals(
-            '"gcs_path" not set for inventory summary notifier.',
-            mock_logger.error.call_args[0][0])
 
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
-    def test_inventory_summary_invalid_gcs_path(self, mock_logger):
-        mock_service_config = mock.MagicMock()
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(summary=dict(enabled=True, gcs_path='invalid')))
-        notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_logger.error.called)
-        self.assertEquals(
-            'Invalid GCS path: %s', mock_logger.error.call_args[0][0])
-        self.assertEquals('invalid', mock_logger.error.call_args[0][1])
-
-    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
+    @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
     def test_inventory_summary_no_summary_data(self, mock_logger):
-        mock_inv_index = mock.MagicMock()
-        mock_inv_index.get_summary.return_value = dict()
-
-        mock_session = mock.MagicMock()
-        mock_session.query.return_value.get.return_value = mock_inv_index
-
         mock_service_config = mock.MagicMock()
-        mock_service_config.scoped_session.return_value.__enter__.return_value = mock_session
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
+        mock_service_config.get_notifier_config.return_value = {
+            'inventory': {'gcs_summary': {'enabled': True,
+                                          'data_format': 'csv',
+                                          'gcs_path': 'gs://blah'},
+                          'email_summary': {'enabled': True,
+                                            'sendgrid_api_key': 'blah',
+                                            'sender': 'blah',
+                                            'recipient': 'blah'}}}
 
-        notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_logger.warn.called)
-        self.assertEquals(
-            'No inventory summary data found.',
-            mock_logger.warn.call_args[0][0])
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier._get_summary_data = mock.MagicMock()
+        notifier._get_summary_data.side_effect = util_errors.NoDataError
+        notifier.run()
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifier.InventorySummary',
-        autospec=True)
-    def test_inv_summary_can_run_successfully(self, mock_inventory_summary):
-        mock_inv_index = mock.MagicMock()
-        mock_inv_index.get_summary.return_value = {
+        self.assertTrue(mock_logger.error.called)
+        self.assertTrue('no summary data is found'
+                        in mock_logger.error.call_args[0][0])
+
+    def test_inventory_summary_can_run_successfully(self):
+        mock_inventory_index = mock.MagicMock()
+        mock_inventory_index.get_summary.return_value = {
             'bucket': 2, 'object': 1, 'organization': 1, 'project': 2}
 
         mock_session = mock.MagicMock()
-        mock_session.query.return_value.get.return_value = mock_inv_index
+        mock_session.query.return_value.get.return_value = mock_inventory_index
 
         mock_service_config = mock.MagicMock()
         mock_service_config.scoped_session.return_value.__enter__.return_value = mock_session
-        mock_service_config.get_notifier_config.return_value = dict(
-            inventory=dict(summary=dict(enabled=True, gcs_path='gs://xx')))
+        mock_service_config.get_notifier_config.return_value = {
+            'inventory': {'gcs_summary': {'enabled': True,
+                                          'data_format': 'csv',
+                                          'gcs_path': 'gs://blah'},
+                          'email_summary': {'enabled': True,
+                                            'sendgrid_api_key': 'blah',
+                                            'sender': 'blah',
+                                            'recipient': 'blah'}}}
 
-        notifier.run_inv_summary('blah', mock_service_config)
-        self.assertTrue(mock_inventory_summary.called)
-        self.assertEquals('blah', mock_inventory_summary.call_args[0][0])
-        expected_inv_summary = [
-            {'count': 2, 'resource_type': 'project'},
-            {'count': 1, 'resource_type': 'organization'},
+        notifier = inventory_summary.InventorySummary(mock_service_config,
+                                                      'abcd')
+        notifier._upload_to_gcs = mock.MagicMock()
+        notifier._send_email = mock.MagicMock()
+        notifier.run()
+
+        expected_summary_data = [
+            {'count': 2, 'resource_type': 'bucket'},
             {'count': 1, 'resource_type': 'object'},
-            {'count': 2, 'resource_type': 'bucket'}]
+            {'count': 1, 'resource_type': 'organization'},
+            {'count': 2, 'resource_type': 'project'}]
+        
+        self.assertEquals(1, notifier._upload_to_gcs.call_count)
         self.assertEquals(
-            expected_inv_summary, mock_inventory_summary.call_args[0][1])
+            expected_summary_data,
+            notifier._upload_to_gcs.call_args[0][0])
+
+        self.assertEquals(1, notifier._send_email.call_count)
         self.assertEquals(
-            dict(enabled=True, gcs_path='gs://xx'),
-            mock_inventory_summary.call_args[0][2])
-        self.assertTrue(mock_inventory_summary.return_value.run.called)
-    '''
+            expected_summary_data,
+            notifier._send_email.call_args[0][0])
 
 if __name__ == '__main__':
     unittest.main()
