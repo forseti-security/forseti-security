@@ -101,7 +101,7 @@ By limiting access to datasets, you prevent malicious external actors from chang
 **Create a [root password](https://cloud.google.com/sql/docs/mysql/create-manage-users#user-root)
 for database users.**
 
-Adding a password to the root user provides the most basic protection.**
+Adding a password to the root user provides the most basic protection.
 
 **Always access Cloud SQL through
 [Cloud SQL Proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy).**
