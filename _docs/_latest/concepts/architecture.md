@@ -38,7 +38,7 @@ security risks.
     Forseti modules.
  1. Scanner compares the data collected by Inventory to the policy rules you
     set.
- 1. Notifier sends Scanner findings to one or more of the following channels you
+ 1. Notifier sends Scanner & Inventory results to one or more of the following channels you
     configure: Cloud Storage, SendGrid, and Slack.
  1. You use Explain to query and understand your Cloud IAM policies.
  1. Enforcer uses Google Cloud APIs to make sure policies match your desired

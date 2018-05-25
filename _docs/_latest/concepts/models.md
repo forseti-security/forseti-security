@@ -10,17 +10,14 @@ Starting with version 2.0, Forseti introduces the use of data models.
 The data model is an additional pool of data that is relational in nature,
 and is created from the flat json data in inventory. With the relational data, Forseti 
 can more easily understand the entire relationship, including inheritance between resources. Models
-allow for easier querying against the entire computed policy. For example, a data model for
-service accounts allows Forseti to easily compute what access it has across all the projects in the 
-Organization.
+allow for easier querying against the entire computed policy.
 
 Another important concept to keep in mind is that the data models are not meant
-to be persistent. The data models need to be created before use, and then
-destroyed after use. So, before using Explain, you will need to create a data model set, and then
-delete them after finish using Explain.
+to be persistent. Before using Scanner or Explain a data model must be created. Once you're done 
+using the model it should be deleted.
 
 Both Scanner and Explain depend on the data models being present, therefore creating a valid data 
-model set prior to using Scanner or Explain is **required**.
+model prior to using Scanner or Explain is **required**.
 
 ---
 

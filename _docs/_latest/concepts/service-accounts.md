@@ -42,8 +42,8 @@ The `forseti-client-gcp` service account has less access and is used exclusively
 `forseti-client-vm` virtual machine instance.
 
 This service account is used to communicate with the `forseti-server-vm`. The separation 
-between service accounts is key to securing the granted rights of the `forseti-server-gpc`
-service account from that of the `forseti-client-gpc` service account. 
+between service accounts is key to securing the granted rights of the `forseti-server-gcp`
+service account from that of the `forseti-client-gcp` service account. 
  
 This way you can grant many people access to the `forseti-client-vm` without over granting
 access required for proper operation of the core modules.
