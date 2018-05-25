@@ -616,7 +616,7 @@ def run_config(_, config, output, config_env):
 
     def do_show_config():
         """Show the current config."""
-        output.write(config_env)
+        print config_env
 
     def do_set_endpoint():
         """Set a config item."""
