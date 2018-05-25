@@ -70,17 +70,6 @@ message InventoryIndex {
   string errors = 8;
 }
 
-message InventoryIndexViewModel {
-  int64 id = 1;
-  string start_timestamp = 2;
-  string complete_timestamp = 3;
-  int32 schema_version = 4;
-  int32 count_objects = 5;
-  string status = 6;
-  string warnings = 7;
-  string errors = 8;
-}
-
 message GetRequest {
   int64 id = 1;
 }
