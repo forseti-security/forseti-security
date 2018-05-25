@@ -164,7 +164,7 @@ def define_config_parser(parent):
         help='Configure the output format')
     set_format_config_parser.add_argument(
         'name',
-        choices=['json', 'text'],
+        choices=['json'],
         help='Configure the CLI output format')
 
 
@@ -552,7 +552,7 @@ def define_parent_parser(parser_cls, config_env):
     parent_parser.add_argument(
         '--out-format',
         default=config_env['format'],
-        choices=['text', 'json'])
+        choices=['json'])
     return parent_parser
 
 
@@ -594,17 +594,6 @@ class Output(object):
         raise NotImplementedError()
 
 
-class TextOutput(Output):
-    """Text output for result objects."""
-
-    def write(self, obj):
-        """Writes text representation.
-            Args:
-                obj (object): Object to write as string
-        """
-        print obj
-
-
 class JsonOutput(Output):
     """Raw output for result objects."""
 
@@ -627,10 +616,7 @@ def run_config(_, config, output, config_env):
 
     def do_show_config():
         """Show the current config."""
-        if isinstance(output, TextOutput):
-            output.write(config_env)
-        else:
-            print config_env
+        print config_env
 
     def do_set_endpoint():
         """Set a config item."""
@@ -979,7 +965,6 @@ def run_explainer(client, config, output, _):
 
 
 OUTPUTS = {
-    'text': TextOutput,
     'json': JsonOutput,
 }
 
@@ -1033,7 +1018,7 @@ class DefaultConfig(dict):
     DEFAULT = {
         'endpoint': '',
         'model': '',
-        'format': 'text',
+        'format': 'json',
     }
 
     def __init__(self, *args, **kwargs):
