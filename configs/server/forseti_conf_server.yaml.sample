@@ -143,9 +143,14 @@ notifier:
         gcs_path:
 
     inventory:
-      summary:
+      gcs_summary:
         enabled: true
-        # gcs_path should begin with "gs://"
         # data_format may be one of: csv (the default) or json
         data_format: csv
+        # gcs_path should begin with "gs://"
         gcs_path: gs://{FORSETI_BUCKET}/inventory_summary
+      email_summary:
+        enabled: true
+        sendgrid_api_key: {SENDGRID_API_KEY}
+        sender: {EMAIL_SENDER}
+        recipient: {EMAIL_RECIPIENT}
