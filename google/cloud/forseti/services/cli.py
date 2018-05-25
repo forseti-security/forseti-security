@@ -593,7 +593,6 @@ class Output(object):
         """
         raise NotImplementedError()
 
-
 class TextOutput(Output):
     """Text output for result objects."""
 
@@ -840,12 +839,12 @@ def run_inventory(client, config, output, _):
     def do_list_inventory():
         """List an inventory."""
         for inventory in client.list():
-            output.write(inventory)
+            output.write(_convert_inventory_to_view_model(inventory))
 
     def do_get_inventory():
         """Get an inventory."""
         result = client.get(int(config.id))
-        output.write(result)
+        output.write(_convert_inventory_to_view_model(result.inventory))
 
     def do_delete_inventory():
         """Delete an inventory."""
@@ -856,6 +855,28 @@ def run_inventory(client, config, output, _):
         """Purge all inventory data older than the retention days."""
         result = client.purge(config.retention_days)
         output.write(result)
+
+    def _convert_inventory_to_view_model(inventory):
+        """Format inventory timestamp.
+        Args:
+            inventory (InventoryIndex): GRPC Inventory object.
+
+        Returns:
+            InventoryIndexViewModel: GRPC Inventory VM object.
+        """
+        from google.cloud.forseti.services.inventory import inventory_pb2
+        inventory_vm = inventory_pb2.InventoryIndexViewModel(
+            id=inventory.id,
+            start_timestamp=inventory.start_timestamp.ToJsonString(),
+            complete_timestamp=inventory.complete_timestamp.ToJsonString(),
+            schema_version=inventory.schema_version,
+            count_objects=inventory.count_objects,
+            status=inventory.status,
+            warnings=inventory.warnings,
+            errors=inventory.errors
+        )
+
+        return inventory_vm
 
     actions = {
         'create': do_create_inventory,
