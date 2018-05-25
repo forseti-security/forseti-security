@@ -92,7 +92,7 @@ class InventorySummary(object):
                     'inv_summary', summary_data, gcs_upload_path)
             else:
                 gcs_upload_path = '{}/{}'.format(
-                    self.notifier_config['gcs_path'],
+                    gcs_summary_config.get('gcs_path'),
                     self._get_output_filename(
                         string_formats.INVENTORY_SUMMARY_JSON_FMT))
                 file_uploader.upload_json(summary_data, gcs_upload_path)
