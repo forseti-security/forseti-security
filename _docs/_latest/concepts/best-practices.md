@@ -1,6 +1,6 @@
 ---
 title: Best Practices
-order: 100
+order: 002
 ---
 
 # {{ page.title }}
@@ -69,6 +69,7 @@ Legacy bucket roles are usually too broad. Use Cloud IAM roles to give users onl
 need.
 
 **Don't allow buckets to be publicly visible. It's best to keep data private in general.**
+
 By keeping data private, you prevent malicious external actors from uploading content that could
 get ingested into an application or replace data in the bucket.
 

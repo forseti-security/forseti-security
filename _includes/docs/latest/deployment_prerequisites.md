@@ -22,7 +22,7 @@ Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to
 read GCP data and to manage Forseti modules.
 
 _For a detailed explanation of how Forseti Security uses service accounts, refer to 
-["Forseti Service Accounts"]({% link _docs/latest/concepts/forseti-service-accounts.md %})._
+["Forseti Service Accounts"]({% link _docs/latest/concepts/service-accounts.md %}).
 
 To create and grant roles to a service account for Forseti Inventory, 
 Scanner, and Enforcer, follow the steps below.

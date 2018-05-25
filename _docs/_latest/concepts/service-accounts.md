@@ -5,95 +5,55 @@ order: 004
 
 # {{ page.title }}
 
-When you use multiple service accounts with your Forseti Security deployments,
-you implement the security best practice of privilege separation. Following are
-the scenarios for which it's best to use separate service accounts:
+By default Forseti will create and use multiple service accounts in its default deployment. In 
+doing this Forseti implements the security best practice of privilege separation and least
+privilege.
 
- * **[Forseti Security service account](#forseti-security-service-account)**
- (required): used by all core modules of the program to provide basic
- inventory, scanning, and enforcement actions.
- * **[G Suite Groups service account](#g-suite-groups-service-account)**
- (optional): used to inventory G Suite Groups and their members.
- Forseti Explain requires this to be enabled.
- * **[Explain service account](#explain-service-account)**
- (optional): used to provide Explain functionality.
+Following are the service accounts Forseti creates on your behalf.
 
-When you name your service accounts, it's best to use a descriptive name like
-`forseti-security` or `forseti-security-gsuite`.
+ * **[Forseti Security Server service account](#the-forseti-security-server-service-account)**
+ * **[Forseti Security Client service account](#the-forseti-security-client-service-account)**
+ 
+---
 
-The image below shows how different service accounts can work with
-different modules and resources:
+**The image below shows how the default service accounts created by Forseti are used.**
 
 {% responsive_image path: images/docs/concepts/service-account-architecture.png alt: "service account architecture diagram" %}
 
-### Forseti Security service account
+## The Forseti Security Server service account 
+The `forseti-security-server` service account is used by core modules of the Forseti service. For
+example, Inventory uses this service account to read and store the supported resources. It's also
+used by Scanner to audit policies.
 
-This service account is used by core modules of the Forseti service. For
-example, `forseti_inventory` uses this service account to read and store the
-supported resources. It's also used by `forseti_scanner` to scan
-`forseti_inventory` records.
+The service account is used exclusively on the `forseti-security-server-vm` virtual machine
+instance.
 
-A good name for this service account would be `forseti-security`.
+### Permissions 
 
-### G Suite Groups service account
+For Forseti Security to work properly the `forseti-server` and subsequent `forseti-security-server`
+account requires the following permissions
 
-It's best to use a separate service account for G Suite Groups inventory for
-privilege separation because the service account key must be local to
-`forseti_inventory`. By using a separate service account, the key scope is
-limited to G Suite Groups if the machine is compromised.
+{% include docs/latest/forseti-security-server-required-roles.md %}
 
-If you
-[enable G Suite Group collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
-and create a service account, a good name for the service account would be
-`forseti-security-gsuite-groups`.
+## The Forseti Security Client service account
 
-### Explain service account
+The `forseti-security-client` service account has less access and is used exclusively on the
+`forseti-security-client-vm` virtual machine.
 
-You can use the Forseti Security service account for Explain. However,
-since the `explain` service is an interactive tool and runs on its own
-Compute Engine instance, it's best to apply privilege separation principles
-by creating a separate service account for Explain.
-
-If you enable Explain and create a service account, a good name for the
-service account would be `forseti-security-explain`.
-
-## Service account key security
-
-Whether you install and deploy Forseti manually or by using the setup wizard,
-you'll need to store the keys securely. To learn how to keep your Google Cloud
-Platform (GCP) service account keys safe, see these
-[best practices](https://cloudplatform.googleblog.com/2017/07/help-keep-your-Google-Cloud-service-account-keys-safe.html)
-on least privilege, secure storage, and rotation.
-
-## Service account permissions
-
-If you aren't using some Forseti modules, such as `forseti_enforcer`, you don't
-need to create that service account or grant those permissions.
-
-### Service account for Forseti Security
-
-Forseti Security needs the following roles for `forseti_inventory` and
-`forseti_scanner` purposes.
-
-{% include docs/latest/required_roles.md %}
-
-### Service account for G Suite Groups
-
-To inventory G Suite Groups and their members, Forseti Security uses a service
-account enabled for G Suite domain-wide delegation. The only permission this
-service account needs is read-access on the Groups and Group Members services.
-
- * `https://www.googleapis.com/auth/admin.directory.group.readonly`
+This service account is used to communicate with the `forseti-security-server-vm`. Maintaining
+this privilege separation is key to securing the granted rights of the `forseti-security-server-vm`
+ and it's service account from that of the `forseti-security-client-vm` and its service account. 
  
-### Service account for Explain
+ This way you can grant many people access to the `forseti-security-client-vm` without overgranting
+ access to the APIs and roles required to Inventory, Audit, and Enforce.
 
-Explain should have its own service account and it only requires access to read
+### Permissions
+
+should have its own service account and it only requires access to read
 from the inventory stored in Cloud SQL.
 
-**Granted on the project where Explain is deployed**
+{% include docs/latest/forseti-security-client-required-roles.md %}
 
- * `roles/cloudsql.client`
- 
 ## What's next
 
  * Learn more about [Service Accounts](https://cloud.google.com/iam/docs/understanding-service-accounts)

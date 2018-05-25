@@ -1,5 +1,5 @@
 ---
-title: FAQ
+title: Frequently Asked Questions
 hide:
   left_sidebar: true
   right_sidebar: true
