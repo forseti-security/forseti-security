@@ -109,7 +109,7 @@ Adding a password to the root user provides the most basic protection.**
 Cloud SQL Proxy offers secure connections and handles authentication, so you don't have to
 whitelist IP addresses.
 
-**Always use SSL connections if you aren't using Cloud SQL Proxy or if you configured
+**Always use SSL connections if you are not using Cloud SQL Proxy or if you configured
 authorized networks.**
 
 By using SSL connections, you prevent third parties from seeing the data that's transferred
