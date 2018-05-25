@@ -18,7 +18,7 @@ hide:
 | :---------------------------------------------------------------------------- |
 | Configure Forseti Security and modules and enable optional features like email notifications or export summary notifications. |
 
-| **[Using]({% link _docs/latest/use/index.md %})**| 
+| **[Use]({% link _docs/latest/use/index.md %})**| 
 | :---------------------------------------------------------------------------- |
 | Learn about using the command line and third-party tool queries to access Forseti Security. |
 
