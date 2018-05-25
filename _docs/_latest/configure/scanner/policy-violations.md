@@ -13,6 +13,6 @@ location for the CSV, edit the `notifier` section in the `forseti_server_conf.ya
 file. To learn more, see
 [Configuring Notifier]({% link _docs/latest/configure/notifier/index.md %})
 
-Below is an example of scanner violation output:
+**Below is an example of scanner violation output**
 
-{% responsive_image path: images/docs/quickstarts/scanner-output.png alt: "sample scanner output" indent: 2 %}
+{% responsive_image path: images/docs/quickstarts/scanner-output.png alt: "sample scanner output" %}
