@@ -6,27 +6,30 @@ hide:
   right_sidebar: true
 ---
 
-| **[Concepts]({% link _docs/latest/concepts/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Learn the core concepts and get an overview of each Forseti Security module. |
+**[Concepts]({% link _docs/latest/concepts/index.md %})**
 
-| **[Setup]({% link _docs/latest/setup/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Install or upgrade Forseti Security to help protect your GCP environments by monitoring your GCP resources to ensure that role-based access controls are set as you intended. |
+Learn the core concepts and get an overview of each Forseti Security module.
 
-| **[Configure]({% link _docs/latest/configure/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Configure Forseti Security and modules and enable optional features like email notifications or export summary notifications. |
+**[Setup]({% link _docs/latest/setup/index.md %})**
 
-| **[Use]({% link _docs/latest/use/index.md %})**| 
-| :---------------------------------------------------------------------------- |
-| Learn about using the command line and third-party tool queries to access Forseti Security. |
+Install or upgrade Forseti Security to help protect your GCP environments by monitoring your GCP
+resources to ensure that role-based access controls are set as you intended.
 
-| **[Develop]({% link _docs/latest/develop/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Learn how to set up Forseti for local development, contribute to Forseti, run tests on your Forseti contributions, and more. |
+**[Configure]({% link _docs/latest/configure/index.md %})**
 
-| **[FAQ]({% link _docs/latest/faq/index.md %})** |
-| :---------------------------------------------------------------------------- |
-| Get answers to common questions like why you should run Forseti in a separate project or where logs are stored. |
+Configure Forseti Security and modules and enable optional features like email notifications or
+export summary notifications.
 
+**[Use]({% link _docs/latest/use/index.md %})**
+
+Learn about using the command line and third-party tool queries to access Forseti.
+
+**[Develop]({% link _docs/latest/develop/index.md %})**
+
+Learn how to set up Forseti for local development, contribute to Forseti, run tests on your
+Forseti contributions, and more.
+
+**[FAQ]({% link _docs/latest/faq/index.md %})**
+
+Get answers to common questions like why you should run Forseti in a separate project or where
+logs are stored.

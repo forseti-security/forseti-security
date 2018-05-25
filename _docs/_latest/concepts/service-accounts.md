@@ -11,8 +11,8 @@ privilege.
 
 Following are the service accounts Forseti creates on your behalf.
 
- * **[Forseti Security Server service account](#the-forseti-security-server-service-account)**
- * **[Forseti Security Client service account](#the-forseti-security-client-service-account)**
+ * **[Server service account](#the-server-service-account)**
+ * **[Client service account](#the-client-service-account)**
  
 ---
 
@@ -20,39 +20,40 @@ Following are the service accounts Forseti creates on your behalf.
 
 {% responsive_image path: images/docs/concepts/service-account-architecture.png alt: "service account architecture diagram" %}
 
-## The Forseti Security Server service account 
-The `forseti-security-server` service account is used by core modules of the Forseti service. For
+## The Server Service Account 
+
+The `forseti-server-gcp` service account has more access and is used exclusively on the
+`forseti-server-vm` virtual machine instance.
+
+This service account is used by core modules of the Forseti service. For
 example, Inventory uses this service account to read and store the supported resources. It's also
 used by Scanner to audit policies.
 
-The service account is used exclusively on the `forseti-security-server-vm` virtual machine
-instance.
-
 ### Permissions 
 
-For Forseti Security to work properly the `forseti-server` and subsequent `forseti-security-server`
-account requires the following permissions
+For Forseti to work properly the `forseti-server-gcp` service account requires the
+following permissions.
 
-{% include docs/latest/forseti-security-server-required-roles.md %}
+{% include docs/latest/forseti-server-gcp-required-roles.md %}
 
-## The Forseti Security Client service account
+## The Client Service Account 
 
-The `forseti-security-client` service account has less access and is used exclusively on the
-`forseti-security-client-vm` virtual machine.
+The `forseti-client-gcp` service account has less access and is used exclusively on the
+`forseti-client-vm` virtual machine instance.
 
-This service account is used to communicate with the `forseti-security-server-vm`. Maintaining
-this privilege separation is key to securing the granted rights of the `forseti-security-server-vm`
- and it's service account from that of the `forseti-security-client-vm` and its service account. 
+This service account is used to communicate with the `forseti-server-vm`. The separation 
+between service accounts is key to securing the granted rights of the `forseti-server-gpc`
+service account from that of the `forseti-client-gpc` service account. 
  
- This way you can grant many people access to the `forseti-security-client-vm` without overgranting
- access to the APIs and roles required to Inventory, Audit, and Enforce.
+This way you can grant many people access to the `forseti-client-vm` without over granting
+access required for proper operation of the core modules.
 
 ### Permissions
 
-should have its own service account and it only requires access to read
-from the inventory stored in Cloud SQL.
+For Forseti to work properly the `forseti-client-gcp` service account requires the following
+permissions.
 
-{% include docs/latest/forseti-security-client-required-roles.md %}
+{% include docs/latest/forseti-client-gcp-required-roles.md %}
 
 ## What's next
 

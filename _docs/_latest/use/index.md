@@ -12,34 +12,34 @@ access Forseti Security.
 
 ---
 
-| **[Command Line]({% link _docs/latest/use/cli.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using the command line to access Forseti data. |
+**[Command Line]({% link _docs/latest/use/cli.md %})**
 
-| **[Inventory]({% link _docs/latest/use/inventory.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using third party tools to query raw Forseti Inventory data. |
+Using the command line to access Forseti data.
 
-| **[Model]({% link _docs/latest/use/model.md %})** |
-| :---------------------------------------------------------------------------- |
-| Building the Forseti Model. |
+**[Inventory]({% link _docs/latest/use/inventory.md %})**
 
-| **[Scanner]({% link _docs/latest/use/scanner.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using the Forseti Scanner to scan inventory data. |
+Using third party tools to query raw Forseti Inventory data.
 
-| **[Notifier]({% link _docs/latest/use/notifier.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using the Forseti Notifier to send notifications. |
+**[Model]({% link _docs/latest/use/model.md %})**
 
-| **[Explainer]({% link _docs/latest/use/explain.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using the Forseti Explainer to query the data model. |
+Building and using Forseti models.
 
-| **[Server]({% link _docs/latest/use/server.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using the Forseti Server to update server configuration. |
+**[Scanner]({% link _docs/latest/use/scanner.md %})**
 
-| **[Config]({% link _docs/latest/use/config.md %})** |
-| :---------------------------------------------------------------------------- |
-| Using the Forseti Config to update CLI configuration. |
+Using the Forseti Scanner to scan inventory data.
+
+**[Notifier]({% link _docs/latest/use/notifier.md %})**
+
+Using the Forseti Notifier to send notifications.
+
+**[Explainer]({% link _docs/latest/use/explain.md %})**
+
+Using the Forseti Explainer to query the data model.
+
+**[Server]({% link _docs/latest/use/server.md %})**
+
+Using the Forseti Server to update server configuration.
+
+**[Config]({% link _docs/latest/use/config.md %})**
+
+Using the Forseti Config to update CLI configuration.

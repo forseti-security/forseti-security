@@ -22,6 +22,8 @@ delete them after finish using Explain.
 Both Scanner and Explain depend on the data models being present, therefore creating a valid data 
 model set prior to using Scanner or Explain is **required**.
 
+---
+
 ## How data models are stored
 
 Data models are stored in its own set of tables, which are named with the

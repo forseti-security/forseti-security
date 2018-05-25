@@ -10,9 +10,9 @@ resources in your Google Cloud Platform (GCP) environments. Future Forseti
 releases are expected to include scans that correspond to each best practice,
 so you can easily run them.
 
-## Cloud Identity and Access Management (Cloud IAM) policies
-
 ---
+
+## Cloud Identity and Access Management (Cloud IAM) policies
 
 **Don't use [primitive roles](https://cloud.google.com/iam/docs/understanding-roles#primitive_roles)
 in Cloud IAM policies, and never grant primitive roles on an organization.**
@@ -41,8 +41,6 @@ When you add external users directly to a Cloud IAM policy, it's easier to audit
 and do lifecycle management.
 
 ## Service accounts
-
----
 
 **Don't use default service accounts. They have
 [primitive roles](https://cloud.google.com/iam/docs/understanding-roles#primitive_roles).**
@@ -75,16 +73,12 @@ get ingested into an application or replace data in the bucket.
 
 ## Compute Engine
 
----
-
 **Minimize direct exposure to the internet. Don't open up 0.0.0.0/0.**
 
 By limiting exposure to the internet, you prevent malicious external actors from getting access to
 the instance.
 
 ## Networking
-
----
 
 **Don't allow instances behind backend services to be directly accessed from the internet.
 Allow access only from specified ranges for
@@ -95,8 +89,6 @@ and getting access to the instance.
 
 ## BigQuery
 
----
-
 **It's best to keep data private in general:**
 
 * Don't allow datasets to be publicly readable or writable.
@@ -105,8 +97,6 @@ and getting access to the instance.
 By limiting access to datasets, you prevent malicious external actors from changing or adding data.
 
 ## Cloud SQL
-
----
 
 **Create a [root password](https://cloud.google.com/sql/docs/mysql/create-manage-users#user-root)
 for database users.**

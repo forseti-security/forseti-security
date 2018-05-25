@@ -15,4 +15,4 @@ file. To learn more, see
 
 Below is an example of scanner violation output:
 
-![scanner violation output table](/images/docs/quickstarts/scanner-output.png)
+{% responsive_image path: images/docs/quickstarts/scanner-output.png alt: "sample scanner output" indent: 2 %}
