@@ -71,8 +71,8 @@ class InventoryIndex(BASE):
     progress = Column(Text)
     counter = Column(Integer)
     inventory_index_warnings = Column(Text(16777215))
-    inventory_index_errors = Column(Text)
-    message = Column(Text)
+    inventory_index_errors = Column(Text(16777215))
+    message = Column(Text(16777215))
 
     def __repr__(self):
         """Object string representation.
