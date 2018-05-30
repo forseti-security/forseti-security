@@ -26,7 +26,7 @@ security risks.
  * Notifier keeps you up to date about Forseti findings and actions.
  * Explain helps you understand, test, and develop Cloud Identity and Access
    Management (Cloud IAM) policies.
-   
+
 ---
 
 **The image below shows how data flows through Forseti**
@@ -34,15 +34,15 @@ security risks.
 {% responsive_image path: images/docs/concepts/forseti-architecture.png alt: "forseti architecture" %}
 
  1. Inventory collects information about your GCP resources and G Suite Groups and Users.
- 1. Inventory stores information in Cloud SQL for your review and use by other
+ 2. Inventory stores information in Cloud SQL for your review and use by other
     Forseti modules.
- 1. Scanner compares the data collected by Inventory to the policy rules you
+ 3. Scanner compares the data collected by Inventory to the policy rules you
     set.
- 1. Notifier sends Scanner & Inventory results to one or more of the following channels you
+ 4. Notifier sends Scanner & Inventory results to one or more of the following channels you
     configure: Cloud Storage, SendGrid, and Slack.
- 1. You use Explain to query and understand your Cloud IAM policies.
- 1. Enforcer uses Google Cloud APIs to make sure policies match your desired
+ 5. You use Explain to query and understand your Cloud IAM policies.
+ 6. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.
- 1. You use the command-line interface to query Forseti data via GRPC.
- 1. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
+ 7. You use the command-line interface to query Forseti data via GRPC.
+ 8. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
     in CloudSQL.
