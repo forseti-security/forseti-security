@@ -65,8 +65,6 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
 
 ## Setting up local environment
 
-### Install 
-
 ### Ubuntu setup
 
 Install the necessary python dev tools using the following command:
@@ -93,7 +91,7 @@ $ brew install openssl
 
 ### Installing mysql_config
 
-The MySql-python library requires the `mysql_config` utility to be present in your system.
+The MySQL-python library requires the `mysql_config` utility to be present in your system.
 Following are example commands to install `mysql_config`:
 
   ```bash
@@ -128,7 +126,7 @@ Use the following command to create a virtualenv:
 
 ### Getting the source code
 
-Follow our [contributing guideline](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/.github/CONTRIBUTING.md) to get a fork of the Forseti code, and learn how to submit a PR:
+Follow our [contributing guideline](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md) to get a fork of the Forseti code, and learn how to submit a PR.
 
 ### Installing build dependencies
 
@@ -197,7 +195,7 @@ $ forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
     --services scanner model inventory explain notifier \
-    --config_file "PATH_TO_YOUR_CONFIG.yaml" \
+    --config_file_path "PATH_TO_YOUR_CONFIG.yaml" \
     --log_level=info \
     --enable_console_log
 
@@ -205,25 +203,6 @@ $ forseti_server \
 # In another terminal window:
 
 # See the forseti cli options
-$ forseti -h
+$ forseti -h or --help
 
-# Run the inventory crawler, you can add --import_as if you want to create a       # data model along with the inventory
-
-# i.e. forseti inventory create --import_as MODEL_NAME
-$ forseti inventory create
-
-# List the inventory after it has been created and copy the id field of the output
-$ forseti inventory list
-
-# Create a model using the inventory id and use the model
-$ forseti model create inventory --id <inventory_index_id> <model_name>
-$ forseti model use <model_name>
-
-
-# Run scanner
-$ forseti scanner run
-
-# Run notifier
-$ forseti notifier run
-
-To display the flag options for each tool, use the `--help` or `-h` flags.
+To see how to use more CLI commands, see Use({% link _docs/latest/howto/use/index.md %}).
