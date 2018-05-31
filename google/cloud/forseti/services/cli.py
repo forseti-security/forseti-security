@@ -19,12 +19,14 @@ import json
 import os
 import sys
 
-from google.protobuf.json_format import MessageToJson
 import grpc
+from google.protobuf.json_format import MessageToJson
 
 from google.cloud.forseti.services import client as iam_client
+from google.cloud.forseti.services.client import ModelNotSetError
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
+
 
 LOGGER = logger.get_logger(__name__)
 
@@ -162,7 +164,7 @@ def define_config_parser(parent):
         help='Configure the output format')
     set_format_config_parser.add_argument(
         'name',
-        choices=['json', 'text'],
+        choices=['json'],
         help='Configure the CLI output format')
 
 
@@ -326,13 +328,14 @@ def define_notifier_parser(parent):
 
     create_notifier_parser.add_argument(
         '--inventory_index_id',
-        default=None,
+        default=0,
         help=('Id of the inventory index to send violation notifications. '
               'If this is not specified, then the last inventory index id '
               'will be used.')
     )
 
 
+# pylint: disable=too-many-locals
 def define_explainer_parser(parent):
     """Define the explainer service parser.
 
@@ -414,11 +417,13 @@ def define_explainer_parser(parent):
     explain_granted_parser.add_argument(
         'resource',
         help='Resource to query')
-    explain_granted_parser.add_argument(
+    explain_granted_group = (
+        explain_granted_parser.add_mutually_exclusive_group(required=True))
+    explain_granted_group.add_argument(
         '--role',
         default=None,
         help='Query for a role')
-    explain_granted_parser.add_argument(
+    explain_granted_group.add_argument(
         '--permission',
         default=None,
         help='Query for a permission')
@@ -434,12 +439,14 @@ def define_explainer_parser(parent):
         'resources',
         nargs='+',
         help='Resource to query')
-    explain_denied_parser.add_argument(
+    explain_denied_group = (
+        explain_denied_parser.add_mutually_exclusive_group(required=True))
+    explain_denied_group.add_argument(
         '--roles',
         nargs='*',
         default=[],
         help='Query for roles')
-    explain_denied_parser.add_argument(
+    explain_denied_group.add_argument(
         '--permissions',
         nargs='*',
         default=[],
@@ -458,8 +465,7 @@ def define_explainer_parser(parent):
         help='Permissions to query for')
     query_access_by_member.add_argument(
         '--expand_resources',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand the resource hierarchy')
 
     query_access_by_authz = action_subparser.add_parser(
@@ -477,13 +483,11 @@ def define_explainer_parser(parent):
         help='Role to query')
     query_access_by_authz.add_argument(
         '--expand_groups',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand groups to their members')
     query_access_by_authz.add_argument(
         '--expand_resources',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand resources to their children')
 
     query_access_by_resource = action_subparser.add_parser(
@@ -499,8 +503,7 @@ def define_explainer_parser(parent):
         help='Permissions to query for')
     query_access_by_resource.add_argument(
         '--expand_groups',
-        type=bool,
-        default=False,
+        action='store_true',
         help='Expand groups to their members')
 
 
@@ -549,7 +552,7 @@ def define_parent_parser(parser_cls, config_env):
     parent_parser.add_argument(
         '--out-format',
         default=config_env['format'],
-        choices=['text', 'json'])
+        choices=['json'])
     return parent_parser
 
 
@@ -591,17 +594,6 @@ class Output(object):
         raise NotImplementedError()
 
 
-class TextOutput(Output):
-    """Text output for result objects."""
-
-    def write(self, obj):
-        """Writes text representation.
-            Args:
-                obj (object): Object to write as string
-        """
-        print obj
-
-
 class JsonOutput(Output):
     """Raw output for result objects."""
 
@@ -624,10 +616,7 @@ def run_config(_, config, output, config_env):
 
     def do_show_config():
         """Show the current config."""
-        if isinstance(output, TextOutput):
-            output.write(config_env)
-        else:
-            print config_env
+        print config_env
 
     def do_set_endpoint():
         """Set a config item."""
@@ -748,7 +737,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(config.inventory_index_id):
+        for progress in client.run(int(config.inventory_index_id)):
             output.write(progress)
 
     actions = {
@@ -788,7 +777,7 @@ def run_model(client, config, output, config_env):
         """Create a model."""
         result = client.new_model('inventory',
                                   config.name,
-                                  config.inventory_index_id,
+                                  int(config.inventory_index_id),
                                   config.background)
         output.write(result)
 
@@ -841,12 +830,12 @@ def run_inventory(client, config, output, _):
 
     def do_get_inventory():
         """Get an inventory."""
-        result = client.get(config.id)
+        result = client.get(int(config.id))
         output.write(result)
 
     def do_delete_inventory():
         """Delete an inventory."""
-        result = client.delete(config.id)
+        result = client.delete(int(config.id))
         output.write(result)
 
     def do_purge_inventory():
@@ -976,7 +965,6 @@ def run_explainer(client, config, output, _):
 
 
 OUTPUTS = {
-    'text': TextOutput,
     'json': JsonOutput,
 }
 
@@ -1030,7 +1018,7 @@ class DefaultConfig(dict):
     DEFAULT = {
         'endpoint': '',
         'model': '',
-        'format': 'text',
+        'format': 'json',
     }
 
     def __init__(self, *args, **kwargs):
@@ -1055,14 +1043,23 @@ class DefaultConfig(dict):
         Returns:
             str: Forseti server endpoint
         """
+        default_env_variable = 'FORSETI_CLIENT_CONFIG'
         try:
-            conf_path = os.environ['FORSETI_CLIENT_CONFIG']
+            conf_path = os.environ[default_env_variable]
             configs = file_loader.read_and_parse_file(conf_path)
             server_ip = configs.get('server_ip')
             if server_ip:
                 return '{}:50051'.format(server_ip)
-        except (KeyError, IOError) as err:
-            LOGGER.warn(err)
+        except KeyError:
+            LOGGER.info('Unable to read environment variable: %s, will use '
+                        'the default endpoint instead, endpoint: %s',
+                        default_env_variable,
+                        self.DEFAULT_ENDPOINT)
+        except IOError:
+            LOGGER.info('Unable to open file: %s, will use the default '
+                        'endpoint instead, endpoint: %s',
+                        conf_path,
+                        self.DEFAULT_ENDPOINT)
 
         return self.DEFAULT_ENDPOINT
 
@@ -1122,15 +1119,15 @@ class DefaultConfig(dict):
         self[key] = self.DEFAULT[key]
 
 
-def main(args,
-         config_env,
+def main(args=None,
+         config_env=None,
          client=None,
          outputs=None,
          parser_cls=DefaultParser,
          services=None):
     """Main function.
     Args:
-        args (list): Command line arguments without argv[0].
+        args (list): CLI arguments.
         config_env (obj): Configuration environment.
         client (obj): API client to use.
         outputs (list): Supported output formats.
@@ -1140,8 +1137,10 @@ def main(args,
     Returns:
         object: Environment configuration.
     """
+    config_env = config_env or DefaultConfigParser.load()
     parser = create_parser(parser_cls, config_env)
     config = parser.parse_args(args)
+
     if not client:
         client = iam_client.ClientComposition(config.endpoint)
     client.switch_model(config.use_model)
@@ -1155,13 +1154,22 @@ def main(args,
         services[config.service](client, config, output, config_env)
     except ValueError as e:
         parser.error(e.message)
-    except grpc.RpcError:
-        print('Error communicating to the Forseti server.\n'
-              'Please check the status of the server and make sure it\'s '
-              'running.\n'
-              'If you are accessing from a client VM, make sure the '
-              '`server_ip` field inside the client configuration file in '
-              'the Forseti client GCS bucket contains the right IP address.\n')
+    except grpc.RpcError as e:
+        grpc_status_code = e.code()
+        if grpc_status_code == grpc.StatusCode.UNAVAILABLE:
+            print('Error communicating to the Forseti server.\n'
+                  'Please check the status of the server and make sure it\'s '
+                  'running.\n'
+                  'If you are accessing from a client VM, make sure the '
+                  '`server_ip` field inside the client configuration file in '
+                  'the Forseti client GCS bucket contains the right IP '
+                  'address.\n')
+        else:
+            print 'Error occurred on the server side, message: {}'.format(e)
+    except ModelNotSetError:
+        print ('Model must be specified before running this command. '
+               'You can specify a model to use with command '
+               '"forseti model use <MODEL_NAME>".')
     return config
 
 
@@ -1178,5 +1186,4 @@ def get_config_path():
 
 
 if __name__ == '__main__':
-    ENV_CONFIG = DefaultConfigParser.load()
-    main(sys.argv[1:], ENV_CONFIG)
+    main()

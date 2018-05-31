@@ -128,7 +128,7 @@ class KeVersionScanner(base_scanner.BaseScanner):
                     KeCluster.from_json(project_id,
                                         service_config.data,
                                         ke_cluster.data,
-                                        ke_cluster.parent.full_name))
+                                        ke_cluster.full_name))
 
         return ke_clusters
 

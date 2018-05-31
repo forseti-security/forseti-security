@@ -52,10 +52,10 @@ class EmailViolationsTest(ForsetiTestCase):
                 os.path.dirname(__file__), 'test_data',
                 'expected_attachment.csv')
 
-        self.cycle_timestamp = '2018-03-24T00:49:02.891287'
+        self.inventory_index_id = 1526675202480850
         self.evp_init_args = [
             'policy_violations',
-            self.cycle_timestamp,
+            self.inventory_index_id,
             fake_violations.VIOLATIONS['iam_policy_violations'],
             self.fake_global_conf,
             {},
@@ -75,7 +75,7 @@ class EmailViolationsTest(ForsetiTestCase):
         attachment = evp._make_attachment_csv()
         self.assertEquals(
             string_formats.VIOLATION_CSV_FMT.format(
-                evp.resource, evp.cycle_timestamp, expected_timestamp),
+                evp.resource, evp.inventory_index_id, expected_timestamp),
             attachment.filename)
 
     @mock.patch(
@@ -168,11 +168,11 @@ class EmailViolationsTest(ForsetiTestCase):
         notifier_config = fake_violations.NOTIFIER_CONFIGS_EMAIL_JSON
         notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
         resource = 'policy_violations'
-        cycle_timestamp = '1514764800123456'
+        inventory_index_id = 1514764800123456
         mock_json_stringify.return_value = 'test123'
         evp = email_violations.EmailViolations(
             resource,
-            cycle_timestamp,
+            inventory_index_id,
             fake_violations.VIOLATIONS,
             fake_violations.GLOBAL_CONFIGS,
             notifier_config,
@@ -201,11 +201,11 @@ class EmailViolationsTest(ForsetiTestCase):
         notifier_config = fake_violations.NOTIFIER_CONFIGS_EMAIL_DEFAULT
         notification_config = notifier_config['resources'][0]['notifiers'][0]['configuration']
         resource = 'policy_violations'
-        cycle_timestamp = '1514764800123456'
+        inventory_index_id = 1514764800123456
         mock_json_stringify.return_value = 'test123'
         evp = email_violations.EmailViolations(
             resource,
-            cycle_timestamp,
+            inventory_index_id,
             fake_violations.VIOLATIONS,
             fake_violations.GLOBAL_CONFIGS,
             notifier_config,

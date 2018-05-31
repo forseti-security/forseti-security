@@ -43,21 +43,20 @@ class BaseNotification(object):
     __metaclass__ = abc.ABCMeta
     supported_data_formats = ['csv', 'json']
 
-    def __init__(self, resource, cycle_timestamp,
+    def __init__(self, resource, inventory_index_id,
                  violations, global_configs, notifier_config,
                  notification_config):
         """Constructor for the base notifier.
 
         Args:
             resource (str): Violation resource name.
-            cycle_timestamp (str): Snapshot timestamp,
-               formatted as YYYYMMDDTHHMMSSZ.
+            inventory_index_id (int64): Inventory index id.
             violations (dict): Violations.
             global_configs (dict): Global configurations.
             notifier_config (dict): Notifier configurations.
             notification_config (dict): notifier configurations.
         """
-        self.cycle_timestamp = cycle_timestamp
+        self.inventory_index_id = inventory_index_id
         self.resource = resource
         self.global_configs = global_configs
         self.notifier_config = notifier_config
@@ -87,7 +86,7 @@ class BaseNotification(object):
             string_formats.TIMESTAMP_TIMEZONE_FILES)
 
         output_filename = filename_template.format(
-            self.resource, self.cycle_timestamp, output_timestamp)
+            self.resource, str(self.inventory_index_id), output_timestamp)
         return output_filename
 
     @classmethod
