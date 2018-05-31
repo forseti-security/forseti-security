@@ -29,12 +29,6 @@ exposure.
 Configure Scanner to monitor your GCP resources for rule violations. Scanner uses the information
 from Inventory to regularly compare role-based access policies for your resources.
 
-**[Configuring Enforcer]({% link _docs/latest/configure/enforcer/index.md %})**
-
-Configure Enforcer to automatically correct policy discrepancies. Enforcer uses policies you
-create to compare the current state of your Compute Engine firewall to the desired state and uses
-Google Cloud APIs to make changes if it finds any differences.
-
 **[Enabling Email Notifications]({% link _docs/latest/configure/email-notification.md %})**
 
 Enable Forseti email notifications using the SendGrid API. SendGrid is the suggested free email
