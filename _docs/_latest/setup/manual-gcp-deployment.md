@@ -62,16 +62,15 @@ Note:
 `roles/iam.serviceAccountTokenCreator` can only be assigned by gcloud
 
 ## Create a forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
-	* n1-standard-2
-	* ubuntu-1804-lts
-	* bind the server service account to the VM instance
+* n1-standard-2
+* ubuntu-1804-lts
+* bind the server service account to the VM instance
 
 ## Install Forseti Server
 * ssh into the server VM
 * become ubuntu user
 * git clone the latest release from the stable branch
 * run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L114)
-* create a cron job with a run frequency that you desire.
 * create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py#L164)
 
 ## Configuration
