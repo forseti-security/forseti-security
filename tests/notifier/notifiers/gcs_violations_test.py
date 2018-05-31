@@ -56,7 +56,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
 
         gvp = gcs_violations.GcsViolations(
             'abcd',
-            '11111',
+            1514764800123456,
             [],
             self.fake_global_conf,
             {},
@@ -65,7 +65,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             string_formats.VIOLATION_CSV_FMT)
         self.assertEquals(
             string_formats.VIOLATION_CSV_FMT.format(
-                gvp.resource, gvp.cycle_timestamp, expected_timestamp),
+                gvp.resource, gvp.inventory_index_id, expected_timestamp),
             actual_filename)
 
     @mock.patch(
@@ -80,7 +80,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
 
         gvp = gcs_violations.GcsViolations(
             'abcd',
-            '11111',
+            1514764800123456,
             [],
             self.fake_global_conf,
             {},
@@ -89,7 +89,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
             string_formats.VIOLATION_JSON_FMT)
         self.assertEquals(
             string_formats.VIOLATION_JSON_FMT.format(
-                gvp.resource, gvp.cycle_timestamp, expected_timestamp),
+                gvp.resource, gvp.inventory_index_id, expected_timestamp),
             actual_filename)
 
     @mock.patch(
@@ -104,7 +104,7 @@ class GcsViolationsnotifierTest(ForsetiTestCase):
 
         gvp = gcs_violations.GcsViolations(
             'abcd',
-            '11111',
+            1514764800123456,
             [],
             self.fake_global_conf,
             {},

@@ -23,22 +23,21 @@ https://github.com/google/google-apputils/blob/master/google/apputils/run_script
 
 # pylint: disable=invalid-name
 
-from google.apputils import run_script_module
 
 
 def RunForsetiEnforcer():
     """Run Forseti Enforcer module."""
     import google.cloud.forseti.enforcer.enforcer as forseti_enforcer
-    run_script_module.RunScriptModule(forseti_enforcer)
+    forseti_enforcer.main()
 
 
 def RunForsetiServer():
     """Run Forseti API server."""
     import google.cloud.forseti.services.server as forseti_server
-    run_script_module.RunScriptModule(forseti_server)
+    forseti_server.main()
 
 
 def RunForsetiCli():
     """Run Forseti CLI."""
     import google.cloud.forseti.services.cli as forseti_cli
-    run_script_module.RunScriptModule(forseti_cli)
+    forseti_cli.main()

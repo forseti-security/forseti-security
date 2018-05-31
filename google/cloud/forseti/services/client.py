@@ -35,6 +35,10 @@ from google.cloud.forseti.services.utils import oneof
 
 # pylint: disable=too-many-instance-attributes
 
+class ModelNotSetError(Exception):
+    """ModelNotSetError."""
+    pass
+
 
 def require_model(f):
     """Decorator to perform check that the model handle exists in the service.
@@ -57,11 +61,11 @@ def require_model(f):
             object: Results of executing f if model handle exists
 
         Raises:
-            Exception: Model handle not set
+            ModelNotSetError: Model handle not set
         """
         if args[0].config.handle():
             return f(*args, **kwargs)
-        raise Exception('API requires model to be set.')
+        raise ModelNotSetError('API requires model to be set.')
     return wrapper
 
 
@@ -226,7 +230,7 @@ class NotifierClient(ForsetiClient):
         """Runs the notifier.
 
         Args:
-            inventory_index_id (int): Inventory Index Id.
+            inventory_index_id (int64): Inventory Index Id.
 
         Returns:
             proto: the returned proto message.
@@ -266,14 +270,14 @@ class ModelClient(ForsetiClient):
         echo = self.stub.Ping(model_pb2.PingRequest(data=data)).data
         return echo == data
 
-    def new_model(self, source, name, inventory_index_id='', background=True):
+    def new_model(self, source, name, inventory_index_id=0, background=True):
         """Creates a new model, reply contains the handle.
 
         Args:
             source (str): the source to create the model, either EMPTY
                 or INVENTORY.
             name (str): the name for the model.
-            inventory_index_id (str): the index id of the inventory to
+            inventory_index_id (int64): the index id of the inventory to
                 import from.
             background (bool): whether to run in background.
 
@@ -394,7 +398,7 @@ class InventoryClient(ForsetiClient):
         """Delete an inventory.
 
         Args:
-            inventory_index_id (str): the index id of the inventory to delete.
+            inventory_index_id (int64): the index id of the inventory to delete.
 
         Returns:
             proto: the returned proto message of delete inventory.
@@ -733,14 +737,14 @@ class ClientComposition(object):
             if not all([c.is_available() for c in self.clients]):
                 raise Exception('gRPC connected but services not registered')
 
-    def new_model(self, source, name, inventory_index_id='', background=False):
+    def new_model(self, source, name, inventory_index_id=0, background=False):
         """Create a new model from the specified source.
 
         Args:
             source (str): the source to create the model, either EMPTY
                 or INVENTORY.
             name (str): the name for the model.
-            inventory_index_id (str): the index id of the inventory to
+            inventory_index_id (int64): the index id of the inventory to
                 import from.
             background (bool): whether to run in background.
 

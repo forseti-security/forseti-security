@@ -186,6 +186,12 @@ class KeVersionRuleBook(bre.BaseRuleBook):
 
         checked_wildcards = set()
         for curr_resource in resource_ancestors:
+            if not curr_resource:
+                # resource_ancestors will contain all the resources including
+                # the child resource, which has type kebernete cluster and
+                # cannot be created (return None) as part of the ancestor path,
+                # we will skip the child as it's not part of the ancestor.
+                continue
 
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:

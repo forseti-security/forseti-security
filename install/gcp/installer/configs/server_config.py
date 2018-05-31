@@ -30,9 +30,7 @@ class ServerConfig(Config):
         """
         super(ServerConfig, self).__init__(**kwargs)
         self.installation_type = 'server'
-        self.cloudsql_instance = '{}-{}-db-{}'.format('forseti',
-                                                      self.installation_type,
-                                                      self.timestamp)
+        self.cloudsql_instance = None
         self.cloudsql_region = kwargs.get('cloudsql_region')
 
         # forseti_conf_server.yaml.in properties
@@ -42,3 +40,9 @@ class ServerConfig(Config):
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
         self.skip_sendgrid_config = bool(kwargs.get('skip_sendgrid_config'))
+
+    def generate_cloudsql_instance(self):
+        """Update cloudsql_instance when the identifier is generated."""
+        self.cloudsql_instance = '{}-{}-db-{}'.format('forseti',
+                                                      self.installation_type,
+                                                      self.identifier)

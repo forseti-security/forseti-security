@@ -198,6 +198,7 @@ class ForsetiInstaller(object):
                                          self.config.force_no_cloudshell,
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
+        self.config.generate_identifier(self.organization_id)
         self.check_if_authed_user_in_domain(
             self.organization_id, authed_user)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
@@ -231,7 +232,7 @@ class ForsetiInstaller(object):
             self.organization_id,
             deployment_tpl_path,
             self.config.installation_type,
-            self.config.timestamp,
+            self.config.identifier,
             self.config.dry_run)
 
         status_checker = (lambda: gcloud.check_deployment_status(
@@ -320,7 +321,7 @@ class ForsetiInstaller(object):
             utils.generate_service_acct_info(
                 'gcp',
                 self.config.installation_type,
-                self.config.timestamp,
+                self.config.identifier,
                 self.project_id))
         return service_account_email, service_account_name
 
@@ -332,7 +333,7 @@ class ForsetiInstaller(object):
         """
         return constants.DEFAULT_BUCKET_FMT_V2.format(
             self.config.installation_type,
-            self.config.timestamp)
+            self.config.identifier)
 
     @abstractmethod
     def get_deployment_values(self):
@@ -365,7 +366,7 @@ class ForsetiInstaller(object):
         deployment_tpl_path = files.generate_deployment_templates(
             self.config.installation_type,
             deploy_values,
-            self.config.timestamp)
+            self.config.identifier)
 
         return deployment_tpl_path
 
@@ -383,7 +384,7 @@ class ForsetiInstaller(object):
         forseti_conf_path = files.generate_forseti_conf(
             self.config.installation_type,
             conf_values,
-            self.config.timestamp)
+            self.config.identifier)
 
         return forseti_conf_path
 
