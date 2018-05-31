@@ -21,7 +21,7 @@ class ServerConfig(Config):
     """Forseti installer server config object."""
 
     # pylint: disable=too-many-instance-attributes
-    
+
     def __init__(self, **kwargs):
         """Initialize.
 
