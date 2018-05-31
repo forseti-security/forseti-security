@@ -2,11 +2,13 @@
 {: .table}
 |Name|API URI|
 |--------|------------|
-|Admin SDK API|`admin.googleapis.com`|
-|AppEngine Admin API|`appengine.googleapis.com`|
-|Cloud Resource Manager API|`cloudresourcemanager.googleapis.com`|
-|Cloud SQL Admin API|`sqladmin.googleapis.com`|
-|Cloud SQL API|`sql-component.googleapis.com`|
-|Compute Engine API|`compute.googleapis.com`|
-|Deployment Manager API|`deploymentmanager.googleapis.com`|
-|Identity and Access Management (IAM) API|`iam.googleapis.com`|
+|Admin SDK|`admin.googleapis.com`|
+|AppEngine Admin|`appengine.googleapis.com`|
+|BigQuery|`bigquery-json.googleapis.com`|
+|Cloud Billing|`cloudbilling.googleapis.com`|
+|Cloud Resource Manager|`cloudresourcemanager.googleapis.com`|
+|Cloud SQL Admin|`sqladmin.googleapis.com`|
+|Cloud SQL|`sql-component.googleapis.com`|
+|Compute Engine|`compute.googleapis.com`|
+|Deployment Manager|`deploymentmanager.googleapis.com`|
+|IAM|`iam.googleapis.com`|
