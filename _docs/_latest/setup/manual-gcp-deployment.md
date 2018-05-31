@@ -1,5 +1,5 @@
-It is highly recommended that you use the automated installer for an easy
-and error-free deployment.
+It is highly recommended that you use the [automated installer](({% link _docs/latest/setup/install.md %})
+for an easy and error-free deployment.
 
 But in case you prefer to install and deploy Forseti on your own, or just
 curious what goes into the installation process, you can follow the steps below.
@@ -57,7 +57,7 @@ specific details of the commands to use.
 	Note: 
 	`roles/iam.serviceAccountTokenCreator` can only be assigned by gcloud
 
-## Create a forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/deployment-templates/compute-engine/server/forseti-instance-server.py)
+## Create a forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
 	* n1-standard-2
 	* ubuntu-1804-lts
 	* bind the server service account to the VM instance
@@ -90,7 +90,7 @@ specific details of the commands to use.
 
 # Create Database
 
-## Create a [CloudSQL instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/deployment-templates/cloudsql/cloudsql-instance.py)
+## Create a [CloudSQL instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py)
 	* forseti-server-db-#######
 	* MySQL 5.7
 	* second generation
@@ -110,7 +110,7 @@ forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 	* roles/storage.objectViewer
 	* roles/logging.logWriter
 
-## Create a forseti [client VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/deployment-templates/compute-engine/client/forseti-instance-client.py).
+## Create a forseti [client VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py).
 	* n1-standard-2
 	* ubuntu-1804-lts
 	* bind the client service account to the VM instance
