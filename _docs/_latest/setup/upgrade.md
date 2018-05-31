@@ -1,6 +1,6 @@
 ---
-title: Upgrading from Forseti v1.x
-order: 001
+title: Upgrade
+order: 00
 ---
 
 # {{ page.title }}
@@ -11,13 +11,19 @@ This guide explains how to use the Forseti upgrade tool.
 
 Before you upgrade Forseti, you'll need the following:
 
-  - A G Suite super admin account to complete the [Domain-wide delegation steps]
-({% link _docs/latest/configure/gsuite-group-collection.md %}). 
-Forseti 2.0 requires G Suite enablement, so you'll need this before you start the installation.
-  - The Forseti Security 2.0 installer only migrates configuration and rule files.
+ * A G Suite super admin account to complete the [Domain-wide delegation steps]({% link _docs/latest/configure/gsuite-group-collection.md %}). 
+Forseti 2.0 requires G Suite being enabled, so you'll need this before you start the installation.
 
+{% capture 1x_upgrade %}
 
-### Activate Google Cloud Shell
+## Important caveats
+
+ * The Forseti Security 2.0 installer only migrates configuration and rule files.
+ * The Forseti Security 2.0 installer will attempt to re-use previous service accounts and projects.
+ * The Forseti Security 2.0 installer will not destroy existing v1.X data.
+ * Forseti Security 2.0 data is not compatible with v1.X's and therefore a new database is created.
+ 
+## Activate Google Cloud Shell
 
 It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the
 Forseti installer. This ensures you're using the latest version of Cloud SDK since it's included
@@ -28,8 +34,8 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
   you have Forseti v1.x deployed.
   1. On the top right of the console, click **Activate Google Cloud Shell**. The Cloud
   Shell panel opens at the bottom of the page.
-
-### Run setup
+  
+## Run setup
 
   1. After you activate Cloud Shell, download Forseti. The installer is included.
      Getting `master` branch will install [the latest released version of Forseti]({% link releases/index.md %}).
@@ -60,6 +66,10 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
        Ask your G Suite admin if you don't know which super admin email to use.
   1. Forseti is now upgraded to v2.x. To manually remove unused resources, follow the instructions
   at the end of the installation process.
+  
+{% endcapture %} 
+
+{% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
 ## What's next
 

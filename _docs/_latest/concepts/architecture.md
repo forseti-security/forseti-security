@@ -1,12 +1,16 @@
 ---
 title: Architecture
-order: 105
+order: 001
 ---
 
 # {{ page.title }}
 
 This page describes how Forseti is built, and how the components of Forseti fit
 together.
+
+---
+
+Overview
 
 Forseti gives you tools to understand all the resources you have in Google Cloud
 Platform (GCP). The core Forseti modules work together to provide complete
@@ -23,20 +27,22 @@ security risks.
  * Explain helps you understand, test, and develop Cloud Identity and Access
    Management (Cloud IAM) policies.
 
-The image below shows how data flows through Forseti:
+---
+
+**The image below shows how data flows through Forseti**
 
 {% responsive_image path: images/docs/concepts/forseti-architecture.png alt: "forseti architecture" %}
 
- 1. Inventory collects information about your GCP resources and G Suite Groups.
+ 1. Inventory collects information about your GCP resources and G Suite Groups and Users.
  2. Inventory stores information in Cloud SQL for your review and use by other
     Forseti modules.
  3. Scanner compares the data collected by Inventory to the policy rules you
     set.
- 4. Notifier sends Scanner findings to one or more of the following channels you
+ 4. Notifier sends Scanner & Inventory results to one or more of the following channels you
     configure: Cloud Storage, SendGrid, and Slack.
- 5. You use Explain query and understand your Cloud IAM policies.
+ 5. You use Explain to query and understand your Cloud IAM policies.
  6. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.
- 7. You use the CLI to query Forseti data via GRPC.
+ 7. You use the command-line interface to query Forseti data via GRPC.
  8. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
     in CloudSQL.
