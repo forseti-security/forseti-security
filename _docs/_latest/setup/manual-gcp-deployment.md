@@ -75,6 +75,7 @@ Note:
 
 ## Configuration
 * [forseti server conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_server.yaml.in)
+
 Make a copy of `forseti_conf_server.yaml.in` and call it `forseti_conf_server.yaml`
 Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
 Save it to `/home/ubuntu/forseti-security/configs`
@@ -122,11 +123,12 @@ forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 ## Install Forseti Client
 * ssh into the client VM
 * become ubuntu user
- * git clone the latest release from the stable branch
+* git clone the latest release from the stable branch
 * run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py)
 
 ## Configuration
 * [forseti client conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_client.yaml.in)
+
 Make a copy of `forseti_conf_client.yaml.in` and call it `forseti_conf_client.yaml`
 Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
 This file does not need to be saved locally.  It will always be read from the GCS bucket
