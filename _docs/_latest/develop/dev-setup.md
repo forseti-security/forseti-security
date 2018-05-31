@@ -17,7 +17,7 @@ To complete this guide, you will need:
 
 ## Setting GCP infrastructure
 
-{% include docs/latest/howto/deployment_prerequisites.md %}
+{% include docs/latest/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
