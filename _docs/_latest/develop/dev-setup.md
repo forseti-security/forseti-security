@@ -16,7 +16,7 @@ To complete this guide, you will need:
 
 ## Setting GCP infrastructure
 
-{% include docs/latest/deployment_prerequisites.md %}
+{% include docs/v1.1/howto/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
@@ -52,12 +52,19 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
       ```bash
       $ <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
       ```
-      
+
+1. Install MySQL Workbench, a GUI tool to view the forseti datababse and tables.
+    1. Connection Name
+    1. Hostname: 127.0.0.1
+    1. Port: 3306
+    1. Username: forseti_user
 1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as 
    the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance). 
    You will need these for your forseti_conf.yaml later.
 
 ## Setting up local environment
+
+### Install 
 
 ### Ubuntu setup
 
@@ -131,16 +138,7 @@ Use the command below to get the Forseti code if you haven't already:
 Use the following command to install required build dependencies:
 
   ```bash
-  $ pip install --upgrade \
-    coverage \
-    codecov \
-    google-apputils \
-    grpcio==1.4.0 \
-    grpcio-tools==1.4.0 \
-    mock \
-    netaddr \
-    parameterized \
-    pylint
+  $ pip install -q --upgrade forseti-security/requirements.txt
   ```
 
 ### Running the python setup
@@ -185,20 +183,50 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 
 Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
 `forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/latest/configure/configuring-forseti.md %}) 
+["Configuring Forseti"]({% link _docs/v1.1/howto/configure/configuring-forseti.md %}) 
 for more information.
 
 ### Executing Forseti commands
 
-After you complete the above steps, you should be able to run the following
-command-line tools:
+After you complete the above steps, you should be able to run the forseti server and the CLI client.
 
--   `forseti_inventory`
--   `forseti_scanner`
--   `forseti_enforcer`
--   `forseti_notifier`
--   `forseti_api`
--   `forseti_iam`
+Forseti 2.0 will be on the “2.0-dev” branch in github.
 
-To display the flag options for each tool, use the `--helpshort` or `--helpfull`
-flags.
+Note that these could change, due to 2.0 undergoing rapid change.
+
+```
+# Probably throw this in a shell script to make it easy to run
+$ forseti_server \
+    --endpoint "localhost:50051" \
+    --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
+    --services scanner model inventory explain notifier \
+    --config_file "PATH_TO_YOUR_CONFIG.yaml" \
+    --log_level=info \
+    --enable_console_log
+
+
+# In another terminal window:
+
+# See the forseti cli options
+$ forseti -h
+
+# Run the inventory crawler, you can add --import_as if you want to create a       # data model along with the inventory
+
+# i.e. forseti inventory create --import_as MODEL_NAME
+$ forseti inventory create
+
+# List the inventory after it has been created and copy the id field of the output
+$ forseti inventory list
+
+# Create a model using the inventory id and use the model
+$ forseti model create inventory --id <inventory_index_id> <model_name>
+$ forseti model use <model_name>
+
+
+# Run scanner
+$ forseti scanner run
+
+# Run notifier
+$ forseti notifier run
+
+To display the flag options for each tool, use the `--help` or `-h` flags.

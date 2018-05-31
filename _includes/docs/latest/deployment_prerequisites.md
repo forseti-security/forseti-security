@@ -22,7 +22,7 @@ Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to
 read GCP data and to manage Forseti modules.
 
 _For a detailed explanation of how Forseti Security uses service accounts, refer to 
-["Forseti Service Accounts"]({% link _docs/latest/concepts/forseti-service-accounts.md %})._
+["Forseti Service Accounts"]({% link _docs/v1.1/guides/forseti-service-accounts.md %})._
 
 To create and grant roles to a service account for Forseti Inventory, 
 Scanner, and Enforcer, follow the steps below.
@@ -36,8 +36,8 @@ Scanner, and Enforcer, follow the steps below.
   gcloud auth activate-service-account --key-file=PATH/TO/KEYFILE.json
   ```
 
-To create a separate service account for enabling G Suite data collection, follow the steps in 
-["Enabling GSuite Google Groups Collection"]({% link _docs/latest/configure/gsuite-group-collection.md %}).
+You can enable your service account for collecting G Suite data collection.  Follow the steps in 
+["Enabling GSuite Google Groups Collection"]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %}).
 
 ### Assigning roles
 
@@ -95,27 +95,17 @@ the roles below.
 ```bash
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/browser
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/compute.networkViewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/iam.securityReviewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
 --role=roles/appengine.appViewer
 ```
 ```bash
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/servicemanagement.quotaViewer
+--role=roles/bigquery.dataViewer
+```
+```bash
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/browser
 ```
 ```bash
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
@@ -125,12 +115,32 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 ```bash
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/compute.networkViewer
+```
+```bash
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
 --role=roles/compute.securityAdmin
 ```
 ```bash
 $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/bigquery.dataViewer
+--role=roles/iam.securityReviewer
+```
+```bash
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/servicemanagement.quotaViewer
+```
+```bash
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/serviceusage.serviceUsageConsumer
+```
+```bash
+$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/iam.serviceAccountTokenCreator
 ```
 
 _Project Cloud IAM roles_
@@ -153,6 +163,11 @@ $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
 --role=roles/cloudsql.client
 ```
+```bash
+$ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
+--member=MEMBER_TYPE:MEMBER_NAME \
+--role=roles/logging.logWriter
+```
 
 ### Enabling APIs
 
@@ -162,4 +177,4 @@ Enable each of the required APIs by running the following command:
   $ gcloud beta service-management enable <API URI>
   ```
   
-  {% include docs/latest/required_apis.md %}
+  {% include docs/1.1/required_apis.md %}

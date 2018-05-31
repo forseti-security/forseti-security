@@ -4,6 +4,8 @@
 |--------|------------|
 |Admin SDK API|`admin.googleapis.com`|
 |AppEngine Admin API|`appengine.googleapis.com`|
+|BigQuery API|`bigquery.googleapis.com`|
+|Cloud Billing API|`cloudbilling.googleapis.com`|
 |Cloud Resource Manager API|`cloudresourcemanager.googleapis.com`|
 |Cloud SQL Admin API|`sqladmin.googleapis.com`|
 |Cloud SQL API|`sql-component.googleapis.com`|
