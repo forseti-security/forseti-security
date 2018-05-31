@@ -37,6 +37,7 @@ class ServerConfig(Config):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
+        self.skip_sendgrid_config = bool(kwargs.get('skip_sendgrid_config'))
 
     def generate_cloudsql_instance(self):
         """Update cloudsql_instance when the identifier is generated."""
