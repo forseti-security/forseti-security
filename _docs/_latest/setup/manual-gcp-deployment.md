@@ -17,16 +17,18 @@ specific details of the commands to use.
 
 ## Enable the following APIs in the projects:
 
-	* Admin SDK API
-	* AppEngine Admin API
-	* BigQuery API
-	* Cloud Billing API
-	* Cloud Resource Manager API
-	* Cloud SQL Admin API
-  * Cloud SQL API
-	* Compute Engine API
-	* Deployment Manager API
-	* IAM API
+```
+* Admin SDK API
+* AppEngine Admin API
+* BigQuery API
+* Cloud Billing API
+* Cloud Resource Manager API
+* Cloud SQL Admin API
+* Cloud SQL API
+* Compute Engine API
+* Deployment Manager API
+* IAM API
+```
 
 ## Create a forseti server service account.
 ```
