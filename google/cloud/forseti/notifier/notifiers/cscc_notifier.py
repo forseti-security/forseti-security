@@ -16,6 +16,8 @@
 
 import tempfile
 
+from googleapiclient.errors import HttpError
+
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
@@ -33,7 +35,7 @@ class CsccNotifier(object):
         """`Findingsnotifier` initializer.
 
         Args:
-            inv_index_id (str): inventory index ID
+            inv_index_id (int64): inventory index ID
         """
         self.inv_index_id = inv_index_id
 
@@ -57,7 +59,7 @@ class CsccNotifier(object):
                 'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
-                    'inventory_index_id': self.inv_index_id,
+                    'inventory_index_id': str(self.inv_index_id),
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
@@ -99,5 +101,9 @@ class CsccNotifier(object):
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
-                storage_client.put_text_file(
-                    tmp_violations.name, gcs_upload_path)
+                try:
+                    storage_client.put_text_file(
+                        tmp_violations.name, gcs_upload_path)
+                except HttpError as e:
+                    LOGGER.error('Unable to save CSCC in bucket %s:\n%s',
+                                 gcs_upload_path, e.content)

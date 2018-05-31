@@ -24,17 +24,19 @@ LOGGER = logger.get_logger(__name__)
 class ScopedSession(object):
     """A scoped session is automatically released."""
 
-    def __init__(self, session, auto_commit=False):
+    def __init__(self, session, auto_commit=False, readonly=False):
         """Constructor.
 
         Args:
             session (object): Database session to use scope.
             auto_commit (bool): Set to true, of commit should automatically
                 happen upon close.
+            readonly (bool): whether or not the session is read only.
         """
 
         self.session = session
         self.auto_commit = auto_commit
+        self.readonly = readonly
 
     def __enter__(self):
         """To support with statement.
@@ -42,7 +44,8 @@ class ScopedSession(object):
         Returns:
             object: Returns its session.
         """
-
+        if self.readonly:
+            stub_out_flush_operation(self.session)
         return self.session
 
     def __exit__(self, exc_type, value, traceback):
@@ -57,7 +60,13 @@ class ScopedSession(object):
             if traceback is None and self.auto_commit:
                 self.session.commit()
         finally:
-            self.session.close()
+            # session.close() is not a must have operation based on the
+            # sqlalchemy documentation, it's only useful when you are in
+            # some intermediate state, if the session is readonly, there
+            # is no need to close the session.
+            # http://docs.sqlalchemy.org/en/latest/orm/session_transaction.html
+            if not self.readonly:
+                self.session.close()
 
 
 class ScopedSessionMaker(object):
@@ -104,7 +113,7 @@ def create_scoped_sessionmaker(engine):
 
 
 def _abort_readonly():
-    """Intercept the flush operatio"""
+    """Intercept the flush operation and log a warning message."""
     LOGGER.warn('This session is read-only, no flush is allowed.')
 
 
@@ -113,7 +122,6 @@ def stub_out_flush_operation(session):
 
     Args:
         session (Session): Session to stub out.
-
     Returns:
         Session: The session after stubbed out the flush operation.
     """
@@ -131,5 +139,5 @@ def create_scoped_readonly_session(engine):
         object: Scoped session maker.
     """
     session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
-    session = stub_out_flush_operation(session)
-    return ScopedSession(session, auto_commit=False)
+
+    return ScopedSession(session, auto_commit=False, readonly=True)

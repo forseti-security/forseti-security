@@ -25,6 +25,8 @@ import StringIO
 import tempfile
 import unittest
 
+import grpc
+
 from google.cloud.forseti.services import cli
 from tests.unittest_utils import ForsetiTestCase
 
@@ -35,6 +37,20 @@ CLIENT.inventory.create = mock.Mock(return_value=iter(['test']))
 CLIENT.inventory.delete = mock.Mock(return_value='test')
 CLIENT.inventory.list = mock.Mock(return_value=iter(['test']))
 CLIENT.inventory.get = mock.Mock(return_value='test')
+
+# list raises server unavailable
+ERROR_CLIENT = mock.Mock()
+ERROR_CLIENT.inventory = ERROR_CLIENT
+ERROR_CLIENT.inventory.list = mock.Mock()
+grpc_server_unavailable = grpc.RpcError()
+grpc_server_unavailable.code = lambda: grpc.StatusCode.UNAVAILABLE
+ERROR_CLIENT.inventory.list.side_effect = grpc_server_unavailable
+
+# get raises server unknown
+ERROR_CLIENT.inventory.get = mock.Mock()
+grpc_unknown_error = grpc.RpcError()
+grpc_unknown_error.code = lambda: grpc.StatusCode.UNKNOWN
+ERROR_CLIENT.inventory.get.side_effect = grpc_unknown_error
 
 reply_model_s = mock.Mock()
 reply_model_s.status = "SUCCESS"
@@ -118,21 +134,21 @@ class ImporterTest(ForsetiTestCase):
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
-         ['1'],
+         [1],
          {},
          '{}',
          {'endpoint': 'localhost:50051'}),
 
         ('inventory delete 1',
          CLIENT.inventory.delete,
-         ['1'],
+         [1],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
 
         ('--endpoint 10.0.0.1:8080 inventory delete 1',
          CLIENT.inventory.delete,
-         ['1'],
+         [1],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '10.0.0.1:8080'}),
@@ -146,7 +162,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('inventory get 1',
          CLIENT.inventory.get,
-         ['1'],
+         [1],
          {},
          '{}',
          {}),
@@ -181,7 +197,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('model create --inventory_index_id 1 foo',
          CLIENT.model.new_model,
-         ["inventory", "foo", '1', False],
+         ["inventory", "foo", 1, False],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
@@ -228,9 +244,16 @@ class ImporterTest(ForsetiTestCase):
          '{}',
          {}),
 
-        ('explainer why_granted member/foo resource/bar',
+        ('explainer why_granted member/foo resource/bar --role role/r1',
          CLIENT.explain.explain_granted,
-         ['member/foo', 'resource/bar', None, None],
+         ['member/foo', 'resource/bar', 'role/r1', None],
+         {},
+         '{}',
+         {}),
+
+        ('explainer why_granted member/foo resource/bar --permission permission/p1',
+         CLIENT.explain.explain_granted,
+         ['member/foo', 'resource/bar', None, 'permission/p1'],
          {},
          '{}',
          {}),
@@ -238,6 +261,13 @@ class ImporterTest(ForsetiTestCase):
         ('explainer why_denied member/foo resource/bar --role role/r1',
          CLIENT.explain.explain_denied,
          ['member/foo', ['resource/bar'], ['role/r1'], []],
+         {},
+         '{}',
+         {}),
+
+        ('explainer why_denied member/foo resource/bar --permission permission/p1',
+         CLIENT.explain.explain_denied,
+         ['member/foo', ['resource/bar'], [], ['permission/p1']],
          {},
          '{}',
          {}),
@@ -256,7 +286,7 @@ class ImporterTest(ForsetiTestCase):
          '{}',
          {}),
 
-        ('explainer access_by_resource resource/foo --expand_groups True',
+        ('explainer access_by_resource resource/foo --expand_groups',
          CLIENT.explain.query_access_by_resources,
          ['resource/foo', [], True],
          {},
@@ -286,7 +316,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('notifier run --inventory_index_id 88',
          CLIENT.scanner.run,
-         ['88'],
+         [88],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
@@ -312,7 +342,7 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
         ])
-
+    @mock.patch('google.cloud.forseti.services.cli.MessageToJson', mock.MagicMock())
     def test_cli(self, test_cases):
         """Test if the CLI hits specific client methods."""
         tmp_config = os.path.join(self.test_dir, '.forseti')
@@ -324,7 +354,6 @@ class ImporterTest(ForsetiTestCase):
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
                         json.load(StringIO.StringIO(config_string)))
-
                     # Capture stdout, so it doesn't pollute the test output
                     with mock.patch('sys.stdout',
                                     new_callable=StringIO.StringIO):
@@ -350,6 +379,54 @@ class ImporterTest(ForsetiTestCase):
                     self.fail('Argument parser failed on {}, {}'.format(
                         commandline,
                         e.message))
+
+    @test_cmds([
+            ('inventory list',
+             ERROR_CLIENT.inventory.list,
+             [],
+             {},
+             '{}',
+             {})])
+    def test_cli_grpc_server_unavailable(self, test_cases):
+        """Grpc server unavailable."""
+        for (commandline, client_func, func_args,
+             func_kwargs, config_string, config_expect) in test_cases:
+            args = shlex.split(commandline)
+            env_config = cli.DefaultConfig(
+                json.load(StringIO.StringIO(config_string)))
+            with mock.patch('sys.stdout',
+                            new_callable=StringIO.StringIO) as mock_out:
+                cli.main(
+                    args=args,
+                    config_env=env_config,
+                    client=ERROR_CLIENT,
+                    parser_cls=MockArgumentParser)
+                cli_output = mock_out.getvalue().strip()
+                self.assertTrue('Error communicating to the Forseti server.' in cli_output)
+
+    @test_cmds([
+            ('inventory get 123',
+             ERROR_CLIENT.inventory.get,
+             [],
+             {},
+             '{}',
+             {})])
+    def test_cli_grpc_server_unknown(self, test_cases):
+        """Grpc server unavailable."""
+        for (commandline, client_func, func_args,
+             func_kwargs, config_string, config_expect) in test_cases:
+            args = shlex.split(commandline)
+            env_config = cli.DefaultConfig(
+                json.load(StringIO.StringIO(config_string)))
+            with mock.patch('sys.stdout',
+                            new_callable=StringIO.StringIO) as mock_out:
+                cli.main(
+                    args=args,
+                    config_env=env_config,
+                    client=ERROR_CLIENT,
+                    parser_cls=MockArgumentParser)
+                cli_output = mock_out.getvalue().strip()
+                self.assertTrue('Error occurred on the server side' in cli_output)
 
 
 class RunExplainerTest(ForsetiTestCase):
@@ -431,7 +508,7 @@ class MainTest(ForsetiTestCase):
         mock_config.action = 'list_permissions'
         mock_config.roles = None
         mock_config.role_prefixes = None
-        mock_config.out_format = 'text'
+        mock_config.out_format = 'json'
         mock_config.service = 'explainer'
         with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
             mock_create_parser.return_value = mock_parser
@@ -448,7 +525,7 @@ class MainTest(ForsetiTestCase):
         mock_config.action = 'list_permissions'
         mock_config.roles = ['r1', 'r2']
         mock_config.role_prefixes = None
-        mock_config.out_format = 'text'
+        mock_config.out_format = 'json'
         mock_config.service = 'explainer'
         with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
             mock_create_parser.return_value = mock_parser

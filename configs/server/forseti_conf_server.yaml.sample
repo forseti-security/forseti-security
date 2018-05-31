@@ -75,7 +75,9 @@ scanner:
 
     # Enable the scanners as default to true when integrated for Forseti 2.0.
 
-    scanners:
+     scanners:
+        - name: audit_logging
+          enabled: false
         - name: bigquery
           enabled: true
         - name: blacklist
@@ -84,12 +86,12 @@ scanner:
           enabled: true
         - name: cloudsql_acl
           enabled: true
+        - name: enabled_apis
+          enabled: false
         - name: firewall_rule
           enabled: true
         - name: forwarding_rule
-          enabled: true
-        - name: ke_version_scanner
-          enabled: true
+          enabled: false
         - name: group
           enabled: true
         - name: iam_policy
@@ -97,6 +99,8 @@ scanner:
         - name: iap
           enabled: true
         - name: instance_network_interface
+          enabled: false
+        - name: ke_version_scanner
           enabled: true
 
 ##############################################################################
@@ -139,9 +143,14 @@ notifier:
         gcs_path:
 
     inventory:
-      summary:
+      gcs_summary:
         enabled: true
-        # gcs_path should begin with "gs://"
         # data_format may be one of: csv (the default) or json
         data_format: csv
+        # gcs_path should begin with "gs://"
         gcs_path: gs://{FORSETI_BUCKET}/inventory_summary
+      email_summary:
+        enabled: true
+        sendgrid_api_key: {SENDGRID_API_KEY}
+        sender: {EMAIL_SENDER}
+        recipient: {EMAIL_RECIPIENT}

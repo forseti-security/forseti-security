@@ -94,7 +94,7 @@ class Model(MODEL_BASE):
     watchdog_timer_datetime = Column(DateTime())
     created_at_datetime = Column(DateTime())
     etag_seed = Column(String(32), nullable=False)
-    message = Column(Text())
+    message = Column(Text(16777215))
     warnings = Column(Text(16777215))
 
     def __init__(self, *args, **kwargs):
