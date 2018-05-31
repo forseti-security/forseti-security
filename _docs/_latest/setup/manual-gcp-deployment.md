@@ -1,12 +1,13 @@
 It is highly recommended that you use the automated installer for an easy
 and error-free deployment.
 
-But in case you prefer to install and deploy Forseti on your own,
-you can follow the steps below.  These steps assume you have certain level
-of GCP knowledge (how to use gcloud, where to bind the service account
-to the VM in the Cloud Console, etc), and will by necessity point to the
-installer and Deployment Templates for specific details of the commands
-that you will need to use.
+But in case you prefer to install and deploy Forseti on your own, or just
+curious what goes into the installation process, you can follow the steps below.
+
+These steps assume you have certain level of GCP knowledge (how to use gcloud,
+where to bind the service account to the VM in the Cloud Console, etc),
+and will by necessity point to the installer and Deployment Templates for
+specific details of the commands to use.
 
 # Create Project
 
@@ -66,6 +67,7 @@ that you will need to use.
 	* become ubuntu user
 	* git clone the latest release from the stable branch
 	* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L114)
+  * create a cron job with a run frequency that you desire.
 	* create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py#L164)
 
 ## Configuration
