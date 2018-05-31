@@ -10,13 +10,14 @@ This page explains how to set up Forseti for local development.
 
 To complete this guide, you will need:
 
+- A Github account.
 - A GCP organization.
 - A GCP project (in above organization) for Forseti Security with billing enabled.
 - The ability to assign roles on your organization's Cloud IAM policy.
 
 ## Setting GCP infrastructure
 
-{% include docs/v1.1/howto/deployment_prerequisites.md %}
+{% include docs/latest/howto/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
@@ -127,11 +128,7 @@ Use the following command to create a virtualenv:
 
 ### Getting the source code
 
-Use the command below to get the Forseti code if you haven't already:
-
-  ```bash
-  $ git clone https://github.com/GoogleCloudPlatform/forseti-security.git
-  ```
+Follow our [contributing guideline](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/.github/CONTRIBUTING.md) to get a fork of the Forseti code, and learn how to submit a PR:
 
 ### Installing build dependencies
 
@@ -183,7 +180,7 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 
 Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
 `forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/v1.1/howto/configure/configuring-forseti.md %}) 
+["Configuring Forseti"]({% link _docs/latest/howto/configure/configuring-forseti.md %}) 
 for more information.
 
 ### Executing Forseti commands
