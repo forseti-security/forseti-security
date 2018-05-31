@@ -56,7 +56,7 @@ from resources and ensure that these access policies stay consistent. If it find
 policies that don’t match your Scanner rules, it can save those rule violations to Cloud SQL or to
 Cloud Storage. This helps protect you against unsafe or unintentional changes.
 
-### [Enforcer]({% link _docs/latest/use/enforcer/index.md %})
+### [Enforcer]({% link _docs/latest/use/enforcer.md %})
 
 Enforcer uses policies you create to compare the current state of your Compute Engine firewall to
 the desired state. Enforcer is an on-demand command-line tool that compares policies in batch mode
