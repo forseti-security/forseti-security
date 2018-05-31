@@ -29,10 +29,12 @@ specific details of the commands to use.
 	* IAM API
 
 ## Create a forseti server service account.
-	* forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
+```
+forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
+```
 
-  Where `#######` is a random alphanumeric unique identifier that must be
-  accepted when used for GCS bucket name.
+Where `#######` is a random alphanumeric unique identifier that must be
+accepted when used for GCS bucket name.
 
 ## Assign roles:
 
@@ -54,8 +56,8 @@ specific details of the commands to use.
 	* roles/cloudsql.client
 	* roles/logging.logWriter
 
-	Note: 
-	`roles/iam.serviceAccountTokenCreator` can only be assigned by gcloud
+Note: 
+`roles/iam.serviceAccountTokenCreator` can only be assigned by gcloud
 
 ## Create a forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
 	* n1-standard-2
@@ -63,30 +65,30 @@ specific details of the commands to use.
 	* bind the server service account to the VM instance
 
 ## Install Forseti Server
-	* ssh into the server VM
-	* become ubuntu user
-	* git clone the latest release from the stable branch
-	* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L114)
-  * create a cron job with a run frequency that you desire.
-	* create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py#L164)
+* ssh into the server VM
+* become ubuntu user
+* git clone the latest release from the stable branch
+* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L114)
+* create a cron job with a run frequency that you desire.
+* create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py#L164)
 
 ## Configuration
-	* [forseti server conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_server.yaml.in)
-	Make a copy of `forseti_conf_server.yaml.in` and call it `forseti_conf_server.yaml`
-	Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
-	Save it to `/home/ubuntu/forseti-security/configs`
+* [forseti server conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_server.yaml.in)
+Make a copy of `forseti_conf_server.yaml.in` and call it `forseti_conf_server.yaml`
+Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
+Save it to `/home/ubuntu/forseti-security/configs`
 
-	* [scanner rule files](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules)
-	Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
+* [scanner rule files](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules)
+Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
 
-  ** Copy the Forseti server configuration file to:
-  ```
-	gs://forseti-server-#######/configs/forseti_conf_server.yaml
-  ```
-	** Copy the default Forseti rules to:
-  ```
-  gs://forseti-server-#######/rules
-  ```
+* Copy the Forseti server configuration file to:
+```
+gs://forseti-server-#######/configs/forseti_conf_server.yaml
+ ```
+* Copy the default Forseti rules to:
+```
+gs://forseti-server-#######/rules
+```
 
 # Create Database
 
@@ -111,28 +113,28 @@ forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 	* roles/logging.logWriter
 
 ## Create a forseti [client VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py).
-	* n1-standard-2
-	* ubuntu-1804-lts
-	* bind the client service account to the VM instance
-	* [enable computeOS login](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/util/gcloud.py#L709)
+* n1-standard-2
+* ubuntu-1804-lts
+* bind the client service account to the VM instance
+* [enable computeOS login](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/util/gcloud.py#L709)
 
 ## Install Forseti Client
-	* ssh into the client VM
-	* become ubuntu user
-  * git clone the latest release from the stable branch
-	* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py)
+* ssh into the client VM
+* become ubuntu user
+ * git clone the latest release from the stable branch
+* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py)
 
 ## Configuration
-	* [forseti client conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_client.yaml.in)
-	Make a copy of `forseti_conf_client.yaml.in` and call it `forseti_conf_client.yaml`
-	Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
-	This file does not need to be saved locally.  It will always be read from the GCS bucket
-	on installation.
+* [forseti client conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_client.yaml.in)
+Make a copy of `forseti_conf_client.yaml.in` and call it `forseti_conf_client.yaml`
+Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
+This file does not need to be saved locally.  It will always be read from the GCS bucket
+on installation.
 
-	* Copy the Forseti client configuration file to:
-  ```
-  gs://forseti-client-#######/configs/forseti_conf_client.yaml
-  ```
+* Copy the Forseti client configuration file to:
+ ```
+ gs://forseti-client-#######/configs/forseti_conf_client.yaml
+ ```
 
 GSuite Integration
-	* [Enable DwD for the server service account](https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html)
+* [Enable DwD for the server service account](https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html)
