@@ -16,4 +16,4 @@ If you need help with a bug or error, include the following information in your 
 If you have an idea for a Forseti feature that isn't already on the
 [forseti-security](https://github.com/GoogleCloudPlatform/forseti-security/issues)
 issue list, we'd like to hear from you! Please file a new feature request to the
-issue list so community members and Google engineers can review it.
+issue list so community members and Forseti Security engineers can review it.
