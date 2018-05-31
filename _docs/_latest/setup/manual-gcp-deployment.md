@@ -68,7 +68,7 @@ Note:
 * ubuntu-1804-lts
 * bind the server service account to the VM instance
 
-# Install Forseti Server
+## Install Forseti Server
 * ssh into the server VM
 * become ubuntu user
 * git clone the latest release from the stable branch
