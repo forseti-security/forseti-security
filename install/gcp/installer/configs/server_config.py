@@ -20,6 +20,8 @@ from config import Config
 class ServerConfig(Config):
     """Forseti installer server config object."""
 
+    # pylint: disable=too-many-instance-attributes
+
     def __init__(self, **kwargs):
         """Initialize.
 
@@ -39,3 +41,4 @@ class ServerConfig(Config):
         self.notification_recipient_email = (
             kwargs.get('notification_recipient_email'))
         self.gsuite_superadmin_email = kwargs.get('gsuite_superadmin_email')
+        self.skip_sendgrid_config = bool(kwargs.get('skip_sendgrid_config'))

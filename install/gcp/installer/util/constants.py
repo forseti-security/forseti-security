@@ -212,6 +212,9 @@ MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
     'API Key')
 
+MESSAGE_SKIP_SENDGRID_API_KEY = (
+    'Skipping SendGrid configuration.\n')
+
 MESSAGE_FORSETI_CONFIGURATION_ACCESS_LEVEL = (
     'Forseti can be configured to access an '
     'organization, folder, or project.')

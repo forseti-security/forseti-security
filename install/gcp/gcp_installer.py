@@ -91,6 +91,9 @@ def run():
                               help='Sendgrid API key')
     email_params.add_argument('--notification-recipient-email',
                               help='Notification recipient email')
+    email_params.add_argument('--skip-sendgrid-config',
+                              action='store_true',
+                              help='Skip Sendgrid cofiguration')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
     args = vars(parser.parse_args())

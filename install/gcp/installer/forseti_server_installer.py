@@ -352,6 +352,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.gsuite_superadmin_email = raw_input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
+        if self.config.skip_sendgrid_config:
+            print(constants.MESSAGE_SKIP_SENDGRID_API_KEY)
+            return
+
         utils.print_banner('Configuring Forseti Email Settings')
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key.
