@@ -33,6 +33,7 @@ security risks.
 
 {% responsive_image path: images/docs/concepts/forseti-architecture.png alt: "forseti architecture" %}
 
+{: list-style-type: upper-alpha }
  A. Inventory collects information about your GCP resources and G Suite Groups and Users.
  B. Inventory stores information in Cloud SQL for your review and use by other
     Forseti modules.
