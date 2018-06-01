@@ -11,28 +11,18 @@ specific details of the commands to use.
 
 # Create Project
 
-## Create a new project to host forseti.
+## Create a new project to host Forseti.
 
 ## Assign a billing account.
 
 ## Enable the following APIs in the projects:
 
-```
-* Admin SDK API
-* AppEngine Admin API
-* BigQuery API
-* Cloud Billing API
-* Cloud Resource Manager API
-* Cloud SQL Admin API
-* Cloud SQL API
-* Compute Engine API
-* Deployment Manager API
-* IAM API
-```
+See [this doc]({% link _docs/latest/required_apis.md %})
+to see the APIs that need to be enabled in the project hosting Forseti.
 
 # Deploy Server VM
 
-## Create a forseti server service account.
+## Create a Forseti server service account.
 ```
 forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
 ```
@@ -42,28 +32,10 @@ accepted when used for GCS bucket name.
 
 ## Assign roles:
 
-	Org-Level
-	* roles/iam.serviceAccountTokenCreator (see gcloud note below)
-	* roles/browser
-	* roles/compute.networkViewer
-	* roles/iam.securityReviewer
-	* roles/appengine.appViewer
-	* roles/bigquery.dataViewer
-	* roles/servicemanagement.quotaViewer
-	* roles/serviceusage.serviceUsageConsumer
-	* roles/cloudsql.viewer
-	* roles/compute.securityAdmin
+See [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
+to see what roles need to be assigned to the Forseti server service account.
 
-	Project-Level
-	* roles/storage.objectViewer
-	* roles/storage.objectCreator
-	* roles/cloudsql.client
-	* roles/logging.logWriter
-
-Note: 
-`roles/iam.serviceAccountTokenCreator` can only be assigned by gcloud
-
-## Create a forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
+## Create a Forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
 * n1-standard-2
 * ubuntu-1804-lts
 * bind the server service account to the VM instance
@@ -76,7 +48,7 @@ Note:
 * create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py#L164)
 
 ## Configuration
-* [forseti server conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_server.yaml.in)
+* [Forseti server conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_server.yaml.in)
 
 Make a copy of `forseti_conf_server.yaml.in` and call it `forseti_conf_server.yaml`
 Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
@@ -107,7 +79,7 @@ gs://forseti-server-#######/rules
 
 # Deploy Client VM
 
-## Create a forseti client service account.
+## Create a Forseti client service account.
 ```
 forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 ```
@@ -129,7 +101,7 @@ forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 * run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py)
 
 ## Configuration
-* [forseti client conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_client.yaml.in)
+* [Forseti client conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_client.yaml.in)
 
 Make a copy of `forseti_conf_client.yaml.in` and call it `forseti_conf_client.yaml`
 Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
