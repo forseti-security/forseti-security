@@ -41,6 +41,8 @@ class Config(object):
         self.dry_run = bool(kwargs.get('dry_run'))
         self.bucket_location = kwargs.get('gcs_location')
         self.installation_type = None
+        self.skip_check_authed_user = bool(
+            kwargs.get('skip_check_authed_user'))
 
     def generate_identifier(self, organization_id):
         """Generate resource unique identifier.
