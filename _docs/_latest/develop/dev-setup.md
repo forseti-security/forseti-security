@@ -182,10 +182,6 @@ for more information.
 
 After you complete the above steps, you should be able to run the forseti server and the CLI client.
 
-Forseti 2.0 will be on the “dev” branch in github.
-
-Note that these could change, due to 2.0 undergoing rapid change.
-
 ```
 $ forseti_server \
     --endpoint "localhost:50051" \
@@ -196,9 +192,8 @@ $ forseti_server \
     --enable_console_log
 
 
-# In another terminal window:
-
-# See the forseti cli options
+In another terminal window:
+```
 $ forseti -h or --help
-
+```
 To see how to use more CLI commands, see Use({% link _docs/latest/howto/use/index.md %}).
