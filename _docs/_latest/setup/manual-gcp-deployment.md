@@ -33,7 +33,7 @@ accepted when used for GCS bucket name.
 ## Assign roles:
 
 See [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
-to see what roles need to be assigned to the Forseti server service account.
+to see the roles need to be assigned to the Forseti server service account.
 
 ## Create a Forseti [server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
 * n1-standard-2
