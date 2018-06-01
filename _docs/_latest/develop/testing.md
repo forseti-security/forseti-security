@@ -7,7 +7,7 @@ order: 003
 This page describes how to run tests on your Forseti contributions. You need to
 install Forseti before you run the unit tests, either by following the
 [Developer Setup]({% link _docs/latest/develop/dev-setup.md %}) (local installation) 
-or the [GCP setup]({% link _docs/latest/configure/configuring-forseti.md %}) 
+or the [GCP setup]({% link _docs/latest/configure/forseti/index.md %}) 
 (install on a GCE instance; you will need to connect to that instance to run the unit tests).
 
 ## Executing tests

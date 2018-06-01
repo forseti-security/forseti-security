@@ -1,6 +1,6 @@
 ---
 title: Scanner Specifications
-order: 102
+order: 301
 ---
 
 # {{ page.title }}

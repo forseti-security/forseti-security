@@ -1,6 +1,6 @@
 ---
 title: Configure
-order: 000
+order: 001
 hide:
   right_sidebar: true
 ---
@@ -29,13 +29,13 @@ exposure.
 Configure Scanner to monitor your GCP resources for rule violations. Scanner uses the information
 from Inventory to regularly compare role-based access policies for your resources.
 
-**[Enabling Email Notifications]({% link _docs/latest/configure/email-notification.md %})**
+**[Configuring Notifier]({% link _docs/latest/configure/notifier/index.md %})**
 
-Enable Forseti email notifications using the SendGrid API. SendGrid is the suggested free email
-service provider for Google Cloud Platform (GCP).
+Configuring Notifier to dispatch a variety of messages through various channels and varying formats 
+alerting you to events in your environment.
 
 **[Enabling G Suite Google Groups Collection]({% link _docs/latest/configure/gsuite-group-collection.md %})**
 
 Enable the data collection of G Suite Google Groups for processing by Forseti Inventory. G Suite
 Groups Collection helps you make sure the right people are in the right group, and is required for
-Explain.
+Forseti.

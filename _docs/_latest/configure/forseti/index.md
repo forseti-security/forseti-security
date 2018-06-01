@@ -1,5 +1,6 @@
 ---
 title: Forseti
+order: 100
 ---
 
 # {{ page.title }}
@@ -8,7 +9,9 @@ This page describes how to configure Forseti after it's set up. Forseti configur
 are global and module-specific settings such as the following:
 
 -   [`global`]: configurations that are used by multiple modules such as SendGrid API key,
-    G Suite admin account, and email recipients.
+    G Suite admin account, and email recipients. This section is currently not being used so there is no need to configure.
+-   [`inventory`]({% link _docs/latest/configure/inventory/index.md %}): configurations that are used only by Forseti Inventory, such as
+    api quota usage and inventory purge option.
 -   [`scanner`]({% link _docs/latest/configure/scanner/index.md %}): configurations that are used only by Forseti Scanner, such as
     specifying which scanners to enable.
 -   [`notifier`]({% link _docs/latest/configure/notifier/index.md %}): configurations that are used only by Forseti Notifier, such as
@@ -40,3 +43,5 @@ Use the following commands to copy your conf and rules files to Cloud Storage:
 ```
 gsutil cp configs/forseti_conf.yaml gs://YOUR_FORSETI_GCS_BUCKET/configs/server/forseti_server_conf.yaml
 ```
+
+Learn how to manually [reload the server configuration]({% link _docs/latest/use/server.md %}).

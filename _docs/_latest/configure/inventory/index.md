@@ -1,6 +1,6 @@
 ---
-title: Configuring Inventory
-order: 002
+title: Inventory
+order: 200
 ---
 
 # {{ page.title }}
@@ -16,4 +16,4 @@ perform operations.
 
 ## What's next
 - Learn about [using Inventory]({% link _docs/latest/use/inventory.md %})
-- Learn more about [configuring Forseti]({% link _docs/latest/configure/configuring-forseti.md %}).
+- Learn more about [configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}).
