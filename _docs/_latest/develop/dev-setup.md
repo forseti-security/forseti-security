@@ -59,9 +59,6 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     1. Hostname: 127.0.0.1
     1. Port: 3306
     1. Username: forseti_user
-1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as 
-   the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance). 
-   You will need these for your forseti_conf.yaml later.
 
 ## Setting up local environment
 
@@ -185,12 +182,11 @@ for more information.
 
 After you complete the above steps, you should be able to run the forseti server and the CLI client.
 
-Forseti 2.0 will be on the “2.0-dev” branch in github.
+Forseti 2.0 will be on the “dev” branch in github.
 
 Note that these could change, due to 2.0 undergoing rapid change.
 
 ```
-# Probably throw this in a shell script to make it easy to run
 $ forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \

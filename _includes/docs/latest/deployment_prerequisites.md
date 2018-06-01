@@ -88,6 +88,8 @@ Examples of `MEMBER_TYPE:MEMBER_NAME`:
   * group:my-forseti-group@example.com
   * domain:example.com
 
+OrganizationIAM Roles
+
 Use these commands to grant the Forseti roles to your organization IAM policy. If you 
 need to assign the roles on the folder or project level, use the commands from above, with 
 the roles below.
@@ -137,13 +139,8 @@ $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
 --role=roles/serviceusage.serviceUsageConsumer
 ```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/iam.serviceAccountTokenCreator
-```
 
-_Project Cloud IAM roles_
+Project IAM roles
 
 These are necessary for reading/writing Forseti data in Google Cloud Storage and Cloud SQL.
 Do not assign these outside of the project IAM.
@@ -167,6 +164,13 @@ $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
 $ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
 --member=MEMBER_TYPE:MEMBER_NAME \
 --role=roles/logging.logWriter
+```
+
+Service Account IAM Role
+```bash
+gcloud iam service-accounts add-iam-policy-binding YOUR_SERVICE_ACCOUNT \
+--member=serviceACcount:YOUR_SERVICE_ACCOUNT \
+--role=roles/iam.serviceAccountTokenCreator
 ```
 
 ### Enabling APIs
