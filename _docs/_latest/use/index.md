@@ -43,3 +43,7 @@ Using the Forseti Server to update server configuration.
 **[Config]({% link _docs/latest/use/config.md %})**
 
 Using the Forseti Config to update CLI configuration.
+
+**[Enforcer]({% link _docs/latest/use/enforcer.md %})**
+
+Using the Forseti Enforcer to automatically correct policy discrepancies.
