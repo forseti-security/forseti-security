@@ -7,6 +7,8 @@ order: 305
 
 This page describes how to define rules for Forseti Scanner.
 
+---
+
 ## Defining custom rules
 
 You can find some starter rules in the

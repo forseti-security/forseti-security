@@ -19,6 +19,8 @@ for the following resources:
 For examples, see the [rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/dev/rules) 
 directory.
 
+---
+
 ## IamRulesEngine Overview
 
 With the `IamRulesEngine`, Forseti Scanner integrates with Forseti Inventory to

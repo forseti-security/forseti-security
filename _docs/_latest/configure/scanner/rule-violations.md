@@ -1,5 +1,5 @@
 ---
-title: Scanner Violations
+title: Rule Violations
 order: 303
 ---
 

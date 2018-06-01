@@ -11,7 +11,7 @@ This guide explains how to use the Forseti upgrade tool.
 
 Before you upgrade Forseti, you'll need the following:
 
- * A G Suite super admin account to complete the [Domain-wide delegation steps]({% link _docs/latest/configure/gsuite-group-collection.md %}). 
+ * A G Suite super admin account to complete the [Domain-wide delegation steps]({% link _docs/latest/configure/gsuite.md %}). 
 Forseti 2.0 requires G Suite being enabled, so you'll need this before you start the installation.
 
 {% capture 1x_upgrade %}
@@ -61,7 +61,7 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
      * Email recipient \[Optional\]: If a SendGrid API key is provided, you will also be asked
        to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
+       [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite.md %})
        and is required.
        Ask your G Suite admin if you don't know which super admin email to use.
   1. Forseti is now upgraded to v2.x. To manually remove unused resources, follow the instructions
@@ -76,5 +76,5 @@ in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps bel
   - Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
   [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
   - Configure Forseti to send [email notifications]({% link _docs/latest/configure/email-notification.md %}).
-  - Enable [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
+  - Enable [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite.md %})
   for processing by Forseti.

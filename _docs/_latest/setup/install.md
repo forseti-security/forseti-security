@@ -75,7 +75,7 @@ steps below:
      * Email recipient \[Optional\]: If you provide a SendGrid API key, you will
        also be asked to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
+       [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite.md %})
        and is necessary. Ask your G Suite Admin if you don't know the super
        admin email.
 
@@ -98,5 +98,5 @@ steps below:
   - Configure Forseti to send
     [email notifications]({% link _docs/latest/configure/email-notification.md %}).
   - Enable
-    [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite-group-collection.md %})
+    [G Suite Google Groups collection]({% link _docs/latest/configure/gsuite.md %})
     for processing by Forseti.

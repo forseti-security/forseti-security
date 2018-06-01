@@ -17,10 +17,12 @@ Engine vulnerability scanning. Learn more about
 
 You can learn how to run the [Forseti Scanner]{% link _docs/latest/use/index.md %}).
 
+---
+
 ## What's next
 
 - Read more about [configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 - Learn about the [different scanners]({% link _docs/latest/configure/scanner/descriptions.md %}) available in Forseti.
 - Learn about [defining rules]({% link _docs/latest/configure/scanner/rules.md %}).
-- Read about how Scanner outputs [policy violations]({% link _docs/latest/configure/scanner/policy-violations.md %}).
+- Read about how Scanner outputs [policy violations]({% link _docs/latest/configure/scanner/rule-violations.md %}).
 - Read more about [the concepts of data model]({% link _docs/latest/concepts/models.md %}).

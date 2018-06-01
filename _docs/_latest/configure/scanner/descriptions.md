@@ -1,5 +1,5 @@
 ---
-title: Scanner Specifications
+title: Descriptions
 order: 301
 ---
 
@@ -8,6 +8,8 @@ order: 301
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can configure Scanner to execute multiple scanners in
 the same run. Learn about [configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
+
+---
 
 ## BigQuery dataset ACL scanner
 

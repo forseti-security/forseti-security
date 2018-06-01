@@ -10,6 +10,8 @@ is the suggested free email service provider for Google Cloud Platform (GCP).
 For information about how to get 12,000 free emails every month, see
 [Sending Email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
 
+---
+
 ## Setting Up SendGrid
 
 To use SendGrid to send email notifications for Forseti Security, follow the

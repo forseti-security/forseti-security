@@ -8,6 +8,8 @@ order: 400
 Notifier can dispatch a variety of messages through various channels
 and varying formats alerting you to events in your environment.
 
+---
+
 ## Notification Types
 
   * Inventory Summary: Count of the resources added in the latest inventory crawl.

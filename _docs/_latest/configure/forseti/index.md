@@ -21,6 +21,8 @@ Configurations are centrally maintained in the
 `forseti-security/configs/server/forseti_server_conf.yaml` file that's organized into
 module-specific sections.
 
+---
+
 ## Configuring settings
 
 To set up your configuration, you'll edit

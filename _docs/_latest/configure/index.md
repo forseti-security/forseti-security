@@ -34,7 +34,7 @@ from Inventory to regularly compare role-based access policies for your resource
 Configuring Notifier to dispatch a variety of messages through various channels and varying formats 
 alerting you to events in your environment.
 
-**[Enabling G Suite Google Groups Collection]({% link _docs/latest/configure/gsuite-group-collection.md %})**
+**[Enabling G Suite Google Groups Collection]({% link _docs/latest/configure/gsuite.md %})**
 
 Enable the data collection of G Suite Google Groups for processing by Forseti Inventory. G Suite
 Groups Collection helps you make sure the right people are in the right group, and is required for

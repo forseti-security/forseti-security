@@ -1,5 +1,5 @@
 ---
-title: Enabling GSuite Google Groups Collection
+title: G Suite
 order: 600
 ---
 
@@ -7,6 +7,8 @@ order: 600
 
 This page describes how to enable the data collection of G Suite Google Groups for
 processing by Forseti Inventory.
+
+---
 
 ## Enable Domain-Wide Delegation in G Suite
 
@@ -16,9 +18,9 @@ service account for this functionality. Read more about
 
 ### Enable DwD on a service account
 
-1. Navigate to the [**service account**](https://pantheon.corp.google.com/projectselector/iam-admin/serviceaccounts) page
+1. Navigate to the [service account](https://pantheon.corp.google.com/projectselector/iam-admin/serviceaccounts){:target="_blank"} page
 
-   * Click on the 3 dots on the right hand side of your forseti gcp server service account and select **Edit**
+   * Click on the 3 dots on the right hand side of your Forseti GCP Server service account and select **Edit**
    {% responsive_image path: images/docs/configuration/service_account_edit.png alt: "Service Account Edit" indent: 3 %}
    
    * Select the **Enable G Suite Domain-wide Delegation** checkbox and click **SAVE**
@@ -51,7 +53,7 @@ After you create a service account above, you may need to edit the following var
 in your `forseti_conf_server.yaml`.
 
 - `domain_super_admin_email`: Use of the Admin API requires delegation
-  (impersonation). Enter an email address of a Super Admin in the GSuite
+  (impersonation). Enter an email address of a Super Admin in the G Suite
   account. If you entered this value in the setup wizard, you do not need to 
   change this in your `forseti_conf_server.yaml`.
 

@@ -37,7 +37,7 @@ Scanner, and Enforcer, follow the steps below.
   ```
 
 To create a separate service account for enabling G Suite data collection, follow the steps in 
-["Enabling GSuite Google Groups Collection"]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %}).
+["Enabling G Suite Google Groups Collection"]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %}).
 
 ### Assigning roles
 

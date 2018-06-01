@@ -14,6 +14,8 @@ provide a foundation that others can build upon.
 Get started with
 [Forseti Security]({% link _docs/latest/configure/forseti/index.md %}).
 
+---
+
 ## When to use Forseti Security
 
 Forseti Security makes sense when you need Security at Scale. It’s easy to monitor a few resources
