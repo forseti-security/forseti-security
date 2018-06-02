@@ -12,24 +12,98 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""A Service Account
+"""A Service Acccount object along with it's USER_MANAGED keys.
 
-See: https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
+See:
+https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
+https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts.keys
 """
 
+import json
 
+
+# pylint: disable=too-many-arguments,too-many-instance-attributes
+# pylint: disable=too-many-locals,missing-param-doc,missing-type-doc
+# pylint: disable=invalid-name
 class ServiceAccount(object):
-    """Represents Service Account resource."""
+    """A Service Acccount object along with it's USER_MANAGED keys."""
+    def __init__(self, project_id, full_name, display_name, name, unique_id,
+                 email, oauth2_client_id, raw_json, keys=None):
+        """Initialize."""
 
-    def __init__(self, **kwargs):
-        """Service Account resource.
+        self.project_id = project_id
+        self.full_name = full_name
+        self.display_name = display_name
+        self.name = name
+        self.unique_id = unique_id
+        self.email = email
+        self.oauth2_client_id = oauth2_client_id
+        self.keys = keys
+        self._json = raw_json
+
+    @classmethod
+    def from_dict(cls, project_id, full_name, service_account, keys):
+        """Returns a new ServiceAccount object from dict.
 
         Args:
-            **kwargs (dict): The keyworded variable args.
+            project_id (str): The project id.
+            full_name (str): The full path, including ancestors
+            service_account (dict): ServiceAccount dict
+            keys (list): A list of dicsts of USER_MANAGED keys for the above
+                ServiceAccount
+        Returns:
+            ServiceAccount: A new ServiceAccount object
         """
-        self.project_id = kwargs.get('project_id')
-        self.name = kwargs.get('name')
-        self.email = kwargs.get('email')
-        self.oauth2_client_id = kwargs.get('oauth2_client_id')
-        self.keys = kwargs.get('keys')
-        self.raw_service_account = kwargs.get('raw_service_account')
+        return cls(
+            project_id=project_id,
+            full_name=full_name,
+            display_name=service_account.get('displayName'),
+            name=service_account.get('name'),
+            unique_id=service_account.get('uniqueId'),
+            email=service_account.get('email'),
+            oauth2_client_id=service_account.get('oauth2ClientId'),
+            raw_json=json.dumps(service_account),
+            keys=keys,
+        )
+
+    @staticmethod
+    def from_json(project_id, full_name, service_account,
+                  service_account_keys=None):
+        """Returns a new ServiceAccount object from json data.
+
+        Args:
+            project_id (str): The project id.
+            full_name (str): The full path, including ancestors
+            service_account (str): The json string representations of the
+                ServiceAccount
+            service_account_keys (list): List of json strings of keys 
+        Returns:
+            ServiceAccount: A new ServiceAccount object
+        """
+        service_account = json.loads(service_account)
+        # Extract out only the key specific attributes
+        keys = []
+        for item in service_account_keys:
+            data = json.loads(item.data)
+            keys.append({'key_id': item.name,
+                         'full_name': item.full_name,
+                         'key_algorithm': data.get('keyAlgorithm'),
+                         'valid_after_time': data.get('validAfterTime'),
+                         'valid_before_time': data.get('validBeforeTime')})
+
+        return ServiceAccount.from_dict(project_id, full_name, service_account,
+                                        keys)
+
+    def __repr__(self):
+        """String representation.
+        Returns:
+            str: Json string.
+        """
+        return self._json
+
+    def __hash__(self):
+        """Return hash of properties.
+        Returns:
+            hash: The hash of the class properties.
+        """
+        return hash(self._json)
