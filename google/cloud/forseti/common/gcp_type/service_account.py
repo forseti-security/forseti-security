@@ -21,10 +21,8 @@ https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts.keys
 
 import json
 
-
-# pylint: disable=too-many-arguments,too-many-instance-attributes
-# pylint: disable=too-many-locals,missing-param-doc,missing-type-doc
-# pylint: disable=invalid-name
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=missing-param-doc,missing-type-doc
 class ServiceAccount(object):
     """A Service Acccount object along with it's USER_MANAGED keys."""
     def __init__(self, project_id, full_name, display_name, name, unique_id,
@@ -76,7 +74,7 @@ class ServiceAccount(object):
             full_name (str): The full path, including ancestors
             service_account (str): The json string representations of the
                 ServiceAccount
-            service_account_keys (list): List of json strings of keys 
+            service_account_keys (list): List of json strings of keys
         Returns:
             ServiceAccount: A new ServiceAccount object
         """

@@ -99,7 +99,6 @@ class ServiceAccountKeyRuleBook(bre.BaseRuleBook):
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
-    # pylint: disable=invalid-name
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
 
@@ -272,7 +271,6 @@ class ResourceRules(object):
             self.resource, self.rules)
 
 
-# False positive - pylint: disable=inconsistent-return-statements
 class Rule(object):
     """Rule properties from the rule definition file, also finds violations."""
 
@@ -283,7 +281,7 @@ class Rule(object):
         Args:
             rule_name (str): Name of the loaded rule
             rule_index (int): The index of the rule from the rule definitions
-            key_max_age: Max allowed age in days of service
+            key_max_age (int): Max allowed age in days of service
                 account key
         """
         self.rule_name = rule_name
@@ -330,14 +328,14 @@ class Rule(object):
             LOGGER.debug('Checking key rotation for %s', full_name)
             created_time = key.get('valid_after_time')
             if self._is_un_rotated_key(created_time, scan_time):
-                violation_reason = ('Key ID %s not rotated since %s.' % (key_id,
-                                    created_time))
+                violation_reason = ('Key ID %s not rotated since %s.' %
+                                    (key_id, created_time))
                 violations.append(RuleViolation(
                     resource_type=resource_mod.ResourceType.SERVICE_ACCOUNT_KEY,
                     resource_id=service_account.email,
                     service_account_name=service_account.display_name,
                     full_name=full_name,
-                    rule_name="%s (older than %s days)" % (self.rule_name,
+                    rule_name='%s (older than %s days)' % (self.rule_name,
                                                            self.key_max_age),
                     rule_index=self.rule_index,
                     violation_type='SERVICE_ACCOUNT_KEY_VIOLATION',
