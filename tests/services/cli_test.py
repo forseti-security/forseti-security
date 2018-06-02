@@ -244,9 +244,16 @@ class ImporterTest(ForsetiTestCase):
          '{}',
          {}),
 
-        ('explainer why_granted member/foo resource/bar',
+        ('explainer why_granted member/foo resource/bar --role role/r1',
          CLIENT.explain.explain_granted,
-         ['member/foo', 'resource/bar', None, None],
+         ['member/foo', 'resource/bar', 'role/r1', None],
+         {},
+         '{}',
+         {}),
+
+        ('explainer why_granted member/foo resource/bar --permission permission/p1',
+         CLIENT.explain.explain_granted,
+         ['member/foo', 'resource/bar', None, 'permission/p1'],
          {},
          '{}',
          {}),
@@ -254,6 +261,13 @@ class ImporterTest(ForsetiTestCase):
         ('explainer why_denied member/foo resource/bar --role role/r1',
          CLIENT.explain.explain_denied,
          ['member/foo', ['resource/bar'], ['role/r1'], []],
+         {},
+         '{}',
+         {}),
+
+        ('explainer why_denied member/foo resource/bar --permission permission/p1',
+         CLIENT.explain.explain_denied,
+         ['member/foo', ['resource/bar'], [], ['permission/p1']],
          {},
          '{}',
          {}),
@@ -272,7 +286,7 @@ class ImporterTest(ForsetiTestCase):
          '{}',
          {}),
 
-        ('explainer access_by_resource resource/foo --expand_groups True',
+        ('explainer access_by_resource resource/foo --expand_groups',
          CLIENT.explain.query_access_by_resources,
          ['resource/foo', [], True],
          {},
@@ -328,6 +342,7 @@ class ImporterTest(ForsetiTestCase):
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
         ])
+    @mock.patch('google.cloud.forseti.services.cli.MessageToJson', mock.MagicMock())
     def test_cli(self, test_cases):
         """Test if the CLI hits specific client methods."""
         tmp_config = os.path.join(self.test_dir, '.forseti')
@@ -339,7 +354,6 @@ class ImporterTest(ForsetiTestCase):
                     args = shlex.split(commandline)
                     env_config = cli.DefaultConfig(
                         json.load(StringIO.StringIO(config_string)))
-
                     # Capture stdout, so it doesn't pollute the test output
                     with mock.patch('sys.stdout',
                                     new_callable=StringIO.StringIO):
@@ -494,7 +508,7 @@ class MainTest(ForsetiTestCase):
         mock_config.action = 'list_permissions'
         mock_config.roles = None
         mock_config.role_prefixes = None
-        mock_config.out_format = 'text'
+        mock_config.out_format = 'json'
         mock_config.service = 'explainer'
         with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
             mock_create_parser.return_value = mock_parser
@@ -511,7 +525,7 @@ class MainTest(ForsetiTestCase):
         mock_config.action = 'list_permissions'
         mock_config.roles = ['r1', 'r2']
         mock_config.role_prefixes = None
-        mock_config.out_format = 'text'
+        mock_config.out_format = 'json'
         mock_config.service = 'explainer'
         with mock.patch('google.cloud.forseti.services.cli.create_parser') as mock_create_parser:
             mock_create_parser.return_value = mock_parser

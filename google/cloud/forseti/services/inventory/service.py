@@ -35,16 +35,17 @@ def inventory_pb_from_object(inventory_index):
     """
 
     # complete_timestamp is None before the inventory finished.
-    complete_timestamp = (
-        timestamp.Timestamp().FromDatetime(
-            inventory_index.completed_at_datetime)
-        if inventory_index.completed_at_datetime
-        else inventory_index.completed_at_datetime)
+    complete_timestamp = None
+    if inventory_index.completed_at_datetime:
+        complete_timestamp = timestamp.Timestamp()
+        complete_timestamp.FromDatetime(inventory_index.completed_at_datetime)
+
+    start_timestamp = timestamp.Timestamp()
+    start_timestamp.FromDatetime(inventory_index.created_at_datetime)
 
     return inventory_pb2.InventoryIndex(
         id=inventory_index.id,
-        start_timestamp=timestamp.Timestamp().FromDatetime(
-            inventory_index.created_at_datetime),
+        start_timestamp=start_timestamp,
         complete_timestamp=complete_timestamp,
         schema_version=inventory_index.schema_version,
         count_objects=inventory_index.counter,

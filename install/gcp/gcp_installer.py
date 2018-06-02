@@ -91,6 +91,9 @@ def run():
                               help='Sendgrid API key')
     email_params.add_argument('--notification-recipient-email',
                               help='Notification recipient email')
+    email_params.add_argument('--skip-sendgrid-config',
+                              action='store_true',
+                              help='Skip Sendgrid cofiguration')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
     args = vars(parser.parse_args())
@@ -110,6 +113,9 @@ def run():
         # If the user didn't specify a type, install both server and client
         forseti_server = ForsetiServerInstaller(server_config)
         instructions = forseti_server.run_setup(final_setup=False)
+        # Server and client will have the same identifier to keep them
+        # consistent.
+        client_config.identifier = server_config.identifier
         ForsetiClientInstaller(client_config, forseti_server).run_setup(
             setup_continuation=True,
             previous_instructions=instructions)
