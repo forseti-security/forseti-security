@@ -6,8 +6,9 @@ order: 6
 
 Although Forseti is designed to install and run out-of-the box with complete
 org access, it is possible to install Forseti without being an org admin and
-then manually give Forseti the permissions to inventory and audit specific
-projects.  These projects must be standalone and can not be under folders.
+then manually give Forseti the permissions to inventory and audit subset of
+resources by one specific folder or by projects that are standalone under
+the org and not be under folders.
 
 1. User is not org admin, nor has access to an org admin to give org access to
 Froseti.
@@ -19,9 +20,16 @@ to assign org-level roles, but those can be ignored.
 project, VM instances, CloudSQL db, and most importantly the
 service accounts.
 
-1. Grant the Forseti server service account with project viewer role
-on the specific projects that you want Forseti to audit.
+1. If you want to inventory all the resources in a folder,
+edit the `forseti_conf_server.yaml` and point the `root_resource_id`
+to the target folder: `folders/<foo_folder_id>`.  Be sure to force the server
+to reload the updated configuration.  Grant the folder editor role to
+the forseti server service account, on the target folder.
+
+1. If you want to inventory all the standalone projects under the org, no
+update to `forseti_conf_server.yaml` is necessary.  Directly grant the project
+viewer role to Forseti server service account, on the specific projects that
+you want Forseti to inventory.
 
 When you run the Forseti inventory again, you will see the project and all
 the project resources collected in inventory.
-
