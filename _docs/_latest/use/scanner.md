@@ -31,6 +31,15 @@ $ forseti model use <YOUR_MODEL_NAME>
 $ forseti scanner run
 ```
 
-Scanner produces violations and stores them in the violation table in the database. 
+When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.
+
+Scanner can save violations as a CSV and send an email notification or upload it
+automatically to a Cloud Storage bucket. 
+
+**Below is an example of scanner violation output**
+
+{% responsive_image path: images/docs/quickstarts/scanner-output.png alt: "sample scanner output" %}
+
 To receive notifications for violations, run the 
 [Forseti Notifier]({% link _docs/latest/use/notifier.md %}).
+

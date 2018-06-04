@@ -167,36 +167,6 @@ notifier:
             webhook_url: https://hooks.slack.com/services/foobar
 ```
 
-### Cloud SCC Findings
-
-Violations can be shared with [Cloud Security Command Center](https://cloud.google.com/security-command-center) on Google Cloud
-Platform (GCP).
-
-[Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
-
-1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
-
-1. Navigate to the `notifier` > `violation` > `cloud_scc` section.
-
-The following options are available.
-
-* `enabled`
-  * **Description**: Whether Cloud SCC findings should be sent.
-  * **Valid values**: one of valid `true` or `false`
-
-* `gcs_path`
-  * **Description**: The path to a Cloud Storage bucket.
-  * **Valid values**: String
-  * **Note**: Must start with `gs://`.
-
-```yaml
-notifier:
-  violation:
-    cscc:
-      enabled: true
-      gcs_path: gs://<path to your GCS bucket>
-```
-
 ## What's next
 
 * Learn how to [set up SendGrid]({% link _docs/latest/configure/email-notification.md %})

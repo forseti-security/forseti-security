@@ -17,5 +17,6 @@ perform operations.
 {% include docs/latest/min_conf_settings.md %}
 
 ## What's next
+
 - Learn about [using Inventory]({% link _docs/latest/use/inventory.md %})
 - Learn more about [configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}).

@@ -51,7 +51,7 @@ having their accesses logged. The audit logging scanner detects if any projects
 are missing a required audit log, or have extra exempted members.
 
 For examples of how to define scanner rules for Cloud Audit Logging, see the
-[audit_logging_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/audit_logging_rules.yaml)
+[`audit_logging_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/audit_logging_rules.yaml)
 rule file.
 
 ## Cloud SQL Networks scanner
@@ -72,7 +72,7 @@ supports whitelisting supported APIs, blacklisting unsupported APIs, and
 specifying required APIs that must be enabled.
 
 For examples of how to define scanner rules for Enabled APIs, see the
-[enabled_apis_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/enabled_apis_rules.yaml)
+[`enabled_apis_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/rules/enabled_apis_rules.yaml)
 rule file.
 
 ## Firewall Rules scanner
