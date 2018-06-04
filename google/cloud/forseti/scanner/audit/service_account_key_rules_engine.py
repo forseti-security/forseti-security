@@ -288,7 +288,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.key_max_age = key_max_age
 
-    def _is_un_rotated_key(self, created_time, scan_time):
+    def _is_more_than_max_age(self, created_time, scan_time):
         """Check if the key has been rotated: is the key creation time older
         than max_age in the policy
 
@@ -304,8 +304,9 @@ class Rule(object):
         created_time = date_time.get_datetime_from_string(
             created_time, string_formats.DEFAULT_FORSETI_TIMESTAMP)
 
-        return True if (scan_time - created_time).days > self.key_max_age \
-            else False
+        if (scan_time - created_time).days > self.key_max_age:
+            return True
+        return False
 
     def find_policy_violations(self, service_account):
         """Find service account key age violations based on the max_age.
@@ -327,7 +328,7 @@ class Rule(object):
             full_name = key.get('full_name')
             LOGGER.debug('Checking key rotation for %s', full_name)
             created_time = key.get('valid_after_time')
-            if self._is_un_rotated_key(created_time, scan_time):
+            if self._is_more_than_max_age(created_time, scan_time):
                 violation_reason = ('Key ID %s not rotated since %s.' %
                                     (key_id, created_time))
                 violations.append(RuleViolation(
@@ -386,8 +387,6 @@ class Rule(object):
         """
         return hash(self.rule_index)
 
-
-# pylint: enable=inconsistent-return-statements
 
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id',

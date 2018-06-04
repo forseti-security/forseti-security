@@ -49,6 +49,7 @@ class ServiceAccount(object):
             service_account (dict): ServiceAccount dict
             keys (list): A list of dicsts of USER_MANAGED keys for the above
                 ServiceAccount
+
         Returns:
             ServiceAccount: A new ServiceAccount object
         """
@@ -75,6 +76,7 @@ class ServiceAccount(object):
             service_account (str): The json string representations of the
                 ServiceAccount
             service_account_keys (list): List of json strings of keys
+
         Returns:
             ServiceAccount: A new ServiceAccount object
         """

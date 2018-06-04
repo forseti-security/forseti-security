@@ -45,10 +45,10 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
             snapshot_timestamp,
             rules)
 
-        self.rules_engine = \
+        self.rules_engine = (
             service_account_key_rules_engine.ServiceAccountKeyRulesEngine(
                 rules_file_path=self.rules,
-                snapshot_timestamp=self.snapshot_timestamp)
+                snapshot_timestamp=self.snapshot_timestamp))
         self.rules_engine.build_rule_book(self.global_configs)
 
     @staticmethod

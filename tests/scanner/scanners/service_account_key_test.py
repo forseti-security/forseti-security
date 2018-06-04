@@ -45,13 +45,17 @@ SERVICE_ACCOUNT_DATA = """
 
 TIME_NOW = datetime.utcnow()
 
-UN_ROTATED_KEY_AGE_DAYS = 101
-UN_ROTATED_KEY_DATETIME = TIME_NOW - timedelta(days=UN_ROTATED_KEY_AGE_DAYS)
-UN_ROTATED_KEY_TIME = UN_ROTATED_KEY_DATETIME.strftime(DEFAULT_FORSETI_TIMESTAMP)
+KEY_AGE_MORE_THAN_MAX_AGE = 101
+KEY_DATETIME_MORE_THAN_MAX_AGE = TIME_NOW - timedelta(
+    days=KEY_AGE_MORE_THAN_MAX_AGE)
+KEY_TIME_MORE_THAN_MAX_AGE = KEY_DATETIME_MORE_THAN_MAX_AGE.strftime(
+    DEFAULT_FORSETI_TIMESTAMP)
 
-ROTATED_KEY_AGE_DAYS = 99
-ROTATED_KEY_DATETIME = TIME_NOW - timedelta(days=ROTATED_KEY_AGE_DAYS)
-ROTATED_KEY_TIME = ROTATED_KEY_DATETIME.strftime(DEFAULT_FORSETI_TIMESTAMP)
+KEY_AGE_LESS_THAN_MAX_AGE = 99
+KEY_DATETIME_LESS_THAN_MAX_AGE = TIME_NOW - timedelta(
+    days=KEY_AGE_LESS_THAN_MAX_AGE)
+KEY_TIME_LESS_THAN_MAX_AGE = KEY_DATETIME_LESS_THAN_MAX_AGE.strftime(
+    DEFAULT_FORSETI_TIMESTAMP)
 
 # Not used in checking but populate anyway
 VALID_BEFORE_TIME = (TIME_NOW + timedelta(days=3650)).strftime(
@@ -64,7 +68,7 @@ ROTATED_KEY_DATA = """
  "name": "%s",
  "validAfterTime": "%s",
  "validBeforeTime": "%s"}
-""" % (ROTATED_KEY_NAME, ROTATED_KEY_TIME, VALID_BEFORE_TIME)
+""" % (ROTATED_KEY_NAME, KEY_TIME_LESS_THAN_MAX_AGE, VALID_BEFORE_TIME)
 
 UN_ROTATED_KEY_ID = '999999999999999999999'
 UN_ROTATED_KEY_NAME = SERVICE_ACCOUNT_NAME + '/keys/' + UN_ROTATED_KEY_ID
@@ -73,7 +77,7 @@ UN_ROTATED_KEY_DATA = """
  "name": "%s",
  "validAfterTime": "%s",
  "validBeforeTime": "%s"}
-""" % (UN_ROTATED_KEY_NAME, UN_ROTATED_KEY_TIME, VALID_BEFORE_TIME)
+""" % (UN_ROTATED_KEY_NAME, KEY_TIME_MORE_THAN_MAX_AGE, VALID_BEFORE_TIME)
 
 RESOURCE_DATA = "{'key_id': u'999999999999999999999', " \
                 "'key_algorithm': u'KEY_ALG_RSA_2048', " \
@@ -81,7 +85,7 @@ RESOURCE_DATA = "{'key_id': u'999999999999999999999', " \
                 "'valid_before_time': u'%s', " \
                 "'full_name': u'organization/12345/project/foo/serviceaccount" \
                 "/123456789012345678901/serviceaccount_key" \
-                "/999999999999999999999/'}" % (UN_ROTATED_KEY_TIME,
+                "/999999999999999999999/'}" % (KEY_TIME_MORE_THAN_MAX_AGE,
                                                VALID_BEFORE_TIME)
 
 EXPECTED_VIOLATION = {'rule_name': 'Service account keys not rotated (older than 100 days)',
@@ -93,10 +97,10 @@ EXPECTED_VIOLATION = {'rule_name': 'Service account keys not rotated (older than
                       'violation_data': {
                           'service_account_name': u'Service Account Key Age Test Service Account',
                           'service_account_id': u'test-service-account@developer.gserviceaccount.com',
-                          'violation_reason': u'Key ID 999999999999999999999 not rotated since %s.' % UN_ROTATED_KEY_TIME,
+                          'violation_reason': u'Key ID 999999999999999999999 not rotated since %s.' % KEY_TIME_MORE_THAN_MAX_AGE,
                           'key_id': u'999999999999999999999',
                           'project_id': u'foo',
-                          'key_created_time': u'%s' % UN_ROTATED_KEY_TIME},
+                          'key_created_time': u'%s' % KEY_TIME_MORE_THAN_MAX_AGE},
                       'resource_type': 'serviceaccount_key'
                       }
 
@@ -132,15 +136,15 @@ class ServiceAccountKeyScannerTest(unittest_utils.ForsetiTestCase):
             service_account.data = SERVICE_ACCOUNT_DATA
 
             # Add both, the rotated and un-rotated keys to the above
-            sc = data_access.add_resource(
+            rotated_key = data_access.add_resource(
                 session, 'serviceaccount_key/%s' % ROTATED_KEY_ID,
                 service_account)
-            sc.data = ROTATED_KEY_DATA
+            rotated_key.data = ROTATED_KEY_DATA
 
-            sc = data_access.add_resource(
+            un_rotated_key = data_access.add_resource(
                 session, 'serviceaccount_key/%s' % UN_ROTATED_KEY_ID,
                 service_account)
-            sc.data = UN_ROTATED_KEY_DATA
+            un_rotated_key.data = UN_ROTATED_KEY_DATA
 
             session.commit()
 
