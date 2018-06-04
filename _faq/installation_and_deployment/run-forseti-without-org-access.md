@@ -6,8 +6,8 @@ order: 6
 
 Although Forseti is designed to install and run out-of-the box with complete
 org access, it is possible to install Forseti without being an org admin and
-then manually give Forseti the permissions to audit specific projects.  These
-projects must be standalone and not under any folders.
+then manually give Forseti the permissions to inventory and audit specific
+projects.  These projects must be standalone and can not be under folders.
 
 1. User is not org admin, nor has access to an org admin to give org access to
 Froseti.
