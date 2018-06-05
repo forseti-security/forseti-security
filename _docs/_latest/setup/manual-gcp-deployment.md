@@ -105,3 +105,7 @@ Forseti client has configuration file that needed to be configured
 and stored in GCS. 
 Reference [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
 to see how.
+
+## What's next
+
+  - How to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
