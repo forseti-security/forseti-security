@@ -86,14 +86,10 @@ def _get_user_from_json(path):
     Returns:
         str: service account email aka client_email
     """
-    try:
-        f = open(path, 'r')
-        service_account_info = json.loads(f.read())
-        return service_account_info.get('client_email')
-    except IOError:
-        return None
-    finally:
-        f.close()
+    if path:
+        with open(path, 'r') as f:
+            service_account_info = json.loads(f.read())
+            return service_account_info.get('client_email')
 
 
 def active_service_account(authed_user):
@@ -101,7 +97,7 @@ def active_service_account(authed_user):
     Args:
         authed_user (str): service account email
     """
-    return_code, err = utils.run_command(
+    return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
          authed_user, '--key-file={}'
          .format(_get_service_account_json_path())])
