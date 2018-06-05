@@ -11,7 +11,7 @@ resources. Forseti Scanner and Enforcer use Inventory data to perform operations
 ## Running Inventory
 
 Before you start using Inventory, you'll need to make sure you have the  
-[proper permission setup]({% link _docs/latest/configure/gsuite-group-collection.md %}) 
+[proper permission setup]({% link _docs/latest/configure/gsuite.md %}) 
 for your Forseti gcp service account.
 
 To display Inventory flag options, run `forseti inventory -h`.

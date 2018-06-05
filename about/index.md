@@ -12,7 +12,9 @@ developing add-on modules to offer unique capabilities. Forseti’s core modules
 provide a foundation that others can build upon.
 
 Get started with
-[Forseti Security]({% link _docs/latest/configure/configuring-forseti.md %}).
+[Forseti Security]({% link _docs/latest/configure/forseti/index.md %}).
+
+---
 
 ## When to use Forseti Security
 

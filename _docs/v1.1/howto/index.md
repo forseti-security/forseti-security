@@ -15,6 +15,6 @@ hide:
 
 - [Configure Forseti]({% link _docs/v1.1/howto/configure/configuring-forseti.md %})
 - [Enable Email Notifications]({% link _docs/v1.1/howto/configure/email-notification.md %})
-- [Enable GSuite Google Groups Collection]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %})
+- [Enable G Suite Google Groups Collection]({% link _docs/v1.1/howto/configure/gsuite-group-collection.md %})
 - [Collect and Store New Data in Forseti Inventory]({% link _docs/v1.1/howto/configure/inventory-new-data.md %})
 - [Export Summary Notifications to BigQuery]({% link _docs/v1.1/howto/configure/export-summary-notifications.md %})
