@@ -233,7 +233,7 @@ def infer_version(advanced_mode):
         str: Selected Forseti branch.
     """
     return_code, out, err = run_command(
-        ['git', 'symbolic-ref', '-q' ,'--short', 'HEAD'])
+        ['git', 'symbolic-ref', '-q', '--short', 'HEAD'])
     # The git command above will return empty if the user is not currently
     # on a branch.
     if return_code:
@@ -271,9 +271,9 @@ def infer_version(advanced_mode):
             % target).lower().strip()
 
     if user_choice == 'n':
-        target = checkout_git_branch()
-        if target:
-            branch = target
+        branch = checkout_git_branch()
+        if branch:
+            target = branch
         else:
             print('No branch/tag was chosen; using %s' % target)
 
