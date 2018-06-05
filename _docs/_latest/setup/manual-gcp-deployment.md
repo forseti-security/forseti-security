@@ -22,14 +22,15 @@ Create a new project to host Forseti.  Forseti is intended to run in its own
 dedicated project so that access to its highly privileged permissions can be
 controlled.  Assign a billing account to the project.
 
-### Enable the following APIs in the projects:
+### Enable APIs in Project
 
-See [this doc]({% link _docs/latest/required_apis.md %})
+Reference [this doc]({% link _docs/latest/required_apis.md %})
 to see the APIs that need to be enabled in the project hosting Forseti.
 
 ## Deploy Server VM
 
-### Create a Forseti server service account.
+### Create a Forseti Server Service Account
+
 ```
 forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
 ```
@@ -37,12 +38,12 @@ forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
 Where `#######` is a random alphanumeric unique identifier that must be
 accepted when used for GCS bucket name.
 
-### Assign roles:
+### Assign Roles
 
 Reference [this doc]({% link _docs/latest/concepts/service-accounts.html#the-server-service-account %})
 to see the roles need to be assigned to the Forseti server service account.
 
-### Create a Forseti server VM instance
+### Create a Forseti Server VM Instance
 
 * Reference [this deployment template for the specifications of the server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py) to create.
 * bind the server service account to the VM instance
@@ -57,15 +58,20 @@ to see the roles need to be assigned to the Forseti server service account.
 
 ### Configuration
 
-Forseti server has configuration files and rules that needed to be configured
-and saved to GCS. Reference [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
-to see the roles need to be assigned to the Forseti server service account.
+Forseti server has configuration and rule files that needed to be configured
+and stored in GCS. 
+Reference [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
+to see how.
+
+### GSuite Integration
+
+[Enable DwD for the server service account](https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html)
 
 ## Create Database
 
 ### Create a CloudSQL instance.
 
-Look in [this deployment template for the specifications of the CloudSQL instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py) to create.
+Reference [this deployment template for the specifications of the CloudSQL instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py) to create.
 
 ## Deploy Client VM
 
@@ -75,12 +81,12 @@ Look in [this deployment template for the specifications of the CloudSQL instanc
 forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 ```
 
-### Assign roles:
+### Assign Roles
 
 Reference [this doc]({% link _docs/latest/concepts/service-accounts.html#the-client-service-account %})
 to see the roles need to be assigned to the Forseti client service account.
 
-### Create a Forseti client VM instance.
+### Create Forseti client VM Instance
 
 * Reference [this deployment template for the specifications of the client VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py) to create.
 * bind the client service account to the VM instance
@@ -95,19 +101,7 @@ to see the roles need to be assigned to the Forseti client service account.
 
 ### Configuration
 
-* [Forseti client conf](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/configs/server/forseti_conf_client.yaml.in)
-
-Make a copy of `forseti_conf_client.yaml.in` and call it `forseti_conf_client.yaml`
-Fill-in the placeholder values as denoted by `{FOOBAR_PLACEHOLDER}`
-This file does not need to be saved locally.  It will always be read from the GCS bucket
-on installation.
-
-* Copy the Forseti client configuration file to:
-
- ```
- gs://forseti-client-#######/configs/forseti_conf_client.yaml
- ```
-
-### GSuite Integration
-
-* [Enable DwD for the server service account](https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html)
+Forseti client has configuration file that needed to be configured
+and stored in GCS. 
+Reference [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
+to see how.
