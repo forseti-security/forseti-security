@@ -199,8 +199,9 @@ class ForsetiInstaller(object):
                                          is_cloudshell)
         self.organization_id = gcloud.lookup_organization(self.project_id)
         self.config.generate_identifier(self.organization_id)
-        self.check_if_authed_user_in_domain(
-            self.organization_id, authed_user)
+        if not self.config.skip_check_authed_user:
+            self.check_if_authed_user_in_domain(
+                self.organization_id, authed_user)
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
 
     def create_or_reuse_service_accts(self):

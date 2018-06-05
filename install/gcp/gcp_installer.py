@@ -74,6 +74,9 @@ def run():
                         choices=['client', 'server'],
                         help='Type of the installation, '
                              'either client or server')
+    parser.add_argument('--skip-check-authed-user',
+                        action='store_true',
+                        help='Skip check if auther user is in domain')
 
     group = parser.add_argument_group(title='regions')
     group.add_argument('--gcs-location',
