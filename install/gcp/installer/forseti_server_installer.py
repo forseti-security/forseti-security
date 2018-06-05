@@ -397,8 +397,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if self.has_roles_script:
             instructions.other_messages.append(
-                constants.MESSAGE_HAS_ROLE_SCRIPT.format(
-                    self.resource_root_id))
+                constants.MESSAGE_HAS_ROLE_SCRIPT)
 
         if not self.config.sendgrid_api_key:
             instructions.other_messages.append(
