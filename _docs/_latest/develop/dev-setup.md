@@ -181,7 +181,7 @@ After you complete the above steps, you should be able to run the forseti server
     --config_file_path "PATH_TO_YOUR_CONFIG.yaml" \
     --log_level=info \
     --enable_console_log
-
+  ```
 
 In another terminal window:
 
