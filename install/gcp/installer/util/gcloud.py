@@ -18,6 +18,7 @@ from __future__ import print_function
 import json
 import re
 import sys
+import os
 
 import constants
 import utils
@@ -30,6 +31,7 @@ def get_gcloud_info():
         str: GCP project id
         str: GCP Authenticated user
         bool: Whether or not the installer is running in cloudshell
+        bool: Whether using a service account
     """
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
@@ -46,10 +48,68 @@ def get_gcloud_info():
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
             print('Read gcloud info: Success')
+            is_service_account = False
+            if not authed_user:
+                print('Not auth user found, reading extra information'
+                      ' from environment variables')
+                authed_user = _get_user_from_json(
+                    _get_service_account_json_path())
+                if authed_user:
+                    is_service_account = True
         except ValueError as verr:
             print(verr)
             sys.exit(1)
-    return project_id, authed_user, is_devshell
+    return project_id, authed_user, is_devshell, is_service_account
+
+
+def _get_service_account_json_path():
+    """Search in the environment variables for Google Credentials
+    Returns:
+        str: The value of the first non-empty environment variable
+    """
+    if 'GOOGLE_CREDENTIALS' in os.environ:
+        return os.environ['GOOGLE_CREDENTIALS']
+    elif 'GOOGLE_CLOUD_KEYFILE_JSON' in os.environ:
+        return os.environ['GOOGLE_CLOUD_KEYFILE_JSON']
+    elif 'GCLOUD_KEYFILE_JSON' in os.environ:
+        return os.environ['GCLOUD_KEYFILE_JSON']
+    elif 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE' in os.environ:
+        return os.environ['CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE']
+
+    return None
+
+
+def _get_user_from_json(path):
+    """Read a service account json file and search for client_email
+    Args:
+        path (str): path to file
+    Returns:
+        str: service account email aka client_email
+    """
+    try:
+        f = open(path, 'r')
+        service_account_info = json.loads(f.read())
+        return service_account_info.get('client_email')
+    except IOError:
+        return None
+    finally:
+        f.close()
+
+
+def active_service_account(authed_user):
+    """Activate the service account with gcloud
+    Args:
+        authed_user (str): service account email
+    """
+    return_code, err = utils.run_command(
+        ['gcloud', 'auth', 'activate-service-account',
+         authed_user, '--key-file={}'
+         .format(_get_service_account_json_path())])
+    if return_code:
+        print(err)
+        sys.exit(1)
+    else:
+        print('Service account activated')
 
 
 def verify_gcloud_information(project_id,
