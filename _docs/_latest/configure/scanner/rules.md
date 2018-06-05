@@ -42,40 +42,40 @@ rules:
           ...
 ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
-- `mode`
+* `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-     `whitelist` - Allow the members defined.  
-     `blacklist` - Block the members defined.  
-     `required` - Defined members with the specified roles must be found in policy.
+    * `whitelist` - Allow the members defined.  
+    * `blacklist` - Block the members defined.  
+    * `required` - Defined members with the specified roles must be found in policy.
 
-- `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `applies_to`
-      * **Description**: What resources to apply the rule to.
-      * **Valid values**: One of `self`, `children` or `self_and_children`.
-      * **Note**:  
-         `self` - Allow the members defined.  
-         `children` - Block the members defined.  
-         `self_and_children` - The rule applies to the specified resource and its child resources.
+  * `applies_to`
+    * **Description**: What resources to apply the rule to.
+    * **Valid values**: One of `self`, `children` or `self_and_children`.
+    * **Note**:  
+      * `self` - Allow the members defined.  
+      * `children` - Block the members defined.  
+      * `self_and_children` - The rule applies to the specified resource and its child resources.
 
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `inherit_from_parents`
+* `inherit_from_parents`
   * **Description**: A boolean that defines whether a specified resource inherits ancestor rules.
   * **Valid values**: One of `true` or `false`.
 
-- `bindings`
+* `bindings`
   * **Description**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit. 
     - `role`
       * **Description**: A [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam).
@@ -116,43 +116,43 @@ rules:
         operator: '>='
  ```
  
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
- - `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `check_serverconfig_valid_node_versions`
+* `check_serverconfig_valid_node_versions`
   * **Description**: If true, will raise a violation for any node pool running a version 
   that is not listed as supported for the zone the cluster is running in.
   * **Valid values**: One of `true` or `false`.
 
-- `check_serverconfig_valid_master_versions`
+* `check_serverconfig_valid_master_versions`
   * **Description**: If true, will raise a violation for any cluster running an out of 
   date master version. New clusters can only be created with a supported master version.
   * **Valid values**: One of `true` or `false`.
 
-- `allowed_nodepool_versions`
+* `allowed_nodepool_versions`
   * **Description**: Optional, if not included all versions are allowed. 
   The list of rules for what versions are allowed on nodes.
-    - `major`
+    * `major`
       * **Description**: The major version that is allowed.
       * **Valid values**: String.
       * **Example values**: `1.6`, `1.7`, `1.8`
       
-    - `minor`
+    * `minor`
       * **Description**: Optional, the minor version that is allowed. If not included, all minor versions are allowed.
       * **Valid values**: String.
       * **Example values**: `11-gke.1`, `12-gke.1`
 
-    - `operator`
+    * `operator`
       * **Description**: Optional, defaults to =, can be one of (=, >, <, >=, <=). The operator determines 
       how the current version compares with the allowed version. If a minor version is not included,
       the operator applies to major version. Otherwise it applies to minor versions within a single major version.
@@ -203,8 +203,8 @@ rules:
     url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
 ```
 
-- **blacklist**: The name of your blacklist
-- **url**: Url that contains a list of IPs to check against
+* **blacklist**: The name of your blacklist
+* **url**: Url that contains a list of IPs to check against
 
 ### Enabling
 To enable the blacklist scanner, add the followings to the scanner section in your forseti_conf.yaml file.
@@ -260,33 +260,33 @@ rules:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
 ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
- - `resource`
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+* `resource`
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `bucket`
+* `bucket`
   * **Description**: The bucket name you want to audit.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `entity`
+* `entity`
   * **Description**: The [ACL entity](https://cloud.google.com/storage/docs/access-control/lists) that holds the bucket permissions.
   * **Valid values**: String.
   * **Example values**: `AllUsers`
 
-- `email`
+* `email`
   * **Description**: The email of the entity.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `domain`
+* `domain`
   * **Description**: The domain of the entity.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `role`
+* `role`
   * **Description**: The access permission of the entity.
   * **Valid values**: String, you can use `*` to match for all.
 
@@ -314,29 +314,29 @@ rules:
       - 'user:user2@MYDOMAIN.com'
  ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
- - `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `service`
+* `service`
   * **Description**: The service on which logs must be enabled. The special value of `allServices` denotes audit logs for all services.
   * **Valid values**: String.
   * **Example values**: `allServices`, `storage.googleapis.com`
 
-- `log_types`
+* `log_types`
   * **Description**: The required log types.
   * **Valid values**: One of `AUDIT_READ`, `DATA_READ` or `DATA_WRITE`.
 
-- `allowed_exemptions`
+* `allowed_exemptions`
   * **Description**: Optional, a list of allowed exemptions in the audit logs for this service.
   * **Valid values**: String.
   * **Example values**: `user:user1@MYDOMAIN.com`
@@ -358,29 +358,29 @@ rules:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
  ```
  
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
- - `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `instance_name`
+* `instance_name`
   * **Description**: The Cloud SQL instance to which you want to apply the rule.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `authorized_networks`
+* `authorized_networks`
   * **Description**: The allowed network.
   * **Valid values**: String.
   * **Example values**: `0.0.0.0/0`
 
-- `ssl_enabled`
+* `ssl_enabled`
   * **Description**: Whether SSL should be enabled.
   * **Valid values**: One of `true` or `false`.
 
@@ -405,40 +405,40 @@ rules:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
 ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
- - `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `dataset_id`
+* `dataset_id`
   * **Description**: The BigQuery dataset to which you want to apply the rule.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `special_group`
+* `special_group`
   * **Description**: The special group.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `domain`
+* `domain`
   * **Description**: Domain.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `role`
+* `role`
   * **Description**: The BigQuery dataset to which you want to apply the rule.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `group_email`
+* `group_email`
   * **Description**: Group email.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `role`
+* `role`
   * **Description**: Role.
   * **Valid values**: String, you can use `*` to match for all.
 
@@ -470,36 +470,36 @@ rules:
       - 'storage-component.googleapis.com'
  ```
  
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
-- `mode`
+* `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-     `whitelist` - Allow only the APIs listed in `services`.
-     `blacklist` - Block the APIs listed in `services`.
-     `required` - All APIs listed in `services` must be enabled.
+    * `whitelist` - Allow only the APIs listed in `services`.
+    * `blacklist` - Block the APIs listed in `services`.
+    * `required` - All APIs listed in `services` must be enabled.
 
-- `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `applies_to`
-      * **Description**: What resources to apply the rule to.
-      * **Valid values**: One of `self`, `children` or `self_and_children`.
-      * **Note**:  
-         `self` - Allow the members defined.  
-         `children` - Block the members defined.  
-         `self_and_children` - The rule applies to the specified resource and its child resources.
+  * `applies_to`
+    * **Description**: What resources to apply the rule to.
+    * **Valid values**: One of `self`, `children` or `self_and_children`.
+    * **Note**:  
+      * `self` - Allow the members defined.  
+      * `children` - Block the members defined.  
+      * `self_and_children` - The rule applies to the specified resource and its child resources.
 
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `services`
+* `services`
   * **Description**: The list of services to whitelist/blacklist/require.
   * **Valid values**: String.
   * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
@@ -518,29 +518,29 @@ rules:
     ip_address: "198.51.100.46"
 ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
-- `target`
+* `target`
   * **Description**: The URL of the target resource to receive the matched traffic.
   * **Valid values**: String.
 
-- `mode`
+* `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: Current only support `whitelist` mode.
   * **Note**:  
-     `whitelist` - Ensure each forwarding rule only directs to the intended target instance.
+     * `whitelist` - Ensure each forwarding rule only directs to the intended target instance.
 
-- `load_balancing_scheme`
+* `load_balancing_scheme`
   * **Description**: What the ForwardingRule will be used for.
   * **Valid values**: One of `INTERNAL` or `EXTERNAL`.
   
-- `ip_protocol`
+* `ip_protocol`
   * **Description**: The IP protocol to which this rule applies.
   * **Valid values**: One of `TCP`, `UDP`, `ESP`, `AH`, `SCTP`, or `ICMP`.
   
-- `ip_address`
+* `ip_address`
   * **Description**: The IP address for which this forwarding rule serves.
   * **Valid values**: String.
   * **Example values**: `198.51.100.46`
@@ -566,40 +566,40 @@ rules:
     allowed_direct_access_sources: '10.*,monitoring-instance-tag'
 ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
-- `mode`
+* `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-     `whitelist` - Allow the members defined.  
-     `blacklist` - Block the members defined.  
-     `required` - Defined members with the specified roles must be found in policy.
+    * `whitelist` - Allow the members defined.  
+    * `blacklist` - Block the members defined.  
+    * `required` - Defined members with the specified roles must be found in policy.
 
-- `resource`
-    - `type`
-      * **Description**: The type of the resource.
-      * **Valid values**: One of `organization`, `folder` or `project`.
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
       
-    - `applies_to`
-      * **Description**: What resources to apply the rule to.
-      * **Valid values**: One of `self`, `children` or `self_and_children`.
-      * **Note**:  
-         `self` - Allow the members defined.  
-         `children` - Block the members defined.  
-         `self_and_children` - The rule applies to the specified resource and its child resources.
+  * `applies_to`
+    * **Description**: What resources to apply the rule to.
+    * **Valid values**: One of `self`, `children` or `self_and_children`.
+    * **Note**:  
+      * `self` - Allow the members defined.  
+      * `children` - Block the members defined.  
+      * `self_and_children` - The rule applies to the specified resource and its child resources.
 
-    - `resource_ids`
-      * **Description**: A list of one or more resource ids to match.
-      * **Valid values**: String, you can use `*` to match for all.
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
 
-- `inherit_from_parents`
+* `inherit_from_parents`
   * **Description**: A boolean that defines whether a specified resource inherits ancestor rules.
   * **Valid values**: One of `true` or `false`.
 
-- `allowed_direct_access_sources`
+* `allowed_direct_access_sources`
   * **Description**:  Comma-separated list of globs that are matched against the IP ranges and tags in your 
   firewall rules that allow access to services in your GCP environment.  
   * **Valid values**: String.
@@ -631,23 +631,25 @@ rules:
         - network-3
 ```
 
-- `name`
+* `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
 
-- `project`
+* `project`
   * **Description**: Project id.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `network`
+* `network`
   * **Description**: Network.
   * **Valid values**: String, you can use `*` to match for all.
 
-- `whitelist`
+* `whitelist`
   * **Description**: The whitelist describes which projects and networks for which VM 
   instances can have external IPs.
   * **Valid values**: project/networks pairs.
   * **Example values**: The following values would specify that VM instances in 
   project_01’s network_01 can have external IP addresses:
+    ```
     project_01:  
-    \- network_01
+    - network_01
+    ```

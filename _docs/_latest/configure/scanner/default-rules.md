@@ -5,7 +5,7 @@ order: 302
 
 # {{ page.title }}
 
-Forseti Scanner has default rules that create a [violation]({% link _docs/latest/configure/scanner/rule-violations.md %}) when their conditions are met.
+Forseti Scanner has default rules that create a [violation]({% link _docs/latest/use/scanner.md %}) when their conditions are met.
 
 ---
 

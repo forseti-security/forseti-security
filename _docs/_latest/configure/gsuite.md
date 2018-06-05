@@ -50,7 +50,7 @@ You must have the **super admin** role in admin.google.com to complete these ste
 
 ## Configuring Forseti to collect G Suite data
 
-After you setup your service account above, you may need to edit [domain_super_admin_email]({% link _docs/latest/confugre/inventory/index.md %}) field in 
+After you setup your service account above, you may need to edit [domain_super_admin_email]({% link _docs/latest/configure/inventory/index.md %}) field in 
 your `forseti_conf_server.yaml`.
 
 If you are running Forseti on GCP and made any changes to the above values, 

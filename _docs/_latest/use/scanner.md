@@ -38,7 +38,17 @@ automatically to a Cloud Storage bucket.
 
 **Below is an example of scanner violation output**
 
-{% responsive_image path: images/docs/quickstarts/scanner-output.png alt: "sample scanner output" %}
+Firewall rule violation output:
+
+{% responsive_image path: images/docs/use/firewall_scanner_output.png alt: "sample scanner output" %}
+
+Bigquery violation output:
+
+{% responsive_image path: images/docs/use/bigquery_scanner_output.png alt: "sample scanner output" %}
+
+Cloudsql violation output:
+
+{% responsive_image path: images/docs/use/cloudsql_scanner_output.png alt: "sample scanner output" %}
 
 To receive notifications for violations, run the 
 [Forseti Notifier]({% link _docs/latest/use/notifier.md %}).
