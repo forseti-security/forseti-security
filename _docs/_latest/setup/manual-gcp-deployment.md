@@ -37,7 +37,7 @@ forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
 Where `#######` is a random alphanumeric unique identifier that must be
 accepted when used for GCS bucket name.
 
-## Assign roles:
+### Assign roles:
 
 See [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
 to see the roles need to be assigned to the Forseti server service account.
