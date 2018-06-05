@@ -62,9 +62,6 @@ def run():
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')
-    parser.add_argument('--no-iam-check',
-                        action='store_true',
-                        help='Bypass IAM check for user running script')
     parser.add_argument('--advanced',
                         action='store_true',
                         help='Advanced setup mode (more options)')

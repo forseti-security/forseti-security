@@ -179,11 +179,11 @@ MESSAGE_SKIP_EMAIL = (
     'email-notification.html\n\n')
 
 MESSAGE_HAS_ROLE_SCRIPT = (
-    'Some roles could not be assigned to {} where you want '
-    'to grant Forseti access. A script `grant_forseti_roles.sh` '
-    'has been generated with the necessary commands to assign '
-    'those roles. Please run this script to assign the Forseti '
-    'roles so that Forseti will work properly.\n\n')
+    'Some roles could not be assigned during the installation. '
+    'A script `grant_forseti_roles.sh` has been generated in '
+    'your cloud shell directory located at ~/forseti-security with '
+    'the necessary commands to assign those roles. Please run this '
+    'script to assign the roles so that Forseti will work properly.\n\n')
 
 MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS = (
     'IMPORTANT NOTE\n'
