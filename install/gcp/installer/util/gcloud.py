@@ -91,6 +91,8 @@ def _get_user_from_json(path):
             service_account_info = json.loads(f.read())
             return service_account_info.get('client_email')
 
+    return None
+
 
 def active_service_account(authed_user):
     """Activate the service account with gcloud
