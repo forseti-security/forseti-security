@@ -233,18 +233,34 @@ def infer_version(advanced_mode):
         str: Selected Forseti branch.
     """
     return_code, out, err = run_command(
-        ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        ['git', 'symbolic-ref', '-q' ,'--short', 'HEAD'])
+    # The git command above will return empty if the user is not currently
+    # on a branch.
     if return_code:
         print(err)
         print('Will try to infer the Forseti version instead.')
     else:
-        branch = out.strip()
+        target = out.strip()
+
+    # if the target is empty, then the user might be on a tag.
+    if not target:
+        return_code, out, err = run_command(
+            ['git', 'describe', '--tags', '--exact-match'])
+        # The git command above will return the tag name if we are on a tag,
+        # will throw an exception otherwise.
+        if return_code:
+            print(err)
+            print('Unable to determine the current Forseti version, please '
+                  'check https://forsetisecurity.org/faq/ for more '
+                  'information.')
+            sys.exit(1)
+        target = 'tags/{}'.format(out.strip()) if out.strip() else ''
 
     user_choice = None
-    if not branch or branch == 'master':
+    if not target or target == 'master':
         version = get_forseti_version()
         if version:
-            branch = 'v%s' % version
+            target = 'v%s' % version
 
     if not advanced_mode:
         user_choice = 'y'
@@ -252,17 +268,17 @@ def infer_version(advanced_mode):
     while user_choice != 'y' and user_choice != 'n':
         user_choice = raw_input(
             'Install Forseti branch/tag %s? (y/n) '
-            % branch).lower().strip()
+            % target).lower().strip()
 
     if user_choice == 'n':
-        branch = checkout_git_branch()
-        if branch:
-            branch = branch
+        target = checkout_git_branch()
+        if target:
+            branch = target
         else:
-            print('No branch was chosen; using %s' % branch)
+            print('No branch/tag was chosen; using %s' % target)
 
-    print('Forseti branch/tag: %s' % branch)
-    return branch
+    print('Forseti branch/tag: %s' % target)
+    return target
 
 
 def get_zone_from_bucket_location(bucket_location):
