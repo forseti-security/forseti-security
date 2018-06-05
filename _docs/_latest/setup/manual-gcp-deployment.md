@@ -51,14 +51,20 @@ to see the roles need to be assigned to the Forseti server service account.
 ### Install Forseti Server
 
 * ssh into the server VM
+
 * become ubuntu user
 
 `sudo su ubuntu`
 
-* git clone the latest release from the stable branch
+* git clone from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and checkout the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
 
+```
+git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+git checkout tags/<tag_number>
+```
 
 * run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
+
 * create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py)
 
 ### Configuration
@@ -100,8 +106,18 @@ to see the roles need to be assigned to the Forseti client service account.
 ### Install Forseti Client
 
 * ssh into the client VM
+
 * become ubuntu user
-* git clone the latest release from the stable branch
+
+`sudo su ubuntu`
+
+* git clone from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and checkout the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
+
+```
+git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+git checkout tags/<tag_number>
+```
+
 * run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py)
 
 ### Configuration
