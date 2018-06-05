@@ -1,27 +1,30 @@
-**Granted at the Organization level**
-
- `forseti_inventory` and `forseti_scanner` require:
+**Forseti server service account requires:
  
+***Granted at the Organization level**
+  
+ * `roles/appengine.appViewer`
  * `roles/bigquery.dataViewer`
  * `roles/browser`
- * `roles/compute.networkViewer`
- * `roles/iam.securityReviewer`
- * `roles/appengine.appViewer`
- * `roles/servicemanagement.quotaViewer`
  * `roles/cloudsql.viewer`
- 
- `forseti_enforcer` requires:
- 
+ * `roles/compute.networkViewer`
  * `roles/compute.securityAdmin`
-
-**Granted on the project where Forseti Security is deployed**
-
- `forseti_inventory`, `forseti_scanner`, and `forseti_enforcer` require:
-
- * `roles/storage.objectViewer`
- * `roles/storage.objectCreator`
- * `roles/logging.logWriter`
+ * `roles/iam.securityReviewer`
+ * `roles/servicemanagement.quotaViewer`
+ * `roles/serviceusage.serviceUsageConsumer`
  
- `forseti_inventory`, `forseti_scanner`, and `forseti_iam` require:
+***Granted at the project level**
  
  * `roles/cloudsql.client`
+ * `roles/logging.logWriter`
+ * `roles/storage.objectViewer`
+ * `roles/storage.objectCreator`
+
+
+***Forseti server service account requires:
+ 
+ * `roles/iam.serviceAccountTokenCreator
+ 
+**Forseti server service account requires:
+ 
+ * `roles/logging.logWriter`
+ * `roles/storage.objectViewer`

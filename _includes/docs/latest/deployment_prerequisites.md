@@ -76,6 +76,15 @@ Also, you can grant the roles on the organization, folder, or project IAM polici
     $ gcloud projects add-iam-policy-binding PROJECT_ID \
        --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
+    
+  * Service Account IAM:
+
+    ```bash
+    gcloud iam service-accounts add-iam-policy-binding YOUR_SERVICE_ACCOUNT \
+      --member=serviceACcount:YOUR_SERVICE_ACCOUNT \
+      --role=ROLE_NAME
+    ```
+
 
 The `MEMBER_TYPE` value is either `user`, `group`, `serviceAccount`, or `domain`.
 
@@ -87,91 +96,6 @@ Examples of `MEMBER_TYPE:MEMBER_NAME`:
   * serviceAccount:forseti-gcp-reader@your-project-id.iam.gserviceaccount.com
   * group:my-forseti-group@example.com
   * domain:example.com
-
-OrganizationIAM Roles
-
-Use these commands to grant the Forseti roles to your organization IAM policy. If you 
-need to assign the roles on the folder or project level, use the commands from above, with 
-the roles below.
-
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/appengine.appViewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/bigquery.dataViewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/browser
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/cloudsql.viewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/compute.networkViewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/compute.securityAdmin
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/iam.securityReviewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/servicemanagement.quotaViewer
-```
-```bash
-$ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/serviceusage.serviceUsageConsumer
-```
-
-Project IAM roles
-
-These are necessary for reading/writing Forseti data in Google Cloud Storage and Cloud SQL.
-Do not assign these outside of the project IAM.
-
-```bash
-$ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/storage.objectViewer
-```
-```bash
-$ gcloud rpojects add-iam-policy-binding FORSETI_PROJECT_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/storage.objectCreator
-```
-```bash
-$ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/cloudsql.client
-```
-```bash
-$ gcloud projects add-iam-policy-binding FORSETI_PROJECT_ID \
---member=MEMBER_TYPE:MEMBER_NAME \
---role=roles/logging.logWriter
-```
-
-Service Account IAM Role
-```bash
-gcloud iam service-accounts add-iam-policy-binding YOUR_SERVICE_ACCOUNT \
---member=serviceACcount:YOUR_SERVICE_ACCOUNT \
---role=roles/iam.serviceAccountTokenCreator
-```
 
 ### Enabling APIs
 

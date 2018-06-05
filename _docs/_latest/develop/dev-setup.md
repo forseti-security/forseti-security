@@ -66,52 +66,43 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
 
 Install the necessary python dev tools using the following command:
 
-```bash
-$ sudo apt-get install python-pip python-dev
-```
+  ```bash
+  $ sudo apt-get install python-pip python-dev
+  ```
 
 ### Mac setup
 
-This guide makes a very light assumption that you have [Homebrew](https://brew.sh).
+This guide makes an assumption that you have [Homebrew](https://brew.sh).
 
-Use the following command to install python (which will also install the necessary python dev tools):
-
-```bash
-$ brew install python
-```
-
-Also install openssl:
-
-```bash
-$ brew install openssl
-```
-
-### Installing mysql_config
-
-The MySQL-python library requires the `mysql_config` utility to be present in your system.
-Following are example commands to install `mysql_config`:
+Use the following command to install the necessary dependencies:
 
   ```bash
-  # Ubuntu
-  # Note: If libmysqlclient-dev doesn't install `mysql_config`, then try also installing `mysql_server`.
-  # If you encounter the following error, use command `sudo apt-get install default-libmysqlclient-dev` instead.
-  # E: Package 'libmysqlclient-dev' has no installation candidate
-  $ sudo apt-get install libmysqlclient-dev
+  $ brew install python
+  ```
 
-  # OSX, using homebrew
+Install openssl:
+
+  ```bash
+  $ brew install openssl
+  ```
+
+Install mysql_config
+
+  ```bash
   $ brew install mysql
   ```
-  
-### Installing ssl dev
 
-The crypto libraries require `libssl-dev` and `libffi-dev`.
+### Ubuntu setup
 
-  ```bash
-  # Ubuntu
-  $ sudo apt-get install libssl-dev libffi-dev
-  ```
+Ubuntu users can reference and [install the apt packages here](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/install/dependencies/apt_packages.txt).
 
 ### Creating a virtualenv
+
+Ensure virtualenv is installed in your system.
+
+  ```bash
+  $ sudo pip install virtualenv
+  ```
 
 Use the following command to create a virtualenv:
 
@@ -182,8 +173,8 @@ for more information.
 
 After you complete the above steps, you should be able to run the forseti server and the CLI client.
 
-```
-$ forseti_server \
+  ```bash
+  $ forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
     --services scanner model inventory explain notifier \
@@ -193,7 +184,8 @@ $ forseti_server \
 
 
 In another terminal window:
-```
-$ forseti -h or --help
-```
+
+  ```bash
+  $ forseti -h or --help
+  ```
 To see how to use more CLI commands, see Use({% link _docs/latest/howto/use/index.md %}).
