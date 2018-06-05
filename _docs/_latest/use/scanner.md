@@ -36,19 +36,30 @@ When Scanner finds a rule violation, it outputs the data to a Cloud SQL database
 Scanner can save violations as a CSV and send an email notification or upload it
 automatically to a Cloud Storage bucket. 
 
-**Below is an example of scanner violation output**
+## Sample scanner violation
 
-Firewall rule violation output:
+### Firewall rule violation:
 
-{% responsive_image path: images/docs/use/firewall_scanner_output.png alt: "sample scanner output" %}
+{: .table .table-striped}
+| resource_id | resource_type | full_name | rule_index | rule_name | violation_type | violation_data |
+|---|---|---|---|---|---|---|
+| my-project-1 | firewall_rule | organization/1234567890/project/my-project-1/firewall/494704901029517064/ | 1 | disallow_all_ports | FIREWALL_BLACKLIST_VIOLATION | {u'policy_names': [u'gke-staging-9696e33a-all'], u'recommended_actions': {u'DELETE_FIREWALL_RULES': [u'gke-staging-9696e33a-all']}} |
+| my-project-2 | firewall_rule | organization/1234567890/project/my-project-2/firewall/494704901029517064/ | 1 | disallow_all_ports | FIREWALL_BLACKLIST_VIOLATION | {u'policy_names': [u'gke-canary-west-69bb2963-all'], u'recommended_actions': {u'DELETE_FIREWALL_RULES': [u'gke-canary-west-69bb2963-all']}} |
 
-Bigquery violation output:
+### Bigquery violation:
 
-{% responsive_image path: images/docs/use/bigquery_scanner_output.png alt: "sample scanner output" %}
+{: .table .table-striped}
+| resource_id | resource_type | full_name | rule_index | rule_name | violation_type | violation_data |
+|--------------|---|---|---|---|---|---|
+| my-project-1:testdataset1 | bigquery_dataset | organization/1234567890/project/my-project-1/dataset/my-project-1:testdataset1/dataset_policy/dataset/my-project-1:testdataset1/ | 0 | Public datasets | BIGQUERY_VIOLATION | {u'access_user_by_email': u'', u'access_special_group': u'allAuthenticatedUsers', u'access_domain': u'', u'access_group_by_email': u'', u'role': u'READER', u'full_name': u'organization/1234567890/project/my-project-1/dataset/my-project-1:testdataset1/dataset_policy/dataset/my-project-1:testdataset1/', u'dataset_id': u'my-project-1:testdataset1', u'view': {}} |
+| my-project-1:testdataset1 | bigquery_dataset | organization/1234567890/project/my-project-1/dataset/my-project-1:testdataset1/dataset_policy/dataset/my-project-1:testdataset1/ | 0 | Datasets accessible by gmail.com addresses | BIGQUERY_VIOLATION | {u'access_user_by_email': u'my_test_acc_1@gmail.com', u'access_special_group': u'allAuthenticatedUsers', u'access_domain': u'', u'access_group_by_email': u'', u'role': u'READER', u'full_name': u'organization/1234567890/project/my-project-1/dataset/my-project-1:testdataset1/dataset_policy/dataset/my-project-1:testdataset1/', u'dataset_id': u'my-project-1:testdataset1', u'view': {}} |
 
-Cloudsql violation output:
+### Cloudsql violation:
 
-{% responsive_image path: images/docs/use/cloudsql_scanner_output.png alt: "sample scanner output" %}
+{: .table .table-striped}
+| resource_id | resource_type | full_name | rule_index | rule_name | violation_type | violation_data |
+|---|---|---|---|---|---|---|
+| my-project-1 | cloudsql | organization/1234567890/project/my-project-1/cloudsqlinstance/readme1/  | 0  |  publicly exposed instances | CLOUD_SQL_VIOLATION | {u'instance_name': u'readme1', u'require_ssl': False, u'project_id': u'readme1', u'authorized_networks': [u'0.0.0.0/0'], u'full_name': u'organization/1234567890/project/my-project-1/cloudsqlinstance/readme1/'} |
 
 To receive notifications for violations, run the 
 [Forseti Notifier]({% link _docs/latest/use/notifier.md %}).
