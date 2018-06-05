@@ -5,7 +5,7 @@ order: 004
 
 # {{ page.title }}
 
-It is highly recommended that you use the [automated installer](({% link _docs/latest/setup/install.md %})
+It is highly recommended that you use the [automated installer]({% link _docs/latest/setup/install.md %})
 for an easy and error-free deployment.
 
 But in case you prefer to install and deploy Forseti on your own, or just
@@ -52,9 +52,14 @@ to see the roles need to be assigned to the Forseti server service account.
 
 * ssh into the server VM
 * become ubuntu user
+
+`sudo su ubuntu`
+
 * git clone the latest release from the stable branch
-* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L114)
-* create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py#L164)
+
+
+* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
+* create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py)
 
 ### Configuration
 
@@ -90,7 +95,7 @@ to see the roles need to be assigned to the Forseti client service account.
 
 * Reference [this deployment template for the specifications of the client VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py) to create.
 * bind the client service account to the VM instance
-* [enable computeOS login](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/util/gcloud.py#L709)
+* [enable computeOS login](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/util/gcloud.py)
 
 ### Install Forseti Client
 
