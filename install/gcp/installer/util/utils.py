@@ -232,6 +232,7 @@ def infer_version(advanced_mode):
     Returns:
         str: Selected Forseti branch.
     """
+    target = None
     return_code, out, err = run_command(
         ['git', 'symbolic-ref', '-q', '--short', 'HEAD'])
     # The git command above will return empty if the user is not currently
