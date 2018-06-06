@@ -14,8 +14,8 @@ the setup commands:
 
 ### Creating service accounts
 
-If you are setting up a developer environment, It is recommended that
-you use the credential from the Forseti service accounts.  You can also use
+If you are setting up a developer environment, it's best to use the credential
+from the Forseti service accounts.  You can also use
 your own Google credentials from when you ran `gcloud auth login`, but your
 personal credential might drift and differ from the Forseti service
 account.
@@ -24,66 +24,66 @@ If you are running Forseti on GCP, you'll need create service accounts with
 Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to 
 read GCP data and to manage Forseti modules.
 
-_For a detailed explanation of how Forseti Security uses service accounts, refer to 
-["Forseti Service Accounts"]({% link _docs/latest/concepts/forseti-service-accounts.md %})._
+_For a detailed explanation of how Forseti Security uses service accounts, see
+[Forseti Service Accounts]({% link _docs/latest/concepts/forseti-service-accounts.md %})._
 
 To create and grant roles to a service account for Forseti Inventory, 
 Scanner, and Enforcer, follow the steps below.
 
-  1. Go to your [Google Cloud Platform console](https://console.cloud.google.com/iam-admin/serviceaccounts)
+  1. Go to the [GCP Console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
-  1. Create and download a json key for the service account.
+  1. Create and download a JSON key for the service account.
   1. Run the following command to assume the service account credentials:
   
   ```bash
   gcloud auth activate-service-account --key-file=PATH/TO/KEYFILE.json
   ```
 
-You can enable your service account for collecting G Suite data collection.  Follow the steps in 
-["Enabling GSuite Google Groups Collection"]({% link _docs/latest/howto/configure/gsuite-group-collection.md %}).
+To enable your service account for collecting G Suite data, follow the steps in 
+[Enabling G Suite Google Groups Collection]({% link _docs/latest/howto/configure/gsuite-group-collection.md %}).
 
 ### Assigning roles
 
-In order for Forseti to have access to read data from your GCP environment,
+For Forseti to have access to read data from your GCP environment,
 you will need to assign roles to either the Forseti service account
 or to your Google user.
 
 {% include docs/latest/required_roles.md %}
 
-You can grant the roles on the IAM policies with the following commands:
+You can grant the roles on the Cloud IAM policies with the following commands:
 
-  * Organization IAM: the member has access to the everything under the organization.
-    Your authed account must have the Organization Admin role to assign the role to another member.
+  * Organization: the member has access to the everything under the organization.
+    Your authorized account must have the Organization Admin role to assign the role to another member.
     
-    The command to add IAM policy bindings to the organization IAM is:
+    To add Cloud IAM policy bindings to the Organization, run the following command:
 
     ```bash
     $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
        --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
 
-  * Folder IAM: the member has access to everything under a particular folder.
-    Your authed account must have the Folder IAM Admin role to assign the role to another member.
+  * Folder: the member has access to everything under a particular folder.
+    Your authorized account must have the Folder Admin role to assign the role to another member.
 
-    The command to add IAM policy bindings to the folder IAM is:
+    To add Cloud IAM policy bindings to the Folder, run the following command:
 
     ```bash
     $ gcloud alpha resource-manager folders add-iam-policy-binding FOLDER_ID \
        --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
 
-  * Project IAM: the member has access only to a particular project.
-    Your authed account must either have the Owner role on the project or Folder IAM Admin.
+  * Project: the member has access only to a particular project.
+    Your authorized account must have the Owner role on the project or Folder Admin.
     
-    The command to add IAM policy bindings to the folder IAM is:
+    To add Cloud IAM policy bindings to the Project, run the following command:
 
     ```bash
     $ gcloud projects add-iam-policy-binding PROJECT_ID \
        --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
     
-  * Service Account IAM: grant additional roles to the service account.
-    Your authed account must either have the Owner role on the project that is
+  * Service Account: grant additional roles to the service account.
+    Your authorized account must have the Owner role on the project that is
     the source of the service account.
 
     ```bash
@@ -92,11 +92,11 @@ You can grant the roles on the IAM policies with the following commands:
     ```
 
 `MEMBER_TYPE`
-  * **Description:** identity types in IAM policies
+  * **Description:** identity types in Cloud IAM policies
   * **Valid values:** `user`, `group`, `serviceAccount`, or `domain`
 
 `MEMBER_NAME`
-  * **Description:** name of the IAM member
+  * **Description:** name of the Cloud IAM member
   * **Valid values:** String, either a domain (e.g. example.com) or an email address (user@example.com).
 
 Examples of `MEMBER_TYPE:MEMBER_NAME`:
