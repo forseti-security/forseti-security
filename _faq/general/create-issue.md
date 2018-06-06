@@ -6,6 +6,6 @@ order: 2
 
 Great! Please file an 
 [issue](https://github.com/GoogleCloudPlatform/forseti-security/issues) 
-if it doesn't already exist. If you'd like to address the issue, let us know on 
+if it doesn't already exist. If you'd like to discuss the issue, let us know on 
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss)!
 We'd love to chat with you about it.

@@ -16,11 +16,13 @@ You can find the details of each of the scanners [here]({% link _docs/latest/con
 | Audit Logging Configuration Scanner|
 | BigQuery Scanner |
 | Blacklist Scanner |
-| Bucket Scanner |
-| Cloud APIs Configuration Scanner |
-| Cloud SQL Scanner |
+| Bucket ACL Scanner |
+| Cloud SQL ACL Scanner |
+| Enabled APIs Scanner |
 | Firewall Rules Scanner |
+| Forwarding Rules Scanner |
 | Groups Scanner |
 | IAM Rules Scanner |
+| IAP Scanner |
 | Instance Network Interface Scanner |
 | Kubernetes Engine Version Scanner |

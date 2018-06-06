@@ -10,4 +10,4 @@ Compute Engine instance.
 The Forseti Inventory, Scanner, and Enforcer logs can be found in the Cloud 
 Platform Console, under [Stackdriver](https://console.cloud.google.com/logs/). 
 Change the first dropdown filter to "GCE VM Instance", and the second dropdown 
-filter to "syslog".
+filter to "forseti".
