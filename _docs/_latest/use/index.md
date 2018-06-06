@@ -36,6 +36,10 @@ Using the Forseti Notifier to send notifications.
 
 Using the Forseti Explainer to query the data model.
 
+**[Enforcer]({% link _docs/latest/use/enforcer.md %})**
+
+Using the Forseti Enforcer to automatically correct policy discrepancies.
+
 **[Server]({% link _docs/latest/use/server.md %})**
 
 Using the Forseti Server to update server configuration.
@@ -44,6 +48,3 @@ Using the Forseti Server to update server configuration.
 
 Using the Forseti Config to update CLI configuration.
 
-**[Enforcer]({% link _docs/latest/use/enforcer.md %})**
-
-Using the Forseti Enforcer to automatically correct policy discrepancies.
