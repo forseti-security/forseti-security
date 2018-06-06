@@ -1,30 +1,23 @@
-**Forseti server service account requires:
  
 ***Granted at the Organization level**
   
- * `roles/appengine.appViewer`
- * `roles/bigquery.dataViewer`
- * `roles/browser`
- * `roles/cloudsql.viewer`
- * `roles/compute.networkViewer`
- * `roles/compute.securityAdmin`
- * `roles/iam.securityReviewer`
- * `roles/servicemanagement.quotaViewer`
- * `roles/serviceusage.serviceUsageConsumer`
+ * `roles/appengine.appViewer` (server)
+ * `roles/bigquery.dataViewer` (server)
+ * `roles/browser` (server)
+ * `roles/cloudsql.viewer` (server)
+ * `roles/compute.networkViewer` (server)
+ * `roles/compute.securityAdmin` (server)
+ * `roles/iam.securityReviewer` (server)
+ * `roles/servicemanagement.quotaViewer` (server)
+ * `roles/serviceusage.serviceUsageConsumer` (server)
  
 ***Granted at the project level**
  
- * `roles/cloudsql.client`
- * `roles/logging.logWriter`
- * `roles/storage.objectViewer`
- * `roles/storage.objectCreator`
+ * `roles/cloudsql.client` (server)
+ * `roles/logging.logWriter` (server, client)
+ * `roles/storage.objectViewer` (server, client)
+ * `roles/storage.objectCreator` (server)
 
-
-***Forseti server service account requires:
+***Granted at the service account level**
  
- * `roles/iam.serviceAccountTokenCreator
- 
-**Forseti server service account requires:
- 
- * `roles/logging.logWriter`
- * `roles/storage.objectViewer`
+ * `roles/iam.serviceAccountTokenCreator` (server)

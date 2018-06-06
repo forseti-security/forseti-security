@@ -6,75 +6,39 @@ order: 103
 
 This page explains how to set up Forseti for local development.
 
+---
+
 ## Before you begin
 
 To complete this guide, you will need:
 
-- A Github account.
-- A GCP organization.
-- A GCP project (in above organization) for Forseti Security with billing enabled.
-- The ability to assign roles on your organization's Cloud IAM policy.
+* A Github account.
+* A GCP organization.
+* A GCP project for Forseti with billing enabled.
+* The ability to assign roles on your organization's Cloud IAM policy.
+* The ability to assign GSuite domain-wide delegation to the Forseti service account.
 
-## Setting GCP infrastructure
+## Setting up GCP infrastructure
 
 {% include docs/latest/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
-Forseti stores data in Cloud SQL. You can connect to the Cloud SQL instance by
-using the Cloud SQL proxy to authenticate to GCP with your Google credentials, 
-instead of opening up network access to your Cloud SQL instance.
-To set up your Cloud SQL instance for Forseti, follow the steps below:
-
-1.  Go to the [Cloud Console SQL page](https://console.cloud.google.com/sql) and
-    follow the steps below to create a new instance:
-    1.  Select a **MySQL** database engine.
-    1.  Select a **Second Generation** instance type.
-    1.  On the **Create a MySQL Second Generation instance** page, enter an
-        **Instance ID** and **Root password**, then select the following
-        settings:
-        1.  **Database version:** MySQL 5.7
-        1.  **Machine type:** db-n1-standard-1 machine type
-        1.  **Storage capacity:** 25 GB
-    1.  Add or modify other database details as you wish.
-    1.  When you're finished setting up the database, click **Create**.
-1.  [Create a new user](https://cloud.google.com/sql/docs/mysql/create-manage-users#creating),
-    e.g. `forseti_user`,
-    with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges)
-    for Forseti to access the database. Don't set a password for the new user.
-    This will allow Cloud SQL Proxy to handle authentication to your instance.
-1.  [Create a new database](https://cloud.google.com/sql/docs/mysql/create-manage-databases#creating_a_database),
-    e.g. `forseti_security`.
-1.  Use the [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
-    to proxy your connection to your Cloud SQL instance. Your
-    INSTANCE_CONNECTION_NAME is the **Instance Connection Name** under
-    **Properties** on the Cloud SQL dashboard instance details, with the format "PROJECTID:REGION:INSTANCEID".
-    
-      ```bash
-      $ <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
-      ```
-
-1. Install MySQL Workbench, a GUI tool to view the forseti datababse and tables.
-    1. Connection Name
-    1. Hostname: 127.0.0.1
-    1. Port: 3306
-    1. Username: forseti_user
+{% include docs/latest/setup_cloudsql.md %}
 
 ## Setting up local environment
 
 ### Ubuntu setup
 
-Install the necessary python dev tools using the following command:
-
-  ```bash
-  $ sudo apt-get install python-pip python-dev
-  ```
+Install the necessary python dev tools and packages from [apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/dependencies/apt_packages.txt).
 
 ### Mac setup
 
 This guide makes an assumption that you have [Homebrew](https://brew.sh).
 
 Use the following command to install the necessary dependencies:
+
+Install python-dev:
 
   ```bash
   $ brew install python
@@ -86,19 +50,17 @@ Install openssl:
   $ brew install openssl
   ```
 
-Install mysql_config
+Install mysql_config:
 
   ```bash
   $ brew install mysql
   ```
 
-### Ubuntu setup
-
-Ubuntu users can reference and [install the apt packages here](https://github.com/GoogleCloudPlatform/forseti-security/blob/2.0-dev/install/dependencies/apt_packages.txt).
-
 ### Creating a virtualenv
 
-Ensure virtualenv is installed in your system.
+Ensure virtualenv is installed in your system.  Virtualenv allows you to
+create multiple environments to contain different modules and dependencies
+in different projects.
 
   ```bash
   $ sudo pip install virtualenv
@@ -166,10 +128,10 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 
 Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
 `forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/latest/howto/configure/configuring-forseti.md %}) 
+[Configuring Forseti]({% link _docs/latest/configure/configuring-forseti.md %}) 
 for more information.
 
-### Executing Forseti commands
+### Starting Forseti commands
 
 After you complete the above steps, you should be able to run the forseti server and the CLI client.
 
@@ -188,4 +150,7 @@ In another terminal window:
   ```bash
   $ forseti -h or --help
   ```
-To see how to use more CLI commands, see Use({% link _docs/latest/howto/use/index.md %}).
+
+## What's next
+
+To see how to use more CLI commands, see [Use]({% link _docs/latest/use/index.md %}).

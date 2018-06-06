@@ -14,15 +14,18 @@ the setup commands:
 
 ### Creating service accounts
 
-If you are setting up a developer environment, you can just use the Google credentials 
-from when you ran `gcloud auth login` and go to the next section.
+If you are setting up a developer environment, It is recommended that
+you use the credential from the Forseti service accounts.  You can also use
+your own Google credentials from when you ran `gcloud auth login`, but your
+personal credential might drift and differ from the Forseti service
+account.
 
 If you are running Forseti on GCP, you'll need create service accounts with 
 Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to 
 read GCP data and to manage Forseti modules.
 
 _For a detailed explanation of how Forseti Security uses service accounts, refer to 
-["Forseti Service Accounts"]({% link _docs/latest/guides/forseti-service-accounts.md %})._
+["Forseti Service Accounts"]({% link _docs/latest/concepts/forseti-service-accounts.md %})._
 
 To create and grant roles to a service account for Forseti Inventory, 
 Scanner, and Enforcer, follow the steps below.
@@ -41,11 +44,13 @@ You can enable your service account for collecting G Suite data collection.  Fol
 
 ### Assigning roles
 
-In order for Forseti to have access to read data from your GCP environment, you will need 
-to assign roles to a particular _member_: either the Inventory/Scanner/Enforcer 
-service account or your Google user. You can refer to the [official documentation about members](https://cloud.google.com/iam/docs/overview#concepts_related_to_identity) for more information.
+In order for Forseti to have access to read data from your GCP environment,
+you will need to assign roles to either the Forseti service account
+or to your Google user.
 
-Also, you can grant the roles on the organization, folder, or project IAM policies.
+{% include docs/latest/required_roles.md %}
+
+You can grant the roles on the IAM policies with the following commands:
 
   * Organization IAM: the member has access to the everything under the organization.
     Your authed account must have the Organization Admin role to assign the role to another member.
@@ -77,18 +82,22 @@ Also, you can grant the roles on the organization, folder, or project IAM polici
        --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
     
-  * Service Account IAM:
+  * Service Account IAM: grant additional roles to the service account.
+    Your authed account must either have the Owner role on the project that is
+    the source of the service account.
 
     ```bash
     gcloud iam service-accounts add-iam-policy-binding YOUR_SERVICE_ACCOUNT \
-      --member=serviceACcount:YOUR_SERVICE_ACCOUNT \
-      --role=ROLE_NAME
+      --member=serviceACcount:YOUR_SERVICE_ACCOUNT --role=ROLE_NAME
     ```
 
+`MEMBER_TYPE`
+  * **Description:** identity types in IAM policies
+  * **Valid values:** `user`, `group`, `serviceAccount`, or `domain`
 
-The `MEMBER_TYPE` value is either `user`, `group`, `serviceAccount`, or `domain`.
-
-The `MEMBER_NAME` is either a domain (e.g. example.com) or an email address (user@example.com).
+`MEMBER_NAME`
+  * **Description:** name of the IAM member
+  * **Valid values:** String, either a domain (e.g. example.com) or an email address (user@example.com).
 
 Examples of `MEMBER_TYPE:MEMBER_NAME`:
 
