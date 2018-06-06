@@ -144,7 +144,7 @@ def run(inventory_index_id, progress_queue, service_config=None):
             # Run the notifiers.
             for notifier in notifiers:
                 try:
-                    # Notifiers should one independently, i.e. one failed
+                    # Notifiers should run independently, i.e. one failed
                     # shouldn't stop the rest of the notifiers from running.
                     notifier.run()
                 except Exception as e:  # pylint: disable=broad-except
