@@ -7,6 +7,8 @@ order: 001
 
 This guide explains how to use the Forseti installation tool.
 
+---
+
 ## Before you begin
 
 Before you run the setup wizard, you will need:
@@ -42,13 +44,14 @@ steps below:
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is included. 
+  1. After you've started Cloud Shell, download Forseti. The installer is 
+  included in the `install/` directory.
 
       ```bash
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Checking out a specific version of Forseti by tag, e.g. `v2.0.0.`.
+  1. Checking out a specific version of Forseti by tag, e.g. `v2.0.0.`
 
       ```bash
       # make sure you are in the forseti-security folder.
@@ -56,15 +59,15 @@ steps below:
       git checkout tags/v2.0.0
       ```
 
-  1. Running the installer:
+  1. Running the installer
 
-     To install both client and server:
+     To install both client and server
      
      ```bash 
      python install/gcp_installer.py
      ```
 
-     To see additional configurations for the setup:
+     To see additional configurations for the setup
 
      ```bash
      python install/gcp_installer.py -h
@@ -87,7 +90,7 @@ steps below:
 
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
-     your Cloud Storage bucket:
+     your Cloud Storage bucket.
      ```bash
        MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
        forseti inventory create --import_as ${MODEL_ID}
