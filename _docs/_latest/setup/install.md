@@ -51,7 +51,7 @@ steps below:
   1. Checking out a specific version of Forseti by tag, e.g. `v2.0.0.`.
 
       ```bash
-      # make sure you are in forseti-security folder.
+      # make sure you are in the forseti-security folder.
       git fetch --all
       git checkout tags/v2.0.0
       ```
