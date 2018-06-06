@@ -42,11 +42,18 @@ steps below:
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is
-     included. Getting Forseti with tag `v2.0.0` will install Forseti v2.0.0.
+  1. After you've started Cloud Shell, download Forseti. The installer is included. 
 
       ```bash
-      git clone -b v2.0.0 --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
+      git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+      ```
+
+  1. Checking out a specific version of Forseti by tag, e.g. `v2.0.0.`.
+
+      ```bash
+      # make sure you are in forseti-security folder.
+      git fetch --all
+      git checkout tags/v2.0.0
       ```
 
   1. Running the installer:
@@ -57,11 +64,11 @@ steps below:
      python install/gcp_installer.py
      ```
 
-      To see additional configurations for the setup:
+     To see additional configurations for the setup:
 
-      ```bash
-      python install/gcp_installer.py -h
-      ```
+     ```bash
+     python install/gcp_installer.py -h
+     ```
 
   1. The installer will infer the necessary information to install Forseti.
 
