@@ -13,10 +13,10 @@ This page explains how to set up Forseti for local development.
 To complete this guide, you will need:
 
 * A Github account.
-* A GCP organization.
+* A Google Cloud Platform (GCP) organization.
 * A GCP project for Forseti with billing enabled.
 * The ability to assign roles on your organization's Cloud IAM policy.
-* The ability to assign GSuite domain-wide delegation to the Forseti service account.
+* The ability to assign G Suite domain-wide delegation to the Forseti service account.
 
 ## Setting up GCP infrastructure
 
@@ -26,7 +26,7 @@ To complete this guide, you will need:
 
 {% include docs/latest/setup_cloudsql.md %}
 
-## Setting up local environment
+## Setting up a local environment
 
 ### Ubuntu setup
 
@@ -34,9 +34,9 @@ Install the necessary python dev tools and packages from [apt_packages.txt](http
 
 ### Mac setup
 
-This guide makes an assumption that you have [Homebrew](https://brew.sh).
+This guide is written for use with [Homebrew](https://brew.sh).
 
-Use the following command to install the necessary dependencies:
+Use the following commands to install the necessary dependencies:
 
 Install python-dev:
 
@@ -76,7 +76,7 @@ Use the following command to create a virtualenv:
 
 ### Getting the source code
 
-Follow our [contributing guideline](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md) to get a fork of the Forseti code, and learn how to submit a PR.
+Follow our [contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md) to create a fork of the Forseti code, and learn how to submit a PR.
 
 ### Installing build dependencies
 
@@ -97,11 +97,13 @@ Use the following commands to navigate to your cloned repo and run the python se
 
 ### Troubleshooting
 
-If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and see 
+If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and get 
 a fatal error related to `'openssl/opensslv.h' file not found`, you may need to 
-export `CPPFLAGS` and `LDFLAGS` for the openssl package
-(see [this issue](https://github.com/pyca/cryptography/issues/3489) for more information).
-You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows:
+export `CPPFLAGS` and `LDFLAGS` for the openssl package. For more information,
+see [issue 3489](https://github.com/pyca/cryptography/issues/3489).
+
+To find the `CPPFLAGS` and `LDFLAGS` information and export them, run the
+following command:
 
   ```bash
   $ brew info openssl
@@ -116,13 +118,15 @@ You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows
     CPPFLAGS: -I/SOME/PATH/TO/openssl/include
   ```
 
-Then copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
-following (use the values from your terminal, not "`/SOME/PATH/TO`"):
+Next, copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
+following:
 
   ```bash
   $ export CPPFLAGS=-I/SOME/PATH/TO/openssl/include
   $ export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
+In the above example, `/SOME/PATH/TO` represents the path specific to your
+system. Make sure to use the values from your terminal.
 
 ### Configuring Forseti settings
 
@@ -133,7 +137,8 @@ for more information.
 
 ### Starting Forseti commands
 
-After you complete the above steps, you should be able to run the forseti server and the CLI client.
+After you complete the above steps, you should be able to run the Forseti
+server and the command-line interface (CLI) client.
 
   ```bash
   $ forseti_server \
@@ -153,4 +158,4 @@ In another terminal window:
 
 ## What's next
 
-To see how to use more CLI commands, see [Use]({% link _docs/latest/use/index.md %}).
+* To learn about more CLI commands, see [Use]({% link _docs/latest/use/index.md %}).
