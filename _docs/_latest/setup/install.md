@@ -43,11 +43,10 @@ steps below:
 ### Run setup
 
   1. After you've started Cloud Shell, download Forseti. The installer is
-     included. Getting `2.0-dev-rc1` branch will install Forseti v2.0 Release
-     Candidate 1.
+     included. Getting Forseti with tag `v2.0.0` will install Forseti v2.0.0.
 
       ```bash
-      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
+      git clone -b v2.0.0 --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
   1. Running the installer:
@@ -55,18 +54,18 @@ steps below:
      To install both client and server:
      
      ```bash 
-     python setup/installer.py
+     python install/gcp_installer.py
      ```
 
       To see additional configurations for the setup:
 
       ```bash
-      python installer.py -h
+      python install/gcp_installer.py -h
       ```
 
   1. The installer will infer the necessary information to install Forseti.
 
-     If you ran the `installer.py` without extra flags, you will be
+     If you ran the `install/gcp_installer.py` without extra flags, you will be
      prompted to enter the following:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For
