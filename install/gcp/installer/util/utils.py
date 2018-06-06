@@ -234,7 +234,8 @@ def infer_version(advanced_mode):
     """
     target = None
     return_code, out, err = run_command(
-        ['git', 'symbolic-ref', '-q', '--short', 'HEAD'])
+        ['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
+        number_of_retry=0)
     # The git command above will return empty if the user is not currently
     # on a branch.
     if return_code:
