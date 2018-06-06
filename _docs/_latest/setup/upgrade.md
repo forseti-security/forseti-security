@@ -5,71 +5,44 @@ order: 00
 
 # {{ page.title }}
 
-This guide explains how to use the Forseti upgrade tool.
+This guide explains how to upgrade your Forseti from v1.x to v2.
 
-## Before you begin
+## Important notes
 
-Before you upgrade Forseti, you'll need the following:
+ * We currently don't support data migration from v1 to v2, so you will need to archive the database manually 
+   for future reference if the data is important to you.
+ * [Forseti v2 configuration]({% link _docs/latest/configure/forseti/index.md %}) is different than v1 so 
+   you can not replace the v2 configuration file with the v1 configuration file.
+ * Resources in inventory are no longer configurable.
 
- * A G Suite super admin account to complete the [Domain-wide delegation steps]({% link _docs/latest/configure/gsuite.md %}). 
-Forseti 2.0 requires G Suite being enabled, so you'll need this before you start the installation.
+## Upgrading your v1 instance
 
-{% capture 1x_upgrade %}
+The suggested way of upgrading your Forseti instance is to do create a new project, [install 
+the latest v2 instance]({% link _docs/latest/setup/install.md %}), move all the rule files 
+from the v1 bucket to the v2 bucket.
 
-## Important caveats
-
- * The Forseti Security 2.0 installer only migrates configuration and rule files.
- * The Forseti Security 2.0 installer will attempt to re-use previous service accounts and projects.
- * The Forseti Security 2.0 installer will not destroy existing v1.X data.
- * Forseti Security 2.0 data is not compatible with v1.X's and therefore a new database is created.
  
-## Activate Google Cloud Shell
+### Moving the rule files from v1 to v2
 
-It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the
-Forseti installer. This ensures you're using the latest version of Cloud SDK since it's included
-in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
+Since the functionality of the existing scanners didn't change, you can re-use the rule 
+files defined for your v1 instance in v2.  
 
-  1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
-  1. In the **Select a project** drop-down list at the top of the console, select the project where
-  you have Forseti v1.x deployed.
-  1. On the top right of the console, click **Activate Google Cloud Shell**. The Cloud
-  Shell panel opens at the bottom of the page.
+Run the following command to copy all the rule files from the v1 bucket to the v2 bucket.
+
+```bash
+# Replace <YOUR_V1_BUCKET> with your v1 forseti GCS bucket and
+# <YOUR_V2_BUCKET> with your v2 forseti GCS bucket.
+
+gsutil cp gs://<YOUR_V1_BUCKET>/rules/*.yaml gs://<YOUR_V2_BUCKET>/
+```
+
   
-## Run setup
+### Archiving your existing Cloud SQL Database
 
-  1. After you activate Cloud Shell, download Forseti. The installer is included.
-     Getting `master` branch will install [the latest released version of Forseti]({% link releases/index.md %}).
+There are many ways of archiving a database, the recommended way is to [export the data 
+to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/exporting#mysqldump) 
+through Google Cloud SQL.
 
-      ```bash
-      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
-      ```
-
-  1. Run the installer.
-
-     ```bash 
-     python setup/installer.py
-     ```
-
-  1. When prompted to migrate configuration files, select "Y".
-
-  1. The installer will prompt you for the necessary information to install Forseti.
-
-     If you didn't configure the following options in v1.x, you'll be prompted during the upgrade:
-
-     * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For more information, 
-       see [Enabling email notifications]({% link _docs/latest/configure/email-notification.md %}).
-     * Email recipient \[Optional\]: If a SendGrid API key is provided, you will also be asked
-       to whom Forseti should send the email notifications.
-     * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite data collection]({% link _docs/latest/configure/gsuite.md %})
-       and is required.
-       Ask your G Suite admin if you don't know which super admin email to use.
-  1. Forseti is now upgraded to v2.x. To manually remove unused resources, follow the instructions
-  at the end of the installation process.
-  
-{% endcapture %} 
-
-{% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
 ## What's next
 
