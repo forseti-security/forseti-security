@@ -5,15 +5,20 @@ order: 00
 
 # {{ page.title }}
 
-This guide explains how to upgrade your Forseti from v1.x to v2.
+This guide explains how to upgrade your Forseti instance.
+
+---
+
+{% capture 1x_upgrade %}
 
 ## Important notes
 
- * We currently don't support data migration from v1 to v2, so you will need to archive the database manually 
+ * We don't support data migration from v1 to v2, so you will need to archive the database manually 
    for future reference if the data is important to you.
  * [Forseti v2 configuration]({% link _docs/latest/configure/forseti/index.md %}) is different than v1 so 
    you can not replace the v2 configuration file with the v1 configuration file.
- * Resources in inventory are no longer configurable.
+ * Configuration of the resources that are inventoried is not configureable.
+
 
 ## Upgrading your v1 instance
 
@@ -36,12 +41,15 @@ Run the following command to copy all the rule files from the v1 bucket to the v
 gsutil cp gs://<YOUR_V1_BUCKET>/rules/*.yaml gs://<YOUR_V2_BUCKET>/
 ```
 
-  
+
 ### Archiving your existing Cloud SQL Database
 
 There are many ways of archiving a database, the recommended way is to [export the data 
 to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/exporting#mysqldump) 
 through Google Cloud SQL.
+
+{% endcapture %} 
+{% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
 
 ## What's next
