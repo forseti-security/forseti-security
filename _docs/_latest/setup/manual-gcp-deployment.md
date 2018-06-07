@@ -1,132 +1,141 @@
 ---
-title: Manual Deployment on GCP
+title: Manual Deployment
 order: 004
 ---
 
 # {{ page.title }}
 
-It is highly recommended that you use the [automated installer]({% link _docs/latest/setup/install.md %})
-for an easy and error-free deployment.
+This page describes the steps to install and deploy Forseti manually on 
+Google Cloud Platform (GCP). It's best to use the
+[automated installer]({% link _docs/latest/setup/install.md %})
+for an easy and error-free deployment. Use this guide only if you strongly
+prefer to install Forseti yourself, or if you want to learn about the
+installation process.
 
-But in case you prefer to install and deploy Forseti on your own, or just
-curious what goes into the installation process, you can follow the steps below.
+To complete this guide, you will need in-depth knowledge of GCP. For example,
+you will need to know how to use the gcloud command-line tool and where to bind
+a service account to a VM in the GCP Console. This guide refers to the installer
+and deployment templates for specific details of the commands to use.
 
-These steps assume you have certain level of GCP knowledge (how to use gcloud,
-where to bind the service account to the VM in the Cloud Console, etc),
-and will by necessity point to the installer and Deployment Templates for
-specific details of the commands to use.
-
-## Create Project
+## Create a project
 
 Create a new project to host Forseti.  Forseti is intended to run in its own
 dedicated project so that access to its highly privileged permissions can be
 controlled.  Assign a billing account to the project.
 
-### Enable APIs in Project
+### Enable APIs
 
-Reference [this doc]({% link _docs/latest/required_apis.md %})
-to see the APIs that need to be enabled in the project hosting Forseti.
+For information about the APIs you need to enable in the project that hosts
+Forseti, see [required APIs]({% link _docs/latest/required_apis.md %}).
 
-## Deploy Server VM
+## Deploy a server VM
 
-### Create a Forseti Server Service Account
+### Create a Forseti server service sccount
+
+Create a server service account by running the following command:
 
 ```
 forseti-server-gcp-#######@fooproject.iam.gserviceaccount.com
 ```
 
 Where `#######` is a random alphanumeric unique identifier that must be
-accepted when used for GCS bucket name.
+accepted when used for the Cloud Storage bucket name.
 
-### Assign Roles
+### Assign roles
 
-Reference [this doc]({% link _docs/latest/concepts/service-accounts.html#the-server-service-account %})
-to see the roles need to be assigned to the Forseti server service account.
+For information about the roles you need to assign to the Forseti server
+service account, see 
+[the server service account]({% link _docs/latest/concepts/service-accounts.html#the-server-service-account %}).
 
-### Create a Forseti Server VM Instance
+### Create a Forseti server VM instance
 
-* Reference [this deployment template for the specifications of the server VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py) to create.
-* bind the server service account to the VM instance
+* For information about the specifications needed for a Forseti server
+  VM instance, see the [Compute Engine deployment template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
+* When you create the instance, bind the server service account to the VM instance
 
-### Install Forseti Server
+### Install the Forseti Server
 
-* ssh into the server VM
+To install the Forseti Server, follow the steps below:
 
-* become ubuntu user
+1. SSH into the server VM
+1. Run the following command to become an Ubuntu user:
 
-`sudo su ubuntu`
-
-* git clone from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and checkout the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
-
-```
-git clone https://github.com/GoogleCloudPlatform/forseti-security.git
-git checkout tags/<tag_number>
-```
-
-* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
-
-* create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py)
+        sudo su ubuntu
+        
+1. `git clone` from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and check out the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
+        
+        git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+        git checkout tags/<tag_number>
+        
+1. Run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
+1. Create [firewall rules](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/forseti_server_installer.py)
 
 ### Configuration
 
-Forseti server has configuration and rule files that needed to be configured
-and stored in GCS. 
-Reference [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
-to see how.
+Forseti server configuration and rule files are configured and stored in
+Cloud Storage. For more information, see
+[Configuring Forseti]({% link _docs/latest/howto/configure/configuring-forseti.md %}).
 
-### GSuite Integration
+### G Suite Integration
 
-[Enable DwD for the server service account](https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html)
+To integrate G Suite, you'll need to enable domain-wide delegation in G Suite.
+For more information, see [Enabling G Suite Google Groups Collection](https://forsetisecurity.org/docs/howto/configure/gsuite-group-collection.html)
 
-## Create Database
+## Create a Database
 
-### Create a CloudSQL instance.
+### Create a Cloud SQL instance.
 
-Reference [this deployment template for the specifications of the CloudSQL instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py) to create.
+To create a For information about the specifications needed for a Cloud
+SQL instance, see the [Cloud SQL template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py).
 
-## Deploy Client VM
+## Deploy a client VM
 
-### Create a Forseti client service account.
+### Create a Forseti client service account
+
+Create a client service account by running the following command:
 
 ```
 forseti-client-gcp-#######@fooproject.iam.gserviceaccount.com
 ```
 
-### Assign Roles
+Where `#######` is a random alphanumeric unique identifier that must be
+accepted when used for the Cloud Storage bucket name.
 
-Reference [this doc]({% link _docs/latest/concepts/service-accounts.html#the-client-service-account %})
-to see the roles need to be assigned to the Forseti client service account.
+### Assign roles
 
-### Create Forseti client VM Instance
+For information about the roles you need to assign to the Forseti server
+service account, see
+[the client service account]({% link _docs/latest/concepts/service-accounts.html#the-client-service-account %}).
 
-* Reference [this deployment template for the specifications of the client VM instance](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py) to create.
-* bind the client service account to the VM instance
-* [enable computeOS login](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/util/gcloud.py)
+### Create a Forseti client VM Instance
 
-### Install Forseti Client
+* For information about the specifications needed for a Forseti server
+  VM instance, see the [Compute Engine deployment template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
+* When you create the instance, bind the server service account to the VM instance
+* [Enable computeOS login](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/gcp/installer/util/gcloud.py)
 
-* ssh into the client VM
+### Install the Forseti client
 
-* become ubuntu user
+To install the Forseti client, follow the steps below:
 
-`sudo su ubuntu`
+1. SSH into the client VM
+1. Run the following command to become an Ubuntu user:
 
-* git clone from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and checkout the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
+        sudo su ubuntu
+        
+1. `git clone` from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and check out the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
 
-```
-git clone https://github.com/GoogleCloudPlatform/forseti-security.git
-git checkout tags/<tag_number>
-```
-
-* run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py)
+        git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+        git checkout tags/<tag_number>
+        
+1. Run the steps in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
 
 ### Configuration
 
-Forseti client has configuration file that needed to be configured
-and stored in GCS. 
-Reference [this doc]({% link _docs/latest/howto/configure/configuring-forseti.md %})
-to see how.
+Forseti client configuration files are configured and stored in
+Cloud Storage. For more information, see
+[Configuring Forseti]({% link _docs/latest/howto/configure/configuring-forseti.md %}).
 
 ## What's next
 
-  - How to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
+  - Learn how to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
