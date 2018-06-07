@@ -109,12 +109,33 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
 
 
 def get_forseti_version():
-    """Get Forseti version from version file.
+    """Get the current Forseti version. If the current version is a branch
+    or a tag, we will return it. Otherwise we will read the __init__ file
+    for the latest version.
 
     Returns:
         str: The version.
     """
     version = None
+    return_code, out, err = run_command(
+        ['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
+        number_of_retry=0)
+    # The git command above will return empty if the user is not currently
+    # on a branch.
+    if return_code:
+        print(err)
+    else:
+        version = out.strip()
+
+    return_code, out, err = run_command(
+        ['git', 'describe', '--tags', '--exact-match'])
+    # The git command above will return the tag name if we checked out
+    # a tag, will throw an exception otherwise.
+    if return_code:
+        print(err)
+    else:
+        version = 'tags/{}'.format(out.strip()) if out.strip() else ''
+
     version_re = re.compile(constants.VERSIONFILE_REGEX)
     version_file = os.path.join(
         constants.FORSETI_SRC_PATH, '__init__.py')
@@ -122,7 +143,7 @@ def get_forseti_version():
         for line in vfile:
             version_match = version_re.match(line)
             if version_match:
-                version = version_match.group(1)
+                version = 'tags/v%s' % version_match.group(1)
                 break
     return version
 
@@ -232,37 +253,16 @@ def infer_version(advanced_mode):
     Returns:
         str: Selected Forseti branch.
     """
-    version = None
-    return_code, out, err = run_command(
-        ['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
-        number_of_retry=0)
-    # The git command above will return empty if the user is not currently
-    # on a branch.
-    if return_code:
-        print(err)
-        print('Will try to infer the Forseti version instead.')
 
-        return_code, out, err = run_command(
-            ['git', 'describe', '--tags', '--exact-match'])
-        # The git command above will return the tag name if we checked out
-        # a tag, will throw an exception otherwise.
-        if return_code:
-            print(err)
-        else:
-            version = 'tags/{}'.format(out.strip()) if out.strip() else ''
-    else:
-        version = out.strip()
+    cur_version = get_forseti_version()
 
-    user_choice = None
-    if not version or version == 'stable':
-        cur_version = get_forseti_version()
-        if version:
-            version = 'v%s' % cur_version
-        else:
-            print('Unable to determine the current Forseti version, please '
-                  'check https://forsetisecurity.org/faq/ for more '
-                  'information.')
-            sys.exit(1)
+    if not cur_version:
+        print('Unable to determine the current Forseti version, please '
+              'check https://forsetisecurity.org/faq/ for more '
+              'information.')
+        sys.exit(1)
+
+    user_choice = 'n'
 
     if not advanced_mode:
         user_choice = 'y'
@@ -270,17 +270,17 @@ def infer_version(advanced_mode):
     while user_choice != 'y' and user_choice != 'n':
         user_choice = raw_input(
             'Install Forseti branch/tag %s? (y/n) '
-            % version).lower().strip()
+            % cur_version).lower().strip()
 
     if user_choice == 'n':
         branch = checkout_git_branch()
         if branch:
-            version = branch
+            cur_version = branch
         else:
-            print('No branch/tag was chosen; using %s' % version)
+            print('No branch/tag was chosen; using %s' % cur_version)
 
-    print('Forseti branch/tag: %s' % version)
-    return version
+    print('Forseti branch/tag: %s' % cur_version)
+    return cur_version
 
 
 def get_zone_from_bucket_location(bucket_location):
