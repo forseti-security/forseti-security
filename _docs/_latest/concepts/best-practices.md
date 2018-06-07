@@ -51,10 +51,12 @@ security policies of that user account; deprovision when user leaves, enforce
 **Project Naming Convention**
 
 Enterprises should agree on a standardised project naming convention. E.g.
-[system name]-[environment (dev, test, uat, stage, prod)] => [costanalytics-dev] (https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#projects_are_identified_by_universally_unique_identifiers)
+[system name]-[environment (dev, test, uat, stage, prod)] =>
+[costanalytics-dev](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#projects_are_identified_by_universally_unique_identifiers)
 Some documents recommend using [company tag]-[group tag] prefixed to the above,
-opinion today is that this means project names fall “out of date/stale” too fast
-as companies go through reorgs. Consider moving this information to project
+opinion today is that this means project names fall “out of date/stale” too
+fast as companies go through reorgs. Consider moving this information to
+project
 [labels](https://cloud.google.com/resource-manager/docs/creating-managing-labels#using_console).
 
 **Group Naming Convention**
