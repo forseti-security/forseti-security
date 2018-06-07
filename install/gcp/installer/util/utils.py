@@ -241,30 +241,30 @@ def infer_version(advanced_mode):
     if return_code:
         print(err)
         print('Will try to infer the Forseti version instead.')
-    else:
-        version = out.strip()
-
-    # For the installation to work, user must be on a tag or a branch.
-    # If the user is not on a branch, we check whether or not the user
-    # is on a tag, if not, we will exit the installation.
-    if not version:
+        # For the installation to work, user must be on a tag or a branch.
+        # If the user is not on a branch, we check whether or not the user
+        # is on a tag, if not, we will exit the installation.
         return_code, out, err = run_command(
             ['git', 'describe', '--tags', '--exact-match'])
         # The git command above will return the tag name if we checked out
         # a tag, will throw an exception otherwise.
         if return_code:
             print(err)
-            print('Unable to determine the current Forseti version, please '
-                  'check https://forsetisecurity.org/faq/ for more '
-                  'information.')
-            sys.exit(1)
+        else:
             version = 'tags/{}'.format(out.strip()) if out.strip() else ''
+    else:
+        version = out.strip()
 
     user_choice = None
     if not version or version == 'stable':
         cur_version = get_forseti_version()
         if version:
             version = 'v%s' % cur_version
+        else:
+            print('Unable to determine the current Forseti version, please '
+                  'check https://forsetisecurity.org/faq/ for more '
+                  'information.')
+            sys.exit(1)
 
     if not advanced_mode:
         user_choice = 'y'
