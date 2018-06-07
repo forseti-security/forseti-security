@@ -126,7 +126,7 @@ def get_forseti_version():
     if return_code:
         print(err)
     else:
-        return'tags/{}'.format(out.strip())
+        return 'tags/{}'.format(out.strip())
 
     # Check version by branch.
     return_code, out, err = run_command(
