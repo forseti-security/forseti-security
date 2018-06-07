@@ -38,7 +38,7 @@ Run the following command to copy all the rule files from the v1 bucket to the v
 # Replace <YOUR_V1_BUCKET> with your v1 forseti GCS bucket and
 # <YOUR_V2_BUCKET> with your v2 forseti GCS bucket.
 
-gsutil cp gs://<YOUR_V1_BUCKET>/rules/*.yaml gs://<YOUR_V2_BUCKET>/
+gsutil cp gs://<YOUR_V1_BUCKET>/rules/*.yaml gs://<YOUR_V2_BUCKET>/rules
 ```
 
 
