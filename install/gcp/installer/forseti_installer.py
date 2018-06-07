@@ -79,7 +79,7 @@ class ForsetiInstaller(object):
     __metaclass__ = ABCMeta
 
     # Class variables initialization
-    branch = None
+    version = None
     project_id = None
     organization_id = None
     gcp_service_acct_email = None
