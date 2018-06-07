@@ -232,7 +232,7 @@ def infer_version(advanced_mode):
     Returns:
         str: Selected Forseti branch.
     """
-    target = None
+    version = None
     return_code, out, err = run_command(
         ['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
         number_of_retry=0)
@@ -242,12 +242,12 @@ def infer_version(advanced_mode):
         print(err)
         print('Will try to infer the Forseti version instead.')
     else:
-        target = out.strip()
+        version = out.strip()
 
     # For the installation to work, user must be on a tag or a branch.
     # If the user is not on a branch, we check whether or not the user
     # is on a tag, if not, we will exit the installation.
-    if not target:
+    if not version:
         return_code, out, err = run_command(
             ['git', 'describe', '--tags', '--exact-match'])
         # The git command above will return the tag name if we checked out
@@ -258,13 +258,13 @@ def infer_version(advanced_mode):
                   'check https://forsetisecurity.org/faq/ for more '
                   'information.')
             sys.exit(1)
-        target = 'tags/{}'.format(out.strip()) if out.strip() else ''
+            version = 'tags/{}'.format(out.strip()) if out.strip() else ''
 
     user_choice = None
-    if not target or target == 'stable':
-        version = get_forseti_version()
+    if not version or version == 'stable':
+        cur_version = get_forseti_version()
         if version:
-            target = 'v%s' % version
+            version = 'v%s' % cur_version
 
     if not advanced_mode:
         user_choice = 'y'
@@ -272,17 +272,17 @@ def infer_version(advanced_mode):
     while user_choice != 'y' and user_choice != 'n':
         user_choice = raw_input(
             'Install Forseti branch/tag %s? (y/n) '
-            % target).lower().strip()
+            % version).lower().strip()
 
     if user_choice == 'n':
         branch = checkout_git_branch()
         if branch:
-            target = branch
+            version = branch
         else:
-            print('No branch/tag was chosen; using %s' % target)
+            print('No branch/tag was chosen; using %s' % version)
 
-    print('Forseti branch/tag: %s' % target)
-    return target
+    print('Forseti branch/tag: %s' % version)
+    return version
 
 
 def get_zone_from_bucket_location(bucket_location):
