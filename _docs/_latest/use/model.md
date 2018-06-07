@@ -25,7 +25,7 @@ The command above will create a data model `<MODEL_NAME>` from inventory `<INVEN
 Note: It is likely you will be getting `PARTIAL_SUCCESS` status when you
 create the data model because you might be getting expected warnings.
 For example, roles in their alpha version will not contain any permissions
-and we will log that as a warning in the data model.  So, model with status of
+and we will log that as a warning in the data model. So, model with status of
 `PARTIAL_SUCCESS` is safe to use.
 
 To display all the errors and warnings of the data model, use the `get` command.

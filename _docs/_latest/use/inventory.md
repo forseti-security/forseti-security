@@ -6,8 +6,8 @@ order: 002
 # {{ page.title }}
 
 Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
-resources. The Inventory data is transformed to data model that is used
-by Forseti Scanner and Explaine to perform operations.
+resources. The Inventory data is [transformed to data model]({% link _docs/latest/concepts/models.md %}) that is used
+by Forseti Scanner and Explain to perform operations.
 
 ---
 
