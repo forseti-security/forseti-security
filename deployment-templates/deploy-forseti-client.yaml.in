@@ -46,10 +46,10 @@ resources:
     gcs-bucket: {FORSETI_BUCKET}
 
     # --- Forseti version
-    # "forseti-target": Can be a tag or a branch.
+    # "forseti-version": Can be a tag or a branch.
     #
     # See https://github.com/GoogleCloudPlatform/forseti-security/releases
     # for a list of releases.
-    {FORSETI_TARGET}
+    forseti-version: {FORSETI_VERSION}
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version

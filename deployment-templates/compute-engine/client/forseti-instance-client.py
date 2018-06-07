@@ -25,8 +25,8 @@ def GenerateConfig(context):
             src_path=context.properties['src-path']))
 
     FORSETI_TARGET = (
-        "git checkout {forseti_target}".format(
-            forseti_target=context.properties['forseti-target']))
+        "git checkout {forseti_version}".format(
+            forseti_version=context.properties['forseti-version']))
 
     FORSETI_CLIENT_CONF = ('gs://{bucket_name}/configs/'
                            'forseti_conf_client.yaml').format(

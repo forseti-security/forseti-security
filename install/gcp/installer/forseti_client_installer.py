@@ -87,6 +87,6 @@ class ForsetiClientInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_CLIENT_SERVICE_ACCOUNT': self.gcp_service_acct_email,
-            'FORSETI_TARGET': 'forseti-target: "{}"'.format(self.branch),
+            'FORSETI_VERSION': self.version,
             'FORSETI_SERVER_ZONE': self.server_zone
         }

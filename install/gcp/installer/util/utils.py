@@ -244,12 +244,14 @@ def infer_version(advanced_mode):
     else:
         target = out.strip()
 
-    # if the target is empty, then the user might be on a tag.
+    # For the installation to work, user must be on a tag or a branch.
+    # If the user is not on a branch, we check whether or not the user
+    # is on a tag, if not, we will exit the installation.
     if not target:
         return_code, out, err = run_command(
             ['git', 'describe', '--tags', '--exact-match'])
-        # The git command above will return the tag name if we are on a tag,
-        # will throw an exception otherwise.
+        # The git command above will return the tag name if we checked out
+        # a tag, will throw an exception otherwise.
         if return_code:
             print(err)
             print('Unable to determine the current Forseti version, please '
@@ -259,7 +261,7 @@ def infer_version(advanced_mode):
         target = 'tags/{}'.format(out.strip()) if out.strip() else ''
 
     user_choice = None
-    if not target or target == 'master':
+    if not target or target == 'stable':
         version = get_forseti_version()
         if version:
             target = 'v%s' % version
