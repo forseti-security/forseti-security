@@ -73,7 +73,7 @@ to gain access to the GCP projects.
 
 **Deeply Nested Sub Groups**
 
-Nested groups can [DRY] (https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
+Nested groups can [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
 group memberships however they can be hard to reason about when determining
 access. IAM Explain might help with this in the future. Deeply nested groups can
 also delay the propagation of projects to users; as a best practice, one level
@@ -141,8 +141,9 @@ employees join and leave the company the state in Google is consistent.
 **Super Admin Access**
 
 The Super Admin role in G Suite has full administrative control in GCP, this
-role should be reviewed to ensure the appropriate personnel have access.
-Check [how to define domain administration roles](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#define_domain_administration_roles).
+role should be reviewed to ensure the appropriate personnel have access.  Check
+[how to define domain administration
+roles](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#define_domain_administration_roles).
 
 **Organization Policy - VPC Service Controls**
 
@@ -154,16 +155,17 @@ to and between those services.
 
 **Third Party Access to GCP**
 
-Third parties (vendors, contractors) often require access to an enterprises GCP,
-the recommended approach is to create a user account in the companies Admin
-Console and assign the user account an appropriate license (G Suite or Cloud
-Identity). (https://support.google.com/cloudidentity/answer/7384684?hl=en) This
-solution gives the company full control over the user account, they can then
-suspend or delete the identity when the third party leaves - removing their
-access from GCP resources. The company can also use their identity provider to
-enforce user authentication. To allow for separate configuration options, they
-could also consider placing these users in a separate organization unit.
-(https://support.google.com/a/answer/182537?hl=en)
+Third parties (vendors, contractors) often require access to an enterprises
+GCP, the recommended approach is to create a user account in the companies
+Admin Console and assign the user account an appropriate license ([G Suite or
+Cloud
+Identity](https://support.google.com/cloudidentity/answer/7384684?hl=en)).
+This solution gives the company full control over the user account, they can
+then suspend or delete the identity when the third party leaves - removing
+their access from GCP resources. The company can also use their identity
+provider to enforce user authentication. To allow for separate configuration
+options, they could also consider placing these users in a [separate
+organization unit](https://support.google.com/a/answer/182537?hl=en).
 
 ## Service accounts
 
@@ -322,17 +324,17 @@ Requirements should be determined on retaining or alerting on these actions.
 
 **Data Access Logs**
 
-For finer grained access logs, Data Access logs can be enabled to capture read
-operations being performed by users in the project.
-(https://cloud.google.com/logging/docs/audit/configure-data-access)
+For finer grained access logs, [Data Access logs can be
+enabled](https://cloud.google.com/logging/docs/audit/configure-data-access) to
+capture read operations being performed by users in the project.
 
 **Aggregated Logging Exports**
 
-An organization can create an aggregated export sink that can export log entries
-from all the projects, folders, and billing accounts of the organization. As an
-example, an organization might use this feature to export audit log entries from
-its projects to a central location.
-(https://cloud.google.com/logging/docs/export/aggregated_exports)
+An organization can create an [aggregated
+export](https://cloud.google.com/logging/docs/export/aggregated_exports) sink
+that can export log entries from all the projects, folders, and billing
+accounts of the organization. As an example, an organization might use this
+feature to export audit log entries from its projects to a central location.
 
 ## Cost Control
 
@@ -375,13 +377,15 @@ account team and the customer before taking action.
 Projects are a good standard way of attributing costs. If the naming convention
 of a project follows the recommended [company tag]-[group tag]-[system
 name]-[env].The enterprise can attribute costs to a Business Unit > System >
-Environment level of granularity. [The monthly bill breaks down costs by project,
-then by resource type and labels] (https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#your_monthly_bill_breaks_down_costs_by_project_then_by_resource_type).
+Environment level of granularity. [The monthly bill breaks down costs by
+project, then by resource type and
+labels](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#your_monthly_bill_breaks_down_costs_by_project_then_by_resource_type).
 
 **Billing Exports**
 
 For better ability to interrogate the monthly bill, consider setting up a
-billing export to get a [machine-readable version of your bill] (https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_billing_export_daily_to_get_a_machine-readable_version_of_your_bill).
+billing export to get a [machine-readable version of your
+bill](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_billing_export_daily_to_get_a_machine-readable_version_of_your_bill).
 
 **Multiple Billing Accounts**
 
