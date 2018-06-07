@@ -44,20 +44,10 @@ resources:
       - https://www.googleapis.com/auth/cloud-platform
 
     # --- Forseti version
-    # Use either branch-name or release-version, but NOT both.
-    #
-    # "release-version": A Forseti release.
-    # See https://github.com/GoogleCloudPlatform/forseti-security/releases
-    #
-    # "branch-name": A git branch of Forseti.
-    #
-    # e.g. "I want to deploy Forseti Security's master branch"
-    #    branch-name: "master"
-    #    # release-version: ... <-- COMMENT OUT
-    #
-    # e.g. "I want to deploy release 1.0"
-    #    # branch-name: "master" <-- COMMENT OUT
-    #    release-version: "1.0"
-    forseti-target: "v2.0"
+    # "forseti-version": Can be a tag or a branch.
+    forseti-version: "v2.0"
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security
+    # --- end Forseti version
+
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version

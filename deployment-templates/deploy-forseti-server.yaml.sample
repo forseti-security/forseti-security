@@ -66,13 +66,8 @@ resources:
     database-name: forseti_security
 
     # --- Forseti version
-    # Use either branch-name or release-version, but NOT both.
-    #
-    # "release-version": A Forseti release.
-    # See https://github.com/GoogleCloudPlatform/forseti-security/releases
-    #
-    # "forseti-target": Can be a tag or a branch.
-    forseti-target: "v2.0"
+    # "forseti-version": Can be a tag or a branch.
+    forseti-version: "v2.0"
     src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 

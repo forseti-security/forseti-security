@@ -23,7 +23,7 @@ def GenerateConfig(context):
         "git clone {src_path}.git".format(
             src_path=context.properties['src-path']))
 
-    FORSETI_TARGET = (
+    FORSETI_VERSION = (
         "git checkout {forseti_version}".format(
             forseti_version=context.properties['forseti-version']))
 
@@ -138,7 +138,7 @@ rm -rf *forseti*
 {download_forseti}
 cd forseti-security
 git fetch --all
-{checkout_forseti_target}
+{checkout_forseti_version}
 
 # Forseti Host Setup
 sudo apt-get install -y git unzip
@@ -224,8 +224,8 @@ echo "Execution of startup script finished"
     # Install Forseti.
     download_forseti=DOWNLOAD_FORSETI,
 
-    # Checkout Forseti target.
-    checkout_forseti_target=FORSETI_TARGET,
+    # Checkout Forseti version.
+    checkout_forseti_version=FORSETI_VERSION,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,
