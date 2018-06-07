@@ -13,7 +13,8 @@ by Forseti Scanner and Explainer to perform operations.
 
 Before you start using Inventory, you'll need to make sure that Inventory is
 [configured]({% link _docs/latest/configure/inventory/index.md %}) and the
-[proper permission is setup]({% link _docs/latest/concepts/service-accounts.md %}) 
+proper [GCP]({% link _docs/latest/concepts/service-accounts.md %}) and
+[GSuite]({% link _docs/latest/configure/gsuite.md %}) permissions are setup] 
 for your Forseti gcp service account.
 
 To display Inventory flag options, run `forseti inventory -h`.
