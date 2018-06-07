@@ -61,5 +61,5 @@ resources:
     #    # branch-name: "master" <-- COMMENT OUT
     #    release-version: "1.0"
     {BRANCH_OR_RELEASE}
-    src-path: https://github.com/GoogleCloudPlatform/forseti-security
+    src-path: https://github.com/angelzamir/forseti-security
     # --- end Forseti version
