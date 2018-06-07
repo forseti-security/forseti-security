@@ -1,9 +1,9 @@
 ## File an issue or feature request
 
 If you're experiencing an issue, find out if there's already a solution:
-1. read the FAQs
-1. search [existing issue in GitHub](https://github.com/GoogleCloudPlatform/forseti-security/issues)
-1. search
+1. Read the FAQs
+1. Search [existing issue in GitHub](https://github.com/GoogleCloudPlatform/forseti-security/issues)
+1. Search
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss)
 
 If you still have an issue, file a new issue at

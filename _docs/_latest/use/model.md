@@ -5,10 +5,12 @@ order: 004
 
 # {{ page.title }}
 
-Forseti models are built on top of the raw inventory data to provide us with
-a better understanding of how the data is related to each other.
+Forseti models are built on top of the raw Inventory data to help show how the
+data is related.
 
-You can learn more about the concept of Forseti model [here]({% link _docs/latest/concepts/models.md %}).
+To learn more about the Forseti model, see [Models]({% link _docs/latest/concepts/models.md %}).
+
+---
 
 ## Running Forseti model
 
@@ -23,8 +25,8 @@ The command above will create a data model `<MODEL_NAME>` from inventory `<INVEN
 Note: The status of the data model can be `SUCCESS`, `PARTIAL_SUCCESS` and `BROKEN`.
 It is likely you will be getting `PARTIAL_SUCCESS` for your data model because there are expected warnings that you
 might be getting. For example, roles in their alpha version will not contain any permissions and we
-will log that as a warning in the data model. You can see all the errors/warnings of the data model
-with the `get` command. Model with status = `PARTIAL_SUCCESS` is safe to use.
+will log that as a warning in the data model. To display all the errors and warnings of the data model,
+use the `get` command." Model with status = `PARTIAL_SUCCESS` is safe to use.
 
 ### Using a data model
 

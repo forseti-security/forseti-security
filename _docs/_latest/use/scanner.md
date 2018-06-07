@@ -9,6 +9,8 @@ Forseti Scanner scans the inventory data according to the rules (policies) you d
 
 You can learn about how to [define custom rules]({% link _docs/latest/configure/scanner/rules.md %}).
 
+---
+
 ## Running Forseti Scanner
 
 Forseti Scanner works on a data model, so before you start using Scanner, you'll select a model to use. 
@@ -63,4 +65,4 @@ To receive notifications for violations, run the
 
 ## What's next
 
-See how to [use the Notifier]({% link _docs/latest/use/notifier.md %}) to send notifications on the violations found by Scanner.
+Learn how to [use the Notifier]({% link _docs/latest/use/notifier.md %}) to send notifications on the violations found by Scanner.

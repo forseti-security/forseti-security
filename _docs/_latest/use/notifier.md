@@ -13,6 +13,8 @@ or manually invoked using the Forseti CLI.
 When the cron job runs the Notifier, it sends notifications on the
 latest violations from the previous scanner run.
 
+---
+
 ### CLI Usage
 
   ```bash
