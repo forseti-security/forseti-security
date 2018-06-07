@@ -136,6 +136,9 @@ def get_forseti_version():
     else:
         version = 'tags/{}'.format(out.strip()) if out.strip() else ''
 
+    if not version == 'stable':
+        return version
+
     version_re = re.compile(constants.VERSIONFILE_REGEX)
     version_file = os.path.join(
         constants.FORSETI_SRC_PATH, '__init__.py')
