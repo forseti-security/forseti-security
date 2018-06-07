@@ -241,9 +241,7 @@ def infer_version(advanced_mode):
     if return_code:
         print(err)
         print('Will try to infer the Forseti version instead.')
-        # For the installation to work, user must be on a tag or a branch.
-        # If the user is not on a branch, we check whether or not the user
-        # is on a tag, if not, we will exit the installation.
+
         return_code, out, err = run_command(
             ['git', 'describe', '--tags', '--exact-match'])
         # The git command above will return the tag name if we checked out
