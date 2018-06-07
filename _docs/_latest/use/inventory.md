@@ -6,12 +6,14 @@ order: 002
 # {{ page.title }}
 
 Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
-resources. Forseti Scanner and Enforcer use Inventory data to perform operations.
+resources. The Inventory data is transformed to data model, which will be used
+by Forseti Scanner and Explainer to perform operations.
 
 ## Running Inventory
 
-Before you start using Inventory, you'll need to make sure you have the  
-[proper permission setup]({% link _docs/latest/configure/gsuite.md %}) 
+Before you start using Inventory, you'll need to make sure that Inventory is
+[configured]({% link _docs/latest/configure/inventory/index.md %}) and the
+[proper permission is setup]({% link _docs/latest/concepts/service-accounts.md %}) 
 for your Forseti gcp service account.
 
 To display Inventory flag options, run `forseti inventory -h`.
@@ -26,8 +28,8 @@ The command above will start a new inventory process, you can track the status b
 
 ### Create a new inventory along with a data model
 
-Since the data model is widely used in Forseti so sometimes it's handy 
-to just create the dada model along with the newest inventory.
+Since the data model is widely used in Forseti, sometimes it's handy 
+to just create the data model along with the newest inventory.
 
 ```bash
 $ forseti inventory create --import_as <MODEL_NAME>

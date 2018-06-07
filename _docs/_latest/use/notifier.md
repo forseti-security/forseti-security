@@ -18,7 +18,6 @@ latest violations from the previous scanner run.
   ```bash
   $ forseti notifier --help
   
-  google_cloud_platform_resource_scanner
   $ forseti notifier run
 
   # Send the violations by inventory index id.

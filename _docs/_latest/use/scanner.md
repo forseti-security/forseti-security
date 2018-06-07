@@ -33,9 +33,6 @@ $ forseti scanner run
 
 When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.
 
-Scanner can save violations as a CSV and send an email notification or upload it
-automatically to a Cloud Storage bucket.
-
 ## Sample scanner violation
 
 ### Firewall rule violation
@@ -64,3 +61,6 @@ automatically to a Cloud Storage bucket.
 To receive notifications for violations, run the 
 [Forseti Notifier]({% link _docs/latest/use/notifier.md %}).
 
+## What's next
+
+See how to [use the Notifier]({% link _docs/latest/use/notifier.md %}) to send notifications on the violations found by Scanner.
