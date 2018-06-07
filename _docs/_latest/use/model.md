@@ -22,11 +22,13 @@ $ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 
 The command above will create a data model `<MODEL_NAME>` from inventory `<INVENTORY_INDEX_ID>`.
 
-Note: The status of the data model can be `SUCCESS`, `PARTIAL_SUCCESS` and `BROKEN`.
-It is likely you will be getting `PARTIAL_SUCCESS` for your data model because there are expected warnings that you
-might be getting. For example, roles in their alpha version will not contain any permissions and we
-will log that as a warning in the data model. To display all the errors and warnings of the data model,
-use the `get` command." Model with status = `PARTIAL_SUCCESS` is safe to use.
+Note: It is likely you will be getting `PARTIAL_SUCCESS` status when you
+create the data model because you might be getting expected warnings.
+For example, roles in their alpha version will not contain any permissions
+and we will log that as a warning in the data model.  So, model with status of
+`PARTIAL_SUCCESS` is safe to use.
+
+To display all the errors and warnings of the data model, use the `get` command.
 
 ### Using a data model
 
@@ -63,5 +65,4 @@ The command above will delete the data model with model name = `<MODEL_NAME>`.
 
 ## What's next
 
-Once we have the data model ready, you can learn how to query the data model using Forseti Explainer
-[here]({% link _docs/latest/use/explain.md %}).
+Learn how to query the data model using [Explain]({% link _docs/latest/use/explain.md %}).
