@@ -109,9 +109,10 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
 
 
 def get_forseti_version():
-    """Get the current Forseti version. If the current version is a branch
-    or a tag, we will return it. Otherwise we will read the __init__ file
-    for the latest version.
+    """Get the current Forseti version.
+
+    If the current version is a branch or a tag, we will return it. Otherwise
+    we will read the __init__ file for the latest version.
 
     Returns:
         str: The version.
@@ -139,12 +140,13 @@ def get_forseti_version():
     else:
         version = out.strip()
 
+    # If there is a version and it's not branch `stable`, we don't need to
+    # read the __init__.py file for version.
     if version and version != 'stable':
-        # If there is a version and it's not branch `stable`, we don't need
-        # to read the __init__.py file for version.
         return version
 
     # Check version by source code.
+    # Installing from stable branch must be pinned to a release tag.
     version_re = re.compile(constants.VERSIONFILE_REGEX)
     version_file = os.path.join(
         constants.FORSETI_SRC_PATH, '__init__.py')
