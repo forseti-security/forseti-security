@@ -115,7 +115,7 @@ def get_forseti_version():
     we will read the __init__ file for the latest version.
 
     Returns:
-        str: The version.
+        str: The version, that is either a tag or a branch name.
     """
     version = None
 
@@ -129,7 +129,7 @@ def get_forseti_version():
     else:
         return 'tags/{}'.format(out.strip())
 
-    # Check version by branch.
+    # Check version by branch. Allow installs from development branches.
     return_code, out, err = run_command(
         ['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
         number_of_retry=0)
@@ -273,10 +273,10 @@ def infer_version(advanced_mode):
               'for more information.')
         sys.exit(1)
 
-    user_choice = 'n'
-
     if not advanced_mode:
-        user_choice = 'y'
+        return cur_version
+
+    user_choice = 'n'
 
     while user_choice != 'y' and user_choice != 'n':
         user_choice = raw_input(
