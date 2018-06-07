@@ -136,7 +136,9 @@ def get_forseti_version():
     else:
         version = 'tags/{}'.format(out.strip()) if out.strip() else ''
 
-    if not version == 'stable':
+    if version and not version == 'stable':
+        # If there is a version and it's not branch stable, we don't need
+        # to read the __init__.py file for version.
         return version
 
     version_re = re.compile(constants.VERSIONFILE_REGEX)
