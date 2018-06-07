@@ -117,6 +117,18 @@ def get_forseti_version():
         str: The version.
     """
     version = None
+
+    # Check version by tag.
+    return_code, out, err = run_command(
+        ['git', 'describe', '--tags', '--exact-match'])
+    # The git command above will return the tag name if we checked out
+    # a tag, will throw an exception otherwise.
+    if return_code:
+        print(err)
+    else:
+        return'tags/{}'.format(out.strip())
+
+    # Check version by branch.
     return_code, out, err = run_command(
         ['git', 'symbolic-ref', '-q', '--short', 'HEAD'],
         number_of_retry=0)
@@ -127,20 +139,12 @@ def get_forseti_version():
     else:
         version = out.strip()
 
-    return_code, out, err = run_command(
-        ['git', 'describe', '--tags', '--exact-match'])
-    # The git command above will return the tag name if we checked out
-    # a tag, will throw an exception otherwise.
-    if return_code:
-        print(err)
-    else:
-        version = 'tags/{}'.format(out.strip()) if out.strip() else ''
-
     if version and version != 'stable':
         # If there is a version and it's not branch `stable`, we don't need
         # to read the __init__.py file for version.
         return version
 
+    # Check version by source code.
     version_re = re.compile(constants.VERSIONFILE_REGEX)
     version_file = os.path.join(
         constants.FORSETI_SRC_PATH, '__init__.py')
