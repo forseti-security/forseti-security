@@ -107,7 +107,6 @@ def _print_banner(border_symbol, edge_symbol, corner_symbol,
     print('')
 
 
-
 def get_forseti_version():
     """Get the current Forseti version.
 
