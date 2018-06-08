@@ -613,6 +613,7 @@ def run_config(_, config, output, config_env):
             output (Output): output writer to use.
             config_env (object): Configuration environment.
     """
+    del output  # unused argument.
 
     def do_show_config():
         """Show the current config."""
@@ -1155,7 +1156,7 @@ def main(args=None,
     except ValueError as e:
         parser.error(e.message)
     except grpc.RpcError as e:
-        grpc_status_code = e.code()
+        grpc_status_code = e.code()  # pylint: disable=no-member
         if grpc_status_code == grpc.StatusCode.UNAVAILABLE:
             print('Error communicating to the Forseti server.\n'
                   'Please check the status of the server and make sure it\'s '

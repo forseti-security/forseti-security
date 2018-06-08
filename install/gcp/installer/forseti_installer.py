@@ -79,7 +79,7 @@ class ForsetiInstaller(object):
     __metaclass__ = ABCMeta
 
     # Class variables initialization
-    branch = None
+    version = None
     project_id = None
     organization_id = None
     gcp_service_acct_email = None
@@ -191,7 +191,7 @@ class ForsetiInstaller(object):
         """Pre-flight checks"""
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
-        self.branch = utils.infer_version(self.config.advanced_mode)
+        self.version = utils.infer_version(self.config.advanced_mode)
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
                                          authed_user,
@@ -412,7 +412,7 @@ class ForsetiInstaller(object):
             instructions.deployed_branch = message
         elif deploy_success:
             instructions.deployed_branch = (
-                constants.MESSAGE_FORSETI_BRANCH_DEPLOYED.format(self.branch))
+                constants.MESSAGE_FORSETI_BRANCH_DEPLOYED.format(self.version))
         else:
             instructions.deployed_branch = (
                 constants.MESSAGE_DEPLOYMENT_HAD_ISSUES)
@@ -442,6 +442,6 @@ class ForsetiInstaller(object):
         Args:
             other_installer (ForsetiInstaller): The other installer.
         """
-        self.branch = other_installer.branch
+        self.version = other_installer.version
         self.project_id = other_installer.project_id
         self.organization_id = other_installer.organization_id
