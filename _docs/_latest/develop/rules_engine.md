@@ -16,7 +16,7 @@ for the following resources:
 * Load balancer rules
 * Cloud SQL authorized networks
 
-See the [rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/dev/rules) 
+See the [rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules) 
 directory for examples.
 
 ## IamRulesEngine Overview
