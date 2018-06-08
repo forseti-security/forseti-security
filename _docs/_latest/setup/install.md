@@ -7,6 +7,8 @@ order: 001
 
 This guide explains how to use the Forseti installation tool.
 
+---
+
 ## Before you begin
 
 Before you run the setup wizard, you will need:
@@ -42,31 +44,36 @@ steps below:
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is
-     included. Getting `2.0-dev-rc1` branch will install Forseti v2.0 Release
-     Candidate 1.
+  1. After you've started Cloud Shell, download Forseti. The installer is 
+  included in the `install/` directory.
 
       ```bash
-      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
+      git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Running the installer:
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`
 
-     To install both client and server:
+      ```bash
+      # make sure you are in the forseti-security folder.
+      git fetch --all
+      git checkout tags/v2.0.0
+      ```
+
+  1. Install both client and server by running the installer:
      
      ```bash 
-     python setup/installer.py
+     python install/gcp_installer.py
      ```
 
-      To see additional configurations for the setup:
+     To see additional configurations for the setup, run the following:
 
-      ```bash
-      python installer.py -h
-      ```
+     ```bash
+     python install/gcp_installer.py -h
+     ```
 
   1. The installer will infer the necessary information to install Forseti.
 
-     If you ran the `installer.py` without extra flags, you will be
+     If you ran the `install/gcp_installer.py` without extra flags, you will be
      prompted to enter the following:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For
@@ -81,7 +88,7 @@ steps below:
 
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
-     your Cloud Storage bucket:
+     your Cloud Storage bucket.
      ```bash
        MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
        forseti inventory create --import_as ${MODEL_ID}
