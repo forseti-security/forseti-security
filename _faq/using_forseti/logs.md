@@ -4,7 +4,7 @@ order: 3
 ---
 {::options auto_ids="false" /}
 
-The installation log is stored in `/tmp/deployment.log` on the Forseti 
+The installation log is stored in `/tmp/deployment.log` directory on the Forseti 
 Compute Engine instance.
 
 The Forseti Inventory, Scanner, and Enforcer logs can be found in the Cloud 
