@@ -268,7 +268,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
-            'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
+            'FORSETI_VERSION': self.version,
             'RAND_MINUTE': random.randint(0, 59)
         }
 
