@@ -16,53 +16,51 @@ To learn more about the Forseti model, see [Models]({% link _docs/latest/concept
 
 ### Creating a data model
 
+To create a data model from a specific inventory, run the following command:
+
 ```bash
 $ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
-The command above will create a data model `<MODEL_NAME>` from inventory `<INVENTORY_INDEX_ID>`.
-
-Note: It is likely you will be getting `PARTIAL_SUCCESS` status when you
-create the data model because you might be getting expected warnings.
-For example, roles in their alpha version will not contain any permissions
-and we will log that as a warning in the data model. So, model with status of
+When you create the data model, you might get a `PARTIAL_SUCCESS` status because you might
+be getting expected warnings. For example, an alpha version role doesn't contain any
+permissions, which is logged as a warning in the data model. A model with status of
 `PARTIAL_SUCCESS` is safe to use.
 
 To display all the errors and warnings of the data model, use the `get` command.
 
 ### Using a data model
 
+To set the data model for your current session, run the following command:
+
 ```bash
 $ forseti model use <MODEL_NAME>
 ```
 
-The command above will set the data model of the current session to `<MODEL_NAME>`.
-
 ### Listing all the existing data models
+
+To list all existing data models and their statuses, run the following command:
 
 ```bash
 $ forseti model list
 ```
 
-The command above will list all the existing data models along with their statuses.
-
 ### Getting a data model
+
+To get the summary of an inventory with a specific model name, run the following command:
 
 ```bash
 $ forseti model get <MODEL_NAME>
 ```
 
-The command above will get the summary of the inventory with model name = `<MODEL_NAME>`.
-
-
 ### Deleting a data model
+
+To delete a specific data model, run the following command:
 
 ```bash
 $ forseti model delete <MODEL_NAME>
 ```
 
-The command above will delete the data model with model name = `<MODEL_NAME>`.
-
 ## What's next
 
-Learn how to query the data model using [Explain]({% link _docs/latest/use/explain.md %}).
+* Learn how to query the data model using [Explain]({% link _docs/latest/use/explain.md %}).
