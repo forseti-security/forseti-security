@@ -4,8 +4,5 @@ order: 2
 ---
 {::options auto_ids="false" /}
 
-Great! Please file an 
-[issue](https://github.com/GoogleCloudPlatform/forseti-security/issues) 
-if it doesn't already exist. If you'd like to discuss the issue, let us know on 
-[discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss)!
-We'd love to chat with you about it.
+Great!  Please see the [help page]({% link _docs/latest/use/get-help.md %})
+on how to submit your idea or get help.
