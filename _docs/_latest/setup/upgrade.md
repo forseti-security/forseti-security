@@ -22,18 +22,22 @@ This guide explains how to upgrade your Forseti instance.
 
 ## Upgrade to v2
 
-The suggested way of upgrading your Forseti instance is to do create a new project, [install 
-the latest v2 instance]({% link _docs/latest/setup/install.md %}), move all the rule files 
-from the v1 bucket to the v2 bucket and have both instances running side by side. 
+To upgrade your Forseti instance, it's best to run the v1 and v2 instances
+running side by side:
 
-You can shutdown and clean up the v1 instance when you feel that the v2 instance is working as expected.
+1. Create a new project.
+1. [Install the latest v2 instance]({% link _docs/latest/setup/install.md %}).
+1. Copy all the rule files from the v1 bucket to the v2 bucket. 
+
+After you have the v2 instance working as expected, you can shut down and
+clean up the v1 instance.
 
  
-### Moving the rule files from v1 to v2
+### Copying rule files from v1 to v2
 
 You can re-use the rule files defined for your v1 instance in v2 by copying them to the v2 buckets.
 
-Run the following command to copy all the rule files from the v1 bucket to the v2 bucket.
+To copy all the rule files from the v1 bucket to the v2 bucket, run the following command:
 
 ```bash
 # Replace <YOUR_V1_BUCKET> with your v1 forseti GCS bucket and
@@ -42,13 +46,10 @@ Run the following command to copy all the rule files from the v1 bucket to the v
 gsutil cp gs://<YOUR_V1_BUCKET>/rules/*.yaml gs://<YOUR_V2_BUCKET>/rules
 ```
 
+### Archiving your Cloud SQL Database
 
-### Archiving your existing Cloud SQL Database
-
-There are many ways of archiving a database, the recommended way is to [export the data 
-to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/exporting#mysqldump) 
-through Google Cloud SQL.
-
+The best way to archive your database is to use Cloud SQL to [export the data 
+to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/exporting#mysqldump).
 
 ## Difference between v1 configuration and v2 configuration
 
@@ -98,12 +99,10 @@ We will be listing the difference between v1.1.11 configuration anv v2.0.0 serve
 | notifier/resources/pipelines/gcs_violations_pipeline | notifier/resources/notifiers/gcs_violations |
 | notifier/resources/pipelines/slack_webhook_pipeline | notifier/resources/notifiers/slack_webhook |
 
-You can learn more about what each of the fields mean in [Configure]({% link _docs/latest/configure/forseti/index.md %}).
-
+To learn more about these fields, see [Configure]({% link _docs/latest/configure/forseti/index.md %}).
 
 {% endcapture %} 
 {% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
-
 
 ## What's next
 
