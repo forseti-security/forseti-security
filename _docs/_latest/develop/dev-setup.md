@@ -130,9 +130,8 @@ system. Make sure to use the values from your terminal.
 
 ### Configuring Forseti settings
 
-Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
-`forseti-security/configs/forseti_conf.yaml`. Refer to 
-[Configuring Forseti]({% link _docs/latest/configure/configuring-forseti.md %}) 
+Before you run Forseti, you need to edit the forseti configuration file. 
+Refer to [Configuring Forseti]({% link _docs/latest/configure/configuring-forseti.md %}) 
 for more information.
 
 ### Starting Forseti commands
