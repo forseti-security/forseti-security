@@ -16,6 +16,7 @@ set -e
 trap 'return_code=$?' ERR
 
 # Write out the Python API documentation via Sphinx
+# TODO(drmorris): change branch to "stable" when after release
 ./scripts/generate_sphinx_docs.sh "dev"
 
 if  [ -z ${JGT+x} ]; then
