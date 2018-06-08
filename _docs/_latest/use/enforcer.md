@@ -13,6 +13,8 @@ policy, Enforcer makes changes using Google Cloud APIs.
 Enforcer code currently supports Compute Engine firewall rules.
 Additional enforcement endpoints are in development.
 
+---
+
 ## Before you begin
 
 Forseti Enforcer requires write permissions for the resources that it manages.
