@@ -1,12 +1,14 @@
 ---
 title: Notifier
-order: 300
+order: 400
 ---
 
 # {{ page.title }}
 
 Notifier can dispatch a variety of messages through various channels
 and varying formats alerting you to events in your environment.
+
+---
 
 ## Notification Types
 
@@ -37,7 +39,9 @@ follow the steps below
 
 1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
 
-1. Navigate to the `notifier` > `inventory` > `summary` section.
+1. Navigate to the `notifier` > `inventory` section.
+
+If you want the notifier to upload the inventory summary to the GCS bucket, edit `gcs_summary`
 
 * `enabled`
   * **Description**: Whether to send the inventory summary.
@@ -55,10 +59,39 @@ follow the steps below
 ```yaml
 notifier:
   inventory:
-    summary:
+    gcs_summary:
       enabled: true
       data_format: csv
       gcs_path: gs://path_to_foo_bucket
+```
+
+If you want the notifier to send the inventory summary via email, edit `email_summary`
+
+* `enabled`
+  * **Description**: Whether to send the inventory summary.
+  * **Valid values**: one of valid `true` or `false`
+
+* `sendgrid_api_key`
+  * **Description**: The key used to authorize requests to SendGrid.
+  * **Valid values**: String
+
+* `sender`
+  * **Description**: The email address of the sender of the email.
+  * **Valid values**: String
+
+* `recipient`
+  * **Description**: The email addresses of the recipients of the email.
+  * **Valid values**: String
+  * **Note**: Multiple email recipients as delimited by comma, e.g. `john@mycompany.com,jane@mycompany.com`.
+
+```yaml
+notifier:
+  inventory:
+    email_summary:
+      enabled: true
+      sendgrid_api_key: <SENDGRID_API_KEY>
+      sender: <SENDER EMAIL>
+      recipient: <RECIPIENT EMAIL>
 ```
 
 ### Violation Notifications
@@ -132,36 +165,6 @@ notifier:
           configuration:
             data_format: json
             webhook_url: https://hooks.slack.com/services/foobar
-```
-
-### Cloud SCC Findings
-
-Violations can be shared with [Cloud Security Command Center](https://cloud.google.com/security-command-center) on Google Cloud
-Platform (GCP).
-
-[Sign-up for the Cloud SCC alpha program here!](https://services.google.com/fb/forms/commandcenteralpha/)
-
-1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
-
-1. Navigate to the `notifier` > `violation` > `cloud_scc` section.
-
-The following options are available.
-
-* `enabled`
-  * **Description**: Whether Cloud SCC findings should be sent.
-  * **Valid values**: one of valid `true` or `false`
-
-* `gcs_path`
-  * **Description**: The path to a Cloud Storage bucket.
-  * **Valid values**: String
-  * **Note**: Must start with `gs://`.
-
-```yaml
-notifier:
-  violation:
-    cloud_scc:
-      enabled: true
-      gcs_path: gs://<path to your GCS bucket>
 ```
 
 ## What's next
