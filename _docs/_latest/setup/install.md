@@ -51,7 +51,7 @@ steps below:
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Checking out a specific version of Forseti by tag, e.g. `v2.0.0.`
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`
 
       ```bash
       # make sure you are in the forseti-security folder.
@@ -59,15 +59,13 @@ steps below:
       git checkout tags/v2.0.0
       ```
 
-  1. Running the installer
-
-     To install both client and server
+  1. Install both client and server by running the installer:
      
      ```bash 
      python install/gcp_installer.py
      ```
 
-     To see additional configurations for the setup
+     To see additional configurations for the setup, run the following:
 
      ```bash
      python install/gcp_installer.py -h
