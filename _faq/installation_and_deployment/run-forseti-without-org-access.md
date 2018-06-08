@@ -14,17 +14,18 @@ the org and not be under folders.
 Froseti.
 
 1. Non-org admin user runs the Forseti installer. The installer will attempt
-to assign org-level roles, but those can be ignored.
+to assign org-level roles without success, but those can be ignored.
 
-1. The installer will create all the necessary Forseti resources: Forseti
-project, VM instances, CloudSQL db, and most importantly the
-service accounts.
+1. The [installer]({% link _docs/latest/setup/install.md %}) will create
+all the necessary Forseti resources: Forseti project, VM instances, 
+CloudSQL db, and most importantly the service accounts.
 
 1. If you want to inventory all the resources in a folder,
 edit the `forseti_conf_server.yaml` and point the `root_resource_id`
 to the target folder: `folders/<foo_folder_id>`.  Be sure to force the server
-to reload the updated configuration.  Grant the folder editor role to
-the forseti server service account, on the target folder.
+to [reload the updated configuration]({% link _docs/latest/use/server.md %}).
+[Grant the folder editor role](https://cloud.google.com/iam/docs/granting-changing-revoking-access)
+to the forseti server service account, on the target folder.
 
 1. If you want to inventory all the standalone projects under the org, no
 update to `forseti_conf_server.yaml` is necessary.  Directly grant the project
