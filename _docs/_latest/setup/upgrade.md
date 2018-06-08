@@ -17,7 +17,7 @@ This guide explains how to upgrade your Forseti instance.
    for future reference if the data is important to you.
  * [Forseti v2 configuration]({% link _docs/latest/configure/forseti/index.md %}) is different than v1 so 
    you can not replace the v2 configuration file with the v1 configuration file.
- * Configuration of the resources that are inventoried is not configureable.
+ * In v2, all resources are inventoried. You won't be able to configure Inventory to include or exclude resources.
 
 
 ## Upgrade to v2
