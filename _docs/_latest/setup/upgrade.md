@@ -20,17 +20,18 @@ This guide explains how to upgrade your Forseti instance.
  * Configuration of the resources that are inventoried is not configureable.
 
 
-## Upgrading your v1 instance
+## Upgrade to v2
 
 The suggested way of upgrading your Forseti instance is to do create a new project, [install 
 the latest v2 instance]({% link _docs/latest/setup/install.md %}), move all the rule files 
-from the v1 bucket to the v2 bucket.
+from the v1 bucket to the v2 bucket and have both instances running side by side. 
+
+You can shutdown and clean up the v1 instance when you feel that the v2 instance is working as expected.
 
  
 ### Moving the rule files from v1 to v2
 
-Since the functionality of the existing scanners didn't change, you can re-use the rule 
-files defined for your v1 instance in v2.  
+You can re-use the rule files defined for your v1 instance in v2 by copying them to the v2 buckets.
 
 Run the following command to copy all the rule files from the v1 bucket to the v2 bucket.
 
