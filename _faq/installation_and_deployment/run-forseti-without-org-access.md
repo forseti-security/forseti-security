@@ -13,12 +13,12 @@ the org and not be under folders.
 1. User is not org admin, nor has access to an org admin to give org access to
 Froseti.
 
-1. Non-org admin user runs the Forseti installer. The installer will attempt
-to assign org-level roles without success, but those can be ignored.
+1. Non-org admin user runs the Forseti [installer]({% link _docs/latest/setup/install.md %}).
+The installer will attempt to assign org-level roles without success, but\
+those can be ignored.
 
-1. The [installer]({% link _docs/latest/setup/install.md %}) will create
-all the necessary Forseti resources: Forseti project, VM instances, 
-CloudSQL db, and most importantly the service accounts.
+1. The installer will create all the necessary Forseti resources: Forseti
+project, VM instances, CloudSQL db, and most importantly the service accounts.
 
 1. If you want to inventory all the resources in a folder,
 edit the `forseti_conf_server.yaml` and point the `root_resource_id`
