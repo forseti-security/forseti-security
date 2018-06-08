@@ -1,6 +1,6 @@
 ---
 title: Best Practices
-order: 100
+order: 002
 ---
 
 # {{ page.title }}
@@ -10,9 +10,9 @@ resources in your Google Cloud Platform (GCP) environments. Future Forseti
 releases are expected to include scans that correspond to each best practice,
 so you can easily run them.
 
-## Cloud Identity and Access Management (Cloud IAM) policies
-
 ---
+
+## Cloud Identity and Access Management (Cloud IAM) policies
 
 **Don't use [primitive roles](https://cloud.google.com/iam/docs/understanding-roles#primitive_roles)
 in Cloud IAM policies, and never grant primitive roles on an organization.**
@@ -42,8 +42,6 @@ and do lifecycle management.
 
 ## Service accounts
 
----
-
 **Don't use default service accounts. They have
 [primitive roles](https://cloud.google.com/iam/docs/understanding-roles#primitive_roles).**
 
@@ -69,12 +67,11 @@ Legacy bucket roles are usually too broad. Use Cloud IAM roles to give users onl
 need.
 
 **Don't allow buckets to be publicly visible. It's best to keep data private in general.**
+
 By keeping data private, you prevent malicious external actors from uploading content that could
 get ingested into an application or replace data in the bucket.
 
 ## Compute Engine
-
----
 
 **Minimize direct exposure to the internet. Don't open up 0.0.0.0/0.**
 
@@ -82,8 +79,6 @@ By limiting exposure to the internet, you prevent malicious external actors from
 the instance.
 
 ## Networking
-
----
 
 **Don't allow instances behind backend services to be directly accessed from the internet.
 Allow access only from specified ranges for
@@ -94,8 +89,6 @@ and getting access to the instance.
 
 ## BigQuery
 
----
-
 **It's best to keep data private in general:**
 
 * Don't allow datasets to be publicly readable or writable.
@@ -105,12 +98,10 @@ By limiting access to datasets, you prevent malicious external actors from chang
 
 ## Cloud SQL
 
----
-
 **Create a [root password](https://cloud.google.com/sql/docs/mysql/create-manage-users#user-root)
 for database users.**
 
-Adding a password to the root user provides the most basic protection.**
+Adding a password to the root user provides the most basic protection.
 
 **Always access Cloud SQL through
 [Cloud SQL Proxy](https://cloud.google.com/sql/docs/mysql/sql-proxy).**
@@ -118,7 +109,7 @@ Adding a password to the root user provides the most basic protection.**
 Cloud SQL Proxy offers secure connections and handles authentication, so you don't have to
 whitelist IP addresses.
 
-**Always use SSL connections if you aren't using Cloud SQL Proxy or if you configured
+**Always use SSL connections if you are not using Cloud SQL Proxy or if you configured
 authorized networks.**
 
 By using SSL connections, you prevent third parties from seeing the data that's transferred

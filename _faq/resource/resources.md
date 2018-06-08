@@ -28,8 +28,8 @@ interested in isn't listed, please open an issue or contribute!
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) |
 | [Folders Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) |
 | [Google Kubernetes Engine Configurations](https://cloud.google.com/kubernetes-engine/docs/reference/rest) |
-| [GSuite Groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups) |
-| [GSuite Group Members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members) |
+| [G Suite Groups](https://developers.google.com/admin-sdk/directory/v1/guides/manage-groups) |
+| [G Suite Group Members](https://developers.google.com/admin-sdk/directory/v1/guides/manage-group-members) |
 | [IAM GrantableRoles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |
 | [Load Balancer Forwarding Rules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules#resource) |
 | [Organizations](https://cloud.google.com/resource-manager/reference/rest/v1/organizations) |
