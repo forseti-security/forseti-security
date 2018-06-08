@@ -5,70 +5,103 @@ order: 00
 
 # {{ page.title }}
 
-This guide explains how to use the Forseti upgrade tool.
+This guide explains how to upgrade your Forseti instance.
 
-## Before you begin
-
-Before you upgrade Forseti, you'll need the following:
-
- * A G Suite super admin account to complete the [Domain-wide delegation steps]({% link _docs/latest/configure/gsuite.md %}). 
-Forseti 2.0 requires G Suite being enabled, so you'll need this before you start the installation.
+---
 
 {% capture 1x_upgrade %}
 
-## Important caveats
+## Important notes
 
- * The Forseti Security 2.0 installer only migrates configuration and rule files.
- * The Forseti Security 2.0 installer will attempt to re-use previous service accounts and projects.
- * The Forseti Security 2.0 installer will not destroy existing v1.X data.
- * Forseti Security 2.0 data is not compatible with v1.X's and therefore a new database is created.
+ * We don't support data migration from v1 to v2, so you will need to archive the database manually 
+   for future reference if the data is important to you.
+ * [Forseti v2 configuration]({% link _docs/latest/configure/forseti/index.md %}) is different than v1 so 
+   you can not replace the v2 configuration file with the v1 configuration file.
+ * In v2, all resources are inventoried. You won't be able to configure Inventory to include or exclude resources.
+
+
+## Upgrade to v2
+
+To upgrade your Forseti instance, it's best to run the v1 and v2 instances
+running side by side:
+
+1. Create a new project.
+1. [Install the latest v2 instance]({% link _docs/latest/setup/install.md %}).
+1. Copy all the rule files from the v1 bucket to the v2 bucket. 
+
+After you have the v2 instance working as expected, you can shut down and
+clean up the v1 instance.
+
  
-## Activate Google Cloud Shell
+### Copying rule files from v1 to v2
 
-It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the
-Forseti installer. This ensures you're using the latest version of Cloud SDK since it's included
-in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
+You can re-use the rule files defined for your v1 instance in v2 by copying them to the v2 buckets.
 
-  1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
-  1. In the **Select a project** drop-down list at the top of the console, select the project where
-  you have Forseti v1.x deployed.
-  1. On the top right of the console, click **Activate Google Cloud Shell**. The Cloud
-  Shell panel opens at the bottom of the page.
-  
-## Run setup
+To copy all the rule files from the v1 bucket to the v2 bucket, run the following command:
 
-  1. After you activate Cloud Shell, download Forseti. The installer is included.
-     Getting `master` branch will install [the latest released version of Forseti]({% link releases/index.md %}).
+```bash
+# Replace <YOUR_V1_BUCKET> with your v1 forseti GCS bucket and
+# <YOUR_V2_BUCKET> with your v2 forseti GCS bucket.
 
-      ```bash
-      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security.git
-      ```
+gsutil cp gs://<YOUR_V1_BUCKET>/rules/*.yaml gs://<YOUR_V2_BUCKET>/rules
+```
 
-  1. Run the installer.
+### Archiving your Cloud SQL Database
 
-     ```bash 
-     python setup/installer.py
-     ```
+The best way to archive your database is to use Cloud SQL to [export the data 
+to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/exporting#mysqldump).
 
-  1. When prompted to migrate configuration files, select "Y".
+## Difference between v1 configuration and v2 configuration
 
-  1. The installer will prompt you for the necessary information to install Forseti.
+We will be listing the difference between v1.1.11 configuration anv v2.0.0 server configuration.
 
-     If you didn't configure the following options in v1.x, you'll be prompted during the upgrade:
+### Deprecated fields in v2.0.0
+* global
+    * db_host
+    * db_user
+    * db_name
+    * groups_service_account_key_file
+    * max_results_admin_api
 
-     * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For more information, 
-       see [Enabling email notifications]({% link _docs/latest/configure/email-notification.md %}).
-     * Email recipient \[Optional\]: If a SendGrid API key is provided, you will also be asked
-       to whom Forseti should send the email notifications.
-     * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite data collection]({% link _docs/latest/configure/gsuite.md %})
-       and is required.
-       Ask your G Suite admin if you don't know which super admin email to use.
-  1. Forseti is now upgraded to v2.x. To manually remove unused resources, follow the instructions
-  at the end of the installation process.
-  
+* inventory
+    * pipelines
+
+
+### New fields in v2.0.0
+* inventory
+    * api_quota
+        * servicemanagement
+
+* notifier
+    * resources
+        * notifiers
+            * configuration
+                * data_format
+    * violation
+    * inventory
+
+### Updated/Renamed fields in v2.0.0
+
+{: .table .table-striped}
+| v1.1.11 | v2.0.0 |  
+|--------|--------|
+| global/domain_super_admin_email | inventory/domain_super_admin_email |
+| global/max_admin_api_calls_per_100_seconds | inventory/api_quota/admin |
+| global/max_appengine_api_calls_per_second | inventory/api_quota/appengine |
+| global/max_bigquery_api_calls_per_100_seconds | inventory/api_quota/bigquery |
+| global/max_cloudbilling_api_calls_per_60_seconds | inventory/api_quota/cloudbilling |
+| global/max_compute_api_calls_per_second | inventory/api_quota/compute |
+| global/max_container_api_calls_per_100_seconds | inventory/api_quota/container |
+| global/max_crm_api_calls_per_100_seconds | inventory/api_quota/crm |
+| global/max_iam_api_calls_per_second | inventory/api_quota/iam |
+| global/max_sqladmin_api_calls_per_100_seconds | inventory/api_quota/sqladmin |
+| notifier/resources/pipelines/email_violations_pipeline | notifier/resources/notifiers/email_violations |
+| notifier/resources/pipelines/gcs_violations_pipeline | notifier/resources/notifiers/gcs_violations |
+| notifier/resources/pipelines/slack_webhook_pipeline | notifier/resources/notifiers/slack_webhook |
+
+To learn more about these fields, see [Configure]({% link _docs/latest/configure/forseti/index.md %}).
+
 {% endcapture %} 
-
 {% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
 ## What's next
