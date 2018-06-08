@@ -48,6 +48,58 @@ There are many ways of archiving a database, the recommended way is to [export t
 to a SQL dump file](https://cloud.google.com/sql/docs/mysql/import-export/exporting#mysqldump) 
 through Google Cloud SQL.
 
+
+## Difference between v1 configuration and v2 configuration
+
+We will be listing the difference between v1.1.11 configuration anv v2.0.0 server configuration.
+
+### Deprecated fields in v2.0.0
+* global
+    * db_host
+    * db_user
+    * db_name
+    * groups_service_account_key_file
+    * max_results_admin_api
+
+* inventory
+    * pipelines
+
+
+### New fields in v2.0.0
+* inventory
+    * api_quota
+        * servicemanagement
+
+* notifier
+    * resources
+        * notifiers
+            * configuration
+                * data_format
+    * violation
+    * inventory
+
+### Updated/Renamed fields in v2.0.0
+
+{: .table .table-striped}
+| v1.1.11 | v2.0.0 |  
+|--------|--------|
+| global/domain_super_admin_email | inventory/domain_super_admin_email |
+| global/max_admin_api_calls_per_100_seconds | inventory/api_quota/admin |
+| global/max_appengine_api_calls_per_second | inventory/api_quota/appengine |
+| global/max_bigquery_api_calls_per_100_seconds | inventory/api_quota/bigquery |
+| global/max_cloudbilling_api_calls_per_60_seconds | inventory/api_quota/cloudbilling |
+| global/max_compute_api_calls_per_second | inventory/api_quota/compute |
+| global/max_container_api_calls_per_100_seconds | inventory/api_quota/container |
+| global/max_crm_api_calls_per_100_seconds | inventory/api_quota/crm |
+| global/max_iam_api_calls_per_second | inventory/api_quota/iam |
+| global/max_sqladmin_api_calls_per_100_seconds | inventory/api_quota/sqladmin |
+| notifier/resources/pipelines/email_violations_pipeline | notifier/resources/notifiers/email_violations |
+| notifier/resources/pipelines/gcs_violations_pipeline | notifier/resources/notifiers/gcs_violations |
+| notifier/resources/pipelines/slack_webhook_pipeline | notifier/resources/notifiers/slack_webhook |
+
+You can learn more about what each of the fields mean in [Configure]({% link _docs/latest/configure/forseti/index.md %}).
+
+
 {% endcapture %} 
 {% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
