@@ -76,11 +76,11 @@ Inventory pipelines:
 
 ## Groups scanner
 
-Because groups can be added to IAM policies, GSuite group membership can allow
+Because groups can be added to IAM policies, G Suite group membership can allow
 access on Google Cloud Platform. The group scanner supports a whitelist mode, to
-make sure that only authorized users are members of your GSuite group.
+make sure that only authorized users are members of your G Suite group.
 
-For examples of how to define scanner rules for your GSuite groups, see the
+For examples of how to define scanner rules for your G Suite groups, see the
 [group_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/group_rules.yaml)
 rule file.
 
