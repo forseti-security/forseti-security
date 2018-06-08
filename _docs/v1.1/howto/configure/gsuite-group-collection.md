@@ -1,5 +1,5 @@
 ---
-title: Enabling GSuite Google Groups Collection
+title: Enabling G Suite Google Groups Collection
 order: 204
 ---
 #  {{ page.title }}
@@ -66,7 +66,7 @@ After you create a service account above, you may need to edit the following var
 in your `forseti_conf.yaml`.
 
 - `groups-domain-super-admin-email`: Use of the Admin API requires delegation
-  (impersonation). Enter an email address of a Super Admin in the GSuite
+  (impersonation). Enter an email address of a Super Admin in the G Suite
   account. If you entered this value in the setup wizard, you do not need to 
   change this in your `forseti_conf.yaml`.
 - `groups-service-account-key-file`: Forseti Inventory uses this path to

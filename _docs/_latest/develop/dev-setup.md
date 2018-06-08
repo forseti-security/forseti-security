@@ -185,7 +185,7 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 
 Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
 `forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/latest/configure/configuring-forseti.md %}) 
+["Configuring Forseti"]({% link _docs/latest/configure/forseti/index.md %}) 
 for more information.
 
 ### Executing Forseti commands
