@@ -16,7 +16,7 @@ These are the branches that the Forseti Security project team use
 for developing, creating releases, and building the website.
 
 * `dev`: The development branch.
-* `master`: The latest stable release; suitable for deploy to production.
+* `stable`: The latest stable release; suitable for deploy to production.
 * `forsetisecurity.org`: Forseti website.
 
 The `dev` branch is the starting point where you can create a new PR. 
@@ -24,8 +24,8 @@ Although there are unit tests, the `dev` branch is still considered to be
 unreliable because it can change before it's merged into the `master`
 branch.
 
-The `master` branch is checkpointed code from the `dev` branch that
-has passed QA and integration testing. The `master` branch is considered
+The `stable` branch is checkpointed code from the `dev` branch that
+has passed QA and integration testing. The `stable` branch is considered
 to be stable and suitable for production-use.
 
 ### Next-generation branches
@@ -87,7 +87,7 @@ found are fixed as follows:
    2. The bug fix is merged back into the release branch.
 
 1. When the release branch is fully qualified, the branch is merged into 
-the `master` and `dev` branch.
+the `stable` and `dev` branch.
 
 1. After the release branch is merged, it's deleted.
 

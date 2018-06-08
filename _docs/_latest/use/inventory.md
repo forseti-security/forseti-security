@@ -6,28 +6,34 @@ order: 002
 # {{ page.title }}
 
 Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
-resources. Forseti Scanner and Enforcer use Inventory data to perform operations.
+resources. The Inventory data is [transformed to a data model]({% link _docs/latest/concepts/models.md %}) Forseti Scanner and Explain use to perform operations.
+
+---
 
 ## Running Inventory
 
-Before you start using Inventory, you'll need to make sure you have the  
-[proper permission setup]({% link _docs/latest/configure/gsuite.md %}) 
-for your Forseti gcp service account.
+Before you start using Inventory, you'll need to make sure that Inventory is
+[configured]({% link _docs/latest/configure/inventory/index.md %}) and the
+proper [GCP]({% link _docs/latest/concepts/service-accounts.md %}) and
+[G Suite]({% link _docs/latest/configure/gsuite.md %}) permissions are set up
+for your Forseti GCP service account.
 
 To display Inventory flag options, run `forseti inventory -h`.
 
 ### Create a new inventory
 
+To start a new inventory process, run the following command:
+
 ```bash
 $ forseti inventory create
 ```
 
-The command above will start a new inventory process, you can track the status by using the `list` command.
+You can track the status by using the `list` command.
 
 ### Create a new inventory along with a data model
 
-Since the data model is widely used in Forseti so sometimes it's handy 
-to just create the dada model along with the newest inventory.
+Because the data model is widely used in Forseti, it can be helpful to create
+the data model along with the newest Inventory.
 
 ```bash
 $ forseti inventory create --import_as <MODEL_NAME>
@@ -35,38 +41,40 @@ $ forseti inventory create --import_as <MODEL_NAME>
 
 ### List all the existing inventories
 
+To list all of the existing inventories and their statuses, run the following command:
+
 ```bash
 $ forseti inventory list
 ```
 
-The command above will list all the existing inventories along with their statuses.
-
 ### Get an inventory
+
+To display a summary of an inventory, run the following command:
 
 ```bash
 $ forseti inventory get <INVENTORY_INDEX_ID>
 ```
 
-The command above will get the summary of the inventory with inventory_index_id = `<INVENTORY_INDEX_ID>`. 
-`<INVENTORY_INDEX_ID>` can be retrieved by the `list` command.
+To get the `<INVENTORY_INDEX_ID>`, run the `list` command.
 
 ### Delete an inventory
+
+To delete an inventory, run the following command:
 
 ```bash
 $ forseti inventory delete <INVENTORY_INDEX_ID>
 ```
 
-The command above will delete the inventory with inventory_index_id = `<INVENTORY_INDEX_ID>`. 
-
 ### Purge inventories
+
+To delete all inventories that are older than a specific date, run the following command:
 
 ```bash
 $ forseti inventory purge <RETENTION_DAY>
 ```
 
-The command above will delete all the inventories that are older than `<RETENTION_DAY>`.
-Note: `<RETENTION_DAY>` is number of days to retain the data. If not specified, then the 
-value in forseti config yaml file will be used.
+Note that `<RETENTION_DAY>` is the number of days to retain the data. If you don't specify
+a value, then the value in `forseti_config.yaml` will be used.
 
 
 ## What's next

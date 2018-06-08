@@ -7,6 +7,8 @@ order: 007
 
 Forseti Server is tool to retrieve and update the server settings.
 
+---
+
 ## Running Forseti Server
 
 ### Getting the current server configuration
