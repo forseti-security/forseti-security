@@ -1,6 +1,6 @@
 ---
 title: Model
-order: 004
+order: 003
 ---
 
 # {{ page.title }}
