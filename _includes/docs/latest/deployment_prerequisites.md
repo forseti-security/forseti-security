@@ -24,7 +24,7 @@ If you are running Forseti on GCP, you'll need create service accounts with
 Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to 
 read GCP data and to manage Forseti modules.
 
-_For a detailed explanation of how Forseti Security uses service accounts, refer to 
+For a detailed explanation of how Forseti Security uses service accounts, refer to 
 ["Forseti Service Accounts"]({% link _docs/latest/concepts/service-accounts.md %}).
 
 To create and grant roles to a service account for Forseti Inventory, 
@@ -39,13 +39,8 @@ Scanner, and Enforcer, follow the steps below.
   gcloud auth activate-service-account --key-file=PATH/TO/KEYFILE.json
   ```
 
-<<<<<<< HEAD
 To enable your service account for collecting G Suite data, follow the steps in 
-[Enabling G Suite Google Groups Collection]({% link _docs/latest/howto/configure/gsuite-group-collection.md %}).
-=======
-To create a separate service account for enabling G Suite data collection, follow the steps in 
-["Enabling G Suite data collection"]({% link _docs/latest/configure/gsuite.md %}).
->>>>>>> 2.0-forsetisecurity.org-dev
+[Enabling G Suite Google Groups Collection]({% link _docs/latest/configure/gsuite.md %}).
 
 ### Assigning roles
 
@@ -53,7 +48,7 @@ For Forseti to have access to read data from your GCP environment,
 you will need to assign roles to either the Forseti service account
 or to your Google user.
 
-{% include docs/latest/required_roles.md %}
+{% include docs/latest/forseti-server-gcp-required-roles.md %}
 
 You can grant the roles on the Cloud IAM policies with the following commands:
 

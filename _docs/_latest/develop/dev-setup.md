@@ -131,7 +131,7 @@ system. Make sure to use the values from your terminal.
 ### Configuring Forseti settings
 
 Before you run Forseti, you need to edit the forseti configuration file. 
-Refer to [Configuring Forseti]({% link _docs/latest/configure/configuring-forseti.md %}) 
+Refer to [Configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}) 
 for more information.
 
 ### Starting Forseti commands
