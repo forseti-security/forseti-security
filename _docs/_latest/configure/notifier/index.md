@@ -111,7 +111,7 @@ any combination of notifiers for each resource.
 
 * `name`
   * **Description**: The name of the notifier you want for each resource.
-  * **Valid values**: The name must match the actual module name for each notifier in [forseti-security/google/cloud/forseti/notifier/notifiers](https://github.com/GoogleCloudPlatform/forseti-security/tree/2.0-dev/google/cloud/forseti/notifier/notifiers), such as `email_violations`, or `slack_webhook`.
+  * **Valid values**: The name must match the actual module name for each notifier in [forseti-security/google/cloud/forseti/notifier/notifiers](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/notifier/notifiers), such as `email_violations`, or `slack_webhook`.
   * **Note**: You can specify multiple notifiers for each resource.
 
 * `data_format`
