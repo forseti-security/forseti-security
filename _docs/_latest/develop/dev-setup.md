@@ -58,7 +58,7 @@ Install mysql_config:
 
 ### Creating a virtualenv
 
-Ensure virtualenv is installed in your system.  Virtualenv allows you to
+Ensure virtualenv is installed in your system. Virtualenv allows you to
 create multiple environments to contain different modules and dependencies
 in different projects.
 

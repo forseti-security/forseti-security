@@ -15,10 +15,9 @@ the setup commands:
 ### Creating service accounts
 
 If you are setting up a developer environment, it's best to use the credential
-from the Forseti service accounts.  You can also use
-your own Google credentials from when you ran `gcloud auth login`, but your
-personal credential might drift and differ from the Forseti service
-account.
+from the Forseti service accounts. You can also use your own Google credentials
+from when you ran `gcloud auth login`, but your personal credential might drift
+and differ from the Forseti service account.
 
 If you are running Forseti on GCP, you'll need create service accounts with 
 Cloud Identity and Access Management (Cloud IAM) roles to allow Forseti to 
