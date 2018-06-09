@@ -9,6 +9,8 @@ Forseti Config lets you set the configuration of the CLI.
 
 You can learn more about the [client-server architecture of Forseti]({% link _docs/latest/concepts/architecture.md %}).
 
+---
+
 ## Running Forseti Config
 
 ### Show the current local configuration

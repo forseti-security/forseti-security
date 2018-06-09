@@ -8,7 +8,7 @@ This page describes how to define rules for Forseti Scanner.
 ## Defining custom rules
 
 You can find some starter rules in the
-[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/dev/rules) 
+[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/1.0-dev/rules) 
 directory. When you make changes to the rule files, upload them to your 
 Forseti bucket or copy them to the `rules_path` (found in `forseti_conf.yaml`).
 

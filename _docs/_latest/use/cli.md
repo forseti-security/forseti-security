@@ -10,6 +10,8 @@ that can be used to operate the various functionalities in Forseti:
 build inventory, create models, use explain, perform scanning, and
 send notifications.
 
+---
+
 ## Access
 
 CLI users can be non-admin users, and should not have access to the highly
