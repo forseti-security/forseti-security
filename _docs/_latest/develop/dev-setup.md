@@ -134,7 +134,7 @@ Before you run Forseti, you need to edit the forseti configuration file.
 Refer to [Configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}) 
 for more information.
 
-### Starting Forseti commands
+### Starting Forseti
 
 After you complete the above steps, you should be able to run the Forseti
 server and the command-line interface (CLI) client.
