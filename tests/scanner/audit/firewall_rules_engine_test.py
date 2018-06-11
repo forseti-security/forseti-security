@@ -18,6 +18,7 @@ import unittest
 import parameterized
 
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type.firewall_rule import FirewallRule
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
@@ -475,7 +476,7 @@ class RuleTest(ForsetiTestCase):
           }],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed',
@@ -526,7 +527,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
@@ -540,7 +541,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], "direction": "INGRESS", "name": "0.0.0.0/0", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"]}']
               },
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p2',
                   'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
@@ -613,7 +614,7 @@ class RuleTest(ForsetiTestCase):
           }],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
@@ -672,7 +673,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
@@ -686,7 +687,7 @@ class RuleTest(ForsetiTestCase):
                   'resource_data': ['{"allowed": [{"IPProtocol": "tcp", "ports": ["443"]}], "direction": "INGRESS", "name": "Any to 443 on https-server", "network": "https://www.googleapis.com/compute/v1/projects/yourproject/global/networks/default", "sourceRanges": ["0.0.0.0/0"], "sourceTags": ["tag1", "tag2"]}']
               },
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p3',
                   'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
@@ -780,7 +781,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'full_name': None,
                   'rule_id': 'Allow SSH to tag from 1.1.1.1',
@@ -916,7 +917,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
                   'full_name': None,
@@ -986,7 +987,7 @@ class RuleTest(ForsetiTestCase):
           ],
           [
               {
-                  'resource_type': 'firewall_rule',
+                  'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
                   'rule_id': 'Golden Policy',
                   'full_name': None,
@@ -1448,7 +1449,7 @@ class RuleBookTest(ForsetiTestCase):
             lambda x,y: ancestry[x])
         project0_violations = [
             fre.RuleViolation(
-                resource_type='firewall_rule',
+                resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
                 full_name='organization/org/folder/folder1/project/project0/firewall/policy1/',
                 rule_id='rule1',
@@ -1460,7 +1461,7 @@ class RuleBookTest(ForsetiTestCase):
         ]
         project1_violations = [
             fre.RuleViolation(
-                resource_type='firewall_rule',
+                resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
                 full_name='organization/org/folder/folder2/project/project1/firewall/policy1/',
                 rule_id='rule2',
@@ -1472,7 +1473,7 @@ class RuleBookTest(ForsetiTestCase):
         ]
         project2_violations = [
             fre.RuleViolation(
-                resource_type='firewall_rule',
+                resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
                 full_name='organization/org/folder/folder3/folder/folder4/project/project2/firewall/policy1/',
                 rule_id='rule3',
@@ -1484,7 +1485,7 @@ class RuleBookTest(ForsetiTestCase):
         ]
         project3_violations = [
             fre.RuleViolation(
-                resource_type='firewall_rule',
+                resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
                 full_name='organization/org/folder/folder3/project/project3/firewall/policy1/',
                 rule_id='rule4',
@@ -1580,7 +1581,7 @@ class RuleEngineTest(ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_rule',
+                    'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
                     'full_name': ('organization/org/folder/folder1/'
                                   'project/project0/firewall/policy1/'),
@@ -1608,7 +1609,7 @@ class RuleEngineTest(ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_rule',
+                    'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
                     'full_name': ('organization/org/folder/test_instances/'
                                   'project/project1/firewall/policy1/'),
