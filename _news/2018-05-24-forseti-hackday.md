@@ -17,4 +17,4 @@ into Forseti with us and learn more about how to:
 Spend the day with the Forseti team at Google, gain insight into what’s on the
 horizon, and help make our code base stronger together!
 
-We still have openings but they won’t last long! [Register for Forseti Hack Day](https://docs.google.com/forms/d/1QzJHCTfG0_E4ag7NMk5e6LwVNwn81I7P-HDqJygeijg/edit) now to attend.
+We still have openings but they won’t last long! [Register for Forseti Hack Day](https://docs.google.com/forms/d/e/1FAIpQLScTo7p0cET9CnUqS-Tm1Si_NRA78WwuUdnOr6mYAzL1Rf_G9Q/viewform?usp=sf_link) now to attend.
