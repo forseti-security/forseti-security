@@ -16,38 +16,6 @@
 
 For now, this only represents Organization resources. In the future, we may
 need to separate the classes depending on implementation.
-
-
-
-        gcp_type_list = [
-            'organization',
-            'folder',
-            'project',
-            'role',
-            'appengine_app',
-            'appengine_service',
-            'appengine_version',
-            'appengine_instance',
-            'serviceaccount',
-            'serviceaccount_key',
-            'bucket',
-            'dataset',
-            'compute_project',
-            'image',
-            'instancegroup',
-            'instancegroupmanager',
-            'instancetemplate',
-            'instance',
-            'firewall',
-            'backendservice',
-            'forwardingrule',
-            'network',
-            'subnetwork',
-            'cloudsqlinstance',
-            'kubernetes_cluster',
-        ]
-
-
 """
 
 import abc
