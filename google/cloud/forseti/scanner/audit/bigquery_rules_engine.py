@@ -20,6 +20,7 @@ import re
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.gcp_type import bigquery_access_controls as bq_acls
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 # pylint: enable=line-too-long
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.regular_exp import escape_and_globify
@@ -254,7 +255,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='bigquery_dataset',
+                resource_type=resource_mod.ResourceType.BIGQUERY,
                 resource_id=bigquery_acl.dataset_id,
                 full_name=bigquery_acl.full_name,
                 rule_name=self.rule_name,

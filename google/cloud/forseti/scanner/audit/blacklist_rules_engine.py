@@ -21,6 +21,7 @@ import socket
 
 from collections import namedtuple
 
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 
@@ -224,7 +225,7 @@ class Rule(object):
 
                 if self.is_blacklisted(ipaddr):
                     yield self.RuleViolation(
-                        resource_type='instance',
+                        resource_type=resource_mod.ResourceType.INSTANCE,
                         full_name=network_interface.full_name,
                         rule_blacklist=self.rule_blacklist,
                         rule_name=self.rule_blacklist,

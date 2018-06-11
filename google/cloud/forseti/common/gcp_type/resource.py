@@ -16,6 +16,38 @@
 
 For now, this only represents Organization resources. In the future, we may
 need to separate the classes depending on implementation.
+
+
+
+        gcp_type_list = [
+            'organization',
+            'folder',
+            'project',
+            'role',
+            'appengine_app',
+            'appengine_service',
+            'appengine_version',
+            'appengine_instance',
+            'serviceaccount',
+            'serviceaccount_key',
+            'bucket',
+            'dataset',
+            'compute_project',
+            'image',
+            'instancegroup',
+            'instancegroupmanager',
+            'instancetemplate',
+            'instance',
+            'firewall',
+            'backendservice',
+            'forwardingrule',
+            'network',
+            'subnetwork',
+            'cloudsqlinstance',
+            'kubernetes_cluster',
+        ]
+
+
 """
 
 import abc
@@ -39,26 +71,28 @@ class ResourceType(object):
     SERVICE_ACCOUNT_KEY = 'serviceaccount_key'
 
     # Compute engine
-    BACKEND_SERVICE = 'backend_service'
-    FIREWALL_RULE = 'firewall_rule'
-    FORWARDING_RULE = 'forwarding_rule'
+    BACKEND_SERVICE = 'backendservice'
+    FIREWALL_RULE = 'firewall'
+    FORWARDING_RULE = 'forwardingrule'
     INSTANCE = 'instance'
-    INSTANCE_GROUP = 'instance_group'
-    INSTANCE_GROUP_MANAGER = 'instance_group_manager'
-    INSTANCE_TEMPLATE = 'instance_template'
+    INSTANCE_GROUP = 'instancegroup'
+    INSTANCE_GROUP_MANAGER = 'instancegroupmanager'
+    INSTANCE_TEMPLATE = 'instancetemplate'
     INSTANCE_NETWORK_INTERFACE = 'instance_network_interface'
 
     # Data storage
+    BIGQUERY = 'dataset'
     BIGQUERY_ACL = 'bigquery_datasets'
-    BUCKETS_ACL = 'buckets_acl'
-    CLOUDSQL_ACL = 'cloudsql_instances'
     BUCKET = 'bucket'
+    BUCKETS_ACL = 'buckets_acl'
+    CLOUDSQL = 'cloudsqlinstance'
+    CLOUDSQL_ACL = 'cloudsql_instances'
 
     # AppEngine
     APPENGINE = 'appengine'
 
     # Kubernetes Engine
-    KE_CLUSTER = 'ke'
+    KE_CLUSTER = 'kubernetes_cluster'
 
     resource_types = frozenset([
         ORGANIZATION,

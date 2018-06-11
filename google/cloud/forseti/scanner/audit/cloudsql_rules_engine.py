@@ -18,6 +18,7 @@ import itertools
 import json
 import re
 
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type.cloudsql_access_controls import (
     CloudSqlAccessControl)
 from google.cloud.forseti.common.util import logger
@@ -231,7 +232,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='cloudsql',
+                resource_type=resource_mod.ResourceType.CLOUDSQL,
                 resource_id=cloudsql_acl.instance_name,
                 full_name=cloudsql_acl.full_name,
                 rule_name=self.rule_name,
