@@ -21,9 +21,8 @@ and deployment templates for specific details of the commands to use.
 
 ## Create a project
 
-Create a new project to host Forseti. Forseti is intended to run in its own
-dedicated project so that access to its highly privileged permissions can be
-controlled.  Assign a billing account to the project.
+Create a new project to host Forseti. Forseti is intended to run in its own dedicated project to 
+control access to its highly privileged permissions. Assign a billing account to the project.
 
 ### Enable APIs
 
@@ -52,14 +51,17 @@ service account, see
 
 * For information about the specifications needed for a Forseti server
   VM instance, see the [Compute Engine deployment template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
-* When you create the instance, set the service account of the instance to the service account we just created or 
-if you already created the instance, you can [update the service account](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#changeserviceaccountandscopes).
+* When you create the instance, set the service account of the instance to the service account you just created.
+    * If you already have an instance you want to use, follow the process to [update the service account](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#changeserviceaccountandscopes).
 
 ### Install the Forseti Server
 
 To install the Forseti Server, follow the steps below:
 
 1. SSH into the server VM
+    ```bash
+    gcloud compute --project <YOUR_PROJECT> ssh --zone <YOUR_ZONE> <YOUR_FORSETI_SERVER_NAME>
+    ```
 1. Run the following command to become an Ubuntu user:
     ```bash
     sudo su ubuntu
@@ -72,19 +74,20 @@ To install the Forseti Server, follow the steps below:
     ``` 
 1. Follow the setup instructions in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L109) 
 to install Forseti server and all the necessary components like Fluentd and Cloud SQL Proxy.
-1. Create firewall rules
+1. Create the following firewall rules:
     ```bash
-    # Note: You will need the email address of your service account, you can get the email address by running command
+    # To create firewall rules, you will need the email address of your service account. 
+    # You can get the service account's email address by running command
     # gcloud iam service-accounts list
     # The email address will be in this format: forseti-server-gcp-#######@PROJECT-ID.iam.gserviceaccount.com
     
-    # Create firewall rule to block out all the ingress traffic.
+    # Create a firewall rule to block out all the ingress traffic.
     gcloud compute firewall-rules create forseti-server-deny-all --action DENY --target-service-accounts <SERVICE_ACCOUNT_EMAIL_ADDRESS> --priority 1 --direction INGRESS --rules icmp,udp,tcp
     
-    # Create firewall rule to open only port tcp:50051 within the internal network (ip-ranges - 10.128.0.0/9).
+    # Create a firewall rule to open only port tcp:50051 within the internal network (ip-ranges - 10.128.0.0/9).
     gcloud compute firewall-rules create forseti-server-allow-grpc --action ALLOW --target-service-accounts <SERVICE_ACCOUNT_EMAIL_ADDRESS> --priority 0 --direction INGRESS --rules tcp:50051 --source-ranges 10.128.0.0/9
     
-    # Create firewall rule to open only port tcp:22 (ssh) to all the external traffics from the internet.
+    # Create a firewall rule to open only port tcp:22 (ssh) to all the external traffics from the internet.
     gcloud compute firewall-rules create forseti-server-allow-ssh-external --action ALLOW --target-service-accounts <SERVICE_ACCOUNT_EMAIL_ADDRESS> --priority 0 --direction INGRESS --rules tcp:22 --source-ranges 0.0.0.0/0
     ```
 
@@ -103,8 +106,10 @@ For more information, see [Enabling G Suite Google Groups Collection]({% link _d
 
 ### Create a Cloud SQL instance.
 
-To create a For information about the specifications needed for a Cloud
-SQL instance, see the [Cloud SQL template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py).
+To create a Cloud SQL instance, see [Creating Instances](https://cloud.google.com/sql/docs/mysql/create-instance).
+
+For more information about the specifications needed for the Cloud SQL instance, 
+see the [Cloud SQL template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/cloudsql/cloudsql-instance.py).
 
 ## Deploy a client VM
 
@@ -149,7 +154,7 @@ To install the Forseti client, follow the steps below:
  
     git checkout tags/<tag_number>
     ```   
-1. Follow the setup instructions in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py#L93) to install Forseti CLI.
+1. Follow the setup instructions in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py#L93) to install the Foresti command-line interface (CLI).
 
 ### Configuration
 
@@ -159,4 +164,4 @@ Cloud Storage. For more information, see
 
 ## What's next
 
-  - Learn how to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
+  * Learn how to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
