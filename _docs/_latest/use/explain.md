@@ -12,6 +12,8 @@ It can enumerate access by resource or member, answer why a principal has access
 to a certain resource, or offer possible strategies for how to grant a specific 
 resource.
 
+---
+
 ## Before you begin
 
 To run Explain, you'll need the following:
