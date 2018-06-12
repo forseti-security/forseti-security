@@ -26,3 +26,6 @@ you want Forseti to inventory.
 
 When you run Forseti inventory again, all the projects and project resources
 will be collected in Inventory.
+
+**Important note**: By running Forseti without Organization Access, Forseti Explain and Forseti IAM scanner will 
+not contain the full results due to IAM policy inheritance and limited access of the service account.
