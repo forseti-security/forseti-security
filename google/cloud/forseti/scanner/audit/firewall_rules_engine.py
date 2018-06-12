@@ -579,7 +579,7 @@ class Rule(object):
         for policy in policies:
             inventory_data.append(policy.as_json())
         return RuleViolation(
-            resource_type='firewall_rule',
+            resource_type=resource_mod.ResourceType.FIREWALL_RULE,
             resource_id=policies[0].project_id,
             full_name=policies[0].full_name,
             rule_id=self.id,

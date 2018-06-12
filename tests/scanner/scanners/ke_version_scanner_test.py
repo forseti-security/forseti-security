@@ -19,6 +19,7 @@ import mock
 
 from tests import unittest_utils
 from tests.services.util.db import create_test_engine
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.scanner.scanners import ke_version_scanner
 from google.cloud.forseti.services.dao import ModelManager
 
@@ -172,7 +173,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                  'full_name': u'organization/12345/project/foo/kubernetes_cluster/node-version-not-allowed/',
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
-             'resource_type': 'ke'},
+             'resource_type': resource_mod.ResourceType.KE_CLUSTER},
             {'resource_id': u'master-version-invalid',
              'rule_name': 'Unsupported master version',
              'resource_data': '{"nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1"}',
@@ -187,7 +188,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                  'full_name': u'organization/12345/project/foo/kubernetes_cluster/master-version-invalid/',
                  'node_pool_name': ''},
              'violation_type': 'KE_VERSION_VIOLATION',
-             'resource_type': 'ke'},
+             'resource_type': resource_mod.ResourceType.KE_CLUSTER},
             {'resource_id': u'node-version-invalid',
              'rule_name': 'Unsupported node pool version',
              'resource_data': '{"nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1"}',
@@ -203,7 +204,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                  'full_name': u'organization/12345/project/foo/kubernetes_cluster/node-version-invalid/',
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
-             'resource_type': 'ke'}]
+             'resource_type': resource_mod.ResourceType.KE_CLUSTER}]
         mock_output_results.assert_called_once_with(mock.ANY,
                                                     expected_violations)
 

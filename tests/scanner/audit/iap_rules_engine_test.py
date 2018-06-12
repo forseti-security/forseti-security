@@ -22,6 +22,7 @@ import yaml
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import backend_service
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.util import file_loader
@@ -159,7 +160,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                                      iap_resource))
         expected_violations = [
             ire.RuleViolation(
-                resource_type='backend_service',
+                resource_type=resource_mod.ResourceType.BACKEND_SERVICE,
                 resource_name='bs1',
                 resource_id=service.resource_id,
                 full_name='fake_full_name111',
@@ -195,7 +196,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                                      iap_resource))
         expected_violations = [
             ire.RuleViolation(
-                resource_type='backend_service',
+                resource_type=resource_mod.ResourceType.BACKEND_SERVICE,
                 resource_name='bs1',
                 resource_id=service.resource_id,
                 full_name='fake_full_name111',
@@ -229,7 +230,7 @@ class IapRulesEngineTest(ForsetiTestCase):
                                                      iap_resource))
         expected_violations = [
             ire.RuleViolation(
-                resource_type='backend_service',
+                resource_type=resource_mod.ResourceType.BACKEND_SERVICE,
                 resource_name='bs1',
                 resource_id=service.resource_id,
                 full_name='fake_full_name111',

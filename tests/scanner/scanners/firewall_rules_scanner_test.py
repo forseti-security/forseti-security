@@ -21,6 +21,7 @@ import os
 import parameterized
 import unittest
 
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.scanner.scanners import firewall_rules_scanner
 from google.cloud.forseti.scanner.audit import firewall_rules_engine as fre
@@ -112,7 +113,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             lambda x, y: rule_indices.get(x, -1))
         violations = [
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
-                resource_type='firewall_rule',
+                resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id='p1',
                 full_name='fake_full_name111',
                 rule_id='rule1',
@@ -122,7 +123,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 resource_data='fake_inventory_data111'
             ),
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
-                resource_type='firewall_rule',
+                resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id='p2',
                 full_name='fake_full_name222',
                 rule_id='rule2',
@@ -166,7 +167,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_rule',
+                    'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
                     'full_name': 'fake_full_name000',
                     'rule_id': 'no_rdp_to_linux',
@@ -192,7 +193,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             },
             [
                 {
-                    'resource_type': 'firewall_rule',
+                    'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
                     'full_name': 'organization/1/folder/test_instances/project/project1/firewall/policy1/',
                     'rule_id': 'test_instances_rule',
@@ -277,7 +278,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             resource, policies)
         expected_violations_dicts = [
                 {
-                    'resource_type': 'firewall_rule',
+                    'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
                     'full_name': 'fake_full_name111',
                     'rule_id': 'golden_policy',
@@ -376,7 +377,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             {}, {}, mock_service_config, '', '', rules_local_path)
         results = scanner._retrieve()
 
-        self.assertEqual({'firewall_rule': 2}, results[1])
+        self.assertEqual({resource_mod.ResourceType.FIREWALL_RULE: 2}, results[1])
 
         _, expected_firewall1 = resource_and_policies[0]
         _, expected_firewall2 = resource_and_policies[1]

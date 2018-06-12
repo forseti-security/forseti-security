@@ -209,13 +209,14 @@ class Resource(object):
         """
         return self._inventory_key
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Raises:
             NotImplementedError: method not implemented
         """
-        raise NotImplementedError('Class: {}'.format(self.__class__.__name__))
+        raise NotImplementedError()
 
     def data(self):
         """Get data on this resource
@@ -490,7 +491,8 @@ class Organization(Resource):
         """
         return self['name'].split('/', 1)[-1]
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -538,7 +540,8 @@ class Folder(Resource):
         """
         return client.get_folder_iam_policy(self['name'])
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -703,7 +706,8 @@ class Project(Resource):
         """
         return self.is_api_enabled('storage-component.googleapis.com')
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -743,7 +747,8 @@ class GcsBucket(Resource):
         except KeyError:
             return []
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -791,7 +796,8 @@ class GcsObject(Resource):
         except KeyError:
             return []
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -839,7 +845,8 @@ class KubernetesCluster(Resource):
         # Clusters do not have globally unique IDs, use size_t hash of selfLink
         return '%u' % ctypes.c_size_t(hash(self['selfLink'])).value
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -901,7 +908,8 @@ class DataSet(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -922,7 +930,8 @@ class AppEngineApp(Resource):
         # Apps do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -943,7 +952,8 @@ class AppEngineService(Resource):
         # Services do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -964,7 +974,8 @@ class AppEngineVersion(Resource):
         # Versions do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -985,7 +996,8 @@ class AppEngineInstance(Resource):
         # Instances do not have globally unique IDs, use size_t hash of name
         return '%u' % ctypes.c_size_t(hash(self['name'])).value
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1005,7 +1017,8 @@ class ComputeProject(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1025,7 +1038,8 @@ class Instance(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1045,7 +1059,8 @@ class Firewall(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1065,7 +1080,8 @@ class Image(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1085,7 +1101,8 @@ class InstanceGroup(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1105,7 +1122,8 @@ class InstanceGroupManager(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1125,7 +1143,8 @@ class InstanceTemplate(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1145,7 +1164,8 @@ class Network(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1165,7 +1185,8 @@ class Subnetwork(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1185,7 +1206,8 @@ class BackendService(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1205,7 +1227,8 @@ class ForwardingRule(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1225,7 +1248,8 @@ class CuratedRole(Resource):
         """
         return self['name']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1253,7 +1277,8 @@ class Role(Resource):
         """
         return self['name']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1273,7 +1298,8 @@ class CloudSqlInstance(Resource):
         """
         return self['name']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1305,7 +1331,8 @@ class ServiceAccount(Resource):
         """
         return self['uniqueId']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1327,7 +1354,8 @@ class ServiceAccountKey(Resource):
         """
         return self['name'].split('/')[-1]
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1347,7 +1375,8 @@ class GsuiteUser(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1367,7 +1396,8 @@ class GsuiteGroup(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1387,7 +1417,8 @@ class GsuiteUserMember(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
@@ -1407,7 +1438,8 @@ class GsuiteGroupMember(Resource):
         """
         return self['id']
 
-    def type(self):
+    @staticmethod
+    def type():
         """Get type of this resource
 
         Returns:
