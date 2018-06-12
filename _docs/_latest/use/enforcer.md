@@ -105,8 +105,8 @@ To run Forseti Enforcer with a local policy file, run the following command on
 the server instance:
 
   ```bash
-  $ forseti_enforcer --enforce_project PROJECT_ID \
-      --policy_file path/to/policy.json
+  forseti_enforcer --enforce_project PROJECT_ID \
+    --policy_file path/to/policy.json
   ```
 
 #### Use a Cloud Storage policy file
@@ -116,6 +116,6 @@ such as `gs://my-project-id/firewall-policies/default.json`, run the following
 command on the server instance:
 
   ```bash
-  $ forseti_enforcer --enforce_project PROJECT_ID \
-      --policy_file gs://my-project-id/firewall-policies/default.json
+  forseti_enforcer --enforce_project PROJECT_ID \
+    --policy_file gs://my-project-id/firewall-policies/default.json
   ```

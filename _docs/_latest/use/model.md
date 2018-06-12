@@ -19,7 +19,7 @@ To learn more about the Forseti model, see [Models]({% link _docs/latest/concept
 To create a data model from a specific inventory, run the following command:
 
 ```bash
-$ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
+forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
 When you create the data model, you might get a `PARTIAL_SUCCESS` status because you might
@@ -34,7 +34,7 @@ To display all the errors and warnings of the data model, use the `get` command.
 To set the data model for your current session, run the following command:
 
 ```bash
-$ forseti model use <MODEL_NAME>
+forseti model use <MODEL_NAME>
 ```
 
 ### Listing all the existing data models
@@ -42,7 +42,7 @@ $ forseti model use <MODEL_NAME>
 To list all existing data models and their statuses, run the following command:
 
 ```bash
-$ forseti model list
+forseti model list
 ```
 
 ### Getting a data model
@@ -50,7 +50,7 @@ $ forseti model list
 To get the summary of an inventory with a specific model name, run the following command:
 
 ```bash
-$ forseti model get <MODEL_NAME>
+forseti model get <MODEL_NAME>
 ```
 
 ### Deleting a data model
@@ -58,7 +58,7 @@ $ forseti model get <MODEL_NAME>
 To delete a specific data model, run the following command:
 
 ```bash
-$ forseti model delete <MODEL_NAME>
+forseti model delete <MODEL_NAME>
 ```
 
 ## What's next
