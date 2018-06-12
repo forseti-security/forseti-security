@@ -103,7 +103,6 @@ an organization reputation on the platform.  Enterprises will need to define a
 workflow to monitor their quota usage and to apply for more quota when they
 determine that they are nearing their allocation.
 
-
 **Remove Default IAM Organization Policies**
 
 By default, a GCP organization is created allowing all users to create and
@@ -138,7 +137,6 @@ Google allows for the provisioning of users automatically via
 Enterprises should integrate the provisioning and management of users with
 their enterprises single source of truth for users (e.g. AD) to ensure when
 employees join and leave the company the state in Google is consistent.
-
 
 **Super Admin Access**
 
@@ -226,14 +224,12 @@ critical for business operations.  A typical practice is to provision a new VPC
 with subnetworks for the regions that an enterprise approves, removing the
 default VPC that provides subnetworks for all GCP regions.
 
-
 **Security Scanning**
 
 [Scan for common website
 vulnerabilities](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#scan_for_common_website_vulnerabilities)
 where applicable. These must be supplemented with manual security reviews.
 Third-party penetration and security testing should be considered.
-
 
 **DDoS Mitigation**
 
@@ -292,7 +288,6 @@ GCS](https://cloud.google.com/storage/docs/lifecycle), a dataset table
 time](https://cloud.google.com/bigquery/docs/managing-datasets#table-expiration)
 for BigQuery, or as a custom solution.
 
-
 **Logging Strategy**
 
 Stackdriver is the default logging tool in GCP. Enterprise customers usually
@@ -323,7 +318,6 @@ captured in the Cloud Audit
 Logs](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#monitor_administrative_actions).
 Requirements should be determined on retaining or alerting on these actions.
 
-
 **Data Access Logs**
 
 For finer grained access logs, [Data Access logs can be
@@ -348,14 +342,12 @@ can be configured for a project or a billing account for monthly spending
 thresholds. There is a limitation that these alerts will only go to the Billing
 Admin.
 
-
 **Labels**
 
 For finer grained cost attribution across resources within or across projects
 project
 [labels](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_project_labels_to_further_categorize_projects_in_billing_export)
 can be used to further categorize projects in the billing export.
-
 
 **Billing Admins**
 
