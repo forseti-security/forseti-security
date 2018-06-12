@@ -14,7 +14,7 @@ Forseti Server is tool to retrieve and update the server settings.
 ### Getting the current server configuration
 
 ```bash
-$ forseti server configuration get 
+forseti server configuration get 
 ```
 
 The command above will output the configuration that is current used by Forseti server.
@@ -22,7 +22,7 @@ The command above will output the configuration that is current used by Forseti 
 ### Reloading the current server configuration
 
 ```bash
-$ forseti server configuration reload <PATH_TO_CONFIG_FILE> 
+forseti server configuration reload <PATH_TO_CONFIG_FILE> 
 ```
 
 The command above will have the server reload its configuration.
@@ -35,7 +35,7 @@ The command above will have the server reload its configuration.
 ### Getting the current log level of the server
 
 ```bash
-$ forseti server log_level get
+forseti server log_level get
 ```
 
 The command above output the current log level of the server.
@@ -43,7 +43,7 @@ The command above output the current log level of the server.
 ### Setting the server log level
 
 ```bash
-$ forseti server log_level set <LOG_LEVEL>
+forseti server log_level set <LOG_LEVEL>
 ```
 
 The command above will set the log level of the server.
