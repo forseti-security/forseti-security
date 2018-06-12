@@ -4,11 +4,13 @@ order: 6
 ---
 {::options auto_ids="false" /}
 
-Although Forseti is designed to install and run out-of-the box with complete
-org access, you can install Forseti if you aren't an org admin. You'll then
-manually give Forseti the permissions to inventory and audit a subset of
-resources by one specific folder or by projects that are directly under
-the org.
+Forseti is designed to install and run out-of-the box with complete
+org access, but you can install Forseti if you aren't an org admin. You'll
+then manually give Forseti the permissions to inventory and audit a subset
+of resources by one specific folder or by projects that are directly under
+the org. When you run Forseti without org access, Forseti Explain and
+Forseti IAM scanner will not contain the full results. This is because
+of Cloud IAM policy inheritance and limited access of the service account.
 
 If you aren't an org admin and an org admin isn't available to grant org
 access to Forseti, follow the process below:
@@ -21,11 +23,8 @@ to the target folder: `folders/<foo_folder_id>`.
    1. [Grant the folder editor role](https://cloud.google.com/iam/docs/granting-changing-revoking-access) to the Forseti server service account, on the target folder.
 
 1. To inventory all the projects directly under the org, directly grant the project
-viewer role to Forseti server service account, on the specific projects that
+viewer role to the Forseti server service account, on the specific projects that
 you want Forseti to inventory.
 
 When you run Forseti inventory again, all the projects and project resources
 will be collected in Inventory.
-
-**Important note**: By running Forseti without Organization Access, Forseti Explain and Forseti IAM scanner will 
-not contain the full results due to IAM policy inheritance and limited access of the service account.
