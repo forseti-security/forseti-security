@@ -1,22 +1,23 @@
-**Granted at the Organization level**
-
- * `roles/browser`
- * `roles/compute.networkViewer`
- * `roles/iam.securityReviewer`
- * `roles/appengine.appViewer`
- * `roles/bigquery.dataViewer`
- * `roles/servicemanagement.quotaViewer`
- * `roles/serviceusage.serviceUsageConsumer`
- * `roles/cloudsql.viewer`
- * `roles/compute.securityAdmin`
-
-**Granted at the Project level**
-
- * `roles/storage.objectViewer`
- * `roles/storage.objectCreator`
- * `roles/cloudsql.client`
- * `roles/logging.logWriter`
  
- **Granted on the Service Account level**
+***Granted at the Organization level**
+  
+ * `roles/appengine.appViewer` (server)
+ * `roles/bigquery.dataViewer` (server)
+ * `roles/browser` (server)
+ * `roles/cloudsql.viewer` (server)
+ * `roles/compute.networkViewer` (server)
+ * `roles/compute.securityAdmin` (server)
+ * `roles/iam.securityReviewer` (server)
+ * `roles/servicemanagement.quotaViewer` (server)
+ * `roles/serviceusage.serviceUsageConsumer` (server)
  
- * `roles/iam.serviceAccountTokenCreator`
+***Granted at the project level**
+ 
+ * `roles/cloudsql.client` (server)
+ * `roles/logging.logWriter` (server, client)
+ * `roles/storage.objectViewer` (server, client)
+ * `roles/storage.objectCreator` (server)
+
+***Granted at the service account level**
+ 
+ * `roles/iam.serviceAccountTokenCreator` (server)
