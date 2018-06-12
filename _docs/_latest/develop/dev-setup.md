@@ -6,109 +6,65 @@ order: 103
 
 This page explains how to set up Forseti for local development.
 
+---
+
 ## Before you begin
 
 To complete this guide, you will need:
 
-- A GCP organization.
-- A GCP project (in above organization) for Forseti Security with billing enabled.
-- The ability to assign roles on your organization's Cloud IAM policy.
+* A Github account.
+* A Google Cloud Platform (GCP) organization.
+* A GCP project for Forseti with billing enabled.
+* The ability to assign roles on your organization's Cloud IAM policy.
+* The ability to assign G Suite domain-wide delegation to the Forseti service account.
 
-## Setting GCP infrastructure
+## Setting up GCP infrastructure
 
 {% include docs/latest/deployment_prerequisites.md %}
 
 ### Setting up Cloud SQL
 
-Forseti stores data in Cloud SQL. You can connect to the Cloud SQL instance by
-using the Cloud SQL proxy to authenticate to GCP with your Google credentials, 
-instead of opening up network access to your Cloud SQL instance.
-To set up your Cloud SQL instance for Forseti, follow the steps below:
+{% include docs/latest/setup_cloudsql.md %}
 
-1.  Go to the [Cloud Console SQL page](https://console.cloud.google.com/sql) and
-    follow the steps below to create a new instance:
-    1.  Select a **MySQL** database engine.
-    1.  Select a **Second Generation** instance type.
-    1.  On the **Create a MySQL Second Generation instance** page, enter an
-        **Instance ID** and **Root password**, then select the following
-        settings:
-        1.  **Database version:** MySQL 5.7
-        1.  **Machine type:** db-n1-standard-1 machine type
-        1.  **Storage capacity:** 25 GB
-    1.  Add or modify other database details as you wish.
-    1.  When you're finished setting up the database, click **Create**.
-1.  [Create a new user](https://cloud.google.com/sql/docs/mysql/create-manage-users#creating),
-    e.g. `forseti_user`,
-    with [read/write privileges](https://cloud.google.com/sql/docs/mysql/users?hl=en_US#privileges)
-    for Forseti to access the database. Don't set a password for the new user.
-    This will allow Cloud SQL Proxy to handle authentication to your instance.
-1.  [Create a new database](https://cloud.google.com/sql/docs/mysql/create-manage-databases#creating_a_database),
-    e.g. `forseti_security`.
-1.  Use the [SQL Proxy](https://cloud.google.com/sql/docs/mysql-connect-proxy#connecting_mysql_client)
-    to proxy your connection to your Cloud SQL instance. Your
-    INSTANCE_CONNECTION_NAME is the **Instance Connection Name** under
-    **Properties** on the Cloud SQL dashboard instance details, with the format "PROJECTID:REGION:INSTANCEID".
-    
-      ```bash
-      $ <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
-      ```
-      
-1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as 
-   the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance). 
-   You will need these for your forseti_conf.yaml later.
-
-## Setting up local environment
+## Setting up a local environment
 
 ### Ubuntu setup
 
-Install the necessary python dev tools using the following command:
-
-```bash
-$ sudo apt-get install python-pip python-dev
-```
+Install the necessary python dev tools and packages from [apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/dependencies/apt_packages.txt).
 
 ### Mac setup
 
-This guide makes a very light assumption that you have [Homebrew](https://brew.sh).
+This guide is written for use with [Homebrew](https://brew.sh).
 
-Use the following command to install python (which will also install the necessary python dev tools):
+Use the following commands to install the necessary dependencies:
 
-```bash
-$ brew install python
-```
-
-Also install openssl:
-
-```bash
-$ brew install openssl
-```
-
-### Installing mysql_config
-
-The MySql-python library requires the `mysql_config` utility to be present in your system.
-Following are example commands to install `mysql_config`:
+Install python-dev:
 
   ```bash
-  # Ubuntu
-  # Note: If libmysqlclient-dev doesn't install `mysql_config`, then try also installing `mysql_server`.
-  # If you encounter the following error, use command `sudo apt-get install default-libmysqlclient-dev` instead.
-  # E: Package 'libmysqlclient-dev' has no installation candidate
-  $ sudo apt-get install libmysqlclient-dev
-
-  # OSX, using homebrew
-  $ brew install mysql
+  $ brew install python
   ```
-  
-### Installing ssl dev
 
-The crypto libraries require `libssl-dev` and `libffi-dev`.
+Install openssl:
 
   ```bash
-  # Ubuntu
-  $ sudo apt-get install libssl-dev libffi-dev
+  $ brew install openssl
+  ```
+
+Install mysql_config:
+
+  ```bash
+  $ brew install mysql
   ```
 
 ### Creating a virtualenv
+
+Ensure virtualenv is installed in your system. Virtualenv allows you to
+create multiple environments to contain different modules and dependencies
+in different projects.
+
+  ```bash
+  $ sudo pip install virtualenv
+  ```
 
 Use the following command to create a virtualenv:
 
@@ -120,27 +76,14 @@ Use the following command to create a virtualenv:
 
 ### Getting the source code
 
-Use the command below to get the Forseti code if you haven't already:
-
-  ```bash
-  $ git clone https://github.com/GoogleCloudPlatform/forseti-security.git
-  ```
+Follow our [contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md) to create a fork of the Forseti code, and learn how to submit a PR.
 
 ### Installing build dependencies
 
 Use the following command to install required build dependencies:
 
   ```bash
-  $ pip install --upgrade \
-    coverage \
-    codecov \
-    google-apputils \
-    grpcio==1.4.0 \
-    grpcio-tools==1.4.0 \
-    mock \
-    netaddr \
-    parameterized \
-    pylint
+  $ pip install -q --upgrade forseti-security/requirements.txt
   ```
 
 ### Running the python setup
@@ -154,11 +97,13 @@ Use the following commands to navigate to your cloned repo and run the python se
 
 ### Troubleshooting
 
-If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and see 
+If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and get 
 a fatal error related to `'openssl/opensslv.h' file not found`, you may need to 
-export `CPPFLAGS` and `LDFLAGS` for the openssl package
-(see [this issue](https://github.com/pyca/cryptography/issues/3489) for more information).
-You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows:
+export `CPPFLAGS` and `LDFLAGS` for the openssl package. For more information,
+see [issue 3489](https://github.com/pyca/cryptography/issues/3489).
+
+To find the `CPPFLAGS` and `LDFLAGS` information and export them, run the
+following command:
 
   ```bash
   $ brew info openssl
@@ -173,32 +118,43 @@ You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows
     CPPFLAGS: -I/SOME/PATH/TO/openssl/include
   ```
 
-Then copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
-following (use the values from your terminal, not "`/SOME/PATH/TO`"):
+Next, copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
+following:
 
   ```bash
   $ export CPPFLAGS=-I/SOME/PATH/TO/openssl/include
   $ export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
+In the above example, `/SOME/PATH/TO` represents the path specific to your
+system. Make sure to use the values from your terminal.
 
 ### Configuring Forseti settings
 
-Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
-`forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/latest/configure/forseti/index.md %}) 
+Before you run Forseti, you need to edit the forseti configuration file. 
+Refer to [Configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}) 
 for more information.
 
-### Executing Forseti commands
+### Starting Forseti
 
-After you complete the above steps, you should be able to run the following
-command-line tools:
+After you complete the above steps, you should be able to run the Forseti
+server and the command-line interface (CLI) client.
 
--   `forseti_inventory`
--   `forseti_scanner`
--   `forseti_enforcer`
--   `forseti_notifier`
--   `forseti_api`
--   `forseti_iam`
+  ```bash
+  $ forseti_server \
+    --endpoint "localhost:50051" \
+    --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
+    --services scanner model inventory explain notifier \
+    --config_file_path "PATH_TO_YOUR_CONFIG.yaml" \
+    --log_level=info \
+    --enable_console_log
+  ```
 
-To display the flag options for each tool, use the `--helpshort` or `--helpfull`
-flags.
+In another terminal window:
+
+  ```bash
+  $ forseti -h or --help
+  ```
+
+## What's next
+
+* To learn about more CLI commands, see [Use]({% link _docs/latest/use/index.md %}).
