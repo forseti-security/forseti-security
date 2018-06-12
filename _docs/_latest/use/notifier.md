@@ -18,11 +18,11 @@ latest violations from the previous scanner run.
 ### CLI Usage
 
   ```bash
-  $ forseti notifier --help
+  forseti notifier --help
   
-  $ forseti notifier run
+  forseti notifier run
 
   # Send the violations by inventory index id.
-  $ forseti notifier run --inventory_index_id <inventory index id>
+  forseti notifier run --inventory_index_id <inventory index id>
   ```
   
