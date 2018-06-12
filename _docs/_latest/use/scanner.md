@@ -7,13 +7,15 @@ order: 004
 
 Forseti Scanner scans the inventory data according to the rules (policies) you defined.
 
-You can learn about how to [define custom rules]({% link _docs/latest/configure/scanner/rules.md %}).
+For more information, see [defining custom rules]({% link _docs/latest/configure/scanner/rules.md %}).
+
+---
 
 ## Running Forseti Scanner
 
 Forseti Scanner works on a data model, so before you start using Scanner, you'll select a model to use. 
 
-Instructions on how to [create a model]({% link _docs/latest/use/model.md %}).
+If you haven't created a model yet, see [create a model]({% link _docs/latest/use/model.md %}).
 
 To configure which scanners to run, see 
 [Configuring Forseti: Configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
@@ -32,9 +34,6 @@ $ forseti scanner run
 ```
 
 When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.
-
-Scanner can save violations as a CSV and send an email notification or upload it
-automatically to a Cloud Storage bucket.
 
 ## Sample scanner violation
 
@@ -61,6 +60,9 @@ automatically to a Cloud Storage bucket.
 |---|---|---|---|---|---|---|
 | my-project-1 | cloudsql | organization/1234567890/project/my-project-1/cloudsqlinstance/readme1/  | 0  |  publicly exposed instances | CLOUD_SQL_VIOLATION | {u'instance_name': u'readme1', u'require_ssl': False, u'project_id': u'readme1', u'authorized_networks': [u'0.0.0.0/0'], u'full_name': u'organization/1234567890/project/my-project-1/cloudsqlinstance/readme1/'} |
 
-To receive notifications for violations, run the 
+To receive notifications for violations, run 
 [Forseti Notifier]({% link _docs/latest/use/notifier.md %}).
 
+## What's next
+
+* Learn how to [use Notifier]({% link _docs/latest/use/notifier.md %}) to send notifications on the violations found by Scanner.
