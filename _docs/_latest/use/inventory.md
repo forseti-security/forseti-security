@@ -25,7 +25,7 @@ To display Inventory flag options, run `forseti inventory -h`.
 To start a new inventory process, run the following command:
 
 ```bash
-$ forseti inventory create
+forseti inventory create
 ```
 
 You can track the status by using the `list` command.
@@ -36,7 +36,7 @@ Because the data model is widely used in Forseti, it can be helpful to create
 the data model along with the newest Inventory.
 
 ```bash
-$ forseti inventory create --import_as <MODEL_NAME>
+forseti inventory create --import_as <MODEL_NAME>
 ```
 
 ### List all the existing inventories
@@ -44,7 +44,7 @@ $ forseti inventory create --import_as <MODEL_NAME>
 To list all of the existing inventories and their statuses, run the following command:
 
 ```bash
-$ forseti inventory list
+forseti inventory list
 ```
 
 ### Get an inventory
@@ -52,7 +52,7 @@ $ forseti inventory list
 To display a summary of an inventory, run the following command:
 
 ```bash
-$ forseti inventory get <INVENTORY_INDEX_ID>
+forseti inventory get <INVENTORY_INDEX_ID>
 ```
 
 To get the `<INVENTORY_INDEX_ID>`, run the `list` command.
@@ -62,7 +62,7 @@ To get the `<INVENTORY_INDEX_ID>`, run the `list` command.
 To delete an inventory, run the following command:
 
 ```bash
-$ forseti inventory delete <INVENTORY_INDEX_ID>
+forseti inventory delete <INVENTORY_INDEX_ID>
 ```
 
 ### Purge inventories
@@ -70,7 +70,7 @@ $ forseti inventory delete <INVENTORY_INDEX_ID>
 To delete all inventories that are older than a specific date, run the following command:
 
 ```bash
-$ forseti inventory purge <RETENTION_DAY>
+forseti inventory purge <RETENTION_DAY>
 ```
 
 Note that `<RETENTION_DAY>` is the number of days to retain the data. If you don't specify
