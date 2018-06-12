@@ -67,9 +67,10 @@ To install the Forseti Server, follow the steps below:
 1. `git clone` from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and check out the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
     ```bash
     git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+ 
     git checkout tags/<tag_number>
     ``` 
-1. Follow the setup instructions in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/9a505061637913aa19c5b47bbf5ba507ce3bcebf/deployment-templates/compute-engine/server/forseti-instance-server.py#L109) 
+1. Follow the setup instructions in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L109) 
 to install Forseti server and all the necessary components like Fluentd and Cloud SQL Proxy.
 1. Create firewall rules
     ```bash
@@ -145,6 +146,7 @@ To install the Forseti client, follow the steps below:
 1. `git clone` from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security), and check out the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases) by their tags.
     ```bash
     git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+ 
     git checkout tags/<tag_number>
     ```   
 1. Follow the setup instructions in the [startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py#L93) to install Forseti CLI.
