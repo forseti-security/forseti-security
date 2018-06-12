@@ -14,7 +14,7 @@ If you aren't an org admin and an org admin isn't available to grant org
 access to Forseti, follow the process below:
 
    1. Run the Forseti [installer]({% link _docs/latest/setup/install.md %}). The installer will try to assign org-level. You can ignore the org-level role assignment.
-   1. The installer will create all the necessary Forseti resources: Forseti project, VM instances, CloudSQL db, and most importantly the +project, VM instances, Cloud SQL database, and service accounts.
+   1. The installer will create all the necessary Forseti resources: Forseti project, VM instances, CloudSQL database, Google Cloud Storage buckets and service accounts.
    1. Edit `forseti_conf_server.yaml` and point the `root_resource_id`
 to the target folder: `folders/<foo_folder_id>`.
    1. Force the server to [reload the updated configuration]({% link _docs/latest/use/server.md %}).
