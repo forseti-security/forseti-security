@@ -65,25 +65,25 @@ reorg. Consider moving this information to project
 
 **Group Naming Convention**
 
-Groups are used to manage user membership in IAM policies. A consistent naming
-convention is recommended for enterprises. E.g. gcp-[system name]-[role type] =>
+Groups are used to manage user membership in Cloud IAM policies. It's best to
+use a consistent naming convention, like gcp-[system name]-[role type] =>
 gcp-costanalytics-prodsupport, gcp-costanalytics-analysts
 
 **Assign Roles to Groups**
 
 [Assign project roles to groups of
 users](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#assign_project_roles_to_groups_of_users).
-Rather than assign individual user accounts roles in IAM, setup a Group. User
-can then request to join a group (via their an automated and audited process)
-to gain access to the GCP projects.
+Instead of assigning individual user accounts roles in Cloud IAM, set up a
+Group. User can then request to join a group (via their an automated and
+audited process) to gain access to the GCP projects.
 
 **Deeply Nested Sub Groups**
 
-Nested groups can [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
-group memberships however they can be hard to reason about when determining
-access. IAM Explain might help with this in the future. Deeply nested groups can
-also delay the propagation of projects to users; as a best practice, one level
-works best.
+Nested groups would allow to not repeat redundantly the same configuration
+reducing thus possiblity of inconsistency.  group memberships however they can
+be hard to reason about when determining access. Multiple levels of nested
+groups can delay propagation of projects to users. It's best to limit nesting
+to one level.
 
 **Organization Policy - Restricted Sharing Org Policy**
 
@@ -92,22 +92,21 @@ being shared with identities outside their organization.
 
 **Resource Management Hierarchy (GCP Project Structure)**
 
-Usage of the organization node, folders and projects should only have enough
-complexity to solve specific requirements. A typical best practice is for a
-customer to create a project per “system or application”, per “environment”
-(DEV, TEST, PROD). Folders are only introduced if distinct business users
-require autonomy (to create projects and manage Organization Policies) in their
-own “space” in GCP or to have distinct groupings of DEV, TEST, PROD with
-different policies applied at the folder level for each environment.
+It's best to limit the complexity of the organization, folder, and project
+hierarchy to solve specific requirements. For example, create one project per
+system or application per environment (DEV, TEST, PROD). Use folders only if
+distinct business users need autonomy to create projects and manage
+organization policies in a separate GCP structure, or to have distinct
+groupings of DEV, TEST, PROD with different folder-level policies for each
+environment.
 
 **Quota Management Process**
 
 GCP provides default [quotas](https://cloud.google.com/compute/quotas) based on
-an organization reputation on the platform.  Enterprises will need to define a
-workflow to monitor their quota usage and to apply for more quota when they
-determine that they are nearing their allocation.
+a variety of factors. Your organization will need to monitor your quota usage
+and apply for more quota when you're nearing your allocation limit.
 
-**Remove Default IAM Organization Policies**
+**Remove Default Cloud IAM Organization Policies**
 
 By default, a GCP organization is created allowing all users to create and
 manage projects. For most large organizations, this should be removed.
@@ -127,27 +126,31 @@ You can place a
 project to block the project's deletion until you remove the lien. This can be
 useful to protect projects of particular importance. 
 
-**Ensure IAM Project Owners are Email Routable**
+**Ensure Cloud IAM Project Owners are Email Routable**
 
-Google uses the members of the IAM role Project Owner to determine who should
-receive GCP Outreach and Mass Service Announcement emails. If the member of this
-role is not email routable, a customer may miss important notifications. This is
-common for customers who use Cloud Identity and create Google Groups that do not
-match mail routable groups in their mail system.
+Google uses the members of the Cloud IAM role Project Owner to determine who
+should receive GCP Outreach and Mass Service Announcement emails. If the member
+of this role is not email routable, a customer could miss important
+notifications. This is common for customers who use Cloud Identity and create
+Google Groups that do not match mail routable groups in their mail system.
+This is a risk if you use Cloud Identity and create Google Groups that don't
+match mail-routable groups in your mail system. To prevent this ensure that the
+groups and the groups' members are mail-routable. 
 
 **User and Group Provisioning Method**
 
-Google allows for the provisioning of users automatically via
-[API](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#provision_users_to_googles_directory).
-Enterprises should integrate the provisioning and management of users with
-their enterprises single source of truth for users (e.g. AD) to ensure when
-employees join and leave the company the state in Google is consistent.
+You can provision users automatically using [Google Admin SDK's Directory
+API](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#provision_users_to_googles_directory).
+To ensure that when employees join and leave the company, the state in Google is
+consistent and stable, integrate the provisioning and management of users with
+your organization's single source of truth for users (for example Active
+Directory).
 
 **Super Admin Access**
 
-The Super Admin role in G Suite has full administrative control in GCP, this
-role should be reviewed to ensure the appropriate personnel have access.  Check
-[how to define domain administration
+Because the G Suite Super Admin role has full administrative control in GCP,
+it's best to review the role to ensure the appropriate people have access. For
+more information, see [how to define domain administration
 roles](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#define_domain_administration_roles).
 
 **Organization Policy - VPC Service Controls**
@@ -160,17 +163,14 @@ to and between those services.
 
 **Third Party Access to GCP**
 
-Third parties (vendors, contractors) often require access to an enterprises
-GCP, the recommended approach is to create a user account in the companies
-Admin Console and assign the user account an appropriate license ([G Suite or
-Cloud
-Identity](https://support.google.com/cloudidentity/answer/7384684?hl=en)).
-This solution gives the company full control over the user account, they can
-then suspend or delete the identity when the third party leaves - removing
-their access from GCP resources. The company can also use their identity
-provider to enforce user authentication. To allow for separate configuration
-options, they could also consider placing these users in a [separate
-organization unit](https://support.google.com/a/answer/182537?hl=en).
+Third parties like vendors or contractors often need access to your GCP. It's
+best to create a [G Suite or Cloud Identity user account](https://support.google.com/cloudidentity/answer/7384684?hl=en) in your organization's
+Admin Console. This gives you full control over the user account so you can
+suspend or delete the identity to remove GCP access when the third party leaves.
+
+You can also use your own identity provider to enforce user authentication. To
+allow separate configuration options, consider placing third party users in a
+[separate organization unit](https://support.google.com/a/answer/182537?hl=en).
 
 ## Service accounts
 
@@ -221,31 +221,24 @@ and getting access to the instance.
 
 **Regions and Zones**
 
-It is recommended that the customer [put certain resources in regions and zones
-for lower latency and disaster
-recovery](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#put_certain_resources_in_regions_and_zones_for_lower_latency_and_disaster_recovery),
-however care must be taken when considering egress charges and whether this is
-critical for business operations.  A typical practice is to provision a new VPC
-with subnetworks for the regions that an enterprise approves, removing the
-default VPC that provides subnetworks for all GCP regions.
-
-**Security Scanning**
-
-[Scan for common website
-vulnerabilities](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#scan_for_common_website_vulnerabilities)
-where applicable. These must be supplemented with manual security reviews.
-Third-party penetration and security testing should be considered.
+For lower latency and disaster recovery, it's best to [put certain resources in
+regions and
+zones](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#put_certain_resources_in_regions_and_zones_for_lower_latency_and_disaster_recovery).
+Make sure you consider egress charges and whether it's critical for business
+operations. It's common to provision a new VPC with subnetworks for the regions
+you approve, and remove the default VPC that provides networks for all GCP
+regions.
 
 **DDoS Mitigation**
 
-The attack surface should be reviewed and minimised by reducing the number of
-externally facing resources. Consider the use of third-party DDoS protection
-services. 
+To minimize your attack surface, review and reduce the number of externally
+facing resource. You should also consider using third-party DDoS protection
+services.
 
 **Consistent Naming Convention for Resources**
 
-Determine a consistent naming convention for typical resources: VPNs, Firewall
-Rules, Subnets, Routes, VMs, etc.
+Use a consistent naming convention for typical resources like VPNs, firewalls,
+rules, routes, subnetworks, and VMs.
 
 ## BigQuery
 
@@ -279,36 +272,34 @@ between client and server over insecure networks.
 
 **Stackdriver Account per Environment**
 
-Best practice is to have a Stackdriver account per environment (DEV, TEST, &
-PROD). Projects can be added to these Stackdriver accounts as a Monitored
-project. It is recommended to initialize the Stackdriver account in a separate
-project - to allow for independent management of the IAM policies.
+It's best to have a separate Stackdriver account for each DEV, TEST, and PROD
+environment. You can add projects to these Stackdriver accounts as monitored
+projects. To allow independent management of Cloud IAM policies, initialize the
+Stackdriver account in a separate project.
 
 **Logging Retention**
 
-Determine the enterprise requirements for retaining logging data. This will
-need to be implemented as an object [lifecycle policy for
-GCS](https://cloud.google.com/storage/docs/lifecycle), a dataset table
-[expiration
-time](https://cloud.google.com/bigquery/docs/managing-datasets#table-expiration)
-for BigQuery, or as a custom solution.
+Determine the enterprise requirements for retaining logging data. Implement a
+policy for log data retention using [object lifecycle
+management](https://cloud.google.com/storage/docs/lifecycle), BiqQuery dataset
+[table
+expiration](https://cloud.google.com/bigquery/docs/managing-datasets#table-expiration),
+or as a custom solution.
 
 **Logging Strategy**
 
-Stackdriver is the default logging tool in GCP. Enterprise customers usually
-have a preferred logging tool. It should be determined how Stackdriver will be
-used in conjunction with or in place of other logging tools. Best practice is
-to use Stackdriver Logging as a [centralized location for logs in
+Stackdriver is the default GCP logging tool. You might have a preferred logging
+tool already, so you'll need to decide how Stackdriver will be used with, or in
+place of, other logging tools. It's best to use Stackdriver Logging as a
+[centralized location for logs in
 GCP](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_cloud_logging_as_a_centralized_location_for_logs).
 
 **Monitoring Strategy**
 
-Stackdriver is the default monitoring tool in GCP. Enterprise customers usually
-have a preferred monitoring tool. It should be determined how Stackdriver will
-be used in conjunction with
-[partners](https://cloud.google.com/stackdriver/partners) or in place of other
-monitoring tools. Best practice is to [use Stackdriver Monitoring to monitor
-your resources and provide
+Stackdriver is the default GCP monitoring tool. You might have a preferred
+monitoring tool already, so you'll need to decide how Stackdriver will be used
+with, or in place of, other monitoring tools. It's best to use Stackdriver
+Monitoring to [monitor your resources and provide
 alerts](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_stackdriver_monitoring_to_monitor_your_resources_and_provide_alerts).
 
 **Logging Exports**
@@ -318,47 +309,46 @@ storage](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-
 
 **Cloud Audit Logs**
 
-[Admin actions, such as creating, updating, and deleting a resource are
-captured in the Cloud Audit
-Logs](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#monitor_administrative_actions).
+Admin actions like creating, updating, and deleting a resource are captured in
+the [Admin audit
+log](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#monitor_administrative_actions).
 Requirements should be determined on retaining or alerting on these actions.
 
 **Data Access Logs**
 
-For finer grained access logs, [Data Access logs can be
-enabled](https://cloud.google.com/logging/docs/audit/configure-data-access) to
-capture read operations being performed by users in the project.
+For more detailed access logs, you can enable [Data Access audit
+logs](https://cloud.google.com/logging/docs/audit/configure-data-access) that
+capture read operations performed by users in a project.
 
 **Aggregated Logging Exports**
 
-An organization can create an [aggregated
-export](https://cloud.google.com/logging/docs/export/aggregated_exports) sink
-that can export log entries from all the projects, folders, and billing
-accounts of the organization. As an example, an organization might use this
-feature to export audit log entries from its projects to a central location.
+You can create an [aggregated
+export](https://cloud.google.com/logging/docs/export/aggregated_exports) that
+exports log entries from all of the projects, folders, and billing accounts in
+an organization. For example, you could use this feature to export audit log
+entries from your organization's projects to a central location.
 
 ## Cost Control
 
 **Billing Alerts**
 
-[Billing
+You can configure [billing
 alerts](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#set_alerts_for_monthly_spending_thresholds)
-can be configured for a project or a billing account for monthly spending
-thresholds. There is a limitation that these alerts will only go to the Billing
-Admin.
+to set a monthly spending limit for a project or billing account. These alerts
+are sent only to users with the Billing Admin role.
 
 **Labels**
 
-For finer grained cost attribution across resources within or across projects
-project
+For more detailed cost attribution across resources or within or across
+projects, you can use project
 [labels](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_project_labels_to_further_categorize_projects_in_billing_export)
-can be used to further categorize projects in the billing export.
+to further categorize projects in a billing export.
 
 **Billing Admins**
 
-Organizations should review their current Billing Access Control following the
-principle of least privilege.
-Check [how to bill](https://cloud.google.com/billing/docs/how-to/billing-access).
+You should review their current Billing Access Control following the principle
+of least privilege.  To learn more, see the [billing access
+overview](https://cloud.google.com/billing/docs/how-to/billing-access).
 
 **Invoiced Billing Account**
 
