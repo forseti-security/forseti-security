@@ -24,13 +24,13 @@ To configure which scanners to run, see
 ### Selecting a data model
 
 ```bash
-$ forseti model use <YOUR_MODEL_NAME>
+forseti model use <YOUR_MODEL_NAME>
 ```
 
 ### Running the scanner
 
 ```bash
-$ forseti scanner run
+forseti scanner run
 ```
 
 When Scanner finds a rule violation, it outputs the data to a Cloud SQL database.

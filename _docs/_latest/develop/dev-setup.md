@@ -41,19 +41,19 @@ Use the following commands to install the necessary dependencies:
 Install python-dev:
 
   ```bash
-  $ brew install python
+  brew install python
   ```
 
 Install openssl:
 
   ```bash
-  $ brew install openssl
+  brew install openssl
   ```
 
 Install mysql_config:
 
   ```bash
-  $ brew install mysql
+  brew install mysql
   ```
 
 ### Creating a virtualenv
@@ -63,15 +63,16 @@ create multiple environments to contain different modules and dependencies
 in different projects.
 
   ```bash
-  $ sudo pip install virtualenv
+  sudo pip install virtualenv
   ```
 
 Use the following command to create a virtualenv:
 
   ```bash
   # create a virtualenv
-  $ mkvirtualenv forseti-security
-  $ workon forseti-security
+  mkvirtualenv forseti-security
+  
+  workon forseti-security
   ```
 
 ### Getting the source code
@@ -83,7 +84,7 @@ Follow our [contributing guidelines](https://github.com/GoogleCloudPlatform/fors
 Use the following command to install required build dependencies:
 
   ```bash
-  $ pip install -q --upgrade forseti-security/requirements.txt
+  pip install -q --upgrade forseti-security/requirements.txt
   ```
 
 ### Running the python setup
@@ -91,8 +92,9 @@ Use the following command to install required build dependencies:
 Use the following commands to navigate to your cloned repo and run the python setup:
 
   ```bash
-  $ cd forseti-security
-  $ python setup.py install
+  cd forseti-security
+  
+  python setup.py install
   ```
 
 ### Troubleshooting
@@ -106,7 +108,7 @@ To find the `CPPFLAGS` and `LDFLAGS` information and export them, run the
 following command:
 
   ```bash
-  $ brew info openssl
+  brew info openssl
   
     ... lots of information ...
     
@@ -122,8 +124,9 @@ Next, copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the
 following:
 
   ```bash
-  $ export CPPFLAGS=-I/SOME/PATH/TO/openssl/include
-  $ export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
+  export CPPFLAGS=-I/SOME/PATH/TO/openssl/include
+  
+  export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
 In the above example, `/SOME/PATH/TO` represents the path specific to your
 system. Make sure to use the values from your terminal.
@@ -140,19 +143,19 @@ After you complete the above steps, you should be able to run the Forseti
 server and the command-line interface (CLI) client.
 
   ```bash
-  $ forseti_server \
-    --endpoint "localhost:50051" \
-    --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
-    --services scanner model inventory explain notifier \
-    --config_file_path "PATH_TO_YOUR_CONFIG.yaml" \
-    --log_level=info \
-    --enable_console_log
+  forseti_server \
+  --endpoint "localhost:50051" \
+  --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
+  --services scanner model inventory explain notifier \
+  --config_file_path "PATH_TO_YOUR_CONFIG.yaml" \
+  --log_level=info \
+  --enable_console_log
   ```
 
 In another terminal window:
 
   ```bash
-  $ forseti -h or --help
+  forseti -h or --help
   ```
 
 ## What's next
