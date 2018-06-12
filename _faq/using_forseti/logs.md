@@ -4,10 +4,15 @@ order: 3
 ---
 {::options auto_ids="false" /}
 
-The installation log is stored in `/tmp/deployment.log` directory on the Forseti 
-Compute Engine instance.
+The installation log is stored in `/tmp/deployment.log` on the Forseti 
+Compute Engine instance.  You can view it with any editor.  For example:
 
-The Forseti Inventory, Scanner, and Enforcer logs can be found in the Cloud 
-Platform Console, under [Stackdriver](https://console.cloud.google.com/logs/). 
-Change the first dropdown filter to "GCE VM Instance", and the second dropdown 
-filter to "syslog".
+```bash
+vim /tmp/deployment.log
+```
+
+To find the Forseti Inventory, Scanner, and Enforcer logs:
+
+1. Go to the Google Cloud Platform Console [Logs](https://console.cloud.google.com/logs/) page.
+1. On the resources drop-down list, select **GCE VM Instance**.
+1. On the **All logs** drop-down list, select **forseti**.

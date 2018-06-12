@@ -57,8 +57,8 @@ You can grant the roles on the Cloud IAM policies with the following commands:
     To add Cloud IAM policy bindings to the Organization, run the following command:
 
     ```bash
-    $ gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
-       --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
+    gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
+     --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
 
   * Folder: the member has access to everything under a particular folder.
@@ -67,8 +67,8 @@ You can grant the roles on the Cloud IAM policies with the following commands:
     To add Cloud IAM policy bindings to the Folder, run the following command:
 
     ```bash
-    $ gcloud alpha resource-manager folders add-iam-policy-binding FOLDER_ID \
-       --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
+    gcloud alpha resource-manager folders add-iam-policy-binding FOLDER_ID \
+     --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
 
   * Project: the member has access only to a particular project.
@@ -77,8 +77,8 @@ You can grant the roles on the Cloud IAM policies with the following commands:
     To add Cloud IAM policy bindings to the Project, run the following command:
 
     ```bash
-    $ gcloud projects add-iam-policy-binding PROJECT_ID \
-       --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
+    gcloud projects add-iam-policy-binding PROJECT_ID \
+     --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
     
   * Service Account: grant additional roles to the service account.
@@ -110,7 +110,7 @@ Examples of `MEMBER_TYPE:MEMBER_NAME`:
 Enable each of the required APIs by running the following command:
 
   ```bash
-  $ gcloud beta service-management enable <API URI>
+  gcloud beta service-management enable <API URI>
   ```
   
   {% include docs/latest/required_apis.md %}
