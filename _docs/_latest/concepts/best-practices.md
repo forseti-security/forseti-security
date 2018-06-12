@@ -6,9 +6,10 @@ order: 002
 # {{ page.title }}
 
 This page includes best practices and rationale for using Forseti with specific
-resources in your Google Cloud Platform (GCP) environments. Future Forseti
-releases are expected to include scans that correspond to each best practice,
-so you can easily run them.
+resources in your Google Cloud Platform (GCP) environments. Forseti is expanding
+its ability to test these practices, and we would very much appreciate anyone to
+[contribute](https://github.com/GoogleCloudPlatform/forseti-security/blob/1.0-dev/.github/CONTRIBUTING.md)
+code to make this happen!
 
 ---
 
@@ -22,41 +23,44 @@ Least Privilege and limit user access to only the resources they need.
     
 **Don't grant an entire domain access to resources in a Cloud IAM policy.**
 
-Granting access to an entire domain is usually too broad. Use groups to manage access instead. 
+Granting access to an entire domain is usually too broad. Use groups to manage
+access instead. 
    
 **Protect your organization from external identities:**
 
 - Don't give organization-level permissions to anyone outside your organization.
-- Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
-     monitor all external identities in your organization.
+- Always use [custom
+  roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
+monitor all external identities in your organization.
  
-Scanning for external identities helps stop untrusted users from getting access to your resources.
+Scanning for external identities helps stop untrusted users from getting access
+to your resources.
 
 **Protect your resources from external identities:**
 
-* Add external users to Cloud IAM policies as individual users.
-* Don't add outside users to groups.
+* Add external users to Cloud IAM policies as individual users.  Don't add
+* outside users to groups.
 
-When you add external users directly to a Cloud IAM policy, it's easier to audit their activities
-and do lifecycle management.
+Using [Cloud IAM
+policies](https://cloud.google.com/iam/docs/resource-hierarchy-access-control),
+you can audit external user activities and do lifecycle management.
 
 **User Account Strategy**
 
-Ensure all employees are using a [Google Account from the enterprises Cloud
-Identity](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_corporate_login_credentials).
+Ensure all employees are using a [Cloud Identity
+Account](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_corporate_login_credentials).
 This gives enterprise administrators full control over the lifecycle and
-security policies of that user account; deprovision when user leaves, enforce
-2SV, etc.
+security policies of that user account, like deprovision when user leaves,
+enforce two-step verification (2SV).
 
 **Project Naming Convention**
 
-Enterprises should agree on a standardised project naming convention. E.g.
-[system name]-[environment (dev, test, uat, stage, prod)] =>
+Enterprises should agree on a standardised project naming convention. For
+example [system name]-[environment (dev, test, uat, stage, prod)] =>
 [costanalytics-dev](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#projects_are_identified_by_universally_unique_identifiers)
 Some documents recommend using [company tag]-[group tag] prefixed to the above,
-opinion today is that this means project names fall “out of date/stale” too
-fast as companies go through reorgs. Consider moving this information to
-project
+but this can cause project names to become stale too quickly as businesses
+reorg. Consider moving this information to project
 [labels](https://cloud.google.com/resource-manager/docs/creating-managing-labels#using_console).
 
 **Group Naming Convention**
@@ -112,8 +116,9 @@ Check the [default access control](https://cloud.google.com/resource-manager/doc
 **Consumer Account Strategy**
 
 It is not possible to prevent users from signing up for a consumer account with
-their work email once the domain is registered with Google, see b/65413695. To
-mitigate, periodic review of consumer accounts is encouraged by checking the
+their work email once the domain is registered with Google. To mitigate,
+periodic review of consumer accounts is encouraged by looking for unmanaged
+users.
 
 **Prevent Accidental Deletion**
 
@@ -357,33 +362,29 @@ Check [how to bill](https://cloud.google.com/billing/docs/how-to/billing-access)
 
 **Invoiced Billing Account**
 
-Most large enterprise accounts should be using an offline billing account.
+If your organization is a large enterprise account, it's best to use an offline
+billing account.
 
 **Whitelisting the Customer Billing Account**
 
-For large customers not on invoiced billing, their billing account should be
-whitelisted by Google. This will prevent their account from being suspended or
-cancelled automatically - instead Google support will reach out to the Google
-account team and the customer before taking action.
+If your organization isn't on invoiced billing, you'll need to have your billing
+account whitelisted by Google. This will prevent your account from being
+automatically suspended or cancelled. Instead, Google Support will work with you
+and the Google account team to whitelist the billing account and to ensure a
+smooth process.
 
 **Cost Attribution with Projects**
 
-Projects are a good standard way of attributing costs. If the naming convention
-of a project follows the recommended [company tag]-[group tag]-[system
-name]-[env].The enterprise can attribute costs to a Business Unit > System >
-Environment level of granularity. [The monthly bill breaks down costs by
-project, then by resource type and
-labels](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#your_monthly_bill_breaks_down_costs_by_project_then_by_resource_type).
+Projects are a good, standard way to attribute costs. If you use the recommended
+[company tag]-[group tag]-[system name]-[env] convention, you can attribute
+costs to a Business Unit > System > Environment level of granularity. The
+monthly bill separates costs by project, then by resource type and labels. To
+learn more, see the [enterprise
+guide](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#your_monthly_bill_breaks_down_costs_by_project_then_by_resource_type).
 
 **Billing Exports**
 
-For better ability to interrogate the monthly bill, consider setting up a
-billing export to get a [machine-readable version of your
+To help get more detail from your monthly bill, you can set up a billing export
+to get a [machine-readable version of your
 bill](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_billing_export_daily_to_get_a_machine-readable_version_of_your_bill).
-
-**Multiple Billing Accounts**
-
-Some large customers require multiple billing accounts as the above suggested
-internal chargeback process is insufficient for their needs. Multiple billing
-accounts is possible, but has caveats.
 
