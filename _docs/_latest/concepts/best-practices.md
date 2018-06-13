@@ -7,9 +7,9 @@ order: 002
 
 This page includes best practices and rationale for using Forseti with specific
 resources in your Google Cloud Platform (GCP) environments. Forseti is expanding
-its ability to test these practices, and we would very much appreciate anyone to
-[contribute](https://github.com/GoogleCloudPlatform/forseti-security/blob/1.0-dev/.github/CONTRIBUTING.md)
-code to make this happen!
+its ability to test these practices, and we appreciate your
+[code contributions](https://github.com/GoogleCloudPlatform/forseti-security/blob/1.0-dev/.github/CONTRIBUTING.md)
+to make this happen!
 
 ---
 
@@ -20,17 +20,16 @@ in Cloud IAM policies, and never grant primitive roles on an organization.**
 
 Primitive roles give an identity a lot of power. By using custom roles, you apply the Principle of
 Least Privilege and limit user access to only the resources they need.
-    
+
 **Don't grant an entire domain access to resources in a Cloud IAM policy.**
 
 Granting access to an entire domain is usually too broad. Use groups to manage
 access instead. 
-   
+
 **Protect your organization from external identities:**
 
-- Don't give organization-level permissions to anyone outside your organization.
-- Always use [custom
-  roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
+* Don't give organization-level permissions to anyone outside your organization.
+* Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
 monitor all external identities in your organization.
  
 Scanning for external identities helps stop untrusted users from getting access
@@ -38,26 +37,24 @@ to your resources.
 
 **Protect your resources from external identities:**
 
-* Add external users to Cloud IAM policies as individual users.  Don't add
+* Add external users to Cloud IAM policies as individual users. Don't add
 * outside users to groups.
 
-Using [Cloud IAM
-policies](https://cloud.google.com/iam/docs/resource-hierarchy-access-control),
+Using [Cloud IAM policies](https://cloud.google.com/iam/docs/resource-hierarchy-access-control),
 you can audit external user activities and do lifecycle management.
 
 **User Account Strategy**
 
-Ensure all employees are using a [Cloud Identity
-Account](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_corporate_login_credentials).
+Ensure all employees are using a [Cloud Identity Account](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_corporate_login_credentials).
 This gives enterprise administrators full control over the lifecycle and
-security policies of that user account, like deprovision when user leaves,
-enforce two-step verification (2SV).
+security policies of that user account, like deprovisioning when the user
+leaves or enforcing two-step verification (2SV).
 
 **Project Naming Convention**
 
 Enterprises should agree on a standardised project naming convention. For
 example [system name]-[environment (dev, test, uat, stage, prod)] =>
-[costanalytics-dev](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#projects_are_identified_by_universally_unique_identifiers)
+[costanalytics-dev](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#projects_are_identified_by_universally_unique_identifiers).
 Some documents recommend using [company tag]-[group tag] prefixed to the above,
 but this can cause project names to become stale too quickly as businesses
 reorg. Consider moving this information to project
@@ -71,19 +68,17 @@ gcp-costanalytics-prodsupport, gcp-costanalytics-analysts
 
 **Assign Roles to Groups**
 
-[Assign project roles to groups of
-users](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#assign_project_roles_to_groups_of_users).
+[Assign project roles to groups of users](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#assign_project_roles_to_groups_of_users).
 Instead of assigning individual user accounts roles in Cloud IAM, set up a
-Group. User can then request to join a group (via their an automated and
-audited process) to gain access to the GCP projects.
+Group. Users can then request to join a group through an automated and
+audited process to gain access to the GCP projects.
 
 **Deeply Nested Sub Groups**
 
-Nested groups would allow to not repeat redundantly the same configuration
-reducing thus possiblity of inconsistency.  group memberships however they can
-be hard to reason about when determining access. Multiple levels of nested
-groups can delay propagation of projects to users. It's best to limit nesting
-to one level.
+Using nested groups can help prevent inconsistency by repeating
+the same configuration. Multiple levels of nested groups can delay
+propagation of projects to users and make it difficult to find the
+source of a user's access. It's best to limit nesting to one level.
 
 **Organization Policy - Restricted Sharing Org Policy**
 
@@ -114,15 +109,15 @@ Check the [default access control](https://cloud.google.com/resource-manager/doc
 
 **Consumer Account Strategy**
 
-It is not possible to prevent users from signing up for a consumer account with
-their work email once the domain is registered with Google. To mitigate,
-periodic review of consumer accounts is encouraged by looking for unmanaged
-users.
+After a domain is registered with Google, there isn't any way to prevent
+users from signing up for a consumer account with their organization account.
+To mitigate risk, it's best to periodically review consumer accounts for
+unmanaged users.
 
 **Prevent Accidental Deletion**
 
 You can place a
-[lien](https://cloud.google.com/resource-manager/docs/project-liens) upon a
+[lien](https://cloud.google.com/resource-manager/docs/project-liens) on a
 project to block the project's deletion until you remove the lien. This can be
 useful to protect projects of particular importance. 
 
@@ -130,21 +125,20 @@ useful to protect projects of particular importance.
 
 Google uses the members of the Cloud IAM role Project Owner to determine who
 should receive GCP Outreach and Mass Service Announcement emails. If the member
-of this role is not email routable, a customer could miss important
-notifications. This is common for customers who use Cloud Identity and create
+of this role is not email routable, you could miss important notifications.
+This is common for customers who use Cloud Identity and create
 Google Groups that do not match mail routable groups in their mail system.
 This is a risk if you use Cloud Identity and create Google Groups that don't
-match mail-routable groups in your mail system. To prevent this ensure that the
+match mail-routable groups in your mail system. To prevent this, ensure that the
 groups and the groups' members are mail-routable. 
 
 **User and Group Provisioning Method**
 
 You can provision users automatically using [Google Admin SDK's Directory
 API](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#provision_users_to_googles_directory).
-To ensure that when employees join and leave the company, the state in Google is
-consistent and stable, integrate the provisioning and management of users with
-your organization's single source of truth for users (for example Active
-Directory).
+To ensure that access to GCP is consistent and stable when employees join
+and leave the company, integrate the provisioning and management of users with
+your organization's single source of truth for users, like Active Directory.
 
 **Super Admin Access**
 
@@ -163,14 +157,16 @@ to and between those services.
 
 **Third Party Access to GCP**
 
-Third parties like vendors or contractors often need access to your GCP. It's
-best to create a [G Suite or Cloud Identity user account](https://support.google.com/cloudidentity/answer/7384684?hl=en) in your organization's
-Admin Console. This gives you full control over the user account so you can
-suspend or delete the identity to remove GCP access when the third party leaves.
+Third parties like vendors or contractors often need access to your GCP resources.
+It's best to create a
+[G Suite or Cloud Identity user account](https://support.google.com/cloudidentity/answer/7384684)
+in your organization's Admin Console. This gives you full control over the user
+account so that you can suspend or delete the identity to remove GCP access when
+the third party leaves.
 
 You can also use your own identity provider to enforce user authentication. To
 allow separate configuration options, consider placing third party users in a
-[separate organization unit](https://support.google.com/a/answer/182537?hl=en).
+[separate organization unit](https://support.google.com/a/answer/182537).
 
 ## Service accounts
 
@@ -221,9 +217,8 @@ and getting access to the instance.
 
 **Regions and Zones**
 
-For lower latency and disaster recovery, it's best to [put certain resources in
-regions and
-zones](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#put_certain_resources_in_regions_and_zones_for_lower_latency_and_disaster_recovery).
+For lower latency and disaster recovery, it's best to
+[put certain resources in regions and zones](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#put_certain_resources_in_regions_and_zones_for_lower_latency_and_disaster_recovery).
 Make sure you consider egress charges and whether it's critical for business
 operations. It's common to provision a new VPC with subnetworks for the regions
 you approve, and remove the default VPC that provides networks for all GCP
@@ -232,7 +227,7 @@ regions.
 **DDoS Mitigation**
 
 To minimize your attack surface, review and reduce the number of externally
-facing resource. You should also consider using third-party DDoS protection
+facing resources. You should also consider using third-party DDoS protection
 services.
 
 **Consistent Naming Convention for Resources**
@@ -280,10 +275,10 @@ Stackdriver account in a separate project.
 **Logging Retention**
 
 Determine the enterprise requirements for retaining logging data. Implement a
-policy for log data retention using [object lifecycle
-management](https://cloud.google.com/storage/docs/lifecycle), BiqQuery dataset
-[table
-expiration](https://cloud.google.com/bigquery/docs/managing-datasets#table-expiration),
+policy for log data retention using
+[object lifecycle management](https://cloud.google.com/storage/docs/lifecycle),
+BiqQuery dataset
+[table expiration](https://cloud.google.com/bigquery/docs/managing-datasets#table-expiration),
 or as a custom solution.
 
 **Logging Strategy**
@@ -291,51 +286,44 @@ or as a custom solution.
 Stackdriver is the default GCP logging tool. You might have a preferred logging
 tool already, so you'll need to decide how Stackdriver will be used with, or in
 place of, other logging tools. It's best to use Stackdriver Logging as a
-[centralized location for logs in
-GCP](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_cloud_logging_as_a_centralized_location_for_logs).
+[centralized location for logs in GCP](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_cloud_logging_as_a_centralized_location_for_logs).
 
 **Monitoring Strategy**
 
 Stackdriver is the default GCP monitoring tool. You might have a preferred
 monitoring tool already, so you'll need to decide how Stackdriver will be used
 with, or in place of, other monitoring tools. It's best to use Stackdriver
-Monitoring to [monitor your resources and provide
-alerts](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_stackdriver_monitoring_to_monitor_your_resources_and_provide_alerts).
+Monitoring to [monitor your resources and provide alerts](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_stackdriver_monitoring_to_monitor_your_resources_and_provide_alerts).
 
 **Logging Exports**
 
-[Export logs to BigQuery for analysis and long term
-storage](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#export_logs_to_bigquery_for_analysis_and_long_term_storage).
+[Export logs to BigQuery for analysis and long term storage](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#export_logs_to_bigquery_for_analysis_and_long_term_storage).
 
 **Cloud Audit Logs**
 
 Admin actions like creating, updating, and deleting a resource are captured in
-the [Admin audit
-log](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#monitor_administrative_actions).
+the [Admin audit log](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#monitor_administrative_actions).
 Requirements should be determined on retaining or alerting on these actions.
 
 **Data Access Logs**
 
-For more detailed access logs, you can enable [Data Access audit
-logs](https://cloud.google.com/logging/docs/audit/configure-data-access) that
+For more detailed access logs, you can enable [Data Access audit logs](https://cloud.google.com/logging/docs/audit/configure-data-access) that
 capture read operations performed by users in a project.
 
 **Aggregated Logging Exports**
 
-You can create an [aggregated
-export](https://cloud.google.com/logging/docs/export/aggregated_exports) that
-exports log entries from all of the projects, folders, and billing accounts in
-an organization. For example, you could use this feature to export audit log
+You can create an [aggregated export](https://cloud.google.com/logging/docs/export/aggregated_exports)
+that exports log entries from all of the projects, folders, and billing accounts
+in an organization. For example, you could use this feature to export audit log
 entries from your organization's projects to a central location.
 
 ## Cost Control
 
 **Billing Alerts**
 
-You can configure [billing
-alerts](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#set_alerts_for_monthly_spending_thresholds)
-to set a monthly spending limit for a project or billing account. These alerts
-are sent only to users with the Billing Admin role.
+You can configure [billing alerts](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#set_alerts_for_monthly_spending_thresholds) to set a monthly
+spending limit for a project or billing account. These alerts are sent only
+to users with the Billing Admin role.
 
 **Labels**
 
@@ -347,8 +335,7 @@ to further categorize projects in a billing export.
 **Billing Admins**
 
 You should review their current Billing Access Control following the principle
-of least privilege.  To learn more, see the [billing access
-overview](https://cloud.google.com/billing/docs/how-to/billing-access).
+of least privilege. To learn more, see the [billing access overview](https://cloud.google.com/billing/docs/how-to/billing-access).
 
 **Invoiced Billing Account**
 
@@ -369,12 +356,9 @@ Projects are a good, standard way to attribute costs. If you use the recommended
 [company tag]-[group tag]-[system name]-[env] convention, you can attribute
 costs to a Business Unit > System > Environment level of granularity. The
 monthly bill separates costs by project, then by resource type and labels. To
-learn more, see the [enterprise
-guide](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#your_monthly_bill_breaks_down_costs_by_project_then_by_resource_type).
+learn more, see the [enterprise guide](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#your_monthly_bill_breaks_down_costs_by_project_then_by_resource_type).
 
 **Billing Exports**
 
 To help get more detail from your monthly bill, you can set up a billing export
-to get a [machine-readable version of your
-bill](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_billing_export_daily_to_get_a_machine-readable_version_of_your_bill).
-
+to get a [machine-readable version of your bill](https://cloud.google.com/docs/enterprise/best-practices-for-enterprise-organizations#use_billing_export_daily_to_get_a_machine-readable_version_of_your_bill).
