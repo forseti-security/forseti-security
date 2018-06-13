@@ -21,7 +21,7 @@ Some of the unit tests will fail if they can't find the required protos.
 **Run the following commands in the _top-level_ directory of Forseti.**
 
   ```bash
-  python build_protos.py --clean
+  python setup.py install
   ```
 
 To execute all the unit tests:

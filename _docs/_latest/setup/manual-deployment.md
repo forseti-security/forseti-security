@@ -26,8 +26,11 @@ control access to its highly privileged permissions. Assign a billing account to
 
 ### Enable APIs
 
-For information about the APIs you need to enable in the project that hosts
-Forseti, see [required APIs]({% include docs/latest/required_apis.md %}).
+```bash
+gcloud beta service-management enable <API URI>
+```
+  
+{% include docs/latest/required_apis.md %}
 
 ## Deploy a server VM
 
