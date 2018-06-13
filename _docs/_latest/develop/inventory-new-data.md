@@ -8,6 +8,8 @@ order: 205
 This page describes how to modify Forseti Inventory to collect and store new
 data types.
 
+---
+
 ## Collecting and storing new data
 
 To add new GCP resource types to Forseti Inventory, follow the process below:

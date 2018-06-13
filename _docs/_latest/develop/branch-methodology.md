@@ -8,6 +8,8 @@ order: 003
 This page describes the branches in the Forseti repository and how they're used
 and managed.
 
+---
+
 ## Branches
 
 ### Main branches
