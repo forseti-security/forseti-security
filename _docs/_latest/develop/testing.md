@@ -15,29 +15,25 @@ or the [GCP setup]({% link _docs/latest/configure/forseti/index.md %})
 You can find unit tests in the top-level `tests/` directory. We use [`unittest`](https://docs.python.org/2/library/unittest.html)
 from standard Python to run our tests.
 
-Before you run unit tests, build the protos if you haven't already.
-Some of the unit tests will fail if they can't find the required protos.
+Before you run unit tests and pylint checkers, make sure you have [Docker CE](https://docs.docker.com/install/) installed.
+
 
 **Run the following commands in the _top-level_ directory of Forseti.**
 
+Install Forseti in a docker image
+
   ```bash
-  python setup.py install
+  sudo ./install/scripts/docker_install_forseti.sh
   ```
 
-To execute the pylint style check:
+Run all the unit tests
 
   ```bash
-  pylint --rcfile=pylintrc google/ install/
+  sudo ./install/scripts/docker_unittest_forseti.sh
   ```
 
-To execute all the unit tests:
+Run pylint checkers
 
   ```bash
-  python -m unittest discover -s . -p "*_test*"
-  ```
-
-To execute the tests just for a particular file pattern:
-
-  ```bash
-  python -m unittest discover -s . -p "*some_feature_test*"
+  sudo ./install/scripts/docker_pylint_forseti.sh
   ```
