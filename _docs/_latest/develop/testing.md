@@ -24,6 +24,12 @@ Some of the unit tests will fail if they can't find the required protos.
   python setup.py install
   ```
 
+To execute the pylint style check:
+
+  ```bash
+  pylint --rcfile=pylintrc google/ install/
+  ```
+
 To execute all the unit tests:
 
   ```bash
