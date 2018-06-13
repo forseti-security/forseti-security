@@ -2085,3 +2085,88 @@ SERVICEMANAGEMENT_ENABLED_APIS = {
         json.loads(APPENGINE_API_ENABLED),
     ],
 }
+
+# Fields: name, destination
+LOG_SINK_TEMPLATE = """
+{{
+ "name": "{name}",
+ "destination": "{destination}",
+ "filter": "logName:\\\"logs/cloudaudit.googleapis.com\\\"",
+ "outputVersionFormat": "V2",
+ "writerIdentity": "serviceAccount:{name}@logging-1234.iam.gserviceaccount.com"
+}}
+"""
+
+# Fields: name, destination
+LOG_SINK_TEMPLATE_NO_FILTER = """
+{{
+ "name": "{name}",
+ "destination": "{destination}",
+ "outputVersionFormat": "V2",
+ "writerIdentity": "serviceAccount:{name}@logging-1234.iam.gserviceaccount.com"
+}}
+"""
+
+# Fields: name, destination
+LOG_SINK_TEMPLATE_INCL_CHILDREN = """
+{{
+ "name": "{name}",
+ "destination": "{destination}",
+ "outputVersionFormat": "V2",
+ "filter": "logName:\\\"logs/cloudaudit.googleapis.com\\\"",
+ "includeChildren": true,
+ "writerIdentity": "serviceAccount:cloud-logs@system.gserviceaccount.com"
+}}
+"""
+
+LOGGING_GET_ORG_SINKS = {
+    ORGANIZATION_ID: [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="org-audit-logs",
+                destination="storage.googleapis.com/my_org_logs")),
+    ]
+}
+
+LOGGING_GET_FOLDER_SINKS = {
+    FOLDER_ID_PREFIX + "1": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="folder-logs", destination=(
+                    "pubsub.googleapis.com/projects/project1/topics/f1-logs"))),
+    ],
+    FOLDER_ID_PREFIX + "2": [
+        json.loads(
+            LOG_SINK_TEMPLATE_INCL_CHILDREN.format(
+                name="folder-logs",
+                destination="storage.googleapis.com/my_folder_logs")),
+    ]
+}
+LOGGING_GET_BILLING_ACCOUNT_SINKS = {
+    "000000-111111-222222": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="billing-audit-logs",
+                destination="storage.googleapis.com/b001122_logs")),
+    ]
+}
+
+LOGGING_GET_PROJECT_SINKS = {
+    "project1": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="logs-to-bigquery", destination=(
+                    "bigquery.googleapis.com/projects/project1/"
+                    "datasets/audit_logs"))),
+        json.loads(
+            LOG_SINK_TEMPLATE_NO_FILTER.format(
+                name="logs-to-gcs",
+                destination="storage.googleapis.com/project1_logs")),
+    ],
+    "project2": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="logs-to-gcs",
+                destination="storage.googleapis.com/project2_logs")),
+    ]
+}
