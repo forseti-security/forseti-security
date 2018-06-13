@@ -23,17 +23,17 @@ Before you run unit tests and pylint checkers, make sure you have [Docker CE](ht
 Install Forseti in a docker image
 
   ```bash
-  sudo ./install/scripts/docker_install_forseti.sh
+  ./install/scripts/docker_install_forseti.sh
   ```
 
 Run all the unit tests
 
   ```bash
-  sudo ./install/scripts/docker_unittest_forseti.sh
+  ./install/scripts/docker_unittest_forseti.sh
   ```
 
 Run pylint checkers
 
   ```bash
-  sudo ./install/scripts/docker_pylint_forseti.sh
+  ./install/scripts/docker_pylint_forseti.sh
   ```
