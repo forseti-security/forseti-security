@@ -89,7 +89,7 @@ Use the following command to install required build dependencies:
 
 ### Running the python setup
 
-Use the following commands to navigate to your cloned repo and run the python setup:
+Use the following commands to navigate to your cloned repository and run the python setup:
 
   ```bash
   cd forseti-security

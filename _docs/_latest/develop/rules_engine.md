@@ -2,6 +2,7 @@
 title: Rules Engine
 order: 104
 ---
+
 # {{ page.title }}
 
 The *rules engine* checks data (e.g. IAM policy, firewall rule) against
@@ -18,6 +19,8 @@ for the following resources:
 
 See the [rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules) 
 directory for examples.
+
+---
 
 ## IamRulesEngine Overview
 
