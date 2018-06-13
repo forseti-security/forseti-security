@@ -22,3 +22,7 @@ determines setup information, generates a deployment template, and creates a For
 
 Get new features and update your GCP deployment by upgrading your Forseti Security installation
 to the latest version.
+
+**[Manual Deployment]({% link _docs/latest/setup/manual-deployment.md %})**
+
+Deploy Forseti manually on Google Cloud Platform (GCP).

@@ -1,4 +1,3 @@
-
 {: .table}
 |Name|API URI|
 |--------|------------|
@@ -12,4 +11,3 @@
 |Compute Engine|`compute.googleapis.com`|
 |Deployment Manager|`deploymentmanager.googleapis.com`|
 |IAM|`iam.googleapis.com`|
-s

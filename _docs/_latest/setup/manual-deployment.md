@@ -27,7 +27,7 @@ control access to its highly privileged permissions. Assign a billing account to
 ### Enable APIs
 
 For information about the APIs you need to enable in the project that hosts
-Forseti, see [required APIs]({% link _docs/latest/required_apis.md %}).
+Forseti, see [required APIs]({% include docs/latest/required_apis.md %}).
 
 ## Deploy a server VM
 
@@ -45,7 +45,7 @@ Where `#######` is a random alphanumeric unique identifier.
 
 For information about the roles you need to assign to the Forseti server
 service account, see 
-[the server service account]({% link _docs/latest/concepts/service-accounts.html#the-server-service-account %}).
+[the server service account]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
 
 ### Create a Forseti server VM instance
 
@@ -127,7 +127,7 @@ Where `#######` is a random alphanumeric unique identifier.
 
 For information about the roles you need to assign to the Forseti server
 service account, see
-[the client service account]({% link _docs/latest/concepts/service-accounts.html#the-client-service-account %}).
+[the client service account]({% link _docs/latest/concepts/service-accounts.md %}#the-client-service-account).
 
 ### Create a Forseti client VM Instance
 
