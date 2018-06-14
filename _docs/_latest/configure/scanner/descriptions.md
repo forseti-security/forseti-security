@@ -96,7 +96,7 @@ For examples of how to define scanner rules for your forwarding rules, see the
 [`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/forwarding_rules.yaml)
 rule file.
 
-## G Suite scanner
+## Groups scanner
 
 Because groups can be added to Cloud Identity and Access Management (Cloud IAM)
 policies, G Suite group membership can allow access on Google Cloud Platform (GCP).

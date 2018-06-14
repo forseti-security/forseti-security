@@ -238,7 +238,7 @@ To enable the blacklist notifier, add the followings to the notifier section in 
                 gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
 ```
 
-## G Suite rules
+## Google Group rules
 
 ### Rule definition
 
