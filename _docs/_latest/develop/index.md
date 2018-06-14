@@ -14,21 +14,20 @@ hide:
 Learn about the process to contribute to Forseti, including how style guidelines and how to submit
 a pull request.
 
-**[Testing Forseti Contributions]({% link _docs/latest/develop/testing.md %})**
+**[Git Branch Management]({% link _docs/latest/develop/branch-management.md %})**
 
-Learn how to build protos and run unit tests for your Forseti contributions.
+Understand how Forseti uses branches, performs releases, and manages development of Forseti on
+GitHub.
 
-**[Setting up the Development Environment]({% link _docs/latest/develop/dev-setup.md %})**
+**[Start Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
 
-Set up Forseti for local development from the Google Cloud Platform (GCP) infrastructure to
-executing commands.
+Get setup and started with development.
 
-**[Collecting and Storing New Data in Forseti Inventory]({% link _docs/latest/develop/inventory-new-data.md %})**
+**[Get Help Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
 
-Modify Forseti Inventory to collect and store new data so you can inventory new products and
-resources.
+Find the best way to get help with development.
 
-**[Creating a Rules Engine]({% link _docs/latest/develop/rules_engine.md %})**
+**[Learn the Forseti API]({% link _docs/latest/develop/reference/index.html %})**
 
-Create your own Forseti Scanner rules to check different types of data to make sure it's securely
-configured.
+Review the generated pydoc to understand the internal APIs.
+

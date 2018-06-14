@@ -1,4 +1,4 @@
-## Ask a question
+**Ask a question**
 
 Ask a question about Forseti and get community support by posting to
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss).

@@ -1,6 +1,6 @@
 ---
 title: Enforcer
-order: 002
+order: 107
 ---
 
 # {{ page.title }}
@@ -26,12 +26,13 @@ installation, or you want to run enforcer on a different instance than the
 Forseti server, then you need to grant the service account used by enforcer
 the following permissions:
 
-  - The Compute Security Admin role on all projects that it will enforce, or on
-    the folder(s) or organization parenting the projects.
-  - The cloud-platform or compute API scope on the instance that's running
-    Forseti Enforcer.
+* The Compute Security Admin role on all projects that it will enforce, or on
+  the folder(s) or organization parenting the projects.
+* The cloud-platform or compute API scope on the instance that's running
+  Forseti Enforcer.
 
 ## Using Forseti Enforcer
+
 To use Forseti Enforcer, you'll define policies in a JSON formatted rule list,
 and then run the `forseti_enforcer` tool referencing a local or Cloud Storage
 policy file.

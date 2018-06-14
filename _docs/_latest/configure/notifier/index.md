@@ -1,6 +1,6 @@
 ---
-title: Notifier
-order: 400
+title: Notifier 
+order: 401
 ---
 
 # {{ page.title }}
@@ -10,22 +10,21 @@ and varying formats alerting you to events in your environment.
 
 ---
 
-## Notification Types
+## Notifications
 
-  * Inventory Summary: Count of the resources added in the latest inventory crawl.
-  * Violation Notifications: Individual violations that have been found from the latest scanner run. 
-  * Cloud SCC Findings: Violations converted to [Cloud SCC (Cloud Security Command Center)](https://cloud.google.com/security-command-center/) findings format, that's ingestable by Cloud SCC.
+**Types of notifications**
+* Inventory Summary: Count of the resources added in the latest inventory crawl.
+* Violation Notifications: Individual violations that have been found from the latest scanner run. 
+* Cloud SCC Findings: Violations converted to [Cloud SCC (Cloud Security Command Center)](https://cloud.google.com/security-command-center/) findings format, that's ingestable by Cloud SCC.
   
-## Notification Channels
+**Channels used to notify**
+* Email
+* Slack
+* Cloud Storage
 
-  * Email
-  * Slack
-  * Cloud Storage
-
-## Notification Formats
-
-  * Human-readable data: CSV
-  * Structured data: JSON
+**The possible formats of notifications**
+* Human-readable data: CSV
+* Structured data: JSON
 
 ## Configuring Notifier
 
@@ -56,14 +55,14 @@ If you want the notifier to upload the inventory summary to the GCS bucket, edit
   * **Valid values**: String
   * **Note**: Must start with `gs://`.
 
-```yaml
-notifier:
-  inventory:
-    gcs_summary:
-      enabled: true
-      data_format: csv
-      gcs_path: gs://path_to_foo_bucket
-```
+  ```yaml
+  notifier:
+    inventory:
+      gcs_summary:
+        enabled: true
+        data_format: csv
+        gcs_path: gs://path_to_foo_bucket
+  ```
 
 If you want the notifier to send the inventory summary via email, edit `email_summary`
 
@@ -84,15 +83,15 @@ If you want the notifier to send the inventory summary via email, edit `email_su
   * **Valid values**: String
   * **Note**: Multiple email recipients as delimited by comma, e.g. `john@mycompany.com,jane@mycompany.com`.
 
-```yaml
-notifier:
-  inventory:
-    email_summary:
-      enabled: true
-      sendgrid_api_key: <SENDGRID_API_KEY>
-      sender: <SENDER EMAIL>
-      recipient: <RECIPIENT EMAIL>
-```
+  ```yaml
+  notifier:
+    inventory:
+      email_summary:
+        enabled: true
+        sendgrid_api_key: <SENDGRID_API_KEY>
+        sender: <SENDER EMAIL>
+        recipient: <RECIPIENT EMAIL>
+  ```
 
 ### Violation Notifications
 
@@ -111,7 +110,9 @@ any combination of notifiers for each resource.
 
 * `name`
   * **Description**: The name of the notifier you want for each resource.
-  * **Valid values**: The name must match the actual module name for each notifier in [forseti-security/google/cloud/forseti/notifier/notifiers](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/notifier/notifiers), such as `email_violations`, or `slack_webhook`.
+  * **Valid values**: The name must match the actual module name for each notifier in
+  [forseti-security/google/cloud/forseti/notifier/notifiers](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/notifier/notifiers),
+  such as `email_violations`, or `slack_webhook`.
   * **Note**: You can specify multiple notifiers for each resource.
 
 * `data_format`
@@ -167,9 +168,33 @@ notifier:
             webhook_url: https://hooks.slack.com/services/foobar
 ```
 
+### Email notifications with SendGrid
+
+Forseti Security can send email notifications using the SendGrid API. SendGrid
+is the suggested free email service provider for Google Cloud Platform (GCP).
+For information about how to get 12,000 free emails every month, see
+[Sending email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
+
+To use SendGrid to send email notifications for Forseti Security, follow the
+process below:
+
+1. [Sign up for a SendGrid account](https://sendgrid.com/).
+1. Create a general
+    [API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
+1. Edit the following in `forseti_conf_server.yaml`:
+    1. `email_recipient` 
+       * **Description**: The Email address of notification recipient.
+    1. `email_sender`
+       * **Description**: The Sender email address for notifications
+    1. `sendgrid_api_key`
+       * **Description**: The API key for SendGrid email service.
+
+Note that SendGrid automatically includes an invisible tracking pixel in your
+emails. This may cause email warnings about opening images. To disable this,
+disable SendGrid
+[Open Tracking](https://sendgrid.com/docs/User_Guide/Settings/tracking.html#-Open-Tracking).
+
 ## What's next
 
-* Learn how to [set up SendGrid]({% link _docs/latest/configure/email-notification.md %})
-  to receive email notifications.
 * Learn how to [generate a Slack webhook](https://api.slack.com/incoming-webhooks).
-* Learn how to [invoke the Notifier]({% link _docs/latest/use/notifier.md %}).
+* Learn how to [invoke Forseti Notifier]({% link _docs/latest/use/cli/notifier.md %}).

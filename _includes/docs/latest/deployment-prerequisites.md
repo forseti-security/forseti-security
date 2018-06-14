@@ -39,7 +39,7 @@ Scanner, and Enforcer, follow the steps below.
   ```
 
 To enable your service account for collecting G Suite data, follow the steps in 
-[Enabling G Suite Google Groups Collection]({% link _docs/latest/configure/gsuite.md %}).
+[Enabling G Suite Access]({% link _docs/latest/configure/inventory/gsuite.md %}).
 
 ### Assigning roles
 
@@ -113,4 +113,4 @@ Enable each of the required APIs by running the following command:
   gcloud beta service-management enable <API URI>
   ```
   
-  {% include docs/latest/required_apis.md %}
+  {% include docs/latest/required-apis.md %}

@@ -1,12 +1,14 @@
 ---
 title: Inventory
-order: 002
+order: 101
 ---
 
 # {{ page.title }}
 
 Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
-resources. The Inventory data is [transformed to a data model]({% link _docs/latest/concepts/models.md %}) Forseti Scanner and Explain use to perform operations.
+resources. The Inventory data is
+[transformed to a data model]({% link _docs/latest/concepts/models.md %}) Forseti Scanner and
+Explain use to perform their operations.
 
 ---
 
@@ -15,7 +17,7 @@ resources. The Inventory data is [transformed to a data model]({% link _docs/lat
 Before you start using Inventory, you'll need to make sure that Inventory is
 [configured]({% link _docs/latest/configure/inventory/index.md %}) and the
 proper [GCP]({% link _docs/latest/concepts/service-accounts.md %}) and
-[G Suite]({% link _docs/latest/configure/gsuite.md %}) permissions are set up
+[G Suite]({% link _docs/latest/configure/inventory/gsuite.md %}) acccess is set up
 for your Forseti GCP service account.
 
 To display Inventory flag options, run `forseti inventory -h`.
@@ -78,4 +80,4 @@ a value, then the value in `forseti_config.yaml` will be used.
 
 
 ## What's next
-- Learn about [configuring Inventory]({% link _docs/latest/configure/inventory/index.md %}).
+* Learn about [configuring Inventory]({% link _docs/latest/configure/inventory/index.md %}).

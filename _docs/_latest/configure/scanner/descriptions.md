@@ -96,7 +96,7 @@ For examples of how to define scanner rules for your forwarding rules, see the
 [`forwarding_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/forwarding_rules.yaml)
 rule file.
 
-## Groups scanner
+## G Suite scanner
 
 Because groups can be added to Cloud Identity and Access Management (Cloud IAM)
 policies, G Suite group membership can allow access on Google Cloud Platform (GCP).
@@ -113,9 +113,9 @@ Cloud IAM policies directly grant access on GCP. To ensure only authorized
 members and permissions are granted in Cloud IAM policies, IAM policy scanner
 supports the following:
 
- - Whitelist, blacklist, and required modes.
- - Define if the scope of the rule inherits from parents or just self.
- - Access to specific organization, folder, or project resource types.
+* Whitelist, blacklist, and required modes.
+* Define if the scope of the rule inherits from parents or just self.
+* Access to specific organization, folder, or project resource types.
 
 For examples of how to define scanner rules for Cloud IAM policies, see the
 [`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/iam_rules.yaml)
@@ -147,7 +147,7 @@ rule file.
 ## Kubernetes Engine Version scanner
 
 Kubernetes Engine clusters running on older versions can be exposed to security 
-vulnerabilities, or lack of support.  The KE version scanner can ensure your 
+vulnerabilities, or lack of support. The KE version scanner can ensure your 
 Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the

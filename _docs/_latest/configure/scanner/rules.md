@@ -50,9 +50,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-    * `whitelist` - Allow the members defined.  
-    * `blacklist` - Block the members defined.  
-    * `required` - Defined members with the specified roles must be found in policy.
+    * `whitelist`: Allow the members defined. 
+    * `blacklist`: Block the members defined. 
+    * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
@@ -63,9 +63,9 @@ rules:
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
     * **Note**:  
-      * `self` - Allow the members defined.  
-      * `children` - Block the members defined.  
-      * `self_and_children` - The rule applies to the specified resource and its child resources.
+      * `self`: Allow the members defined. 
+      * `children`: Block the members defined. 
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -77,12 +77,11 @@ rules:
 
 * `bindings`
   * **Description**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit. 
-    - `role`
+    * `role`
       * **Description**: A [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam).
       * **Valid values**: String.
       * **Example values**: `roles/editor`, `roles/viewer`
-    
-    - `members`
+    * `members`
       * **Description**: A list of Cloud IAM members. You can also use wildcards.
       * **Valid values**: String.
       * **Example values**: `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
@@ -230,7 +229,7 @@ To enable the blacklist notifier, add the followings to the notifier section in 
                 gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
 ```
 
-## Google Groups rules
+## G Suite rules
 
 ### Rule definition
 
@@ -478,9 +477,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-    * `whitelist` - Allow only the APIs listed in `services`.
-    * `blacklist` - Block the APIs listed in `services`.
-    * `required` - All APIs listed in `services` must be enabled.
+    * `whitelist`: Allow only the APIs listed in `services`.
+    * `blacklist`: Block the APIs listed in `services`.
+    * `required`: All APIs listed in `services` must be enabled.
 
 * `resource`
   * `type`
@@ -491,9 +490,9 @@ rules:
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
     * **Note**:  
-      * `self` - Allow the members defined.  
-      * `children` - Block the members defined.  
-      * `self_and_children` - The rule applies to the specified resource and its child resources.
+      * `self`: Allow the members defined. 
+      * `children`: Block the members defined. 
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -530,7 +529,7 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: Current only support `whitelist` mode.
   * **Note**:  
-     * `whitelist` - Ensure each forwarding rule only directs to the intended target instance.
+     * `whitelist`: Ensure each forwarding rule only directs to the intended target instance.
 
 * `load_balancing_scheme`
   * **Description**: What the ForwardingRule will be used for.
@@ -574,9 +573,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-    * `whitelist` - Allow the members defined.  
-    * `blacklist` - Block the members defined.  
-    * `required` - Defined members with the specified roles must be found in policy.
+    * `whitelist`: Allow the members defined. 
+    * `blacklist`: Block the members defined. 
+    * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
@@ -587,9 +586,9 @@ rules:
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
     * **Note**:  
-      * `self` - Allow the members defined.  
-      * `children` - Block the members defined.  
-      * `self_and_children` - The rule applies to the specified resource and its child resources.
+      * `self`: Allow the members defined. 
+      * `children`: Block the members defined. 
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -601,7 +600,7 @@ rules:
 
 * `allowed_direct_access_sources`
   * **Description**:  Comma-separated list of globs that are matched against the IP ranges and tags in your 
-  firewall rules that allow access to services in your GCP environment.  
+  firewall rules that allow access to services in your GCP environment. 
   * **Valid values**: String.
   * **Example values**: `10.*,monitoring-instance-tag`
   
@@ -649,6 +648,7 @@ rules:
   * **Valid values**: project/networks pairs.
   * **Example values**: The following values would specify that VM instances in 
   project_01’s network_01 can have external IP addresses:
+  
     ```
     project_01:  
     - network_01

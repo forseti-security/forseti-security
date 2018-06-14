@@ -1,6 +1,6 @@
 ---
-title: Rules Engine
-order: 104
+title: Scanner 
+order: 103
 ---
 
 # {{ page.title }}
@@ -45,14 +45,14 @@ according to the kind of data that needs to be audited.
 
 To design a rules engine, follow the guidelines below:
 
-1.  Create another rules engine class that inherits from `BaseRulesEngine`.
-1.  Implement `BaseRulesEngine.build_rule_book()` and
+1. Create another rules engine class that inherits from `BaseRulesEngine`.
+1. Implement `BaseRulesEngine.build_rule_book()` and
     `BaseRulesEngine.find_policy_violations()`.
     *   The rule book is a data structure that provides a way to compare a rule
         with a policy.
     *   The `find_policy_violations()` method searches the rule book and
         compares the policy against the rule (if found) in the book.
-1.  Create a new scanner and add the necessary scanner mappings and configurations.
+1. Create a new scanner and add the necessary scanner mappings and configurations.
 
 Refer to `scanner.py` for an example of how the `IamRulesEngine` works with the 
 other Forseti scanners.

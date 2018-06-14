@@ -12,7 +12,7 @@ developing add-on modules to offer unique capabilities. Forseti’s core modules
 provide a foundation that others can build upon.
 
 Get started with
-[Forseti Security]({% link _docs/latest/configure/forseti/index.md %}).
+[Forseti Security]({% link _docs/latest/configure/general/index.md %}).
 
 ---
 
@@ -58,7 +58,7 @@ from resources and ensure that these access policies stay consistent. If it find
 policies that don’t match your Scanner rules, it can save those rule violations to Cloud SQL or to
 Cloud Storage. This helps protect you against unsafe or unintentional changes.
 
-### [Enforcer]({% link _docs/latest/use/enforcer.md %})
+### [Enforcer]({% link _docs/latest/use/cli/enforcer.md %})
 
 Enforcer uses policies you create to compare the current state of your Compute Engine firewall to
 the desired state. Enforcer is an on-demand command-line tool that compares policies in batch mode
@@ -72,7 +72,7 @@ The tool can also:
 * Roll back firewall policies
 
 
-### [Explain]({% link _docs/latest/use/explain.md %})
+### [Explain]({% link _docs/latest/use/cli/explain.md %})
 
 The Explain add-on module provides visibility into your Cloud Identity and Access Management
 (Cloud IAM) policies. Explain can help you understand:
@@ -82,7 +82,7 @@ The Explain add-on module provides visibility into your Cloud Identity and Acces
 it
 * What roles grant a permission and which roles aren’t in sync with recent changes
 
-### [Email Notifications]({% link _docs/latest/configure/email-notification.md %})
+### [Email Notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid)
 
 When configured, Forseti Security can send email notifications for Inventory and Scanner using the
 SendGrid API. SendGrid is currently the only supported email provider.

@@ -35,7 +35,7 @@ security risks.
 
 {:style="list-style-type: upper-alpha;"}
 
- 1. Inventory collects information about your GCP resources and G Suite Groups and Users.
+ 1. Inventory collects information about your GCP resources and G Suite.
  1. Inventory stores information in Cloud SQL for your review and use by other
     Forseti modules.
  1. Scanner compares the data collected by Inventory to the policy rules you

@@ -21,7 +21,7 @@ For more information, see [scanner descriptions]({% link _docs/latest/configure/
 | Enabled APIs Scanner |
 | Firewall Rules Scanner |
 | Forwarding Rules Scanner |
-| Google Groups Scanner |
+| G Suite Scanner |
 | Cloud IAM Rules Scanner |
 | Cloud IAP Scanner |
 | Instance Network Interface Scanner |

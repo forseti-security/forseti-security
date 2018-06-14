@@ -1,6 +1,6 @@
 ---
 title: G Suite
-order: 600
+order: 201
 ---
 
 #  {{ page.title }}
@@ -55,5 +55,5 @@ your `forseti_conf_server.yaml`.
 
 If you are running Forseti on GCP and made any changes to the above values, 
 you will need to copy the conf file to the GCS bucket. See 
-["Move Configuration to GCS"]({% link _docs/latest/configure/forseti/index.md %}) 
+["Move Configuration to GCS"]({% link _docs/latest/configure/general/index.md %}) 
 for details on how to do this.

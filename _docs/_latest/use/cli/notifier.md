@@ -1,6 +1,6 @@
 ---
 title: Notifier
-order: 005
+order: 104
 ---
 
 # {{ page.title }}
@@ -15,7 +15,7 @@ latest violations from the previous scanner run.
 
 ---
 
-### CLI Usage
+### Usage
 
   ```bash
   forseti notifier --help
