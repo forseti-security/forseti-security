@@ -81,7 +81,8 @@ If you want the notifier to send the inventory summary via email, edit `email_su
 * `recipient`
   * **Description**: The email addresses of the recipients of the email.
   * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, e.g. `john@mycompany.com,jane@mycompany.com`.
+  * **Note**: Multiple email recipients as delimited by comma, e.g.
+  `john@mycompany.com,jane@mycompany.com`.
 
   ```yaml
   notifier:
@@ -144,7 +145,7 @@ any combination of notifiers for each resource.
   * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
 
 The following example shows how to update a `.yaml` file to add email, Slack,
-and Cloud Storage notifier for Cloud SQL violations.
+and Cloud Storage notifier for Cloud SQL violations:
 
 ```yaml
 notifier:

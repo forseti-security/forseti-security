@@ -61,7 +61,7 @@ Install mysql_config:
 
 Ensure virtualenv is installed in your system. Virtualenv allows you to
 create multiple environments to contain different modules and dependencies
-in different projects.
+in different projects:
 
   ```bash
   sudo pip install virtualenv

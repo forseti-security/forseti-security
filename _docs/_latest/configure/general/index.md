@@ -46,7 +46,7 @@ forseti_server_conf.yaml to your Forseti Cloud Storage bucket. When Forseti runs
 
 Use the following commands to copy your conf and rules files to Cloud Storage:
 
-```
+```bash
 gsutil cp configs/forseti_conf.yaml gs://YOUR_FORSETI_GCS_BUCKET/configs/server/forseti_server_conf.yaml
 ```
 

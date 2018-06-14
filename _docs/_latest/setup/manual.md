@@ -26,6 +26,9 @@ control access to its highly privileged permissions. Assign a billing account to
 
 ### Enable APIs
 
+It's necessary to enable the APIs Forseti Security needs, you can do it with a command like the one
+below:
+
 ```bash
 gcloud beta service-management enable <API URI>
 ```
@@ -38,7 +41,7 @@ gcloud beta service-management enable <API URI>
 
 Create a server service account by running the following command:
 
-```
+```bash
 gcloud iam service-accounts create forseti-server-gcp-####### --display-name forseti-server-gcp-#######
 ```
 
@@ -135,7 +138,7 @@ see the [Cloud SQL template](https://github.com/GoogleCloudPlatform/forseti-secu
 
 Create a client service account by running the following command:
 
-```
+```bash
 gcloud iam service-accounts create forseti-client-gcp-####### --display-name forseti-client-gcp-#######
 ```
 

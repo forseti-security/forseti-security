@@ -66,7 +66,7 @@ described above.
 
 ## Version numbering scheme
 
-Forseti versions are denoted with an `X.Y.Z` version numbering schema.
+Forseti versions are denoted with an `X.Y.Z` version numbering schema, for example:
 
 ```
 X signifies architectural changes.

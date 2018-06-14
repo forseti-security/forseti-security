@@ -257,7 +257,6 @@ memberships {
 }
 resource_ancestors: "project/my-project-123"
 resource_ancestors: "organization/1234567890"
-
 ```
 
 ### Grant a member permission to a resource
