@@ -14,9 +14,9 @@ perform operations.
 
 ## Configuring Inventory
 
-{% include docs/latest/min_conf_settings.md %}
+{% include docs/latest/minimum-configuration-settings.md %}
 
 ## What's next
 
-- Learn about [using Inventory]({% link _docs/latest/use/inventory.md %})
-- Learn more about [configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}).
+* Learn about [using Inventory]({% link _docs/latest/use/cli/inventory.md %})
+* Learn more about [configuring Forseti]({% link _docs/latest/configure/general/index.md %}).

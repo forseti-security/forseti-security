@@ -26,8 +26,8 @@ Granting access to an entire domain is usually too broad. Use groups to manage a
    
 **Protect your organization from external identities:**
 
-- Don't give organization-level permissions to anyone outside your organization.
-- Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
+* Don't give organization-level permissions to anyone outside your organization.
+* Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
      monitor all external identities in your organization.
  
 Scanning for external identities helps stop untrusted users from getting access to your resources.

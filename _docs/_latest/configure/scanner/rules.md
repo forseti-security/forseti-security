@@ -14,7 +14,8 @@ This page describes how to define rules for Forseti Scanner.
 You can find some starter rules in the
 [rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules) 
 directory. When you make changes to the rule files, upload them to your 
-Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path` (found in `forseti_server_conf.yaml`).
+Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
+(found in `forseti_server_conf.yaml`).
 
 ## Cloud IAM policy rules
 
@@ -50,9 +51,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-    * `whitelist` - Allow the members defined.  
-    * `blacklist` - Block the members defined.  
-    * `required` - Defined members with the specified roles must be found in policy.
+    * `whitelist`: Allow the members defined. 
+    * `blacklist`: Block the members defined. 
+    * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
@@ -63,9 +64,9 @@ rules:
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
     * **Note**:  
-      * `self` - Allow the members defined.  
-      * `children` - Block the members defined.  
-      * `self_and_children` - The rule applies to the specified resource and its child resources.
+      * `self`: Allow the members defined. 
+      * `children`: Block the members defined. 
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -76,13 +77,13 @@ rules:
   * **Valid values**: One of `true` or `false`.
 
 * `bindings`
-  * **Description**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit. 
-    - `role`
+  * **Description**: The
+  [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit. 
+    * `role`
       * **Description**: A [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam).
       * **Valid values**: String.
       * **Example values**: `roles/editor`, `roles/viewer`
-    
-    - `members`
+    * `members`
       * **Description**: A list of Cloud IAM members. You can also use wildcards.
       * **Valid values**: String.
       * **Example values**: `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
@@ -148,20 +149,23 @@ rules:
       * **Example values**: `1.6`, `1.7`, `1.8`
       
     * `minor`
-      * **Description**: Optional, the minor version that is allowed. If not included, all minor versions are allowed.
+      * **Description**: Optional, the minor version that is allowed. If not included, all minor
+      versions are allowed.
       * **Valid values**: String.
       * **Example values**: `11-gke.1`, `12-gke.1`
 
     * `operator`
-      * **Description**: Optional, defaults to =, can be one of (=, >, <, >=, <=). The operator determines 
-      how the current version compares with the allowed version. If a minor version is not included,
-      the operator applies to major version. Otherwise it applies to minor versions within a single major version.
+      * **Description**: Optional, defaults to =, can be one of (=, >, <, >=, <=). The operator
+      determines how the current version compares with the allowed version. If a minor version is
+      not included, the operator applies to major version. Otherwise it applies to minor versions
+      within a single major version.
       * **Valid values**: String.
       * **Example values**: `>=`
 
 ### Enabling
 
-To enable the Kubernetes Engine inventory, add the following to the inventory section in your forseti_confi.yaml file.
+To enable the Kubernetes Engine inventory, add the following to the inventory section in your
+`forseti_confi.yaml` file:
 
 ```yaml
 inventory:
@@ -170,7 +174,8 @@ inventory:
           enabled: true
 ```
 
-To enable the Kubernetes Engine scanner, add the followings to the scanner section in your forseti_conf.yaml file.
+To enable the Kubernetes Engine scanner, add the followings to the scanner section in your
+`forseti_conf.yaml` file:
 
 ```yaml
 scanner:
@@ -179,7 +184,8 @@ scanner:
           enabled: true
 ```
 
-To enable the Kubernetes Engine notifier or blacklist notifier, add the followings to the notifier section in your forseti_conf.yaml file.
+To enable the Kubernetes Engine notifier or blacklist notifier, add the followings to the notifier
+section in your `forseti_conf.yaml` file:
 
 ```yaml
     resources:
@@ -207,7 +213,8 @@ rules:
 * **url**: Url that contains a list of IPs to check against
 
 ### Enabling
-To enable the blacklist scanner, add the followings to the scanner section in your forseti_conf.yaml file.
+To enable the blacklist scanner, add the followings to the scanner section in your
+`forseti_conf.yaml` file:
 
 ```yaml
 scanner:
@@ -216,7 +223,8 @@ scanner:
           enabled: true
 ```
 
-To enable the blacklist notifier, add the followings to the notifier section in your forseti_conf.yaml file.
+To enable the blacklist notifier, add the followings to the notifier section in your
+`forseti_conf.yaml` file:
 
 ```yaml
     resources:
@@ -230,7 +238,7 @@ To enable the blacklist notifier, add the followings to the notifier section in 
                 gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
 ```
 
-## Google Groups rules
+## Google Group rules
 
 ### Rule definition
 
@@ -388,7 +396,7 @@ rules:
 
 ### Rule definition
 
-BigQuery scanner rules serve as blacklists.
+BigQuery scanner rules serve as blacklists, for example:
 
 ```yaml
 rules:
@@ -478,9 +486,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-    * `whitelist` - Allow only the APIs listed in `services`.
-    * `blacklist` - Block the APIs listed in `services`.
-    * `required` - All APIs listed in `services` must be enabled.
+    * `whitelist`: Allow only the APIs listed in `services`.
+    * `blacklist`: Block the APIs listed in `services`.
+    * `required`: All APIs listed in `services` must be enabled.
 
 * `resource`
   * `type`
@@ -491,9 +499,9 @@ rules:
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
     * **Note**:  
-      * `self` - Allow the members defined.  
-      * `children` - Block the members defined.  
-      * `self_and_children` - The rule applies to the specified resource and its child resources.
+      * `self`: Allow the members defined. 
+      * `children`: Block the members defined. 
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -530,7 +538,7 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: Current only support `whitelist` mode.
   * **Note**:  
-     * `whitelist` - Ensure each forwarding rule only directs to the intended target instance.
+     * `whitelist`: Ensure each forwarding rule only directs to the intended target instance.
 
 * `load_balancing_scheme`
   * **Description**: What the ForwardingRule will be used for.
@@ -574,9 +582,9 @@ rules:
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
   * **Note**:  
-    * `whitelist` - Allow the members defined.  
-    * `blacklist` - Block the members defined.  
-    * `required` - Defined members with the specified roles must be found in policy.
+    * `whitelist`: Allow the members defined. 
+    * `blacklist`: Block the members defined. 
+    * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
@@ -587,9 +595,9 @@ rules:
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
     * **Note**:  
-      * `self` - Allow the members defined.  
-      * `children` - Block the members defined.  
-      * `self_and_children` - The rule applies to the specified resource and its child resources.
+      * `self`: Allow the members defined. 
+      * `children`: Block the members defined. 
+      * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
@@ -601,7 +609,7 @@ rules:
 
 * `allowed_direct_access_sources`
   * **Description**:  Comma-separated list of globs that are matched against the IP ranges and tags in your 
-  firewall rules that allow access to services in your GCP environment.  
+  firewall rules that allow access to services in your GCP environment. 
   * **Valid values**: String.
   * **Example values**: `10.*,monitoring-instance-tag`
   
@@ -649,6 +657,7 @@ rules:
   * **Valid values**: project/networks pairs.
   * **Example values**: The following values would specify that VM instances in 
   project_01’s network_01 can have external IP addresses:
+  
     ```
     project_01:  
     - network_01

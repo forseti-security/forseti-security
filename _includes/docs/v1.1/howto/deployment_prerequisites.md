@@ -162,4 +162,4 @@ Enable each of the required APIs by running the following command:
   $ gcloud beta service-management enable <API URI>
   ```
   
-  {% include docs/latest/required_apis.md %}
+  {% include docs/v1.1/required_apis.md %}

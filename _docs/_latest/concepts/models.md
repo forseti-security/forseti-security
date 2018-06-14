@@ -24,7 +24,7 @@ Both Scanner and Explain depend on the data models being present, so you
 ## How data models are stored
 
 Data models are stored in their own set of tables, which are named with the
-`<model_handle>_<table_name>` and are tied to each other by specific relationships.  At any given
+`<model_handle>_<table_name>` and are tied to each other by specific relationships. At any given
 time, multiple set of tables can exist, either created by the cron job, or by other users. The
 table sets are listed in the `models` table.
 

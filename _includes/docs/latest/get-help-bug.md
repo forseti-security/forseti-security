@@ -1,4 +1,4 @@
-## File an issue or feature request
+**File an issue or feature request**
 
 If you're experiencing an issue, find out if there's already a solution:
 
@@ -12,11 +12,11 @@ If you still have an issue, file a new issue at
 
 If you need help with a bug or error, include the following information in your message:
 
-  * What happened?
-  * What did you expect to happen?
-  * How can we reproduce the problem?
-  * Which interface are you using (Cloud Platform Console, gcloud)?
-  * Which Forseti module are you using?
+* What happened?
+* What did you expect to happen?
+* How can we reproduce the problem?
+* Which interface are you using (Cloud Platform Console, gcloud)?
+* Which Forseti module are you using?
 
 If you have an idea for a Forseti feature that isn't already on the
 [forseti-security](https://github.com/GoogleCloudPlatform/forseti-security/issues)

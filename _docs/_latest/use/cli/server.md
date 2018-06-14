@@ -1,11 +1,11 @@
 ---
 title: Server
-order: 007
+order: 106
 ---
 
 # {{ page.title }}
 
-Forseti Server is tool to retrieve and update the server settings.
+Use the CLI to request the server to retrieve and use new settings.
 
 ---
 

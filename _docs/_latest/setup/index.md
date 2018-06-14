@@ -18,11 +18,11 @@ Install Forseti Security to help protect your GCP environments by monitoring you
 ensure that role-based access controls are set as you intended. The setup wizard automatically
 determines setup information, generates a deployment template, and creates a Forseti deployment.
 
-**[Upgrading Forseti]({% link _docs/latest/setup/upgrade.md %})**
+**[Upgrading Forseti Security]({% link _docs/latest/setup/upgrade.md %})**
 
 Get new features and update your GCP deployment by upgrading your Forseti Security installation
 to the latest version.
 
-**[Manual Deployment]({% link _docs/latest/setup/manual-deployment.md %})**
+**[Deploy Forseti Security Manually]({% link _docs/latest/setup/manual.md %})**
 
 Deploy Forseti manually on Google Cloud Platform (GCP).

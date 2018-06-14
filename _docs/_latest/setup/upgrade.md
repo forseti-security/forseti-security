@@ -1,6 +1,6 @@
 ---
 title: Upgrade
-order: 00
+order: 002
 ---
 
 # {{ page.title }}
@@ -15,7 +15,7 @@ This guide explains how to upgrade your Forseti instance.
 
  * We don't support data migration from v1 to v2, so you will need to archive the database manually 
    for future reference if the data is important to you.
- * [Forseti v2 configuration]({% link _docs/latest/configure/forseti/index.md %}) is different than v1 so 
+ * [Forseti v2 configuration]({% link _docs/latest/configure/general/index.md %}) is different than v1 so 
    you can not replace the v2 configuration file with the v1 configuration file.
  * In v2, all resources are inventoried. You won't be able to configure Inventory to include or exclude resources.
 
@@ -99,15 +99,16 @@ We will be listing the difference between v1.1.11 configuration anv v2.0.0 serve
 | notifier/resources/pipelines/gcs_violations_pipeline | notifier/resources/notifiers/gcs_violations |
 | notifier/resources/pipelines/slack_webhook_pipeline | notifier/resources/notifiers/slack_webhook |
 
-To learn more about these fields, see [Configure]({% link _docs/latest/configure/forseti/index.md %}).
+To learn more about these fields, see [Configure]({% link _docs/latest/configure/general/index.md %}).
 
 {% endcapture %} 
 {% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
 ## What's next
 
-  - Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
-  [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
-  - Configure Forseti to send [email notifications]({% link _docs/latest/configure/email-notification.md %}).
-  - Enable [G Suite data collection]({% link _docs/latest/configure/gsuite.md %})
-  for processing by Forseti.
+* Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
+[Scanner]({% link _docs/latest/configure/scanner/index.md %}).
+* Configure Forseti to send
+[email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+* Enable [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
+for processing by Forseti.

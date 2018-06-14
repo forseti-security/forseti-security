@@ -1,6 +1,6 @@
 ---
 title: Model
-order: 004
+order: 102 
 ---
 
 # {{ page.title }}
@@ -63,4 +63,4 @@ forseti model delete <MODEL_NAME>
 
 ## What's next
 
-* Learn how to query the data model using [Explain]({% link _docs/latest/use/explain.md %}).
+* Learn how to query the data model using [Explain]({% link _docs/latest/use/cli/explain.md %}).

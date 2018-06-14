@@ -1,6 +1,6 @@
 ---
 title: Contributing
-order: 002
+order: 001
 ---
 
 #  {{ page.title }}

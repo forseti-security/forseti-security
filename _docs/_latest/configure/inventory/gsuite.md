@@ -1,6 +1,6 @@
 ---
 title: G Suite
-order: 600
+order: 201
 ---
 
 #  {{ page.title }}
@@ -42,9 +42,11 @@ You must have the **super admin** role in admin.google.com to complete these ste
    Security settings.
 1. In the **Client Name** box, paste the **Client ID** you copied above.
 1. In the **One or More API Scopes** box, paste the following scope:
+
     ```
     https://www.googleapis.com/auth/admin.directory.group.readonly
     ```
+    
 1. Click **Authorize**.
 {% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
 
@@ -55,5 +57,5 @@ your `forseti_conf_server.yaml`.
 
 If you are running Forseti on GCP and made any changes to the above values, 
 you will need to copy the conf file to the GCS bucket. See 
-["Move Configuration to GCS"]({% link _docs/latest/configure/forseti/index.md %}) 
+["Move Configuration to GCS"]({% link _docs/latest/configure/general/index.md %}) 
 for details on how to do this.

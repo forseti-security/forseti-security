@@ -1,6 +1,6 @@
 ---
-title: Development Environment Setup
-order: 103
+title: Setup
+order: 101
 ---
 #  {{ page.title }}
 
@@ -20,17 +20,18 @@ To complete this guide, you will need:
 
 ## Setting up GCP infrastructure
 
-{% include docs/latest/deployment_prerequisites.md %}
+{% include docs/latest/deployment-prerequisites.md %}
 
 ### Setting up Cloud SQL
 
-{% include docs/latest/setup_cloudsql.md %}
+{% include docs/latest/setup-cloudsql.md %}
 
 ## Setting up a local environment
 
 ### Ubuntu setup
 
-Install the necessary python dev tools and packages from [apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/dependencies/apt_packages.txt).
+Install the necessary python dev tools and packages from
+[apt_packages.txt](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/install/dependencies/apt_packages.txt).
 
 ### Mac setup
 
@@ -60,7 +61,7 @@ Install mysql_config:
 
 Ensure virtualenv is installed in your system. Virtualenv allows you to
 create multiple environments to contain different modules and dependencies
-in different projects.
+in different projects:
 
   ```bash
   sudo pip install virtualenv
@@ -77,7 +78,9 @@ Use the following command to create a virtualenv:
 
 ### Getting the source code
 
-Follow our [contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md) to create a fork of the Forseti code, and learn how to submit a PR.
+Follow our
+[contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md)
+to create a fork of the Forseti code, and learn how to submit a PR.
 
 ### Installing build dependencies
 
@@ -128,19 +131,20 @@ following:
   
   export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
+  
 In the above example, `/SOME/PATH/TO` represents the path specific to your
 system. Make sure to use the values from your terminal.
 
 ### Configuring Forseti settings
 
 Before you run Forseti, you need to edit the forseti configuration file. 
-Refer to [Configuring Forseti]({% link _docs/latest/configure/forseti/index.md %}) 
+Refer to [Configuring Forseti]({% link _docs/latest/configure/general/index.md %}) 
 for more information.
 
 ### Starting Forseti
 
 After you complete the above steps, you should be able to run the Forseti
-server and the command-line interface (CLI) client.
+server and the command line interface (CLI) client:
 
   ```bash
   forseti_server \
