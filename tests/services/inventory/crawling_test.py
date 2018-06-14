@@ -141,6 +141,7 @@ class CrawlerTest(ForsetiTestCase):
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
+            'sink': {'resource': 6},
             'subnetwork': {'resource': 24},
         }
 
@@ -178,7 +179,8 @@ class CrawlerTest(ForsetiTestCase):
             'folder': {'iam_policy': 2, 'resource': 2},
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
-            'role': {'resource': 1}
+            'role': {'resource': 1},
+            'sink': {'resource': 1},
         }
 
         self.assertEqual(expected_counts, result_counts)
@@ -222,6 +224,7 @@ class CrawlerTest(ForsetiTestCase):
                         'resource': 1},
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
             'serviceaccount_key': {'resource': 1},
+            'sink': {'resource': 2},
             'subnetwork': {'resource': 12},
         }
 
@@ -279,6 +282,7 @@ class CrawlerTest(ForsetiTestCase):
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
+            'sink': {'resource': 6},
             'subnetwork': {'resource': 24},
         }
 
