@@ -1,4 +1,4 @@
-**Granted at the Organization level**
+**Granted at the organization level**
   
  * `roles/appengine.appViewer` (server)
  * `roles/bigquery.dataViewer` (server)
