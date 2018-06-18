@@ -6,7 +6,8 @@ order: 401
 # {{ page.title }}
 
 Notifier can dispatch a variety of messages through various channels
-and varying formats alerting you to events in your environment.
+and varying formats to you to events in your Google Cloud Platform
+(GCP) environment.
 
 ---
 
@@ -31,24 +32,25 @@ and varying formats alerting you to events in your environment.
 ### Inventory Summary
 
 This is a count of what resources have been crawled into inventory,
-and outputted to a Cloud Storage bucket.
+and output to a Cloud Storage bucket.
 
 To configure how you want Notifier to send the Inventory Summary,
-follow the steps below
+follow the steps below:
 
 1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
 
 1. Navigate to the `notifier` > `inventory` section.
 
-If you want the notifier to upload the inventory summary to the GCS bucket, edit `gcs_summary`
+If you want the notifier to upload the inventory summary to a Cloud Storage
+bucket, edit `gcs_summary`:
 
 * `enabled`
   * **Description**: Whether to send the inventory summary.
-  * **Valid values**: one of valid `true` or `false`
+  * **Valid values**: one of valid `true` or `false`.
 
 * `data_format`
   * **Description**: The format of the data for the inventory summary.
-  * **Valid values**: one of valid `csv` or `json`
+  * **Valid values**: one of valid `csv` or `json`.
 
 * `gcs_path`
   * **Description**: The path to a Cloud Storage bucket.
@@ -64,7 +66,7 @@ If you want the notifier to upload the inventory summary to the GCS bucket, edit
         gcs_path: gs://path_to_foo_bucket
   ```
 
-If you want the notifier to send the inventory summary via email, edit `email_summary`
+If you want the notifier to send the inventory summary via email, edit `email_summary`:
 
 * `enabled`
   * **Description**: Whether to send the inventory summary.
@@ -81,7 +83,7 @@ If you want the notifier to send the inventory summary via email, edit `email_su
 * `recipient`
   * **Description**: The email addresses of the recipients of the email.
   * **Valid values**: String
-  * **Note**: Multiple email recipients as delimited by comma, e.g.
+  * **Note**: Multiple email recipients as delimited by comma, like
   `john@mycompany.com,jane@mycompany.com`.
 
   ```yaml
@@ -102,7 +104,7 @@ follow the steps below:
 1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
 1. Navigate to the `notifier` > `resources` section.
 
-On a per-resources basis, the following options are available. You can use
+On a per-resources basis, the options below are available. You can use
 any combination of notifiers for each resource.
 
 * `should_notify`
@@ -118,7 +120,7 @@ any combination of notifiers for each resource.
 
 * `data_format`
   * **Description**: The format of the data generated for a given violation.
-  * **Valid values**: one of valid `csv` or `json`
+  * **Valid values**: one of valid `csv` or `json`.
   * **Note**: Slack only supports the `json` type.
 
 * `gcs_path`
@@ -172,8 +174,8 @@ notifier:
 ### Email notifications with SendGrid
 
 Forseti Security can send email notifications using the SendGrid API. SendGrid
-is the suggested free email service provider for Google Cloud Platform (GCP).
-For information about how to get 12,000 free emails every month, see
+is the suggested free email service provider for GCP. For information about
+how to get 12,000 free emails every month, see
 [Sending email with SendGrid](https://cloud.google.com/appengine/docs/standard/python/mail/sendgrid).
 
 To use SendGrid to send email notifications for Forseti Security, follow the
