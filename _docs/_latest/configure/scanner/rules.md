@@ -15,9 +15,11 @@ You can find some starter rules in the
 [rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules) 
 directory. When you make changes to the rule files, upload them to your 
 Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
-(found in `forseti_server_conf.yaml`).
+listed in `forseti_server_conf.yaml`.
 
 ## Cloud IAM policy rules
+
+This section describes rules for Cloud Identity and Access Management (Cloud IAM).
 
 ### Rule definition
 
@@ -162,7 +164,7 @@ rules:
       * **Valid values**: String.
       * **Example values**: `>=`
 
-### Enabling
+### Enabling Kubernetes Engine inventory
 
 To enable the Kubernetes Engine inventory, add the following to the inventory section in your
 `forseti_confi.yaml` file:
@@ -192,7 +194,7 @@ section in your `forseti_conf.yaml` file:
         - resource: ke_version_violations
           should_notify: true
           pipelines:
-            # Upload violations to GCS.
+            # Upload violations to Cloud Storage.
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
@@ -209,8 +211,8 @@ rules:
     url: https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
 ```
 
-* **blacklist**: The name of your blacklist
-* **url**: Url that contains a list of IPs to check against
+* **blacklist**: The name of your blacklist.
+* **url**: URL that contains a list of IPs to check against.
 
 ### Enabling
 To enable the blacklist scanner, add the followings to the scanner section in your
@@ -231,7 +233,7 @@ To enable the blacklist notifier, add the followings to the notifier section in 
         - resource: blacklist_violations
           should_notify: true
           pipelines:
-            # Upload violations to GCS.
+            # Upload violations to Cloud Storage.
             - name: gcs_violations_pipeline
               configuration:
                 # gcs_path should begin with "gs://"
@@ -251,7 +253,7 @@ To enable the blacklist notifier, add the followings to the notifier section in 
     - member_email: '@gmail.com'
 ```
 
-## GCS bucket ACL rules
+## Cloud Storage bucket ACL rules
 
 ### Rule definition
 
@@ -356,7 +358,7 @@ rules:
 
 ```yaml
 rules:
-  - name: sample cloudsql rule to search for publicly exposed instances
+  - name: sample Cloud SQL rule to search for publicly exposed instances
     instance_name: '*'
     authorized_networks: '0.0.0.0/0'
     ssl_enabled: 'False'
@@ -557,7 +559,9 @@ To learn more, see the
 [ForwardingRules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules)
 documentation.
 
-## IAP rules
+## Cloud IAP rules
+
+This section describes rules for Cloud Identity-Aware Proxy (Cloud IAP).
 
 ### Rule definition
 
