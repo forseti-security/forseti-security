@@ -22,7 +22,7 @@ Access Management (Cloud IAM) policies and service accounts.
 
 **[Models]({% link _docs/latest/concepts/models.md %})**
 
-Learn about the use of data-models and how Forseti uses them to represent, audit, and explain
+Learn about the use of data models and how Forseti uses them to represent, audit, and explain
 complex security policies.
 
 **[Service Accounts]({% link _docs/latest/concepts/service-accounts.md %})**
