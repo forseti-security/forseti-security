@@ -15,7 +15,8 @@ To complete this guide, you will need:
 * A Github account.
 * A Google Cloud Platform (GCP) organization.
 * A GCP project for Forseti with billing enabled.
-* The ability to assign roles on your organization's Cloud IAM policy.
+* The ability to assign roles on your organization's Cloud Identity
+  and Access Management (Cloud IAM) policy.
 * The ability to assign G Suite domain-wide delegation to the Forseti service account.
 
 ## Setting up GCP infrastructure
@@ -57,7 +58,7 @@ Install mysql_config:
   brew install mysql
   ```
 
-### Creating a virtualenv
+## Creating a virtualenv
 
 Ensure virtualenv is installed in your system. Virtualenv allows you to
 create multiple environments to contain different modules and dependencies
@@ -76,13 +77,13 @@ Use the following command to create a virtualenv:
   workon forseti-security
   ```
 
-### Getting the source code
+## Getting the source code
 
 Follow our
 [contributing guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md)
-to create a fork of the Forseti code, and learn how to submit a PR.
+to create a fork of the Forseti code, and learn how to submit a pull request (PR).
 
-### Installing build dependencies
+## Installing build dependencies
 
 Use the following command to install required build dependencies:
 
@@ -90,9 +91,9 @@ Use the following command to install required build dependencies:
   pip install -q --upgrade forseti-security/requirements.txt
   ```
 
-### Running the python setup
+## Running the Python setup
 
-Use the following commands to navigate to your cloned repository and run the python setup:
+Use the following commands to navigate to your cloned repository and run the Python setup:
 
   ```bash
   cd forseti-security
@@ -100,10 +101,10 @@ Use the following commands to navigate to your cloned repository and run the pyt
   python setup.py install
   ```
 
-### Troubleshooting
+## Troubleshooting
 
 If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and get 
-a fatal error related to `'openssl/opensslv.h' file not found`, you may need to 
+a fatal error related to `'openssl/opensslv.h' file not found`, you might need to 
 export `CPPFLAGS` and `LDFLAGS` for the openssl package. For more information,
 see [issue 3489](https://github.com/pyca/cryptography/issues/3489).
 
@@ -115,7 +116,7 @@ following command:
   
     ... lots of information ...
     
-    Generally there are no consequences of this for you. If you build your
+    There aren't usually any consequences of this for you. If you build your
     own software and it requires this formula, you'll need to add to your
     build variables:
 
@@ -135,16 +136,15 @@ following:
 In the above example, `/SOME/PATH/TO` represents the path specific to your
 system. Make sure to use the values from your terminal.
 
-### Configuring Forseti settings
+## Configuring Forseti settings
 
 Before you run Forseti, you need to edit the forseti configuration file. 
-Refer to [Configuring Forseti]({% link _docs/latest/configure/general/index.md %}) 
-for more information.
+For more information, see [Configuring Forseti]({% link _docs/latest/configure/general/index.md %}).
 
-### Starting Forseti
+## Starting Forseti
 
 After you complete the above steps, you should be able to run the Forseti
-server and the command line interface (CLI) client:
+server and the command-line interface (CLI) client:
 
   ```bash
   forseti_server \
@@ -156,7 +156,8 @@ server and the command line interface (CLI) client:
   --enable_console_log
   ```
 
-In another terminal window:
+For more information about commands, run the following in
+another terminal window:
 
   ```bash
   forseti -h or --help
