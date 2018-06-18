@@ -18,7 +18,7 @@ Following are the branches that the Forseti Security project team uses
 for developing, creating releases, and building the website:
 
 * `dev`: The development branch.
-* `stable`: The latest stable release; suitable for deploy to production.
+* `stable`: The latest stable release, suitable for deployment to production.
 * `forsetisecurity.org`: Forseti website.
 
 The `dev` branch is the starting point where you can create a new pull
