@@ -14,21 +14,21 @@ and managed.
 
 ### Main branches
 
-These are the branches that the Forseti Security project team use
-for developing, creating releases, and building the website.
+Following are the branches that the Forseti Security project team uses
+for developing, creating releases, and building the website:
 
 * `dev`: The development branch.
 * `stable`: The latest stable release; suitable for deploy to production.
 * `forsetisecurity.org`: Forseti website.
 
-The `dev` branch is the starting point where you can create a new PR. 
-Although there are unit tests, the `dev` branch is still considered to be
-unreliable because it can change before it's merged into the `master`
-branch.
+The `dev` branch is the starting point where you can create a new pull
+request (PR). Although there are unit tests, the `dev` branch is still
+considered to be unreliable because it can change before it's merged into
+the `master` branch.
 
 The `stable` branch is checkpointed code from the `dev` branch that
 has passed QA and integration testing. The `stable` branch is considered
-to be stable and suitable for production-use.
+to be stable and suitable for production use.
 
 ### Next-generation branches
 
