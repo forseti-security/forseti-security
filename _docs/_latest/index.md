@@ -12,8 +12,9 @@ Learn the core concepts and get an overview of each Forseti Security module.
 
 **[Setup]({% link _docs/latest/setup/index.md %})**
 
-Install or upgrade Forseti Security to help protect your GCP environments by monitoring your GCP
-resources to ensure that role-based access controls are set as you intended.
+Install or upgrade Forseti Security to help protect your Google Cloud Platform (GCP)
+environments by monitoring your GCP resources to ensure that role-based access
+controls are set as you intended.
 
 **[Configure]({% link _docs/latest/configure/index.md %})**
 
