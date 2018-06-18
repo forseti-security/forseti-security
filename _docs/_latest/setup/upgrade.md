@@ -23,7 +23,7 @@ This guide explains how to upgrade your Forseti instance.
 ## Upgrade to v2
 
 To upgrade your Forseti instance, it's best to run the v1 and v2 instances
-running side by side:
+side by side:
 
 1. Create a new project.
 1. [Install the latest v2 instance]({% link _docs/latest/setup/install.md %}).
