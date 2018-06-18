@@ -7,6 +7,8 @@ order: 302
 
 Forseti Scanner has default rules that create a
 [violation]({% link _docs/latest/use/cli/scanner.md %}) when their conditions are met.
+This page describes the default rules for specific Google Cloud Platform (GCP) products and
+resources.
 
 ---
 
@@ -16,7 +18,7 @@ Forseti Scanner has default rules that create a
   * Datasets should not be accessible by groups who's email address matches `*@googlegroups.com`.
 
 ## Blacklist
-  * The IP address of any Google Cloud Platform (GCP) instances should not be listed on
+  * The IP address of any GCP instances should not be listed on
   the [emergingthreats](https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt) website.
 
 ## Cloud Storage (legacy ACL policies)
