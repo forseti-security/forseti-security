@@ -8,10 +8,12 @@ This page describes how to run tests on your Forseti contributions.
 
 ## Before you begin
 
-Before you run unit tests, install Forseti on a Compute Engine instance by following the
-[Developer Setup]({% link _docs/latest/develop/dev/setup.md %}) (a local installation) 
-or the [Google Cloud Platform (GCP) setup]({% link _docs/latest/configure/general/index.md %}).
-You will need to connect to that instance to run the unit tests.
+Before you run unit tests, install Forseti by following the
+[Developer Setup]({% link _docs/latest/develop/dev/setup.md %}) for
+a local installation or the
+[Google Cloud Platform (GCP) setup]({% link _docs/latest/configure/general/index.md %})
+for a Compute Engine installation. You will need to connect to that
+instance to run the unit tests.
 
 ---
 
