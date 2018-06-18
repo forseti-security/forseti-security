@@ -7,7 +7,7 @@ hide:
 
 # {{ page.title }}
 
-Learn about using the command line interface (CLI) and third-party tool queries to
+Learn about using the command-line interface (CLI) and third-party tool queries to
 access Forseti Security.
 
 ---
