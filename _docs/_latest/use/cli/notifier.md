@@ -5,17 +5,19 @@ order: 104
 
 # {{ page.title }}
 
-This page describes how the Notifier is used and run.
+This page describes how Forseti Notifier is used and run.
 
-Notifier can either be run as part of the scheduled cron job's workflow
-or manually invoked using the Forseti CLI.
+Notifier can either run as part of the scheduled cron job's workflow
+or manually invoked using the Forseti command-line interface (CLI).
 
 When the cron job runs the Notifier, it sends notifications on the
-latest violations from the previous scanner run.
+latest violations from the previous Scanner run.
 
 ---
 
-### Usage
+## Running Notifier
+
+Following are the CLI commands you can use with Notifier:
 
   ```bash
   forseti notifier --help
