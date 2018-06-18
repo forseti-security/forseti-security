@@ -26,8 +26,7 @@ control access to its highly privileged permissions. Assign a billing account to
 
 ### Enable APIs
 
-It's necessary to enable the APIs Forseti Security needs, you can do it with a command like the one
-below:
+Install the required APIs for Forseti Security using the following command:
 
 ```bash
 gcloud beta service-management enable <API URI>
@@ -51,7 +50,7 @@ Where `#######` is a random alphanumeric unique identifier.
 
 For information about the roles you need to assign to the Forseti server
 service account, see 
-[the server service account]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
+[the server service account]({% link _docs/latest/concepts/service-accounts.md#the-server-service-account%}).
 
 ### Create a Forseti server VM instance
 
@@ -72,7 +71,7 @@ To install the Forseti Server, follow the steps below:
     gcloud compute --project <YOUR_PROJECT> ssh --zone <YOUR_ZONE> <YOUR_FORSETI_SERVER_NAME>
     ```
     
-1. Run the following command to become an Ubuntu user:
+1. To become an Ubuntu user, run the following command:
 
     ```bash
     sudo su ubuntu
@@ -88,9 +87,9 @@ by their tags:
     git checkout tags/<tag_number>
     ``` 
     
-1. Follow the setup instructions in the
-[startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L109) 
-to install Forseti server and all the necessary components like Fluentd and Cloud SQL Proxy.
+1. To install Forseti server and necessary components like Fluentd
+and Cloud SQL Proxy, follow the setup instructions in the
+[startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py#L109).
 
 1. Create the following firewall rules:
 
@@ -154,9 +153,9 @@ service account, see
 
 * For information about the specifications needed for a Forseti server
   VM instance, see the
-  [Compute Engine deployment template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py)
-* When you create the instance, bind the server service account to the VM instance
-* [Enable computeOS login](https://cloud.google.com/compute/docs/instances/managing-instance-access#enable_oslogin)
+  [Compute Engine deployment template](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/server/forseti-instance-server.py).
+* When you create the instance, bind the server service account to the VM instance.
+* [Enable Compute Engine OS Login](https://cloud.google.com/compute/docs/instances/managing-instance-access#enable_oslogin).
 
 ### Install the Forseti client
 
@@ -174,7 +173,7 @@ To install the Forseti client, follow the steps below:
     sudo su ubuntu
     ```
     
-1. `git clone` from the [forseti repo](https://github.com/GoogleCloudPlatform/forseti-security),
+1. `git clone` from the [Forseti repo](https://github.com/GoogleCloudPlatform/forseti-security),
 and check out the [latest release](https://github.com/GoogleCloudPlatform/forseti-security/releases)
 by their tags:
 
@@ -184,9 +183,9 @@ by their tags:
     git checkout tags/<tag_number>
     ```   
     
-1. Follow the setup instructions in the
-[startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py#L93)
-to install the Foresti command-line interface (CLI).
+1. To install the Foresti command-line interface (CLI), follow the setup
+instructions in the
+[startup-script](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/deployment-templates/compute-engine/client/forseti-instance-client.py#L93).
 
 ### Configuration
 
@@ -196,4 +195,4 @@ Cloud Storage. For more information, see
 
 ## What's next
 
-  * Learn how to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
+* Learn how to [use Forseti]({% link _docs/latest/configure/inventory/index.md %}).
