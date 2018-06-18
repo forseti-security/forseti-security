@@ -12,7 +12,8 @@ data types.
 
 ## Collecting and storing new data
 
-To add new GCP resource types to Forseti Inventory, follow the process below:
+To add new Google Cloud Platform (GCP) resource types to Forseti Inventory,
+follow the process below:
 
 1. Define a new table schema for the *flattened* data you'll store. Each field
     of data you retrieve from an API should correspond to a column in the table
@@ -21,7 +22,7 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
     returns data formatted as JSON.
 1. Create a
     [pull request](https://help.github.com/articles/creating-a-pull-request/) to add
-    initial table schema. To learn more, refer to this
+    initial table schema. To learn more, see this
     [example pull request](https://github.com/GoogleCloudPlatform/forseti-security/pull/159).
 1. After you merge the table schema pull request, create a
     [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/master/google/cloud/security/inventory/pipelines)
@@ -45,7 +46,7 @@ To add new GCP resource types to Forseti Inventory, follow the process below:
         inventory.
     1. Specify if the pipeline will run.
 1. Flatten the data collected from your API so you can store it in a CSV or
-    normalized storage system. See an example of
+    normalized storage system. For more information, see this example of
     [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32).
 1. Load the flattened data into the database table.
 
