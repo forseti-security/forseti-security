@@ -26,11 +26,6 @@ When you're finished making changes, run the
 [configuration reload]({% link _docs/latest/use/cli/server.md %}) 
 command to update the configuration of the server.
 
-Forseti Scanner is dependent on specific Inventory pipelines. To learn about	
-the available scanners and dependencies, see	
-[Scanner Specifications]({% link _docs/latest/configure/scanner/descriptions.md %}).
-
-
 You can learn how to run the [Forseti Scanner]({% link _docs/latest/use/cli/scanner.md %}).
 
 ---
