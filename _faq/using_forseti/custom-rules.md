@@ -6,5 +6,5 @@ order: 1
 
 We have some starter documentation for 
 [defining rules]({% link _docs/latest/configure/scanner/rules.md %}). 
-For more questions, please contact us at 
+If you have more questions, you can ask for help at 
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss).
