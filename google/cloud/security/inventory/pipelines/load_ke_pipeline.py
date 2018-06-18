@@ -60,17 +60,24 @@ class LoadKePipeline(base_pipeline.BasePipeline):
                     # would users really have multiple clusters in the same zone
                     # for redundancy.
                     self_link_parts = cluster.get('selfLink').split('/')
-                    zone = self_link_parts[self_link_parts.index('zones')+1]
+                    zone, location = None
+                    if 'zones' in self_link_parts:
+                        zone = self_link_parts[self_link_parts.index('zones')+1]
+                    elif 'locations' in self_link_parts:
+                        location = self_link_parts[self_link_parts.index('locations')+1]
+                    else:
+                        LOGGER.error('Cluster has no zone or location: %s', cluster)
+                        cluster['serverConfig'] = {}
+                        continue
                     server_config = self.safe_api_call(
-                        'get_serverconfig', project.id, zone)
+                        'get_serverconfig', project.id, zone=zone, location=location)
                     cluster['serverConfig'] = server_config
 
                 ke_services[project.id] = clusters
 
-
         return ke_services
-    # pylint: enable=too-many-locals, too-many-nested-blocks
 
+    # pylint: enable=too-many-locals, too-many-nested-blocks
     def _transform(self, resource_from_api):
         """Create an iterator of KE services to load into database.
 
