@@ -65,4 +65,4 @@ forseti config endpoint <IP_ADDRESS>:50051
 
 ## What's Next
 
-*  To learn how to use the CLI commands for specific components, see the other [CLI guides](({% link _docs/latest/use/cli/cli.md %})).
+*  To learn how to use the CLI commands for specific components, see the other [CLI guides](({% link _docs/latest/use/cli/index.md %})).
