@@ -156,10 +156,10 @@ file.
 
 ## Service Account Key scanner
 
-It is best practice to periodically rotate your user-managed service account
+It's best to periodically rotate your user-managed service account
 keys, in case the keys get compromised without your knowledge. With the
 service account key scanner, you can define the max age at which your service
-account keys should be rotated and the scanner can find any key that is older
+account keys should be rotated. The scanner will then find any key that is older
 than the max age.
 
 For examples of how to define scanner rules for your service account keys, see the
