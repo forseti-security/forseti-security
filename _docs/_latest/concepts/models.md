@@ -23,8 +23,8 @@ meant to be persistent, so when you're finished using a model, you should delete
 
 Data models are stored in their own set of tables with a naming convention of
 `<model_handle>_<table_name>`, and are tied to each other by specific relationships.
-Multiple set of tables can exist, either created by the cron job, or by other users. The
-table sets are listed in the `models` table.
+Multiple sets of tables can exist, either created by the cron job, or by other users.
+The table sets are listed in the `models` table.
 
 ### The `binding_members` table
 
