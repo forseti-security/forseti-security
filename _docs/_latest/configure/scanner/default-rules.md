@@ -47,3 +47,6 @@ Forseti Scanner has default rules that create a
     * For major version 1.9, the minor version must be at least 7-gke.1
     * For major version 1.10, the minor version must be at least 2-gke.1
     * For major version 1.11, any minor version is allowed
+
+## Kubernetes Engine
+  * User-managed service account keys should not be older than max age.
