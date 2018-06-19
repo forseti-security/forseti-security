@@ -49,4 +49,4 @@ Forseti Scanner has default rules that create a
     * For major version 1.11, any minor version is allowed
 
 ## Service Account Key
-  * User-managed service account keys should not be older than certain time.
+  * User-managed service account keys should not be older than the date and time you specify.
