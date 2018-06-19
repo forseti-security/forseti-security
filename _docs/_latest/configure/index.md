@@ -22,7 +22,7 @@ and Enforcer.
 
 Configure Inventory to collect and store information about your Google Cloud Platform (GCP) resources.
 Inventory helps you understand your resources and take action to conserve resources, reduce cost, and
-minimize security exposure.
+minimize security risk.
 
 **[Configuring Scanner]({% link _docs/latest/configure/scanner/index.md %})**
 
