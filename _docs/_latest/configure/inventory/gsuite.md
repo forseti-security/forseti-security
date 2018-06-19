@@ -18,7 +18,7 @@ control panel, you must have the **super admin** role in admin.google.com.
 ## Enable Domain-wide Delegation (DwD) in G Suite
 
 To enable collection of G Suite data using your existing Forseti
-service account, follow the steps below. Read more about 
+service account, follow the steps below. Read more about
 [domain-wide delegation](https://developers.google.com/identity/protocols/OAuth2ServiceAccount#delegatingauthority).
 
 ### Enable DwD on a service account
@@ -29,12 +29,12 @@ page.
 
    1. On the right side of the Forseti GCP server service account row,
    under **Options**, click **More > Edit**.
-   
+
       {% responsive_image path: images/docs/configuration/service_account_edit.png alt: "Service Account Edit" indent: 3 %}
-   
+
    1. On the **Edit service account** dialog that appears, select the **Enable
    G Suite Domain-wide Delegation** checkbox, then click **Save**.
-            
+
    {% responsive_image path: images/docs/configuration/service_account_enable_dwd.png alt: "Service Account Enable DwD" indent: 3 %}
 
 1. On the service account row, click **View Client ID**.
@@ -43,7 +43,7 @@ page.
 **Client ID** value, which will be a large number.
 
 {% responsive_image path: images/docs/configuration/client-id.png alt: "service account panel with client ID highlighted" indent: 2 %}
-        
+
 ### Enable the service account in your G Suite admin control panel.
 
 1. Go to your Google Admin
@@ -55,7 +55,7 @@ settings.
     ```
     https://www.googleapis.com/auth/admin.directory.group.readonly
     ```
-    
+
 1. Click **Authorize**.
 {% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
 
@@ -65,7 +65,7 @@ After you set up your service account above, you may need to edit the
 [`domain_super_admin_email`]({% link _docs/latest/configure/inventory/index.md %})
 field in your `forseti_conf_server.yaml`.
 
-If you are running Forseti on GCP and made any changes to the above values, 
+If you are running Forseti on GCP and made any changes to the above values,
 you will need to copy the `conf` file to the Cloud Storage bucket. For more
 information, see
 [Moving configuration to Cloud Storage]({% link _docs/latest/configure/general/index.md %}).
