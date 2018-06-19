@@ -1,6 +1,6 @@
 ---
 title: Model
-order: 102 
+order: 102
 ---
 
 # {{ page.title }}

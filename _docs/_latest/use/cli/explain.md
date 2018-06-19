@@ -8,7 +8,7 @@ This guide describes how to configure Explain for Forseti Security.
 
 Explain helps you understand the Cloud Identity and Access Management
 (Cloud IAM) policies that affect your Google Cloud Platform (GCP) resources.
-It can enumerate access by resource or member, answer why a principal has access 
+It can enumerate access by resource or member, answer why a principal has access
 to a certain resource, or offer possible strategies for how to grant access
 to a specific resource.
 
@@ -153,7 +153,7 @@ direct or indirect binding.
 ```bash
 forseti explainer access_by_member user/<USER_NAME> --expand_resource true
 ```
- 
+
 With resource expansion enabled, the example above will return `organizations/1234567890` and all
 folders, projects, VMs, and other resources in it.
 
@@ -186,7 +186,7 @@ To enable group expansion, pass in the `--expand_group` argument. Forseti will p
 expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true 
+forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true
 ```
 
 With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo`
@@ -195,7 +195,7 @@ is a member in `group/bar`.
 To constrain the result to a certain type of permission, pass in the permission:
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION> 
+forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION>
 ```
 
 ### Access member or resource by permission
@@ -246,7 +246,7 @@ in the binding links to your target member.
 
 In the following example, user `user/abc@gmail.com` has permission
 `iam.serviceAccounts.get` on resource `my-project-123` because the user
-has the role `roles/iam.securityReviewer` on resource 
+has the role `roles/iam.securityReviewer` on resource
 `organization/1234567890`. Member `user/abc@gmail.com` also has a
 membership in group `group/my-group-123@gmail.com`.
 
@@ -277,28 +277,28 @@ role `roles/baz_role` on the resource or its parent. The result also shows that 
 role if you add them to the group `group_foo_parent`, which already has the required permission.
 
 ```
-strategies { 
-    bindings { 
-        member: "member_foo " 
-        resource: "resource_bar_parent" 
-        role: "roles/baz_role" 
-    } 
-    overgranting: 1
-}
-strategies { 
-    bindings { 
-        member: "group_foo_parent " 
-        resource: "resource_bar"
-        role: "roles/baz_role" 
+strategies {
+    bindings {
+        member: "member_foo "
+        resource: "resource_bar_parent"
+        role: "roles/baz_role"
     }
     overgranting: 1
 }
-strategies { 
-    bindings { 
-        member: "member_foo" 
-        resource: "resource_bar" 
-        role: "roles/baz_role" 
-    } 
+strategies {
+    bindings {
+        member: "group_foo_parent "
+        resource: "resource_bar"
+        role: "roles/baz_role"
+    }
+    overgranting: 1
+}
+strategies {
+    bindings {
+        member: "member_foo"
+        resource: "resource_bar"
+        role: "roles/baz_role"
+    }
 }
 ...
 ```

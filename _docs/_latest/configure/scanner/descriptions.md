@@ -25,8 +25,8 @@ rule file.
 ## Blacklist scanner
 
 Virtual Machine (VM) instances that have external IP addresses can communicate
-with the outside world. If they are compromised, they could appear in various 
-blacklists and could be known as malicious, such as for sending spam, 
+with the outside world. If they are compromised, they could appear in various
+blacklists and could be known as malicious, such as for sending spam,
 hosting Command & Control servers, and so on. The blacklist scanner audits
 all of the VM instances in your environment and determines if any VMs
 with external IP addresses are on a specific blacklist you've configured.
@@ -36,8 +36,8 @@ For examples of how to define scanner rules, see the
 
 ## Bucket ACL scanner
 
-Cloud Storage buckets have ACLs that can grant public access to your 
-Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode, 
+Cloud Storage buckets have ACLs that can grant public access to your
+Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
 to ensure unauthorized users don't gain access to your Cloud Storage bucket.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
@@ -78,8 +78,8 @@ rule file.
 
 ## Firewall rules scanner
 
-Network firewall rules protect your network & organization by only allowing 
-desired traffic into and out of your network. The firewall rules scanner can 
+Network firewall rules protect your network & organization by only allowing
+desired traffic into and out of your network. The firewall rules scanner can
 ensure that all your network's firewalls are properly configured.
 
 For examples of how to define scanner rules for your firewall rules scanner, see the
@@ -141,14 +141,14 @@ additional attack surface area. The instance network interface scanner audits
 all of your VM instances in your environment, and determines if any VMs with
 external IP addresses are outside of the trusted networks.
 
-For examples of how to define scanner rules for network interfaces, see the 
+For examples of how to define scanner rules for network interfaces, see the
 [`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/instance_network_interface_rules.yaml)
 rule file.
 
 ## Kubernetes Engine version scanner
 
-Kubernetes Engine clusters running on older versions can be exposed to security 
-vulnerabilities, or lack of support. The KE version scanner can ensure your 
+Kubernetes Engine clusters running on older versions can be exposed to security
+vulnerabilities, or lack of support. The KE version scanner can ensure your
 Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the

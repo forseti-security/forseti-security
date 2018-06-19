@@ -14,7 +14,7 @@ access Forseti Security.
 
 **[Use the CLI]({% link _docs/latest/use/cli/index.md %})**
 
-Use the CLI to interface with Forseti and all of its modules. 
+Use the CLI to interface with Forseti and all of its modules.
 
 **[Get Help using Forseti]({% link _docs/latest/use/get-help.md %})**
 

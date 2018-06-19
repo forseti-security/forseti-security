@@ -21,10 +21,10 @@ Following are the CLI commands you can use with Notifier:
 
   ```bash
   forseti notifier --help
-  
+
   forseti notifier run
 
   # Send the violations by inventory index id.
   forseti notifier run --inventory_index_id <inventory index id>
   ```
-  
+

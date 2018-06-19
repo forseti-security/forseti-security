@@ -8,8 +8,8 @@ This page describes how to define rules for Forseti Scanner.
 ## Defining custom rules
 
 You can find some starter rules in the
-[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/1.0-dev/rules) 
-directory. When you make changes to the rule files, upload them to your 
+[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/1.0-dev/rules)
+directory. When you make changes to the rule files, upload them to your
 Forseti bucket or copy them to the `rules_path` (found in `forseti_conf.yaml`).
 
 ## Cloud IAM policy rules
@@ -54,14 +54,14 @@ rules:
     child resources.
 - **inherit_from_parents**: A boolean that defines whether a
   specified resource inherits ancestor rules.
-- **bindings**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to 
-  audit. 
+- **bindings**: The [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to
+  audit.
   - **role_name**: A
     [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam) such as
     "roles/editor" or "roles/viewer".
     - You can also use wildcards, such as **roles/***. Refer to the starter rules or the
       unit tests directory for examples.
-  - **members**: a list of Cloud IAM members. You can also use wildcards, 
+  - **members**: a list of Cloud IAM members. You can also use wildcards,
     such as `serviceAccount:*@*gserviceaccount.com` (all service accounts) or
     `user:*@company.com` (anyone with an identity at company.com).
 
@@ -205,15 +205,15 @@ rules:
   specified resource inherits ancestor rules.
 - **allowed_direct_access_sources**: Comma-separated list of globs that are
   matched against the IP ranges and tags in your firewall rules that allow
-  access to services in your GCP environment.  
-  
+  access to services in your GCP environment.
+
 ## Instance Network Interface rules
 ```yaml
 rules:
   # This rule helps with:
-  # #1 Ensure instances with external IPs are only running 
+  # #1 Ensure instances with external IPs are only running
   # on whitelisted networks
-  # #2 Ensure instances are only running on networks created in allowed 
+  # #2 Ensure instances are only running on networks created in allowed
   # projects (using XPN)
   - name: all networks covered in whitelist
     project: '*'
@@ -221,10 +221,10 @@ rules:
     is_external_network: True
     # this would be a custom list of your networks/projects.
     whitelist:
-      master: 
+      master:
         - master-1
-      network: 
-        - network-1 
+      network:
+        - network-1
         - network-2
       default:
         - default-1
@@ -234,6 +234,6 @@ rules:
   VM instances can have external IPs. For example, the following values would
   specify that VM instances in project_01’s network_01 can have external IP
   addresses:
-        
+
       project_01:
         - network_01

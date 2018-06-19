@@ -18,7 +18,7 @@ The following command will output the configuration that Forseti
 server is currently using:
 
 ```bash
-forseti server configuration get 
+forseti server configuration get
 ```
 
 ### Reloading the current server configuration
@@ -26,7 +26,7 @@ forseti server configuration get
 The following command forces the server to reload its configuration:
 
 ```bash
-forseti server configuration reload <PATH_TO_CONFIG_FILE> 
+forseti server configuration reload <PATH_TO_CONFIG_FILE>
 ```
 
 Where `<PATH_TO_CONFIG_FILE>` is an optional path to the Forseti
@@ -51,5 +51,5 @@ The following command will set the log level of the server:
 forseti server log_level set <LOG_LEVEL>
 ```
 
-Where `<LOG_LEVEL>` is the log level of the server as one of 
+Where `<LOG_LEVEL>` is the log level of the server as one of
 `debug`, `info`, `warning` or `error`.

@@ -1,5 +1,5 @@
 ---
-title: Notifier 
+title: Notifier
 order: 401
 ---
 
@@ -15,9 +15,9 @@ and varying formats to you to events in your Google Cloud Platform
 
 **Types of notifications**
 * Inventory Summary: Count of the resources added in the latest inventory crawl.
-* Violation Notifications: Individual violations that have been found from the latest scanner run. 
+* Violation Notifications: Individual violations that have been found from the latest scanner run.
 * Cloud SCC Findings: Violations converted to [Cloud SCC (Cloud Security Command Center)](https://cloud.google.com/security-command-center/) findings format, that's ingestable by Cloud SCC.
-  
+
 **Channels used to notify**
 * Email
 * Slack
@@ -142,7 +142,7 @@ any combination of notifiers for each resource.
   * **Note**: Multiple email recipients as delimited by comma, e.g. `john@mycompany.com,jane@mycompany.com`.
 
 * `webhook_url`
-  * **Description**: The url of the Slack channel to receive the notification. 
+  * **Description**: The url of the Slack channel to receive the notification.
   * **Valid values**: String
   * **Note**: See [this Slack documentation on how to generate a webhook](https://api.slack.com/incoming-webhooks).
 
@@ -185,7 +185,7 @@ process below:
 1. Create a general
     [API Key](https://sendgrid.com/docs/User_Guide/Settings/api_keys.html).
 1. Edit the following in `forseti_conf_server.yaml`:
-    1. `email_recipient` 
+    1. `email_recipient`
        * **Description**: The Email address of notification recipient.
     1. `email_sender`
        * **Description**: The Sender email address for notifications

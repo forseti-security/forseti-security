@@ -73,7 +73,7 @@ Use the following command to create a virtualenv:
   ```bash
   # create a virtualenv
   mkvirtualenv forseti-security
-  
+
   workon forseti-security
   ```
 
@@ -97,14 +97,14 @@ Use the following commands to navigate to your cloned repository and run the Pyt
 
   ```bash
   cd forseti-security
-  
+
   python setup.py install
   ```
 
 ## Troubleshooting
 
-If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and get 
-a fatal error related to `'openssl/opensslv.h' file not found`, you might need to 
+If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and get
+a fatal error related to `'openssl/opensslv.h' file not found`, you might need to
 export `CPPFLAGS` and `LDFLAGS` for the openssl package. For more information,
 see [issue 3489](https://github.com/pyca/cryptography/issues/3489).
 
@@ -113,9 +113,9 @@ following command:
 
   ```bash
   brew info openssl
-  
+
     ... lots of information ...
-    
+
     There aren't usually any consequences of this for you. If you build your
     own software and it requires this formula, you'll need to add to your
     build variables:
@@ -124,21 +124,21 @@ following command:
     CPPFLAGS: -I/SOME/PATH/TO/openssl/include
   ```
 
-Next, copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
+Next, copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the
 following:
 
   ```bash
   export CPPFLAGS=-I/SOME/PATH/TO/openssl/include
-  
+
   export LDFLAGS=-L/SOME/PATH/TO/openssl/lib
   ```
-  
+
 In the above example, `/SOME/PATH/TO` represents the path specific to your
 system. Make sure to use the values from your terminal.
 
 ## Configuring Forseti settings
 
-Before you run Forseti, you need to edit the forseti configuration file. 
+Before you run Forseti, you need to edit the forseti configuration file.
 For more information, see [Configuring Forseti]({% link _docs/latest/configure/general/index.md %}).
 
 ## Starting Forseti

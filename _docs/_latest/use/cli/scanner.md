@@ -15,11 +15,11 @@ For more information about rules, see how to
 ## Running Forseti Scanner
 
 Forseti Scanner works on a data model. Before you start using Scanner, you'll
-select the model you want to use. 
+select the model you want to use.
 
 If you haven't created a model yet, see [create a model]({% link _docs/latest/use/cli/model.md %}).
 
-To configure which scanners to run, see 
+To configure which scanners to run, see
 [Configuring Forseti: Configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 
 

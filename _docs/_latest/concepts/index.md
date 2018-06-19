@@ -1,5 +1,5 @@
 ---
-title: Concepts 
+title: Concepts
 order: 000
 hide:
   right_sidebar: true

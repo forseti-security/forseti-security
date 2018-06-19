@@ -12,8 +12,8 @@ This page describes how to define rules for Forseti Scanner.
 ## Defining custom rules
 
 You can find some starter rules in the
-[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules) 
-directory. When you make changes to the rule files, upload them to your 
+[rules](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/rules)
+directory. When you make changes to the rule files, upload them to your
 Forseti bucket under `forseti-server-xxxx/rules/` or copy them to the `rules_path`
 listed in `forseti_server_conf.yaml`.
 
@@ -52,22 +52,22 @@ rules:
 * `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
-  * **Note**:  
-    * `whitelist`: Allow the members defined. 
-    * `blacklist`: Block the members defined. 
+  * **Note**:
+    * `whitelist`: Allow the members defined.
+    * `blacklist`: Block the members defined.
     * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `applies_to`
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
-    * **Note**:  
-      * `self`: Allow the members defined. 
-      * `children`: Block the members defined. 
+    * **Note**:
+      * `self`: Allow the members defined.
+      * `children`: Block the members defined.
       * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
@@ -80,7 +80,7 @@ rules:
 
 * `bindings`
   * **Description**: The
-  [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit. 
+  [Policy Bindings](https://cloud.google.com/iam/reference/rest/v1/Policy#binding) to audit.
     * `role`
       * **Description**: A [Cloud IAM role](https://cloud.google.com/compute/docs/access/iam).
       * **Valid values**: String.
@@ -118,7 +118,7 @@ rules:
       - major: '1.9'
         operator: '>='
  ```
- 
+
 * `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
@@ -127,29 +127,29 @@ rules:
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: String, you can use `*` to match for all.
 
 * `check_serverconfig_valid_node_versions`
-  * **Description**: If true, will raise a violation for any node pool running a version 
+  * **Description**: If true, will raise a violation for any node pool running a version
   that is not listed as supported for the zone the cluster is running in.
   * **Valid values**: One of `true` or `false`.
 
 * `check_serverconfig_valid_master_versions`
-  * **Description**: If true, will raise a violation for any cluster running an out of 
+  * **Description**: If true, will raise a violation for any cluster running an out of
   date master version. New clusters can only be created with a supported master version.
   * **Valid values**: One of `true` or `false`.
 
 * `allowed_nodepool_versions`
-  * **Description**: Optional, if not included all versions are allowed. 
+  * **Description**: Optional, if not included all versions are allowed.
   The list of rules for what versions are allowed on nodes.
     * `major`
       * **Description**: The major version that is allowed.
       * **Valid values**: String.
       * **Example values**: `1.6`, `1.7`, `1.8`
-      
+
     * `minor`
       * **Description**: Optional, the minor version that is allowed. If not included, all minor
       versions are allowed.
@@ -332,7 +332,7 @@ rules:
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: String, you can use `*` to match for all.
@@ -367,7 +367,7 @@ rules:
         resource_ids:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
  ```
- 
+
 * `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
@@ -376,7 +376,7 @@ rules:
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: String, you can use `*` to match for all.
@@ -423,7 +423,7 @@ rules:
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: String, you can use `*` to match for all.
@@ -479,7 +479,7 @@ rules:
       - 'storage-api.googleapis.com'
       - 'storage-component.googleapis.com'
  ```
- 
+
 * `name`
   * **Description**: The name of the rule.
   * **Valid values**: String.
@@ -487,7 +487,7 @@ rules:
 * `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
-  * **Note**:  
+  * **Note**:
     * `whitelist`: Allow only the APIs listed in `services`.
     * `blacklist`: Block the APIs listed in `services`.
     * `required`: All APIs listed in `services` must be enabled.
@@ -496,13 +496,13 @@ rules:
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `applies_to`
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
-    * **Note**:  
-      * `self`: Allow the members defined. 
-      * `children`: Block the members defined. 
+    * **Note**:
+      * `self`: Allow the members defined.
+      * `children`: Block the members defined.
       * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
@@ -513,7 +513,7 @@ rules:
   * **Description**: The list of services to whitelist/blacklist/require.
   * **Valid values**: String.
   * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
-  
+
 ## Forwarding rules
 
 ### Rule definition
@@ -539,17 +539,17 @@ rules:
 * `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: Current only support `whitelist` mode.
-  * **Note**:  
+  * **Note**:
      * `whitelist`: Ensure each forwarding rule only directs to the intended target instance.
 
 * `load_balancing_scheme`
   * **Description**: What the ForwardingRule will be used for.
   * **Valid values**: One of `INTERNAL` or `EXTERNAL`.
-  
+
 * `ip_protocol`
   * **Description**: The IP protocol to which this rule applies.
   * **Valid values**: One of `TCP`, `UDP`, `ESP`, `AH`, `SCTP`, or `ICMP`.
-  
+
 * `ip_address`
   * **Description**: The IP address for which this forwarding rule serves.
   * **Valid values**: String.
@@ -585,22 +585,22 @@ rules:
 * `mode`
   * **Description**: The mode of the rule.
   * **Valid values**: One of `whitelist`, `blacklist` or `required`.
-  * **Note**:  
-    * `whitelist`: Allow the members defined. 
-    * `blacklist`: Block the members defined. 
+  * **Note**:
+    * `whitelist`: Allow the members defined.
+    * `blacklist`: Block the members defined.
     * `required`: Defined members with the specified roles must be found in policy.
 
 * `resource`
   * `type`
     * **Description**: The type of the resource.
     * **Valid values**: One of `organization`, `folder` or `project`.
-      
+
   * `applies_to`
     * **Description**: What resources to apply the rule to.
     * **Valid values**: One of `self`, `children` or `self_and_children`.
-    * **Note**:  
-      * `self`: Allow the members defined. 
-      * `children`: Block the members defined. 
+    * **Note**:
+      * `self`: Allow the members defined.
+      * `children`: Block the members defined.
       * `self_and_children`: The rule applies to the specified resource and its child resources.
 
   * `resource_ids`
@@ -612,11 +612,11 @@ rules:
   * **Valid values**: One of `true` or `false`.
 
 * `allowed_direct_access_sources`
-  * **Description**:  Comma-separated list of globs that are matched against the IP ranges and tags in your 
-  firewall rules that allow access to services in your GCP environment. 
+  * **Description**:  Comma-separated list of globs that are matched against the IP ranges and tags in your
+  firewall rules that allow access to services in your GCP environment.
   * **Valid values**: String.
   * **Example values**: `10.*,monitoring-instance-tag`
-  
+
 ## Instance Network Interface rules
 
 ### Rule definition
@@ -624,9 +624,9 @@ rules:
 ```yaml
 rules:
   # This rule helps with:
-  # #1 Ensure instances with external IPs are only running 
+  # #1 Ensure instances with external IPs are only running
   # on whitelisted networks
-  # #2 Ensure instances are only running on networks created in allowed 
+  # #2 Ensure instances are only running on networks created in allowed
   # projects (using XPN)
   - name: all networks covered in whitelist
     project: '*'
@@ -656,13 +656,13 @@ rules:
   * **Valid values**: String, you can use `*` to match for all.
 
 * `whitelist`
-  * **Description**: The whitelist describes which projects and networks for which VM 
+  * **Description**: The whitelist describes which projects and networks for which VM
   instances can have external IPs.
   * **Valid values**: project/networks pairs.
-  * **Example values**: The following values would specify that VM instances in 
+  * **Example values**: The following values would specify that VM instances in
   project_01’s network_01 can have external IP addresses:
-  
+
     ```
-    project_01:  
+    project_01:
     - network_01
     ```

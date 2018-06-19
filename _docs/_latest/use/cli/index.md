@@ -1,5 +1,5 @@
 ---
-title: Using the CLI 
+title: Using the CLI
 order: 100
 hide:
   right_sidebar: true
@@ -7,8 +7,8 @@ hide:
 
 # {{ page.title }}
 
-Learn about using the command-line interface (CLI) and 
-third-party tool queries to work with Forseti Security 
+Learn about using the command-line interface (CLI) and
+third-party tool queries to work with Forseti Security
 and its modules.
 
 ---

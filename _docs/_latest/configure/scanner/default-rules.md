@@ -24,7 +24,7 @@ resources.
 ## Cloud Storage (legacy ACL policies)
   * Buckets ACLs should not be publicly accessible (`AllUsers`).
   * Buckets ACLs should not be accessible by any authenticated user (`AllAuthenticatedUsers`).
- 
+
 ## Cloud SQL
   * Cloud SQL instances should not allow access from anywhere (authorized networks).
   * Cloud SQL instances should not allow access over SSL from anywhere (authorized networks).
@@ -32,7 +32,7 @@ resources.
 ## G Suite
   * Your company users (@domain.tld) and all gmail users are allowed to be members of your G Suite
   groups.
- 
+
 ## Cloud Identity and Access Management (Cloud IAM) policies
   * Only Cloud IAM users and group members in my domain may be granted the role `Organization Admin`.
 

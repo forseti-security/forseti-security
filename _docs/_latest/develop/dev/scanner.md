@@ -1,5 +1,5 @@
 ---
-title: Scanner 
+title: Scanner
 order: 103
 ---
 
@@ -26,7 +26,7 @@ directory.
 ## IamRulesEngine Overview
 
 With the `IamRulesEngine`, Forseti Scanner integrates with Forseti Inventory to
-get Cloud IAM policy data for organizations, folders, and projects, and audits the policies 
+get Cloud IAM policy data for organizations, folders, and projects, and audits the policies
 against user-defined rules. `IamRulesEngine` uses the organization resources' hierarchy, so
 rules can "roll up" to resource parents. For example, a project under an
 organization can look for rules for that project and for its parent
@@ -40,8 +40,8 @@ The rule violations can be stored in a CSV, a Cloud Storage bucket, and a Cloud 
 The base rules engine class
 `google.cloud.security.scanner.audit.BaseRulesEngine` contains some generic
 methods for loading rules files in YAML or JSON format. Because Google Cloud
-Platform (GCP) resources have different kinds of data that can be checked for 
-whether they are secureliy configured, you'll need to design the rule checking 
+Platform (GCP) resources have different kinds of data that can be checked for
+whether they are secureliy configured, you'll need to design the rule checking
 based on the kind of data you want to audit.
 
 To design a rules engine, follow the guidelines below:

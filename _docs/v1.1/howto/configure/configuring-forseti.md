@@ -66,15 +66,15 @@ forseti_inventory --forseti_config path/to/forseti_conf.yaml
 
 ### Configuring Scanner
 
-Forseti Scanner runs in batch mode, executing each scanner serially 
+Forseti Scanner runs in batch mode, executing each scanner serially
 for each run. To modify the scanner settings:
 
 1. Open `forseti-security/configs/forseti_conf.yaml`.
 1. Navigate to the `scanner` > `scanners` section.
 1. Edit the `enabled` property for the appropriate pipelines.
    `true` enables the pipeline, and `false` disables the pipeline.
-1. Forseti Scanner can save output to CSV files. To specify an output 
-   location, specify the `output_path` location (either on the local 
+1. Forseti Scanner can save output to CSV files. To specify an output
+   location, specify the `output_path` location (either on the local
    filesystem or in GCS) where you want to save the CSV.
 1. Specify the path of the rule files (either on the local filesystem
    or in GCS).
@@ -85,21 +85,21 @@ updated configuration:
  ```
  forseti_scanner --forseti_config path/to/forseti_conf.yaml
  ```
- 
+
 Forseti Scanner is dependent on specific Inventory pipelines. To learn about
 the available scanners and dependencies, see
 [Scanner Specifications]({% link _docs/v1.1/quickstarts/scanner/descriptions.md %}).
- 
- 
+
+
 ### Configuring Notifier
 
-Forseti Notifier can currently send notifications for scanner violations. The 
+Forseti Notifier can currently send notifications for scanner violations. The
 following options are available:
 
-* Email notifications via SendGrid -- This sends the scanner violation data to 
+* Email notifications via SendGrid -- This sends the scanner violation data to
   a specific email recipient.
 * Upload violations CSV to GCS -- This uploads the scanner violation data to GCS.
-* Slack webhook -- This invokes a Slack webhook for each scanner violation found. 
+* Slack webhook -- This invokes a Slack webhook for each scanner violation found.
   Configure a webhook in your organization's Slack settings and set the `webhook_url`.
 
 You can invoke the Forseti Notifier with the following command:
@@ -110,7 +110,7 @@ forseti_notifier --forseti_config path/to/forseti_conf.yaml
 
 ### Move Configuration to GCS
 
-If you are running Forseti on GCP, you should copy your edited forseti_conf.yaml to 
+If you are running Forseti on GCP, you should copy your edited forseti_conf.yaml to
 your GCS `SCANNER_BUCKET`. When Forseti runs again (via cronjob), it will execute a
 script that downloads the latest conf and rules files.
 

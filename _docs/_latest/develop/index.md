@@ -5,7 +5,7 @@ hide:
   right_sidebar: true
 ---
 
-# {{ page.title }} 
+# {{ page.title }}
 
 ---
 

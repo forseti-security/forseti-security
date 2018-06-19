@@ -13,7 +13,7 @@ This guide explains how to use the Forseti installation tool.
 
 Before you run the setup wizard, you will need:
 
-* A Google Cloud Platform (GCP) organization you want to deploy 
+* A Google Cloud Platform (GCP) organization you want to deploy
   Forseti for.
 * An Organization Administrator Cloud Identity and Access Management (Cloud IAM)
   role so the script can assign the Forseti service account roles on the
@@ -44,7 +44,7 @@ steps below:
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is 
+  1. After you've started Cloud Shell, download Forseti. The installer is
   included in the `install/` directory:
 
       ```bash
@@ -62,8 +62,8 @@ steps below:
       ```
 
   1. Install both client and server by running the installer:
-     
-     ```bash 
+
+     ```bash
      python install/gcp_installer.py
      ```
 
@@ -91,7 +91,7 @@ steps below:
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
      your Cloud Storage bucket:
-     
+
      ```bash
        MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
        forseti inventory create --import_as ${MODEL_ID}
@@ -103,7 +103,7 @@ steps below:
 ## What's next
 
 * Learn how to customize
-  [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and 
+  [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
   [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 * Configure Forseti Notifier to send
   [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).

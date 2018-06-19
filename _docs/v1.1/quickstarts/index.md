@@ -1,5 +1,5 @@
 ---
-title: Quickstarts 
+title: Quickstarts
 order: 001
 hide:
   right_sidebar: true

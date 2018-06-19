@@ -1,5 +1,5 @@
 ---
-title: Branch Management 
+title: Branch Management
 order: 003
 ---
 
@@ -32,7 +32,7 @@ to be stable and suitable for production use.
 
 ### Next-generation branches
 
-Branches will be created to develop the versions of Forseti Security. 
+Branches will be created to develop the versions of Forseti Security.
 These next-generation branches will be prefixed with a version number.
 
 Typically, the team will begin with an `N.N-dev` branch. After the code
@@ -54,7 +54,7 @@ Following is an example of this workflow for version 2.0:
 
 After the support period has passed for the previous version, the
 next-generation `dev` and `master` branches will be merged into the
-`dev` and `master` branches. Then, the `N.N-<name>` branches will be deleted. 
+`dev` and `master` branches. Then, the `N.N-<name>` branches will be deleted.
 This is so that the `dev` and `master` are always maintained as the canonical
 branches, and all the commit histories are retained.
 
@@ -83,12 +83,12 @@ version will be created from the `dev` branch.
 found are fixed as follows:
 
    2. A new feature branch is created from the release branch.
-  
+
    2. A code review is completed.
-  
+
    2. The bug fix is merged back into the release branch.
 
-1. When the release branch is fully qualified, the branch is merged into 
+1. When the release branch is fully qualified, the branch is merged into
 the `stable` and `dev` branch.
 
 1. After the release branch is merged, it's deleted.

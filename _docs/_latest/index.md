@@ -1,7 +1,7 @@
 ---
-title: Docs 
+title: Docs
 order: 000
-hide: 
+hide:
   left_sidebar: true
   right_sidebar: true
 ---
