@@ -268,7 +268,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
-            'BRANCH_OR_RELEASE': 'branch-name: "{}"'.format(self.branch),
+            'FORSETI_VERSION': self.version,
             'RAND_MINUTE': random.randint(0, 59)
         }
 
@@ -353,6 +353,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.config.gsuite_superadmin_email = raw_input(
                 constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
+        if self.config.skip_sendgrid_config:
+            print(constants.MESSAGE_SKIP_SENDGRID_API_KEY)
+            return
+
         utils.print_banner('Configuring Forseti Email Settings')
         if not self.config.sendgrid_api_key:
             # Ask for SendGrid API Key.
@@ -393,8 +397,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
         if self.has_roles_script:
             instructions.other_messages.append(
-                constants.MESSAGE_HAS_ROLE_SCRIPT.format(
-                    self.resource_root_id))
+                constants.MESSAGE_HAS_ROLE_SCRIPT)
 
         if not self.config.sendgrid_api_key:
             instructions.other_messages.append(

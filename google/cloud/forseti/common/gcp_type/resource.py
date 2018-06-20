@@ -36,6 +36,7 @@ class ResourceType(object):
 
     # IAM
     SERVICE_ACCOUNT = 'service_account'
+    SERVICE_ACCOUNT_KEY = 'serviceaccount_key'
 
     # Compute engine
     BACKEND_SERVICE = 'backend_service'
