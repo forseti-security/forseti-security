@@ -95,5 +95,5 @@ the `stable` and `dev` branch.
 
 ## What's next
 
-* Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+* Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md).
 * Learn about Forseti release process (TBD).

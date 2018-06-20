@@ -9,12 +9,12 @@ The Forseti Security community is growing and we welcome your participation!
 Forseti would not exist without the rest of the open-source community. We thank
 our contributors for their commitment to making it better.
 
-## Get involved 
+## Get involved
 
 **Contribute**
 
 If you'd like to contribute to Forseti, please follow our
-[contribution guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
+[contribution guidelines](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/.github/CONTRIBUTING.md).
 
 **Learn about announcements**
 
