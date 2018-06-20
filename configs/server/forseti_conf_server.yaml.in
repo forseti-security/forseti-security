@@ -102,6 +102,8 @@ scanner:
           enabled: false
         - name: ke_version_scanner
           enabled: true
+        - name: service_account_key
+          enabled: true
 
 ##############################################################################
 
@@ -326,6 +328,23 @@ notifier:
                 data_format: csv
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: service_account_key_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
 
     violation:
       cscc:

@@ -14,27 +14,18 @@
 
 """Creates a GCE instance template for Forseti Security."""
 
-import random
-
 def GenerateConfig(context):
     """Generate configuration."""
 
-    USE_BRANCH = context.properties.get('branch-name')
     FORSETI_HOME = '$USER_HOME/forseti-security'
 
-    if USE_BRANCH:
-        DOWNLOAD_FORSETI = """
-git clone {src_path}.git --branch {branch_name} --single-branch forseti-security
-        """.format(
-            src_path=context.properties['src-path'],
-            branch_name=context.properties['branch-name'])
-    else:
-        DOWNLOAD_FORSETI = """
-wget -qO- {src_path}/archive/v{release_version}.tar.gz | tar xvz
-mv forseti-security-{release_version} forseti-security
-        """.format(
-            src_path=context.properties['src-path'],
-            release_version=context.properties['release-version'])
+    DOWNLOAD_FORSETI = (
+        "git clone {src_path}.git".format(
+            src_path=context.properties['src-path']))
+
+    FORSETI_VERSION = (
+        "git checkout {forseti_version}".format(
+            forseti_version=context.properties['forseti-version']))
 
     CLOUDSQL_CONN_STRING = '{}:{}:{}'.format(
         context.env['project'],
@@ -45,7 +36,6 @@ mv forseti-security-{release_version} forseti-security
     FORSETI_DB_NAME = context.properties['database-name']
     SERVICE_ACCOUNT_SCOPES =  context.properties['service-account-scopes']
     FORSETI_SERVER_CONF = '{}/configs/forseti_conf_server.yaml'.format(FORSETI_HOME)
-
 
     EXPORT_INITIALIZE_VARS = (
         'export SQL_PORT={0}\n'
@@ -147,6 +137,8 @@ rm -rf *forseti*
 # Download Forseti source code
 {download_forseti}
 cd forseti-security
+git fetch --all
+{checkout_forseti_version}
 
 # Forseti Host Setup
 sudo apt-get install -y git unzip
@@ -231,6 +223,9 @@ echo "Execution of startup script finished"
 
     # Install Forseti.
     download_forseti=DOWNLOAD_FORSETI,
+
+    # Checkout Forseti version.
+    checkout_forseti_version=FORSETI_VERSION,
 
     # Set ownership for Forseti conf and rules dirs
     forseti_home=FORSETI_HOME,
