@@ -55,5 +55,6 @@ To design a rules engine, follow the guidelines below:
         compares the policy against the rule in the book, if found.
 1. Create a new scanner and add the necessary scanner mappings and configurations.
 
-For an example of how the `IamRulesEngine` works with the other Forseti scanners,
-see `scanner.py`.
+## What's next
+
+* Learn about [Forseti's APIs]({% link _docs/_latest/develop/index.md %}).
