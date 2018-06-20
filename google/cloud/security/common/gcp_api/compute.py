@@ -15,8 +15,9 @@
 """Wrapper for Compute API client."""
 import json
 import os
-from googleapiclient import errors
 from httplib2 import HttpLib2Error
+
+from googleapiclient import errors
 
 from google.cloud.security.common.gcp_api import _base_repository
 from google.cloud.security.common.gcp_api import api_helpers

@@ -23,9 +23,9 @@ import operator
 import socket
 import ssl
 import time
+import httplib2
 
 from googleapiclient import errors
-import httplib2
 from retrying import retry
 from google.apputils import datelib
 from google.cloud.security.common.util import log_util
