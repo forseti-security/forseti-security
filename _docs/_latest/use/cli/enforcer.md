@@ -21,15 +21,8 @@ Enforcer requires write permissions for the resources that it manages.
 When you set up Forseti using the installer, a service account is created and
 granted write access to update firewalls on any project in your organization.
 
-If you didn't use the installer, or you didn't enable Enforcer during
-installation, or if you want to run Enforcer on a different instance than the
-Forseti server, then you need to grant following permissions to the service
-account used by Enforcer:
-
-* The Compute Security Admin role on all projects that it will enforce, or on
-  the folders or organization parenting the projects.
-* The cloud-platform or compute API scope on the instance that's running
-  Forseti Enforcer.
+This special access is only available from the Forseti Server and not the Forseti Client and its
+command line interface.
 
 ## Using Enforcer
 
@@ -104,7 +97,7 @@ to only allow:
 #### Use a local policy file
 
 To run Enforcer with a local policy file, run the following command on
-the server instance:
+the **server** instance:
 
   ```bash
   forseti_enforcer --enforce_project PROJECT_ID \
