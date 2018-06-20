@@ -21,8 +21,8 @@ Enforcer requires write permissions for the resources that it manages.
 When you set up Forseti using the installer, a service account is created and
 granted write access to update firewalls on any project in your organization.
 
-This special access is only available from the Forseti Server and not the Forseti Client and its
-command line interface.
+This write access is only available from the Forseti Server. It isn't
+available from the Forseti Client and its command-line interface (CLI).
 
 ## Using Enforcer
 
