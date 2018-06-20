@@ -57,4 +57,4 @@ To design a rules engine, follow the guidelines below:
 
 ## What's next
 
-* Learn about [Forseti's APIs]({% link _docs/_latest/develop/index.md %}).
+* Learn about [Forseti's APIs]({% link _docs/_latest/develop/reference/index.html %}).
