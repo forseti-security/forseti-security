@@ -27,7 +27,7 @@ this is deprecated and should not be used for new installs.
 
 * `forsetisecurity.org`: Forseti website.
 
-The `dev` branch is the starting point where you can create a new PR. 
+The `dev` branch is the starting point where you can create a new PR.
 Although there are unit tests, the `dev` branch is still considered to be
 unreliable because it can change before it's merged into the `master`
 branch.
@@ -74,10 +74,10 @@ dev --> 2.0-dev
 # Make existing master branch to be the deprecated release branch.
 master --> 2.0-master
 
-# Make the new version's dev branch to be the new active dev branch.
+# Make the new version's dev branch to be the new active development branch.
 3.0-dev --> dev
 
-# Create new active release branch from the new dev branch.
+# Create new active release branch from the new active release branch.
 ```
 
 ### Other branches
