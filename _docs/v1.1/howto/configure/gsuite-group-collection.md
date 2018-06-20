@@ -55,7 +55,7 @@ You must have the **super admin** role in admin.google.com to complete these ste
 1. In the **Client Name** box, paste the **Client ID** you copied above.
 1. In the **One or More API Scopes** box, paste the following scope:
     ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly
+    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
     ```
 1. Click **Authorize**.
 {% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
@@ -65,11 +65,16 @@ You must have the **super admin** role in admin.google.com to complete these ste
 After you create a service account above, you may need to edit the following variables 
 in your `forseti_conf.yaml`.
 
+<<<<<<< HEAD:_docs/v1.1/howto/configure/gsuite-group-collection.md
 - `groups-domain-super-admin-email`: Use of the Admin API requires delegation
   (impersonation). Enter an email address of a Super Admin in the G Suite
+=======
+- `domain_super_admin_email`: Use of the Admin API requires delegation
+  (impersonation). Enter an email address of a Super Admin in the GSuite
+>>>>>>> 8e4b8a241ea9fcd82e013d239c7547c6fbc2b712:_docs/howto/configure/gsuite-group-collection.md
   account. If you entered this value in the setup wizard, you do not need to 
   change this in your `forseti_conf.yaml`.
-- `groups-service-account-key-file`: Forseti Inventory uses this path to
+- `groups_service_account_key_file`: Forseti Inventory uses this path to
   locate the key file which you downloaded earlier. If you deployed with the 
   setup wizard, this value is already pre-populated for you.
 
@@ -91,4 +96,4 @@ on GCP, run the following command to copy your G Suite key to your Forseti insta
 
 Note the remote destination of where you put the key on the VM instance. It
 should match what you specified in your forseti_conf.yaml for the
-`groups-service-account-key-file` property.
+`groups_service_account_key_file` property.
