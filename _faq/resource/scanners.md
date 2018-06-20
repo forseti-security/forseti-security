@@ -11,8 +11,8 @@ interested in isn't listed, please open an issue or contribute!
 For more information, see the [scanner descriptions]({% link _docs/latest/configure/scanner/descriptions.md %}).
 
 {: .table .table-striped}
-| Scanner                                | 
-| --------------------------------------- | 
+| Scanner                                |
+| --------------------------------------- |
 | Audit Logging Configuration Scanner|
 | BigQuery Scanner |
 | Blacklist Scanner |

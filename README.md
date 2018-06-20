@@ -242,7 +242,7 @@ This is as it was before. The `_config.yml` and `_data/doc_categories.yml` have 
 
 The categories are inferred based upon the directory that a page is in.
 For example, a page under `_docs/configure` belongs to the *Configure* category while
-a page under `_docs/develop` belongs to the *Develop* category. 
+a page under `_docs/develop` belongs to the *Develop* category.
 
 Simply add your page to the appropriate directory.
 
@@ -339,7 +339,7 @@ Once you're finished, build the CSS and JS files with:
 
 ```bash
 $ grunt dist-less dist-js
-``` 
+```
 
 And copy over everything under `dist/css/` and `dist/js/` into their
 respective directories in this repository -- overwriting any old files in the

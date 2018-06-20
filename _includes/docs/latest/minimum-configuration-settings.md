@@ -15,7 +15,7 @@ You will also need to edit, at a minimum, the following variables in the config 
   * **Example values**: `my_gsuite_admin@my_domain.com`.
 
 * `api_quota`
-  * **Description**: The maximum calls we can make to each API per second. This is lower than 
+  * **Description**: The maximum calls we can make to each API per second. This is lower than
   the max allowed API quota to allow space for retries.
   * `max_calls`
     * **Description**: Maximum calls we can make to the API.

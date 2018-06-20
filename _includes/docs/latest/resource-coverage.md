@@ -1,6 +1,6 @@
 {: .table .table-striped}
-| Resource                                | 
-| --------------------------------------- | 
+| Resource                                |
+| --------------------------------------- |
 | [App Engine Apps](https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps) |
 | [BigQuery](https://cloud.google.com/bigquery/docs/reference/rest/v2/) |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) |
@@ -13,7 +13,7 @@
 | [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/latest/backendServices#resource) |
 | [Compute Engine Instances](https://cloud.google.com/compute/docs/reference/latest/instances#resource) |
 | [Compute Engine Instance Groups](https://cloud.google.com/compute/docs/reference/latest/instanceGroups#resource) |
-| [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) | 
+| [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) |
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) |
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) |
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) |

@@ -605,9 +605,9 @@ rules:
     ```
 
  ## Service Account Key rules
- 
+
  ### Rule definitions
- 
+
  ```yaml
  rules:
   # The max allowed age of user managed service account keys (in days)
@@ -618,7 +618,7 @@ rules:
           - '*'
     max_age: 100 # days
  ```
- 
+
 * `name`
   * **Description**: The name of the rule
   * **Valid values**: String.

@@ -1,5 +1,5 @@
 Forseti stores data in Cloud SQL. You can connect to the Cloud SQL instance by
-using the Cloud SQL proxy to authenticate to GCP with your Google credentials, 
+using the Cloud SQL proxy to authenticate to GCP with your Google credentials,
 instead of opening up network access to your Cloud SQL instance.
 To set up your Cloud SQL instance for Forseti, follow the steps below:
 
@@ -26,7 +26,7 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     to proxy your connection to your Cloud SQL instance. Your
     INSTANCE_CONNECTION_NAME is the **Instance Connection Name** under
     **Properties** on the Cloud SQL dashboard instance details, in the format "PROJECTID:REGION:INSTANCEID".
-    
+
       ```bash
       <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
       ```

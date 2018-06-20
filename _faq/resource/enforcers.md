@@ -12,7 +12,7 @@ For details about each of the enforcers, see the
 [Enforcer]({% link _docs/latest/use/cli/enforcer.md %}) guide.
 
 {: .table .table-striped}
-| Enforcer                                | 
-| --------------------------------------- | 
+| Enforcer                                |
+| --------------------------------------- |
 | Firewalls |
 
