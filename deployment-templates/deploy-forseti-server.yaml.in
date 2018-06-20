@@ -64,9 +64,6 @@ resources:
     # "forseti-version": Can be a tag or a branch.
     #
     # See https://github.com/GoogleCloudPlatform/forseti-security/releases
-    # for a list of releases.
-    forseti-version: {FORSETI_VERSION}
-    src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
     # Cloud SQL
