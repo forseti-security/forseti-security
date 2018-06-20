@@ -164,43 +164,6 @@ rules:
       * **Valid values**: String.
       * **Example values**: `>=`
 
-### Enabling Kubernetes Engine inventory
-
-To enable the Kubernetes Engine inventory, add the following to the inventory section in your
-`forseti_confi.yaml` file:
-
-```yaml
-inventory:
-    pipelines:
-        - resource: ke
-          enabled: true
-```
-
-To enable the Kubernetes Engine scanner, add the followings to the scanner section in your
-`forseti_conf.yaml` file:
-
-```yaml
-scanner:
-   scanners:
-        - name: ke_version_scanner
-          enabled: true
-```
-
-To enable the Kubernetes Engine notifier or blacklist notifier, add the followings to the notifier
-section in your `forseti_conf.yaml` file:
-
-```yaml
-    resources:
-        - resource: ke_version_violations
-          should_notify: true
-          pipelines:
-            # Upload violations to Cloud Storage.
-            - name: gcs_violations_pipeline
-              configuration:
-                # gcs_path should begin with "gs://"
-                gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
-```
-
 ## Blacklist rules
 
 ### Rule definition
@@ -213,32 +176,6 @@ rules:
 
 * **blacklist**: The name of your blacklist.
 * **url**: URL that contains a list of IPs to check against.
-
-### Enabling
-To enable the blacklist scanner, add the followings to the scanner section in your
-`forseti_conf.yaml` file:
-
-```yaml
-scanner:
-   scanners:
-        - name: blacklist
-          enabled: true
-```
-
-To enable the blacklist notifier, add the followings to the notifier section in your
-`forseti_conf.yaml` file:
-
-```yaml
-    resources:
-        - resource: blacklist_violations
-          should_notify: true
-          pipelines:
-            # Upload violations to Cloud Storage.
-            - name: gcs_violations_pipeline
-              configuration:
-                # gcs_path should begin with "gs://"
-                gcs_path: gs://{__YOUR_SCANNER_BUCKET__}/scanner_violations
-```
 
 ## Google Group rules
 
