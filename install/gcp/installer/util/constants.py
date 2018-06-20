@@ -168,15 +168,15 @@ VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 MESSAGE_GSUITE_DATA_COLLECTION = (
     'To complete setup for G Suite Groups data collection, '
     'follow the steps here:\n\n    '
-    'https://forsetisecurity.org/docs/howto'
-    '/configure/gsuite-group-collection.html\n')
+    'https://forsetisecurity.org/docs/latest/configure/'
+    'inventory/gsuite.html\n')
 
 MESSAGE_SKIP_EMAIL = (
     'If you would like to enable email notifications via '
     'SendGrid, please refer to:\n\n'
     '    '
-    'http://forsetisecurity.org/docs/howto/configure/'
-    'email-notification.html\n\n')
+    'http://forsetisecurity.org/docs/latest/configure/notifier/'
+    'index.html#email-notifications-with-sendgrid\n\n')
 
 MESSAGE_HAS_ROLE_SCRIPT = (
     'Some roles could not be assigned during the installation. '
@@ -189,18 +189,18 @@ MESSAGE_ENABLE_GSUITE_GROUP_INSTRUCTIONS = (
     'IMPORTANT NOTE\n'
     'Your Forseti Security Installation will not work until '
     'you enable GSuite data collection:\n'
-    'https://forsetisecurity.org/docs/howto/configure/gsuite'
-    '-group-collection.html\n')
+    'https://forsetisecurity.org/docs/latest/configure/'
+    'inventory/gsuite.html\n')
 
 MESSAGE_FORSETI_CONFIGURATION_INSTRUCTIONS = (
     'For instructions on how to change your roles or configuration files:\n'
-    'http://forsetisecurity.org/docs/howto/deploy/gcp-deployment.html#move'
-    '-configuration-to-gcs')
+    'http://forsetisecurity.org/docs/latest/configure/')
 
 MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS = (
     'If you would like to enable email notifications via SendGrid,'
     ' please refer to:\n'
-    'http://forsetisecurity.org/docs/howto/configure/email-notification.html\n'
+    'http://forsetisecurity.org/docs/latest/configure/notifier/'
+    'index.html#email-notifications-with-sendgrid\n'
 )
 
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
@@ -299,9 +299,9 @@ MESSAGE_RUN_FREQUENCY = (
 
 MESSAGE_DEPLOYMENT_ERROR = (
     'Error occurred during the deployment, please check the Forseti '
-    'FAQ for more information '
-    '(https://forsetisecurity.org/faq/#installation-and-deployment),'
-    ' exiting...'
+    'FAQ for more information ('
+    'https://forsetisecurity.org/docs/latest/faq/#installation-and-deployment'
+    '), exiting...'
 )
 
 # Questions templates

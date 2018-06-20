@@ -38,7 +38,7 @@ class ResourceTest(ForsetiTestCase):
         self.assertEqual(ResourceType.PROJECT,
                          ResourceType.verify('project'))
         self.assertEqual(ResourceType.GROUP,
-                         ResourceType.verify('group'))
+                         ResourceType.verify('gsuite_group'))
 
     def test_get_invalid_resource_type_does_not_exist(self):
         """Test fake resource type raises exception."""

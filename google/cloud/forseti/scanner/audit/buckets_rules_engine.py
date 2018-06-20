@@ -18,6 +18,7 @@ import itertools
 import json
 import re
 
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
     BucketAccessControls)
 from google.cloud.forseti.common.util import logger
@@ -234,7 +235,7 @@ class Rule(object):
 
         if should_raise_violation:
             yield self.RuleViolation(
-                resource_type='bucket',
+                resource_type=resource_mod.ResourceType.BUCKET,
                 resource_id=bucket_acl.bucket,
                 full_name=bucket_acl.full_name,
                 rule_name=self.rule_name,

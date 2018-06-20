@@ -17,6 +17,7 @@ from collections import namedtuple
 import itertools
 import re
 
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util.regular_exp import escape_and_globify
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
@@ -239,7 +240,7 @@ class Rule(object):
                        for config in instance_network_interface.access_configs
                        if 'natIP' in config]
                 yield self.RuleViolation(
-                    resource_type='instance',
+                    resource_type=resource_mod.ResourceType.INSTANCE,
                     resource_id=instance_network_interface.name,
                     full_name=instance_network_interface.full_name,
                     rule_name=self.rule_name,

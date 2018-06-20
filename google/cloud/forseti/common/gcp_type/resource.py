@@ -21,44 +21,45 @@ need to separate the classes depending on implementation.
 import abc
 
 from google.cloud.forseti.common.gcp_type import errors
+from google.cloud.forseti.services.inventory.base import resources
 
 
 class ResourceType(object):
     """Resource types."""
 
     # Org resources
-    ORGANIZATION = 'organization'
-    FOLDER = 'folder'
-    PROJECT = 'project'
+    ORGANIZATION = resources.Organization.type()
+    FOLDER = resources.Folder.type()
+    PROJECT = resources.Project.type()
 
     # Groups
-    GROUP = 'group'
+    GROUP = resources.GsuiteGroup.type()
 
     # IAM
-    SERVICE_ACCOUNT = 'service_account'
-    SERVICE_ACCOUNT_KEY = 'serviceaccount_key'
+    SERVICE_ACCOUNT = resources.ServiceAccount.type()
+    SERVICE_ACCOUNT_KEY = resources.ServiceAccountKey.type()
 
     # Compute engine
-    BACKEND_SERVICE = 'backend_service'
-    FIREWALL_RULE = 'firewall_rule'
-    FORWARDING_RULE = 'forwarding_rule'
-    INSTANCE = 'instance'
-    INSTANCE_GROUP = 'instance_group'
-    INSTANCE_GROUP_MANAGER = 'instance_group_manager'
-    INSTANCE_TEMPLATE = 'instance_template'
-    INSTANCE_NETWORK_INTERFACE = 'instance_network_interface'
+    BACKEND_SERVICE = resources.BackendService.type()
+    FIREWALL_RULE = resources.Firewall.type()
+    FORWARDING_RULE = resources.ForwardingRule.type()
+    INSTANCE = resources.Instance.type()
+    INSTANCE_GROUP = resources.InstanceGroup.type()
+    INSTANCE_GROUP_MANAGER = resources.InstanceGroupManager.type()
+    INSTANCE_TEMPLATE = resources.InstanceTemplate.type()
 
     # Data storage
-    BIGQUERY_ACL = 'bigquery_datasets'
-    BUCKETS_ACL = 'buckets_acl'
-    CLOUDSQL_ACL = 'cloudsql_instances'
-    BUCKET = 'bucket'
+    BIGQUERY = resources.DataSet.type()
+    BUCKET = resources.GcsBucket.type()
+    CLOUDSQL = resources.CloudSqlInstance.type()
 
     # AppEngine
-    APPENGINE = 'appengine'
+    APPENGINE_APP = resources.AppEngineApp.type()
+    APPENGINE_INSTANCE = resources.AppEngineInstance.type()
+    APPENGINE_VERSION = resources.AppEngineVersion.type()
 
     # Kubernetes Engine
-    KE_CLUSTER = 'ke'
+    KE_CLUSTER = resources.KubernetesCluster.type()
 
     resource_types = frozenset([
         ORGANIZATION,
