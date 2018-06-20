@@ -206,10 +206,12 @@ class ContainerClient(object):
         """Gets the serverconfig for a project and zone or location.
         Requires either a zone or a location, if both are passed in, the
         location is used instead of the zone.
+
         Args:
             project_id (int): The project id for a GCP project.
             zone (str):  Name of the zone to get the configuration for.
             location (str): Name of the location to get the configuration for.
+
         Returns:
             dict: A serverconfig for a given Compute Engine zone.
             https://cloud.google.com/kubernetes-engine/docs/reference/rest/v1beta1/ServerConfig
@@ -226,6 +228,7 @@ class ContainerClient(object):
                 string
               ],
             }
+            
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP API fails
