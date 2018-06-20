@@ -74,10 +74,10 @@ dev --> 2.0-dev
 # Make existing master branch to be the deprecated release branch.
 master --> 2.0-master
 
-# Make the new version's dev branch to be the new active development branch.
+# Make the new version's dev branch to be the active development branch.
 3.0-dev --> dev
 
-# Create new active release branch from the new active release branch.
+# Create new active release branch from the active release branch.
 ```
 
 ### Other branches
