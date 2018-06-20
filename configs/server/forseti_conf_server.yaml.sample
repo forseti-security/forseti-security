@@ -102,8 +102,6 @@ scanner:
           enabled: false
         - name: ke_version_scanner
           enabled: true
-        - name: service_account_key_scanner
-          enabled: true
 
 ##############################################################################
 

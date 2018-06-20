@@ -1156,7 +1156,8 @@ def main(args=None,
     except ValueError as e:
         parser.error(e.message)
     except grpc.RpcError as e:
-        grpc_status_code = e.code()  # pylint: disable=no-member
+        grpc_status_code = e.code()
+
         if grpc_status_code == grpc.StatusCode.UNAVAILABLE:
             print('Error communicating to the Forseti server.\n'
                   'Please check the status of the server and make sure it\'s '
