@@ -59,19 +59,25 @@ Following is an example of this workflow for future versions:
 * `master`: The final released version of v2.0.
 
 Before launching a new version, the existing `dev` and `master` will be moved
-and renamed as `(N-1).0-dev` and `(N-1).0-master`.  Existing `N.N-dev`
+and renamed as `(N-1).0-dev` and `(N-1).0-master`. Existing `N.N-dev`
 will be moved and renamed to `dev`. A new `master` branch will be created from
-`dev` branch.  This is so that the `dev` and `master` branches are always
+`dev` branch. This is so that the `dev` and `master` branches are always
 maintained as the canonical branches, and all the commit histories and tags
 are retained.
 
-For example, when version 3.0 is ready to be launched:
+For example, when a future version 3.0 is ready to be launched:
 
 ```
+# Make existing dev branch to be the deprecated development branch.
 dev --> 2.0-dev
+
+# Make existing master branch to be the deprecated release branch.
 master --> 2.0-master
+
+# Make the new version's dev branch to be the new active dev branch.
 3.0-dev --> dev
-Create new master branch from new dev branch.
+
+# Create new active release branch from the new dev branch.
 ```
 
 ### Other branches
