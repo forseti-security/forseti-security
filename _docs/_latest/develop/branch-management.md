@@ -17,8 +17,14 @@ and managed.
 These are the branches that the Forseti Security project team use
 for developing, creating releases, and building the website.
 
-* `dev`: The development branch.
-* `stable`: The latest stable release; suitable for deploy to production.
+* `dev`: The currently active development branch.
+* `stable`: The latest Forseti release suitable for deploy to production.
+
+* `1.0-dev`: The deprecated development branch for Forseti 1.0;
+this is for critical bug fixes only for the duration of 1.0 support.
+* `master`: The latest Forseti 1.0 release suitable for deploy to production;
+this is deprecated and should not be used for new installs.
+
 * `forsetisecurity.org`: Forseti website.
 
 The `dev` branch is the starting point where you can create a new PR. 
@@ -32,8 +38,8 @@ to be stable and suitable for production-use.
 
 ### Next-generation branches
 
-Branches will be created to develop the versions of Forseti Security. 
-These next-generation branches will be prefixed with a version number.
+Branches will be created to develop the next-generation versions of Forseti
+Security. These next-generation branches will be prefixed with a version number.
 
 Typically, the team will begin with an `N.N-dev` branch. After the code
 is developed so it's suitable for early testing, an Early Access Phase (EAP)
@@ -44,19 +50,29 @@ After the EAP is complete, a Release Candidate (RC) will be created, like
 the team will merge the completed code into `N.N-dev`, then into
 `N.N-master`, then into `dev`, and finally `master`.
 
-Following is an example of this workflow for version 2.0:
+Following is an example of this workflow for future versions:
 
-* `2.0-dev`: A daily development branch.
-* `2.0-eap1`: A branch used for Early Access testing.
-* `2.0-rc1`: A possible release candidate.
-* `2.0-rc2`: A second release candidate with additional changes.
-* `2.0-master`: The final released version of v2.0.
+* `3.0-dev`: A daily development branch.
+* `3.0-eap1`: A branch used for Early Access testing.
+* `3.0-rc1`: A possible release candidate.
+* `3.0-rc2`: A second release candidate with additional changes.
+* `master`: The final released version of v2.0.
 
-After the support period has passed for the previous version, the
-next-generation `dev` and `master` branches will be merged into the
-`dev` and `master` branches. Then, the `N.N-<name>` branches will be deleted. 
-This is so that the `dev` and `master` are always maintained as the canonical
-branches, and all the commit histories are retained.
+Before launching a new version, the existing `dev` and `master` will be moved
+and renamed as `(N-1).0-dev` and `(N-1).0-master`.  Existing `N.N-dev`
+will be moved and renamed to `dev`. A new `master` branch will be created from
+`dev` branch.  This is so that the `dev` and `master` branches are always
+maintained as the canonical branches, and all the commit histories and tags
+are retained.
+
+For example, when version 3.0 is ready to be launched:
+
+```
+dev --> 2.0-dev
+master --> 2.0-master
+3.0-dev --> dev
+Create new master branch from new dev branch.
+```
 
 ### Other branches
 
@@ -96,4 +112,3 @@ the `stable` and `dev` branch.
 ## What's next
 
 * Learn how to [submit a Pull Request](https://github.com/GoogleCloudPlatform/forseti-security/blob/master/.github/CONTRIBUTING.md).
-* Learn about Forseti release process (TBD).
