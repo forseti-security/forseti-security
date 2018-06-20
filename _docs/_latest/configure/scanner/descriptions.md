@@ -154,3 +154,15 @@ Kubernetes Engine clusters are running safe and supported versions.
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the
 [`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
 file.
+
+## Service Account Key scanner
+
+It's best to periodically rotate your user-managed service account
+keys, in case the keys get compromised without your knowledge. With the
+service account key scanner, you can define the max age at which your service
+account keys should be rotated. The scanner will then find any key that is older
+than the max age.
+
+For examples of how to define scanner rules for your service account keys, see the
+[`service_account_key_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/service_account_key_rules.yaml)
+file.

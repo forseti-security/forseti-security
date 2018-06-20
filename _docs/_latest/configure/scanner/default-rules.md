@@ -49,3 +49,6 @@ resources.
     * For major version 1.9, the minor version must be at least 7-gke.1
     * For major version 1.10, the minor version must be at least 2-gke.1
     * For major version 1.11, any minor version is allowed
+
+## Service Account Key
+  * User-managed service account keys should not be older than the date and time you specify.
