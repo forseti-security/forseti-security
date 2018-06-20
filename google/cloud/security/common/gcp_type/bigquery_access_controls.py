@@ -15,7 +15,6 @@
 """BigQuery ACL Resource."""
 
 
-# pylint: disable=too-few-public-methods
 class BigqueryAccessControls(object):
     """BigQuery ACL Resource."""
 
