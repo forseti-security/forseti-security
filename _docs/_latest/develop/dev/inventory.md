@@ -25,7 +25,7 @@ follow the process below:
     initial table schema. To learn more, see this
     [example pull request](https://github.com/GoogleCloudPlatform/forseti-security/pull/159).
 1. After you merge the table schema pull request, create a
-    [pipeline](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/security/inventory/pipelines)
+    pipeline
     to fetch your data. If Forseti isn't currently collecting the data you
     want from GCP, you'll need to extend Forseti's API support for
     [Google Cloud APIs](https://cloud.google.com/apis/docs/overview).
@@ -47,7 +47,7 @@ follow the process below:
     1. Specify if the pipeline will run.
 1. Flatten the data collected from your API so you can store it in a CSV or
     normalized storage system. For more information, see this example of
-    [flattening the data structure](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/security/inventory/pipelines/load_projects_pipeline.py#L32).
+    flattening the data structure.
 1. Load the flattened data into the database table.
 
 For an example of the steps above, see this pull request for
