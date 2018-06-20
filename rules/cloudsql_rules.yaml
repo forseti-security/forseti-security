@@ -13,7 +13,7 @@
 # limitations under the License.
 
 rules:
-  - name: sample cloudsql rule to search for publicly exposed instances
+  - name: sample Cloud SQL rule to search for publicly exposed instances
     instance_name: '*'
     authorized_networks: '0.0.0.0/0'
     ssl_enabled: 'False'
@@ -21,7 +21,7 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
-  - name: sample cloudsql rule to search for publicly exposed instances (SSL enabled)
+  - name: sample Cloud SQL rule to search for publicly exposed instances (SSL enabled)
     instance_name: '*'
     authorized_networks: '0.0.0.0/0'
     ssl_enabled: 'True'
