@@ -25,8 +25,7 @@ follow the process below:
     initial table schema. To learn more, see this
     [example pull request](https://github.com/GoogleCloudPlatform/forseti-security/pull/159).
 1. After you merge the table schema pull request, create a
-    pipeline
-    to fetch your data. If Forseti isn't currently collecting the data you
+    pipeline to fetch your data. If Forseti isn't currently collecting the data you
     want from GCP, you'll need to extend Forseti's API support for
     [Google Cloud APIs](https://cloud.google.com/apis/docs/overview).
 1. The pipeline_requirements_map.py file is an internal map that defines
