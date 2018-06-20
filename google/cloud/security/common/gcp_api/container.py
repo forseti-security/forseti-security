@@ -228,7 +228,7 @@ class ContainerClient(object):
                 string
               ],
             }
-            
+
         Raises:
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP API fails
