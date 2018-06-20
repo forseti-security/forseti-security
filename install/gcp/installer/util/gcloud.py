@@ -56,6 +56,8 @@ def get_gcloud_info():
                     _get_service_account_json_path())
                 if authed_user:
                     is_service_account = True
+            elif 'iam.gserviceaccount.com' in authed_user:
+                is_service_account = True
         except ValueError as verr:
             print(verr)
             sys.exit(1)
