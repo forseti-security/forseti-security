@@ -6,35 +6,37 @@ order: 102
 # {{ page.title }}
 
 This page describes how to update Forseti Inventory to collect and store new
-data types, as well as importing it into data model.
+data types, and import it into a data model.
 
 ---
 
-The main steps to add a new type of Inventory data are:
-1. Check API client exists
-1. Create iterator to retrieve the data with the API client
+To add a new type of Inventory data, you'll complete the following tasks:
+
+1. Check that the API client exists
+1. Create an iterator to retrieve the data with the API client
 1. Add the iterator to Inventory factories to make it available for crawling
-1. Add the Inventory data to data model
+1. Add the Inventory data to a data model
 
-To see how these steps actually works, we will do a code-walk of
+The following guide demonstrates these steps as a walkthrough of 
 [PR #883](https://github.com/GoogleCloudPlatform/forseti-security/pull/883),
-which adds Compute Image data to Inventory and data model.
+which adds Compute Engine Image data to Inventory and a data model.
 
-## Check API clients exists
+## Step 1: Check the API client
 
-Look in [_supported_apis.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/_supported_apis.py), if the API client to retrieve the data already exists.
-If the API client is not found, you will have to add it. See [cloud_sql.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py)
-for a small and self-contained example.
+To check if the API client to retrieve the data already exists, look in [`_supported_apis.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/_supported_apis.py).
+If the API client isn't there, you will have to add it. For a self-contained example,
+see [`cloud_sql.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py).
 
-## Create iterator to retrieve the data with the API client
+## Step 2: Create an iterator
 
-Create iter_foo() that will call the API client to retrieve the data.
-
+Edit
 [google/cloud/forseti/services/inventory/base/gcp.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/gcp.py)
+to create `iter_foo()` that will call the API client to retrieve the data.
+
 ```python
     @create_lazy('compute', _create_compute)
     def iter_images(self, projectid):
-        """Image Iterator from gcp API call
+        """Image Iterator from Compte Engine API call
 
         Yields:
             dict: Generator of image resources
@@ -43,10 +45,11 @@ Create iter_foo() that will call the API client to retrieve the data.
             yield image
 ```
 
-Create XYZIterator to call the iter_foo(), and cast the result for storage
+Edit
+[google/cloud/forseti/services/inventory/base/resources.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/resources.py)
+to create `XYZIterator` to call the `iter_foo()`, and cast the result for storage
 in Inventory.
 
-[google/cloud/forseti/services/inventory/base/resources.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/resources.py)
 ```python
     class ImageIterator(ResourceIterator):
         def iter(self):
@@ -58,12 +61,13 @@ in Inventory.
                     yield FACTORIES['image'].create_new(data)
 ```
 
-In order to do the casting, we need to create a resource class for foo. This
-allows us to access the `id` and `type`. If the resource has no provided `id`,
-we must synthesize our own. See other existing `key()`, to see how to create
-a synthetic key.
-
+To complete the casting, edit
 [google/cloud/forseti/services/inventory/base/resources.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/resources.py)
+to create a resource class for foo. This allows you to access the `id` and `type`.
+If the resource doesn't have a provided `id`, you'll have to synthesize one. For
+details to create a synthetic key, see an existing `key()`.
+
+
 ```python
     class Image(Resource):
         def key(self):
@@ -73,11 +77,12 @@ a synthetic key.
             return 'image'
 ```
 
-## Add the iterator to Inventory factories to make it available for crawling
+## Step 3: Add the iterator to Inventory factories
 
-Create ResourceFactory for foo, and link the FooIterator to the parent resource.
-
+Edit
 [google/cloud/forseti/services/inventory/base/resources.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/resources.py)
+to create `ResourceFactory` for `foo`, and link the `FooIterator` to the parent resource.
+
 ```python
     FACTORIES = {
         'project': ResourceFactory({
@@ -97,75 +102,74 @@ Create ResourceFactory for foo, and link the FooIterator to the parent resource.
     }
 ```
 
-## Add the Inventory data to data model
+## Step 4: Add the Inventory data to a data model
 
-Assumption here is that this is a simple resource, and will go into the
-resource data model table. If you need to convert the Inventory data into
-more complicated data model, please email
-[discuss@forsetisecurity.org](mailto:discuss@forsetisecurity.org) for further
-assistance.
+This step assumes that you're working with a simple resource that
+will go into the resource data model table. If you want to convert
+the Inventory data into a more complicated data model, email
+[discuss@forsetisecurity.org](mailto:discuss@forsetisecurity.org) for
+help.
 
-Add foo into `gcp_type_list`.
-
+1. Edit
 [google/cloud/forseti/services/model/importer/importer.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/model/importer/importer.py)
-```python
-    def run(self):
-        """Runs the import.
+to add `foo` into `gcp_type_list`.
+    ```python
+        def run(self):
+            """Runs the import.
 
-        Raises:
-            NotImplementedError: If the importer encounters an unknown
-                inventory type.
-        """
-        gcp_type_list = [
-            'organization',
-            'folder',
-            'project',
-            'image',
-        ]
-```
-
-Create `_convert_foo()` to store the inventory data into data model.
-
+            Raises:
+                NotImplementedError: If the importer encounters an unknown
+                    inventory type.
+            """
+            gcp_type_list = [
+                'organization',
+                'folder',
+                'project',
+                'image',
+            ]
+    ```
+1. Edit
 [google/cloud/forseti/services/model/importer/importer.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/model/importer/importer.py)
-```python
-    def _convert_image(self, image):
-        """Convert a image to a database object.
+to create `_convert_foo()` to store the Inventory data in a data model.
+    ```python
+        def _convert_image(self, image):
+            """Convert a image to a database object.
 
-         Args:
-            image (object): Image to store.
-        """
-        data = image.get_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            image)
-        self.session.add(
-            self.dao.TBL_RESOURCE(
-                full_name=full_res_name,
-                type_name=type_name,
-                name=image.get_key(),
-                type=image.get_type(),
-                display_name=data.get('displayName', ''),
-                email=data.get('email', ''),
-                data=image.get_data_raw(),
-                parent=parent))
-```
-
-Connect foo with the `_convert_foo()` in the `handlers` map in
+             Args:
+                image (object): Image to store.
+            """
+            data = image.get_data()
+            parent, full_res_name, type_name = self._full_resource_name(
+                image)
+            self.session.add(
+                self.dao.TBL_RESOURCE(
+                    full_name=full_res_name,
+                    type_name=type_name,
+                    name=image.get_key(),
+                    type=image.get_type(),
+                    display_name=data.get('displayName', ''),
+                    email=data.get('email', ''),
+                    data=image.get_data_raw(),
+                    parent=parent))
+    ```
+1. Edit
+[google/cloud/forseti/services/model/importer/importer.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/model/importer/importer.py)
+to connect `foo` with the `_convert_foo()` in the `handlers` map in
 `_store_resource()`.
-
-[google/cloud/forseti/services/model/importer/importer.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/model/importer/importer.py)
-```python
-    handlers = {
-        'organization': (None,
-                         self._convert_organization,
-                         None),
-        'folder': (None,
-                   self._convert_folder,
-                   None),
-        'project': (None,
-                    self._convert_project,
-                    None),
-        'image': (None,
-                  self._convert_image,
-                  None),
-    }
-```
+    ```python
+        handlers = {
+            'organization': (None,
+                             self._convert_organization,
+                             None),
+            'folder': (None,
+                       self._convert_folder,
+                       None),
+            'project': (None,
+                        self._convert_project,
+                        None),
+            'image': (None,
+                      self._convert_image,
+                      None),
+        }
+    ```
+Your new data type is now added to Inventory and a new data model.
