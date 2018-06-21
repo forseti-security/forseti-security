@@ -78,7 +78,7 @@ def activate_service_account(authed_user):
         authed_user (str): service account email
     """
 
-    return_code, err = utils.run_command(
+    return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
          authed_user, '--key-file={}'
          .format(_get_service_account_json_path())])
