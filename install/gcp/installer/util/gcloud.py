@@ -18,6 +18,7 @@ from __future__ import print_function
 import json
 import re
 import sys
+import os
 
 import constants
 import utils
@@ -52,6 +53,23 @@ def get_gcloud_info():
             print(verr)
             sys.exit(1)
     return project_id, authed_user, is_devshell, is_service_account
+
+def _get_service_account_json_path():
+    """Search in the environment variables for Google Credentials
+    Returns:
+        str: The value of the first non-empty environment variable
+    """
+    #TODO: Find a better way to do this
+    if 'GOOGLE_CREDENTIALS' in os.environ:
+        return os.environ['GOOGLE_CREDENTIALS']
+    elif 'GOOGLE_CLOUD_KEYFILE_JSON' in os.environ:
+        return os.environ['GOOGLE_CLOUD_KEYFILE_JSON']
+    elif 'GCLOUD_KEYFILE_JSON' in os.environ:
+        return os.environ['GCLOUD_KEYFILE_JSON']
+    elif 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE' in os.environ:
+        return os.environ['CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE']
+    
+    return None
 
 
 def activate_service_account(authed_user):
