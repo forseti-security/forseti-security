@@ -30,6 +30,7 @@ def get_gcloud_info():
         str: GCP project id
         str: GCP Authenticated user
         bool: Whether or not the installer is running in cloudshell
+        bool: Whether or not authenticated user is a service account
     """
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
@@ -45,11 +46,30 @@ def get_gcloud_info():
             props = config.get('properties', {})
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
+            is_service_account = 'iam.iam.gserviceaccount.com' in authed_user
             print('Read gcloud info: Success')
         except ValueError as verr:
             print(verr)
             sys.exit(1)
-    return project_id, authed_user, is_devshell
+    return project_id, authed_user, is_devshell, is_service_account
+
+
+def activate_service_account(authed_user):
+    """Activate the service account with gcloud
+    Args:
+        authed_user (str): service account email
+    """
+
+    return_code, err = utils.run_command(
+        ['gcloud', 'auth', 'activate-service-account',
+         authed_user, '--key-file={}'
+         .format(_get_service_account_json_path())])
+    
+    if return_code:
+        print(err)
+        sys.exit(1)
+    
+    print('Service account activated')
 
 
 def verify_gcloud_information(project_id,
