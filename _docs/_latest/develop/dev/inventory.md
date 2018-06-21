@@ -61,8 +61,8 @@ google/cloud/forseti/services/inventory/base/resources.py
 ```
 
 In order to do the casting, we need to create a resource class for xyz. This
-allows us to access the `id` and `type`. If the resource has no provided id,
-we must synthesize our own.  See other existing key(), to see how to create
+allows us to access the `id` and `type`. If the resource has no provided `id`,
+we must synthesize our own.  See other existing `key()`, to see how to create
 a synthetic key.
 
 ```
@@ -108,9 +108,9 @@ resource data model table. If you need to convert the Inventory data into
 more complicated data model, please email `discuss@forsetisecurity.org` for
 further assistance.
 
-Add xyz into `gcp_type_list`, and create _convert_xyz() to store the inventory
-data into data model. Connect xyz with the _convert_xyz() in the handlers map
-in `_store_resource()`.
+Add xyz into `gcp_type_list`, and create `_convert_xyz()` to store the inventory
+data into data model. Connect xyz with the `_convert_xyz()` in the h`andlers`
+map in `_store_resource()`.
 
 ```
 google/cloud/forseti/services/model/importer/importer.py
