@@ -1137,7 +1137,7 @@ class InventoryImporter(object):
         data = folder.get_resource_data()
         if self._is_root(folder):
             parent, type_name = None, self._type_name(folder)
-            full_res_name = type_name
+            full_res_name = to_full_resource_name('', type_name)
         else:
             parent, full_res_name, type_name = self._full_resource_name(
                 folder)
@@ -1162,7 +1162,7 @@ class InventoryImporter(object):
         data = project.get_resource_data()
         if self._is_root(project):
             parent, type_name = None, self._type_name(project)
-            full_res_name = type_name
+            full_res_name = to_full_resource_name('', type_name)
         else:
             parent, full_res_name, type_name = self._full_resource_name(
                 project)
