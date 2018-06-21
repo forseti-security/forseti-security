@@ -149,7 +149,7 @@ Create `_convert_foo()` to store the inventory data into data model.
                 parent=parent))
 ```
 
-Connect foo with the `_convert_foo()` in the handlers` map in
+Connect foo with the `_convert_foo()` in the `handlers` map in
 `_store_resource()`.
 
 [google/cloud/forseti/services/model/importer/importer.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/model/importer/importer.py)
