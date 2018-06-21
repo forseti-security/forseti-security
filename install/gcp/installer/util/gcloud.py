@@ -47,7 +47,7 @@ def get_gcloud_info():
             props = config.get('properties', {})
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
-            is_service_account = 'iam.iam.gserviceaccount.com' in authed_user
+            is_service_account = 'iam.gserviceaccount.com' in authed_user
             print('Read gcloud info: Success')
         except ValueError as verr:
             print(verr)
