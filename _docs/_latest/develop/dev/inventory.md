@@ -1,5 +1,5 @@
 ---
-title: Inventory 
+title: Inventory
 order: 102
 ---
 
