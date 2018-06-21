@@ -59,7 +59,7 @@ def _get_service_account_json_path():
     Returns:
         str: The value of the first non-empty environment variable
     """
-    
+
     if 'GOOGLE_CREDENTIALS' in os.environ:
         return os.environ['GOOGLE_CREDENTIALS']
     elif 'GOOGLE_CLOUD_KEYFILE_JSON' in os.environ:
@@ -68,7 +68,7 @@ def _get_service_account_json_path():
         return os.environ['GCLOUD_KEYFILE_JSON']
     elif 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE' in os.environ:
         return os.environ['CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE']
-    
+
     return None
 
 
@@ -82,11 +82,11 @@ def activate_service_account(authed_user):
         ['gcloud', 'auth', 'activate-service-account',
          authed_user, '--key-file={}'
          .format(_get_service_account_json_path())])
-    
+
     if return_code:
         print(err)
         sys.exit(1)
-    
+
     print('Service account activated')
 
 
