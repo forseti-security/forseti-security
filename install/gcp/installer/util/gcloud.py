@@ -59,7 +59,7 @@ def _get_service_account_json_path():
     Returns:
         str: The value of the first non-empty environment variable
     """
-    #TODO: Find a better way to do this
+    
     if 'GOOGLE_CREDENTIALS' in os.environ:
         return os.environ['GOOGLE_CREDENTIALS']
     elif 'GOOGLE_CLOUD_KEYFILE_JSON' in os.environ:
