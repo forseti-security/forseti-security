@@ -73,7 +73,7 @@ SUPPORTED_APIS = {
 ## Create a new foo API client file
 
 Create a new foo API client file called foo.py in
-[google/cloud/forseti/common/gcp_api](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/common/gcp_api)
+[google/cloud/forseti/common/gcp_api](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api)
 package.
 
 ## Create a FooClient class to invoke the actual GCP API call
