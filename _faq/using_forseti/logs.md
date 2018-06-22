@@ -4,7 +4,7 @@ order: 3
 ---
 {::options auto_ids="false" /}
 
-The installation log is stored in `/tmp/deployment.log` on the Forseti 
+The installation log is stored in `/tmp/deployment.log` on the Forseti
 Compute Engine instance. You can view it with any editor. For example:
 
 ```bash

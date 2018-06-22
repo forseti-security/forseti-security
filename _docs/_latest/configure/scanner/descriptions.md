@@ -6,15 +6,16 @@ order: 301
 # {{ page.title }}
 
 This page describes the Forseti scanners that are available, how they work, and
-why they're important. You can configure Scanner to execute multiple scanners in
-the same run. Learn about [configuring Scanner]({% link _docs/latest/configure/scanner/index.md %}).
+why they're important. You can
+[configure Scanner]({% link _docs/latest/configure/scanner/index.md %}) to execute
+multiple scanners in the same run.
 
 ---
 
 ## BigQuery dataset ACL scanner
 
 BigQuery datasets have access properties that can publicly expose your datasets.
-The BigQuery scanner supports a blacklist mode, to ensure unauthorized users
+The BigQuery scanner supports a blacklist mode to ensure unauthorized users
 don't gain access to your datasets.
 
 For examples of how to define scanner rules for your BigQuery datasets, see the
@@ -23,9 +24,9 @@ rule file.
 
 ## Blacklist scanner
 
-Virtual Machine (VM instances) that have external IP addresses can communicate
-with the outside world. If they are compromised, they could appear in various 
-blacklists and could be known as malicious, such as for sending spam, 
+Virtual Machine (VM) instances that have external IP addresses can communicate
+with the outside world. If they are compromised, they could appear in various
+blacklists and could be known as malicious, such as for sending spam,
 hosting Command & Control servers, and so on. The blacklist scanner audits
 all of the VM instances in your environment and determines if any VMs
 with external IP addresses are on a specific blacklist you've configured.
@@ -35,8 +36,8 @@ For examples of how to define scanner rules, see the
 
 ## Bucket ACL scanner
 
-Cloud Storage buckets have ACLs that can grant public access to your 
-Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode, 
+Cloud Storage buckets have ACLs that can grant public access to your
+Cloud Storage bucket and objects. The bucket scanner supports a blacklist mode,
 to ensure unauthorized users don't gain access to your Cloud Storage bucket.
 
 For examples of how to define scanner rules for your Cloud Storage buckets, see the
@@ -44,17 +45,17 @@ For examples of how to define scanner rules for your Cloud Storage buckets, see 
 
 ## Cloud Audit Logging scanner
 
-Cloud Audit Logging can be configured to save Admin Activity and Data Access for
-GCP services. The audit log configurations for a project, folder or organization
-specify which logs should be saved along with members who are exempted from
-having their accesses logged. The audit logging scanner detects if any projects
-are missing a required audit log, or have extra exempted members.
+You can configure Cloud Audit Logging to save Admin Activity and Data Access for
+Google Cloud Platform (GCP) services. The audit log configurations for a project,
+folder, or organization specify which logs should be saved, along with members who
+are exempted from having their accesses logged. The audit logging scanner detects
+if any projects are missing a required audit log, or have extra exempted members.
 
 For examples of how to define scanner rules for Cloud Audit Logging, see the
 [`audit_logging_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/audit_logging_rules.yaml)
 rule file.
 
-## Cloud SQL Networks scanner
+## Cloud SQL networks scanner
 
 Cloud SQL instances can be configured to grant external networks access. The
 Cloud SQL scanner supports a blacklist mode, to ensure unauthorized users don't
@@ -67,7 +68,7 @@ rule file.
 
 ## Enabled APIs scanner
 
-The Enabled APIs scanner detects that a project has appropriate APIs enabled. It
+The Enabled APIs scanner detects if a project has appropriate APIs enabled. It
 supports whitelisting supported APIs, blacklisting unsupported APIs, and
 specifying required APIs that must be enabled.
 
@@ -75,19 +76,19 @@ For examples of how to define scanner rules for Enabled APIs, see the
 [`enabled_apis_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/enabled_apis_rules.yaml)
 rule file.
 
-## Firewall Rules scanner
+## Firewall rules scanner
 
-Network firewall rules protects your network & organization by only allowing 
-desired traffic into and out of your network. The firewall rules scanner can 
+Network firewall rules protect your network & organization by only allowing
+desired traffic into and out of your network. The firewall rules scanner can
 ensure that all your network's firewalls are properly configured.
 
 For examples of how to define scanner rules for your firewall rules scanner, see the
 [`firewall_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/firewall_rules.yaml)
 rule file.
 
-## Load Balancer Forwarding Rules scanner
+## Load balancer forwarding rules scanner
 
-Load balancer forwarding rules can be configured to direct unauthorized external
+You can configure load balancer forwarding rules to direct unauthorized external
 traffic to your target instances. The forwarding rule scanner supports a
 whitelist mode, to ensure each forwarding rule only directs to the intended
 target instances.
@@ -99,9 +100,9 @@ rule file.
 ## Groups scanner
 
 Because groups can be added to Cloud Identity and Access Management (Cloud IAM)
-policies, G Suite group membership can allow access on Google Cloud Platform (GCP).
-The group scanner supports a whitelist mode, to make sure that only authorized
-users are members of your G Suite group.
+policies, G Suite group membership can allow access on GCP. The group scanner
+supports a whitelist mode, to make sure that only authorized users are members
+of your G Suite group.
 
 For examples of how to define scanner rules for your G Suite groups, see the
 [`group_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/group_rules.yaml)
@@ -133,21 +134,21 @@ For examples of how to define scanner rules for Cloud IAP, see the
 [`iap_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/iap_rules.yaml)
 rule file.
 
-## Instance Network Interface scanner
+## Instance network interface scanner
 
 VM instances with external IP addresses expose your environment to an
 additional attack surface area. The instance network interface scanner audits
-all your VM instances in your environment, and determines if any VMs with
+all of your VM instances in your environment, and determines if any VMs with
 external IP addresses are outside of the trusted networks.
 
-For examples of how to define scanner rules for network interfaces, see the 
+For examples of how to define scanner rules for network interfaces, see the
 [`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/instance_network_interface_rules.yaml)
 rule file.
 
-## Kubernetes Engine Version scanner
+## Kubernetes Engine version scanner
 
-Kubernetes Engine clusters running on older versions can be exposed to security 
-vulnerabilities, or lack of support. The KE version scanner can ensure your 
+Kubernetes Engine clusters running on older versions can be exposed to security
+vulnerabilities, or lack of support. The KE version scanner can ensure your
 Kubernetes Engine clusters are running safe and supported versions.
 
 For examples of how to define scanner rules for your Kubernetes Engine versions, see the

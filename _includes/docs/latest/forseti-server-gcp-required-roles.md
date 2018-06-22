@@ -1,5 +1,5 @@
-**Granted at the Organization level**
-  
+**Granted at the organization level**
+
  * `roles/appengine.appViewer` (server)
  * `roles/bigquery.dataViewer` (server)
  * `roles/browser` (server)
@@ -9,14 +9,14 @@
  * `roles/iam.securityReviewer` (server)
  * `roles/servicemanagement.quotaViewer` (server)
  * `roles/serviceusage.serviceUsageConsumer` (server)
- 
+
 **Granted at the project level**
- 
+
  * `roles/cloudsql.client` (server)
  * `roles/logging.logWriter` (server, client)
  * `roles/storage.objectViewer` (server, client)
  * `roles/storage.objectCreator` (server)
 
 **Granted at the service account level**
- 
+
  * `roles/iam.serviceAccountTokenCreator` (server)

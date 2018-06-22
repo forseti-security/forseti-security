@@ -1,7 +1,7 @@
 ---
-title: Overview 
+title: Overview
 order: 1
-hide: 
+hide:
   left_sidebar: true
   right_sidebar: true
 ---

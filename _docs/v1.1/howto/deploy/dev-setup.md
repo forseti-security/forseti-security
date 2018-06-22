@@ -21,7 +21,7 @@ To complete this guide, you will need:
 ### Setting up Cloud SQL
 
 Forseti stores data in Cloud SQL. You can connect to the Cloud SQL instance by
-using the Cloud SQL proxy to authenticate to GCP with your Google credentials, 
+using the Cloud SQL proxy to authenticate to GCP with your Google credentials,
 instead of opening up network access to your Cloud SQL instance.
 To set up your Cloud SQL instance for Forseti, follow the steps below:
 
@@ -48,13 +48,13 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     to proxy your connection to your Cloud SQL instance. Your
     INSTANCE_CONNECTION_NAME is the **Instance Connection Name** under
     **Properties** on the Cloud SQL dashboard instance details, with the format "PROJECTID:REGION:INSTANCEID".
-    
+
       ```bash
       $ <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
       ```
-      
-1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as 
-   the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance). 
+
+1. Make a note of your the Cloud SQL user you created (e.g. "forseti_user") as well as
+   the database name (e.g. "forseti_security" -- this is NOT the ID of your Cloud SQL instance).
    You will need these for your forseti_conf.yaml later.
 
 ## Setting up local environment
@@ -98,7 +98,7 @@ Following are example commands to install `mysql_config`:
   # OSX, using homebrew
   $ brew install mysql
   ```
-  
+
 ### Installing ssl dev
 
 The crypto libraries require `libssl-dev` and `libffi-dev`.
@@ -154,17 +154,17 @@ Use the following commands to navigate to your cloned repo and run the python se
 
 ### Troubleshooting
 
-If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and see 
-a fatal error related to `'openssl/opensslv.h' file not found`, you may need to 
+If you are installing on Mac OS X with [Homebrew](https://brew.sh/) and see
+a fatal error related to `'openssl/opensslv.h' file not found`, you may need to
 export `CPPFLAGS` and `LDFLAGS` for the openssl package
 (see [this issue](https://github.com/pyca/cryptography/issues/3489) for more information).
 You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows:
 
   ```bash
   $ brew info openssl
-  
+
     ... lots of information ...
-    
+
     Generally there are no consequences of this for you. If you build your
     own software and it requires this formula, you'll need to add to your
     build variables:
@@ -173,7 +173,7 @@ You can find the `CPPFLAGS` and `LDFLAGS` information and export them as follows
     CPPFLAGS: -I/SOME/PATH/TO/openssl/include
   ```
 
-Then copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the 
+Then copy the `LDFLAGS` and `CPPFLAGS` values and export them, similar to the
 following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 
   ```bash
@@ -184,8 +184,8 @@ following (use the values from your terminal, not "`/SOME/PATH/TO`"):
 ### Configuring Forseti settings
 
 Before you run Forseti, you need to edit the forseti_conf.yaml file, found in
-`forseti-security/configs/forseti_conf.yaml`. Refer to 
-["Configuring Forseti"]({% link _docs/v1.1/howto/configure/configuring-forseti.md %}) 
+`forseti-security/configs/forseti_conf.yaml`. Refer to
+["Configuring Forseti"]({% link _docs/v1.1/howto/configure/configuring-forseti.md %})
 for more information.
 
 ### Executing Forseti commands
