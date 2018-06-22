@@ -62,7 +62,7 @@ def activate_service_account(authed_user, key_path):
 
     return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
-         authed_user, '--key-file={key_path}'])
+         authed_user, '--key-file=' + key_path])
 
     if return_code:
         print(err)
