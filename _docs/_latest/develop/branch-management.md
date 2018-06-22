@@ -18,12 +18,12 @@ These are the branches that the Forseti Security project team use
 for developing, creating releases, and building the website.
 
 * `dev`: The currently active development branch.
-* `stable`: The latest Forseti release suitable for deploy to production.
+* `stable`: The latest Forseti release suitable for deployment to production.
 
-* `1.0-dev`: The deprecated development branch for Forseti 1.0;
-this is for critical bug fixes only for the duration of 1.0 support.
-* `master`: The latest Forseti 1.0 release suitable for deploy to production;
-this is deprecated and should not be used for new installs.
+* `1.0-dev`: The deprecated development branch for Forseti 1.0. This is for
+critical bug fixes only for the duration of 1.0 support.
+* `master`: The latest Forseti 1.0 release suitable for deploy to production.
+This is deprecated and should not be used for new installs.
 
 * `forsetisecurity.org`: Forseti website.
 
@@ -68,16 +68,16 @@ are retained.
 For example, when a future version 3.0 is ready to be launched:
 
 ```
-# Make existing dev branch to be the deprecated development branch.
+# Change the existing dev branch to be the deprecated development branch.
 dev --> 2.0-dev
 
-# Make existing master branch to be the deprecated release branch.
+# Change the existing master branch to be the deprecated release branch.
 master --> 2.0-master
 
-# Make the new version's dev branch to be the active development branch.
+# Change the new version's dev branch to be the active development branch.
 3.0-dev --> dev
 
-# Create new active release branch from the active release branch.
+# Create a new active release branch from the active release branch.
 ```
 
 ### Other branches
