@@ -23,7 +23,8 @@ which adds Compute Engine Image data to Inventory and a data model.
 
 ## Step 1: Check the API client
 
-To check if the API client to retrieve the data already exists, look in [`_supported_apis.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/_supported_apis.py).
+To check if the API client to retrieve the data already exists, look at the
+`SUPPORTED_APIS` map in [`_supported_apis.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/_supported_apis.py).
 If the API client isn't there, you will have to add it. For a self-contained example,
 see [`cloud_sql.py`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py).
 
