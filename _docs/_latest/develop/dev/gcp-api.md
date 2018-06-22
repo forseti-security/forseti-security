@@ -204,7 +204,8 @@ class _CloudSqlInstancesRepository(
 
 ## Use the new API client
 
-With everything in place, the new API client can be used as:
+With everything in place, the new API client can be used by initializing
+the GCP API client, and call the resource method.
 
 ```
 self.foo_api_client = foo.FooClient(configs)
