@@ -192,7 +192,7 @@ class ForsetiInstaller(object):
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
         self.version = utils.infer_version(self.config.advanced_mode)
-        (self.project_id, authed_user, is_cloudshell, is_service_account) = \ 
+        (self.project_id, authed_user, is_cloudshell, is_service_account) = \
             gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
                                          authed_user,
