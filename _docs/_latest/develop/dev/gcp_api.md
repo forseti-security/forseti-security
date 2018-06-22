@@ -185,7 +185,7 @@ class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
 
 ## Create a _FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
 
-1. Create a FooBarRepository class in foo.py.
+1. Create a _FooBarRepository class in foo.py.
 1. Make it inherit the base `GCPRepository` and the appropriate GCP API method
 mixins.
 1. This will install the base GCP API functionalities for building requests,
