@@ -36,7 +36,7 @@ The main steps to add a new foo API client are:
 1. Create a new foo API client file
 1. Create a FooClient class to invoke the actual GCP API call
 1. Create a FooRepositoryClient class, and define the property method for the resource that you want to interact with the GCP API
-1. Create a _FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
+1. Create a \_FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
 1. Use the new API client
 
 A good example to look at, that is small, complete, and self-contained would be
@@ -130,7 +130,7 @@ class CloudsqlClient(object):
 1. Make it inherit the `BaseRepositoryClient`.
 1. Initialize it with quota parameters.
 1. Define the property method named after the bar resource we want to interact
-with, e.g. bar(). This property method will initialize a _FooBarRepository
+with, e.g. bar(). This property method will initialize a \_FooBarRepository
 class, which will install the base GCP API functionalities (building requests,
 authentication, and API methods).
 
@@ -175,9 +175,9 @@ class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._instances
 ```
 
-## Create a _FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
+## Create a \_FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
 
-1. Create a _FooBarRepository class in foo.py.
+1. Create a \_FooBarRepository class in foo.py.
 1. Make it inherit the base `GCPRepository` and the appropriate GCP API method
 mixins.
 1. This will install the base GCP API functionalities for building requests,
