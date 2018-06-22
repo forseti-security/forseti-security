@@ -7,49 +7,46 @@ order: 003
 
 Starting with version 2.0, Forseti introduces the use of data models.
 
-The data model is an additional pool of data that is relational in nature,
-and is created from the flat JSONdata in inventory. With the relational data, Forseti
-can more easily understand the entire relationship, including inheritance between resources. Models
-allow for easier querying against the entire computed policy.
+The data model is an additional pool of relational data that is created
+from the flat JSON data in Inventory. With the relational data, Forseti
+can more easily understand the entire relationship, including inheritance
+between resources. Models allow for easier querying against the entire
+computed policy.
 
-Another important concept to keep in mind is that the data models are not meant
-to be persistent. Before using Scanner or Explain, a data model must be created. After you're
-finished using the model, it should be deleted.
-
-Both Scanner and Explain depend on the data models being present, so you
-**must** create a valid data model before you use Scanner or Explain.
+Scanner and Explain depend on a data model, so you **must** create a valid
+data model before you use Scanner or Explain. Note that data models aren't
+meant to be persistent, so when you're finished using a model, you should delete it.
 
 ---
 
 ## How data models are stored
 
-Data models are stored in their own set of tables, which are named with the
-`<model_handle>_<table_name>` and are tied to each other by specific relationships. At any given
-time, multiple set of tables can exist, either created by the cron job, or by other users. The
-table sets are listed in the `models` table.
+Data models are stored in their own set of tables with a naming convention of
+`<model_handle>_<table_name>`, and are tied to each other by specific relationships.
+Multiple sets of tables can exist, either created by the cron job, or by other users.
+The table sets are listed in the `models` table.
 
 ### The `binding_members` table
 
-This table is a join table that connects `members` table with the `bindings` table, so you can
-know what resources each member can access.
+This table is a join table that connects the `members` table with the `bindings` table,
+so you can know what resources each member can access.
 
 ### The `bindings` table
 
-This table contains information about what resource and what role are associated for a
+This table contains information about what resource and roles are associated for a
 `binding_id`. You can combine this with the binding_members table to see who has access to
 resources, and with which roles.
 
 ### The `group_in_group` table
 
 This table contains information about how groups are nested in other groups.
-Each row contains a group and its parent group.
-
-If a group is not nested, then it will not be in this table.
+Each row contains a group and its parent group. If a group isn't nested, it won't
+be in this table.
 
 ### The `group_members` table
 
-This table contains information about groups, and the members in the group
-(both users and other groups).
+This table contains information about groups, and the members in the group, including
+users and other groups.
 
 ### The `members` table
 
@@ -58,19 +55,19 @@ and their names.
 
 ### The `permissions` table
 
-This table is a listing of all the permissions on GCP.
+This table is a listing of all the permissions on Google Cloud Platform (GCP).
 
 ### The `roles` table
 
-This table is a listing of all the roles on GCP, title, stage, description,
-and whether it's custom role or not.
+This table is a listing of all the roles on GCP, including title, stage, description,
+and whether it's a custom role.
 
 ### The `role_permissions` table
 
 This table contains information on the roles and the permissions of that role.
 
-You can combine the (`binding_members`, `bindings`, `roles`, and
-`role_permissions`) tables to see who has what permissions on what resources.
+You can combine the `binding_members`, `bindings`, `roles`, and
+`role_permissions` tables to see who has what permissions on which resources.
 
 ### The `resources` table
 This table contains the details of each resource, like the full_name, its

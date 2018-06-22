@@ -13,9 +13,9 @@ This guide explains how to use the Forseti installation tool.
 
 Before you run the setup wizard, you will need:
 
-* A Google Cloud Platform (GCP) organization for which you want to deploy 
-  Forseti.
-* Organization Administrator Cloud Identity and Access Management (Cloud IAM)
+* A Google Cloud Platform (GCP) organization you want to deploy
+  Forseti for.
+* An Organization Administrator Cloud Identity and Access Management (Cloud IAM)
   role so the script can assign the Forseti service account roles on the
 organization Cloud IAM policy.
 * A GCP project dedicated to Forseti. You can reuse the same project that has
@@ -36,15 +36,15 @@ installer. This ensures you're using the latest version of Cloud SDK since it's
 included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the
 steps below:
 
-  1. Go to the [Cloud Platform Console](https://console.cloud.google.com/).
+  1. Go to the [GCP Console](https://console.cloud.google.com/).
   1. In the **Select a project** drop-down list at the top of the console,
-     select the project to which you want to deploy Forseti.
+     select the project you want to deploy Forseti to.
   1. On the top right, click the icon to **Activate Google Cloud Shell**. The
      Cloud Shell panel opens at the bottom of the page.
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is 
+  1. After you've started Cloud Shell, download Forseti. The installer is
   included in the `install/` directory:
 
       ```bash
@@ -62,8 +62,8 @@ steps below:
       ```
 
   1. Install both client and server by running the installer:
-     
-     ```bash 
+
+     ```bash
      python install/gcp_installer.py
      ```
 
@@ -91,7 +91,7 @@ steps below:
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
      your Cloud Storage bucket:
-     
+
      ```bash
        MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
        forseti inventory create --import_as ${MODEL_ID}
@@ -103,7 +103,7 @@ steps below:
 ## What's next
 
 * Learn how to customize
-  [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and 
+  [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
   [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
 * Configure Forseti Notifier to send
   [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).

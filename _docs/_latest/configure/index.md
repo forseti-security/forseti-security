@@ -20,9 +20,9 @@ and Enforcer.
 
 **[Configuring Inventory]({% link _docs/latest/configure/inventory/index.md %})**
 
-Configure Inventory to collect and store information about your GCP resources. Inventory helps you
-understand your resources and take action to conserve resources, reduce cost, and minimize security
-exposure.
+Configure Inventory to collect and store information about your Google Cloud Platform (GCP) resources.
+Inventory helps you understand your resources and take action to conserve resources, reduce cost, and
+minimize security risk.
 
 **[Configuring Scanner]({% link _docs/latest/configure/scanner/index.md %})**
 
@@ -31,10 +31,10 @@ from Inventory to regularly compare role-based access policies for your resource
 
 **[Configuring Notifier]({% link _docs/latest/configure/notifier/index.md %})**
 
-Configuring Notifier to dispatch a variety of messages through various channels and varying formats 
+Configure Notifier to dispatch a variety of messages through various channels and varying formats
 alerting you to events in your environment.
 
 **[Enabling G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})**
 
-Enable the data collection of G Suite for processing by Forseti Inventory. G Suite access helps 
+Enable the data collection of G Suite for processing by Forseti Inventory. G Suite access helps
 ensure right people are in the right group, and is required for Forseti.

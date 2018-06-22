@@ -1,7 +1,7 @@
 ---
 title: Forseti conceptual overview
 order: 001
-hide: 
+hide:
   left_sidebar: true
 ---
 

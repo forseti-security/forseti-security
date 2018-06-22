@@ -25,4 +25,4 @@ to the latest version.
 
 **[Deploy Forseti Security Manually]({% link _docs/latest/setup/manual.md %})**
 
-Deploy Forseti manually on Google Cloud Platform (GCP).
+Deploy Forseti manually on GCP.

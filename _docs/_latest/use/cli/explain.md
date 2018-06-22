@@ -8,9 +8,9 @@ This guide describes how to configure Explain for Forseti Security.
 
 Explain helps you understand the Cloud Identity and Access Management
 (Cloud IAM) policies that affect your Google Cloud Platform (GCP) resources.
-It can enumerate access by resource or member, answer why a principal has access 
-to a certain resource, or offer possible strategies for how to grant a specific 
-resource.
+It can enumerate access by resource or member, answer why a principal has access
+to a certain resource, or offer possible strategies for how to grant access
+to a specific resource.
 
 ---
 
@@ -30,7 +30,7 @@ To review the hierarchy of commands and explore Explain functionality, use
 
 ### Creating a data model
 
-Get the inventory_index_id and use it to create the data model by running
+Get the `inventory_index_id` and use it to create the data model by running
 the following command:
 
 ```bash
@@ -38,6 +38,8 @@ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
 ### Selecting a data model
+
+Select the data model you created by running the following command:
 
 ```bash
 forseti model use <MODEL_NAME>
@@ -47,7 +49,7 @@ forseti model use <MODEL_NAME>
 
 Following are some example commands you can run to query the data model.
 
-### Listing resources in the data model
+### List resources in the data model
 
 ```bash
 forseti explainer list_resources
@@ -151,7 +153,7 @@ direct or indirect binding.
 ```bash
 forseti explainer access_by_member user/<USER_NAME> --expand_resource true
 ```
- 
+
 With resource expansion enabled, the example above will return `organizations/1234567890` and all
 folders, projects, VMs, and other resources in it.
 
@@ -184,7 +186,7 @@ To enable group expansion, pass in the `--expand_group` argument. Forseti will p
 expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true 
+forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true
 ```
 
 With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo`
@@ -193,7 +195,7 @@ is a member in `group/bar`.
 To constrain the result to a certain type of permission, pass in the permission:
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION> 
+forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION>
 ```
 
 ### Access member or resource by permission
@@ -237,12 +239,16 @@ forseti explainer why_granted <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMIS
 
 Example values for `<MEMBER_NAME>` are `user/user1@gmail.com` or `serviceAccount/service1@domain.com`
 
-The result shows all bindings that grant the permission you specified. For each binding `<resource, role, [member1, member2]>`, Forseti returns how the resource hierarchy links to your target resource, and how a group in the binding links to your target member.
+The result displays all bindings that grant the permission you specified.
+For each binding `<resource, role, [member1, member2]>`, Forseti returns
+how the resource hierarchy links to your target resource, and how a group
+in the binding links to your target member.
 
-In the following example, user `user/abc@gmail.com` has permission `iam.serviceAccounts.get`
-on resource `my-project-123` because the user has the role `roles/iam.securityReviewer` on resource
-`organization/1234567890`. Member `user/abc@gmail.com` also has a membership in group
-`group/my-group-123@gmail.com`.
+In the following example, user `user/abc@gmail.com` has permission
+`iam.serviceAccounts.get` on resource `my-project-123` because the user
+has the role `roles/iam.securityReviewer` on resource
+`organization/1234567890`. Member `user/abc@gmail.com` also has a
+membership in group `group/my-group-123@gmail.com`.
 
 ```
 forseti explainer why_granted user/abc@gmail.com project/my-project-123 --permission iam.serviceAccounts.get
@@ -271,28 +277,28 @@ role `roles/baz_role` on the resource or its parent. The result also shows that 
 role if you add them to the group `group_foo_parent`, which already has the required permission.
 
 ```
-strategies { 
-    bindings { 
-        member: "member_foo " 
-        resource: "resource_bar_parent" 
-        role: "roles/baz_role" 
-    } 
-    overgranting: 1
-}
-strategies { 
-    bindings { 
-        member: "group_foo_parent " 
-        resource: "resource_bar"
-        role: "roles/baz_role" 
+strategies {
+    bindings {
+        member: "member_foo "
+        resource: "resource_bar_parent"
+        role: "roles/baz_role"
     }
     overgranting: 1
 }
-strategies { 
-    bindings { 
-        member: "member_foo" 
-        resource: "resource_bar" 
-        role: "roles/baz_role" 
-    } 
+strategies {
+    bindings {
+        member: "group_foo_parent "
+        resource: "resource_bar"
+        role: "roles/baz_role"
+    }
+    overgranting: 1
+}
+strategies {
+    bindings {
+        member: "member_foo"
+        resource: "resource_bar"
+        role: "roles/baz_role"
+    }
 }
 ...
 ```

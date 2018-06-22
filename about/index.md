@@ -23,7 +23,7 @@ in one or two projects, but at some point manual checking does not work anymore.
 systematically monitor your GCP resources to ensure that access controls are set as you intended,
 Forseti will allow creating rule-based policies to codify your security stance. Then, if something
 changes unexpectedly, action will be taken including notifying you, and possibly automatically
-reverting to a known state. 
+reverting to a known state.
 
 Taken as a whole, Forseti allows you to ensure your security is governed by consistent,
 intelligible rules.

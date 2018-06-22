@@ -2,7 +2,7 @@
 
 If you're experiencing an issue, find out if there's already a solution:
 
-1. Read the FAQs
+1. Read the [FAQs]({% link _docs/latest/faq/index.md %})
 1. Search [existing issues in GitHub](https://github.com/GoogleCloudPlatform/forseti-security/issues)
 1. Search
 [discuss@forsetisecurity.org](https://groups.google.com/a/forsetisecurity.org/forum/#!forum/discuss)
@@ -15,7 +15,7 @@ If you need help with a bug or error, include the following information in your 
 * What happened?
 * What did you expect to happen?
 * How can we reproduce the problem?
-* Which interface are you using (Cloud Platform Console, gcloud)?
+* Which interface are you using (Google Cloud Platform Console, gcloud command-line tool)?
 * Which Forseti module are you using?
 
 If you have an idea for a Forseti feature that isn't already on the

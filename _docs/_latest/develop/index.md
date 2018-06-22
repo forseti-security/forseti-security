@@ -5,13 +5,13 @@ hide:
   right_sidebar: true
 ---
 
-# {{ page.title }} 
+# {{ page.title }}
 
 ---
 
 **[Contributing to Forseti]({% link _docs/latest/develop/contributing.md %})**
 
-Learn about the process to contribute to Forseti, including how style guidelines and how to submit
+Learn about the process to contribute to Forseti, including style guidelines and how to submit
 a pull request.
 
 **[Git Branch Management]({% link _docs/latest/develop/branch-management.md %})**
@@ -21,7 +21,7 @@ GitHub.
 
 **[Start Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
 
-Get setup and started with development.
+Get set up and started with development.
 
 **[Get Help Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
 
