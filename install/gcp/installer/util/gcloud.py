@@ -18,7 +18,6 @@ from __future__ import print_function
 import json
 import re
 import sys
-import os
 
 import constants
 import utils
