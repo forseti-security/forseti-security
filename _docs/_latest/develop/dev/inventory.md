@@ -48,7 +48,7 @@ to create `iter_foo()` that will call the API client to retrieve the data.
 
 Edit
 [google/cloud/forseti/services/inventory/base/resources.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/resources.py)
-to create `XYZIterator` to call the `iter_foo()`, and cast the result for storage
+to create `FooIterator` to call the `iter_foo()`, and cast the result for storage
 in Inventory.
 
 ```python
