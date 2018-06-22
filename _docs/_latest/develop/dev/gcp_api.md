@@ -47,7 +47,7 @@ A good example to look at, that is small, complete, and self-contained would be
 Add a new entry for the API and the versions that can be used in the
 `SUPPORTED_APIS` map.
 
-google/cloud/forseti/common/gcp_api/_supported_apis.py
+[google/cloud/forseti/common/gcp_api/_supported_apis.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/_supported_apis.py)
 
 ```python
 SUPPORTED_APIS = {
