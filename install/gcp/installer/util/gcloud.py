@@ -47,12 +47,11 @@ def get_gcloud_info():
             props = config.get('properties', {})
             metrics = props.get('metrics', {})
             is_devshell = metrics.get('environment') == 'devshell'
-            is_service_account = 'iam.gserviceaccount.com' in authed_user
             print('Read gcloud info: Success')
         except ValueError as verr:
             print(verr)
             sys.exit(1)
-    return project_id, authed_user, is_devshell, is_service_account
+    return project_id, authed_user, is_devshell
 
 def _get_service_account_json_path():
     """Search in the environment variables for Google Credentials

@@ -62,6 +62,8 @@ def run():
     parser.add_argument('--no-cloudshell',
                         action='store_true',
                         help='Bypass Cloud Shell requirement')
+    parser.add_argument('--service-account-key-path',
+                        help='Absolute path for service account key file')
     parser.add_argument('--advanced',
                         action='store_true',
                         help='Advanced setup mode (more options)')
