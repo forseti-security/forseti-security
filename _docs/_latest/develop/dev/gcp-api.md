@@ -41,6 +41,7 @@ The main steps to add a new foo API client are:
 
 A good example to look at, that is small, complete, and self-contained would be
 [cloudsql.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py).
+We will use it for the code-walk below.
 
 ## Define the API name & versions to be added
 
@@ -124,7 +125,7 @@ class CloudsqlClient(object):
         return flattened_results
 ```
 
-## Create a FooRepositoryClient class, and define the property method for the resource that you want to interact with the GCP API
+## Create a FooRepositoryClient class, and define the property method
 
 1. Create a FooRepositoryClient class in foo.py.
 1. Make it inherit the `BaseRepositoryClient`.
@@ -175,11 +176,11 @@ class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._instances
 ```
 
-## Create a \_FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
+## Create a \_FooBarRepository class, to install the base GCP API functionalities
 
 1. Create a \_FooBarRepository class in foo.py.
 1. Make it inherit the base `GCPRepository` and the appropriate GCP API method
-mixins.
+mixins.  In this example, the mixin for list.
 1. This will install the base GCP API functionalities for building requests,
 authentication, and the API methods.
 
@@ -202,6 +203,9 @@ class _CloudSqlInstancesRepository(
 ```
 
 ## Use the new API client
+
+With everything in place, the new API client can be used as:
+
 ```
 self.foo_api_client = foo.FooClient(configs)
 self.foo_api_client.get_foos(project_id)

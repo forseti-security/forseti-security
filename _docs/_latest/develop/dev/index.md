@@ -22,6 +22,9 @@ changes.
   Inventory to collect and store new data so you can inventory new products and
   resources.
 
+* **[Develop GCP API Client]({% link _docs/latest/develop/dev/gcp-api.md %})**: Create your own GCP
+  API clients, so that Forseti can interact with GCP.
+
 * **[Develop on Scanner]({% link _docs/latest/develop/dev/scanner.md %})**: Create your own Forseti
   Scanner rules to check different types of data to make sure it's securely
   configured.
