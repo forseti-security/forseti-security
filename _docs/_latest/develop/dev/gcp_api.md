@@ -113,14 +113,6 @@ class CloudsqlClient(object):
         Returns:
             list: A list of database Instance resource dicts for a project_id.
             https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances
-
-            [{"kind": "sql#instance", "name": "sql_instance1", ...}
-             {"kind": "sql#instance", "name": "sql_instance2", ...},
-             {...}]
-
-        Raises:
-            ApiExecutionError: ApiExecutionError is raised if the call to the
-                GCP ClodSQL API fails
         """
 
         paged_results = self.repository.instances.list(project_id)
