@@ -130,7 +130,7 @@ class CloudsqlClient(object):
 1. Make it inherit the `BaseRepositoryClient`.
 1. Initialize it with quota parameters.
 1. Define the property method named after the bar resource we want to interact
-with, e.g. bar(). This property method will instantiate a _FooBarRepository
+with, e.g. bar(). This property method will initialize a _FooBarRepository
 class, which will install the base GCP API functionalities (building requests,
 authentication, and API methods).
 
