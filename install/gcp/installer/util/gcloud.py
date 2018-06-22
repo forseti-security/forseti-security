@@ -53,34 +53,16 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
-def _get_service_account_json_path():
-    """Search in the environment variables for Google Credentials
-    Returns:
-        str: The value of the first non-empty environment variable
-    """
-
-    if 'GOOGLE_CREDENTIALS' in os.environ:
-        return os.environ['GOOGLE_CREDENTIALS']
-    elif 'GOOGLE_CLOUD_KEYFILE_JSON' in os.environ:
-        return os.environ['GOOGLE_CLOUD_KEYFILE_JSON']
-    elif 'GCLOUD_KEYFILE_JSON' in os.environ:
-        return os.environ['GCLOUD_KEYFILE_JSON']
-    elif 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE' in os.environ:
-        return os.environ['CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE']
-
-    return None
-
-
-def activate_service_account(authed_user):
+def activate_service_account(authed_user, key_path):
     """Activate the service account with gcloud
     Args:
         authed_user (str): service account email
+        key_path (str): absolute path to service account key file
     """
 
     return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
-         authed_user, '--key-file={}'
-         .format(_get_service_account_json_path())])
+         authed_user, '--key-file=', key_path])
 
     if return_code:
         print(err)
