@@ -66,7 +66,7 @@ To complete the casting, edit
 [google/cloud/forseti/services/inventory/base/resources.py](https://github.com/GoogleCloudPlatform/forseti-security/tree/stable/google/cloud/forseti/services/inventory/base/resources.py)
 to create a resource class for foo. This allows you to access the `id` and `type`.
 If the resource doesn't have a provided `id`, you'll have to synthesize one. For
-details to create a synthetic key, see other existing `key()` in `resources.py`
+details to create a synthetic key, see an existing `key()` in `resources.py`
 where other existing resource attributes are hashed.
 
 
