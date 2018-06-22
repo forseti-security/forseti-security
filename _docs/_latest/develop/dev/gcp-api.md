@@ -34,7 +34,7 @@ The main steps to add a new foo API client are:
 
 1. Define the API name & versions to be added
 1. Create a new foo API client file
-1. Create a FooClient class to invoke the actual GCP API call
+1. Create a FooClient class to provide the entry point to the GCP API method
 1. Create a FooRepositoryClient class, and define the property method for the resource that you want to interact with the GCP API
 1. Create a \_FooBarRepository class, to install the base GCP API functionalities (building requests, authentication, mixin classes)
 1. Use the new API client
@@ -77,7 +77,7 @@ Create a new foo API client file called foo.py in
 [google/cloud/forseti/common/gcp_api](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api)
 package.
 
-## Create a FooClient class to invoke the actual GCP API call
+## Create a FooClient class to provide the entry point to the GCP API method
 
 1. Create FooClient class in foo.py.
 1. Initialize with the allowed quota and FooRepositoryClient.
