@@ -26,7 +26,7 @@ clients, without having to rewrite these common methods for every API clients.
 
 You can [learn more about the mixin pattern here](https://www.ianlewis.org/en/mixins-and-python).
 
-You can see the currently available [mixins in Forseti here](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/repository_mixins.py).
+You can see the currently available [mixins in Forseti here]({% link _docs/_latest/develop/reference/google.cloud.forseti.common.gcp_api.html %}).
 
 ## Main Steps
 
@@ -44,7 +44,7 @@ functionalities (building requests, authentication, mixin classes).
 1. Use the new API client.
 
 A good example to look at, that is small, complete, and self-contained would be
-[cloudsql.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py).
+[cloudsql.py]({% link _docs/_latest/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %}).
 We will use it for the code-walk below.
 
 ## Define the API name & versions to be added
@@ -79,7 +79,7 @@ SUPPORTED_APIS = {
 ## Create new foo API client file
 
 Create a new foo API client file called foo.py in
-[google/cloud/forseti/common/gcp_api](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api)
+[google/cloud/forseti/common/gcp_api]({% link _docs/_latest/develop/reference/google.cloud.forseti.common.gcp_api.html %})
 package.
 
 ## Create FooClient class to provide the entry point to the GCP API method
@@ -90,7 +90,7 @@ package.
 if the repository client has property `instances`. In the example below,
 the repository has list mixin, which will invoke the actual GCP API call.
 
-[google/cloud/forseti/common/gcp_api/cloudsql.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py)
+[google/cloud/forseti/common/gcp_api/cloudsql.py]({% link _docs/_latest/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %})
 
 ```python
 class CloudsqlClient(object):
@@ -142,7 +142,7 @@ class (see next section), which will install the base GCP API functionalities
 (building requests, authentication, and API methods).
 
 
-[google/cloud/forseti/common/gcp_api/cloudsql.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py)
+[google/cloud/forseti/common/gcp_api/cloudsql.py]({% link _docs/_latest/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %})
 
 In this example, bar is ```instances```.
 
@@ -191,7 +191,7 @@ mixins.  In this example, the mixin for list.
 1. This will install the base GCP API functionalities for building requests,
 authentication, and the API methods.
 
-[google/cloud/forseti/common/gcp_api/cloudsql.py](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/google/cloud/forseti/common/gcp_api/cloudsql.py)
+[google/cloud/forseti/common/gcp_api/cloudsql.py]({% link _docs/_latest/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %})
 
 ```python
 class _CloudSqlInstancesRepository(
