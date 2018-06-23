@@ -27,7 +27,7 @@ else
     JEKYLL_GITHUB_TOKEN=$JGT bundle exec jekyll build
 fi
 
-bundle exec htmlproofer --check-img-http --check-opengraph --check-html \
+bundle exec htmlproofer --check-img-http --check-html \
 --check-favicon --report-missing-names --report-script-embeds \
 --url-ignore '/GoogleCloudPlatform/forseti-security/edit/' \
 --file-ignore '/develop/reference/' \

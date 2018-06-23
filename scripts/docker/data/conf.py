@@ -36,9 +36,6 @@ project = google.cloud.forseti.__package_name__.replace('-', ' ').title()
 author = 'The %s Authors' % (project,)
 current_year = datetime.now().year
 copyright = '%s, %s' % (current_year, author,)
-# project = u'Forseti Security'
-# copyright = u'2018, The Forseti Security Authors'
-# author = u'The Forseti Security Authors'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -68,10 +65,23 @@ for project_directory, _, _ in os.walk('google'):
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.inheritance_diagram',
 ]
 
-# napoleon_google_docstring = False
+# Autodoc configuration.
+# See: http://www.sphinx-doc.org/en/master/ext/autodoc.html#confval-autodoc_default_flags
+autodoc_default_flags = [
+    'members',
+    'private-members',
+    'undoc-members',
+]
+
+# Napoleon configuration.
+# See: http://www.sphinx-doc.org/en/master/ext/napoleon.html#configuration
+napoleon_google_docstring = True
+napoleon_include_private_with_doc = True
+napoleon_include_special_with_doc = True
 # napoleon_use_param = False
 # napoleon_use_ivar = True
 
@@ -104,7 +114,10 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-# exclude_patterns = ['_build']
+exclude_patterns = [
+    '*.eggs*',
+    '*pb2*'
+]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -238,7 +251,7 @@ def no_namedtuple_attrib_docstring(app, what, name,
     if is_namedtuple_docstring:
         # We don't return, so we need to purge in-place
         del lines[:]
-        
+
 def setup(app):
     app.connect(
         'autodoc-process-docstring',
