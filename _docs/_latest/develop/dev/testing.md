@@ -4,17 +4,22 @@ order: 105
 ---
 # {{ page.title }}
 
-This page describes how to run tests on your Forseti contributions. You need to
-install Forseti before you run the unit tests, either by following the
-[Developer Setup]({% link _docs/latest/develop/dev/setup.md %}) (a local installation) 
-or the [GCP setup]({% link _docs/latest/configure/general/index.md %}) 
-(install on a GCE instance; you will need to connect to that instance to run the unit tests).
+This page describes how to run tests on your Forseti contributions.
+
+## Before you begin
+
+Before you run unit tests, install Forseti by following the
+[Developer Setup]({% link _docs/latest/develop/dev/setup.md %}) for
+a local installation or the
+[Google Cloud Platform (GCP) setup]({% link _docs/latest/configure/general/index.md %})
+for a Compute Engine installation. You will need to connect to that
+instance to run the unit tests.
 
 ---
 
 ## Executing tests
 
-You can find unit tests in the top-level `tests/` directory. We use
+Unit tests are in the top-level `tests/` directory. We use
 [`unittest`](https://docs.python.org/2/library/unittest.html) from standard Python to run our tests.
 
 Before you run unit tests and pylint checkers, make sure you have

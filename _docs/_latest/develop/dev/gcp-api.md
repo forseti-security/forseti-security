@@ -30,7 +30,7 @@ You can see the currently available [mixins in Forseti here]({% link _docs/_late
 
 ## Main Steps
 
-The main steps to add a new foo API client are:
+To add a new foo GCP API client, you'll complete the following tasks:
 
 1. Define the API name & versions to be added.
 1. Create a new foo API client file.
@@ -47,7 +47,7 @@ A good example to look at, that is small, complete, and self-contained would be
 [cloudsql.py]({% link _docs/_latest/develop/reference/_modules/google/cloud/forseti/common/gcp_api/cloudsql.html %}).
 We will use it for the code-walk below.
 
-## Define the API name & versions to be added
+## Step 1: Define the API name & versions to be added
 
 Add a new entry for the API and the versions that can be used in the
 `SUPPORTED_APIS` map.  You can see the available
@@ -76,16 +76,16 @@ SUPPORTED_APIS = {
 }
 ```
 
-## Create new foo API client file
+## Step 2: Create new foo API client file
 
 Create a new foo API client file called foo.py in
 [google/cloud/forseti/common/gcp_api]({% link _docs/_latest/develop/reference/google.cloud.forseti.common.gcp_api.html %})
 package.
 
-## Create FooClient class to provide the entry point to the GCP API method
+## Step 3: Create FooClient class to provide the entry point to the GCP API method
 
 1. Create FooClient class in foo.py.
-1. Initialize with the allowed quota and FooRepositoryClient (see next section).
+1. Initialize with the allowed quota and [FooRepositoryClient](#Step-4:-Create-FooRepositoryClient-class,-and-define-the-property-method).
 1. Create a get_(repository_client_property)s e.g. `get_instances()` as below,
 if the repository client has property `instances`. In the example below,
 the repository has list mixin, which will invoke the actual GCP API call.
@@ -131,14 +131,14 @@ class CloudsqlClient(object):
         return flattened_results
 ```
 
-## Create FooRepositoryClient class, and define the property method
+## Step 4: Create FooRepositoryClient class, and define the property method
 
 1. Create a FooRepositoryClient class in foo.py.
 1. Inherit from the `BaseRepositoryClient`.
 1. Initialize it with quota parameters.
 1. Define the property method named after the bar resource we want to interact
-with, e.g. bar(). This property method will initialize a \_FooBarRepository
-class (see next section), which will install the base GCP API functionalities
+with, e.g. bar(). This property method will initialize a [\_FooBarRepository
+class](Step-5:-Create-\_FooBarRepository-class,-to-install-the-base-GCP-API-functionalities), which will install the base GCP API functionalities
 (building requests, authentication, and API methods).
 
 
@@ -183,7 +183,7 @@ class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._instances
 ```
 
-## Create \_FooBarRepository class, to install the base GCP API functionalities
+## Step 5: Create \_FooBarRepository class, to install the base GCP API functionalities
 
 1. Create a \_FooBarRepository class in foo.py.
 1. Make it inherit the base `GCPRepository` and the appropriate GCP API method
@@ -209,7 +209,7 @@ class _CloudSqlInstancesRepository(
             component='instances', **kwargs)
 ```
 
-## Use the new API client
+## Step 6: Use the new API client
 
 With everything in place, the new API client can be used by initializing
 the GCP API client, and call the resource method.

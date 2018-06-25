@@ -85,41 +85,11 @@ function copy_sphinx_docs_into_jekyll_docs() {
     docker rm "${container_id}"
 }
 
-#######################################
-# Sphinx generates some links to pages
-# that do not exist; the best way to
-# clean them up is after generation.
-#######################################
-function delete_erroneous_generated_links_from_docs() {
-    sed -i '/<li><a href="sqlalchemy/d' \
-      _docs/_latest/develop/reference/_modules/index.html
-    sed -i '/<li><a href="namedtuple_/d' index.html \
-      _docs/_latest/develop/reference/_modules/index.html
-}
-
-#######################################
-# Jinja uses a similar syntax to Jekyll
-# Liquid, therefore we must escape
-# strings like "{{" and "}}" when used
-# in code samples that are meant to be
-# displayed without Liquid expansion.
-#######################################
-function escape_jinja_templating_in_code_samples() {
-    # Escape "{%", "%}", "{{", "}}" with Liquid's raw escaping mechanism, but
-    # DO NOT escape unbalanced sequences such as "{}}" which is present in some
-    # JSON examples.
-    find _docs/_latest/develop/reference/.eggs/ -type f -print0 | \
-    xargs -0 sed -ri \
-        '/\{\}\}/b; s/(\{\%|\%\}|\{\{|\}\})/\{% raw %\}\1\{% endraw %\}/g'
-}
-
 function main() {
     checkout_python_source_to_temp_directory
     build_python_source_in_docker
     generate_sphinx_docs_in_docker
     copy_sphinx_docs_into_jekyll_docs
-    delete_erroneous_generated_links_from_docs
-    escape_jinja_templating_in_code_samples
 }
 
 main "$@"

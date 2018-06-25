@@ -10,7 +10,7 @@ together.
 
 ---
 
-Overview
+## Overview
 
 Forseti gives you tools to understand all the resources you have in Google Cloud
 Platform (GCP). The core Forseti modules work together to provide complete
@@ -45,6 +45,6 @@ security risks.
  1. You use Explain to query and understand your Cloud IAM policies.
  1. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.
- 1. You use the command-line interface to query Forseti data via GRPC.
+ 1. You use the command-line interface to query Forseti data using gRPC.
  1. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
-    in CloudSQL.
+    in Cloud SQL.

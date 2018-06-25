@@ -28,12 +28,12 @@ exclusively on the `forseti-server-vm` virtual machine instance.
 
 This service account is used by core modules of the Forseti service. For
 example, Inventory uses this service account to read and store the
-supported resources. It's also used by Scanner to audit policies.
+supported resources. Scanner also uses the service account to audit policies.
 
 ### Permissions
 
 For Forseti to work properly, the `forseti-server-gcp` service account
-requires the following permissions.
+requires the following permissions:
 
 {% include docs/latest/forseti-server-gcp-required-roles.md %}
 
@@ -48,20 +48,20 @@ securing the granted rights of the `forseti-server-gcp` service account
 from that of the `forseti-client-gcp` service account.
 
 By using separate service accounts, you can grant many users access to the
-`forseti-client-vm` without over granting access required for proper operation
+`forseti-client-vm` without over-granting access required for proper operation
 of the core modules.
 
 ### Permissions
 
 For Forseti to work properly, the `forseti-client-gcp` service account
-requires the following permissions.
+requires the following permissions:
 
 {% include docs/latest/forseti-client-gcp-required-roles.md %}
 
 ## What's next
 
  * Learn more about [Service Accounts](https://cloud.google.com/iam/docs/understanding-service-accounts)
- * Read about how to [keep your GCP service account keys safe](https://cloudplatform.googleblog.com/2017/07/help-keep-your-Google-Cloud-service-account-keys-safe.html)
+ * Read about how to [keep your Google Cloud service account keys safe](https://cloudplatform.googleblog.com/2017/07/help-keep-your-Google-Cloud-service-account-keys-safe.html)
  * Learn about Cloud Identity and Access Management (Cloud IAM):
    * [Using Cloud IAM securely](https://cloud.google.com/iam/docs/using-iam-securely)
    * [Understanding Cloud IAM roles](https://cloud.google.com/iam/docs/understanding-roles)
