@@ -85,7 +85,7 @@ package.
 ## Step 3: Create FooClient class to provide the entry point to the GCP API method
 
 1. Create FooClient class in foo.py.
-1. Initialize with the allowed quota and [FooRepositoryClient](#Step-4:-Create-FooRepositoryClient-class,-and-define-the-property-method).
+1. Initialize with the allowed quota and FooRepositoryClient (see next section).
 1. Create a get_(repository_client_property)s e.g. `get_instances()` as below,
 if the repository client has property `instances`. In the example below,
 the repository has list mixin, which will invoke the actual GCP API call.
@@ -137,8 +137,8 @@ class CloudsqlClient(object):
 1. Inherit from the `BaseRepositoryClient`.
 1. Initialize it with quota parameters.
 1. Define the property method named after the bar resource we want to interact
-with, e.g. bar(). This property method will initialize a [\_FooBarRepository
-class](Step-5:-Create-\_FooBarRepository-class,-to-install-the-base-GCP-API-functionalities), which will install the base GCP API functionalities
+with, e.g. bar(). This property method will initialize a \_FooBarRepository
+class (see next section), which will install the base GCP API functionalities
 (building requests, authentication, and API methods).
 
 
