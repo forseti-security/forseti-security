@@ -223,7 +223,7 @@ class Rule(object):
             if not network_interface.access_configs:
                 LOGGER.warn('Unable to determine blacklist violation for '
                             'network interface: %s, because it doesn\'t '
-                            'have access_configs.',
+                            'have external internet access.',
                             network_interface.full_name)
                 continue
 
