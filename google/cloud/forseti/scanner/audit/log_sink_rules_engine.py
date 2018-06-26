@@ -245,17 +245,14 @@ class LogSinkRuleBook(bre.BaseRuleBook):
             {
                 'name': 'a rule',
                 'mode': 'required',
-                'resource': {
+                'resource': [{
                     'type': 'organization',
                     'applies_to': 'children',
                     'resource_ids': ['11223344']
-                },
+                }],
                 'sink': {
-                    'destination': (
-                        'bigquery\\.googleapis\\.com\\/projects\\/my-proj\\/'
-                        '.+?'),
-                    'filter': (
-                        'logName\\:\\"logs\\/cloudaudit\\.googleapis\\.com\\"'),
+                    'destination': 'bigquery.googleapis.com/projects/my-proj/*',
+                    'filter': logName:"logs/cloudaudit.googleapis.com"',
                     'include_children': '*'
                 }
             }

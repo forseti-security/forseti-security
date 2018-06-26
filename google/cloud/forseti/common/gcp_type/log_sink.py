@@ -49,7 +49,6 @@ class LogSink(resource.Resource):
             name='{}/sinks/{}'.format(parent.name, sink_id),
             display_name=sink_id,
             parent=parent)
-        self.sink_id = sink_id
         self.destination = destination
         self.sink_filter = sink_filter
         self.include_children = include_children
@@ -70,9 +69,9 @@ class LogSink(resource.Resource):
         return cls(
             sink_id=sink_dict.get('name', ''),
             destination=sink_dict.get('destination', ''),
-            sink_filter=sink_dict.get('sink_filter', ''),
-            include_children=sink_dict.get('include_children', False),
-            writer_identity=sink_dict.get('writer_identity', ''),
+            sink_filter=sink_dict.get('filter', ''),
+            include_children=sink_dict.get('includeChildren', False),
+            writer_identity=sink_dict.get('writerIdentity', ''),
             parent=parent,
             raw_json=json.dumps(sink_dict)
         )

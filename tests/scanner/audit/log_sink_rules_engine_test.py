@@ -111,8 +111,8 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
         expected_rule_resources = ['folders/56', 'organizations/234']
         self.assertEqual(expected_rule_resources, sorted(child_rule_resources))
 
-    def test_build_rule_book_invalid_mode_fails(self):
-        """Tests that a rule with an inavlid mode cannot be created."""
+    def test_build_rule_book_invalid_applies_to_fails(self):
+        """Tests that a rule with invalid applies_to type cannot be created."""
         rules_local_path = get_datafile_path(
             __file__, 'log_sink_test_invalid_rules.yaml')
         rules_engine = self.lsre.LogSinkRulesEngine(
@@ -373,6 +373,92 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             )
         ])
         self.assertEqual(expected_violations, actual_violations)
+
+    def test_add_invalid_rules(self):
+      """Tests that adding invalid rules raises exceptions."""
+      rule_book = self.lsre.LogSinkRuleBook(global_configs=None)
+      valid_resource = {
+          'type': 'organization',
+          'applies_to': 'children',
+          'resource_ids': ['1234']
+      }
+      valid_sink_spec = {
+          'destination': 'bigquery.*',
+          'filter': '',
+          'include_children': '*'
+      }
+      rule_book.add_rule(
+          {
+              'name': 'Valid rule',
+              'resource': [valid_resource],
+              'sink': valid_sink_spec,
+              'mode': 'whitelist'
+          }, 0)
+      bad_rules = [
+          {},
+          {
+              'name': 'Mising Resource',
+              'mode': 'whitelist',
+              'sink': valid_sink_spec,
+          }, {
+              'name': 'Mising sink',
+              'resource': [valid_resource],
+              'mode': 'whitelist',
+          }, {
+              'name': 'Bad mode',
+              'resource': [valid_resource],
+              'sink': valid_sink_spec,
+              'mode': 'other',
+          }, {
+              'name': 'Bad resource type',
+              'resource': [{
+                  'type': 'bucket',
+                  'applies_to': 'self',
+                  'resource_ids': ['bucket-1']
+              }],
+              'sink': valid_sink_spec,
+              'mode': 'whitelist'
+          }, {
+              'name': 'Bad applies to type',
+              'resource': [{
+                  'type': 'folder',
+                  'applies_to': 'self_and_children',
+                  'resource_ids': ['56']
+              }],
+              'sink': valid_sink_spec,
+              'mode': 'whitelist'
+          }, {
+              'name': 'Empty resource_ids',
+              'resource': [{
+                  'type': 'project',
+                  'applies_to': 'self',
+                  'resource_ids': []
+              }],
+              'sink': valid_sink_spec,
+              'mode': 'whitelist'
+          }, {
+              'name': 'Missing filter',
+              'resource': [valid_resource],
+              'sink': {
+                  'destination': 'bigquery.*',
+                  'include_children': '*'
+              },
+              'mode': 'whitelist'
+          }, {
+              'name': 'Bad include_children',
+              'resource': [valid_resource],
+              'sink': {
+                  'destination': 'bigquery.*',
+                  'filter': '*',
+                  'include_children': 'Yes'
+              },
+              'mode': 'whitelist'
+          }
+      ]
+      for rule in bad_rules:
+          with self.assertRaises(InvalidRulesSchemaError):
+              rule_book.add_rule(rule, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
