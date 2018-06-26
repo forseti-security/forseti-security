@@ -52,7 +52,7 @@ def get_gcloud_info():
     return project_id, authed_user, is_devshell
 
 def activate_service_account(authed_user, key_path):
-    """Activate the service account with gcloud
+    """Activate the service account with gcloud.
     Args:
         authed_user (str): service account email
         key_path (str): absolute path to service account key file
