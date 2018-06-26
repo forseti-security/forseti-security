@@ -51,17 +51,17 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
-def activate_service_account(authed_user, key_path):
+def activate_service_account(service_account, key_path):
     """Activate the service account with gcloud.
     
     Args:
-        authed_user (str): service account email
-        key_path (str): absolute path to service account key file
+        service_account (str): Service account email
+        key_path (str): Absolute path to service account key file
     """
 
     return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
-         authed_user, '--key-file=' + key_path])
+         service_account, '--key-file=' + key_path])
 
     if return_code:
         print(err)
