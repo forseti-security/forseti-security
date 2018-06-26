@@ -117,6 +117,11 @@ class _RunData(object):
         # EXTERNAL. When the load balancing scheme is INTERNAL, this field
         # is not used, it has the same behavior of port so we can just use
         # portName to get the port from instance group.
+
+        if not backend_service.port_name:
+            # If backend_service.port_name is None, it's INTERNAL.
+            return None
+
         port = None
         for named_port in instance_group.named_ports or []:
             if named_port.get('name') == backend_service.port_name:
@@ -282,8 +287,7 @@ class _RunData(object):
         for backend in backend_service.backends:
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
-            if not instance_group or not backend_service.port_name:
-                # If backend_service.port_name is None, it's INTERNAL.
+            if not instance_group:
                 continue
 
             network_port = self.instance_group_network_port(
@@ -337,8 +341,7 @@ class _RunData(object):
         for backend in backend_service.backends:
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
-            if not instance_group or not backend_service.port_name:
-                # If backend_service.port_name is None, it's INTERNAL.
+            if not instance_group:
                 continue
 
             network_port = self.instance_group_network_port(
@@ -349,7 +352,7 @@ class _RunData(object):
             for backend2 in backend_service2.backends:
                 instance_group2 = self.find_instance_group_by_url(
                     backend2.get('group'))
-                if not instance_group2 or not backend_service2.port_name:
+                if not instance_group2:
                     continue
                 network_port2 = self.instance_group_network_port(
                     backend_service2, instance_group2)
