@@ -14,6 +14,8 @@
 
 """Scanner for the KE version rules engine."""
 
+import json
+
 from google.cloud.forseti.common.gcp_type.ke_cluster import KeCluster
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import ke_version_rules_engine
@@ -119,16 +121,26 @@ class KeVersionScanner(base_scanner.BaseScanner):
             ke_clusters = []
             for ke_cluster in data_access.scanner_iter(
                     session, 'kubernetes_cluster'):
-                service_config = list(data_access.scanner_iter(
-                    session, 'kubernetes_service_config',
-                    parent_type_name=ke_cluster.type_name))[0]
-
                 project_id = ke_cluster.parent.name
                 ke_clusters.append(
                     KeCluster.from_json(project_id,
-                                        service_config.data,
+                                        None,
                                         ke_cluster.data,
                                         ke_cluster.full_name))
+
+        # Retrieve the service config via a separate query because session
+        # in the middle of yield_per() can not support multiple queries.
+        with scoped_session as session:
+            for ke_cluster in ke_clusters:
+                position = (
+                    ke_cluster.resource_full_name.find('kubernetes_cluster'))
+                ke_cluster_type_name = (
+                    ke_cluster.resource_full_name[position:][:-1])
+                service_config = list(data_access.scanner_iter(
+                    session, 'kubernetes_service_config',
+                    parent_type_name=ke_cluster_type_name))[0]
+
+                ke_cluster.server_config = json.loads(service_config.data)
 
         return ke_clusters
 

@@ -39,10 +39,11 @@ from sqlalchemy import DateTime
 from sqlalchemy import or_
 from sqlalchemy import and_
 from sqlalchemy import not_
-from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import reconstructor
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
@@ -661,14 +662,16 @@ def define_model(model_name, dbengine, model_seed):
             """
 
             qry = (
-                session.query(Resource).filter(
-                    Resource.type == resource_type)
-            )
+                session.query(Resource)
+                .filter(Resource.type == resource_type)
+                .options(joinedload(Resource.parent))
+                .enable_eagerloads(True))
 
             if parent_type_name:
                 qry = qry.filter(Resource.parent_type_name == parent_type_name)
 
-            for resource in qry.yield_per(PER_YIELD):
+#            for resource in qry.yield_per(PER_YIELD):
+            for resource in qry.yield_per(5):
                 yield resource
 
         @classmethod
