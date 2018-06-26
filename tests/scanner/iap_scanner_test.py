@@ -269,10 +269,6 @@ INSTANCE_GROUPS = {
             region='wl-redqueen1',
             instance_urls=[('https://www.googleapis.com/compute/v1/'
                             'projects/foo/zones/wl-redqueen1-a/instances/i1')],
-            named_ports=[{
-                'name': 'http',
-                'port': 80
-            }],
         ),
     # Unmanaged; overrides port mapping
     'ig_unmanaged':
