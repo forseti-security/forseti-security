@@ -428,7 +428,7 @@ class ForsetiInstaller(object):
                 .format(forseti_conf_path, bucket_name))
         else:
             forseti_gcs_path = (
-                '{gcs_bucket}/configs/{installation_type}/'
+                '{gcs_bucket}/configs/'
                 'forseti_conf_{installation_type}.yaml').format(
                     gcs_bucket=bucket_name,
                     installation_type=self.config.installation_type
