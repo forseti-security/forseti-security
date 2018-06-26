@@ -123,6 +123,10 @@ class _RunData(object):
             return None
 
         port = None
+
+        if backend_service.port:
+            port = int(backend_service.port)
+
         for named_port in instance_group.named_ports or []:
             if named_port.get('name') == backend_service.port_name:
                 port = int(named_port.get('port'))
