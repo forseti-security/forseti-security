@@ -30,7 +30,6 @@ def get_gcloud_info():
         str: GCP project id
         str: GCP Authenticated user
         bool: Whether or not the installer is running in cloudshell
-        bool: Whether or not authenticated user is a service account
     """
     return_code, out, err = utils.run_command(
         ['gcloud', 'info', '--format=json'])
