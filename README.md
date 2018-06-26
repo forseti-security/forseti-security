@@ -1,31 +1,9 @@
-<table>
-  <tr>
-    <th colspan="2">2.0 (active)</th>
-    <th colspan="2">1.0 (support only)</th>
-    <th>documentation</th>
-  </tr>
-  <tr>
-    <td>branch: stable</td>
-    <td>branch: dev</td>
-    <td>branch: master</td>
-    <td>branch: 1.0-dev</td>
-    <td>branch: forsetisecurity.org</td>
-  </tr>
-  <tr>
-    <td>[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=stable)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=1.0-dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)</td>
-  </tr>
-  <tr>
-    <td>[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/stable/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/dev/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)</td>
-    <td>[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/1.0-dev/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)</td>
-    <td>N/A</td>
-  </tr>
-</table>
+**branch: stable (2.0 production)** | **branch: dev (2.0 development)** | **branch: master (1.0 production)** | **branch: 1.0-dev** | **branch: forsetisecurity.org**
+:------------ | :------------ | :------------
+[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=stable)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)  | [![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=master)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=1.0-dev)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)|[![Build Status](https://travis-ci.org/GoogleCloudPlatform/forseti-security.svg?branch=forsetisecurity.org)](https://travis-ci.org/GoogleCloudPlatform/forseti-security)
+[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/stable/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)|[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/dev/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)|[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/master/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)|[![codecov](https://codecov.io/gh/GoogleCloudPlatform/forseti-security/branch/1.0-dev/graph/badge.svg)](https://codecov.io/gh/GoogleCloudPlatform/forseti-security)
+
+[More info on the branches.](https://forsetisecurity.org/docs/develop/branch-management.html)
 
 # Forseti Security
 A community-driven collection of open source tools to improve the security
