@@ -119,7 +119,7 @@ class _RunData(object):
         # portName to get the port from instance group.
 
         if not backend_service.port_name:
-            # If backend_service.port_name is None, it's INTERNAL.
+            # Backend_service.port_name is None, it's INTERNAL.
             return None
 
         port = None
@@ -129,7 +129,7 @@ class _RunData(object):
                 break
         if not port:
             LOGGER.error('Unable to find backend_service.portName in '
-                         'instance_group.named_ports, NetworkPort cannot '
+                         'instance_group.named_ports. NetworkPort cannot '
                          'be constructed.')
             return None
         return NetworkPort(
