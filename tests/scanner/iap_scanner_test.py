@@ -269,6 +269,10 @@ INSTANCE_GROUPS = {
             region='wl-redqueen1',
             instance_urls=[('https://www.googleapis.com/compute/v1/'
                             'projects/foo/zones/wl-redqueen1-a/instances/i1')],
+            named_ports=[{
+                'name': 'http',
+                'port': 80
+            }],
         ),
     # Unmanaged; overrides port mapping
     'ig_unmanaged':
@@ -510,16 +514,7 @@ class IapScannerTest(ForsetiTestCase):
             iap_scanner.IapResource(
                 project_full_name='organization/12345/project/foo/',
                 backend_service=BACKEND_SERVICES['bs1'],
-                alternate_services=set([
-                    backend_service_type.Key.from_args(
-                        project_id='foo',
-                        name='bs1_same_backend',
-                    ),
-                    backend_service_type.Key.from_args(
-                        project_id='foo',
-                        name='bs1_same_instance',
-                    ),
-                ]),
+                alternate_services=set([]),
                 direct_access_sources=set(
                     ['10.0.2.0/24', 'tag_match', 'applies_all',
                      'applies_8080']),

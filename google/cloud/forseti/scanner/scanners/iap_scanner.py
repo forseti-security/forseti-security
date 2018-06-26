@@ -122,6 +122,11 @@ class _RunData(object):
             if named_port.get('name') == backend_service.port_name:
                 port = int(named_port.get('port'))
                 break
+        if not port:
+            LOGGER.error('Unable to find backend_service.portName in '
+                         'instance_group.named_ports, NetworkPort cannot '
+                         'be constructed.')
+            return None
         return NetworkPort(
             network=network_type.Key.from_url(
                 instance_group.network,
@@ -283,6 +288,8 @@ class _RunData(object):
 
             network_port = self.instance_group_network_port(
                 backend_service, instance_group)
+            if not network_port:
+                continue
 
             direct_access_sources.update(
                 self.firewall_allowed_sources(network_port, None))
@@ -336,14 +343,17 @@ class _RunData(object):
 
             network_port = self.instance_group_network_port(
                 backend_service, instance_group)
+            if not network_port:
+                continue
+
             for backend2 in backend_service2.backends:
                 instance_group2 = self.find_instance_group_by_url(
                     backend2.get('group'))
-                if not instance_group2:
+                if not instance_group2 or not backend_service2.port_name:
                     continue
                 network_port2 = self.instance_group_network_port(
                     backend_service2, instance_group2)
-                if network_port != network_port2:
+                if not network_port2 or network_port != network_port2:
                     continue
                 if instance_group == instance_group2:
                     return True
