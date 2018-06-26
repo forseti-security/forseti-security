@@ -111,7 +111,12 @@ class _RunData(object):
         Returns:
             NetworkPort: how the service communicates with backends
         """
-        port = int(backend_service.port)
+
+        # Field 'port' from backend service has been deprecated in favor of
+        # portName. PortName is required when the load balancing scheme is
+        # EXTERNAL. When the load balancing scheme is INTERNAL, this field
+        # is not used, it has the same behavior of port so we can just use
+        # portName to get the port from instance group.
         if backend_service.port_name:
             for named_port in instance_group.named_ports or []:
                 if named_port.get('name') == backend_service.port_name:
