@@ -53,7 +53,7 @@ def get_gcloud_info():
 
 def activate_service_account(service_account, key_path):
     """Activate the service account with gcloud.
-    
+
     Args:
         service_account (str): Service account email
         key_path (str): Absolute path to service account key file
