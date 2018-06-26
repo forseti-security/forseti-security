@@ -129,7 +129,7 @@ class KeVersionScanner(base_scanner.BaseScanner):
                                         ke_cluster.full_name))
 
         # Retrieve the service config via a separate query because session
-        # in the middle of yield_per() can not support multiple queries.
+        # in the middle of yield_per() can not support simultaneous queries.
         with scoped_session as session:
             for ke_cluster in ke_clusters:
                 position = (

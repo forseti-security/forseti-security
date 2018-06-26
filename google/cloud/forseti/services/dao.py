@@ -670,8 +670,7 @@ def define_model(model_name, dbengine, model_seed):
             if parent_type_name:
                 qry = qry.filter(Resource.parent_type_name == parent_type_name)
 
-#            for resource in qry.yield_per(PER_YIELD):
-            for resource in qry.yield_per(5):
+            for resource in qry.yield_per(PER_YIELD):
                 yield resource
 
         @classmethod
