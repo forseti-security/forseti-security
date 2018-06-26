@@ -111,27 +111,25 @@ class _RunData(object):
         Returns:
             NetworkPort: how the service communicates with backends
         """
-
         # Field 'port' from backend service has been deprecated in favor of
         # portName. PortName is required when the load balancing scheme is
         # EXTERNAL. When the load balancing scheme is INTERNAL, this field
         # is not used, it has the same behavior of port so we can just use
         # portName to get the port from instance group.
 
-        if not backend_service.port_name:
-            # Backend_service.port_name is None, it's INTERNAL.
-            return None
-
-        port = None
+        port = -1
 
         if backend_service.port:
+            # Although deprecated, it's still returned by the API and might
+            # contain legacy data for customers who have not migrated.
             port = int(backend_service.port)
 
-        for named_port in instance_group.named_ports or []:
-            if named_port.get('name') == backend_service.port_name:
-                port = int(named_port.get('port'))
-                break
-        if not port:
+        if backend_service.port_name:
+            for named_port in instance_group.named_ports or []:
+                if named_port.get('name') == backend_service.port_name:
+                    port = int(named_port.get('port'))
+                    break
+        if port == -1:
             LOGGER.error('Unable to find backend_service.portName in '
                          'instance_group.named_ports. NetworkPort cannot '
                          'be constructed.')
@@ -296,6 +294,7 @@ class _RunData(object):
 
             network_port = self.instance_group_network_port(
                 backend_service, instance_group)
+
             if not network_port:
                 continue
 
@@ -360,7 +359,9 @@ class _RunData(object):
                     continue
                 network_port2 = self.instance_group_network_port(
                     backend_service2, instance_group2)
-                if not network_port2 or network_port != network_port2:
+                if not network_port2:
+                    continue
+                if network_port != network_port2:
                     continue
                 if instance_group == instance_group2:
                     return True

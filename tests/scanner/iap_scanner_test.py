@@ -514,7 +514,16 @@ class IapScannerTest(ForsetiTestCase):
             iap_scanner.IapResource(
                 project_full_name='organization/12345/project/foo/',
                 backend_service=BACKEND_SERVICES['bs1'],
-                alternate_services=set([]),
+                alternate_services=set([
+                    backend_service_type.Key.from_args(
+                        project_id='foo',
+                        name='bs1_same_backend',
+                    ),
+                    backend_service_type.Key.from_args(
+                        project_id='foo',
+                        name='bs1_same_instance',
+                    ),
+                ]),
                 direct_access_sources=set(
                     ['10.0.2.0/24', 'tag_match', 'applies_all',
                      'applies_8080']),
