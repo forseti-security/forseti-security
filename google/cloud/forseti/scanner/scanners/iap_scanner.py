@@ -277,7 +277,7 @@ class _RunData(object):
         for backend in backend_service.backends:
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
-            if not instance_group or not backend_service.port:
+            if not instance_group:
                 continue
 
             network_port = self.instance_group_network_port(
