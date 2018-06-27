@@ -119,13 +119,13 @@ def get_forseti_version():
     version = None
 
     # Check version by tag.
-    return_code, out, err = run_command(
-        ['git', 'describe', '--tags', '--exact-match'])
+    return_code, out, _ = run_command(
+        ['git', 'describe', '--tags', '--exact-match'],
+        number_of_retry=0,
+        suppress_output=True)
     # The git command above will return the tag name if we checked out
     # a tag, will throw an exception otherwise.
-    if return_code:
-        print(err)
-    else:
+    if not return_code:
         return 'tags/{}'.format(out.strip())
 
     # Check version by branch. Allow installs from development branches.

@@ -21,6 +21,7 @@ import socket
 
 from collections import namedtuple
 
+from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 
@@ -219,12 +220,19 @@ class Rule(object):
             project = network_and_project.group(1)
             network = network_and_project.group(2)
 
+            if not network_interface.access_configs:
+                LOGGER.warn('Unable to determine blacklist violation for '
+                            'network interface: %s, because it doesn\'t '
+                            'have external internet access.',
+                            network_interface.full_name)
+                continue
+
             for access_config in network_interface.access_configs:
                 ipaddr = access_config.get('natIP')
 
                 if self.is_blacklisted(ipaddr):
                     yield self.RuleViolation(
-                        resource_type='instance',
+                        resource_type=resource_mod.ResourceType.INSTANCE,
                         full_name=network_interface.full_name,
                         rule_blacklist=self.rule_blacklist,
                         rule_name=self.rule_blacklist,
