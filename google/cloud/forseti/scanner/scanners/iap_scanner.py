@@ -111,12 +111,29 @@ class _RunData(object):
         Returns:
             NetworkPort: how the service communicates with backends
         """
-        port = int(backend_service.port)
+        # Field 'port' from backend service has been deprecated in favor of
+        # portName. PortName is required when the load balancing scheme is
+        # EXTERNAL. When the load balancing scheme is INTERNAL, this field
+        # is not used, it has the same behavior of port so we can just use
+        # portName to get the port from instance group.
+
+        port = -1
+
+        if backend_service.port:
+            # Although deprecated, it's still returned by the API and might
+            # contain legacy data for customers who have not migrated.
+            port = int(backend_service.port)
+
         if backend_service.port_name:
             for named_port in instance_group.named_ports or []:
                 if named_port.get('name') == backend_service.port_name:
                     port = int(named_port.get('port'))
                     break
+        if port == -1:
+            LOGGER.error('NetworkPort can not be constructed. Unable to '
+                         'find the appropriate port from backend service '
+                         'or instance group.')
+            return None
         return NetworkPort(
             network=network_type.Key.from_url(
                 instance_group.network,
@@ -278,6 +295,9 @@ class _RunData(object):
             network_port = self.instance_group_network_port(
                 backend_service, instance_group)
 
+            if not network_port:
+                continue
+
             direct_access_sources.update(
                 self.firewall_allowed_sources(network_port, None))
             tags = self.tags_for_instance_group(instance_group)
@@ -329,6 +349,9 @@ class _RunData(object):
 
             network_port = self.instance_group_network_port(
                 backend_service, instance_group)
+            if not network_port:
+                continue
+
             for backend2 in backend_service2.backends:
                 instance_group2 = self.find_instance_group_by_url(
                     backend2.get('group'))
@@ -336,6 +359,8 @@ class _RunData(object):
                     continue
                 network_port2 = self.instance_group_network_port(
                     backend_service2, instance_group2)
+                if not network_port2:
+                    continue
                 if network_port != network_port2:
                     continue
                 if instance_group == instance_group2:
