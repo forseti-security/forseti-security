@@ -34,7 +34,7 @@ class Config(object):
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
-        self.service_account_key_path = kwargs.get('service_account_key_path')
+        self.service_account_key_file = kwargs.get('service_account_key_file')
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
                                     self.datetimestamp))
