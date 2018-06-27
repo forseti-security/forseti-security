@@ -1,5 +1,5 @@
 ---
-title: GCP API
+title: Google Cloud Platform API
 order: 103
 ---
 
