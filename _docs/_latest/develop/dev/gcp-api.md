@@ -143,7 +143,7 @@ with, such as `bar()`. This property method will initialize a `\_FooBarRepositor
 class that you'll create in the next section to install the base GCP API functionalities
 (building requests, authentication, and API methods).
 
-In this example, `bar` is ```instances```.
+In this example, `bar` is `instances`.
 
 ```python
 class CloudSqlRepositoryClient(_base_repository.BaseRepositoryClient):

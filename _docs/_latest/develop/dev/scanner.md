@@ -1,5 +1,5 @@
 ---
-title: Scanner 
+title: Scanner
 order: 104
 ---
 
