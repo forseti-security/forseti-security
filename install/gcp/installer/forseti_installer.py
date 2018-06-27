@@ -206,7 +206,7 @@ class ForsetiInstaller(object):
                 self.organization_id, authed_user)
         else:
             gcloud.activate_service_account(authed_user,
-                                            service_account_key_path)
+                                            service_account_key_file)
 
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
 
