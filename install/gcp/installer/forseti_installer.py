@@ -192,7 +192,7 @@ class ForsetiInstaller(object):
         utils.print_banner('Pre-installation checks')
         self.check_run_properties()
         self.version = utils.infer_version(self.config.advanced_mode)
-        service_account_key_path = self.config.service_account_key_path
+        service_account_key_file = self.config.service_account_key_file
         self.project_id, authed_user, is_cloudshell = gcloud.get_gcloud_info()
         gcloud.verify_gcloud_information(self.project_id,
                                          authed_user,
@@ -201,7 +201,7 @@ class ForsetiInstaller(object):
         self.organization_id = gcloud.lookup_organization(self.project_id)
         self.config.generate_identifier(self.organization_id)
 
-        if not service_account_key_path:
+        if not service_account_key_file:
             self.check_if_authed_user_in_domain(
                 self.organization_id, authed_user)
         else:
