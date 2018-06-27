@@ -7,7 +7,7 @@ hide:
 
 # {{ page.title }}
 
-Here are some frequently asked questions about Forseti Security.
+This page includes answers to some frequently asked questions about Forseti Security.
 
 {% assign grouped_faqs = site.faq | sort:"order" | group_by:"category" %}
 

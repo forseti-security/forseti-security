@@ -23,17 +23,16 @@ Least Privilege and limit user access to only the resources they need.
 
 **Don't grant an entire domain access to resources in a Cloud IAM policy.**
 
-Granting access to an entire domain is usually too broad. Use groups to manage
-access instead. 
+
+Granting access to an entire domain is usually too broad. Use groups to manage access instead.
 
 **Protect your organization from external identities:**
 
 * Don't give organization-level permissions to anyone outside your organization.
 * Always use [custom roles](https://cloud.google.com/iam/docs/understanding-custom-roles) to
 monitor all external identities in your organization.
- 
-Scanning for external identities helps stop untrusted users from getting access
-to your resources.
+
+Scanning for external identities helps stop untrusted users from getting access to your resources.
 
 **Protect your resources from external identities:**
 

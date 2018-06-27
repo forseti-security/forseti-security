@@ -1,6 +1,6 @@
 ---
 title: Model
-order: 004
+order: 102
 ---
 
 # {{ page.title }}
@@ -22,8 +22,8 @@ To create a data model from a specific inventory, run the following command:
 forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
-When you create the data model, you might get a `PARTIAL_SUCCESS` status because you might
-be getting expected warnings. For example, an alpha version role doesn't contain any
+When you create the data model, you might get a `PARTIAL_SUCCESS` status if you get
+expected warnings. For example, an alpha version role doesn't contain any
 permissions, which is logged as a warning in the data model. A model with status of
 `PARTIAL_SUCCESS` is safe to use.
 
@@ -63,4 +63,4 @@ forseti model delete <MODEL_NAME>
 
 ## What's next
 
-* Learn how to query the data model using [Explain]({% link _docs/latest/use/explain.md %}).
+* Learn how to query the data model using [Explain]({% link _docs/latest/use/cli/explain.md %}).

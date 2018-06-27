@@ -26,7 +26,7 @@ using `forseti_iam --help`.
 Because IAM Explain and its API are still in early development, third party
 clients won't be supported until a first stable API version is released.
 
-## Deploying IAM Explain 
+## Deploying IAM Explain
 
 You can use the provided IAM Explain deployment script that will walk you through
 the deployment. Make sure you have the permission inside your organization to
@@ -109,15 +109,15 @@ To use a model, run the commands below:
         "2654f082f572a9c328cd5bb6f7011b08",
         "33ff45caa913837eb7680056c05d5f31",
     }
-    
+
   $ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
     playground list_resources
-    
+
     ...
-    
+
   $ forseti_iam --use_model 2654f082f572a9c328cd5bb6f7011b08 \
     explainer denormalize
-    
+
     ...
   ```
 

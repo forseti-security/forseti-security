@@ -1,6 +1,6 @@
 ---
 title: Explain
-order: 006
+order: 105
 ---
 # {{ page.title }}
 
@@ -8,9 +8,9 @@ This guide describes how to configure Explain for Forseti Security.
 
 Explain helps you understand the Cloud Identity and Access Management
 (Cloud IAM) policies that affect your Google Cloud Platform (GCP) resources.
-It can enumerate access by resource or member, answer why a principal has access 
-to a certain resource, or offer possible strategies for how to grant a specific 
-resource.
+It can enumerate access by resource or member, answer why a principal has access
+to a certain resource, or offer possible strategies for how to grant access
+to a specific resource.
 
 ---
 
@@ -18,7 +18,7 @@ resource.
 
 To run Explain, you'll need the following:
 
-* Data collected by [Inventory]({% link _docs/latest/use/inventory.md %})
+* Data collected by [Inventory]({% link _docs/latest/use/cli/inventory.md %})
 
 ## Running Explain
 
@@ -30,7 +30,7 @@ To review the hierarchy of commands and explore Explain functionality, use
 
 ### Creating a data model
 
-Get the inventory_index_id and use it to create the data model by running
+Get the `inventory_index_id` and use it to create the data model by running
 the following command:
 
 ```bash
@@ -38,6 +38,8 @@ forseti model create --inventory_index_id <INVENTORY_INDEX_ID> <MODEL_NAME>
 ```
 
 ### Selecting a data model
+
+Select the data model you created by running the following command:
 
 ```bash
 forseti model use <MODEL_NAME>
@@ -47,7 +49,7 @@ forseti model use <MODEL_NAME>
 
 Following are some example commands you can run to query the data model.
 
-### Listing resources in the data model
+### List resources in the data model
 
 ```bash
 forseti explainer list_resources
@@ -88,7 +90,8 @@ Common filters include the following:
 
 `--prefix 'roles/iam'` returns results that only contain predefined roles related to Cloud IAM.
 
-`--prefix 'organizations'` returns results that only contain custom roles defined on the organization level.
+`--prefix 'organizations'` returns results that only contain custom roles defined on the
+organization level.
 
 ### List permissions
 
@@ -98,7 +101,8 @@ The following command lists the permissions contained by roles in the data model
 forseti explainer list_permissions --roles <ROLE1> <ROLE2>
 ```
 
-For example, the following query lists permissions contained in `roles/iam.roleAdmin` and `roles/resourcemanager.projectMover`:
+For example, the following query lists permissions contained in `roles/iam.roleAdmin` and
+`roles/resourcemanager.projectMover`:
 
 ```bash
 forseti explainer list_permissions --roles roles/iam.roleAdmin roles/resourcemanager.projectMover
@@ -115,7 +119,8 @@ forseti explainer list_permissions --role_prefixes roles/iam
 ```bash
 forseti explainer get_policy <RESOURCE_NAME>
 ```
-Example values for `<RESOURCE_NAME>` are the `project/<PROJECT_ID>` and `organization/<ORGANIZATION_ID>`.
+Example values for `<RESOURCE_NAME>` are the `project/<PROJECT_ID>` and
+`organization/<ORGANIZATION_ID>`.
 
 ### Test permissions
 
@@ -123,7 +128,8 @@ Example values for `<RESOURCE_NAME>` are the `project/<PROJECT_ID>` and `organiz
 forseti explainer check_policy <RESOURCE_NAME> <PERMISSION_NAME> <MEMEBER_NAME>
 ```
 
-For example, the following query returns True or False to indicate if the member has permissions on the resource:
+For example, the following query returns True or False to indicate if the member has permissions
+on the resource:
 
 ```bash
 forseti explainer check_policy organizations/1234567890 iam.roles.get user/user1@gmail.com
@@ -136,15 +142,20 @@ The following command lists all resources that can be accessed by a member by a 
 forseti explainer access_by_member user/<USER_NAME>
 ```
 
-By default, resource_expansion is not performed. For example, `user/foo` has `roles/owner` on the `organization/1234567890` and no other policies. The above command will only show `organization/1234567890`.
+By default, resource_expansion is not performed. For example, `user/foo` has `roles/owner` on the
+`organization/1234567890` and no other policies. The above command will only show
+`organization/1234567890`.
 
-To enable resource expansion, pass in the argument `--expand_resource true`. Forseti will perform resource expansion and list all resources that can be accessed by `user/<USER_NAME>` through a direct or indirect binding.
+To enable resource expansion, pass in the argument `--expand_resource true`. Forseti will perform
+resource expansion and list all resources that can be accessed by `user/<USER_NAME>` through a
+direct or indirect binding.
 
 ```bash
 forseti explainer access_by_member user/<USER_NAME> --expand_resource true
 ```
- 
-With resource expansion enabled, the example above will return `organizations/1234567890` and all folders, projects, VMs, and other resources in it.
+
+With resource expansion enabled, the example above will return `organizations/1234567890` and all
+folders, projects, VMs, and other resources in it.
 
 To constrain the result to a certain type of permission, use the following command:
 
@@ -152,7 +163,8 @@ To constrain the result to a certain type of permission, use the following comma
 forseti explainer access_by_member user/<USER_NAME> iam.roles.get
 ```
 
-The above query will list all resources that can be accessed by the member with a binding of `iam.roles.get`.
+The above query will list all resources that can be accessed by the member with a binding of
+`iam.roles.get`.
 
 ### List resource permissions
 
@@ -162,31 +174,37 @@ The following command lists all members that can access a resource by a direct b
 forseti explainer access_by_resource <RESOURCE_NAME>
 ```
 
-Similar to the `access_by_member` command, group expansion is not performed by default. For example, `group/bar` has `roles/owner` on the `organization/1234567890` and no other policies. Without group expansion, the following example will only return `group/bar`:
+Similar to the `access_by_member` command, group expansion is not performed by default. For
+example, `group/bar` has `roles/owner` on the `organization/1234567890` and no other policies.
+Without group expansion, the following example will only return `group/bar`:
 
 ```bash
 forseti explainer access_by_resource organizations/1234567890
 ```
 
-To enable group expansion, pass in the `--expand_group` argument. Forseti will perform group expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
+To enable group expansion, pass in the `--expand_group` argument. Forseti will perform group
+expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true 
+forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true
 ```
 
-With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo` is a member in `group/bar`.
+With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo`
+is a member in `group/bar`.
 
 To constrain the result to a certain type of permission, pass in the permission:
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION> 
+forseti explainer access_by_resource <RESOURCE_NAME> <PERMISSION>
 ```
 
 ### Access member or resource by permission
 
-You can specify a permission, such as `iam.serviceAccounts.get`, and list all the `<members, resource, role>` that have a relation.
+You can specify a permission, such as `iam.serviceAccounts.get`, and list all the
+`<members, resource, role>` that have a relation.
 
-The tuple `<members, resource, role>` contains the members with a role that contains permission `iam.serviceAccounts.get` on the resource.
+The tuple `<members, resource, role>` contains the members with a role that contains permission
+`iam.serviceAccounts.get` on the resource.
 
 ```bash
 forseti explainer access_by_authz --permission iam.serviceAccounts.get
@@ -221,11 +239,16 @@ forseti explainer why_granted <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMIS
 
 Example values for `<MEMBER_NAME>` are `user/user1@gmail.com` or `serviceAccount/service1@domain.com`
 
-The result shows all bindings that grant the permission you specified. For each binding `<resource, role, [member1, member2]>`, Forseti returns how the resource hierarchy links to your target resource, and how a group in the binding links to your target member.
+The result displays all bindings that grant the permission you specified.
+For each binding `<resource, role, [member1, member2]>`, Forseti returns
+how the resource hierarchy links to your target resource, and how a group
+in the binding links to your target member.
 
-In the following example, user `user/abc@gmail.com` has permission `iam.serviceAccounts.get`
-on resource `my-project-123` because the user has the role `roles/iam.securityReviewer` on resource `organization/1234567890`.
-Member `user/abc@gmail.com` also has a membership in group `group/my-group-123@gmail.com`.
+In the following example, user `user/abc@gmail.com` has permission
+`iam.serviceAccounts.get` on resource `my-project-123` because the user
+has the role `roles/iam.securityReviewer` on resource
+`organization/1234567890`. Member `user/abc@gmail.com` also has a
+membership in group `group/my-group-123@gmail.com`.
 
 ```
 forseti explainer why_granted user/abc@gmail.com project/my-project-123 --permission iam.serviceAccounts.get
@@ -240,7 +263,6 @@ memberships {
 }
 resource_ancestors: "project/my-project-123"
 resource_ancestors: "organization/1234567890"
-
 ```
 
 ### Grant a member permission to a resource
@@ -249,38 +271,41 @@ resource_ancestors: "organization/1234567890"
 forseti explainer why_denied <MEMBER_NAME> <RESOURCE_NAME> --permission <PERMISSION_NAME>
 ```
 
-The result will list any potential bindings you can add to grant the required permission. The following example result shows that to access resource `resource_bar`, user `member_foo` needs role `roles/baz_role` on the resource or its parent. The result also shows that the user gets the role if you add them to the group `group_foo_parent`, which already has the required permission.
+The result will list any potential bindings you can add to grant the required permission. The
+following example result shows that to access resource `resource_bar`, user `member_foo` needs
+role `roles/baz_role` on the resource or its parent. The result also shows that the user gets the
+role if you add them to the group `group_foo_parent`, which already has the required permission.
 
 ```
-strategies { 
-    bindings { 
-        member: "member_foo " 
-        resource: "resource_bar_parent" 
-        role: "roles/baz_role" 
-    } 
-    overgranting: 1
-}
-strategies { 
-    bindings { 
-        member: "group_foo_parent " 
-        resource: "resource_bar"
-        role: "roles/baz_role" 
+strategies {
+    bindings {
+        member: "member_foo "
+        resource: "resource_bar_parent"
+        role: "roles/baz_role"
     }
     overgranting: 1
 }
-strategies { 
-    bindings { 
-        member: "member_foo" 
-        resource: "resource_bar" 
-        role: "roles/baz_role" 
-    } 
+strategies {
+    bindings {
+        member: "group_foo_parent "
+        resource: "resource_bar"
+        role: "roles/baz_role"
+    }
+    overgranting: 1
+}
+strategies {
+    bindings {
+        member: "member_foo"
+        resource: "resource_bar"
+        role: "roles/baz_role"
+    }
 }
 ...
 ```
 
-In the example above, overgranting equals 1 to indicate a binding that could grant unnecessary privileges. This means that the binding doesn't work directly on the target member and resource. Instead, the binding applies to groups that contain the target member, or resources that contain the target resource.
+In the example above, overgranting equals 1 to indicate a binding that could grant unnecessary
+privileges. This means that the binding doesn't work directly on the target member and resource. Instead, the binding applies to groups that contain the target member, or resources that contain the target resource.
 
 ## What's next
 
-- Read more about [data model concepts]({% link _docs/latest/concepts/models.md %}).
-- Learn about the [complete list of functionalities]({% link _docs/latest/use/cli.md %}) available in Explain.
+* Read more about [data model concepts]({% link _docs/latest/concepts/models.md %}).

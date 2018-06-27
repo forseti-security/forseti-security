@@ -1,5 +1,5 @@
 ---
-title: I have an idea/found a bug. What do I do next?
+title: I have an idea or found a bug. What do I do next?
 order: 2
 ---
 {::options auto_ids="false" /}

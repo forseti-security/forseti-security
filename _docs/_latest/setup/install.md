@@ -1,5 +1,5 @@
 ---
-title: Installation
+title: Install
 order: 001
 ---
 
@@ -13,14 +13,14 @@ This guide explains how to use the Forseti installation tool.
 
 Before you run the setup wizard, you will need:
 
-  - A Google Cloud Platform (GCP) organization for which you want to deploy 
-    Forseti.
-  - Organization Administrator Cloud Identity and Access Management (Cloud IAM)
-    role so the script can assign the Forseti service account roles on the
-		organization Cloud IAM policy.
-  - A GCP project dedicated to Forseti. You can reuse the same project that has
-    Forseti 1.0 installed in it.
-  - Enable billing on the project.
+* A Google Cloud Platform (GCP) organization you want to deploy
+  Forseti for.
+* An Organization Administrator Cloud Identity and Access Management (Cloud IAM)
+  role so the script can assign the Forseti service account roles on the
+organization Cloud IAM policy.
+* A GCP project dedicated to Forseti. You can reuse the same project that has
+  Forseti 1.0 installed in it.
+* Enable billing on the project.
 
 
 ## Setting up Forseti Security
@@ -36,22 +36,22 @@ installer. This ensures you're using the latest version of Cloud SDK since it's
 included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the
 steps below:
 
-  1. Go to the [Cloud Platform Console](https://console.cloud.google.com/).
+  1. Go to the [GCP Console](https://console.cloud.google.com/).
   1. In the **Select a project** drop-down list at the top of the console,
-     select the project to which you want to deploy Forseti.
+     select the project you want to deploy Forseti to.
   1. On the top right, click the icon to **Activate Google Cloud Shell**. The
      Cloud Shell panel opens at the bottom of the page.
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is 
-  included in the `install/` directory.
+  1. After you've started Cloud Shell, download Forseti. The installer is
+  included in the `install/` directory:
 
       ```bash
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`:
 
       ```bash
       # Make sure you are in the forseti-security folder.
@@ -62,8 +62,8 @@ steps below:
       ```
 
   1. Install both client and server by running the installer:
-     
-     ```bash 
+
+     ```bash
      python install/gcp_installer.py
      ```
 
@@ -79,18 +79,19 @@ steps below:
      prompted to enter the following:
 
      * SendGrid API key \[Optional\]: Used for sending email via SendGrid. For
-       more information, see
-       [Enabling email notifications]({% link _docs/latest/configure/email-notification.md %}).
+       more information, see how to
+       [enable email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
      * Email recipient \[Optional\]: If you provide a SendGrid API key, you will
        also be asked to whom Forseti should send the email notifications.
      * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite data collection]({% link _docs/latest/configure/gsuite.md %})
+       [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
        and is necessary. Ask your G Suite Admin if you don't know the super
        admin email.
 
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
-     your Cloud Storage bucket.
+     your Cloud Storage bucket:
+
      ```bash
        MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
        forseti inventory create --import_as ${MODEL_ID}
@@ -101,11 +102,11 @@ steps below:
 
 ## What's next
 
-  - Learn how to customize
-    [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and 
-    [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
-  - Configure Forseti to send
-    [email notifications]({% link _docs/latest/configure/email-notification.md %}).
-  - Enable
-    [G Suite data collection]({% link _docs/latest/configure/gsuite.md %})
-    for processing by Forseti.
+* Learn how to customize
+  [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
+  [Scanner]({% link _docs/latest/configure/scanner/index.md %}).
+* Configure Forseti Notifier to send
+  [email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
+* Enable
+  [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
+  for processing by Forseti.

@@ -10,7 +10,7 @@ together.
 
 ---
 
-Overview
+## Overview
 
 Forseti gives you tools to understand all the resources you have in Google Cloud
 Platform (GCP). The core Forseti modules work together to provide complete
@@ -35,7 +35,7 @@ security risks.
 
 {:style="list-style-type: upper-alpha;"}
 
- 1. Inventory collects information about your GCP resources and G Suite Groups and Users.
+ 1. Inventory collects information about your GCP resources and G Suite.
  1. Inventory stores information in Cloud SQL for your review and use by other
     Forseti modules.
  1. Scanner compares the data collected by Inventory to the policy rules you
@@ -45,6 +45,6 @@ security risks.
  1. You use Explain to query and understand your Cloud IAM policies.
  1. Enforcer uses Google Cloud APIs to make sure policies match your desired
     state.
- 1. You use the command-line interface to query Forseti data via GRPC.
+ 1. You use the command-line interface to query Forseti data using gRPC.
  1. You use Data Studio or MySQL Workbench to visualize the Forseti data stored
-    in CloudSQL.
+    in Cloud SQL.

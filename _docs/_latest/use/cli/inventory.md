@@ -1,22 +1,26 @@
 ---
 title: Inventory
-order: 002
+order: 101
 ---
 
 # {{ page.title }}
 
-Forseti Inventory collects and stores information about your Google Cloud Platform (GCP)
-resources. The Inventory data is [transformed to a data model]({% link _docs/latest/concepts/models.md %}) Forseti Scanner and Explain use to perform operations.
+Forseti Inventory collects and stores information about your Google
+Cloud Platform (GCP) resources. Inventory data is
+[transformed to a data model]({% link _docs/latest/concepts/models.md %})
+that Forseti Scanner and Explain use to perform their operations.
 
 ---
 
-## Running Inventory
+## Before you begin
 
-Before you start using Inventory, you'll need to make sure that Inventory is
+Before you start using Inventory, make sure that Inventory is
 [configured]({% link _docs/latest/configure/inventory/index.md %}) and the
 proper [GCP]({% link _docs/latest/concepts/service-accounts.md %}) and
-[G Suite]({% link _docs/latest/configure/gsuite.md %}) permissions are set up
+[G Suite]({% link _docs/latest/configure/inventory/gsuite.md %}) acccess is set up
 for your Forseti GCP service account.
+
+## Running Inventory
 
 To display Inventory flag options, run `forseti inventory -h`.
 
@@ -30,10 +34,10 @@ forseti inventory create
 
 You can track the status by using the `list` command.
 
-### Create a new inventory along with a data model
+### Create a new inventory and data model
 
 Because the data model is widely used in Forseti, it can be helpful to create
-the data model along with the newest Inventory.
+the data model along with the newest inventory.
 
 ```bash
 forseti inventory create --import_as <MODEL_NAME>
@@ -78,4 +82,4 @@ a value, then the value in `forseti_config.yaml` will be used.
 
 
 ## What's next
-- Learn about [configuring Inventory]({% link _docs/latest/configure/inventory/index.md %}).
+* Learn about [configuring Inventory]({% link _docs/latest/configure/inventory/index.md %}).
