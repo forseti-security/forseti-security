@@ -130,9 +130,9 @@ class _RunData(object):
                     port = int(named_port.get('port'))
                     break
         if port == -1:
-            LOGGER.error('Unable to find backend_service.portName in '
-                         'instance_group.named_ports. NetworkPort cannot '
-                         'be constructed.')
+            LOGGER.error('NetworkPort can not be constructed. Unable to '
+                         'find the appropriate port from backend service '
+                         'or instance group.')
             return None
         return NetworkPort(
             network=network_type.Key.from_url(
