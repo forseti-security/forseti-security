@@ -181,6 +181,8 @@ class BaseRepositoryClient(object):
                 version,
                 kwargs.get('developer_key'),
                 kwargs.get('cache_discovery', False))
+        
+        LOGGER.info('>>>>> do i get here?')
 
     def __repr__(self):
         """The object representation.

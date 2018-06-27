@@ -283,3 +283,29 @@ class SearchQueryMixin(object):
                 verb=verb,
                 verb_arguments={'body': req_body, 'fields': fields}):
             yield resp
+
+
+class CreateQueryMixin(object):
+    """Mixin that implements a Create query."""
+
+    def create(self, organization_id, query=None, fields=None, max_results=500, verb='create'):
+        """Create a resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+
+        Yields:
+            dict: An API response containing one page of results.
+        """
+        req_body = {}
+        if query:
+            req_body[self._search_query_field] = query
+
+        req_body[self._max_results_field] = max_results
+
+        for resp in self.execute_query(
+                verb=verb,
+                verb_arguments={'orgName': organization_id}):
+            yield resp
