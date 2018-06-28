@@ -1949,8 +1949,7 @@ class FolderSinkIterator(ResourceIterator):
             Resource: Sink created
         """
         gcp = self.client
-        folderid = self.resource['name'].split('/', 1)[-1]
-        for data in gcp.iter_folder_sinks(folderid=folderid):
+        for data in gcp.iter_folder_sinks(folderid=self.resource['name']):
             yield FACTORIES['sink'].create_new(data)
 
 
@@ -1962,8 +1961,7 @@ class OrganizationSinkIterator(ResourceIterator):
             Resource: Sink created
         """
         gcp = self.client
-        for data in gcp.iter_organization_sinks(
-                orgid=self.resource['name']):
+        for data in gcp.iter_organization_sinks(orgid=self.resource['name']):
             yield FACTORIES['sink'].create_new(data)
 
 

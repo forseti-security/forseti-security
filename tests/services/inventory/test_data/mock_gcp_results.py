@@ -2129,13 +2129,13 @@ LOGGING_GET_ORG_SINKS = {
 }
 
 LOGGING_GET_FOLDER_SINKS = {
-    FOLDER_ID_PREFIX + "1": [
+    "folders/" + FOLDER_ID_PREFIX + "1": [
         json.loads(
             LOG_SINK_TEMPLATE.format(
                 name="folder-logs", destination=(
                     "pubsub.googleapis.com/projects/project1/topics/f1-logs"))),
     ],
-    FOLDER_ID_PREFIX + "2": [
+    "folders/" + FOLDER_ID_PREFIX + "2": [
         json.loads(
             LOG_SINK_TEMPLATE_INCL_CHILDREN.format(
                 name="folder-logs",
