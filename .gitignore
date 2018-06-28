@@ -49,3 +49,6 @@ Gemfile.lock
 
 # automatically resized images
 images/resized/
+
+# Generated docs.
+_docs/_latest/develop/reference/
