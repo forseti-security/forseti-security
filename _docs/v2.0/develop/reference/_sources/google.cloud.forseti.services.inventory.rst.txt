@@ -1,0 +1,27 @@
+google.cloud.forseti.services.inventory package
+===============================================
+
+.. automodule:: google.cloud.forseti.services.inventory
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    google.cloud.forseti.services.inventory.base
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.services.inventory.crawler
+   google.cloud.forseti.services.inventory.inventory
+   google.cloud.forseti.services.inventory.inventory_pb2
+   google.cloud.forseti.services.inventory.inventory_pb2_grpc
+   google.cloud.forseti.services.inventory.service
+   google.cloud.forseti.services.inventory.storage
+
