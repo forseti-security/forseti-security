@@ -219,6 +219,13 @@ class Rule(object):
             project = network_and_project.group(1)
             network = network_and_project.group(2)
 
+            if not network_interface.access_configs:
+                LOGGER.warn('Unable to determine blacklist violation for '
+                            'network interface: %s, because it doesn\'t '
+                            'have external internet access.',
+                            network_interface.full_name)
+                continue
+
             for access_config in network_interface.access_configs:
                 ipaddr = access_config.get('natIP')
 
