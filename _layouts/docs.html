@@ -5,24 +5,25 @@ layout: default
 
 <div class="row">
   {% unless page.hide.left_sidebar %}
-    <div class="col-md-3">
+    <div class="col-md-2">
         {% include site/layout/docs/category_nav.html %}
-    </div>
-
-    <div id="documentation" class="col-md-7">
-      {{ content }}
-    </div>
-  {% else %}
-    <div id="documentation" class="col-md-10">
-      {{ content }}
     </div>
   {% endunless %}
 
+  {% if page.hide.left_sidebar and page.hide.right_sidebar %}
+    {% assign doc_cols = 12 %}
+  {% elsif page.hide.left_sidebar or page.hide.right_sidebar %}
+    {% assign doc_cols = 10 %}
+  {% else %}
+    {% assign doc_cols = 8 %}
+  {% endif %}
+
+  <div id="documentation" class="col-md-{{ doc_cols }}">
+    {{ content }}
+  </div>
+
   {% unless page.hide.right_sidebar %}
     <div id="toc" class="col-md-2 toc">
-    </div>
-  {% else %}
-    <div class="col-md-2">
     </div>
   {% endunless %}
 </div>

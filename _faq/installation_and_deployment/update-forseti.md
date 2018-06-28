@@ -4,5 +4,5 @@ order: 2
 ---
 {::options auto_ids="false" /}
 
-Please refer to 
-["Updating Forseti"]({% link _docs/howto/deploy/change-gcp-deployment.md %}).
+For information about how to update Forseti to the latest release,
+see the [Upgrade]({% link _docs/latest/setup/upgrade.md %}) guide.

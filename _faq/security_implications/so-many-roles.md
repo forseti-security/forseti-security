@@ -4,8 +4,7 @@ order: 3
 ---
 {::options auto_ids="false" /}
 
-We recommend 
-[granting only the specific roles]({% link _docs/guides/forseti-service-accounts.md %}) 
-that Forseti needs for reading data in GCP. Since there are many types of 
-access that need to be granted for reading certain data, the Forseti service 
-account must be granted those specific roles.
+Because the Forseti service account needs many types of permissions to read
+certain data, you must grant
+[grant Forseti the specific roles]({% link _docs/latest/concepts/service-accounts.md %})
+that it needs to do its job.

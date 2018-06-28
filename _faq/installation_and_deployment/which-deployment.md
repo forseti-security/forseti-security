@@ -4,9 +4,10 @@ order: 1
 ---
 {::options auto_ids="false" /}
 
-* "I want to setup Forseti in GCP with sane defaults" - Use the 
-[setup wizard]({% link _docs/quickstarts/forseti-security/index.md %}).
-* "I want to setup Forseti for development/local use" - Refer to 
-["Development Environment Setup"]({% link _docs/howto/deploy/dev-setup.md %}).
-* "I want to setup Forseti in GCP but want more flexibility in configuration" - 
-Refer to ["GCP Deployment"]({% link _docs/howto/deploy/gcp-deployment.md %}).
+* To set up Forseti automatically in GCP with sane defaults, use the
+[installer]({% link _docs/latest/setup/install.md %}).
+* To set up Forseti for development or local use, follow the
+[Development Environment Setup guide]({% link _docs/latest/develop/dev/setup.md %}).
+* To set up Forseti in GCP with more flexibility in configuration, use the
+[installer]({% link _docs/latest/setup/install.md %}) and then
+[configure features]({% link _docs/latest/configure/index.md %}).

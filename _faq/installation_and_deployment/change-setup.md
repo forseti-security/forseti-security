@@ -1,10 +1,10 @@
 ---
-title: I made a mistake in Forseti setup, how do I fix/update this?
+title: I made a mistake in Forseti setup, how do I fix or update this?
 order: 3
 ---
 {::options auto_ids="false" /}
 
-You can edit your Forseti deployment script (refer to 
-["Updating Forseti"]({% link _docs/howto/deploy/change-gcp-deployment.md %})) 
-or your Forseti configuration file (refer to 
-["Configuring Forseti"]({% link _docs/howto/configure/configuring-forseti.md %}#move-configuration-to-gcs)).
+To correct mistakes in setup, edit your Forseti deployment script by
+[Updating Forseti]({% link _docs/latest/setup/upgrade.md %}),
+or edit your Forseti configuration file by
+[Configuring Forseti]({% link _docs/latest/configure/general/index.md %}).

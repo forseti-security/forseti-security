@@ -1,0 +1,23 @@
+- title: Keep track of your environment
+  description: Take inventory snapshots of your Google Cloud Platform (GCP) resources on a
+    recurring cadence so that you always have a history of what was in your cloud.
+  image:
+    src: /images/site/icons/forseti-visibility-icon.svg
+    alt: "Forseti Security: Keep track of your environment"
+- title: Monitor your policies
+  description: Scan your GCP resources to ensure that access controls are set as you intended and
+    protected against unsafe changes.
+  image:
+    src: /images/site/icons/forseti-detection-icon.svg
+    alt: "Forseti Security: Monitor your policies"
+- title: Enforce rules
+  description: Ensure the safest settings are in place for your most sensitive GCP resources.
+  image:
+    src: /images/site/icons/forseti-enforcement-icon.svg
+    alt: "Forseti Security: Enforce correction"
+- title: Understand your policies
+  description: Gain visibility into your Cloud Identity and Access Management (Cloud IAM) policies
+    and answer key questions about who has what access to which resources.
+  image:
+    src: /images/site/icons/forseti-explain-icon.svg
+    alt: "Forseti Security: Understand your policies"

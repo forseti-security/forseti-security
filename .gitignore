@@ -31,7 +31,9 @@ deployment-templates/*.yaml
 *.egg-info*
 build/
 dist/
+!third_party/**/dist/
 out/
+
 
 # Coverage
 .coverage
@@ -43,3 +45,10 @@ _www/
 .jekyll-metadata/
 _config.yml~
 Gemfile.lock
+.sass-cache/
+
+# automatically resized images
+images/resized/
+
+# Generated docs.
+_docs/_latest/develop/reference/

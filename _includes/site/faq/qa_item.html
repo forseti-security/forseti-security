@@ -8,7 +8,7 @@
   </div>
   <div id="collapse-{{ include.qid }}" class="panel-collapse collapse">
     <div class="panel-body">
-      {{ include.q.content }}
+      {{ include.q.content | liquify | markdownify }}
     </div>
   </div>
 </div>

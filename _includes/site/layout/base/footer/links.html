@@ -1,8 +1,8 @@
 <div class="col-sm-4">
   <h2>Documentation</h2>
   <ul class="links">
-    {% for tab in site.data.doc_categories %}
-      <li><a href="{{ site.baseurl }}/{{ tab.href }}">{{ tab.title }}</a></li>
+    {% for tab in site.data.doc_categories['latest'] %}
+      <li><a href="{{ site.baseurl }}/{{ tab.href | replace:'$$VERSION$$','latest' }}">{{ tab.title }}</a></li>
     {% endfor %}
   </ul>
 </div>
@@ -10,7 +10,7 @@
   <h2>Resources</h2>
   <ul class="links">
     <li><a href="{% link about/index.md %}">About</a></li>
-    <li><a href="{% link faq/index.md %}">FAQ</a></li>
+    <li><a href="{% link releases/index.md %}">Releases</a></li>
     <li><a href="https://www.google.com/policies/terms/">Website Terms</a></li>
     <li><a href="https://www.google.com/policies/privacy/">Website Privacy Policy</a></li>
   </ul>

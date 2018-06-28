@@ -1,0 +1,25 @@
+---
+layout: default
+title: News
+pagination:
+  enabled: true
+---
+<h1>News</h1>
+{% for post in paginator.posts reversed %}
+  <hr />
+  {% include site/news/news_item.html post=post %}
+{% endfor %}
+<hr />
+{% if paginator.total_pages > 1 %}
+  {% if paginator.previous_page %}
+    <a class="pull-left" href="{{ paginator.previous_page_path | prepend: site.baseurl }}">
+      <button class="btn"><i class="material-icons">navigate_before</i>Newer</button>
+    </a>
+  {% endif %}
+
+  {% if paginator.next_page %}
+    <a class="pull-right" href="{{ paginator.next_page_path | prepend: site.baseurl }}">
+      <button class="btn">Older<i class="material-icons">navigate_next</i></button>
+    </a>
+  {% endif %}
+{% endif %}

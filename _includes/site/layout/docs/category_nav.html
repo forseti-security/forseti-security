@@ -1,10 +1,8 @@
 <div class="left-sidebar">
   {% include site/get_docs_for_category.liquid category=page.category %}
 
-  {% assign ordered_docs = category_docs | sort:"order" %}
+  {% assign ordered_docs = category_docs | where_exp:"doc", "doc.order != nil" | sort:"order" %}
   {% assign category_root_url = ordered_docs[0].url %}
-
-  <h4><a href="{{ category_root_url }}">{{ page.category }}</a></h4>
 
   {% comment %}
     Assume that nested subcategories are ordered continguously. with index files
@@ -23,7 +21,7 @@
   {% endcomment %}
 
   <ul class="links">
-    {% assign last_level = 3 %}
+    {% assign last_level = 4 %}
     {% for doc in ordered_docs %}
       {% assign path_parts = doc.path | split:"/" %}
       {% assign current_level = path_parts | size %}
@@ -31,8 +29,8 @@
 
       {% if filename == "index" %}
         {% assign current_level = current_level | minus:1 %}
-        {% if current_level < 3 %}
-          {% assign current_level = 3 %}
+        {% if current_level < 4 %}
+          {% assign current_level = 4 %}
         {% endif %}
       {% endif %}
 
