@@ -75,6 +75,7 @@ responsive_image:
 
 # Custom site directives.
 # The order of document categories is defined in _data/doc_categories.yml.
+# The order of faq categories is defined in _data/faq_categories.yml
 defaults:
   - scope:
       path: _news
@@ -111,7 +112,6 @@ defaults:
       path: _docs/latest/faq
     values:
       category: FAQ (latest)
-# The order of faq categories is defined in _data/faq_categories.yml
   - scope:
       path: _faq/general
     values:
@@ -149,3 +149,32 @@ defaults:
       path: _docs/v1.1/guides
     values:
       category: Guides (v1.1)
+  - scope:
+      path: _docs/v2.0
+    values:
+      category: Overview (v2.0)
+      layout: docs
+  - scope:
+      path: _docs/v2.0/concepts
+    values:
+      category: Concepts (v2.0)
+  - scope:
+      path: _docs/v2.0/setup
+    values:
+      category: Setup (v2.0)
+  - scope:
+      path: _docs/v2.0/use
+    values:
+      category: Use (v2.0)
+  - scope:
+      path: _docs/v2.0/configure
+    values:
+      category: Configure (v2.0)
+  - scope:
+      path: _docs/v2.0/develop
+    values:
+      category: Develop (v2.0)
+  - scope:
+      path: _docs/v2.0/faq
+    values:
+      category: FAQ (v2.0)

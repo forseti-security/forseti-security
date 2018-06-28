@@ -35,22 +35,29 @@ function uniq_major_minor_filter() {
 }
 
 function main() {
+    echo ">>>>> start sync"
     local all_release_tags releases doc_versions
     all_release_tags="$(git tag -l v*.*)"
     releases="$(uniq_major_minor_filter "${all_release_tags}")"
     doc_versions="$(uniq_major_minor_filter "$(ls _docs)")"
 
+    echo ">>>> first if statement"
+    echo ${doc_versions}
     if [ -z "${doc_versions}" ]; then
+        echo "entering first if statement"
         err "The _docs/ directory is not versioned properly. Please initialize 
             with at least one version."
         exit -1
     fi
 
-    for release in ${RELEASES}; do
+    for release in ${releases}; do
+        echo $release
         if [ ! -d _docs/${release} ]; then
+            echo "entering second if statement"
             ./scripts/create_new_version_from_latest.sh ${release}
         fi
     done
+    echo ">>>>> done"
 }
 
 main "$@"

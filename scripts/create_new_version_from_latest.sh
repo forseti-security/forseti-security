@@ -146,6 +146,8 @@ function main() {
         exit 0
     fi
 
+    echo "$(last_config_key)"
+
     if [ "$(last_config_key)" != "defaults" ]; then
         err "Error: Please make sure that \"defaults\" is the last configuration 
             block in _config.yml"
