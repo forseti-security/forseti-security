@@ -1,0 +1,98 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.resource_util module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.resource_util">
+<span id="google-cloud-forseti-common-gcp-type-resource-util-module"></span><h1>google.cloud.forseti.common.gcp_type.resource_util module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.resource_util" title="Permalink to this headline">¶</a></h1>
+<p>Util for generic operations for Resources.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_type.resource_util.create_resource">
+<code class="descname">create_resource</code><span class="sig-paren">(</span><em>resource_id</em>, <em>resource_type</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource_util.html#create_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource_util.create_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory to create a certain kind of Resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource_id</strong> (<em>str</em>) – The resource id.</li>
+<li><strong>resource_type</strong> (<em>str</em>) – The resource type.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Extra args.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The new Resource based on the type, if supported,
+otherwise None.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource">Resource</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_type.resource_util.get_ancestors_from_full_name">
+<code class="descname">get_ancestors_from_full_name</code><span class="sig-paren">(</span><em>full_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource_util.html#get_ancestors_from_full_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource_util.get_ancestors_from_full_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Resource for each resource in the full ancestory path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>full_name</strong> (<em>str</em>) – The full resource name from the model, includes all
+parent resources in the hierarchy to the root organization.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of Resource objects, from parent to base ancestor.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_type.resource_util.pluralize">
+<code class="descname">pluralize</code><span class="sig-paren">(</span><em>resource_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource_util.html#pluralize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource_util.pluralize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the pluralized form of the resource type.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource_type</strong> (<em>str</em>) – The resource type for which to get its plural form.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The pluralized version of the resource type, if supported,
+otherwise None.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_type.resource_util.type_from_name">
+<code class="descname">type_from_name</code><span class="sig-paren">(</span><em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/resource_util.html#type_from_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.resource_util.type_from_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine resource type from resource name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource_name</strong> (<em>str</em>) – The unique resoure name, with the format
+“{resource_type}/{resource_id}”.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The resource type, if it exists, otherwise None.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

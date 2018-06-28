@@ -1,0 +1,178 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.server_config.service module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.server_config.service">
+<span id="google-cloud-forseti-services-server-config-service-module"></span><h1>google.cloud.forseti.services.server_config.service module<a class="headerlink" href="#module-google.cloud.forseti.services.server_config.service" title="Permalink to this headline">¶</a></h1>
+<p>Server Config gRPC service.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServerConfigFactory">
+<em class="property">class </em><code class="descname">GrpcServerConfigFactory</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServerConfigFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServerConfigFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Factory class for Server config service gRPC interface</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServerConfigFactory.create_and_register_service">
+<code class="descname">create_and_register_service</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServerConfigFactory.create_and_register_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServerConfigFactory.create_and_register_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and register the Service Config service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>server</strong> (<em>object</em>) – The server object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The service object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServiceConfig">
+<em class="property">class </em><code class="descname">GrpcServiceConfig</code><span class="sig-paren">(</span><em>service_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServiceConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServiceConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.server_config.server_pb2_grpc.ServerServicer</span></code></p>
+<p>Service Config gRPC implementation.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServiceConfig.GetLogLevel">
+<code class="descname">GetLogLevel</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServiceConfig.GetLogLevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServiceConfig.GetLogLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Log level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>PingRequest</em>) – The ping request.</li>
+<li><strong>_</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The GetLogLevelReply grpc object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">GetLogLevelReply</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServiceConfig.GetServerConfiguration">
+<code class="descname">GetServerConfiguration</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServiceConfig.GetServerConfiguration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServiceConfig.GetServerConfiguration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Server Configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>GetServerConfigurationRequest</em>) – The grpc request object.</li>
+<li><strong>_</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>The ReloadConfigurationReply</dt>
+<dd><p class="first last">grpc object.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">GetServerConfigurationReply</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServiceConfig.Ping">
+<code class="descname">Ping</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServiceConfig.Ping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServiceConfig.Ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the capability to check for service availability.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>PingRequest</em>) – The ping request.</li>
+<li><strong>_</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The response to the ping request.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PingReply</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServiceConfig.ReloadServerConfiguration">
+<code class="descname">ReloadServerConfiguration</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServiceConfig.ReloadServerConfiguration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServiceConfig.ReloadServerConfiguration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reload Server Configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>ReloadServerConfigurationRequest</em>) – The grpc request
+object.</li>
+<li><strong>_</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><dl class="docutils">
+<dt>The ReloadConfigurationReply</dt>
+<dd><p class="first last">grpc object.</p>
+</dd>
+</dl>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">ReloadServerConfigurationReply</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.server_config.service.GrpcServiceConfig.SetLogLevel">
+<code class="descname">SetLogLevel</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server_config/service.html#GrpcServiceConfig.SetLogLevel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server_config.service.GrpcServiceConfig.SetLogLevel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set log level.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>SetLogLevelRequest</em>) – The grpc request object.</li>
+<li><strong>_</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The SetLogLevelReply grpc object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">SetLogLevelReply</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

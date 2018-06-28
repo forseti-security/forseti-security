@@ -149,3 +149,32 @@ defaults:
       path: _docs/v1.1/guides
     values:
       category: Guides (v1.1)
+  - scope:
+      path: _docs/v2.0
+    values:
+      category: Overview (v2.0)
+      layout: docs
+  - scope:
+      path: _docs/v2.0/concepts
+    values:
+      category: Concepts (v2.0)
+  - scope:
+      path: _docs/v2.0/setup
+    values:
+      category: Setup (v2.0)
+  - scope:
+      path: _docs/v2.0/use
+    values:
+      category: Use (v2.0)
+  - scope:
+      path: _docs/v2.0/configure
+    values:
+      category: Configure (v2.0)
+  - scope:
+      path: _docs/v2.0/develop
+    values:
+      category: Develop (v2.0)
+  - scope:
+      path: _docs/v2.0/faq
+    values:
+      category: FAQ (v2.0)
