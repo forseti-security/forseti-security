@@ -46,7 +46,7 @@ function main() {
         exit -1
     fi
 
-    for release in ${RELEASES}; do
+    for release in ${releases}; do
         if [ ! -d _docs/${release} ]; then
             ./scripts/create_new_version_from_latest.sh ${release}
         fi
