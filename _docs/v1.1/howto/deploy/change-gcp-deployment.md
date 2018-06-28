@@ -7,20 +7,22 @@ order: 104
 Note: If you used the Forseti setup wizard to deploy, your `deploy-forseti.yaml`
 will have a timestamp suffix, e.g. `deploy-forseti-20171001000000.yaml`.
 
-### Get a particular deployment template version
-This step is **optional**.
+## Get the latest version
 
 If you need to change the `release-version` for your Forseti deployment, you MUST
 get the correct version of Forseti. The deployment template's startup
 script has release-specific code, so things will break if you use a startup script that
 is out of sync with the deployed release.
 
+Note: If you used the Forseti setup wizard to deploy then your `deploy-forseti.yaml` 
+will have a timestamp suffix, e.g. `deploy-forseti-20171001000000.yaml`.
+
 1. Sync master branch:
 
-   ```bash
-   $ git checkout master
-   $ git pull
-   ```
+     ```bash
+     $ git checkout master
+     $ git pull
+     ```
 
 2. Checkout the version you want to deploy. (It is NOT recommended to get a previous
    version.) If you want the latest release, you don't have to do this step; `master`
@@ -64,10 +66,10 @@ is out of sync with the deployed release.
 ### Run the Deployment Manager update
 Run the following update command:
 
-```bash
-$ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
-  --config path/to/deploy-forseti.yaml
-```
+  ```bash
+  $ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
+    --config path/to/deploy-forseti-<TIMESTAMP>.yaml
+  ```
 
 If you changed the properties in the `deploy-forseti.yaml` "Compute Engine"
 section or the startup script in `forseti-instance.py`, you need to reset

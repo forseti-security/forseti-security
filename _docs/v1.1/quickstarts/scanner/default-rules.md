@@ -29,3 +29,10 @@ Forseti Scanner has default rules that create a [violation]({% link _docs/v1.1/q
 * Cloud Identity Aware Proxy (IAP) bypass access
   * Forbid any IAP bypasses on all resources in my organization, when IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
+
+* Kubernetes Engine (KE)
+  * Only allow the following supported versions
+    * For major version 1.6, the minor version has to be at least 13-gke.1
+    * For major version 1.7, the minor version has to be at least 11-gke.1
+    * For major version 1.8, the minor version has to be at least 4-gke.1
+    * For major version 1.9, any minor version is allowed

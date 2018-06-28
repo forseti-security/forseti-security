@@ -55,7 +55,7 @@ You must have the **super admin** role in admin.google.com to complete these ste
 1. In the **Client Name** box, paste the **Client ID** you copied above.
 1. In the **One or More API Scopes** box, paste the following scope:
     ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly
+    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
     ```
 1. Click **Authorize**.
 {% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
@@ -91,4 +91,4 @@ on GCP, run the following command to copy your G Suite key to your Forseti insta
 
 Note the remote destination of where you put the key on the VM instance. It
 should match what you specified in your forseti_conf.yaml for the
-`groups-service-account-key-file` property.
+`groups_service_account_key_file` property.
