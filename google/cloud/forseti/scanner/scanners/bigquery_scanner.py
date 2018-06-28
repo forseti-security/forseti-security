@@ -122,11 +122,17 @@ class BigqueryScanner(base_scanner.BaseScanner):
             bq_acls = []
 
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
-                project_id = policy.parent.parent.name
                 dataset_id = policy.parent.name
+                # There is no functional use for project_id in this scanner,
+                # other than to identify where the dataset comes from,
+                # which can now be done with full_name.
+                # In case you are tempted to get the project_id anyways,
+                # do not use project_id = policy.parent.parent.name
+                # which will cause db session conflict.
+                # Instead, parse the project_id from the full_name.
                 bq_acls.extend(
                     BigqueryAccessControls.from_json(
-                        project_id=project_id,
+                        project_id=None,
                         dataset_id=dataset_id,
                         full_name=policy.full_name,
                         acls=policy.data))
