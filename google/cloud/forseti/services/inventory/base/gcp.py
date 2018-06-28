@@ -27,6 +27,7 @@ from google.cloud.forseti.common.gcp_api import compute
 from google.cloud.forseti.common.gcp_api import container
 from google.cloud.forseti.common.gcp_api import iam
 from google.cloud.forseti.common.gcp_api import servicemanagement
+from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
 
@@ -166,6 +167,7 @@ class ApiClientImpl(ApiClient):
         self.container = None
         self.iam = None
         self.servicemanagement = None
+        self.stackdriver_logging = None
         self.storage = None
 
         self.config = config
@@ -251,6 +253,14 @@ class ApiClientImpl(ApiClient):
             object: Client
         """
         return servicemanagement.ServiceManagementClient(self.config)
+
+    def _create_stackdriver_logging(self):
+        """Create stackdriver_logging API client
+
+        Returns:
+            object: Client
+        """
+        return stackdriver_logging.StackdriverLoggingClient(self.config)
 
     def _create_storage(self):
         """Create storage API client
@@ -830,3 +840,55 @@ class ApiClientImpl(ApiClient):
             list: A list of ManagedService resource dicts.
         """
         return self.servicemanagement.get_enabled_apis(projectid)
+
+    @create_lazy('stackdriver_logging', _create_stackdriver_logging)
+    def iter_organization_sinks(self, orgid):
+        """Organization logging sinks Iterator from gcp API call
+
+        Args:
+            orgid (str): id of the organization to query
+
+        Yields:
+            dict: Generator of organization logging sinks
+        """
+        for sink in self.stackdriver_logging.get_organization_sinks(orgid):
+            yield sink
+
+    @create_lazy('stackdriver_logging', _create_stackdriver_logging)
+    def iter_folder_sinks(self, folderid):
+        """Folder logging sinks Iterator from gcp API call
+
+        Args:
+            folderid (str): id of the folder to query
+
+        Yields:
+            dict: Generator of folder logging sinks
+        """
+        for sink in self.stackdriver_logging.get_folder_sinks(folderid):
+            yield sink
+
+    @create_lazy('stackdriver_logging', _create_stackdriver_logging)
+    def iter_billing_account_sinks(self, acctid):
+        """Billing Account logging sinks Iterator from gcp API call
+
+        Args:
+            acctid (str): id of the billing account to query
+
+        Yields:
+            dict: Generator of billing account logging sinks
+        """
+        for sink in self.stackdriver_logging.get_billing_account_sinks(acctid):
+            yield sink
+
+    @create_lazy('stackdriver_logging', _create_stackdriver_logging)
+    def iter_project_sinks(self, projectid):
+        """Project logging sinks Iterator from gcp API call
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of project logging sinks
+        """
+        for sink in self.stackdriver_logging.get_project_sinks(projectid):
+            yield sink
