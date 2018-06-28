@@ -113,7 +113,7 @@ and Cloud SQL Proxy, follow the setup instructions in the
 
 Forseti server configuration and rule files are configured and stored in
 Cloud Storage. For more information, see
-[Configuring Forseti]({% link _docs/latest/howto/configure/configuring-forseti.md %}).
+[Configuring Forseti]({% link _docs/latest/configure/general/index.md %}).
 
 ### G Suite Integration
 
@@ -191,7 +191,7 @@ instructions in the
 
 Forseti client configuration files are configured and stored in
 Cloud Storage. For more information, see
-[Configuring Forseti]({% link _docs/latest/howto/configure/configuring-forseti.md %}).
+[Configuring Forseti]({% link _docs/latest/configure/general/index.md %}).
 
 ## What's next
 
