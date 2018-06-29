@@ -24,8 +24,19 @@
 #       destination: 'bigquery.googleapis.com/*'
 #       filter: 'logName:"logs/cloudaudit.googleapis.com"'
 #       include_children: '*'
-#   - name: 'Require an Org Level audit log sink.'
-#     mode: required
+#  - name: 'Only allow BigQuery Audit Log sinks in projects.'
+#    mode: whitelist
+#    resource:
+#      - type: organization
+#        applies_to: children
+#        resource_ids:
+#          - {ORGANIZATION_ID}
+#    sink:
+#      destination: 'bigquery.googleapis.com/*'
+#      filter: 'logName:"logs/cloudaudit.googleapis.com"'
+#      include_children: '*'
+#   - name: 'Don't allow Org Level log sinks.'
+#     mode: blacklist
 #     resource:
 #       - type: organization
 #         applies_to: self
@@ -34,4 +45,4 @@
 #     sink:
 #       destination: '*'
 #       filter: '*'
-#       include_children: 'False'
+#       include_children: '*'
