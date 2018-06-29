@@ -111,9 +111,6 @@ def _build_from_document(credentials, document_path):
     """
     with open(document_path, 'r') as f:
         discovery_data = json.load(f)
-        
-        findings_data = discovery_data['resources']['organizations']['resources']
-
     return discovery.build_from_document(
         service=discovery_data,
         credentials=credentials
