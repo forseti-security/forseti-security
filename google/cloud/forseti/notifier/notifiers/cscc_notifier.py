@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Upload violations to GCS bucket as Findings."""
-
+import uuid
 import tempfile
 
 from google.cloud.forseti.common.gcp_api import storage
@@ -114,55 +114,47 @@ class CsccNotifier(object):
         Returns:
             list: violations in findings format; each violation is a dict.
         """
+        event_time = timestamp_pb2.Timestamp(
+            seconds=self._unix_time_millis(
+                datetime.now()
+            )
+        )
         findings = []
         for violation in violations:
             finding = {
-                'id': violation.get('violation_hash'),
-                'asset_ids': violation.get('full_name'),
-                'event_time': timestamp_pb2.Timestamp(
-                    seconds=self._unix_time_millis(
-                        datetime.now()
-                    )
-                ),
+                'id': str(uuid.uuid4()),
+                'assetIds': [
+                    violation.get('full_name')
+                ],
+                'eventTime': '2014-10-02T15:01:23.045123456Z',
                 'properties': {},
                 'source_id': 'FORSETI',
-                'category': 'HIGH_RISK'
+                'category': 'UNKNOWN_RISK'
             }
             findings.append(finding)
         return findings
 
-    def _send_findings_to_cscc(self, violations):
+    def _send_findings_to_cscc(self, violations, organization_id):
         """Send violations to CSCC directly via the CSCC API.
         Args:
             violations (dict): Violations to be uploaded as findings.
         """
-        LOGGER.info('Temporarily logging CSCC findings here instead of API.')
-        
         findings = self._transform_for_cscc_api(violations)
-        LOGGER.info('Findings have been transformed for CSCC API.')
-        
 
         client = securitycenter.SecurityCenterClient()
 
-        LOGGER.info('>>>>> Created CSCC Client.')
-
-        ORGANIZATION = 660570133860
-
-        """
         for finding in findings:
-            LOGGER.info("FINDING COMING!!!!!!")
+            LOGGER.info("Sending finding to CSCC.")
             LOGGER.info(finding)
-            client.create_finding(ORGANIZATION,
-                source_finding=finding
+            client.create_finding(
+                organization_id=organization_id,
+                finding=finding
             )
-            LOGGER.info('SUCESS')
-        """
-        result = client.search_assets(ORGANIZATION)
-        print result
+            LOGGER.info('SUCCESS')
 
         return
 
-    def run(self, violations, gcs_path, mode):
+    def run(self, violations, gcs_path, mode, organization_id):
         """Generate the temporary json file and upload to GCS.
         Args:
             violations (dict): Violations to be uploaded as findings.
@@ -173,7 +165,7 @@ class CsccNotifier(object):
         if mode == 'legacy':
             self._send_findings_to_gcs(violations, gcs_path)
         elif mode == 'cscc-api':
-            self._send_findings_to_cscc(violations)
+            self._send_findings_to_cscc(violations, organization_id)
         else:
             LOGGER.info('A valid mode for CSCC was not selected. Please use either legacy or cscc-api modes.')
             # TODO (mcapts) Need to figure out a valid way to exit the run() routine when an invalid mode is selected.

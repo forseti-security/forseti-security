@@ -40,13 +40,14 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
         """
+        LOGGER.info('SecurityCenterRepositoryClient')
         if not quota_max_calls:
             use_rate_limiter = False
 
         self._findings = None
 
         super(SecurityCenterRepositoryClient, self).__init__(
-            'securitycenter', versions=['v1alpha2'],
+            'securitycenter', versions=['v1alpha3'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -62,40 +63,19 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._findings
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
-    # Turn off docstrings for properties.
-    # pylint: disable=missing-return-doc, missing-return-type-doc
-    @property
-    def assets(self):
-        """Returns an _SecurityCenterAssetsRepository instance."""
-        if not self._assets:
-            self._assets = self._init_repository(
-                _SecurityCenterAssetsRepository)
-        return self._findings
-    # pylint: enable=missing-return-doc, missing-return-type-doc
-
 
 class _SecurityCenterOrganizationsFindingsRepository(
         repository_mixins.CreateQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of CSCC Organizations Findings repository."""
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """Constructor.
         """
+        LOGGER.info('_SecurityCenterOrganizationsFindingsRepositoryClient')
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-            component='securitycenter.organizations.findings')
-
-
-class _SecurityCenterAssetsRepository(
-        repository_mixins.SearchQueryMixin,
-        _base_repository.GCPRepository):
-    """Implementation of CSCC Organizations Findings repository."""
-
-    def __init__(self):
-        """Constructor.
-        """
-        super(_SecurityCenterAssetsRepository, self).__init__(
-            component='assets')
+#            component='securitycenter.organizations.findings', **kwargs)
+            component='organizations.findings', **kwargs)
 
 
 class SecurityCenterClient(object):
@@ -109,26 +89,22 @@ class SecurityCenterClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
-        LOGGER.info('Entering CSCC Client init method.')
-
+        LOGGER.info('SecurityCenterClient')
         self.repository = SecurityCenterRepositoryClient()
 
-    def create_finding(self, organization_id, source_finding):
+    def create_finding(self, organization_id, finding):
         """Creates a finding in CSCC.
         Args:
             organization_id (str): The id of the organization.
         """
         try:
-            response = self.repository.findings.create(organization_id)
-            LOGGER.debug('Created finding in CSCC.')
-            return response
+            LOGGER.info('Trying to create finding')
+            response = self.repository.findings.create(organization_id, finding)
+            LOGGER.debug('Created finding in CSCC: %s', list(response))
+            return
         except (errors.HttpError, HttpLib2Error) as e:
-#            if _is_status_not_found(e):
-#                return []
-#            raise api_errors.ApiExecutionError(project_id, e)
-            raise api_errors.ApiExecutionError(organization_id, e)
-
-    def search_assets(self, organization_id):
-        LOGGER.info('>>>>> searching assets')
-        response = self.repository.findings().search(organization_id)
-        return response
+            LOGGER.info('>>>>> %s', e)
+            #if _is_status_not_found(e):
+            #    return []
+            #raise api_errors.ApiExecutionError(project_id, e)
+            raise api_errors.ApiExecutionError(e)

@@ -151,7 +151,9 @@ def run(inventory_index_id, progress_queue, service_config=None):
                 cscc_notifier.CsccNotifier(inventory_index_id).run(
                     violations_as_dict,
                     notifier_configs.get('violation').get('cscc').get('gcs_path'),
-                    notifier_configs.get('violation').get('cscc').get('mode'))            # pylint: enable=line-too-long
+                    notifier_configs.get('violation').get('cscc').get('mode'),
+                    notifier_configs.get('violation').get('cscc').get('organization_id'))
+            # pylint: enable=line-too-long
 
         InventorySummary(service_config, inventory_index_id).run()
 

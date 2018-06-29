@@ -300,12 +300,14 @@ class CreateQueryMixin(object):
             dict: An API response containing one page of results.
         """
         req_body = {}
+        arguments = {'body': req_body,
+                     'orgName': 'organizations/' + str(organization_id)}
         if query:
-            req_body[self._search_query_field] = query
+            req_body['sourceFinding'] = query
 
-        req_body[self._max_results_field] = max_results
+#        req_body[self._max_results_field] = max_results
 
         for resp in self.execute_query(
                 verb=verb,
-                verb_arguments={'orgName': organization_id}):
+                verb_arguments=arguments):
             yield resp
