@@ -51,6 +51,14 @@ SUPPORTED_APIS = {
         'default_version': 'v1',
         'supported_versions': ['v1']
     },
+    'logging': {
+        'default_version': 'v2',
+        'supported_versions': ['v2']
+    },
+    'securitycenter': {
+        'default_version': 'v1alpha3',
+        'supported_versions': ['v1alpha3']
+    },
     'servicemanagement': {
         'default_version': 'v1',
         'supported_versions': ['v1']

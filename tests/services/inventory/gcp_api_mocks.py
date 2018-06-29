@@ -49,6 +49,7 @@ def mock_gcp(has_org_access=True):
     gcs_patcher = _mock_gcs()
     iam_patcher = _mock_iam()
     sm_patcher = _mock_servicemanagement()
+    stackdriver_logging_patcher = _mock_stackdriver_logging()
     try:
         yield
     finally:
@@ -63,6 +64,7 @@ def mock_gcp(has_org_access=True):
         gcs_patcher.stop()
         iam_patcher.stop()
         sm_patcher.stop()
+        stackdriver_logging_patcher.stop()
 
 
 def _mock_admin_directory():
@@ -419,3 +421,38 @@ def _mock_servicemanagement():
     mock_sm.get_enabled_apis.side_effect = _mock_sm_get_enabled_apis
 
     return sm_patcher
+
+
+def _mock_stackdriver_logging():
+    """Mock StackdriverLogging client."""
+    def _mock_get_organization_sinks(orgid):
+        if orgid in results.LOGGING_GET_ORG_SINKS:
+            return results.LOGGING_GET_ORG_SINKS[orgid]
+        return []
+
+    def _mock_get_folder_sinks(folderid):
+        if folderid in results.LOGGING_GET_FOLDER_SINKS:
+            return results.LOGGING_GET_FOLDER_SINKS[folderid]
+        return []
+
+    def _mock_get_billing_account_sinks(acctid):
+        if acctid in results.LOGGING_GET_BILLING_ACCOUNT_SINKS:
+            return results.LOGGING_GET_BILLING_ACCOUNT_SINKS[acctid]
+        return []
+
+    def _mock_get_project_sinks(projectid):
+        if projectid in results.LOGGING_GET_PROJECT_SINKS:
+            return results.LOGGING_GET_PROJECT_SINKS[projectid]
+        return []
+
+    sd_logging_patcher = mock.patch(
+        MODULE_PATH + 'stackdriver_logging.StackdriverLoggingClient', spec=True)
+    mock_sd_logging = sd_logging_patcher.start().return_value
+    mock_sd_logging.get_organization_sinks.side_effect = (
+        _mock_get_organization_sinks)
+    mock_sd_logging.get_folder_sinks.side_effect = _mock_get_folder_sinks
+    mock_sd_logging.get_billing_account_sinks.side_effect = (
+        _mock_get_billing_account_sinks)
+    mock_sd_logging.get_project_sinks.side_effect = _mock_get_project_sinks
+
+    return sd_logging_patcher
