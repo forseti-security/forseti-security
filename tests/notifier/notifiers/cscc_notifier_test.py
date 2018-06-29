@@ -85,7 +85,7 @@ class CsccNotifierTest(ScannerBaseDbTestCase):
         violations_as_dict = notifier.convert_to_timestamp(violations_as_dict)
 
         finding_results = (
-            cscc_notifier.CsccNotifier('iii')._transform_to_findings(
+            cscc_notifier.CsccNotifier('iii')._transform_for_gcs(
                 violations_as_dict)
         )
 
