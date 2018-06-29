@@ -70,6 +70,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'instance_network_interface_scanner',
          'class_name': 'InstanceNetworkInterfaceScanner',
          'rules_filename': 'instance_network_interface_rules.yaml'},
+    'log_sink':
+        {'module_name': 'log_sink_scanner',
+         'class_name': 'LogSinkScanner',
+         'rules_filename': 'log_sink_rules.yaml'},
     'service_account_key':
         {'module_name': 'service_account_key_scanner',
          'class_name': 'ServiceAccountKeyScanner',
