@@ -462,7 +462,7 @@ class Rule(object):
                     sink_destination=sink['destination'],
                     sink_filter=sink['filter'],
                     sink_include_children=sink['include_children'],
-                    resource_data=None
+                    resource_data=''
                 )
         else:
             if self.rule['mode'] == _WHITELIST:

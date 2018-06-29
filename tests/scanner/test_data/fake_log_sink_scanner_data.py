@@ -68,7 +68,7 @@ LOG_SINK_VIOLATIONS = [
                   sink_destination='^pubsub\\.googleapis\\.com\\/.+?$',
                   sink_filter='^$',
                   sink_include_children='*',
-                  resource_data=None),
+                  resource_data=''),
     RuleViolation(resource_type='sink',
                   resource_id='audit_logs_to_bq',
                   full_name='folders/56/sinks/audit_logs_to_bq',
@@ -96,7 +96,7 @@ FLATTENED_LOG_SINK_VIOLATIONS = [
             'sink_filter': '^$',
             'sink_include_children': '*',
         },
-        'resource_data': None,
+        'resource_data': '',
     },
     {
         'resource_type': 'sink',

@@ -227,7 +227,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                 sink_filter=('^logName\\:\\"logs\\/'
                              'cloudaudit\\.googleapis\\.com\\"$'),
                 sink_include_children='*',
-                resource_data=None
+                resource_data=''
             ),
             lsre.Rule.RuleViolation(
                 resource_type='project',
@@ -239,7 +239,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                 sink_destination='^pubsub\\.googleapis\\.com\\/.+?$',
                 sink_filter='^$',
                 sink_include_children='*',
-                resource_data=None
+                resource_data=''
             )
         ])
         self.assertEqual(expected_violations, actual_violations)
@@ -369,7 +369,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                 sink_filter=('^logName\\:\\"logs\\/'
                              'cloudaudit\\.googleapis\\.com\\"$'),
                 sink_include_children=True,
-                resource_data=None
+                resource_data=''
             )
         ])
         self.assertEqual(expected_violations, actual_violations)
