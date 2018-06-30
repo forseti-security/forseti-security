@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: remove all this when cleaning-up the cscc api code
+# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument
+
 """Mixin classes for _base_repository.GCPRepository implementations."""
 
 
@@ -282,4 +285,32 @@ class SearchQueryMixin(object):
         for resp in self.execute_search_query(
                 verb=verb,
                 verb_arguments={'body': req_body, 'fields': fields}):
+            yield resp
+
+
+class CreateQueryMixin(object):
+    """Mixin that implements a Create query."""
+
+    def create(self, organization_id, query=None, fields=None, max_results=500, verb='create'):
+        """Create a resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+
+        Yields:
+            dict: An API response containing one page of results.
+        """
+        req_body = {}
+        arguments = {'body': req_body,
+                     'orgName': 'organizations/' + str(organization_id)}
+        if query:
+            req_body['sourceFinding'] = query
+
+#        req_body[self._max_results_field] = max_results
+
+        for resp in self.execute_query(
+                verb=verb,
+                verb_arguments=arguments):
             yield resp
