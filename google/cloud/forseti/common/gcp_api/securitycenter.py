@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: remove all this when cleaning-up the cscc api code
+# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument,differing-param-doc,no-value-for-parameter,unused-import,bad-continuation,differing-type-doc,bad-continuation
+
+
 """Wrapper for Cloud Security Command Center API client."""
 import json
 from googleapiclient import errors
