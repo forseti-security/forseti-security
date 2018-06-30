@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: remove all this when cleaning-up the cscc api code
+# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-import,missing-return-doc,missing-return-type-doc
+# pylint: disable=trailing-whitespace,invalid-name,missing-docstring,undefined-variable,useless-suppression
+
 """Upload violations to GCS bucket as Findings."""
 import tempfile
 

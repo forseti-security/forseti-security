@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: remove all this when cleaning-up the cscc api code
+# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument
+
 """Mixin classes for _base_repository.GCPRepository implementations."""
 
 
