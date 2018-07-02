@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: remove all this when cleaning-up the cscc api code
-# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument
-
 """Mixin classes for _base_repository.GCPRepository implementations."""
 
 
@@ -24,7 +21,6 @@ class ListQueryMixin(object):
     def list(self, resource=None, fields=None, max_results=None, verb='list',
              **kwargs):
         """List subresources of a given resource.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
@@ -32,7 +28,6 @@ class ListQueryMixin(object):
             max_results (int): Number of entries to include per page.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Yields:
             dict: An API response containing one page of results.
         """
@@ -64,7 +59,6 @@ class AggregatedListQueryMixin(ListQueryMixin):
     def aggregated_list(self, resource=None, fields=None, max_results=None,
                         verb='aggregatedList', **kwargs):
         """List all subresource entities of a given resource.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
@@ -72,7 +66,6 @@ class AggregatedListQueryMixin(ListQueryMixin):
             max_results (int): Number of entries to include per page.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Returns:
             iterator: An iterator of API responses by page.
         """
@@ -85,7 +78,6 @@ class GetQueryMixin(object):
 
     def get(self, resource, target=None, fields=None, verb='get', **kwargs):
         """Get API entity.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
@@ -93,14 +85,11 @@ class GetQueryMixin(object):
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Returns:
             dict: Response from the API.
-
         Raises:
             ValueError: When get_key_field was not defined in the base
                 GCPRepository instance.
-
             errors.HttpError: When attempting to get a non-existent entity.
                ex: HttpError 404 when requesting ... returned
                    "The resource '...' was not found"
@@ -133,7 +122,6 @@ class GetIamPolicyQueryMixin(object):
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
                        include_body=True, resource_field='resource', **kwargs):
         """Get resource IAM Policy.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
@@ -144,10 +132,8 @@ class GetIamPolicyQueryMixin(object):
             resource_field (str): The parameter name of the resource field to
                 pass to the method.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Returns:
             dict: Response from the API.
-
         Raises:
             errors.HttpError: When attempting to get a non-existent entity.
                 ex: HttpError 404 when requesting ... returned
@@ -171,7 +157,6 @@ class OrgPolicyQueryMixin(object):
     def get_effective_org_policy(self, resource, constraint, fields=None,
                                  verb='getEffectiveOrgPolicy', **kwargs):
         """Get Effective Org Policy for a constraint on a resource.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
@@ -179,10 +164,8 @@ class OrgPolicyQueryMixin(object):
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Returns:
             dict: Response from the API.
-
         Raises:
             errors.HttpError: When attempting to get a non-existent entity.
                 ex: HttpError 404 when requesting ... returned
@@ -200,7 +183,6 @@ class OrgPolicyQueryMixin(object):
     def get_org_policy(self, resource, constraint, fields=None,
                        verb='getOrgPolicy', **kwargs):
         """Get Org Policy for a constraint on a resource.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
@@ -208,10 +190,8 @@ class OrgPolicyQueryMixin(object):
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Returns:
             dict: Response from the API.
-
         Raises:
             errors.HttpError: When attempting to get a non-existent entity.
                 ex: HttpError 404 when requesting ... returned
@@ -229,7 +209,6 @@ class OrgPolicyQueryMixin(object):
     def list_org_policies(self, resource, fields=None, max_results=None,
                           verb='listOrgPolicies', **kwargs):
         """List Org Policies applied to the resource.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to query.
@@ -237,10 +216,8 @@ class OrgPolicyQueryMixin(object):
             max_results (int): Number of entries to include per page.
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to the query.
-
         Yields:
             dict: An API response containing one page of results.
-
         Raises:
             errors.HttpError: When attempting to get a non-existent entity.
                 ex: HttpError 404 when requesting ... returned
@@ -264,7 +241,6 @@ class SearchQueryMixin(object):
 
     def search(self, query=None, fields=None, max_results=500, verb='search'):
         """List all subresource entities visable to the caller.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             query (str): Additional filters to apply to the restrict the
@@ -272,7 +248,6 @@ class SearchQueryMixin(object):
             fields (str): Fields to include in the response - partial response.
             max_results (int): Number of entries to include per page.
             verb (str): The method to call on the API.
-
         Yields:
             dict: An API response containing one page of results.
         """
@@ -293,16 +268,17 @@ class CreateQueryMixin(object):
 
     def create(self, organization_id, query=None, fields=None, max_results=500, verb='create'):
         """Create a resource.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
-
         Yields:
             dict: An API response containing one page of results.
         """
         req_body = {}
+        
+        organization_id = '660570133860'
+        
         arguments = {'body': req_body,
                      'orgName': 'organizations/' + str(organization_id)}
         if query:

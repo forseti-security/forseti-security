@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: remove all this when cleaning-up the cscc api code
-# pylint: disable=invalid-string-quote,missing-return-doc,missing-return-type-doc
-# pylint: disable=trailing-whitespace
-
 """Base GCP client which uses the discovery API."""
 import json
 import logging

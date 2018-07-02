@@ -33,8 +33,10 @@ LOGGER = logger.get_logger(__name__)
 # pylint: disable=inconsistent-return-statements
 def find_notifiers(notifier_name):
     """Get the first class in the given sub module
+
     Args:
         notifier_name (str): Name of the notifier.
+
     Return:
         class: The class in the sub module
     """
@@ -57,6 +59,7 @@ def find_notifiers(notifier_name):
 
 def convert_to_timestamp(violations):
     """Convert violation created_at_datetime to timestamp string.
+
     Args:
         violations (dict): List of violations as dict with
             created_at_datetime.
@@ -75,7 +78,9 @@ def convert_to_timestamp(violations):
 
 def run(inventory_index_id, progress_queue, service_config=None):
     """Run the notifier.
+
     Entry point when the notifier is run as a library.
+
     Args:
         inventory_index_id (int64): Inventory index id.
         progress_queue (Queue): The progress queue.

@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: remove all this when cleaning-up the cscc api code
-# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument,differing-param-doc,no-value-for-parameter,unused-import,bad-continuation,differing-type-doc,bad-continuation
-
-
 """Wrapper for Cloud Security Command Center API client."""
 import json
 from googleapiclient import errors
@@ -44,6 +40,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
         """
+        LOGGER.info('SecurityCenterRepositoryClient')
         if not quota_max_calls:
             use_rate_limiter = False
 
@@ -75,6 +72,7 @@ class _SecurityCenterOrganizationsFindingsRepository(
     def __init__(self, **kwargs):
         """Constructor.
         """
+        LOGGER.info('_SecurityCenterOrganizationsFindingsRepositoryClient')
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
 #            component='securitycenter.organizations.findings', **kwargs)
             component='organizations.findings', **kwargs)
@@ -91,6 +89,7 @@ class SecurityCenterClient(object):
             global_configs (dict): Forseti config.
             **kwargs (dict): The kwargs.
         """
+        LOGGER.info('SecurityCenterClient')
         self.repository = SecurityCenterRepositoryClient()
 
     def create_finding(self, organization_id, finding):
@@ -99,6 +98,7 @@ class SecurityCenterClient(object):
             organization_id (str): The id of the organization.
         """
         try:
+            LOGGER.info('Trying to create finding')
             response = self.repository.findings.create(organization_id, finding)
             LOGGER.debug('Created finding in CSCC: %s', list(response))
             return
