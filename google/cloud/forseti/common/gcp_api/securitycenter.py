@@ -38,7 +38,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
         """
-        LOGGER.info('SecurityCenterRepositoryClient')
+        LOGGER.debug('Initializing SecurityCenterRepositoryClient')
         if not quota_max_calls:
             use_rate_limiter = False
 
@@ -100,15 +100,14 @@ class SecurityCenterClient(object):
             finding (dict): Forseti violation in CSCC format.
         """
         try:
-            LOGGER.info('Trying to create finding')
+            LOGGER.debug('Creating finding.')
             response = self.repository.findings.create(
                 arguments={
                     'body': {'sourceFinding': finding},
                     'orgName': organization_id
                 }
             )
-            LOGGER.debug('Created finding in CSCC: %s', list(response))
-            return
+            LOGGER.debug('Created finding response in CSCC: %s', list(response))
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(
                 'Unable to create resource:\n%s\n'
