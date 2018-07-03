@@ -341,7 +341,6 @@ class InventoryImporter(object):
 
         if post_action:
             post_action()
-            post_action()
 
         if idx % flush_count:
             # Additional rows added since last flush.
