@@ -110,16 +110,13 @@ class CsccNotifier(object):
 
     def _transform_for_cscc_api(self, violations):
         """Transform forseti violations to findings for CSCC API. 
+
         Args:
             violations (dict): Violations to be sent to CSCC as findings.
+
         Returns:
             list: violations in findings format; each violation is a dict.
         """
-        event_time = timestamp_pb2.Timestamp(
-            seconds=self._unix_time_millis(
-                datetime.now()
-            )
-        )
         findings = []
         for violation in violations:
             finding = {
