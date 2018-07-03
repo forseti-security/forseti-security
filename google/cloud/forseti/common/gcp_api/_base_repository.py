@@ -55,26 +55,28 @@ REQUEST_RECORDER = dict()
 REQUEST_REPLAYER = dict()
 
 # Used for private APIs that need to be created from local discovery documents
-BASE_DIR = "google/cloud/forseti/common/gcp_api/discovery_documents/"
-PRIVATE_APIS = {
-    "securitycenter": BASE_DIR + "securitycenter.json"
-}
+DISCOVERY_DOCS_BASE_DIR = (
+    'google/cloud/forseti/common/gcp_api/discovery_documents/')
+
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
-def _create_service_api(credentials, service_name, version, developer_key=None,
-                        cache_discovery=False):
+def _create_service_api(credentials, service_name, version, is_private_api,
+                        developer_key=None, cache_discovery=False):
     """Builds and returns a cloud API service object.
+
     Args:
         credentials (OAuth2Credentials): Credentials that will be used to
             authenticate the API calls.
         service_name (str): The name of the API.
         version (str): The version of the API to use.
+        is_private_api (bool): Whether the API is a private API.
         developer_key (str): The api key to use to determine the project
             associated with the API call, most API services do not require
             this to be set.
         cache_discovery (bool): Whether or not to cache the discovery doc.
+
     Returns:
         object: A Resource object with methods for interacting with the service.
     """
@@ -84,6 +86,13 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     if LOGGER.getEffectiveLevel() > logging.DEBUG:
         logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
 
+    # Used for private APIs that are built from a local discovery file
+    if is_private_api:
+        return _build_service_api_from_document(
+            credentials,
+            '{}{}.json'.format(DISCOVERY_DOCS_BASE_DIR, service_name)
+        )
+
     discovery_kwargs = {
         'serviceName': service_name,
         'version': version,
@@ -92,16 +101,10 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery
 
-    # Used for private APIs that are built from a local discovery file
-    if service_name in PRIVATE_APIS:
-        return _build_from_document(
-            credentials,
-            PRIVATE_APIS[service_name]
-        )
-
     return discovery.build(**discovery_kwargs)
 
-def _build_from_document(credentials, document_path):
+
+def _build_service_api_from_document(credentials, document_path):
     """Builds an API client from a local discovery document
     
     Args:
@@ -119,9 +122,11 @@ def _build_from_document(credentials, document_path):
 
 def _build_http(http=None):
     """Set custom Forseti user agent and timeouts on a new http object.
+
     Args:
         http (object): An instance of httplib2.Http, or compatible, used for
             testing.
+
     Returns:
         httplib2.Http: An http object with the forseti user agent set.
     """
@@ -147,6 +152,7 @@ class BaseRepositoryClient(object):
                  use_rate_limiter=False,
                  **kwargs):
         """Constructor.
+
         Args:
             api_name (str): The API name to wrap. More details here:
                   https://developers.google.com/api-client-library/python/apis/
@@ -197,17 +203,22 @@ class BaseRepositoryClient(object):
                                 'in Forseti, proceed at your own risk.',
                                 api_name, version)
 
+        self.is_private_api = (
+            _supported_apis.SUPPORTED_APIS.get(api_name).get('is_private_api'))
+
         self.gcp_services = {}
         for version in versions:
             self.gcp_services[version] = _create_service_api(
                 self._credentials,
                 self.name,
                 version,
+                self.is_private_api,
                 kwargs.get('developer_key'),
                 kwargs.get('cache_discovery', False))
 
     def __repr__(self):
         """The object representation.
+
         Returns:
             str: The object representation.
         """
@@ -215,9 +226,11 @@ class BaseRepositoryClient(object):
 
     def _init_repository(self, repository_class, version=None):
         """Safely initialize a repository class to a property.
+
         Args:
             repository_class (class): The class to initialize.
             version (str): The gcp service version for the repository.
+
         Returns:
             object: An instance of repository_class.
         """
@@ -247,6 +260,7 @@ class GCPRepository(object):
                  max_results_field='maxResults', search_query_field='query',
                  rate_limiter=None, use_cached_http=True):
         """Constructor.
+
         Args:
             gcp_service (object): A Resource object with methods for interacting
                 with the service.
@@ -301,6 +315,7 @@ class GCPRepository(object):
     @property
     def http(self):
         """A thread local instance of httplib2.Http.
+
         Returns:
             google_auth_httplib2.AuthorizedHttp: An Http instance authorized by
                 the credentials.
@@ -317,9 +332,11 @@ class GCPRepository(object):
 
     def _build_request(self, verb, verb_arguments):
         """Builds HttpRequest object.
+
         Args:
             verb (str): Request verb (ex. insert, update, delete).
             verb_arguments (dict): Arguments to be passed with the request.
+
         Returns:
             httplib2.HttpRequest: HttpRequest to be sent to the API.
         """
@@ -334,13 +351,16 @@ class GCPRepository(object):
 
     def _build_next_request(self, verb, prior_request, prior_response):
         """Builds pagination-aware request object.
+
         More details:
           https://developers.google.com/api-client-library/python/guide/pagination
+
         Args:
             verb (str): Request verb (ex. insert, update, delete).
             prior_request (httplib2.HttpRequest): Request that may trigger
                 paging.
             prior_response (dict): Potentially partial response.
+
         Returns:
             httplib2.HttpRequest: HttpRequest or None. None is returned when
                 there is nothing more to fetch - request completed.
@@ -350,8 +370,10 @@ class GCPRepository(object):
 
     def _request_supports_pagination(self, verb):
         """Determines if the API action supports pagination.
+
         Args:
             verb (str): Request verb (ex. insert, update, delete).
+
         Returns:
             bool: True when API supports pagination, False otherwise.
         """
@@ -359,13 +381,16 @@ class GCPRepository(object):
 
     def execute_command(self, verb, verb_arguments):
         """Executes command (ex. add) via a dedicated http object.
+
         Async APIs may take minutes to complete. Therefore, callers are
         encouraged to leverage concurrent.futures (or similar) to place long
         running commands on a separate threads.
+
         Args:
             verb (str): Method to execute on the component (ex. get, list).
             verb_arguments (dict): key-value pairs to be passed to
                 _build_request.
+
         Returns:
             dict: An async operation Service Response.
         """
@@ -375,12 +400,15 @@ class GCPRepository(object):
 
     def execute_paged_query(self, verb, verb_arguments):
         """Executes query (ex. list) via a dedicated http object.
+
         Args:
             verb (str): Method to execute on the component (ex. get, list).
             verb_arguments (dict): key-value pairs to be passed to
                 _BuildRequest.
+
         Yields:
             dict: Service Response.
+
         Raises:
             PaginationNotSupportedError: When an API does not support paging.
         """
@@ -401,10 +429,12 @@ class GCPRepository(object):
 
     def execute_search_query(self, verb, verb_arguments):
         """Executes query (ex. search) via a dedicated http object.
+
         Args:
             verb (str): Method to execute on the component (ex. search).
             verb_arguments (dict): key-value pairs to be passed to
                 _BuildRequest.
+
         Yields:
             dict: Service Response.
         """
@@ -429,10 +459,12 @@ class GCPRepository(object):
 
     def execute_query(self, verb, verb_arguments):
         """Executes query (ex. get) via a dedicated http object.
+
         Args:
             verb (str): Method to execute on the component (ex. get, list).
             verb_arguments (dict): key-value pairs to be passed to
                 _BuildRequest.
+
         Returns:
             dict: Service Response.
         """
@@ -446,8 +478,10 @@ class GCPRepository(object):
            stop_max_attempt_number=5)
     def _execute(self, request):
         """Run execute with retries and rate limiting.
+
         Args:
             request (object): The HttpRequest object to execute.
+
         Returns:
             dict: The response from the API.
         """

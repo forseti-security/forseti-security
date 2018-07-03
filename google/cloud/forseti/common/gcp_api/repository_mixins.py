@@ -266,25 +266,19 @@ class SearchQueryMixin(object):
 class CreateQueryMixin(object):
     """Mixin that implements a Create query."""
 
-    def create(self, organization_id, query=None, fields=None, max_results=500, verb='create'):
+    def create(self, fields=None, verb='create', **kwargs):
         """Create a resource.
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to create.
         Yields:
             dict: An API response containing one page of results.
         """
-        req_body = {}
-        
-        organization_id = '660570133860'
-        
-        arguments = {'body': req_body,
-                     'orgName': 'organizations/' + str(organization_id)}
-        if query:
-            req_body['sourceFinding'] = query
-
-#        req_body[self._max_results_field] = max_results
+        arguments = {}
+        if kwargs.get('arguments'):
+            arguments.update(kwargs.get('arguments'))
 
         for resp in self.execute_query(
                 verb=verb,

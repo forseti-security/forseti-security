@@ -99,7 +99,12 @@ class SecurityCenterClient(object):
         """
         try:
             LOGGER.info('Trying to create finding')
-            response = self.repository.findings.create(organization_id, finding)
+            response = self.repository.findings.create(
+                arguments = {
+                    'body': {'sourceFinding': finding},
+                    'orgName': organization_id
+                }
+            )
             LOGGER.debug('Created finding in CSCC: %s', list(response))
             return
         except (errors.HttpError, HttpLib2Error) as e:
@@ -107,4 +112,4 @@ class SecurityCenterClient(object):
                 'Unable to create resource:\n%s\n'
                 'Resource: %s',
                 e, finding)
-            raise api_errors.ApiExecutionError()
+            raise api_errors.ApiExecutionError('cscc finding', e)

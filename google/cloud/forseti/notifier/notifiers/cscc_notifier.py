@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Upload violations to GCS bucket as Findings."""
-import uuid
 import tempfile
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
@@ -24,7 +23,6 @@ from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
 
-from google.protobuf import timestamp_pb2
 from datetime import datetime
 
 LOGGER = logger.get_logger(__name__)
@@ -151,14 +149,11 @@ class CsccNotifier(object):
         client = securitycenter.SecurityCenterClient()
 
         for finding in findings:
-            LOGGER.info("Sending finding to CSCC.")
-            LOGGER.info(finding)
+            LOGGER.debug('Creating finding CSCC:\n%s.', finding)
             try:
-                client.create_finding(
-                    organization_id=organization_id,
-                    finding=finding
-                )
-                LOGGER.info('SUCCESS')
+                client.create_finding(organization_id, finding)
+                LOGGER.debug('Successfully created finding in CSCC:\n%s',
+                             finding)
             except api_errors.ApiExecutionError as e:
                 continue
         return
