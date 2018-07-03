@@ -16,6 +16,7 @@
 import uuid
 import tempfile
 
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.gcp_api import securitycenter
 from google.cloud.forseti.common.util import logger
@@ -122,12 +123,20 @@ class CsccNotifier(object):
         findings = []
         for violation in violations:
             finding = {
-                'id': str(uuid.uuid4()),
+                'id': violation.get('violation_hash'),
                 'assetIds': [
                     violation.get('full_name')
                 ],
-                'eventTime': '2014-10-02T15:01:23.045123456Z',
-                'properties': {},
+                'eventTime': violation.get('created_at_datetime'),
+                'properties': {
+                    'inventory_index_id': self.inv_index_id,    
+                    'resource_data': violation.get('resource_data'),    
+                    'resource_id': violation.get('resource_id'),    
+                    'resource_type': violation.get('resource_type'),    
+                    'rule_index': violation.get('rule_index'),    
+                    'scanner_index_id': violation.get('scanner_index_id'),    
+                    'violation_data': violation.get('violation_data')    
+                },
                 'source_id': 'FORSETI',
                 'category': 'UNKNOWN_RISK'
             }
@@ -146,12 +155,14 @@ class CsccNotifier(object):
         for finding in findings:
             LOGGER.info("Sending finding to CSCC.")
             LOGGER.info(finding)
-            client.create_finding(
-                organization_id=organization_id,
-                finding=finding
-            )
-            LOGGER.info('SUCCESS')
-
+            try:
+                client.create_finding(
+                    organization_id=organization_id,
+                    finding=finding
+                )
+                LOGGER.info('SUCCESS')
+            except api_errors.ApiExecutionError as e:
+                continue
         return
 
     def run(self, violations, gcs_path, mode, organization_id):

@@ -103,8 +103,11 @@ class SecurityCenterClient(object):
             LOGGER.debug('Created finding in CSCC: %s', list(response))
             return
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.info('>>>>> %s', e)
+            LOGGER.error(
+                'Unable to create resource:\n%s\n'
+                'Finding: %s',
+                e, finding)
             #if _is_status_not_found(e):
             #    return []
             #raise api_errors.ApiExecutionError(project_id, e)
-            raise api_errors.ApiExecutionError(e)
+            raise api_errors.ApiExecutionError(finding, e)
