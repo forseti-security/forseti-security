@@ -129,13 +129,13 @@ class CsccNotifier(object):
                 ],
                 'eventTime': violation.get('created_at_datetime'),
                 'properties': {
-                    'inventory_index_id': self.inv_index_id,    
-                    'resource_data': violation.get('resource_data'),    
-                    'resource_id': violation.get('resource_id'),    
-                    'resource_type': violation.get('resource_type'),    
-                    'rule_index': violation.get('rule_index'),    
-                    'scanner_index_id': violation.get('scanner_index_id'),    
-                    'violation_data': violation.get('violation_data')    
+                    'inventory_index_id': self.inv_index_id,
+                    'resource_data': violation.get('resource_data'),
+                    'resource_id': violation.get('resource_id'),
+                    'resource_type': violation.get('resource_type'),
+                    'rule_index': violation.get('rule_index'),
+                    'scanner_index_id': violation.get('scanner_index_id'),
+                    'violation_data': violation.get('violation_data')
                 },
                 'source_id': 'FORSETI',
                 'category': 'UNKNOWN_RISK'
@@ -145,6 +145,7 @@ class CsccNotifier(object):
 
     def _send_findings_to_cscc(self, violations, organization_id):
         """Send violations to CSCC directly via the CSCC API.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
         """
@@ -167,17 +168,21 @@ class CsccNotifier(object):
 
     def run(self, violations, gcs_path, mode, organization_id):
         """Generate the temporary json file and upload to GCS.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
             gcs_path (str): The GCS bucket to upload the findings.
+            mode (str): The mode in which to send the CSCC notification.
+            organization_id (str): The id of the organization.
         """
-        LOGGER.info('Running CSCC findings notification.')
+        LOGGER.info('Running Cloud Security Command Center notification '
+                    'module.')
 
-        if mode == 'legacy':
+        if mode == 'bucket':
             self._send_findings_to_gcs(violations, gcs_path)
-        elif mode == 'cscc-api':
+        elif mode == 'api':
             self._send_findings_to_cscc(violations, organization_id)
         else:
-            LOGGER.info('A valid mode for CSCC was not selected. Please use either legacy or cscc-api modes.')
-            # TODO (mcapts) Need to figure out a valid way to exit the run() routine when an invalid mode is selected.
-        return
+            LOGGER.info(
+                'A valid mode for CSCC notification was not selected: %s. '
+                'Please use either "bucket" or "api" mode.', mode)
