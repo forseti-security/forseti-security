@@ -88,7 +88,7 @@ def _create_service_api(credentials, service_name, version, is_private_api,
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:
-        return _build_service_api_from_document(
+        return _build_service_from_document(
             credentials,
             '{}{}.json'.format(DISCOVERY_DOCS_BASE_DIR, service_name)
         )
@@ -104,16 +104,20 @@ def _create_service_api(credentials, service_name, version, is_private_api,
     return discovery.build(**discovery_kwargs)
 
 
-def _build_service_api_from_document(credentials, document_path):
+def _build_service_from_document(credentials, document_path):
     """Builds an API client from a local discovery document
-    
+
     Args:
         credentials (OAuth2Credentials): Credentials that will be used to
             authenticate the API calls.
         document_path (str): The local path of the discovery document
+
+    Returns:
+        object: A Resource object with methods for interacting with the service.
     """
     with open(document_path, 'r') as f:
         discovery_data = json.load(f)
+
     return discovery.build_from_document(
         service=discovery_data,
         credentials=credentials
@@ -139,7 +143,7 @@ def _build_http(http=None):
 
     return set_user_agent(http, user_agent)
 
-
+# pylint: disable=too-many-instance-attributes
 class BaseRepositoryClient(object):
     """Base class for API repository for a specified Cloud API."""
 
@@ -248,7 +252,7 @@ class BaseRepositoryClient(object):
                                     credentials=self._credentials,
                                     rate_limiter=self._rate_limiter,
                                     use_cached_http=self._use_cached_http)
-
+# pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
 class GCPRepository(object):

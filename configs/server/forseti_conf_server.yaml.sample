@@ -143,7 +143,9 @@ notifier:
 
     violation:
       cscc:
-        enabled:
+        enabled: true
+        mode: api
+        organization_id: organizations/{ORGANIZATION_ID}
         # gcs_path should begin with "gs://"
         gcs_path:
 

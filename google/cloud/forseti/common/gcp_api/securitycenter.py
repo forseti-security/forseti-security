@@ -13,12 +13,10 @@
 # limitations under the License.
 
 """Wrapper for Cloud Security Command Center API client."""
-import json
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
-from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
@@ -56,7 +54,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def findings(self):
-        """Returns an _SecurityCenterOrganizationsFindingsRepository instance."""
+        """Returns _SecurityCenterOrganizationsFindingsRepository instance."""
         if not self._findings:
             self._findings = self._init_repository(
                 _SecurityCenterOrganizationsFindingsRepository)
@@ -71,36 +69,40 @@ class _SecurityCenterOrganizationsFindingsRepository(
 
     def __init__(self, **kwargs):
         """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
-        LOGGER.info('_SecurityCenterOrganizationsFindingsRepositoryClient')
+
+        LOGGER.debug(
+            'Creating _SecurityCenterOrganizationsFindingsRepositoryClient')
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-#            component='securitycenter.organizations.findings', **kwargs)
             component='organizations.findings', **kwargs)
 
 
 class SecurityCenterClient(object):
     """Cloud Security Command Center Client.
+
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self, **kwargs):
-        """Initialize.
-        Args:
-            global_configs (dict): Forseti config.
-            **kwargs (dict): The kwargs.
-        """
-        LOGGER.info('SecurityCenterClient')
+    def __init__(self):
+        """Initialize."""
+
+        LOGGER.debug('Initializing SecurityCenterClient')
         self.repository = SecurityCenterRepositoryClient()
 
     def create_finding(self, organization_id, finding):
         """Creates a finding in CSCC.
+
         Args:
-            organization_id (str): The id of the organization.
+            organization_id (str): The id prefixed with 'organizations/'.
+            finding (dict): Forseti violation in CSCC format.
         """
         try:
             LOGGER.info('Trying to create finding')
             response = self.repository.findings.create(
-                arguments = {
+                arguments={
                     'body': {'sourceFinding': finding},
                     'orgName': organization_id
                 }
@@ -112,4 +114,7 @@ class SecurityCenterClient(object):
                 'Unable to create resource:\n%s\n'
                 'Resource: %s',
                 e, finding)
-            raise api_errors.ApiExecutionError('cscc finding', e)
+            full_name = (
+                finding.get('properties').get('violation_data')
+                .get('full_name'))
+            raise api_errors.ApiExecutionError(full_name, e)

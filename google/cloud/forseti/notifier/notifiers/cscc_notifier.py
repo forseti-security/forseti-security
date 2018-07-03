@@ -16,14 +16,13 @@
 import tempfile
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
-from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.gcp_api import securitycenter
+from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import string_formats
 
-from datetime import datetime
 
 LOGGER = logger.get_logger(__name__)
 
@@ -39,9 +38,11 @@ class CsccNotifier(object):
         self.inv_index_id = inv_index_id
 
     def _transform_for_gcs(self, violations):
-        """Transform forseti violations to GCS findings format. 
+        """Transform forseti violations to GCS findings format.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
+
         Returns:
             list: violations in findings format; each violation is a dict.
         """
@@ -102,12 +103,8 @@ class CsccNotifier(object):
                     tmp_violations.name, gcs_upload_path)
         return
 
-    @staticmethod
-    def _unix_time_millis(dt):
-        return int((dt - datetime.utcfromtimestamp(0)).total_seconds())
-
     def _transform_for_cscc_api(self, violations):
-        """Transform forseti violations to findings for CSCC API. 
+        """Transform forseti violations to findings for CSCC API.
 
         Args:
             violations (dict): Violations to be sent to CSCC as findings.
@@ -143,6 +140,7 @@ class CsccNotifier(object):
 
         Args:
             violations (dict): Violations to be uploaded as findings.
+            organization_id (str): The id prefixed with 'organizations/'.
         """
         findings = self._transform_for_cscc_api(violations)
 
@@ -154,7 +152,7 @@ class CsccNotifier(object):
                 client.create_finding(organization_id, finding)
                 LOGGER.debug('Successfully created finding in CSCC:\n%s',
                              finding)
-            except api_errors.ApiExecutionError as e:
+            except api_errors.ApiExecutionError:
                 continue
         return
 
@@ -170,7 +168,8 @@ class CsccNotifier(object):
         LOGGER.info('Running Cloud Security Command Center notification '
                     'module.')
 
-        if mode == 'bucket':
+        # At this point, cscc notifier is already determined to be enabled.
+        if mode is None or mode == 'bucket':
             self._send_findings_to_gcs(violations, gcs_path)
         elif mode == 'api':
             self._send_findings_to_cscc(violations, organization_id)
