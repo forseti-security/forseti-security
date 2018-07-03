@@ -803,7 +803,7 @@ class InventoryImporter(object):
         parent, full_res_name = self._get_parent(dataset_policy)
         policy_type_name = to_type_name(
             dataset_policy.get_category(),
-            parent.type_name)
+            dataset_policy.get_resource_id())
         policy_res_name = to_full_resource_name(full_res_name, policy_type_name)
         resource = self.dao.TBL_RESOURCE(
             full_name=policy_res_name,
