@@ -207,8 +207,11 @@ class BaseRepositoryClient(object):
                                 'in Forseti, proceed at your own risk.',
                                 api_name, version)
 
-        self.is_private_api = (
-            _supported_apis.SUPPORTED_APIS.get(api_name).get('is_private_api'))
+        self.is_private_api = None
+        if supported_api:
+            self.is_private_api = (
+                _supported_apis.SUPPORTED_APIS.get(api_name)
+                .get('is_private_api'))
 
         self.gcp_services = {}
         for version in versions:
