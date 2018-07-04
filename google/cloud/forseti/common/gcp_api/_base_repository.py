@@ -90,8 +90,7 @@ def _create_service_api(credentials, service_name, version, is_private_api,
     if is_private_api:
         return _build_service_from_document(
             credentials,
-            '{}{}.json'.format(DISCOVERY_DOCS_BASE_DIR, service_name)
-        )
+            '{}{}.json'.format(DISCOVERY_DOCS_BASE_DIR, service_name))
 
     discovery_kwargs = {
         'serviceName': service_name,
