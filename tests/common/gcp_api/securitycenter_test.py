@@ -38,8 +38,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {
             'securitycenter': {'max_calls': 1, 'period': 1.1}}
-        cls.securitycenter_api_client = securitycenter.SecurityCenterClient(
-            global_configs=fake_global_configs, use_rate_limiter=False)
+        cls.securitycenter_api_client = securitycenter.SecurityCenterClient()
         cls.project_id = 111111
 
     @mock.patch.object(
@@ -48,8 +47,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
                       'test-project'))
     def test_no_quota(self, mock_google_credential):
         """Verify no rate limiter is used if the configuration is missing."""
-        securitycenter_api_client = securitycenter.SecurityCenterClient(
-            global_configs={})
+        securitycenter_api_client = securitycenter.SecurityCenterClient()
         self.assertEqual(None, securitycenter_api_client.repository._rate_limiter)
 
     def test_create_findings(self):
