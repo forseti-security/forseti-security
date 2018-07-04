@@ -294,14 +294,11 @@ class CreateQueryMixin(object):
             verb (str): The method to call on the API.
             **kwargs (dict): Optional additional arguments to pass to create.
 
-        Yields:
+        Returns:
             dict: An API response containing one page of results.
         """
         arguments = {}
         if kwargs.get('arguments'):
             arguments.update(kwargs.get('arguments'))
 
-        for resp in self.execute_query(
-                verb=verb,
-                verb_arguments=arguments):
-            yield resp
+        return self.execute_query(verb=verb, verb_arguments=arguments)

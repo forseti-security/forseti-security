@@ -48,6 +48,9 @@ inventory:
         logging:
           max_calls: 1
           period: 1.1
+        securitycenter:
+          max_calls: 1
+          period: 1.1,
         servicemanagement:
           max_calls: 2
           period: 1.1

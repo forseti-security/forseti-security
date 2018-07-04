@@ -158,8 +158,8 @@ def run(inventory_index_id, progress_queue, service_config=None):
                     mode = violation_configs.get('cscc').get('mode')
                     organization_id = (
                         violation_configs.get('cscc').get('organization_id'))
-                    cscc_notifier.CsccNotifier(inventory_index_id).run(
-                        violations_as_dict, gcs_path, mode, organization_id)
+                    (cscc_notifier.CsccNotifier(inventory_index_id)
+                     .run(violations_as_dict, gcs_path, mode, organization_id))
 
         InventorySummary(service_config, inventory_index_id).run()
 

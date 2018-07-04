@@ -23,6 +23,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+
 class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     """SecurityCenter API Respository."""
 
@@ -87,8 +88,12 @@ class SecurityCenterClient(object):
     """
 
     def __init__(self):
-        """Initialize."""
+        """Initialize.
 
+        TODO: Add api quota configs here.
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            inventory_configs.api_quota_configs, 'securitycenter')
+        """
         LOGGER.debug('Initializing SecurityCenterClient')
         self.repository = SecurityCenterRepositoryClient()
 
@@ -98,6 +103,9 @@ class SecurityCenterClient(object):
         Args:
             organization_id (str): The id prefixed with 'organizations/'.
             finding (dict): Forseti violation in CSCC format.
+
+        Returns:
+            dict: An API response containing one page of results.
         """
         try:
             LOGGER.debug('Creating finding.')
@@ -107,10 +115,11 @@ class SecurityCenterClient(object):
                     'orgName': organization_id
                 }
             )
-            LOGGER.debug('Created finding response in CSCC: %s', list(response))
+            LOGGER.debug('Created finding response in CSCC: %s', response)
+            return response
         except (errors.HttpError, HttpLib2Error) as e:
             LOGGER.error(
-                'Unable to create resource:\n%s\n'
+                'Unable to create CSCC finding:\n%s\n'
                 'Resource: %s',
                 e, finding)
             full_name = (

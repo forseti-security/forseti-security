@@ -32,6 +32,9 @@ class CsccNotifier(object):
 
     def __init__(self, inv_index_id):
         """`Findingsnotifier` initializer.
+
+        # TODO: Find out why the InventoryConfig is empty.
+
         Args:
             inv_index_id (str): inventory index ID
         """
@@ -142,7 +145,7 @@ class CsccNotifier(object):
             violations (dict): Violations to be uploaded as findings.
             organization_id (str): The id prefixed with 'organizations/'.
         """
-        findings = self._transform_for_cscc_api(violations)
+        findings = self._transform_for_api(violations)
 
         client = securitycenter.SecurityCenterClient()
 
