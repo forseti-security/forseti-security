@@ -103,7 +103,7 @@ class CsccNotifier(object):
                     tmp_violations.name, gcs_upload_path)
         return
 
-    def _transform_for_cscc_api(self, violations):
+    def _transform_for_api(self, violations):
         """Transform forseti violations to findings for CSCC API.
 
         Args:
