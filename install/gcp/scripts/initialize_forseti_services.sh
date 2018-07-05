@@ -61,7 +61,8 @@ EOF
 echo "$API_SERVICE" > /tmp/forseti.service
 sudo mv /tmp/forseti.service /lib/systemd/system/forseti.service
 
-
+# By default, Systemd starts the executable stated in ExecStart= as root.
+# See github issue #1761 for why this neds to be run as root.
 SQL_PROXY_SERVICE="$(cat << EOF
 [Unit]
 Description=Cloud SQL Proxy
