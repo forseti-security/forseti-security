@@ -92,7 +92,7 @@ class ServiceAccount(object):
         """Parse service account keys in JSON string format.
 
         Args:
-            service_account_keys (list): List of json strings of keys
+            service_account_keys (list): List of json strings of keys.
 
         Returns:
             list: A list of service account keys in dictionary format.
