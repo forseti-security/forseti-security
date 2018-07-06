@@ -121,16 +121,20 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
             service_accounts = []
             for service_account in data_access.scanner_iter(
                     session, 'serviceaccount'):
-                keys = list(data_access.scanner_iter(
-                    session, 'serviceaccount_key',
-                    parent_type_name=service_account.type_name))
-
                 project_id = service_account.parent.name
                 service_accounts.append(
                     ServiceAccount.from_json(project_id,
                                              service_account.full_name,
                                              service_account.data,
-                                             keys))
+                                             None))
+            # Retrieve the service account key via a separate query because
+            # session in the middle of yield_per() can not support simultaneous
+            # queries.
+            for service_account in service_accounts:
+                keys = list(data_access.scanner_iter(
+                    session, 'serviceaccount_key',
+                    parent_type_name=service_account.type_name))
+                service_account.keys = ServiceAccount.parse_json_keys(keys)
 
         return service_accounts
 
