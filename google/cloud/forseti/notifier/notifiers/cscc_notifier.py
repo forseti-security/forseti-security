@@ -12,17 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: remove all this when cleaning-up the cscc api code
-# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-import,missing-return-doc,missing-return-type-doc
-# pylint: disable=trailing-whitespace,invalid-name,missing-docstring,undefined-variable,useless-suppression
-
 """Upload violations to GCS bucket as Findings."""
 import tempfile
 
-from googleapiclient.errors import HttpError
-
-from google.cloud.forseti.common.gcp_api import storage
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import securitycenter
+from google.cloud.forseti.common.gcp_api import storage
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import date_time
@@ -37,15 +32,20 @@ class CsccNotifier(object):
 
     def __init__(self, inv_index_id):
         """`Findingsnotifier` initializer.
+
+        # TODO: Find out why the InventoryConfig is empty.
+
         Args:
             inv_index_id (str): inventory index ID
         """
         self.inv_index_id = inv_index_id
 
     def _transform_for_gcs(self, violations):
-        """Transform forseti violations to GCS findings format. 
+        """Transform forseti violations to GCS findings format.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
+
         Returns:
             list: violations in findings format; each violation is a dict.
         """
@@ -60,7 +60,7 @@ class CsccNotifier(object):
                 'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': None,
                 'finding_properties': {
-                    'inventory_index_id': str(self.inv_index_id),
+                    'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
@@ -106,14 +106,12 @@ class CsccNotifier(object):
                     tmp_violations.name, gcs_upload_path)
         return
 
-    @staticmethod
-    def _unix_time_millis(dt):
-        return int((dt - datetime.utcfromtimestamp(0)).total_seconds())
+    def _transform_for_api(self, violations):
+        """Transform forseti violations to findings for CSCC API.
 
-    def _transform_for_cscc_api(self, violations):
-        """Transform forseti violations to findings for CSCC API. 
         Args:
             violations (dict): Violations to be sent to CSCC as findings.
+
         Returns:
             list: violations in findings format; each violation is a dict.
         """
@@ -142,33 +140,44 @@ class CsccNotifier(object):
 
     def _send_findings_to_cscc(self, violations, organization_id):
         """Send violations to CSCC directly via the CSCC API.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
+            organization_id (str): The id prefixed with 'organizations/'.
         """
-        LOGGER.info('CSCC API mode detected - sending findings via CSCC API.')
-        findings = self._transform_for_cscc_api(violations)
+        findings = self._transform_for_api(violations)
 
         client = securitycenter.SecurityCenterClient()
 
         for finding in findings:
-            client.create_finding(
-                organization_id=organization_id,
-                finding=finding
-            )
+            LOGGER.debug('Creating finding CSCC:\n%s.', finding)
+            try:
+                client.create_finding(organization_id, finding)
+                LOGGER.debug('Successfully created finding in CSCC:\n%s',
+                             finding)
+            except api_errors.ApiExecutionError as e:
+                LOGGER.error('Encountered CSCC API error:\n%s', e)
+                continue
         return
 
     def run(self, violations, gcs_path, mode, organization_id):
         """Generate the temporary json file and upload to GCS.
+
         Args:
             violations (dict): Violations to be uploaded as findings.
             gcs_path (str): The GCS bucket to upload the findings.
+            mode (str): The mode in which to send the CSCC notification.
+            organization_id (str): The id of the organization.
         """
-        LOGGER.info('Running Cloud Security Command Center notification module.')
+        LOGGER.info('Running Cloud Security Command Center notification '
+                    'module.')
 
-        if mode == 'gcs':
+        # At this point, cscc notifier is already determined to be enabled.
+        if mode is None or mode == 'bucket':
             self._send_findings_to_gcs(violations, gcs_path)
-        elif mode == 'cscc-api':
+        elif mode == 'api':
             self._send_findings_to_cscc(violations, organization_id)
         else:
-            LOGGER.info('A valid mode for CSCC was not selected. Please use either gcs or cscc-api modes.')
-        return
+            LOGGER.info(
+                'A valid mode for CSCC notification was not selected: %s. '
+                'Please use either "bucket" or "api" mode.', mode)
