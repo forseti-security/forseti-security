@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: remove all this when cleaning-up the cscc api code
+# pylint: disable=invalid-string-quote,missing-return-doc,missing-return-type-doc
+# pylint: disable=trailing-whitespace
+
 """Base GCP client which uses the discovery API."""
+import json
 import logging
 import threading
 import google_auth_httplib2
@@ -53,6 +58,11 @@ SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 REQUEST_RECORDER = dict()
 REQUEST_REPLAYER = dict()
 
+# Used for private APIs that need to be created from local discovery documents
+BASE_DIR = "google/cloud/forseti/common/gcp_api/discovery_documents/"
+PRIVATE_APIS = {
+    "securitycenter": BASE_DIR + "securitycenter.json"
+}
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
@@ -60,7 +70,6 @@ REQUEST_REPLAYER = dict()
 def _create_service_api(credentials, service_name, version, developer_key=None,
                         cache_discovery=False):
     """Builds and returns a cloud API service object.
-
     Args:
         credentials (OAuth2Credentials): Credentials that will be used to
             authenticate the API calls.
@@ -70,7 +79,6 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
             associated with the API call, most API services do not require
             this to be set.
         cache_discovery (bool): Whether or not to cache the discovery doc.
-
     Returns:
         object: A Resource object with methods for interacting with the service.
     """
@@ -87,16 +95,37 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         'credentials': credentials}
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery
+
+    # Used for private APIs that are built from a local discovery file
+    if service_name in PRIVATE_APIS:
+        return _build_from_document(
+            credentials,
+            PRIVATE_APIS[service_name]
+        )
+
     return discovery.build(**discovery_kwargs)
+
+def _build_from_document(credentials, document_path):
+    """Builds an API client from a local discovery document
+    
+    Args:
+        credentials (OAuth2Credentials): Credentials that will be used to
+            authenticate the API calls.
+        document_path (str): The local path of the discovery document
+    """
+    with open(document_path, 'r') as f:
+        discovery_data = json.load(f)
+    return discovery.build_from_document(
+        service=discovery_data,
+        credentials=credentials
+    )
 
 
 def _build_http(http=None):
     """Set custom Forseti user agent and timeouts on a new http object.
-
     Args:
         http (object): An instance of httplib2.Http, or compatible, used for
             testing.
-
     Returns:
         httplib2.Http: An http object with the forseti user agent set.
     """
@@ -122,7 +151,6 @@ class BaseRepositoryClient(object):
                  use_rate_limiter=False,
                  **kwargs):
         """Constructor.
-
         Args:
             api_name (str): The API name to wrap. More details here:
                   https://developers.google.com/api-client-library/python/apis/
@@ -184,7 +212,6 @@ class BaseRepositoryClient(object):
 
     def __repr__(self):
         """The object representation.
-
         Returns:
             str: The object representation.
         """
@@ -192,11 +219,9 @@ class BaseRepositoryClient(object):
 
     def _init_repository(self, repository_class, version=None):
         """Safely initialize a repository class to a property.
-
         Args:
             repository_class (class): The class to initialize.
             version (str): The gcp service version for the repository.
-
         Returns:
             object: An instance of repository_class.
         """
@@ -226,7 +251,6 @@ class GCPRepository(object):
                  max_results_field='maxResults', search_query_field='query',
                  rate_limiter=None, use_cached_http=True):
         """Constructor.
-
         Args:
             gcp_service (object): A Resource object with methods for interacting
                 with the service.
@@ -281,7 +305,6 @@ class GCPRepository(object):
     @property
     def http(self):
         """A thread local instance of httplib2.Http.
-
         Returns:
             google_auth_httplib2.AuthorizedHttp: An Http instance authorized by
                 the credentials.
@@ -298,11 +321,9 @@ class GCPRepository(object):
 
     def _build_request(self, verb, verb_arguments):
         """Builds HttpRequest object.
-
         Args:
             verb (str): Request verb (ex. insert, update, delete).
             verb_arguments (dict): Arguments to be passed with the request.
-
         Returns:
             httplib2.HttpRequest: HttpRequest to be sent to the API.
         """
@@ -317,16 +338,13 @@ class GCPRepository(object):
 
     def _build_next_request(self, verb, prior_request, prior_response):
         """Builds pagination-aware request object.
-
         More details:
           https://developers.google.com/api-client-library/python/guide/pagination
-
         Args:
             verb (str): Request verb (ex. insert, update, delete).
             prior_request (httplib2.HttpRequest): Request that may trigger
                 paging.
             prior_response (dict): Potentially partial response.
-
         Returns:
             httplib2.HttpRequest: HttpRequest or None. None is returned when
                 there is nothing more to fetch - request completed.
@@ -336,10 +354,8 @@ class GCPRepository(object):
 
     def _request_supports_pagination(self, verb):
         """Determines if the API action supports pagination.
-
         Args:
             verb (str): Request verb (ex. insert, update, delete).
-
         Returns:
             bool: True when API supports pagination, False otherwise.
         """
@@ -347,16 +363,13 @@ class GCPRepository(object):
 
     def execute_command(self, verb, verb_arguments):
         """Executes command (ex. add) via a dedicated http object.
-
         Async APIs may take minutes to complete. Therefore, callers are
         encouraged to leverage concurrent.futures (or similar) to place long
         running commands on a separate threads.
-
         Args:
             verb (str): Method to execute on the component (ex. get, list).
             verb_arguments (dict): key-value pairs to be passed to
                 _build_request.
-
         Returns:
             dict: An async operation Service Response.
         """
@@ -366,15 +379,12 @@ class GCPRepository(object):
 
     def execute_paged_query(self, verb, verb_arguments):
         """Executes query (ex. list) via a dedicated http object.
-
         Args:
             verb (str): Method to execute on the component (ex. get, list).
             verb_arguments (dict): key-value pairs to be passed to
                 _BuildRequest.
-
         Yields:
             dict: Service Response.
-
         Raises:
             PaginationNotSupportedError: When an API does not support paging.
         """
@@ -395,12 +405,10 @@ class GCPRepository(object):
 
     def execute_search_query(self, verb, verb_arguments):
         """Executes query (ex. search) via a dedicated http object.
-
         Args:
             verb (str): Method to execute on the component (ex. search).
             verb_arguments (dict): key-value pairs to be passed to
                 _BuildRequest.
-
         Yields:
             dict: Service Response.
         """
@@ -425,12 +433,10 @@ class GCPRepository(object):
 
     def execute_query(self, verb, verb_arguments):
         """Executes query (ex. get) via a dedicated http object.
-
         Args:
             verb (str): Method to execute on the component (ex. get, list).
             verb_arguments (dict): key-value pairs to be passed to
                 _BuildRequest.
-
         Returns:
             dict: Service Response.
         """
@@ -444,10 +450,8 @@ class GCPRepository(object):
            stop_max_attempt_number=5)
     def _execute(self, request):
         """Run execute with retries and rate limiting.
-
         Args:
             request (object): The HttpRequest object to execute.
-
         Returns:
             dict: The response from the API.
         """
