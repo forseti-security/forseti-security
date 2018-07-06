@@ -83,6 +83,23 @@ class ServiceAccount(object):
         service_account = json.loads(service_account)
         # Extract out only the key specific attributes
         keys = []
+        if service_account_keys:
+            keys = ServiceAccount.parse_json_keys(service_account_keys)
+
+        return ServiceAccount.from_dict(project_id, full_name, service_account,
+                                        keys)
+
+    @staticmethod
+    def parse_json_keys(service_account_keys):
+        """Parse service account keys in JSON string format.
+
+        Args:
+            service_account_keys (list): List of json strings of keys.
+
+        Returns:
+            list: A list of service account keys in dictionary format.
+        """
+        keys = []
         for item in service_account_keys:
             data = json.loads(item.data)
             keys.append({'key_id': item.name,
@@ -90,9 +107,7 @@ class ServiceAccount(object):
                          'key_algorithm': data.get('keyAlgorithm'),
                          'valid_after_time': data.get('validAfterTime'),
                          'valid_before_time': data.get('validBeforeTime')})
-
-        return ServiceAccount.from_dict(project_id, full_name, service_account,
-                                        keys)
+        return keys
 
     def __repr__(self):
         """String representation.
