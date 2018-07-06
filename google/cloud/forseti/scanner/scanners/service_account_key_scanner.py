@@ -131,9 +131,14 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
             # session in the middle of yield_per() can not support simultaneous
             # queries.
             for service_account in service_accounts:
+                position = (
+                    service_account.full_name.find('serviceaccount'))
+                service_acc_type_name = (
+                    service_account.full_name[position:][:-1])
+
                 keys = list(data_access.scanner_iter(
                     session, 'serviceaccount_key',
-                    parent_type_name=service_account.type_name))
+                    parent_type_name=service_acc_type_name))
                 service_account.keys = ServiceAccount.parse_json_keys(keys)
 
         return service_accounts
