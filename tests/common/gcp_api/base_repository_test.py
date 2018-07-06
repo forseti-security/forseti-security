@@ -107,6 +107,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         self.assertEqual((api_name, [supported_api['default_version']]),
                          (repo_client.name, repo_client.versions))
 
+
     @mock.patch.object(discovery, 'build', autospec=True)
     @mock.patch.object(base, 'LOGGER', autospec=True)
     def test_forseti_unsupported_valid_version_is_ok(

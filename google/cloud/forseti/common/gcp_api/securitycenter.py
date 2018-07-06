@@ -12,22 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: remove all this when cleaning-up the cscc api code
-# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument,differing-param-doc,no-value-for-parameter,unused-import,bad-continuation,differing-type-doc,bad-continuation
-
-
 """Wrapper for Cloud Security Command Center API client."""
-import json
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
 from google.cloud.forseti.common.gcp_api import _base_repository
-from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+
 
 class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     """SecurityCenter API Respository."""
@@ -44,6 +39,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
         """
+        LOGGER.debug('Initializing SecurityCenterRepositoryClient')
         if not quota_max_calls:
             use_rate_limiter = False
 
@@ -59,7 +55,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
     def findings(self):
-        """Returns an _SecurityCenterOrganizationsFindingsRepository instance."""
+        """Returns _SecurityCenterOrganizationsFindingsRepository instance."""
         if not self._findings:
             self._findings = self._init_repository(
                 _SecurityCenterOrganizationsFindingsRepository)
@@ -74,37 +70,59 @@ class _SecurityCenterOrganizationsFindingsRepository(
 
     def __init__(self, **kwargs):
         """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
+
+        LOGGER.debug(
+            'Creating _SecurityCenterOrganizationsFindingsRepositoryClient')
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-#            component='securitycenter.organizations.findings', **kwargs)
             component='organizations.findings', **kwargs)
 
 
 class SecurityCenterClient(object):
     """Cloud Security Command Center Client.
+
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         """Initialize.
-        Args:
-            global_configs (dict): Forseti config.
-            **kwargs (dict): The kwargs.
+
+        TODO: Add api quota configs here.
+        max_calls, quota_period = api_helpers.get_ratelimiter_config(
+            inventory_configs.api_quota_configs, 'securitycenter')
         """
+        LOGGER.debug('Initializing SecurityCenterClient')
         self.repository = SecurityCenterRepositoryClient()
 
     def create_finding(self, organization_id, finding):
         """Creates a finding in CSCC.
+
         Args:
-            organization_id (str): The id of the organization.
+            organization_id (str): The id prefixed with 'organizations/'.
+            finding (dict): Forseti violation in CSCC format.
+
+        Returns:
+            dict: An API response containing one page of results.
         """
         try:
-            response = self.repository.findings.create(organization_id, finding)
-            LOGGER.debug('Created finding in CSCC: %s', list(response))
-            return
+            LOGGER.debug('Creating finding.')
+            response = self.repository.findings.create(
+                arguments={
+                    'body': {'sourceFinding': finding},
+                    'orgName': organization_id
+                }
+            )
+            LOGGER.debug('Created finding response in CSCC: %s', response)
+            return response
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.info('>>>>> %s', e)
-            #if _is_status_not_found(e):
-            #    return []
-            #raise api_errors.ApiExecutionError(project_id, e)
-            raise api_errors.ApiExecutionError(e)
+            LOGGER.error(
+                'Unable to create CSCC finding:\n%s\n'
+                'Resource: %s',
+                e, finding)
+            full_name = (
+                finding.get('properties').get('violation_data')
+                .get('full_name'))
+            raise api_errors.ApiExecutionError(full_name, e)

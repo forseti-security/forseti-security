@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO: remove all this when cleaning-up the cscc api code
-# pylint: disable=line-too-long,missing-param-doc,missing-type-doc,unused-argument
-
 """Mixin classes for _base_repository.GCPRepository implementations."""
 
 
@@ -100,7 +97,6 @@ class GetQueryMixin(object):
         Raises:
             ValueError: When get_key_field was not defined in the base
                 GCPRepository instance.
-
             errors.HttpError: When attempting to get a non-existent entity.
                ex: HttpError 404 when requesting ... returned
                    "The resource '...' was not found"
@@ -133,7 +129,6 @@ class GetIamPolicyQueryMixin(object):
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
                        include_body=True, resource_field='resource', **kwargs):
         """Get resource IAM Policy.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
@@ -291,26 +286,19 @@ class SearchQueryMixin(object):
 class CreateQueryMixin(object):
     """Mixin that implements a Create query."""
 
-    def create(self, organization_id, query=None, fields=None, max_results=500, verb='create'):
+    def create(self, verb='create', **kwargs):
         """Create a resource.
 
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
-            fields (str): Fields to include in the response - partial response.
             verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to create.
 
-        Yields:
+        Returns:
             dict: An API response containing one page of results.
         """
-        req_body = {}
-        arguments = {'body': req_body,
-                     'orgName': 'organizations/' + str(organization_id)}
-        if query:
-            req_body['sourceFinding'] = query
+        arguments = {}
+        if kwargs.get('arguments'):
+            arguments.update(kwargs.get('arguments'))
 
-#        req_body[self._max_results_field] = max_results
-
-        for resp in self.execute_query(
-                verb=verb,
-                verb_arguments=arguments):
-            yield resp
+        return self.execute_query(verb=verb, verb_arguments=arguments)
