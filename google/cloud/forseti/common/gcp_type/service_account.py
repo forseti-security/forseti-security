@@ -82,7 +82,9 @@ class ServiceAccount(object):
         """
         service_account = json.loads(service_account)
         # Extract out only the key specific attributes
-        keys = ServiceAccount.parse_json_keys(service_account_keys)
+        keys = {}
+        if service_account_keys:
+            keys = ServiceAccount.parse_json_keys(service_account_keys)
 
         return ServiceAccount.from_dict(project_id, full_name, service_account,
                                         keys)
