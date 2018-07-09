@@ -1043,7 +1043,7 @@ class Disk(Resource):
         """Get type of this resource
 
         Returns:
-            str: 'instance'
+            str: 'disk'
         """
         return 'disk'
 
