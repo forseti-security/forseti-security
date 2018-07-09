@@ -151,6 +151,7 @@ class InventoryImporter(object):
             'bucket',
             'dataset',
             'compute_project',
+            'disk',
             'image',
             'instancegroup',
             'instancegroupmanager',
@@ -578,6 +579,9 @@ class InventoryImporter(object):
             'compute_project': (None,
                                 self._convert_computeproject,
                                 None),
+            'disk': (None,
+                     self._convert_disk,
+                     None),
             'image': (None,
                       self._convert_image,
                       None),
@@ -860,6 +864,28 @@ class InventoryImporter(object):
             parent_type_name=parent_type_name)
 
         self.session.add(resource)
+
+    def _convert_disk(self, disk):
+        """Convert a disk to a database object.
+
+        Args:
+            disk (object): Disk to store.
+        """
+        data = disk.get_resource_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            disk)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=disk.get_resource_id(),
+            type=disk.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=disk.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource, disk.id)
 
     def _convert_image(self, image):
         """Convert a image to a database object.

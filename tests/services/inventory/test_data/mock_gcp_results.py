@@ -43,6 +43,7 @@ NETWORK_ID_PREFIX = "114"
 SUBNETWORK_ID_PREFIX = "115"
 SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 GCE_IMAGE_ID_PREFIX = "117"
+GCE_DISK_ID_PREFIX = "118"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -1086,6 +1087,62 @@ GCE_GET_FIREWALLS = {
         json.loads(
             GCE_FIREWALL_TEMPLATE_DEFAULT.format(
                 id=2, project="project2", network="default")),
+}
+
+# Fields: id, project, zone, name
+GCE_DISKS_TEMPLATE = """
+{{
+ "kind": "compute#disk",
+ "id": "118{id}",
+ "creationTimestamp": "2017-08-07T10:18:45.802-07:00",
+ "name": "instance-1",
+ "sizeGb": "10",
+ "zone": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}",
+ "status": "READY",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/disks/{name}",
+ "sourceImage": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-9-stretch-v20170717",
+ "sourceImageId": "4214972497302618486",
+ "type": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/diskTypes/pd-standard",
+ "licenses": [
+  "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-9-stretch"
+ ],
+ "lastAttachTimestamp": "2017-08-07T10:18:45.806-07:00",
+ "users": [
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instances/{name}"
+ ],
+ "labelFingerprint": "42WmSpB8rSM="
+}}
+"""
+
+GCE_GET_DISKS = {
+    "project1": [
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=1,
+                name="iap_instance1",
+                project="project1",
+                zone="us-central1-c")),
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=2,
+                name="iap_instance2",
+                project="project1",
+                zone="us-central1-c")),
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=3,
+                name="iap_instance3",
+                project="project1",
+                zone="us-central1-c")),
+    ],
+    "project2": [
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=4,
+                name="instance3",
+                project="project2",
+                zone="us-west1-a")),
+    ]
 }
 
 # Fields: id, project

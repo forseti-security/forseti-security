@@ -577,6 +577,19 @@ class ApiClientImpl(ApiClient):
             yield instancegroup
 
     @create_lazy('compute', _create_compute)
+    def iter_computedisks(self, projectid):
+        """Iterate Compute Engine disks from GCP API.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of Compute Disk
+        """
+        for disk in self.compute.get_disks(projectid):
+            yield disk
+
+    @create_lazy('compute', _create_compute)
     def iter_backendservices(self, projectid):
         """Iterate Backend services from GCP API.
 
