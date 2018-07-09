@@ -108,7 +108,7 @@ To learn more about these fields, see [Configure]({% link _docs/latest/configure
 
 ## Upgrade Forseti v2 to a newer version using deployment manager.
 
-Note: If you used the Forseti setup wizard to deploy, You can locate the deployment template in your 
+Note: If you used the Forseti installer to deploy, you can locate the deployment template in your 
 GCS bucket for the forseti instance under folder `deployment_templates`, the filename will have the 
 following format: `deploy-forseti-{forseti_instance_type}-{hash}.yaml`, an example would be 
 `deploy-forseti-server-79c4374.yaml`.
