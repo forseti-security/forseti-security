@@ -104,6 +104,56 @@ To learn more about these fields, see [Configure]({% link _docs/latest/configure
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 1.X installations" content=1x_upgrade uid=0 %}
 
+{% capture 2x_upgrade %}
+
+## Upgrade Forseti v2 to a newer version using deployment manager.
+
+Note: If you used the Forseti setup wizard to deploy, You can locate the deployment template in your 
+GCS bucket for the forseti instance under folder `deployment_templates`, the filename will have the 
+following format: `deploy-forseti-{forseti_instance_type}-{hash}.yaml`, an example would be 
+`deploy-forseti-server-79c4374.yaml`.
+
+### Change deployment properties
+1. Check `deploy-forseti-server.yaml.sample` and `deploy-forseti-client.yaml.sample` to see if 
+there are any new properties that you need to copy over to your previous deployment template. You 
+can use `git diff` to compare what changed. For example, to see the diff between the latest (HEAD) 
+and one revision ago:
+
+   ```bash
+   $ git diff origin..HEAD~1 -- deploy-forseti-server.yaml.sample
+   ```
+
+1. Edit `deploy-forseti-{forseti_instance_type}-{hash}.yaml` and update field `forseti-version:` under
+section `Comput Engine` to the newest tag. You can find more information about 
+[the latest release]({% link releases/index.md %}).
+
+### Run the Deployment Manager update
+Run the following update command:
+
+```bash
+$ gcloud deployment-manager deployments update DEPLOYMENT_NAME \
+  --config path/to/deploy-forseti-{forseti_instance_type}-{HASH}.yaml
+```
+
+If you changed the properties in the `deploy-forseti-{forseti_instance_type}-{hash}.yaml` `Compute Engine`
+section or the startup script in `forseti-instance.py`, you need to reset the instance for changes 
+to take effect:
+
+  ```bash
+  $ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
+  ```
+
+The Compute Engine instance will restart and perform a fresh installation of Forseti, so you do
+not need to ssh to the instance to run all the git clone/python install commands.
+
+Some resources can't be updated in a deployment. If you see an error that you can't
+change a certain resource, you'll need to create a new deployment of Forseti.
+
+Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.X installations" content=2x_upgrade uid=1 %}
+
 ## What's next
 
 * Customize [Inventory]({% link _docs/latest/configure/inventory/index.md %}) and
