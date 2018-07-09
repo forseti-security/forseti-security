@@ -1027,6 +1027,27 @@ class ComputeProject(Resource):
         return 'compute_project'
 
 
+class Disk(Resource):
+    """The Resource implementation for Disk"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['id']
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'instance'
+        """
+        return 'disk'
+
+
 class Instance(Resource):
     """The Resource implementation for Instance"""
 
@@ -1666,6 +1687,20 @@ class ComputeIterator(ResourceIterator):
             yield FACTORIES['compute'].create_new(data)
 
 
+class DiskIterator(ResourceIterator):
+    """The Resource iterator implementation for Disk"""
+
+    def iter(self):
+        """Yields:
+            Resource: Disk created
+        """
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            for data in gcp.iter_computedisks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['disk'].create_new(data)
+
+
 class InstanceIterator(ResourceIterator):
     """The Resource iterator implementation for Instance"""
 
@@ -2000,6 +2035,7 @@ FACTORIES = {
             AppEngineAppIterator,
             KubernetesClusterIterator,
             ComputeIterator,
+            DiskIterator,
             ImageIterator,
             InstanceIterator,
             FirewallIterator,
@@ -2069,6 +2105,12 @@ FACTORIES = {
     'compute': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeProject,
+        'contains': [
+        ]}),
+
+    'disk': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Disk,
         'contains': [
         ]}),
 

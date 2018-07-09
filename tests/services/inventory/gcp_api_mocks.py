@@ -265,6 +265,11 @@ def _mock_gce():
         error_403 = errors.HttpError(response, content)
         raise api_errors.ApiNotEnabledError('Access Not Configured.', error_403)
 
+    def _mock_gce_get_disks(projectid):
+        if projectid in results.GCE_GET_DISKS:
+            return results.GCE_GET_DISKS[projectid]
+        return []
+
     def _mock_gce_get_instances(projectid):
         return results.GCE_GET_INSTANCES[projectid]
 
@@ -316,6 +321,7 @@ def _mock_gce():
     mock_gce = gce_patcher.start().return_value
     mock_gce.is_api_enabled.side_effect = _mock_gce_is_api_enabled
     mock_gce.get_project.side_effect = _mock_gce_get_project
+    mock_gce.get_disks.side_effect = _mock_gce_get_disks
     mock_gce.get_instances.side_effect = _mock_gce_get_instances
     mock_gce.get_firewall_rules.side_effect = _mock_gce_get_firewall_rules
     mock_gce.get_images.side_effect = _mock_gce_get_images

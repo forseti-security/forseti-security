@@ -121,6 +121,7 @@ class CrawlerTest(ForsetiTestCase):
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
             'dataset': {'dataset_policy': 1, 'resource': 1},
+            'disk': {'resource': 4},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
             'forwardingrule': {'resource': 1},
@@ -212,6 +213,7 @@ class CrawlerTest(ForsetiTestCase):
         expected_counts = {
             'backendservice': {'resource': 1},
             'compute_project': {'resource': 1},
+            'disk': {'resource': 3},
             'firewall': {'resource': 3},
             'forwardingrule': {'resource': 1},
             'instance': {'resource': 3},
@@ -266,6 +268,7 @@ class CrawlerTest(ForsetiTestCase):
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
             'dataset': {'dataset_policy': 1, 'resource': 1},
+            'disk': {'resource': 4},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
             'forwardingrule': {'resource': 1},
