@@ -171,6 +171,36 @@ notifier:
             webhook_url: https://hooks.slack.com/services/foobar
 ```
 
+### CSCC Notification
+
+Forseti Security can configured to send violations to [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
+
+1. Open `forseti-security/configs/server/forseti_conf_server.yaml`.
+1. Navigate to the `notifier` > `violation` > `cscc` section.
+
+The options below are available for you to configure:
+
+* `enabled:`
+  * **Description**: Whether to send notification to Cloud SCC.
+  * **Valid values**: one of valid `true` or `false`
+
+* `mode:`
+  * **Description**: How to send the violations to Cloud SCC.
+  * **Valid values**: one of valid `api` or `bucket`
+  * **Note**: `api` mode will only work if Forseti is using a service account
+from the Cloud Security Center project.
+
+* `organization_id:`
+  * **Description**: The organization id.
+  * **Valid values**: String
+  * **Note**: Must be in the form of `organizations/12345`.
+
+* `gcs_path`
+  * **Description**: The path to a Cloud Storage bucket.
+  * **Valid values**: String
+  * **Note**: Must start with `gs://`.
+
+
 ### Email notifications with SendGrid
 
 Forseti Security can send email notifications using the SendGrid API. SendGrid
