@@ -171,18 +171,9 @@ notifier:
             webhook_url: https://hooks.slack.com/services/foobar
 ```
 
-### Cloud SCC Notification
+### CSCC Notification
 
-Forseti Security can configured to send violations to
-[Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
-
-As Cloud SCC is in alpha, you must meet the following additional requirements:
-* Your organization is enrolled in the [Cloud SCC alpha program](https://services.google.com/fb/forms/commandcenteralpha/).
-* Your Forseti project has been whitelisted to Cloud SCC access. You should
-send the Forseti `project name, id and number` to your Cloud SCC contact.
-* Enable the `Cloud Security Command Center API` for the Forseti project via
-the Cloud Console.
-* Add the `securityCenter.editor` role to the Forseti server's service account. 
+Forseti Security can configured to send violations to [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
 
 1. Open `forseti-security/configs/forseti_conf_server.yaml`.
 1. Navigate to the `notifier` > `violation` > `cscc` section.
