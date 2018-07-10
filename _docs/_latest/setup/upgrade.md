@@ -112,28 +112,28 @@ To learn more about these fields, see [Configure]({% link _docs/latest/configure
 
 {% capture 2x_upgrade %}
 
-## Upgrade Forseti v2 to a newer version using deployment manager.
+## Upgrade Forseti v2 using deployment manager
 
-Note: If you used the Forseti installer to deploy, you can locate the deployment template in your 
-GCS bucket for the forseti instance under folder `deployment_templates`, the filename will have the 
-following format: `deploy-forseti-{forseti_instance_type}-{hash}.yaml`, an example would be 
-`deploy-forseti-server-79c4374.yaml`.
+If you used the Forseti installer to deploy, the deployment template is in your 
+Cloud Storage bucket for the Forseti instance under the `deployment_templates` folder.
+The filename will be in the following format: `deploy-forseti-{forseti_instance_type}-{hash}.yaml`,
+for example, `deploy-forseti-server-79c4374.yaml`.
 
 ### Change deployment properties
-1. Check `deploy-forseti-server.yaml.sample` and `deploy-forseti-client.yaml.sample` to see if 
-there are any new properties that you need to copy over to your previous deployment template. You 
-can use `git diff` to compare what changed. For example, to see the diff between the latest (HEAD) 
-and one revision ago:
+
+1. Review `deploy-forseti-server.yaml.sample` and `deploy-forseti-client.yaml.sample` for any
+new properties that you need to copy to your previous deployment template. To compare what's changed, use
+the `git diff` command. For example, to see the diff between the latest (HEAD) and the most recent revision, run:
 
    ```bash
    $ git diff origin..HEAD~1 -- deploy-forseti-server.yaml.sample
    ```
 
-1. Edit `deploy-forseti-{forseti_instance_type}-{hash}.yaml` and update field `forseti-version:` under
-section `Comput Engine` to the newest tag. You can find more information about 
-[the latest release]({% link releases/index.md %}).
+1. Edit `deploy-forseti-{forseti_instance_type}-{hash}.yaml` and update the field `forseti-version:` under
+section `Compute Engine` to the newest tag. For more information, see [the latest release]({% link releases/index.md %}).
 
 ### Run the Deployment Manager update
+
 Run the following update command:
 
 ```bash
@@ -149,10 +149,10 @@ to take effect:
   $ gcloud compute instances reset COMPUTE_ENGINE_INSTANCE_NAME
   ```
 
-The Compute Engine instance will restart and perform a fresh installation of Forseti, so you do
-not need to ssh to the instance to run all the git clone/python install commands.
+The Compute Engine instance will restart and perform a fresh installation of Forseti. You won't 
+need to SSH to the instance to run all the git clone or Python install commands.
 
-Some resources can't be updated in a deployment. If you see an error that you can't
+Some resources can't be updated in a deployment. If an error displays that you can't
 change a certain resource, you'll need to create a new deployment of Forseti.
 
 Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).
