@@ -1,0 +1,66 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.metadata_server module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.util.metadata_server">
+<span id="google-cloud-forseti-common-util-metadata-server-module"></span><h1>google.cloud.forseti.common.util.metadata_server module<a class="headerlink" href="#module-google.cloud.forseti.common.util.metadata_server" title="Permalink to this headline">¶</a></h1>
+<p>Metadata server utilities.</p>
+<p>The metadata server is only accessible on GCE.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.metadata_server.can_reach_metadata_server">
+<code class="descname">can_reach_metadata_server</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/metadata_server.html#can_reach_metadata_server"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.metadata_server.can_reach_metadata_server" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if we can reach the metadata server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if metadata server can be reached, False otherwise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.metadata_server.get_project_id">
+<code class="descname">get_project_id</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/metadata_server.html#get_project_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.metadata_server.get_project_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the project id from the metadata server.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The of the project id, on error, returns None.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.metadata_server.get_value_for_attribute">
+<code class="descname">get_value_for_attribute</code><span class="sig-paren">(</span><em>attribute</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/metadata_server.html#get_value_for_attribute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.metadata_server.get_value_for_attribute" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given key return the value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>attribute</strong> (<em>str</em>) – Some metadata key.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The value of the requested key, if key isn’t present then None.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

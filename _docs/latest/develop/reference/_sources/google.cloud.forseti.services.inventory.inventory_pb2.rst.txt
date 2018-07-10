@@ -1,0 +1,7 @@
+google.cloud.forseti.services.inventory.inventory\_pb2 module
+=============================================================
+
+.. automodule:: google.cloud.forseti.services.inventory.inventory_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:

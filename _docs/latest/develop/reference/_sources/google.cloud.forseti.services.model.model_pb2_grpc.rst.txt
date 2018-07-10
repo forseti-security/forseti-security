@@ -1,0 +1,7 @@
+google.cloud.forseti.services.model.model\_pb2\_grpc module
+===========================================================
+
+.. automodule:: google.cloud.forseti.services.model.model_pb2_grpc
+    :members:
+    :undoc-members:
+    :show-inheritance:

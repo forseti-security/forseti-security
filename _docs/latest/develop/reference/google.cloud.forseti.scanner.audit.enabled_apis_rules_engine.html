@@ -1,0 +1,282 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.enabled_apis_rules_engine module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.audit.enabled_apis_rules_engine">
+<span id="google-cloud-forseti-scanner-audit-enabled-apis-rules-engine-module"></span><h1>google.cloud.forseti.scanner.audit.enabled_apis_rules_engine module<a class="headerlink" href="#module-google.cloud.forseti.scanner.audit.enabled_apis_rules_engine" title="Permalink to this headline">¶</a></h1>
+<p>Enabled APIS rules engine for organizations, folders, and projects.</p>
+<p>Builds the RuleBook (EnabledApisRuleBook) from the rule definitions (file either
+stored locally or in GCS) and compares a list of APIs  against the RuleBook to
+determine whether there are violations.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook">
+<em class="property">class </em><code class="descname">EnabledApisRuleBook</code><span class="sig-paren">(</span><em>global_configs</em>, <em>rule_defs=None</em>, <em>snapshot_timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRuleBook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook</span></code></a></p>
+<p>The RuleBook for Enabled APIs resources.</p>
+<p>Rules from the rules definition file are parsed and placed into a map, which
+associates the GCP resource (project, folder or organization) with the
+rules defined for it.</p>
+<p>A project’s enabled APIs are evaulated against rules for all ancestor
+resources of that project.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.add_rule">
+<code class="descname">add_rule</code><span class="sig-paren">(</span><em>rule_def</em>, <em>rule_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRuleBook.add_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.add_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a rule to the rule book.</p>
+<p>The rule supplied to this method is the dictionary parsed from
+the rules definition file.</p>
+<p>For example, this rule…</p>
+<blockquote>
+<div><p># rules yaml:
+rules:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">name: a rule
+mode: whitelist
+resource:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">type: project
+resource_ids:</p>
+<blockquote>
+<div><ul class="simple">
+<li>my-project-123</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>services:</dt>
+<dd><ul class="first last simple">
+<li>‘compute.googleapis.com’</li>
+<li>‘storage-component.googleapis.com’</li>
+<li>‘storage-api.googleapis.com’</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p>… gets parsed into:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><p class="first">‘name’: ‘a rule’,
+‘mode’: ‘whitelist’,
+‘resource’: {</p>
+<blockquote>
+<div>‘type’: ‘project’,
+‘resource_ids’: [‘my-project-id’]</div></blockquote>
+<p>},
+‘services’: [</p>
+<blockquote>
+<div>‘compute.googleapis.com’,
+‘storage-component.googleapis.com’,
+‘storage-api.googleapis.com’</div></blockquote>
+<p class="last">]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rule_def</strong> (<em>dict</em>) – Contains rule definition properties.</li>
+<li><strong>rule_index</strong> (<em>int</em>) – The index of the rule from the rule definitions.
+Assigned automatically when the rule book is built.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rule_defs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRuleBook.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rules to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule_defs</strong> (<em>dict</em>) – Rules parsed from the rule definition file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>project</em>, <em>enabled_apis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRuleBook.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find enabled APIs violations in the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project</strong> (<em>gcp_type</em>) – The project that these APIs are enabled on.</li>
+<li><strong>enabled_apis</strong> (<em>list</em>) – list of enabled APIs.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A generator of the rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.supported_resource_types">
+<code class="descname">supported_resource_types</code><em class="property"> = frozenset(['project', 'organization', 'folder'])</em><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRuleBook.supported_resource_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine">
+<em class="property">class </em><code class="descname">EnabledApisRulesEngine</code><span class="sig-paren">(</span><em>rules_file_path</em>, <em>snapshot_timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRulesEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine</span></code></a></p>
+<p>Rules engine for enabled APIs.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRulesEngine.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rules to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rules</strong> (<em>list</em>) – The list of rules to add to the book.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine.build_rule_book">
+<code class="descname">build_rule_book</code><span class="sig-paren">(</span><em>global_configs=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRulesEngine.build_rule_book"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine.build_rule_book" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build EnabledApisRuleBook from the rules definition file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>global_configs</strong> (<em>dict</em>) – Global configurations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>project</em>, <em>enabled_apis</em>, <em>force_rebuild=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#EnabledApisRulesEngine.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.EnabledApisRulesEngine.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether enabled APIs violates rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project</strong> (<em>gcp_type</em>) – The project that these APIs are enabled on.</li>
+<li><strong>enabled_apis</strong> (<em>list</em>) – list of enabled APIs.</li>
+<li><strong>force_rebuild</strong> (<em>bool</em>) – If True, rebuilds the rule book.
+This will reload the rules definition file and add the
+rules to the book.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A generator of rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule">
+<em class="property">class </em><code class="descname">Rule</code><span class="sig-paren">(</span><em>rule_name</em>, <em>rule_index</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#Rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Rule properties from the rule definition file. Also finds violations.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation">
+<em class="property">class </em><code class="descname">RuleViolation</code><span class="sig-paren">(</span><em>resource_type</em>, <em>resource_id</em>, <em>full_name</em>, <em>rule_name</em>, <em>rule_index</em>, <em>violation_type</em>, <em>apis</em>, <em>resource_data</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.apis">
+<code class="descname">apis</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.apis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.full_name">
+<code class="descname">full_name</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.full_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.resource_data">
+<code class="descname">resource_data</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.resource_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.resource_id">
+<code class="descname">resource_id</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.resource_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.resource_type">
+<code class="descname">resource_type</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.resource_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.rule_index">
+<code class="descname">rule_index</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.rule_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.rule_name">
+<code class="descname">rule_name</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.rule_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.violation_type">
+<code class="descname">violation_type</code><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.RuleViolation.violation_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>project</em>, <em>enabled_apis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/enabled_apis_rules_engine.html#Rule.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.enabled_apis_rules_engine.Rule.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find Enabled API violations in the rule book.
+:param project: The project that these APIs are enabled on.
+:type project: gcp_type
+:param enabled_apis: list of enabled APIs.
+:type enabled_apis: list</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Yields:</th><td class="field-body"><em>namedtuple</em> – Returns RuleViolation named tuple.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

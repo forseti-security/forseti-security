@@ -1,0 +1,124 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.enforcer.project_enforcer module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.enforcer.project_enforcer">
+<span id="google-cloud-forseti-enforcer-project-enforcer-module"></span><h1>google.cloud.forseti.enforcer.project_enforcer module<a class="headerlink" href="#module-google.cloud.forseti.enforcer.project_enforcer" title="Permalink to this headline">¶</a></h1>
+<p>Manages enforcement of policies for a single cloud project.</p>
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.ComputeApiDisabledError">
+<em class="property">exception </em><code class="descname">ComputeApiDisabledError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#ComputeApiDisabledError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.ComputeApiDisabledError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.project_enforcer.Error" title="google.cloud.forseti.enforcer.project_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.project_enforcer.Error</span></code></a></p>
+<p>Error raised if a project to be enforced has the compute API disabled.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.EnforcementError">
+<em class="property">exception </em><code class="descname">EnforcementError</code><span class="sig-paren">(</span><em>status</em>, <em>reason</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#EnforcementError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.EnforcementError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.project_enforcer.Error" title="google.cloud.forseti.enforcer.project_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.project_enforcer.Error</span></code></a></p>
+<p>Error encountered while enforcing firewall on project.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.EnforcementError.reason">
+<code class="descname">reason</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#EnforcementError.reason"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.EnforcementError.reason" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return reason.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status reason.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.EnforcementError.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#EnforcementError.status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.EnforcementError.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Status code.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.Error">
+<em class="property">exception </em><code class="descname">Error</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">exceptions.Exception</span></code></p>
+<p>Base error class for the module.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.ProjectDeletedError">
+<em class="property">exception </em><code class="descname">ProjectDeletedError</code><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#ProjectDeletedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.ProjectDeletedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#google.cloud.forseti.enforcer.project_enforcer.Error" title="google.cloud.forseti.enforcer.project_enforcer.Error"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.enforcer.project_enforcer.Error</span></code></a></p>
+<p>Error raised if a project to be enforced has been marked for deletion.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer">
+<em class="property">class </em><code class="descname">ProjectEnforcer</code><span class="sig-paren">(</span><em>project_id</em>, <em>global_configs=None</em>, <em>compute_service=None</em>, <em>dry_run=False</em>, <em>project_sema=None</em>, <em>max_running_operations=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#ProjectEnforcer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manages enforcement of policies for a single cloud project.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer.enforce_firewall_policy">
+<code class="descname">enforce_firewall_policy</code><span class="sig-paren">(</span><em>firewall_policy</em>, <em>networks=None</em>, <em>allow_empty_ruleset=False</em>, <em>prechange_callback=None</em>, <em>add_rule_callback=None</em>, <em>retry_on_dry_run=False</em>, <em>maximum_retries=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/enforcer/project_enforcer.html#ProjectEnforcer.enforce_firewall_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer.enforce_firewall_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enforces the firewall policy on the project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>firewall_policy</strong> (<em>list</em>) – A list of firewall rules that should be
+configured on the project networks.</li>
+<li><strong>networks</strong> (<em>list</em>) – A list of networks on the project that the
+policy applies to. If undefined, then the policy will be applied
+to all networks.</li>
+<li><strong>allow_empty_ruleset</strong> (<em>bool</em>) – If set to true and firewall_policy has
+no rules, all current firewall rules will be deleted from the
+project.</li>
+<li><strong>prechange_callback</strong> (<em>Callable</em>) – See FirewallEnforcer.apply_firewall()
+docstring for more details.</li>
+<li><strong>add_rule_callback</strong> (<em>Callable</em>) – A callback function that checks
+whether a firewall rule should be applied. If the callback
+returns False, that rule will not be modified.</li>
+<li><strong>retry_on_dry_run</strong> (<em>bool</em>) – Set to True to retry applying firewall
+rules when the expected policy does not match the current policy
+when dry_run is enabled.</li>
+<li><strong>maximum_retries</strong> (<em>int</em>) – The number of times enforce_firewall_policy
+will attempt to set the current firewall policy to the expected
+firewall policy. Set to 0 to disable retry behavior.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A proto with details on the status
+of the enforcement and an audit log with any changes made.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">enforcer_log_pb2.ProjectResult</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

@@ -1,0 +1,7 @@
+google.cloud.forseti.services.server\_config.server\_pb2 module
+===============================================================
+
+.. automodule:: google.cloud.forseti.services.server_config.server_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:

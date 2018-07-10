@@ -1,0 +1,7 @@
+google.cloud.forseti.services.notifier.service module
+=====================================================
+
+.. automodule:: google.cloud.forseti.services.notifier.service
+    :members:
+    :undoc-members:
+    :show-inheritance:
