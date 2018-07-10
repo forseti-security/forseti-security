@@ -54,10 +54,6 @@ REQUIREMENTS_MAP = {
         {'module_name': 'groups_scanner',
          'class_name': 'GroupsScanner',
          'rules_filename': 'group_rules.yaml'},
-    'ke_version_scanner':
-        {'module_name': 'ke_version_scanner',
-         'class_name': 'KeVersionScanner',
-         'rules_filename': 'ke_rules.yaml'},
     'iam_policy':
         {'module_name': 'iam_rules_scanner',
          'class_name': 'IamPolicyScanner',
@@ -70,6 +66,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'instance_network_interface_scanner',
          'class_name': 'InstanceNetworkInterfaceScanner',
          'rules_filename': 'instance_network_interface_rules.yaml'},
+    'ke_version_scanner':
+        {'module_name': 'ke_version_scanner',
+         'class_name': 'KeVersionScanner',
+         'rules_filename': 'ke_rules.yaml'},
     'log_sink':
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',
