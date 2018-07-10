@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Base GCP client which uses the discovery API."""
+import json
 import logging
 import threading
 import google_auth_httplib2
@@ -53,12 +54,16 @@ SUPPORT_DISCOVERY_CACHE = (googleapiclient.__version__ >= '1.4.2')
 REQUEST_RECORDER = dict()
 REQUEST_REPLAYER = dict()
 
+# Used for private APIs that need to be created from local discovery documents
+DISCOVERY_DOCS_BASE_DIR = (
+    'google/cloud/forseti/common/gcp_api/discovery_documents/')
+
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
-def _create_service_api(credentials, service_name, version, developer_key=None,
-                        cache_discovery=False):
+def _create_service_api(credentials, service_name, version, is_private_api,
+                        developer_key=None, cache_discovery=False):
     """Builds and returns a cloud API service object.
 
     Args:
@@ -66,6 +71,7 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
             authenticate the API calls.
         service_name (str): The name of the API.
         version (str): The version of the API to use.
+        is_private_api (bool): Whether the API is a private API.
         developer_key (str): The api key to use to determine the project
             associated with the API call, most API services do not require
             this to be set.
@@ -80,6 +86,12 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
     if LOGGER.getEffectiveLevel() > logging.DEBUG:
         logging.getLogger(discovery.__name__).setLevel(logging.WARNING)
 
+    # Used for private APIs that are built from a local discovery file
+    if is_private_api:
+        return _build_service_from_document(
+            credentials,
+            '{}{}.json'.format(DISCOVERY_DOCS_BASE_DIR, service_name))
+
     discovery_kwargs = {
         'serviceName': service_name,
         'version': version,
@@ -87,7 +99,28 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         'credentials': credentials}
     if SUPPORT_DISCOVERY_CACHE:
         discovery_kwargs['cache_discovery'] = cache_discovery
+
     return discovery.build(**discovery_kwargs)
+
+
+def _build_service_from_document(credentials, document_path):
+    """Builds an API client from a local discovery document
+
+    Args:
+        credentials (OAuth2Credentials): Credentials that will be used to
+            authenticate the API calls.
+        document_path (str): The local path of the discovery document
+
+    Returns:
+        object: A Resource object with methods for interacting with the service.
+    """
+    with open(document_path, 'r') as f:
+        discovery_data = json.load(f)
+
+    return discovery.build_from_document(
+        service=discovery_data,
+        credentials=credentials
+    )
 
 
 def _build_http(http=None):
@@ -109,7 +142,7 @@ def _build_http(http=None):
 
     return set_user_agent(http, user_agent)
 
-
+# pylint: disable=too-many-instance-attributes
 class BaseRepositoryClient(object):
     """Base class for API repository for a specified Cloud API."""
 
@@ -173,12 +206,19 @@ class BaseRepositoryClient(object):
                                 'in Forseti, proceed at your own risk.',
                                 api_name, version)
 
+        self.is_private_api = None
+        if supported_api:
+            self.is_private_api = (
+                _supported_apis.SUPPORTED_APIS.get(api_name)
+                .get('is_private_api'))
+
         self.gcp_services = {}
         for version in versions:
             self.gcp_services[version] = _create_service_api(
                 self._credentials,
                 self.name,
                 version,
+                self.is_private_api,
                 kwargs.get('developer_key'),
                 kwargs.get('cache_discovery', False))
 
@@ -214,7 +254,7 @@ class BaseRepositoryClient(object):
                                     credentials=self._credentials,
                                     rate_limiter=self._rate_limiter,
                                     use_cached_http=self._use_cached_http)
-
+# pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
 class GCPRepository(object):

@@ -272,7 +272,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('ad', _create_ad)
     def iter_users(self, gsuite_id):
-        """Gsuite user Iterator from gcp API call
+        """Iterate Gsuite users from GCP API.
 
         Args:
             gsuite_id (str): Gsuite id
@@ -285,7 +285,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('ad', _create_ad)
     def iter_groups(self, gsuite_id):
-        """Gsuite group Iterator from gcp API call
+        """Iterate Gsuite groups from GCP API.
 
         Args:
             gsuite_id (str): Gsuite id
@@ -299,7 +299,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('ad', _create_ad)
     def iter_group_members(self, group_key):
-        """Gsuite group_memeber Iterator from gcp API call
+        """Iterate Gsuite group members from GCP API.
 
         Args:
             group_key (str): key of the group to get
@@ -312,7 +312,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('crm', _create_crm)
     def fetch_organization(self, orgid):
-        """Organization data from gcp API call
+        """Fetch Organization data from GCP API.
 
         Args:
             orgid (str): id of the organization to get
@@ -324,7 +324,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('crm', _create_crm)
     def fetch_folder(self, folderid):
-        """Folder data from gcp API call
+        """Fetch Folder data from GCP API.
 
         Args:
             folderid (str): id of the folder to query
@@ -336,7 +336,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('crm', _create_crm)
     def fetch_project(self, projectid):
-        """Project data from gcp API call
+        """Fetch Project data from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -348,7 +348,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('crm', _create_crm)
     def iter_projects(self, parent_type, parent_id):
-        """Project Iterator from gcp API call
+        """Iterate Projects from GCP API.
 
         Args:
             parent_type (str): type of the parent, "folder" or "organization"
@@ -364,7 +364,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('crm', _create_crm)
     def iter_folders(self, parent_id):
-        """Folder Iterator from gcp API call
+        """Iterate Folders from GCP API.
 
         Args:
             parent_id (str): id of the parent of the folder
@@ -389,7 +389,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('appengine', _create_appengine)
     def iter_gae_services(self, projectid):
-        """AppEngine Service Iterator from gcp API call.
+        """Iterate gae services from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -402,7 +402,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('appengine', _create_appengine)
     def iter_gae_versions(self, projectid, serviceid):
-        """AppEngine Version Iterator from gcp API call.
+        """Iterate gae versions from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -416,7 +416,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('appengine', _create_appengine)
     def iter_gae_instances(self, projectid, serviceid, versionid):
-        """AppEngine Instance Iterator from gcp API call.
+        """Iterate gae instances from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -432,7 +432,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('container', _create_container)
     def iter_container_clusters(self, projectid):
-        """Kubernetes Engine Cluster Iterator from gcp API call.
+        """Iterate Kubernetes Engine Cluster from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -448,7 +448,7 @@ class ApiClientImpl(ApiClient):
     @create_lazy('container', _create_container)
     def fetch_container_serviceconfig(self, projectid, zone=None,
                                       location=None):
-        """Kubernetes Engine per zone service config from gcp API call.
+        """Fetch Kubernetes Engine per zone service config from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -463,7 +463,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('storage', _create_storage)
     def iter_buckets(self, projectid):
-        """Bucket Iterator from gcp API call
+        """Iterate Buckets from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -476,7 +476,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('storage', _create_storage)
     def iter_objects(self, bucket_id):
-        """Object Iterator from gcp API call
+        """Iterate Objects from GCP API.
 
         Args:
             bucket_id (str): id of the bucket to get
@@ -489,7 +489,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('bigquery', _create_bq)
     def iter_datasets(self, projectid):
-        """Dataset Iterator from gcp API call
+        """Iterate Datasets from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -502,7 +502,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('cloudsql', _create_cloudsql)
     def iter_cloudsqlinstances(self, projectid):
-        """Cloudsqlinstance Iterator from gcp API call
+        """Iterate Cloud sql instances from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -527,7 +527,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def fetch_compute_project(self, projectid):
-        """Compute project data from gcp API call.
+        """Fetch compute project data from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -539,7 +539,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_computeinstances(self, projectid):
-        """Compute Engine Instance Iterator from gcp API call
+        """Iterate compute engine instance from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -552,7 +552,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_computefirewalls(self, projectid):
-        """Compute Engine Firewall Iterator from gcp API call
+        """Iterate Compute Engine Firewalls from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -565,7 +565,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_computeinstancegroups(self, projectid):
-        """Compute Engine group Iterator from gcp API call
+        """Iterate Compute Engine groups from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -577,8 +577,21 @@ class ApiClientImpl(ApiClient):
             yield instancegroup
 
     @create_lazy('compute', _create_compute)
+    def iter_computedisks(self, projectid):
+        """Iterate Compute Engine disks from GCP API.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of Compute Disk
+        """
+        for disk in self.compute.get_disks(projectid):
+            yield disk
+
+    @create_lazy('compute', _create_compute)
     def iter_backendservices(self, projectid):
-        """Backend service Iterator from gcp API call
+        """Iterate Backend services from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -591,7 +604,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_forwardingrules(self, projectid):
-        """Forwarding Rule Iterator from gcp API call
+        """Iterate Forwarding Rules from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -604,7 +617,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_images(self, projectid):
-        """Image Iterator from gcp API call
+        """Iterate Images from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -617,7 +630,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_ig_managers(self, projectid):
-        """Instance Group Manager Iterator from gcp API call
+        """Iterate Instance Group Manager from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -630,7 +643,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_instancetemplates(self, projectid):
-        """Instance Template Iterator from gcp API call
+        """Iterate Instance Templates from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -643,7 +656,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_networks(self, projectid):
-        """Network Iterator from gcp API call
+        """Iterate Networks from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -656,7 +669,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('compute', _create_compute)
     def iter_subnetworks(self, projectid):
-        """Subnetwork Iterator from gcp API call
+        """Iterate Subnetworks from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -669,7 +682,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('iam', _create_iam)
     def iter_serviceaccounts(self, projectid):
-        """Service Account Iterator in a project from gcp API call
+        """Iterate Service Accounts in a project from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -682,7 +695,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('iam', _create_iam)
     def iter_serviceaccount_exported_keys(self, name):
-        """Service Account User Managed Key Iterator from gcp API call
+        """Iterate Service Account User Managed Keys from GCP API.
 
         Args:
             name (str): name of the service account
@@ -696,7 +709,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('iam', _create_iam)
     def iter_project_roles(self, projectid):
-        """Project role Iterator in a project from gcp API call
+        """Iterate Project roles in a project from GCP API.
 
         Args:
             projectid (str): id of the project to query
@@ -709,7 +722,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('iam', _create_iam)
     def iter_organization_roles(self, orgid):
-        """Organization role Iterator from gcp API call
+        """Iterate Organization roles from GCP API.
 
         Args:
             orgid (str): id of the organization to get
@@ -722,7 +735,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('iam', _create_iam)
     def iter_curated_roles(self):
-        """Curated role Iterator in an organization from gcp API call
+        """Iterate Curated roles in an organization from GCP API.
 
         Yields:
             dict: Generator of curated roles
@@ -831,7 +844,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('servicemanagement', _create_servicemanagement)
     def get_enabled_apis(self, projectid):
-        """Project enabled API services from gcp API call
+        """Project enabled API services from gcp API call.
 
         Args:
             projectid (str): id of the project to query
@@ -843,7 +856,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_organization_sinks(self, orgid):
-        """Organization logging sinks Iterator from gcp API call
+        """Iterate Organization logging sinks from GCP API.
 
         Args:
             orgid (str): id of the organization to query
@@ -856,7 +869,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_folder_sinks(self, folderid):
-        """Folder logging sinks Iterator from gcp API call
+        """Iterate Folder logging sinks from GCP API.
 
         Args:
             folderid (str): id of the folder to query
@@ -869,7 +882,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_billing_account_sinks(self, acctid):
-        """Billing Account logging sinks Iterator from gcp API call
+        """Iterate Billing Account logging sinks from GCP API.
 
         Args:
             acctid (str): id of the billing account to query
@@ -882,7 +895,7 @@ class ApiClientImpl(ApiClient):
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_project_sinks(self, projectid):
-        """Project logging sinks Iterator from gcp API call
+        """Iterate Project logging sinks from GCP API.
 
         Args:
             projectid (str): id of the project to query
