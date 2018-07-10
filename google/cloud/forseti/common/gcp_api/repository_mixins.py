@@ -97,7 +97,6 @@ class GetQueryMixin(object):
         Raises:
             ValueError: When get_key_field was not defined in the base
                 GCPRepository instance.
-
             errors.HttpError: When attempting to get a non-existent entity.
                ex: HttpError 404 when requesting ... returned
                    "The resource '...' was not found"
@@ -130,7 +129,6 @@ class GetIamPolicyQueryMixin(object):
     def get_iam_policy(self, resource, fields=None, verb='getIamPolicy',
                        include_body=True, resource_field='resource', **kwargs):
         """Get resource IAM Policy.
-
         Args:
             self (GCPRespository): An instance of a GCPRespository class.
             resource (str): The id of the resource to fetch.
@@ -283,3 +281,24 @@ class SearchQueryMixin(object):
                 verb=verb,
                 verb_arguments={'body': req_body, 'fields': fields}):
             yield resp
+
+
+class CreateQueryMixin(object):
+    """Mixin that implements a Create query."""
+
+    def create(self, verb='create', **kwargs):
+        """Create a resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to create.
+
+        Returns:
+            dict: An API response containing one page of results.
+        """
+        arguments = {}
+        if kwargs.get('arguments'):
+            arguments.update(kwargs.get('arguments'))
+
+        return self.execute_query(verb=verb, verb_arguments=arguments)
