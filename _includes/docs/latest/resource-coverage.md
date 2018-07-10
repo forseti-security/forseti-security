@@ -11,7 +11,7 @@
 | [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) |
 | [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
 | [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/latest/backendServices#resource) |
-| [Compute Engine Disks](https://cloud.google.com/compute/docs/reference/latest/disks) |
+| [Compute Engine Disks](https://cloud.google.com/compute/docs/reference/latest/instances#resource) |
 | [Compute Engine Instances](https://cloud.google.com/compute/docs/reference/latest/instances#resource) |
 | [Compute Engine Instance Groups](https://cloud.google.com/compute/docs/reference/latest/instanceGroups#resource) |
 | [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) |
