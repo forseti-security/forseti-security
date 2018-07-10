@@ -1,0 +1,285 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.audit.iam_rules_engine module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.audit.iam_rules_engine">
+<span id="google-cloud-forseti-scanner-audit-iam-rules-engine-module"></span><h1>google.cloud.forseti.scanner.audit.iam_rules_engine module<a class="headerlink" href="#module-google.cloud.forseti.scanner.audit.iam_rules_engine" title="Permalink to this headline">¶</a></h1>
+<p>Rules engine for organizations, folders, and projects.</p>
+<p>Builds the RuleBook (IamRuleBook) from the rule definitions (file either
+stored locally or in GCS) and compares a policy against the RuleBook to
+determine whether there are violations.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook">
+<em class="property">class </em><code class="descname">IamRuleBook</code><span class="sig-paren">(</span><em>global_configs</em>, <em>rule_defs=None</em>, <em>snapshot_timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRuleBook"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRuleBook</span></code></a></p>
+<p>The RuleBook for organization resources.</p>
+<p>Rules from the rules definition file are parsed and placed into a
+map, which associates the GCP resource with the particular rules
+defined for it.</p>
+<p>Sample rules (simplified):</p>
+<p>mode: whitelist
+Org 1234, bindings: roles/*, members: user:*&#64;company.com
+Project p-a, bindings: roles/owner, members: user:pa-owner&#64;company.com
+Project p-b, bindings: roles/owner, members: user:pb-owner&#64;company.com</p>
+<p>Sample org structure:</p>
+<blockquote>
+<div><blockquote>
+<div><blockquote>
+<div>org 1234</div></blockquote>
+<p>/                  f-1       p-c</p>
+</div></blockquote>
+<p>/         p-a  p-b</p>
+</div></blockquote>
+<p>The rule book will be structured as:</p>
+<dl class="docutils">
+<dt>{</dt>
+<dd>Resource(org-1234): ResourceRule(org-1234, [ rules … ]),
+Resource(p-a): ResourceRule(p-a, [ rules … ]),
+Resource(p-a): ResourceRule(p-a, [ rules … ])</dd>
+</dl>
+<p>}</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook.add_rule">
+<code class="descname">add_rule</code><span class="sig-paren">(</span><em>rule_def</em>, <em>rule_index</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRuleBook.add_rule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook.add_rule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a rule to the rule book.</p>
+<p>The rule supplied to this method is the dictionary parsed from
+the rules definition file.</p>
+<p>For example, this rule…</p>
+<blockquote>
+<div><p># rules yaml:
+rules:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">name: a rule
+mode: whitelist
+resource:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">type: project
+applies_to: self
+resource_ids:</p>
+<blockquote>
+<div><ul class="simple">
+<li>my-project-123</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+<p>inherit_from_parents: true
+bindings:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">role: roles/editor
+members:</p>
+<blockquote>
+<div><ul class="simple">
+<li>users:a&#64;b.com</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p>… gets parsed into:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><p class="first">‘name’: ‘a rule’,
+‘mode’: ‘whitelist’,
+‘resource’: {</p>
+<blockquote>
+<div>‘type’: ‘project’,
+‘applies_to’: self,
+‘resource_ids’: [‘my-project-id’]</div></blockquote>
+<p>},
+‘inherit_from_parents’: true,
+‘bindings’: [</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd>‘role’: ‘roles/editor’,
+‘members’: [‘users:a&#64;b.com’]</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p class="last">]</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rule_def</strong> (<em>dict</em>) – Contains rule definition properties.</li>
+<li><strong>rule_index</strong> (<em>int</em>) – The index of the rule from the rule definitions.
+Assigned automatically when the rule book is built.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rule_defs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRuleBook.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rules to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rule_defs</strong> (<em>dict</em>) – Rules parsed from the rule definition file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook.find_violations">
+<code class="descname">find_violations</code><span class="sig-paren">(</span><em>resource</em>, <em>policy</em>, <em>policy_bindings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRuleBook.find_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRuleBook.find_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find policy binding violations in the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>gcp_type</em>) – The GCP resource associated with the
+policy binding.
+This is where we start looking for rule violations and
+we move up the resource hierarchy (if permitted by the
+resource’s “inherit_from_parents” property).</li>
+<li><strong>policy</strong> (<em>forseti_data_model_resource</em>) – The policy to compare
+against the rules.
+See <a class="reference external" href="https://cloud.google.com/iam/reference/rest/v1/Policy">https://cloud.google.com/iam/reference/rest/v1/Policy</a>.</li>
+<li><strong>policy_bindings</strong> (<em>list</em>) – A list of IamPolicyBindings.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A generator of the rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine">
+<em class="property">class </em><code class="descname">IamRulesEngine</code><span class="sig-paren">(</span><em>rules_file_path</em>, <em>snapshot_timestamp=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRulesEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.audit.base_rules_engine.html#google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine" title="google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.audit.base_rules_engine.BaseRulesEngine</span></code></a></p>
+<p>Rules engine for org resources.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine.add_rules">
+<code class="descname">add_rules</code><span class="sig-paren">(</span><em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRulesEngine.add_rules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine.add_rules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add rules to the rule book.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>rules</strong> (<em>list</em>) – The list of rules to add to the book.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine.build_rule_book">
+<code class="descname">build_rule_book</code><span class="sig-paren">(</span><em>global_configs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRulesEngine.build_rule_book"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine.build_rule_book" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build IamRuleBook from the rules definition file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>global_configs</strong> (<em>dict</em>) – Global configurations.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine.find_policy_violations">
+<code class="descname">find_policy_violations</code><span class="sig-paren">(</span><em>resource</em>, <em>policy</em>, <em>policy_bindings</em>, <em>force_rebuild=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#IamRulesEngine.find_policy_violations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.IamRulesEngine.find_policy_violations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine whether policy violates rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>gcp_type</em>) – The resource that the policy belongs to.</li>
+<li><strong>policy</strong> (<em>resource</em>) – The policy to compare against the rules.
+See <a class="reference external" href="https://cloud.google.com/iam/reference/rest/v1/Policy">https://cloud.google.com/iam/reference/rest/v1/Policy</a>.</li>
+<li><strong>policy_bindings</strong> (<em>list</em>) – list of bindings found in <cite>policy.data</cite></li>
+<li><strong>force_rebuild</strong> (<em>bool</em>) – If True, rebuilds the rule book.
+This will reload the rules definition file and add the
+rules to the book.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A generator of rule violations.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.ResourceRules">
+<em class="property">class </em><code class="descname">ResourceRules</code><span class="sig-paren">(</span><em>resource=None</em>, <em>rules=None</em>, <em>applies_to='self'</em>, <em>inherit_from_parents=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#ResourceRules"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.ResourceRules" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An association of a resource to rules.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.audit.iam_rules_engine.ResourceRules.find_mismatches">
+<code class="descname">find_mismatches</code><span class="sig-paren">(</span><em>resource</em>, <em>policy_bindings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/audit/iam_rules_engine.html#ResourceRules.find_mismatches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.audit.iam_rules_engine.ResourceRules.find_mismatches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the policy binding matches this rule’s criteria.</p>
+<p>How the member matching operates:</p>
+<ol class="arabic simple">
+<li>Whitelist: policy members match at least one rule member</li>
+<li>Blacklist: policy members must not match any rule members</li>
+<li>Require: rule members must all be found in policy members</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_type.resource.html#google.cloud.forseti.common.gcp_type.resource.Resource" title="google.cloud.forseti.common.gcp_type.resource.Resource"><em>Resource</em></a>) – The resource that the policy belongs to.</li>
+<li><strong>policy_bindings</strong> (<em>list</em>) – The list of IamPolicyBindings
+to compare to this rule’s bindings.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The violations generator</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterable</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

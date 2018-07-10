@@ -114,7 +114,7 @@ any combination of notifiers for each resource.
 * `name`
   * **Description**: The name of the notifier you want for each resource.
   * **Valid values**: The name must match the actual module name for each notifier in
-  [forseti-security/google/cloud/forseti/notifier/notifiers]({% link _docs/_latest/develop/reference/google.cloud.forseti.notifier.notifiers.html %}),
+  [forseti-security/google/cloud/forseti/notifier/notifiers]({% link _docs/latest/develop/reference/google.cloud.forseti.notifier.notifiers.html %}),
   such as `email_violations`, or `slack_webhook`.
   * **Note**: You can specify multiple notifiers for each resource.
 
@@ -170,35 +170,6 @@ notifier:
             data_format: json
             webhook_url: https://hooks.slack.com/services/foobar
 ```
-
-### CSCC Notification
-
-Forseti Security can configured to send violations to [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
-
-1. Open `forseti-security/configs/forseti_conf_server.yaml`.
-1. Navigate to the `notifier` > `violation` > `cscc` section.
-
-The options below are available for you to configure:
-
-* `enabled:`
-  * **Description**: Whether to send notification to Cloud SCC.
-  * **Valid values**: one of valid `true` or `false`
-
-* `mode:`
-  * **Description**: How to send the violations to Cloud SCC.
-  * **Valid values**: one of valid `api` or `bucket`
-  * **Note**: `api` mode will only work if Forseti is [using a service account from the Cloud Security Center project](https://cloud.google.com/security-command-center/docs/how-to-programmatic-access).
-
-* `organization_id:`
-  * **Description**: The organization id.
-  * **Valid values**: String
-  * **Note**: Must be in the form of `organizations/12345`. Used only in `api` mode.
-
-* `gcs_path`
-  * **Description**: The path to a Cloud Storage bucket.
-  * **Valid values**: String
-  * **Note**: Must start with `gs://`. Used only in `bucket` mode.
-
 
 ### Email notifications with SendGrid
 

@@ -1,0 +1,7 @@
+google.cloud.forseti.services.scanner.scanner\_pb2 module
+=========================================================
+
+.. automodule:: google.cloud.forseti.services.scanner.scanner_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:

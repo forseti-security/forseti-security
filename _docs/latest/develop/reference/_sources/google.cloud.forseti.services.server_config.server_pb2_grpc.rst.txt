@@ -1,0 +1,7 @@
+google.cloud.forseti.services.server\_config.server\_pb2\_grpc module
+=====================================================================
+
+.. automodule:: google.cloud.forseti.services.server_config.server_pb2_grpc
+    :members:
+    :undoc-members:
+    :show-inheritance:

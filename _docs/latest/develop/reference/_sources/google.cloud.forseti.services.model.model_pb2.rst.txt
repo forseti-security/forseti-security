@@ -1,0 +1,7 @@
+google.cloud.forseti.services.model.model\_pb2 module
+=====================================================
+
+.. automodule:: google.cloud.forseti.services.model.model_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:

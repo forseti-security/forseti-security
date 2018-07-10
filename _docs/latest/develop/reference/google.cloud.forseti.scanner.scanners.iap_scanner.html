@@ -1,0 +1,80 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.scanner.scanners.iap_scanner module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.scanner.scanners.iap_scanner">
+<span id="google-cloud-forseti-scanner-scanners-iap-scanner-module"></span><h1>google.cloud.forseti.scanner.scanners.iap_scanner module<a class="headerlink" href="#module-google.cloud.forseti.scanner.scanners.iap_scanner" title="Permalink to this headline">¶</a></h1>
+<p>Scanner for the Identity-Aware Proxy rules engine.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapResource">
+<em class="property">class </em><code class="descname">IapResource</code><span class="sig-paren">(</span><em>project_full_name</em>, <em>backend_service</em>, <em>alternate_services</em>, <em>direct_access_sources</em>, <em>iap_enabled</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.alternate_services">
+<code class="descname">alternate_services</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.alternate_services" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.backend_service">
+<code class="descname">backend_service</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.backend_service" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.direct_access_sources">
+<code class="descname">direct_access_sources</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.direct_access_sources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.iap_enabled">
+<code class="descname">iap_enabled</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.iap_enabled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.project_full_name">
+<code class="descname">project_full_name</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapResource.project_full_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapScanner">
+<em class="property">class </em><code class="descname">IapScanner</code><span class="sig-paren">(</span><em>global_configs</em>, <em>scanner_configs</em>, <em>service_config</em>, <em>model_name</em>, <em>snapshot_timestamp</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iap_scanner.html#IapScanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapScanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.scanner.scanners.base_scanner.html#google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner" title="google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.scanner.scanners.base_scanner.BaseScanner</span></code></a></p>
+<p>Pipeline to IAP-related data from DAO.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapScanner.SCANNER_OUTPUT_CSV_FMT">
+<code class="descname">SCANNER_OUTPUT_CSV_FMT</code><em class="property"> = 'scanner_output_iap.{}.csv'</em><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapScanner.SCANNER_OUTPUT_CSV_FMT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.IapScanner.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/scanner/scanners/iap_scanner.html#IapScanner.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.IapScanner.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the data collection.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.NetworkPort">
+<em class="property">class </em><code class="descname">NetworkPort</code><span class="sig-paren">(</span><em>network</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.NetworkPort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.NetworkPort.network">
+<code class="descname">network</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.NetworkPort.network" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.scanner.scanners.iap_scanner.NetworkPort.port">
+<code class="descname">port</code><a class="headerlink" href="#google.cloud.forseti.scanner.scanners.iap_scanner.NetworkPort.port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+

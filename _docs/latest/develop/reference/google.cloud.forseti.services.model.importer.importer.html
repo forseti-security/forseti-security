@@ -1,0 +1,106 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.model.importer.importer module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.model.importer.importer">
+<span id="google-cloud-forseti-services-model-importer-importer-module"></span><h1>google.cloud.forseti.services.model.importer.importer module<a class="headerlink" href="#module-google.cloud.forseti.services.model.importer.importer" title="Permalink to this headline">¶</a></h1>
+<p>Importer implementations.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.model.importer.importer.EmptyImporter">
+<em class="property">class </em><code class="descname">EmptyImporter</code><span class="sig-paren">(</span><em>session</em>, <em>readonly_session</em>, <em>model</em>, <em>dao</em>, <em>_</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#EmptyImporter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.EmptyImporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Imports an empty model.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.importer.importer.EmptyImporter.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#EmptyImporter.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.EmptyImporter.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the import.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.model.importer.importer.InventoryImporter">
+<em class="property">class </em><code class="descname">InventoryImporter</code><span class="sig-paren">(</span><em>session</em>, <em>readonly_session</em>, <em>model</em>, <em>dao</em>, <em>service_config</em>, <em>inventory_index_id</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#InventoryImporter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.InventoryImporter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Imports data from Inventory.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.services.model.importer.importer.InventoryImporter.model_action_wrapper">
+<em class="property">static </em><code class="descname">model_action_wrapper</code><span class="sig-paren">(</span><em>session</em>, <em>inventory_iterable</em>, <em>pre_action</em>, <em>action</em>, <em>post_action</em>, <em>flush_count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#InventoryImporter.model_action_wrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.InventoryImporter.model_action_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model action wrapper. This is used to reduce code duplication.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>session</strong> (<em>Session</em>) – Database session.</li>
+<li><strong>inventory_iterable</strong> (<em>Iterable</em>) – Inventory iterable.</li>
+<li><strong>pre_action</strong> (<em>func</em>) – Action taken before iterating the
+inventory list.</li>
+<li><strong>action</strong> (<em>func</em>) – Action taken during the iteration of
+the inventory list.</li>
+<li><strong>post_action</strong> (<em>func</em>) – Action taken after iterating the
+inventory list.</li>
+<li><strong>flush_count</strong> (<em>int</em>) – Flush every flush_count times.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of item iterated.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">int</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.importer.importer.InventoryImporter.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#InventoryImporter.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.InventoryImporter.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the import.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">NotImplementedError</span></code> – If the importer encounters an unknown
+inventory type.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.model.importer.importer.ResourceCache">
+<em class="property">class </em><code class="descname">ResourceCache</code><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#ResourceCache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.ResourceCache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+<p>Resource cache.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.model.importer.importer.by_source">
+<code class="descname">by_source</code><span class="sig-paren">(</span><em>source</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/importer/importer.html#by_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.importer.importer.by_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper to resolve client provided import sources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>source</strong> (<em>str</em>) – Source to import from.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Chosen by source.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">Importer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
