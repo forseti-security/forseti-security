@@ -53,7 +53,7 @@ settings.
 1. In the **One or More API Scopes** box, paste the following scope:
 
     ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly
+    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly
     ```
 
 1. Click **Authorize**.
