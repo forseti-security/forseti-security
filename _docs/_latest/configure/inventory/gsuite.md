@@ -58,14 +58,3 @@ settings.
 
 1. Click **Authorize**.
 {% responsive_image path: images/docs/configuration/admin-security.png alt: "manage api client access in Google Admin Security settings" indent: 2 %}
-
-## Configuring Forseti to collect G Suite data
-
-After you set up your service account above, you may need to edit the
-[`domain_super_admin_email`]({% link _docs/latest/configure/inventory/index.md %})
-field in your `forseti_conf_server.yaml`.
-
-If you are running Forseti on GCP and made any changes to the above values,
-you will need to copy the `conf` file to the Cloud Storage bucket. For more
-information, see
-[Moving configuration to Cloud Storage]({% link _docs/latest/configure/general/index.md %}).
