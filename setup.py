@@ -130,8 +130,7 @@ setup(
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
     package_data={
-        '': ['cloud/forseti/common/email_templates/*.jinja',
-             'cloud/forseti/common/gcp_api/discovery_documents/*.json']
+        '': ['cloud/forseti/common/email_templates/*.jinja']
     },
     namespace_packages=NAMESPACE_PACKAGES,
     google_test_dir='tests',
