@@ -88,13 +88,12 @@ described above.
 
 ## Version numbering scheme
 
-Forseti version number scheme follows the [Semantic Versioning defined by semver.org](https://semver.org/),
-and are denoted as `X.Y.Z`.  For example:
+Forseti versions are denoted with an `X.Y.Z` version numbering schema, for example:
 
 ```
-X signifies MAJOR changes, when architecture has changed.
-Y signifies MINOR changes, when new features are added, along with bug fixes.
-Z signifies PATCH changes, when only bug fixes are added.
+X signifies architectural changes.
+Y signifies database schema changes.
+Z signifies code changes.
 ```
 
 The process below outlines how minor new `X.Y.Z` point versions are managed.

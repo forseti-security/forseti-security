@@ -55,8 +55,6 @@ steps below:
 
       ```bash
       # Make sure you are in the forseti-security folder.
-      cd forseti-security
-
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
@@ -67,12 +65,6 @@ steps below:
 
      ```bash
      python install/gcp_installer.py
-     ```
-
-     If you don't plan to share your Forseti instance with other non-administrators, 
-     you can choose to install the server instance only and access Forseti from there.
-     ```bash
-     python install/gcp_installer.py --type=server
      ```
 
      To see additional configurations for the setup, run the following:
