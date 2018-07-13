@@ -178,3 +178,32 @@ defaults:
       path: _docs/v2.0/faq
     values:
       category: FAQ (v2.0)
+  - scope:
+      path: _docs/v2.1
+    values:
+      category: Overview (v2.1)
+      layout: docs
+  - scope:
+      path: _docs/v2.1/concepts
+    values:
+      category: Concepts (v2.1)
+  - scope:
+      path: _docs/v2.1/setup
+    values:
+      category: Setup (v2.1)
+  - scope:
+      path: _docs/v2.1/use
+    values:
+      category: Use (v2.1)
+  - scope:
+      path: _docs/v2.1/configure
+    values:
+      category: Configure (v2.1)
+  - scope:
+      path: _docs/v2.1/develop
+    values:
+      category: Develop (v2.1)
+  - scope:
+      path: _docs/v2.1/faq
+    values:
+      category: FAQ (v2.1)
