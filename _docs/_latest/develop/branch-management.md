@@ -89,7 +89,7 @@ described above.
 ## Version numbering scheme
 
 Forseti version number scheme follows the [Semantic Versioning defined by semver.org](https://semver.org/),
-and are denoted with an `X.Y.Z`.  For example:
+and are denoted as `X.Y.Z`.  For example:
 
 ```
 X signifies MAJOR changes, when architecture has changed.
