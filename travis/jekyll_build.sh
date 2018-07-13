@@ -17,7 +17,7 @@ trap 'return_code=$?' ERR
 
 # Write out the Python API documentation via Sphinx
 # TODO(drmorris): change branch from "stable" to "master" when after release
-./scripts/generate_sphinx_docs.sh "stable"
+./scripts/generate_sphinx_docs.sh "release-2.0.1"
 
 if  [ -z ${JGT+x} ]; then
     # We don't have access to the encrypted vars.
