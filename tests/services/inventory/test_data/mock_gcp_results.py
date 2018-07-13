@@ -43,6 +43,7 @@ NETWORK_ID_PREFIX = "114"
 SUBNETWORK_ID_PREFIX = "115"
 SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 GCE_IMAGE_ID_PREFIX = "117"
+GCE_DISK_ID_PREFIX = "118"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -1088,6 +1089,62 @@ GCE_GET_FIREWALLS = {
                 id=2, project="project2", network="default")),
 }
 
+# Fields: id, project, zone, name
+GCE_DISKS_TEMPLATE = """
+{{
+ "kind": "compute#disk",
+ "id": "118{id}",
+ "creationTimestamp": "2017-08-07T10:18:45.802-07:00",
+ "name": "instance-1",
+ "sizeGb": "10",
+ "zone": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}",
+ "status": "READY",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/disks/{name}",
+ "sourceImage": "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-9-stretch-v20170717",
+ "sourceImageId": "4214972497302618486",
+ "type": "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/diskTypes/pd-standard",
+ "licenses": [
+  "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/licenses/debian-9-stretch"
+ ],
+ "lastAttachTimestamp": "2017-08-07T10:18:45.806-07:00",
+ "users": [
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/{zone}/instances/{name}"
+ ],
+ "labelFingerprint": "42WmSpB8rSM="
+}}
+"""
+
+GCE_GET_DISKS = {
+    "project1": [
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=1,
+                name="iap_instance1",
+                project="project1",
+                zone="us-central1-c")),
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=2,
+                name="iap_instance2",
+                project="project1",
+                zone="us-central1-c")),
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=3,
+                name="iap_instance3",
+                project="project1",
+                zone="us-central1-c")),
+    ],
+    "project2": [
+        json.loads(
+            GCE_DISKS_TEMPLATE.format(
+                id=4,
+                name="instance3",
+                project="project2",
+                zone="us-west1-a")),
+    ]
+}
+
 # Fields: id, project
 GCE_IMAGES_TEMPLATE = """
 [
@@ -2084,4 +2141,89 @@ SERVICEMANAGEMENT_ENABLED_APIS = {
         json.loads(STORAGE_API_ENABLED),
         json.loads(APPENGINE_API_ENABLED),
     ],
+}
+
+# Fields: name, destination
+LOG_SINK_TEMPLATE = """
+{{
+ "name": "{name}",
+ "destination": "{destination}",
+ "filter": "logName:\\\"logs/cloudaudit.googleapis.com\\\"",
+ "outputVersionFormat": "V2",
+ "writerIdentity": "serviceAccount:{name}@logging-1234.iam.gserviceaccount.com"
+}}
+"""
+
+# Fields: name, destination
+LOG_SINK_TEMPLATE_NO_FILTER = """
+{{
+ "name": "{name}",
+ "destination": "{destination}",
+ "outputVersionFormat": "V2",
+ "writerIdentity": "serviceAccount:{name}@logging-1234.iam.gserviceaccount.com"
+}}
+"""
+
+# Fields: name, destination
+LOG_SINK_TEMPLATE_INCL_CHILDREN = """
+{{
+ "name": "{name}",
+ "destination": "{destination}",
+ "outputVersionFormat": "V2",
+ "filter": "logName:\\\"logs/cloudaudit.googleapis.com\\\"",
+ "includeChildren": true,
+ "writerIdentity": "serviceAccount:cloud-logs@system.gserviceaccount.com"
+}}
+"""
+
+LOGGING_GET_ORG_SINKS = {
+    ORGANIZATION_ID: [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="org-audit-logs",
+                destination="storage.googleapis.com/my_org_logs")),
+    ]
+}
+
+LOGGING_GET_FOLDER_SINKS = {
+    "folders/" + FOLDER_ID_PREFIX + "1": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="folder-logs", destination=(
+                    "pubsub.googleapis.com/projects/project1/topics/f1-logs"))),
+    ],
+    "folders/" + FOLDER_ID_PREFIX + "2": [
+        json.loads(
+            LOG_SINK_TEMPLATE_INCL_CHILDREN.format(
+                name="folder-logs",
+                destination="storage.googleapis.com/my_folder_logs")),
+    ]
+}
+LOGGING_GET_BILLING_ACCOUNT_SINKS = {
+    "000000-111111-222222": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="billing-audit-logs",
+                destination="storage.googleapis.com/b001122_logs")),
+    ]
+}
+
+LOGGING_GET_PROJECT_SINKS = {
+    "project1": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="logs-to-bigquery", destination=(
+                    "bigquery.googleapis.com/projects/project1/"
+                    "datasets/audit_logs"))),
+        json.loads(
+            LOG_SINK_TEMPLATE_NO_FILTER.format(
+                name="logs-to-gcs",
+                destination="storage.googleapis.com/project1_logs")),
+    ],
+    "project2": [
+        json.loads(
+            LOG_SINK_TEMPLATE.format(
+                name="logs-to-gcs",
+                destination="storage.googleapis.com/project2_logs")),
+    ]
 }

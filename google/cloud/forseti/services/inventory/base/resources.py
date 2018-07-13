@@ -1027,6 +1027,27 @@ class ComputeProject(Resource):
         return 'compute_project'
 
 
+class Disk(Resource):
+    """The Resource implementation for Disk"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['id']
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'disk'
+        """
+        return 'disk'
+
+
 class Instance(Resource):
     """The Resource implementation for Instance"""
 
@@ -1341,6 +1362,29 @@ class ServiceAccount(Resource):
         return 'serviceaccount'
 
 
+class Sink(Resource):
+    """The Resource implementation for Stackdriver Logging sink"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        sink_name = '/'.join([self.parent().type(), self.parent().key(),
+                              self.type(), self['name']])
+        return sink_name
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'sink'
+        """
+        return 'sink'
+
+
 class ServiceAccountKey(Resource):
     """The Resource implementation for serviceaccount_key"""
 
@@ -1643,6 +1687,20 @@ class ComputeIterator(ResourceIterator):
             yield FACTORIES['compute'].create_new(data)
 
 
+class DiskIterator(ResourceIterator):
+    """The Resource iterator implementation for Disk"""
+
+    def iter(self):
+        """Yields:
+            Resource: Disk created
+        """
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            for data in gcp.iter_computedisks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['disk'].create_new(data)
+
+
 class InstanceIterator(ResourceIterator):
     """The Resource iterator implementation for Instance"""
 
@@ -1904,6 +1962,44 @@ class GsuiteMemberIterator(ResourceIterator):
                 yield FACTORIES['gsuite_group_member'].create_new(data)
 
 
+class ProjectSinkIterator(ResourceIterator):
+    """The Resource iterator implementation for Project Sink"""
+
+    def iter(self):
+        """Yields:
+            Resource: Sink created
+        """
+        gcp = self.client
+        if self.resource.enumerable():
+            for data in gcp.iter_project_sinks(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['sink'].create_new(data)
+
+
+class FolderSinkIterator(ResourceIterator):
+    """The Resource iterator implementation for Folder Sink"""
+
+    def iter(self):
+        """Yields:
+            Resource: Sink created
+        """
+        gcp = self.client
+        for data in gcp.iter_folder_sinks(folderid=self.resource['name']):
+            yield FACTORIES['sink'].create_new(data)
+
+
+class OrganizationSinkIterator(ResourceIterator):
+    """The Resource iterator implementation for Organization Sink"""
+
+    def iter(self):
+        """Yields:
+            Resource: Sink created
+        """
+        gcp = self.client
+        for data in gcp.iter_organization_sinks(orgid=self.resource['name']):
+            yield FACTORIES['sink'].create_new(data)
+
+
 FACTORIES = {
 
     'organization': ResourceFactory({
@@ -1915,6 +2011,7 @@ FACTORIES = {
             FolderIterator,
             OrganizationRoleIterator,
             OrganizationCuratedRoleIterator,
+            OrganizationSinkIterator,
             ProjectIterator,
         ]}),
 
@@ -1923,7 +2020,8 @@ FACTORIES = {
         'cls': Folder,
         'contains': [
             FolderFolderIterator,
-            FolderProjectIterator
+            FolderProjectIterator,
+            FolderSinkIterator,
         ]}),
 
     'project': ResourceFactory({
@@ -1937,6 +2035,7 @@ FACTORIES = {
             AppEngineAppIterator,
             KubernetesClusterIterator,
             ComputeIterator,
+            DiskIterator,
             ImageIterator,
             InstanceIterator,
             FirewallIterator,
@@ -1947,7 +2046,8 @@ FACTORIES = {
             ForwardingRuleIterator,
             NetworkIterator,
             SubnetworkIterator,
-            ProjectRoleIterator
+            ProjectRoleIterator,
+            ProjectSinkIterator
         ]}),
 
     'appengine_app': ResourceFactory({
@@ -2005,6 +2105,12 @@ FACTORIES = {
     'compute': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeProject,
+        'contains': [
+        ]}),
+
+    'disk': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Disk,
         'contains': [
         ]}),
 
@@ -2121,6 +2227,12 @@ FACTORIES = {
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],
         'cls': GsuiteGroupMember,
+        'contains': [
+        ]}),
+
+    'sink': ResourceFactory({
+        'dependsOn': ['organization', 'folder', 'project'],
+        'cls': Sink,
         'contains': [
         ]}),
 }

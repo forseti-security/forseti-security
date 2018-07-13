@@ -7,6 +7,6 @@ First, help us help you by providing the following information when opening an i
 
 Secondly, if the issue is a feature request, be descriptive regarding what needs to be changed and why.
 
-Finally, be sure to see the [FAQ](forsetisecurity.org/FAQ) and [Community](forsetisecurity.org/community) for assistance.
+Finally, be sure to see the [FAQ](https://forsetisecurity.org/docs/latest/faq/) and [Get Help](https://forsetisecurity.org/docs/latest/develop/get-help.html) for assistance.
 
 Thanks!

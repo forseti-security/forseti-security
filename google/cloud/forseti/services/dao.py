@@ -39,10 +39,11 @@ from sqlalchemy import DateTime
 from sqlalchemy import or_
 from sqlalchemy import and_
 from sqlalchemy import not_
-from sqlalchemy.orm import relationship
 from sqlalchemy.orm import aliased
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import reconstructor
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from sqlalchemy.sql import union
 from sqlalchemy.ext.declarative import declarative_base
@@ -287,8 +288,8 @@ def define_model(model_name, dbengine, model_seed):
         parent_type_name = Column(
             get_string_by_dialect(dbengine.dialect.name, 512),
             ForeignKey('{}.type_name'.format(resources_tablename)))
-        name = Column(String(128), nullable=False)
-        type = Column(String(64), nullable=False)
+        name = Column(String(256), nullable=False)
+        type = Column(String(128), nullable=False)
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256), default='')
         email = Column(String(256), default='')
@@ -366,7 +367,7 @@ def define_model(model_name, dbengine, model_seed):
         __tablename__ = members_tablename
         name = Column(String(256), primary_key=True)
         type = Column(String(64))
-        member_name = Column(String(128))
+        member_name = Column(String(256))
 
         parents = relationship(
             'Member',
@@ -661,9 +662,10 @@ def define_model(model_name, dbengine, model_seed):
             """
 
             qry = (
-                session.query(Resource).filter(
-                    Resource.type == resource_type)
-            )
+                session.query(Resource)
+                .filter(Resource.type == resource_type)
+                .options(joinedload(Resource.parent))
+                .enable_eagerloads(True))
 
             if parent_type_name:
                 qry = qry.filter(Resource.parent_type_name == parent_type_name)
