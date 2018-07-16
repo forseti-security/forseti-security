@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2018 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GOogle CLoud Forseti."""
-
-__version__ = '2.1.0'
-__package_name__ = 'forseti-security'
-
-try:
-    __import__('pkg_resources').declare_namespace(__name__)
-except ImportError:
-    __path__ = __import__('pkgutil').extend_path(__path__, __name__)
+"""Discovery documents."""

@@ -268,8 +268,8 @@ def infer_version(advanced_mode):
 
     if not cur_version:
         print('Unable to determine the current Forseti version, please check '
-              'https://forsetisecurity.org/faq/#installation-and-deployment '
-              'for more information.')
+              'https://forsetisecurity.org/docs/latest/faq/'
+              '#installation-and-deployment for more information.')
         sys.exit(1)
 
     if not advanced_mode:
