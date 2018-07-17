@@ -29,6 +29,6 @@ handlers:
   secure: always
 
 - url: /(.*)
-  static_files: www/\1/index.html
-  upload: www/(.*)/index.html
+  static_files: www/\1
+  upload: www/(.*)
   secure: always
