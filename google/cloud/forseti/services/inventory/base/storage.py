@@ -136,7 +136,7 @@ class Memory(Storage):
         Args:
             resource (object): the resource object to write
         """
-        self.mem[resource.key()] = resource
+        self.mem[resource.type() + resource.key()] = resource
 
     def update(self, resource):
         """Update a existing resource object in memory
