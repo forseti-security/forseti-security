@@ -42,6 +42,7 @@ VIOLATION_RESOURCES = {
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
         'instance_network_interface_violations'),
+    'LOG_SINK_VIOLATION': 'log_sink_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
 }

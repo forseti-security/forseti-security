@@ -61,6 +61,9 @@ class ResourceType(object):
     # Kubernetes Engine
     KE_CLUSTER = resources.KubernetesCluster.type()
 
+    # Logging
+    LOG_SINK = resources.Sink.type()
+
     resource_types = frozenset([
         ORGANIZATION,
         FOLDER,
@@ -68,6 +71,7 @@ class ResourceType(object):
         BUCKET,
         GROUP,
         FORWARDING_RULE,
+        LOG_SINK,
     ])
 
     @classmethod
