@@ -368,7 +368,8 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
                      violation_full_name, e)
         return ''
 
-    return violation_hash.hexdigest()
+    # CSCC can't accept the full hash, so this must be shortened.
+    return violation_hash.hexdigest()[:64]
 
 
 def initialize(engine):
