@@ -1,5 +1,5 @@
 ---
-title: Install, Buiild, and Run Forseti Website
+title: Install, Build, and Run Forseti Website
 order: 200
 ---
 
@@ -26,9 +26,6 @@ To build the Forseti Security website locally:
 ### Install Docker {#install-docker}
 
 ```bash
-# Remove old docker-engine package to ensure a clean and up-to-date install
-sudo apt-get remove docker docker-engine docker.io
-
 sudo apt-get update
 sudo apt-get install docker-ce
 ```
