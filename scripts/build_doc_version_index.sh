@@ -40,6 +40,7 @@ function all_version_directories_except_latest() {
 #   Newline-separated list of version
 #   names
 #######################################
+
 function all_versions() {
     local version_directories
     version_directories="$(all_version_directories_except_latest)"
