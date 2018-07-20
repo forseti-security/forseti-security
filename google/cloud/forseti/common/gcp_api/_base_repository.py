@@ -15,6 +15,7 @@
 """Base GCP client which uses the discovery API."""
 import json
 import logging
+import os
 import threading
 import google_auth_httplib2
 import googleapiclient
@@ -55,8 +56,8 @@ REQUEST_RECORDER = dict()
 REQUEST_REPLAYER = dict()
 
 # Used for private APIs that need to be created from local discovery documents
-DISCOVERY_DOCS_BASE_DIR = (
-    'google/cloud/forseti/common/gcp_api/discovery_documents/')
+DISCOVERY_DOCS_BASE_DIR = os.path.join(os.path.abspath(
+    os.path.dirname(__file__)), 'discovery_documents')
 
 
 @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
@@ -88,9 +89,11 @@ def _create_service_api(credentials, service_name, version, is_private_api,
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:
+        service_json = '{}.json'.format(service_name)
+        service_path = os.path.join(DISCOVERY_DOCS_BASE_DIR, service_json)
         return _build_service_from_document(
             credentials,
-            '{}{}.json'.format(DISCOVERY_DOCS_BASE_DIR, service_name))
+            service_path)
 
     discovery_kwargs = {
         'serviceName': service_name,
