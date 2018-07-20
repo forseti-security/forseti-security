@@ -17,9 +17,10 @@ To build the Forseti Security website locally:
 
 1. [Install Docker](#install-docker)
 2. [Install Ruby & RubyGems](#install-ruby)
-3. [Install Bundler](#install-bundler)
-4. [Install Jekyll](#install-jekyll)
-5. [Fetch, Build, and Run Forseti Web Code](#fetch-code)
+3. [Install Website Build Dependencies](#install-web-deps)
+4. [Install Bundler](#install-bundler)
+5. [Install Jekyll](#install-jekyll)
+6. [Fetch, Build, and Run Forseti Web Code](#fetch-code)
 
 ## Step by Step Instructions
 
@@ -63,6 +64,17 @@ To install Ruby and RubyGems, execute the following:
 sudo apt-get install ruby ruby-dev
 ```
 
+### Install Website Build Dependencies {#install-web-deps}
+
+In order to build the website code in the last step, you will need a
+few Linux dependencies installed.
+
+To add these dependencies, run the following:
+
+```bash
+sudo apt-get install imagemagick libmagickwand-dev zlib1g-dev
+```
+
 ### Install Bundler {#install-bundler}
 
 ```bash
@@ -76,8 +88,9 @@ ERROR:  While executing gem ... (Gem::FilePermissionError)
 You don't have write permissions for the /var/lib/gems/2.3.0 directory.
 ```
 
-If you do, the solution is [here](https://stackoverflow.com/a/47207118/1783829)
-and is listed below:
+If you do, you can either setup a Ruby virtual environment or
+follow the steps documented [here](https://stackoverflow.com/a/47207118/1783829)
+ which are listed below:
 
 ```bash
 cd /var/lib
@@ -141,17 +154,6 @@ user@host:~/forseti-web$ git pull origin forsetisecurity.org-dev
 ```
 
 #### Build Code
-
-##### Install Remaining Website Dependencies
-Now that the code is present, you are almost ready to build the website.
-However, Linux is likely missing some dependencies that will be needed
-when installing or building the website.
-
-To add these dependencies, run the following:
-
-```bash
-sudo apt-get install imagemagick libmagickwand-dev zlib1g-dev
-```
 
 ##### Build Website
 
