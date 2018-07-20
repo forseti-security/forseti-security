@@ -1,12 +1,13 @@
 ---
-title: Edit & Build Website
-order: 003
+title: Install, Buiild, and Run Forseti Website
+order: 200
 ---
 
 #  {{ page.title }}
 
 The instructions below are aimed at developers using Linux, particularly Debian
-or Ubuntu.
+or Ubuntu. This pages shows you how to install and run the website server
+lcoally, so that you can test your documentation changes before merging.
 
 ---
 
@@ -25,7 +26,7 @@ To build the Forseti Security website locally:
 ### Install Docker {#install-docker}
 
 ```bash
-# Remove old docker-engine package (if installed)
+# Remove old docker-engine package to ensure a clean and up-to-date install
 sudo apt-get remove docker docker-engine docker.io
 
 sudo apt-get update
@@ -161,16 +162,15 @@ user@host:~/forseti-web$ bundle install
 
 #### Run the Website
 
-OPTIONAL: To generate the sphinx doc, run:
-
-```bash
-user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "dev"
-user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "stable"
-```
-
 To launch and run the website locally, run:
 
 ```bash
 user@host:~/forseti-web$ bundle exec jekyll serve
 ```
 
+OPTIONAL: To generate the sphinx doc, run:
+
+```bash
+user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "dev"
+user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "stable"
+```
