@@ -19,10 +19,6 @@ a pull request.
 Understand how Forseti uses branches, performs releases, and manages development of Forseti on
 GitHub.
 
-**[Edit & Build Forseti Security Website Locally]({% link _docs/latest/develop/website.md %})**
-
-Edit and build the Forseti website locally.
-
 **[Start Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
 
 Get set up and started with development.
