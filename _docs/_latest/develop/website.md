@@ -141,6 +141,8 @@ user@host:~/forseti-web$ git pull origin forsetisecurity.org-dev
 ```
 
 #### Build Code
+
+##### Install Remaining Website Dependencies
 Now that the code is present, you are almost ready to build the website.
 However, Linux is likely missing some dependencies that will be needed
 when installing or building the website.
@@ -150,6 +152,8 @@ To add these dependencies, run the following:
 ```bash
 sudo apt-get install imagemagick libmagickwand-dev zlib1g-dev
 ```
+
+##### Build Website
 
 Build the Forseti website:
 
