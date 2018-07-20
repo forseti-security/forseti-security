@@ -64,7 +64,7 @@
     </div>
     <div class="edit-on-github visible-lg-inline-block visible-md-inline-block">
       {% assign filename = page.path | split:"/" | last | downcase %}
-      <a class="icon github" href="{{ site.github.repository_url }}/edit/forsetisecurity.org/{{ page.path }}">
+      <a class="icon github" href="{{ site.github.repository_url }}/edit/forsetisecurity.org-dev/{{ page.path | replace_first: "_docs/latest/", "_docs/_latest/" }}">
         Edit this page
       </a>
     </div>
