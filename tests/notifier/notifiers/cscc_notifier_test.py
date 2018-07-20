@@ -60,7 +60,7 @@ class CsccNotifierTest(ScannerBaseDbTestCase):
             {'assetIds': ['full_name_111'],
              'category': 'UNKNOWN_RISK',
              'eventTime': '2010-08-28T10:20:30Z',
-             'id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff',
+             'id': '539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69',
              'properties': {
                  'inventory_index_id': 'iii',
                  'resource_data': 'inventory_data_111',
@@ -73,7 +73,7 @@ class CsccNotifierTest(ScannerBaseDbTestCase):
             {'assetIds': ['full_name_222'],
              'category': 'UNKNOWN_RISK',
              'eventTime': '2010-08-28T10:20:30Z',
-             'id': '3eff279ccb96799d9eb18e6b76055b2242d1f2e6f14c1fb3bb48f7c8c03b4ce4db577d67c0b91c5914902d906bf1703d5bbba0ceaf29809ac90fef3bf6aa5417',
+             'id': '3eff279ccb96799d9eb18e6b76055b2242d1f2e6f14c1fb3bb48f7c8c03b4ce4',
              'properties': {
                  'inventory_index_id': 'iii',
                  'resource_data': 'inventory_data_222',
