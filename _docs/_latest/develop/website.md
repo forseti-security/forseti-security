@@ -1,5 +1,5 @@
 ---
-title: Install, Build, and Run Forseti Website
+title: Run Website Locally
 order: 200
 ---
 
@@ -88,7 +88,9 @@ ERROR:  While executing gem ... (Gem::FilePermissionError)
 You don't have write permissions for the /var/lib/gems/2.3.0 directory.
 ```
 
-If you do, you can either setup a Ruby virtual environment or
+If you do, you can either setup a Ruby virtual environment
+like [RVM](http://rvm.io/) or [rbenv](https://github.com/rbenv/rbenv).
+If you do not want to setup a virtual environment,
 follow the steps documented [here](https://stackoverflow.com/a/47207118/1783829)
  which are listed below:
 
@@ -161,17 +163,18 @@ Build the Forseti website:
 user@host:~/forseti-web$ bundle install
 ```
 
-#### Run the Website
+#### Serve the Website locally
+
+Generate the Sphinx docs:
+
+```bash
+user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "dev"
+```
+
+NOTE: You do not have to run this scrit to get the website running locally.
 
 To launch and run the website locally, run:
 
 ```bash
 user@host:~/forseti-web$ bundle exec jekyll serve
-```
-
-OPTIONAL: To generate the sphinx doc, run:
-
-```bash
-user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "dev"
-user@host:~/forseti-web$ ./scripts/generate_sphinx_docs.sh "stable"
 ```
