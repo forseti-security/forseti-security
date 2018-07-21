@@ -88,7 +88,7 @@ ERROR:  While executing gem ... (Gem::FilePermissionError)
 You don't have write permissions for the /var/lib/gems/2.3.0 directory.
 ```
 
-If you do, you can either setup a Ruby virtual environment
+If you do, you can setup a Ruby virtual environment
 like [RVM](http://rvm.io/) or [rbenv](https://github.com/rbenv/rbenv).
 If you do not want to setup a virtual environment,
 follow the steps documented [here](https://stackoverflow.com/a/47207118/1783829)
