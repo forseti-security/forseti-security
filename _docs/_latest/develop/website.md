@@ -153,9 +153,7 @@ user@host:~/forseti-web$ git remote add origin https://github.com/GoogleCloudPla
 user@host:~/forseti-web$ git pull origin forsetisecurity.org-dev
 ```
 
-#### Build Code
-
-##### Build Website
+#### Build Website
 
 Build the Forseti website:
 
