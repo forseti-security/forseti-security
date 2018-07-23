@@ -2,7 +2,7 @@
 title: Develop
 order: 000
 hide:
-  right_sidebar: true
+  right sidebar: true
 ---
 
 # {{ page.title }}
@@ -23,6 +23,10 @@ GitHub.
 
 Get set up and started with development.
 
+**[Install, Build, and Run Forseti Website]({% link _docs/latest/develop/website.md %})**
+
+Install, build, edit, and run the Forseti website locally.
+
 **[Get Help Developing on Forseti]({% link _docs/latest/use/get-help.md %})**
 
 Find the best way to get help with development.
@@ -30,4 +34,3 @@ Find the best way to get help with development.
 **[Learn the Forseti API]({% link _docs/latest/develop/reference/index.html %})**
 
 Review the generated pydoc to understand the internal APIs.
-
