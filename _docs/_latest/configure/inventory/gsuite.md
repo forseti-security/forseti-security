@@ -34,6 +34,7 @@ page.
 
    1. On the **Edit service account** dialog that appears, select the **Enable
    G Suite Domain-wide Delegation** checkbox, then click **Save**.
+   NOTE: You may see a field entitled "Product name for the consent screen". You cannot leave this field blank.
 
    {% responsive_image path: images/docs/configuration/service_account_enable_dwd.png alt: "Service Account Enable DwD" indent: 3 %}
 
