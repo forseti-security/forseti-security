@@ -23,7 +23,7 @@ GitHub.
 
 Get set up and started with development.
 
-**[Install, Buiild, and Run Forseti Website]({% link _docs/latest/develop/website.md %})**
+**[Install, Build, and Run Forseti Website]({% link _docs/latest/develop/website.md %})**
 
 Install, build, edit, and run the Forseti website locally.
 
