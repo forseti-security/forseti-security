@@ -51,7 +51,7 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
-def activate_service_account(service_account, key_file):
+def activate_service_account(key_file):
     """Activate the service account with gcloud.
 
     Args:
@@ -61,7 +61,7 @@ def activate_service_account(service_account, key_file):
 
     return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
-         service_account, '--key-file=' + key_file])
+         '--key-file=' + key_file])
 
     if return_code:
         print(err)
@@ -791,7 +791,7 @@ def check_vm_init_status(vm_name, zone):
         bool: Whether or not the VM has finished initializing.
     """
 
-    check_script_executed = 'tail -n1 /tmp/deployment.log'
+    check_script_executed = '\"tail -n1 /tmp/deployment.log\"'
 
     _, out, _ = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
