@@ -52,7 +52,7 @@ especially if you run Forseti in multiple environments.
 
 To grant the roles on the Cloud IAM policies, use the following commands:
 
-  * **Organization**: the member has access to everything under the organization.
+  * Organization: the member has access to everything under the organization.
     Your authorized account must have the Organization Admin role to assign the role to another member.
     
     To retrieve your organization id, [follow these steps](https://cloud.google.com/resource-manager/docs/creating-managing-organization#retrieving_your_organization_id).
