@@ -31,7 +31,7 @@ Scanner, and Enforcer, follow the steps below:
 
   1. Go to the [GCP Console](https://console.cloud.google.com/iam-admin/serviceaccounts)
   and create a new service account.
-  1. Create and download a JSON key for the service account.
+  1. Create and download a JSON key for the service account [see docs](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
   1. Run the following command to assume the service account credentials:
 
   ```bash
