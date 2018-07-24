@@ -51,7 +51,7 @@ your Google user.
 
 To grant the roles on the Cloud IAM policies, use the following commands:
 
-  * Organization: the member has access to the everything under the organization.
+  * Organization: the member has access to everything under the organization.
     Your authorized account must have the Organization Admin role to assign the role to another member.
 
     To add Cloud IAM policy bindings to the Organization, run the following command:
