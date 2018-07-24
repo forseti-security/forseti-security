@@ -111,7 +111,7 @@ Examples of `MEMBER_TYPE:MEMBER_NAME`:
 Enable each of the required APIs by running the following command:
 
   ```bash
-  gcloud beta service-management enable <API URI>
+  gcloud services enable <API URI>
   ```
 
   {% include docs/latest/required-apis.md %}
