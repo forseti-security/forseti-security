@@ -45,8 +45,8 @@ To enable your service account to collect G Suite data, follow the steps in
 
 For Forseti to have access to read data from your GCP environment,
 you will need to assign the roles below to the Forseti service account or to
-your Google user. It is recommended that you use the service account, especially
-if run Forseti in multiple environments.
+your Google user. It is recommended that you assign roles to the service account,
+especially if you run Forseti in multiple environments.
 
 {% include docs/latest/forseti-server-gcp-required-roles.md %}
 
