@@ -141,8 +141,9 @@ system. Make sure to use the values from your terminal.
 If on Linux executing ``mkvirtualenv forseti-security`` results in
 ``bash: mkvirtualenv: command not found`` then try the following:
 
-(1) ``sudo pip install virtualenv virtualenvwrapper``
-(2) ``sudo pip install --upgrade pip``
+``sudo pip install virtualenv virtualenvwrapper``
+
+Now attempt to make a virtual environent again.
 
 ## Configuring Forseti settings
 
