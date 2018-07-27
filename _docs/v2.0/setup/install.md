@@ -67,6 +67,12 @@ steps below:
      python install/gcp_installer.py
      ```
 
+     If you don't plan to share your Forseti instance with other people, 
+     you can choose to install the server instance only and access Forseti from there.
+     ```bash
+     python install/gcp_installer.py --type=server
+     ```
+
      To see additional configurations for the setup, run the following:
 
      ```bash
