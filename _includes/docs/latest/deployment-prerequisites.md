@@ -44,15 +44,18 @@ To enable your service account to collect G Suite data, follow the steps in
 ### Assigning roles
 
 For Forseti to have access to read data from your GCP environment,
-you will need to assign roles to the Forseti service account or to
-your Google user.
+you will need to assign the roles below to the Forseti service account or to
+your Google user. It is recommended that you assign roles to the service account,
+especially if you run Forseti in multiple environments.
 
 {% include docs/latest/forseti-server-gcp-required-roles.md %}
 
 To grant the roles on the Cloud IAM policies, use the following commands:
 
-  * Organization: the member has access to everything under the organization.
+  * **Organization**: the member has access to everything under the organization.
     Your authorized account must have the Organization Admin role to assign the role to another member.
+    
+    To retrieve your organization id, [follow these steps](https://cloud.google.com/resource-manager/docs/creating-managing-organization#retrieving_your_organization_id).
 
     To add Cloud IAM policy bindings to the Organization, run the following command:
 
@@ -60,8 +63,16 @@ To grant the roles on the Cloud IAM policies, use the following commands:
     gcloud organizations add-iam-policy-binding ORGANIZATION_ID \
      --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
+    
+    For exmple:
+    
+    ```bash
+    gcloud organizations add-iam-policy-binding 000000000001 \
+      --member=serviceAccount:service-account-01@my-foo-project.iam.gserviceaccount.com \
+      --role=roles/serviceusage.serviceUsageConsumer
+    ```
 
-  * Folder: the member has access to everything under a particular folder.
+  * **Folder**: the member has access to everything under a particular folder.
     Your authorized account must have the Folder Admin role to assign the role to another member.
 
     To add Cloud IAM policy bindings to the Folder, run the following command:
@@ -71,7 +82,7 @@ To grant the roles on the Cloud IAM policies, use the following commands:
      --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
 
-  * Project: the member has access only to a particular project.
+  * **Project**: the member has access only to a particular project.
     Your authorized account must have the Owner role on the project or Folder Admin.
 
     To add Cloud IAM policy bindings to the Project, run the following command:
@@ -80,8 +91,16 @@ To grant the roles on the Cloud IAM policies, use the following commands:
     gcloud projects add-iam-policy-binding PROJECT_ID \
      --member=MEMBER_TYPE:MEMBER_NAME --role=ROLE_NAME
     ```
+    
+    For example:
+    
+    ```bash
+    gcloud projects add-iam-policy-binding my-project-name \
+     --member=serviceAccount:service-account-01@my-project-name.iam.gserviceaccount.com \
+     --role=roles/storage.objectCreator
+    ```
 
-  * Service Account: grant additional roles to the service account.
+  * **Service Account**: grant additional roles to the service account.
     Your authorized account must have the Owner role on the project that is
     the source of the service account.
 
