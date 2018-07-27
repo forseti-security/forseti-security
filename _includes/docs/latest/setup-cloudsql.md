@@ -46,7 +46,8 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     For example:
     
       ```bash
-      ./cloud_sql_proxy -instances=foo-project-name:us-central1:mysql-instance=tcp:3306 \
+      ./cloud_sql_proxy \
+          -instances=foo-project-name:us-central1:mysql-instance=tcp:3306 \
           -credential_file=/usr/local/google/home/foo/foo-project-cert-0d152c0e1bc8.json
       ```
 
