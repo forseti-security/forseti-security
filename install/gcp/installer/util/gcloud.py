@@ -790,7 +790,7 @@ def check_vm_init_status(vm_name, zone):
         bool: Whether or not the VM has finished initializing.
     """
 
-    check_script_executed = '\"tail -n1 /tmp/deployment.log\"'
+    check_script_executed = 'tail -n1 /tmp/deployment.log'
 
     _, out, _ = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
