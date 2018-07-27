@@ -39,8 +39,8 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     
       ```bash
       <path/to/cloud_sql_proxy> \
-                  -instances=<INSTANCE_CONNECTION_NAME>=tcp:3306 \
-                  -credential_file=<PATH_TO_KEY_FILE>
+          -instances=<INSTANCE_CONNECTION_NAME>=tcp:3306 \
+          -credential_file=<PATH_TO_KEY_FILE>
       ```
     
     For example:
