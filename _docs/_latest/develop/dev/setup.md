@@ -145,6 +145,14 @@ If on Linux executing ``mkvirtualenv forseti-security`` results in
 
 Now attempt to make a virtual environent again.
 
+------------------
+
+If on Linux executing ``python setup.py install``
+results in ``EnvironmentError: mysql_config not found`` then
+try the following:
+
+``sudo apt install default-libmysqlclient-dev``
+
 ## Configuring Forseti settings
 
 Before you run Forseti, you need to edit the forseti configuration file.
