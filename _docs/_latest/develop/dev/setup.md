@@ -141,28 +141,8 @@ system. Make sure to use the values from your terminal.
 If on Linux executing ``mkvirtualenv forseti-security`` results in
 ``bash: mkvirtualenv: command not found`` then try the following:
 
-``sudo pip install virtualenv virtualenvwrapper``
-
-Now attempt to make a virtual environent again.
-
-------------------
-
-If on Linux executing ``python setup.py install``
-results in ``EnvironmentError: mysql_config not found`` then
-try the following:
-
-``sudo apt install default-libmysqlclient-dev``
-
-------------------
-
-If on Linux executing ``workon forseti-security``
-results in ``bash: workon: command not found`` then
-ensure ``workon`` is in the source path. Try fixing
-source path issue by executing the following:
-
-``source /usr/local/bin/virtualenvwrapper.sh``
-
-and then trying ``workon forseti-security`` again.
+(1) ``sudo pip install virtualenv virtualenvwrapper``
+(2) ``sudo pip install --upgrade pip``
 
 ## Configuring Forseti settings
 
