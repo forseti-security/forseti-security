@@ -107,7 +107,7 @@ class CloudBillingTest(unittest_utils.ForsetiTestCase):
         """Test get billing accounts under a master account."""
         http_mocks.mock_http_response(fake_cloudbilling.GET_BILLING_IAM)
 
-        result = self.billing_api_client.get_billing_account_iam_policies(
+        result = self.billing_api_client.get_billing_acct_iam_policies(
             '001122-AABBCC-DDEEFF')
 
         self.assertEquals(2, len(result['bindings']))

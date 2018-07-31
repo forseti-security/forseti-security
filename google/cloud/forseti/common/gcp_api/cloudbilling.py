@@ -239,8 +239,8 @@ class CloudBillingClient(object):
         """
         filters = ''
         if master_account_id:
-          filters = 'master_billing_account={}'.format(
-              self.repository.billing_accounts.get_name(master_account_id))
+            filters = 'master_billing_account={}'.format(
+                self.repository.billing_accounts.get_name(master_account_id))
 
         try:
             paged_results = self.repository.billing_accounts.list(
@@ -257,7 +257,7 @@ class CloudBillingClient(object):
             LOGGER.error(api_exception)
             raise api_exception
 
-    def get_billing_account_iam_policies(self, account_id):
+    def get_billing_acct_iam_policies(self, account_id):
         """Gets the IAM policies for the given billing account.
 
         Args:
@@ -289,4 +289,3 @@ class CloudBillingClient(object):
             api_exception = api_errors.ApiExecutionError(account_id, e)
             LOGGER.error(api_exception)
             raise api_exception
-
