@@ -21,12 +21,38 @@ from google.auth.transport import requests
 from google.oauth2 import service_account
 
 from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
+from google.cloud.forseti.common.util import logger
 
+LOGGER = logger.get_logger(__name__)
 
 _TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 
 
-def get_delegated_credential(delegated_account, scopes):
+def get_delegated_credential(delegated_account, scopes, retry=5):
+    """Build delegated credentials required for accessing the gsuite APIs with
+    retry.
+
+    Args:
+        delegated_account (str): The account to delegate the service account to
+            use.
+        scopes (list): The list of required scopes for the service account.
+        retry (int): Number of times to retry.
+
+    Returns:
+        service_account.Credentials: Credentials as built by
+        google.oauth2.service_account.
+    """
+    if retry < 0:
+        return None
+
+    try:
+        return _get_delegated_credential(delegated_account, scopes)
+    except Exception as e:
+        LOGGER.error(e, exc_info=True)
+        return get_delegated_credential(delegated_account, scopes, retry-1)
+
+
+def _get_delegated_credential(delegated_account, scopes):
     """Build delegated credentials required for accessing the gsuite APIs.
 
     Args:
@@ -38,6 +64,7 @@ def get_delegated_credential(delegated_account, scopes):
         service_account.Credentials: Credentials as built by
         google.oauth2.service_account.
     """
+
     request = requests.Request()
 
     # Get the "bootstrap" credentials that will be used to talk to the IAM

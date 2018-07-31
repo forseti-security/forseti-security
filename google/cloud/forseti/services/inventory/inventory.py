@@ -255,7 +255,7 @@ class Inventory(object):
                     return result.get_summary()
 
                 except Exception as e:
-                    LOGGER.exception(e)
+                    LOGGER.error(e, exc_info=True)
                     queue.put(e)
                     queue.put(None)
 
