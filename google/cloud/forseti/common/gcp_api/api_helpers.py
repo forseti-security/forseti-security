@@ -14,45 +14,23 @@
 
 """Helper functions for API clients."""
 
+from retrying import retry
+
 import google.auth
-from google.auth import exceptions, iam
+from google.auth import iam
 from google.auth.credentials import with_scopes_if_required
 from google.auth.transport import requests
 from google.oauth2 import service_account
 
 from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
-from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import logger, retryable_exceptions
 
 LOGGER = logger.get_logger(__name__)
 
 _TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 
 
-def get_delegated_credential(delegated_account, scopes, retry=5):
-    """Build delegated credentials required for accessing the gsuite APIs with
-    retry.
-
-    Args:
-        delegated_account (str): The account to delegate the service account to
-            use.
-        scopes (list): The list of required scopes for the service account.
-        retry (int): Number of times to retry.
-
-    Returns:
-        service_account.Credentials: Credentials as built by
-        google.oauth2.service_account.
-    """
-    if retry < 0:
-        return None
-
-    try:
-        return _get_delegated_credential(delegated_account, scopes)
-    except exceptions.DefaultCredentialsError as e:
-        LOGGER.error(e, exc_info=True)
-        return get_delegated_credential(delegated_account, scopes, retry-1)
-
-
-def _get_delegated_credential(delegated_account, scopes):
+def get_delegated_credential(delegated_account, scopes):
     """Build delegated credentials required for accessing the gsuite APIs.
 
     Args:
@@ -69,7 +47,7 @@ def _get_delegated_credential(delegated_account, scopes):
 
     # Get the "bootstrap" credentials that will be used to talk to the IAM
     # API to sign blobs.
-    bootstrap_credentials, _ = google.auth.default()
+    bootstrap_credentials, _ = get_google_default_credentials()
 
     bootstrap_credentials = with_scopes_if_required(
         bootstrap_credentials,
@@ -91,6 +69,18 @@ def _get_delegated_credential(delegated_account, scopes):
         scopes=scopes, subject=delegated_account)
 
     return delegated_credentials
+
+
+@retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
+       wait_exponential_multiplier=1000, wait_exponential_max=10000,
+       stop_max_attempt_number=5)
+def get_google_default_credentials():
+    """Get Google default credentials.
+
+    Returns
+        google.auth.credentials.Credentials: Credentials object.
+    """
+    return google.auth.default()
 
 
 def flatten_list_results(paged_results, item_key):

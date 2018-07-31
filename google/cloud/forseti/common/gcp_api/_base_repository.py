@@ -28,6 +28,7 @@ import google.auth
 from google.auth.credentials import with_scopes_if_required
 
 from google.cloud import forseti as forseti_security
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
@@ -175,7 +176,7 @@ class BaseRepositoryClient(object):
         if not credentials:
             # Only share the http object when using the default credentials.
             self._use_cached_http = True
-            credentials, _ = google.auth.default()
+            credentials, _ = api_helpers.get_google_default_credentials()
         self._credentials = with_scopes_if_required(credentials,
                                                     list(CLOUD_SCOPES))
 
