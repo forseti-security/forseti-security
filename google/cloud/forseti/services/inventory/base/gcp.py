@@ -842,6 +842,28 @@ class ApiClientImpl(ApiClient):
         """
         return self.cloudbilling.get_billing_info(projectid)
 
+    @create_lazy('cloudbilling', _create_cloudbilling)
+    def iter_billing_accounts(self):
+        """Iterate visible Billing Accounts in an organization from GCP API.
+
+        Yields:
+            dict: Generator of billing accounts.
+        """
+        for account in self.cloudbilling.get_billing_accounts():
+            yield account
+
+    @create_lazy('cloudbilling', _create_cloudbilling)
+    def get_billing_account_iam_policy(self, accountid):
+        """Gets IAM policy of a Billing Account from GCP API.
+
+        Args:
+            accountid (str): id of the billing account to get policy.
+
+        Returns:
+            dict: Billing Account IAM policy
+        """
+        return self.cloudbilling.get_billing_acct_iam_policies(accountid)
+
     @create_lazy('servicemanagement', _create_servicemanagement)
     def get_enabled_apis(self, projectid):
         """Project enabled API services from gcp API call.

@@ -153,10 +153,22 @@ def _mock_cloudbilling():
             return results.BILLING_GET_INFO[projectid]
         return {}
 
+    def _mock_billing_get_billing_accounts():
+        return results.BILLING_GET_ACCOUNTS
+
+    def _mock_billing_get_billing_acct_iam_policies(accountid):
+        if accountid in results.BILLING_IAM_POLICIES:
+            return results.BILLING_IAM_POLICIES[account_id]
+        return {}
+
     cloudbilling_patcher = mock.patch(
         MODULE_PATH + 'cloudbilling.CloudBillingClient', spec=True)
     mock_billing = cloudbilling_patcher.start().return_value
     mock_billing.get_billing_info.side_effect = _mock_billing_get_billing_info
+    mock_billing.get_billing_accounts.side_effect = (
+        _mock_billing_get_billing_accounts)
+    mock_billing.get_billing_acct_iam_policies.side_effect = (
+        _mock_billing_get_billing_acct_iam_policies)
 
     return cloudbilling_patcher
 
