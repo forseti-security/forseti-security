@@ -22,11 +22,12 @@ from google.auth.credentials import with_scopes_if_required
 from google.auth.transport import requests
 from google.oauth2 import service_account
 
-from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
 
 LOGGER = logger.get_logger(__name__)
+
+CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
 _TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
 

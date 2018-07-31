@@ -24,7 +24,6 @@ from googleapiclient import discovery
 import httplib2
 from ratelimiter import RateLimiter
 from retrying import retry
-import google.auth
 from google.auth.credentials import with_scopes_if_required
 
 from google.cloud import forseti as forseti_security
@@ -34,9 +33,7 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
-import google.oauth2.credentials
 
-CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
 # Per request max wait timeout.
 HTTP_REQUEST_TIMEOUT = 30.0
@@ -177,8 +174,9 @@ class BaseRepositoryClient(object):
             # Only share the http object when using the default credentials.
             self._use_cached_http = True
             credentials, _ = api_helpers.get_google_default_credentials()
-        self._credentials = with_scopes_if_required(credentials,
-                                                    list(CLOUD_SCOPES))
+        self._credentials = with_scopes_if_required(
+            credentials,
+            list(api_helpers.CLOUD_SCOPES))
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()
