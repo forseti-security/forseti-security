@@ -25,6 +25,7 @@ from google.oauth2 import service_account
 
 from tests import unittest_utils
 from google.cloud import forseti as forseti_security
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import _base_repository as base
 from google.cloud.forseti.common.gcp_api import _supported_apis
 
@@ -76,7 +77,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         creds = self.get_test_service_account()
         self.assertTrue(creds.requires_scopes)
         scoped_creds = base.with_scopes_if_required(
-            creds, list(base.CLOUD_SCOPES))
+            creds, list(api_helpers.CLOUD_SCOPES))
         self.assertFalse(scoped_creds.requires_scopes)
 
     @mock.patch.object(discovery, 'build', autospec=True)

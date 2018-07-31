@@ -79,7 +79,7 @@ def get_delegated_credential(delegated_account, scopes):
 def get_google_default_credentials():
     """Get Google default credentials.
 
-    Returns
+    Returns:
         google.auth.credentials.Credentials: Credentials object.
     """
     return google.auth.default()

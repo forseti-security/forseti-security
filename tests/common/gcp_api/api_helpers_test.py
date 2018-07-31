@@ -21,7 +21,6 @@ from tests import unittest_utils
 import google.auth
 from google.auth.compute_engine import credentials as service_account
 from google.cloud.forseti.common.gcp_api import api_helpers
-from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
 
 
 FAKE_REQUIRED_SCOPES = frozenset([
@@ -44,7 +43,7 @@ class ApiHelpersTest(unittest_utils.ForsetiTestCase):
 
     def test_required_scope_in_private_module_has_not_changed(self):
         required_scope = 'https://www.googleapis.com/auth/cloud-platform'
-        self.assertTrue(required_scope in list(CLOUD_SCOPES))
+        self.assertTrue(required_scope in list(api_helpers.CLOUD_SCOPES))
 
 
 if __name__ == '__main__':
