@@ -15,7 +15,7 @@
 """Helper functions for API clients."""
 
 import google.auth
-from google.auth import iam
+from google.auth import exceptions, iam
 from google.auth.credentials import with_scopes_if_required
 from google.auth.transport import requests
 from google.oauth2 import service_account
@@ -47,7 +47,7 @@ def get_delegated_credential(delegated_account, scopes, retry=5):
 
     try:
         return _get_delegated_credential(delegated_account, scopes)
-    except Exception as e:
+    except exceptions.DefaultCredentialsError as e:
         LOGGER.error(e, exc_info=True)
         return get_delegated_credential(delegated_account, scopes, retry-1)
 
