@@ -23,7 +23,8 @@ from google.auth.transport import requests
 from google.oauth2 import service_account
 
 from google.cloud.forseti.common.gcp_api._base_repository import CLOUD_SCOPES
-from google.cloud.forseti.common.util import logger, retryable_exceptions
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import retryable_exceptions
 
 LOGGER = logger.get_logger(__name__)
 
