@@ -157,8 +157,9 @@ def _mock_cloudbilling():
         return results.BILLING_GET_ACCOUNTS
 
     def _mock_billing_get_billing_acct_iam_policies(accountid):
+        accountid = accountid.split('/')[-1]
         if accountid in results.BILLING_IAM_POLICIES:
-            return results.BILLING_IAM_POLICIES[account_id]
+            return results.BILLING_IAM_POLICIES[accountid]
         return {}
 
     cloudbilling_patcher = mock.patch(
