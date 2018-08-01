@@ -455,6 +455,7 @@ def _mock_stackdriver_logging():
         return []
 
     def _mock_get_billing_account_sinks(acctid):
+        acctid = acctid.split('/')[-1]
         if acctid in results.LOGGING_GET_BILLING_ACCOUNT_SINKS:
             return results.LOGGING_GET_BILLING_ACCOUNT_SINKS[acctid]
         return []

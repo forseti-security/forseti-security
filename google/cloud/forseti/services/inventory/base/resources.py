@@ -2046,6 +2046,19 @@ class OrganizationSinkIterator(ResourceIterator):
             yield FACTORIES['sink'].create_new(data)
 
 
+class BillingAccountSinkIterator(ResourceIterator):
+    """The Resource iterator implementation for Billing Account Sink"""
+
+    def iter(self):
+        """Yields:
+            Resource: Sink created
+        """
+        gcp = self.client
+        for data in gcp.iter_billing_account_sinks(
+                acctid=self.resource['name']):
+            yield FACTORIES['sink'].create_new(data)
+
+
 FACTORIES = {
 
     'organization': ResourceFactory({
@@ -2101,7 +2114,7 @@ FACTORIES = {
         'dependsOn': ['organization'],
         'cls': BillingAccount,
         'contains': [
-            #BillingAccountSinkIterator,
+            BillingAccountSinkIterator,
         ]}),
 
     'appengine_app': ResourceFactory({
