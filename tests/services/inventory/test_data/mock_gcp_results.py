@@ -2080,21 +2080,21 @@ BILLING_GET_INFO = {
             BILLING_DISABLED_TEMPLATE.format(project="project4")),
 }
 
-BILLING_MASTER_ACCOUNT = '001122-AABBCC-DDEEFF'
-BILLING_TEAM_ACCOUNT = '000000-111111-222222'
+BILLING_MASTER_ACCOUNT = "001122-AABBCC-DDEEFF"
+BILLING_TEAM_ACCOUNT = "000000-111111-222222"
 
 BILLING_GET_ACCOUNTS = [{
-    'name': 'billingAccounts/' + BILLING_MASTER_ACCOUNT,
-    'open': True,
-    'displayName': 'Master Billing Account',
+    "name": "billingAccounts/" + BILLING_MASTER_ACCOUNT,
+    "open": True,
+    "displayName": "Master Billing Account",
 }, {
-    'name': 'billingAccounts/' + BILLING_TEAM_ACCOUNT,
-    'open': True,
-    'displayName': 'Team Billing Account',
-    'masterBillingAccount': 'billingAccounts/' + BILLING_MASTER_ACCOUNT,
+    "name": "billingAccounts/" + BILLING_TEAM_ACCOUNT,
+    "open": True,
+    "displayName": "Team Billing Account",
+    "masterBillingAccount": "billingAccounts/" + BILLING_MASTER_ACCOUNT,
 }]
 
-# Fields: admin_address
+# Fields: admin
 BILLING_IAM_POLICY_TEMPLATE = """
 {{
  "etag": "BcDe123456z=",
@@ -2102,7 +2102,7 @@ BILLING_IAM_POLICY_TEMPLATE = """
   {{
    "role": "roles/billing.admin",
    "members": [
-    "user:{admin_address}"
+    "user:{admin}"
    ]
   }},
   {{
@@ -2116,10 +2116,10 @@ BILLING_IAM_POLICY_TEMPLATE = """
 """
 
 BILLING_IAM_POLICIES = {
-   BILLING_MASTER_ACCOUNT: json.loads(BILLING_IAM_POLICY_TEMPLATE.format(
-       admin_address='org-admin@forseti.test')),
-   BILLING_TEAM_ACCOUNT: json.loads(BILLING_IAM_POLICY_TEMPLATE.format(
-       admin_address='team-admin@forseti.test')),
+   "billingAccounts/" + BILLING_MASTER_ACCOUNT: json.loads(
+       BILLING_IAM_POLICY_TEMPLATE.format(admin="org-admin@forseti.test")),
+   "billingAccounts/" + BILLING_TEAM_ACCOUNT: json.loads(
+       BILLING_IAM_POLICY_TEMPLATE.format(admin="team-admin@forseti.test")),
 }
 
 APPENGINE_API_ENABLED = """
@@ -2242,7 +2242,7 @@ LOGGING_GET_FOLDER_SINKS = {
     ]
 }
 LOGGING_GET_BILLING_ACCOUNT_SINKS = {
-    BILLING_TEAM_ACCOUNT: [
+    "billingAccounts/" + BILLING_TEAM_ACCOUNT: [
         json.loads(
             LOG_SINK_TEMPLATE.format(
                 name="billing-audit-logs",

@@ -157,7 +157,6 @@ def _mock_cloudbilling():
         return results.BILLING_GET_ACCOUNTS
 
     def _mock_billing_get_billing_acct_iam_policies(accountid):
-        accountid = accountid.split('/')[-1]
         if accountid in results.BILLING_IAM_POLICIES:
             return results.BILLING_IAM_POLICIES[accountid]
         return {}
@@ -455,7 +454,6 @@ def _mock_stackdriver_logging():
         return []
 
     def _mock_get_billing_account_sinks(acctid):
-        acctid = acctid.split('/')[-1]
         if acctid in results.LOGGING_GET_BILLING_ACCOUNT_SINKS:
             return results.LOGGING_GET_BILLING_ACCOUNT_SINKS[acctid]
         return []
