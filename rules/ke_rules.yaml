@@ -60,16 +60,16 @@ rules:
     check_serverconfig_valid_node_versions: false
     check_serverconfig_valid_master_versions: false
     allowed_nodepool_versions:
-      - major: '1.7'
-        minor: '14-gke.0'
-        operator: '>='
       - major: '1.8'
-        minor: '9-gke.0'
+        minor: '12-gke.1'
         operator: '>='
       - major: '1.9'
-        minor: '4-gke.0'
+        minor: '7-gke.1'
         operator: '>='
       - major: '1.10'
+        minor: '2-gke.1'
+        operator: '>='
+      - major: '1.11'
         operator: '>='
 
 # Example rules.
