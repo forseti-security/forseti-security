@@ -25,6 +25,7 @@ import httplib2
 from ratelimiter import RateLimiter
 from retrying import retry
 from google.auth.credentials import with_scopes_if_required
+import google.auth.exceptions as exceptions
 
 from google.cloud import forseti as forseti_security
 from google.cloud.forseti.common.gcp_api import api_helpers
@@ -493,6 +494,25 @@ class GCPRepository(object):
         Returns:
             dict: The response from the API.
         """
+        try:
+            self._execute_request(request)
+        except exceptions.RefreshError as e:
+            # If there is problem refreshing the token, we will recreate a new
+            # Credential object and use that to refresh the request.
+            LOGGER.exception(e)
+            self._credentials, _ = api_helpers.get_google_default_credentials()
+            self._credentials.refresh(request)
+            self._execute_request(request)
+
+    def _execute_request(self, request):
+        """Execute the request.
+
+        Args:
+            request (object): The HttpRequest object to execute.
+
+        Returns:
+            dict: The response from the API.
+        """
         if self._rate_limiter:
             # Since the ratelimiter library only exposes a context manager
             # interface the code has to be duplicated to handle the case where
@@ -502,4 +522,6 @@ class GCPRepository(object):
                                        num_retries=self._num_retries)
         return request.execute(http=self.http,
                                num_retries=self._num_retries)
+
+
 # pylint: enable=too-many-instance-attributes, too-many-arguments
