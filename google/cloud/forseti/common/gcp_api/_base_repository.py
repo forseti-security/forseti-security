@@ -495,14 +495,14 @@ class GCPRepository(object):
             dict: The response from the API.
         """
         try:
-            self._execute_request(request)
+            return self._execute_request(request)
         except exceptions.RefreshError as e:
             # If there is problem refreshing the token, we will recreate a new
             # Credential object and use that to refresh the request.
             LOGGER.exception(e)
             self._credentials, _ = api_helpers.get_google_default_credentials()
             self._credentials.refresh(request)
-            self._execute_request(request)
+            return self._execute_request(request)
 
     def _execute_request(self, request):
         """Execute the request.
