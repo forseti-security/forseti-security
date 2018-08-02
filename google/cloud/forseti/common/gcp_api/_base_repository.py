@@ -170,10 +170,8 @@ class BaseRepositoryClient(object):
                 limiter for this service.
             **kwargs (dict): Additional args such as version.
         """
-        self._use_cached_http = False
         if not credentials:
             # Only share the http object when using the default credentials.
-            self._use_cached_http = True
             credentials, _ = api_helpers.get_google_default_credentials()
 
         # Lock may be acquired multiple times in the same thread.
@@ -252,8 +250,7 @@ class BaseRepositoryClient(object):
         with self._repository_lock:
             return repository_class(gcp_service=self.gcp_services[version],
                                     credentials=self._credentials,
-                                    rate_limiter=self._rate_limiter,
-                                    use_cached_http=self._use_cached_http)
+                                    rate_limiter=self._rate_limiter)
 # pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -264,7 +261,7 @@ class GCPRepository(object):
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
                  entity_field=None, list_key_field=None, get_key_field=None,
                  max_results_field='maxResults', search_query_field='query',
-                 rate_limiter=None, use_cached_http=True):
+                 rate_limiter=None):
         """Constructor.
 
         Args:
@@ -289,9 +286,6 @@ class GCPRepository(object):
             search_query_field (str): The field name used to filter search
                 results.
             rate_limiter (object): A RateLimiter object to manage API quota.
-            use_cached_http (bool): If set to true, calls to the API will use
-                a thread local shared http object. When false a new http object
-                is used for each request.
         """
         self.gcp_service = gcp_service
         self._credentials = credentials
@@ -314,8 +308,6 @@ class GCPRepository(object):
         self._max_results_field = max_results_field
         self._search_query_field = search_query_field
         self._rate_limiter = rate_limiter
-
-        self._use_cached_http = use_cached_http
         self._local = LOCAL_THREAD
 
     @property
@@ -326,14 +318,10 @@ class GCPRepository(object):
             google_auth_httplib2.AuthorizedHttp: An Http instance authorized by
                 the credentials.
         """
-        if self._use_cached_http and hasattr(self._local, 'http'):
-            return self._local.http
 
         authorized_http = google_auth_httplib2.AuthorizedHttp(
             self._credentials, http=_build_http())
 
-        if self._use_cached_http:
-            self._local.http = authorized_http
         return authorized_http
 
     def _build_request(self, verb, verb_arguments):
@@ -484,25 +472,6 @@ class GCPRepository(object):
            stop_max_attempt_number=5)
     def _execute(self, request):
         """Run execute with retries and rate limiting.
-
-        Args:
-            request (object): The HttpRequest object to execute.
-
-        Returns:
-            dict: The response from the API.
-        """
-        try:
-            return self._execute_request(request)
-        except exceptions.RefreshError as e:
-            # If there is problem refreshing the token, we will recreate a new
-            # Credential object and use that to refresh the request.
-            LOGGER.exception(e)
-            self._credentials = api_helpers.get_google_default_credentials()
-            self._credentials.refresh(request)
-            return self._execute_request(request)
-
-    def _execute_request(self, request):
-        """Execute the request.
 
         Args:
             request (object): The HttpRequest object to execute.
