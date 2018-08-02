@@ -49,11 +49,7 @@ def get_delegated_credential(delegated_account, scopes):
 
     # Get the "bootstrap" credentials that will be used to talk to the IAM
     # API to sign blobs.
-    bootstrap_credentials, _ = get_google_default_credentials()
-
-    bootstrap_credentials = with_scopes_if_required(
-        bootstrap_credentials,
-        list(CLOUD_SCOPES))
+    bootstrap_credentials = get_google_default_credentials()
 
     # Refresh the boostrap credentials. This ensures that the information about
     # this account, notably the email, is populated.
@@ -80,12 +76,14 @@ def get_google_default_credentials():
     """Get Google default credentials.
 
     Returns:
-        Tuple[~google.auth.credentials.Credentials, Optional[str]]:
-            the current environment's credentials and project ID. Project ID
-            may be None, which indicates that the Project ID could not be
-            ascertained from the environment.
+        google.auth.credentials.Credentials:
+            google auth credentials object.
     """
-    return google.auth.default()
+    credentials, _ =  google.auth.default()
+    credentials = with_scopes_if_required(
+        credentials, list(CLOUD_SCOPES))
+    return credentials
+
 
 
 def flatten_list_results(paged_results, item_key):

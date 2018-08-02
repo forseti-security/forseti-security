@@ -175,9 +175,6 @@ class BaseRepositoryClient(object):
             # Only share the http object when using the default credentials.
             self._use_cached_http = True
             credentials, _ = api_helpers.get_google_default_credentials()
-        self._credentials = with_scopes_if_required(
-            credentials,
-            list(api_helpers.CLOUD_SCOPES))
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()
@@ -500,7 +497,7 @@ class GCPRepository(object):
             # If there is problem refreshing the token, we will recreate a new
             # Credential object and use that to refresh the request.
             LOGGER.exception(e)
-            self._credentials, _ = api_helpers.get_google_default_credentials()
+            self._credentials = api_helpers.get_google_default_credentials()
             self._credentials.refresh(request)
             return self._execute_request(request)
 
@@ -522,6 +519,5 @@ class GCPRepository(object):
                                        num_retries=self._num_retries)
         return request.execute(http=self.http,
                                num_retries=self._num_retries)
-
 
 # pylint: enable=too-many-instance-attributes, too-many-arguments
