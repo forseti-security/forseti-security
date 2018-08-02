@@ -173,6 +173,7 @@ class BaseRepositoryClient(object):
         if not credentials:
             # Only share the http object when using the default credentials.
             credentials, _ = api_helpers.get_google_default_credentials()
+        self._credentials = credentials
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()

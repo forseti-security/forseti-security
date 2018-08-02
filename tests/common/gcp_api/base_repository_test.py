@@ -220,8 +220,7 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
         repo = base.GCPRepository(
             gcp_service=gcp_service_mock,
             credentials=credentials_mock,
-            component='fake_component',
-            use_cached_http=True)
+            component='fake_component')
 
         http_objects = [None] * 2
         t1 = threading.Thread(target=get_http, args=(repo, http_objects, 0))
@@ -250,33 +249,10 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
             repo = base.GCPRepository(
                 gcp_service=gcp_service_mock,
                 credentials=fake_credentials,
-                component='fake_component{}'.format(i),
-                use_cached_http=False)
+                component='fake_component{}'.format(i))
             http_objects[i] = repo.http
 
         self.assertNotEqual(http_objects[0], http_objects[1])
-
-    @mock.patch('google.auth.crypt.rsa.RSASigner.from_string',
-                return_value=object())
-    def test_use_cached_http_gets_same_http_objects(self, signer_factory):
-        """Different clients with the same credential get the same http object.
-
-        This verifies that a new http object is not created when two
-        repository clients use the same credentials object.
-        """
-        fake_credentials = self.get_test_credential()
-
-        http_objects = [None] * 2
-        for i in range(2):
-            gcp_service_mock = mock.Mock()
-            repo = base.GCPRepository(
-                gcp_service=gcp_service_mock,
-                credentials=fake_credentials,
-                component='fake_component{}'.format(i),
-                use_cached_http=True)
-            http_objects[i] = repo.http
-
-        self.assertEqual(http_objects[0], http_objects[1])
 
 
 if __name__ == '__main__':
