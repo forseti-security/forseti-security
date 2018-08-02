@@ -115,6 +115,7 @@ class Crawler(crawler.Crawler):
 
             self.write(resource)
         except Exception as e:
+            LOGGER.exception(e)
             progresser.on_error(e)
             raise
         else:
@@ -171,6 +172,7 @@ class Crawler(crawler.Crawler):
         try:
             self.config.storage.update(resource)
         except Exception as e:
+            LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
 
@@ -273,6 +275,7 @@ class ParallelCrawler(Crawler):
             with self._write_lock:
                 self.config.storage.update(resource)
         except Exception as e:
+            LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
 

@@ -107,6 +107,7 @@ def record(requests):
                     results.append(obj)
                     raise
                 except Exception as e:
+                    LOGGER.exception(e)
                     obj = {
                         'raised': True,
                         'request': request.to_json(),

@@ -41,7 +41,8 @@ class Worker(Thread):
             try:
                 val = func(*args, **kargs)
                 result.put(val, False)
-            except Exception, e:
+            except Exception as e:
+                LOGGER.exception(e)
                 result.put(e, True)
             finally:
                 self.queue.task_done()

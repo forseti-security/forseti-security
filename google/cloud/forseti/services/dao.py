@@ -571,7 +571,8 @@ def define_model(model_name, dbengine, model_seed):
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
-            except Exception:
+            except Exception as e:
+                LOGGER.exception(e)
                 LOGGER.error(Exception.message)
                 session.rollback()
                 raise

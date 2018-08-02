@@ -275,6 +275,7 @@ class Resource(object):
         try:
             self.accept(visitor, stack)
         except Exception as e:
+            LOGGER.exception(e)
             self.parent().add_warning(e)
             visitor.update(self.parent())
             visitor.on_child_error(e)
@@ -304,6 +305,7 @@ class Resource(object):
                     else:
                         res.try_accept(visitor, new_stack)
             except Exception as e:
+                LOGGER.exception(e)
                 self.add_warning(e)
                 visitor.on_child_error(e)
 
