@@ -80,7 +80,10 @@ def get_google_default_credentials():
     """Get Google default credentials.
 
     Returns:
-        google.auth.credentials.Credentials: Credentials object.
+        Tuple[~google.auth.credentials.Credentials, Optional[str]]:
+            the current environment's credentials and project ID. Project ID
+            may be None, which indicates that the Project ID could not be
+            ascertained from the environment.
     """
     return google.auth.default()
 
