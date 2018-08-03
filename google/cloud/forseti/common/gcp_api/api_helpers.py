@@ -49,7 +49,7 @@ def get_delegated_credential(delegated_account, scopes):
 
     # Get the "bootstrap" credentials that will be used to talk to the IAM
     # API to sign blobs.
-    bootstrap_credentials = get_google_default_credentials()
+    bootstrap_credentials, _ = get_google_default_credentials()
 
     # Refresh the boostrap credentials. This ensures that the information about
     # this account, notably the email, is populated.
