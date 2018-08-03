@@ -7,6 +7,8 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     follow the steps below to create a new instance:
     1. Select a **MySQL** database engine.
     1. Select a **Second Generation** instance type.
+    1. If you see a **Choose use case** page, select the configuration type you want
+       based upon whether this is for production or development use.
     1. On the **Create a MySQL Second Generation instance** page, enter an
         **Instance ID** and **Root password**, then select the following
         settings:
@@ -26,9 +28,27 @@ To set up your Cloud SQL instance for Forseti, follow the steps below:
     to proxy your connection to your Cloud SQL instance. Your
     INSTANCE_CONNECTION_NAME is the **Instance Connection Name** under
     **Properties** on the Cloud SQL dashboard instance details, in the format "PROJECTID:REGION:INSTANCEID".
+    
+    If you are using Cloud SDK authentication:
 
       ```bash
       <path/to/cloud_sql_proxy> -instances=INSTANCE_CONNECTION_NAME=tcp:3306
+      ```
+    
+    If you are using a service account to authenticate (recommended for production environments):
+    
+      ```bash
+      <path/to/cloud_sql_proxy> \
+          -instances=<INSTANCE_CONNECTION_NAME>=tcp:3306 \
+          -credential_file=<PATH_TO_KEY_FILE>
+      ```
+    
+    For example:
+    
+      ```bash
+      ./cloud_sql_proxy \
+          -instances=foo-project-name:us-central1:mysql-instance=tcp:3306 \
+          -credential_file=/usr/local/google/home/foo/foo-project-cert-0d152c0e1bc8.json
       ```
 
 1. If you are setting up a development environment, install
