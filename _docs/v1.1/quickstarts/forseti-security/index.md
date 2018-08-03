@@ -30,25 +30,17 @@ deployment template, and creates a Forseti deployment.
 
 ### Activate Google Cloud Shell
 
-It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the steps below:
-
-  1. Access the [Cloud Platform Console](https://console.cloud.google.com/).
-  1. In the **Select a project** drop-down list at the top of the console, select the project where you want to deploy Forseti.
-  1. On the top right of the console, click the icon to **Activate Google Cloud Shell**. The Cloud Shell panel opens at the bottom of the page.
+It's recommended to use [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti setup wizard. This ensures you're using the latest version of Cloud SDK since it's included in Cloud Shell.
 
 ### Run setup
 
-  1. Once you've started Cloud Shell, download Forseti. The setup wizard is included.
-     Getting `master` branch will install the latest version of Forseti.
-
-      ```bash
-      git clone -b master --single-branch https://github.com/GoogleCloudPlatform/forseti-security
-      ```
+  1. [Open Google Cloud Shell and download Forseti code](https://console.cloud.google.com/cloudshell/open?git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fforseti-security&page=editor)
+     using Cloud Shell's one-step installation process.
 
      To get a particular release, e.g. 1.1.7, use the following command (note the "v"):
 
       ```bash
-      git clone -b v1.1.7 --single-branch https://github.com/GoogleCloudPlatform/forseti-security
+      git checkout tags/v1.1.7
       ```
 
   1. Navigate to the setup wizard directory:

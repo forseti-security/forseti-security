@@ -33,31 +33,20 @@ template, and creates a Forseti deployment.
 It's best to use
 [Cloud Shell](https://cloud.google.com/shell/docs/quickstart) to run the Forseti
 installer. This ensures you're using the latest version of Cloud SDK since it's
-included in Cloud Shell. To prepare to run the Forseti setup wizard, follow the
-steps below:
-
-  1. Go to the [GCP Console](https://console.cloud.google.com/).
-  1. In the **Select a project** drop-down list at the top of the console,
-     select the project you want to deploy Forseti to.
-  1. On the top right, click the icon to **Activate Google Cloud Shell**. The
-     Cloud Shell panel opens at the bottom of the page.
+included in Cloud Shell.
 
 ### Run setup
 
-  1. After you've started Cloud Shell, download Forseti. The installer is
-  included in the `install/` directory:
-
-      ```bash
-      git clone https://github.com/GoogleCloudPlatform/forseti-security.git
-      ```
+  1. [Open Google Cloud Shell and download Forseti code](https://console.cloud.google.com/cloudshell/open?git_repo=https%3A%2F%2Fgithub.com%2FGoogleCloudPlatform%2Fforseti-security&page=editor)
+     using Cloud Shell's one-step installation process.
+     The installer is included in the `install/` directory.
 
   1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`:
 
       ```bash
       # Make sure you are in the forseti-security folder.
       # If the tag exists in the remote repository but you are unable to checkout the tag,
-      # run command `git fetch --all` to fetch all the latest branch/tag information and run
-      # the checkout command again.
+      # run command `git fetch --all` to fetch all the latest branch/tag information.
       git checkout tags/v2.0.0
       ```
 
