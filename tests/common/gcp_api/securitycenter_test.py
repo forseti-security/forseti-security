@@ -50,10 +50,12 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
         securitycenter_api_client = securitycenter.SecurityCenterClient()
         self.assertEqual(None, securitycenter_api_client.repository._rate_limiter)
 
-    def test_create_findings(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_create_findings(self, fake_http):
         """Test create cscc findings."""
-        
-        http_mocks.mock_http_response(
+
+        fake_http.return_value = http_mocks.mock_http_response(
             json.dumps(fake_cscc.EXPECTED_CREATE_FINDING_RESULT))
 
         result = self.securitycenter_api_client.create_finding(
@@ -61,9 +63,11 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
 
         self.assertEquals(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
 
-    def test_create_findings_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_create_findings_raises(self, fake_http):
         """Test create cscc finding raises exception."""
-        http_mocks.mock_http_response(fake_cscc.PERMISSION_DENIED, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_cscc.PERMISSION_DENIED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.securitycenter_api_client.create_finding(

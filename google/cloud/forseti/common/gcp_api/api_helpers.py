@@ -79,10 +79,10 @@ def get_google_default_credentials():
         google.auth.credentials.Credentials:
             google auth credentials object.
     """
-    credentials, _ =  google.auth.default()
+    credentials, project_id = google.auth.default()
     credentials = with_scopes_if_required(
         credentials, list(CLOUD_SCOPES))
-    return credentials
+    return credentials, project_id
 
 
 
