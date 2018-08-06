@@ -319,9 +319,9 @@ class GCPRepository(object):
             google_auth_httplib2.AuthorizedHttp: An Http instance authorized by
                 the credentials.
         """
-
+        new_cred = api_helpers.get_google_default_credentials()
         authorized_http = google_auth_httplib2.AuthorizedHttp(
-            self._credentials, http=_build_http())
+            new_cred, http=_build_http())
 
         return authorized_http
 
