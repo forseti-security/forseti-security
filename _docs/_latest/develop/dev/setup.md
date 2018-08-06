@@ -153,6 +153,14 @@ try the following:
 
 ``sudo apt install default-libmysqlclient-dev``
 
+------------------
+
+If on Linux executing ``workon forseti-security``
+results in ``bash: workon: command not found`` then
+check whether workon is in the source path. Try:
+
+``source /usr/local/bin/virtualenvwrapper.sh``
+
 ## Configuring Forseti settings
 
 Before you run Forseti, you need to edit the forseti configuration file.
