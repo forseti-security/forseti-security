@@ -17,10 +17,10 @@ import logging
 import unittest
 from tests.services.inventory import gcp_api_mocks
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
-from google.cloud.forseti.services.server import InventoryConfig
 
 
 class NullProgresser(Progresser):

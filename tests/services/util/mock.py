@@ -14,8 +14,8 @@
 """Mock Configs."""
 
 
-from google.cloud.forseti.services.server import AbstractInventoryConfig
-from google.cloud.forseti.services.server import AbstractServiceConfig
+from google.cloud.forseti.services.base.config import AbstractInventoryConfig
+from google.cloud.forseti.services.base.config import AbstractServiceConfig
 
 
 class InventoryConfig(AbstractInventoryConfig):
