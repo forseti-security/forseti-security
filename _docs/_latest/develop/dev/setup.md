@@ -157,9 +157,12 @@ try the following:
 
 If on Linux executing ``workon forseti-security``
 results in ``bash: workon: command not found`` then
-check whether workon is in the source path. Try:
+ensure ``workon`` is in the source path. Try fixing
+source path issue by executing the following:
 
 ``source /usr/local/bin/virtualenvwrapper.sh``
+
+and then trying ``workon forseti-security`` again.
 
 ## Configuring Forseti settings
 
