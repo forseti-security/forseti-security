@@ -45,3 +45,17 @@ Run pylint checkers:
   ```bash
   ./install/scripts/docker_pylint_forseti.sh
   ```
+
+### Executing Individual Tests
+
+If you want to execute individual tests:
+
+   ```bash
+   docker -l error exec -it build /bin/bash -c "python -m unittest tests.common.util.date_time_test"
+   ```
+
+If you want to execute a subset of tests (e.g., all tests in a specific subdirectory):
+
+    ```bash
+    docker -l error exec -it build /bin/bash -c "python -m unittest discover -s tests/common -p '*_test.py'"
+    ```
