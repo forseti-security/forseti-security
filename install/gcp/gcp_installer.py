@@ -86,6 +86,15 @@ def run():
                        help='The Cloud SQL region',
                        default='us-central1')
 
+    network = parser.add_argument_group(title='network')
+    network.add_argument('--network-host-project-id',
+                         help='The project id that is hosting the network '
+                         'resources.')
+    network.add_argument('--vpc-name',
+                         help='The VPC name where Forseti VM will run.')
+    network.add_argument('--subnet-name',
+                         help='The subnetwork name where Forseti VM will run.')
+
     email_params = parser.add_argument_group(title='email')
     email_params.add_argument('--sendgrid-api-key',
                               help='Sendgrid API key')
@@ -96,6 +105,8 @@ def run():
                               help='Skip Sendgrid cofiguration')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
+    
+    
     args = vars(parser.parse_args())
 
     # Set the current date time stamp
