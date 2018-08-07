@@ -86,7 +86,7 @@ def can_reach_metadata_server():
         http_client = _obtain_http_client(hostname=_METADATA_IP)
         http_client.request('GET', '/', headers=REQUIRED_METADATA_HEADER)
         response = http_client.getresponse()
-        metadata_flavor = response.headers.get(_METADATA_FLAVOR_HEADER)
+        metadata_flavor = response.getheader(_METADATA_FLAVOR_HEADER, '')
         return (response.status == httplib.OK and
                 metadata_flavor == _METADATA_FLAVOR_VALUE)
 

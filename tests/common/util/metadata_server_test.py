@@ -141,15 +141,13 @@ class MetadataServerTest(ForsetiTestCase):
     @mock.patch.object(metadata_server, '_obtain_http_client', autospec=True)
     def test_can_reach_metadata_server(self, mock_client):
         """Verifies can_reach_metadata_server returns correctly."""
-        with mock.patch(
-                'httplib.HTTPResponse',
-                mock.mock_open(read_data='')) as mock_http_resp:
-          mock_http_resp.return_value.status = httplib.OK
-          mock_http_resp.return_value.headers = (
-              metadata_server.REQUIRED_METADATA_HEADER)
-          mock_client.return_value.getresponse.side_effect = mock_http_resp
+        mock_http_resp = mock.Mock(spec=httplib.HTTPResponse)
+        mock_http_resp.return_value.status = httplib.OK
+        mock_http_resp.return_value.getheader.return_value = (
+            metadata_server._METADATA_FLAVOR_VALUE)
+        mock_client.return_value.getresponse.side_effect = mock_http_resp
 
-          self.assertTrue(metadata_server.can_reach_metadata_server())
+        self.assertTrue(metadata_server.can_reach_metadata_server())
 
     @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)
     def test_can_reach_metadata_server_timeout(self, mock_req):
