@@ -64,7 +64,8 @@ class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.bucket_rules_scanner.buckets_rules_engine', autospec=True)
     @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
+        'google.cloud.forseti.services.base.config.ServiceConfig',
+        autospec=True)
     def test_scanner_index_id_can_be_correctly_initialized(
         self, mock_service_config, mock_bucket_rules_engine,
         mock_iam_rules_engine):
