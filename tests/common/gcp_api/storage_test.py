@@ -60,12 +60,14 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(api_errors.InvalidBucketPathError):
             storage.get_bucket_and_path_from(None)
 
-    def test_get_buckets(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_buckets(self, fake_http):
         """Test get buckets."""
         mock_responses = []
         for page in fake_storage.GET_BUCKETS_RESPONSES:
             mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_bucket_names = fake_storage.EXPECTED_FAKE_BUCKET_NAMES
 
@@ -74,30 +76,38 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(expected_bucket_names,
                           [r.get('name') for r in results])
 
-    def test_get_buckets_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_buckets_raises(self, fake_http):
         """Test get buckets access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_buckets(fake_storage.FAKE_PROJECT_NUMBER)
 
-    def test_get_bucket_acls(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_bucket_acls(self, fake_http):
         """Test get bucket acls."""
-        http_mocks.mock_http_response(
+        fake_http.return_value = http_mocks.mock_http_response(
             fake_storage.GET_BUCKET_ACL)
 
         results = self.gcs_api_client.get_bucket_acls(
             fake_storage.FAKE_BUCKET_NAME)
         self.assertEqual(3, len(results))
 
-    def test_get_buckets_acls_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_buckets_acls_raises(self, fake_http):
         """Test get buckets acls access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_bucket_acls(fake_storage.FAKE_BUCKET_NAME)
 
-    def test_get_buckets_acls_user_project(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_buckets_acls_user_project(self, fake_http):
         """Test get buckets acls requires user project."""
         mock_responses = [
             ({'status': '400', 'content-type': 'application/json'},
@@ -105,30 +115,36 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             ({'status': '200', 'content-type': 'application/json'},
              fake_storage.GET_BUCKET_ACL),
         ]
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gcs_api_client.get_bucket_acls(
             fake_storage.FAKE_BUCKET_NAME)
         self.assertEqual(3, len(results))
 
-    def test_get_bucket_iam_policy(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_bucket_iam_policy(self, fake_http):
         """Test get bucket iam policy."""
-        http_mocks.mock_http_response(
+        fake_http.return_value = http_mocks.mock_http_response(
             fake_storage.GET_BUCKET_IAM_POLICY_RESPONSE)
 
         results = self.gcs_api_client.get_bucket_iam_policy(
             fake_storage.FAKE_BUCKET_NAME)
         self.assertTrue('bindings' in results)
 
-    def test_get_buckets_iam_policy_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_buckets_iam_policy_raises(self, fake_http):
         """Test get buckets iam policy access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_bucket_iam_policy(
                 fake_storage.FAKE_BUCKET_NAME)
 
-    def test_get_bucket_iam_policy_user_project(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_bucket_iam_policy_user_project(self, fake_http):
         """Test get bucket iam policy requires user project."""
         mock_responses = [
             ({'status': '400', 'content-type': 'application/json'},
@@ -136,30 +152,36 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             ({'status': '200', 'content-type': 'application/json'},
              fake_storage.GET_BUCKET_IAM_POLICY_RESPONSE),
         ]
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gcs_api_client.get_bucket_iam_policy(
             fake_storage.FAKE_BUCKET_NAME)
         self.assertTrue('bindings' in results)
 
-    def test_get_default_object_acls(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_default_object_acls(self, fake_http):
         """Test get default object acls."""
-        http_mocks.mock_http_response(
+        fake_http.return_value = http_mocks.mock_http_response(
             fake_storage.DEFAULT_OBJECT_ACL)
 
         results = self.gcs_api_client.get_default_object_acls(
             fake_storage.FAKE_BUCKET_NAME)
         self.assertEqual(3, len(results))
 
-    def test_get_default_object_acls_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_default_object_acls_raises(self, fake_http):
         """Test get default object acls access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_default_object_acls(
                  fake_storage.FAKE_BUCKET_NAME)
 
-    def test_get_default_object_acls_user_project(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_default_object_acls_user_project(self, fake_http):
         """Test get default object acls requires user project."""
         mock_responses = [
             ({'status': '400', 'content-type': 'application/json'},
@@ -167,18 +189,20 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             ({'status': '200', 'content-type': 'application/json'},
              fake_storage.DEFAULT_OBJECT_ACL),
         ]
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gcs_api_client.get_default_object_acls(
             fake_storage.FAKE_BUCKET_NAME)
         self.assertEqual(3, len(results))
 
-    def test_get_objects(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_objects(self, fake_http):
         """Test get objects."""
         mock_responses = []
         for page in fake_storage.LIST_OBJECTS_RESPONSES:
             mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_object_names = fake_storage.EXPECTED_FAKE_OBJECT_NAMES
 
@@ -187,14 +211,18 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(expected_object_names,
                           [r.get('name') for r in results])
 
-    def test_get_objects_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_objects_raises(self, fake_http):
         """Test get objects bucket not found."""
-        http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_objects(fake_storage.FAKE_PROJECT_NUMBER)
 
-    def test_get_objects_user_project(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_objects_user_project(self, fake_http):
         """Test get objects requires user project."""
         mock_responses = [
             ({'status': '400', 'content-type': 'application/json'},
@@ -202,7 +230,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
         for page in fake_storage.LIST_OBJECTS_RESPONSES:
             mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_object_names = fake_storage.EXPECTED_FAKE_OBJECT_NAMES
 
@@ -211,24 +239,30 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         self.assertEquals(expected_object_names,
                           [r.get('name') for r in results])
 
-    def test_get_object_iam_policy(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_object_iam_policy(self, fake_http):
         """Test get object iam policy."""
-        http_mocks.mock_http_response(
+        fake_http.return_value = http_mocks.mock_http_response(
             fake_storage.GET_OBJECT_IAM_POLICY_RESPONSE)
 
         results = self.gcs_api_client.get_object_iam_policy(
             fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
         self.assertTrue('bindings' in results)
 
-    def test_get_objects_iam_policy_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_objects_iam_policy_raises(self, fake_http):
         """Test get objects iam policy access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_object_iam_policy(
                 fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
 
-    def test_get_object_iam_policy_user_project(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_object_iam_policy_user_project(self, fake_http):
         """Test get object iam policy requires user project."""
         mock_responses = [
             ({'status': '400', 'content-type': 'application/json'},
@@ -236,30 +270,34 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             ({'status': '200', 'content-type': 'application/json'},
              fake_storage.GET_OBJECT_IAM_POLICY_RESPONSE),
         ]
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         results = self.gcs_api_client.get_object_iam_policy(
             fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
         self.assertTrue('bindings' in results)
 
-    def test_get_object_acls(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_object_acls(self, fake_http):
         """Test get object acls."""
-        http_mocks.mock_http_response(
+        fake_http.return_value = http_mocks.mock_http_response(
             fake_storage.GET_OBJECT_ACL)
 
         results = self.gcs_api_client.get_object_acls(
             fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
         self.assertEqual(4, len(results))
 
-    def test_get_objects_iam_policy_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_objects_iam_policy_raises(self, fake_http):
         """Test get object acls access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.gcs_api_client.get_object_acls(
                 fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
 
-    def test_get_object_acls_user_project(self):
+    def test_get_object_acls_user_project(self, fake_http):
         """Test get object acls requires user project."""
         mock_responses = [
             ({'status': '400', 'content-type': 'application/json'},
@@ -272,8 +310,9 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             fake_storage.FAKE_BUCKET_NAME, fake_storage.FAKE_OBJECT_NAME)
         self.assertEqual(4, len(results))
 
-
-    def test_get_text_file(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_text_file(self, fake_http):
         """Test get test file returns a valid response."""
         mock_responses = [
             ({'status': '200',
@@ -281,7 +320,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             ({'status': '200',
               'content-range': '3-4/5'}, b'45')
         ]
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         expected_result = b'12345'
         result = self.gcs_api_client.get_text_file(
@@ -289,18 +328,22 @@ class StorageTest(unittest_utils.ForsetiTestCase):
                                 fake_storage.FAKE_OBJECT_NAME))
         self.assertEqual(expected_result, result)
 
-    def test_get_text_file_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_text_file_raises(self, fake_http):
         """Test get test file returns not found error."""
-        http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
 
         with self.assertRaises(storage.errors.HttpError):
             self.gcs_api_client.get_text_file(
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                     fake_storage.FAKE_OBJECT_NAME))
 
-    def test_upload_text_file(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_upload_text_file(self, fake_http):
         """Test upload text file."""
-        http_mocks.mock_http_response(u'{}')
+        fake_http.return_value = http_mocks.mock_http_response(u'{}')
 
         with unittest_utils.create_temp_file(b'12345') as temp_file:
             result = self.gcs_api_client.put_text_file(
@@ -309,9 +352,11 @@ class StorageTest(unittest_utils.ForsetiTestCase):
                                     fake_storage.FAKE_OBJECT_NAME))
         self.assertEqual({}, result)
 
-    def test_upload_text_file_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_upload_text_file_raises(self, fake_http):
         """Test upload text access forbidden."""
-        http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_storage.ACCESS_FORBIDDEN, '403')
 
         with self.assertRaises(storage.errors.HttpError):
             with unittest_utils.create_temp_file(b'12345') as temp_file:

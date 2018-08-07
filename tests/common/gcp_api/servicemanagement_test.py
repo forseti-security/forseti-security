@@ -50,21 +50,26 @@ class ServiceManagementClientTest(unittest_utils.ForsetiTestCase):
             global_configs={})
         self.assertEqual(None, sm_api_client.repository._rate_limiter)
 
-    def test_get_enabled_apis(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_enabled_apis(self, fake_http):
         """Test that get_enabled_apis returns correctly."""
+
         mock_responses = []
         for page in fake_sm.LIST_CONSUMER_SERVICES_RESPONSES:
             mock_responses.append(({'status': '200'}, page))
-        http_mocks.mock_http_response_sequence(mock_responses)
+        fake_http.return_value = http_mocks.mock_http_response_sequence(mock_responses)
 
         return_value = self.sm_api_client.get_enabled_apis(
             fake_sm.FAKE_PROJECT_ID)
 
         self.assertEquals(fake_sm.EXPECTED_SERVICES_COUNT, len(return_value))
 
-    def test_get_enabled_apis_raises(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.servicemanagement._base_repository.GCPRepository.http',
+                new_callable=mock.PropertyMock)
+    def test_get_enabled_apis_raises(self, fake_http):
         """Test get cloudsql instances."""
-        http_mocks.mock_http_response(fake_sm.PERMISSION_DENIED, '403')
+        fake_http.return_value = http_mocks.mock_http_response(fake_sm.PERMISSION_DENIED, '403')
 
         with self.assertRaises(api_errors.ApiExecutionError):
              self.sm_api_client.get_enabled_apis(fake_sm.FAKE_PROJECT_ID)

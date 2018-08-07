@@ -13,9 +13,7 @@
 # limitations under the License.
 
 """Test data for firewall api responses."""
-
 from googleapiclient import http
-from google.cloud.forseti.common.gcp_api import _base_repository
 
 
 def mock_http_response(response, status='200'):
@@ -26,10 +24,10 @@ def mock_http_response(response, status='200'):
         'content-type': 'application/json',
     }
     http_mock.data = response
-    _base_repository.LOCAL_THREAD.http = http_mock
+    return http_mock
 
 
 def mock_http_response_sequence(responses):
     """Set the mock response to an http request."""
     http_mock = http.HttpMockSequence(responses)
-    _base_repository.LOCAL_THREAD.http = http_mock
+    return http_mock

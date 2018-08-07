@@ -24,18 +24,17 @@ from googleapiclient import discovery
 import httplib2
 from ratelimiter import RateLimiter
 from retrying import retry
-import google.auth
 from google.auth.credentials import with_scopes_if_required
+import google.auth.exceptions as exceptions
 
 from google.cloud import forseti as forseti_security
+from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
-import google.oauth2.credentials
 
-CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
 
 # Per request max wait timeout.
 HTTP_REQUEST_TIMEOUT = 30.0
@@ -171,13 +170,10 @@ class BaseRepositoryClient(object):
                 limiter for this service.
             **kwargs (dict): Additional args such as version.
         """
-        self._use_cached_http = False
         if not credentials:
             # Only share the http object when using the default credentials.
-            self._use_cached_http = True
-            credentials, _ = google.auth.default()
-        self._credentials = with_scopes_if_required(credentials,
-                                                    list(CLOUD_SCOPES))
+            credentials, _ = api_helpers.get_google_default_credentials()
+        self._credentials = credentials
 
         # Lock may be acquired multiple times in the same thread.
         self._repository_lock = threading.RLock()
@@ -255,8 +251,7 @@ class BaseRepositoryClient(object):
         with self._repository_lock:
             return repository_class(gcp_service=self.gcp_services[version],
                                     credentials=self._credentials,
-                                    rate_limiter=self._rate_limiter,
-                                    use_cached_http=self._use_cached_http)
+                                    rate_limiter=self._rate_limiter)
 # pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
@@ -267,7 +262,7 @@ class GCPRepository(object):
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
                  entity_field=None, list_key_field=None, get_key_field=None,
                  max_results_field='maxResults', search_query_field='query',
-                 rate_limiter=None, use_cached_http=True):
+                 rate_limiter=None):
         """Constructor.
 
         Args:
@@ -292,9 +287,6 @@ class GCPRepository(object):
             search_query_field (str): The field name used to filter search
                 results.
             rate_limiter (object): A RateLimiter object to manage API quota.
-            use_cached_http (bool): If set to true, calls to the API will use
-                a thread local shared http object. When false a new http object
-                is used for each request.
         """
         self.gcp_service = gcp_service
         self._credentials = credentials
@@ -317,8 +309,6 @@ class GCPRepository(object):
         self._max_results_field = max_results_field
         self._search_query_field = search_query_field
         self._rate_limiter = rate_limiter
-
-        self._use_cached_http = use_cached_http
         self._local = LOCAL_THREAD
 
     @property
@@ -329,14 +319,10 @@ class GCPRepository(object):
             google_auth_httplib2.AuthorizedHttp: An Http instance authorized by
                 the credentials.
         """
-        if self._use_cached_http and hasattr(self._local, 'http'):
-            return self._local.http
-
+        new_cred = api_helpers.get_google_default_credentials()
         authorized_http = google_auth_httplib2.AuthorizedHttp(
-            self._credentials, http=_build_http())
+            new_cred, http=_build_http())
 
-        if self._use_cached_http:
-            self._local.http = authorized_http
         return authorized_http
 
     def _build_request(self, verb, verb_arguments):
@@ -503,4 +489,5 @@ class GCPRepository(object):
                                        num_retries=self._num_retries)
         return request.execute(http=self.http,
                                num_retries=self._num_retries)
+
 # pylint: enable=too-many-instance-attributes, too-many-arguments

@@ -21,8 +21,11 @@ import urllib2
 
 import httplib2
 
+from google.auth import exceptions
+
 
 RETRYABLE_EXCEPTIONS = (
+    exceptions.DefaultCredentialsError,
     httplib.ResponseNotReady,
     httplib.IncompleteRead,
     httplib2.ServerNotFoundError,
