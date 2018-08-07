@@ -18,9 +18,7 @@ from collections import defaultdict
 import hashlib
 import json
 
-import _mysql_exceptions
 import migrate.changeset
-import MySQLdb
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
