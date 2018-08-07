@@ -408,7 +408,7 @@ def initialize(engine):
     Args:
         engine (object): Database engine to operate on.
     """
-    # Create tables if not exist.
+    # Create tables if not exists.
     BASE.metadata.create_all(engine)
     BASE.metadata.bind = engine
 
