@@ -232,6 +232,7 @@ class Rule(object):
 
                 if self.is_blacklisted(ipaddr):
                     yield self.RuleViolation(
+                        resource_name=project,
                         resource_type=resource_mod.ResourceType.INSTANCE,
                         full_name=network_interface.full_name,
                         rule_blacklist=self.rule_blacklist,
@@ -253,7 +254,7 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'full_name',
-                                'rule_blacklist', 'rule_name',
-                                'rule_index', 'violation_type', 'project',
-                                'network', 'ip', 'resource_data'])
+                               ['resource_type', 'full_name', 'resource_name',
+                                'rule_blacklist', 'rule_name', 'rule_index',
+                                'violation_type', 'project', 'network', 'ip',
+                                'resource_data'])

@@ -71,6 +71,7 @@ class LogSinkScanner(base_scanner.BaseScanner):
             }
 
             yield {
+                'resource_name': violation.resource_name,
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
                 'full_name': violation.full_name,

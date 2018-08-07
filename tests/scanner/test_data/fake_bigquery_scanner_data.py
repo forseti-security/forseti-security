@@ -45,6 +45,7 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
     Rule.RuleViolation(
         domain='',
         resource_id='xza',
+        resource_name='xza',
         full_name='/org/1111/dataset/222',
         special_group='',
         group_email='',
@@ -60,6 +61,7 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
     Rule.RuleViolation(
         domain='',
         resource_id='xza',
+        resource_name='xza',
         full_name='/org/1111/dataset/333',
         special_group='',
         group_email='',

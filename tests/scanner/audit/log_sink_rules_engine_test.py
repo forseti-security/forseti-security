@@ -216,6 +216,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.proj_2, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='proj-2',
                 resource_type='project',
                 resource_id='proj-2',
                 full_name='projects/proj-2',
@@ -230,6 +231,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                 resource_data=''
             ),
             lsre.Rule.RuleViolation(
+                resource_name='proj-2',
                 resource_type='project',
                 resource_id='proj-2',
                 full_name='projects/proj-2',
@@ -276,6 +278,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.proj_3, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='projects/proj-3/sinks/audit_logs_to_pubsub',
                 resource_type='sink',
                 resource_id='audit_logs_to_pubsub',
                 full_name='projects/proj-3/sinks/audit_logs_to_pubsub',
@@ -313,6 +316,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.folder_56, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='folders/56/sinks/audit_logs_to_bq',
                 resource_type='sink',
                 resource_id='audit_logs_to_bq',
                 full_name='folders/56/sinks/audit_logs_to_bq',
@@ -359,6 +363,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.org_234, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='234',
                 resource_type='organization',
                 resource_id='234',
                 full_name='organizations/234',

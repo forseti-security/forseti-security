@@ -18,6 +18,9 @@ from collections import defaultdict
 import hashlib
 import json
 
+import _mysql_exceptions
+import migrate.changeset
+import MySQLdb
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
@@ -26,6 +29,7 @@ from sqlalchemy import inspect
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.forseti.common.data_access import violation_map as vm
@@ -37,6 +41,21 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 SUCCESS_STATES = [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]
+
+
+def create_column(table, col):
+    """Create a new column in a table.
+
+    Args:
+        table (Table): Table to add the column to.
+        col (Column): Column to be created."""
+    try:
+        col.create(table, populate_default=True)
+    except OperationalError:
+        LOGGER.info('Column already exists, table=%s, column=%s',
+                    table.name, col.name)
+    except Exception as e:
+        LOGGER.error(e)
 
 
 class ScannerIndex(BASE):
@@ -163,6 +182,7 @@ class Violation(BASE):
     created_at_datetime = Column(DateTime())
     full_name = Column(String(1024))
     resource_data = Column(Text(16777215))
+    resource_name = Column(String(256), default='')
     resource_id = Column(String(256), nullable=False)
     resource_type = Column(String(256), nullable=False)
     rule_index = Column(Integer, default=0)
@@ -182,6 +202,17 @@ class Violation(BASE):
                   'rule_name={})>')
         return string.format(
             self.violation_type, self.resource_type, self.rule_name)
+
+    @staticmethod
+    def schema_update(table):
+        """Maintain all the schema changes for this table.
+
+        Args:
+            table (Table): The table object of this class.
+        """
+        col = Column('resource_name', String(256), default='')
+        create_column(table, col)
+
 
 class ViolationAccess(object):
     """Facade for violations, implement APIs against violations table."""
@@ -214,6 +245,7 @@ class ViolationAccess(object):
                 created_at_datetime=created_at_datetime,
                 full_name=violation.get('full_name'),
                 resource_data=violation.get('resource_data'),
+                resource_name=violation.get('resource_name'),
                 resource_id=violation.get('resource_id'),
                 resource_type=violation.get('resource_type'),
                 rule_index=violation.get('rule_index'),
@@ -377,4 +409,30 @@ def initialize(engine):
     Args:
         engine (object): Database engine to operate on.
     """
+    # Create tables if not exist.
     BASE.metadata.create_all(engine)
+    BASE.metadata.bind = engine
+
+    # Update schema changes.
+    # Find all the base classes inherited from declarative base.
+    base_subclasses = _find_subclasses(BASE)
+
+    # Find all the table objects for each of the classes.
+    # The format is {table_name: Table object}.
+    tables = BASE.metadata.tables
+
+    schema_update_method_name = 'schema_update'
+
+    for subclass in base_subclasses:
+        schema_update = getattr(subclass, schema_update_method_name, None)
+        if callable(schema_update) and subclass.__tablename__ in tables:
+            LOGGER.info('Updating table %s', subclass.__tablename__)
+            # schema_update will require the Table object.
+            schema_update(tables.get(subclass.__tablename__))
+
+
+def _find_subclasses(cls):
+    results = []
+    for sc in cls.__subclasses__():
+        results.append(sc)
+    return results
