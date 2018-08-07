@@ -59,3 +59,18 @@ If you want to execute a subset of tests (e.g., all tests in a specific subdirec
     ```bash
     docker -l error exec -it build /bin/bash -c "python -m unittest discover -s tests/common -p '*_test.py'"
     ```
+
+### Continual Testing
+
+During the Docker image setup process, the code for Forseti is copied over to Docker.
+This copy is static and not dynamic, so if you make changes to your local code and
+want to run the tests in Docker with your local changes, you need to do the following:
+
+    ```bash
+    # If you already have a Docker container running with image "forseti/build"
+    $ docker rm -f [insert ID for Docker container; find id via "docker ps"]
+    
+    # Re-setup Docker image with updated local code
+    $ ./install/scripts/docker_setup_forseti.sh
+    $ ./install/scripts/docker_install_forseti.sh
+    ```
