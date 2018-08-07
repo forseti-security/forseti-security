@@ -14,6 +14,7 @@
 """Unit Tests: Forseti Server."""
 
 import mock
+import argparse
 import os
 import unittest
 
@@ -32,8 +33,9 @@ class ServerTest(ForsetiTestCase):
     TEST_RESOURCE_DIR_PATH = os.path.join(
         os.path.dirname(__file__), 'test_data')
 
-    @mock.patch('google.cloud.forseti.services.server.ModelManager', mock.MagicMock())
-    @mock.patch('google.cloud.forseti.services.server.create_engine')
+    @mock.patch('google.cloud.forseti.services.base.config.ModelManager',
+                mock.MagicMock())
+    @mock.patch('google.cloud.forseti.services.base.config.create_engine')
     def test_server_config_update_bad_default_path(self, test_patch):
         test_patch.return_value = None
 
@@ -51,8 +53,9 @@ class ServerTest(ForsetiTestCase):
 
         self.assertTrue(has_err_msg)
 
-    @mock.patch('google.cloud.forseti.services.server.ModelManager', mock.MagicMock())
-    @mock.patch('google.cloud.forseti.services.server.create_engine')
+    @mock.patch('google.cloud.forseti.services.base.config.ModelManager',
+                mock.MagicMock())
+    @mock.patch('google.cloud.forseti.services.base.config.create_engine')
     def test_server_config_update_good_default_bad_update_path(self, test_patch):
         test_patch.return_value = None
 
@@ -95,8 +98,9 @@ class ServerTest(ForsetiTestCase):
             # All the scanners are set to true in the default config file.
             self.assertTrue(scanner.get('enabled'))
 
-    @mock.patch('google.cloud.forseti.services.server.ModelManager', mock.MagicMock())
-    @mock.patch('google.cloud.forseti.services.server.create_engine')
+    @mock.patch('google.cloud.forseti.services.base.config.ModelManager',
+                mock.MagicMock())
+    @mock.patch('google.cloud.forseti.services.base.config.create_engine')
     def test_server_config_update_good_default_and_update_path(self, test_patch):
         test_patch.return_value = None
 
@@ -141,13 +145,11 @@ class ServerTest(ForsetiTestCase):
             # All the scanners are set to true in the default config file.
             self.assertTrue(scanner.get('enabled'))
 
-    @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
+    @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_services_not_specified(self, mock_argparse):
         """Test main() with no service specified."""
         expected_exit_code = 1
-        mock_arg_parser = mock.MagicMock()
-        mock_argparse.ArgumentParser.return_value = mock_arg_parser
-        mock_arg_parser.parse_args.return_value = NameSpace(
+        mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
             services=None,
             forseti_db=None,
@@ -159,13 +161,11 @@ class ServerTest(ForsetiTestCase):
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
 
-    @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
+    @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_config_file_path_not_specified(self, mock_argparse):
         """Test main() with no config_file_path specified."""
         expected_exit_code = 2
-        mock_arg_parser = mock.MagicMock()
-        mock_argparse.ArgumentParser.return_value = mock_arg_parser
-        mock_arg_parser.parse_args.return_value = NameSpace(
+        mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
             services=['scanner'],
             forseti_db=None,
@@ -177,13 +177,11 @@ class ServerTest(ForsetiTestCase):
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
 
-    @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
+    @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_config_file_path_non_readable_file(self, mock_argparse):
         """Test main() with non-readable config file."""
         expected_exit_code = 3
-        mock_arg_parser = mock.MagicMock()
-        mock_argparse.ArgumentParser.return_value = mock_arg_parser
-        mock_arg_parser.parse_args.return_value = NameSpace(
+        mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
             services=['scanner'],
             forseti_db=None,
@@ -195,13 +193,11 @@ class ServerTest(ForsetiTestCase):
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
 
-    @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
+    @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_config_file_path_non_existent_file(self, mock_argparse):
         """Test main() with non-existent config file."""
         expected_exit_code = 4
-        mock_arg_parser = mock.MagicMock()
-        mock_argparse.ArgumentParser.return_value = mock_arg_parser
-        mock_arg_parser.parse_args.return_value = NameSpace(
+        mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
             services=['scanner'],
             forseti_db=None,
@@ -217,13 +213,11 @@ class ServerTest(ForsetiTestCase):
                     server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
 
-    @mock.patch('google.cloud.forseti.services.server.argparse', autospec=True)
+    @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_forseti_db_not_set(self, mock_argparse):
         """Test main() with forseti_db not set."""
         expected_exit_code = 5
-        mock_arg_parser = mock.MagicMock()
-        mock_argparse.ArgumentParser.return_value = mock_arg_parser
-        mock_arg_parser.parse_args.return_value = NameSpace(
+        mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
             services=['scanner'],
             forseti_db=None,
