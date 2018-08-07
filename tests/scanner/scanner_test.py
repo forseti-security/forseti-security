@@ -22,7 +22,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.services.scanner.scanner_dao_test import ScannerBaseDbTestCase
+from tests.services.scanner import scanner_base_db
 
 
 Session = sessionmaker()
@@ -49,7 +49,7 @@ TWO_SCANNERS = {'scanners': [
     {'name': 'iam_policy', 'enabled': False}
 ]}
 
-class ScannerRunnerTest(ScannerBaseDbTestCase):
+class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
 
     def setUp(self):
         """Setup method."""
