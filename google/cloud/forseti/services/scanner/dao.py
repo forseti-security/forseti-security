@@ -413,11 +413,11 @@ def initialize(engine):
     BASE.metadata.bind = engine
 
     # Update schema changes.
-    # Find all the base classes inherited from declarative base.
+    # Find all the child classes inherited from declarative base class.
     base_subclasses = _find_subclasses(BASE)
 
-    # Find all the table objects for each of the classes.
-    # The format is {table_name: Table object}.
+    # Find all the Table objects for each of the classes.
+    # The format of tables is: {table_name: Table object}.
     tables = BASE.metadata.tables
 
     schema_update_method_name = 'schema_update'
