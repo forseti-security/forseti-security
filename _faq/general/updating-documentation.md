@@ -7,5 +7,5 @@ order: 2
 Forseti documentations can be updated in the `forsetisecurity.org-dev` branch.
 
 After you update the documentation, the Forseti team will merge the change into
-the ``forsetisecurity.org` branch which will trigger a new build of the
+the `forsetisecurity.org` branch which will trigger a new build of the
 forsetisecurity.org website, which serves the live documentations.
