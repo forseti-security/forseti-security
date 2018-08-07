@@ -4,7 +4,7 @@ order: 2
 ---
 {::options auto_ids="false" /}
 
-Forseti documentations can be updated in the `forsetisecurity.org-dev` branch.
+Forseti documentation can be updated in the `forsetisecurity.org-dev` branch.
 
 You can test your documentation changes locally, by
 [following the instructions here]({% link _docs/latest/develop/website.md %}).
