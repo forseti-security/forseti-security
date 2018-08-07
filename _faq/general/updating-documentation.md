@@ -10,5 +10,5 @@ You can test your documentation changes locally, by
 [following the instructions here]({% link _docs/latest/develop/website.md %}).
 
 After your updated documentation is merged, the Forseti team will merge it
-into the `forsetisecurity.org` branch which will trigger a new build of the
-forsetisecurity.org website.
+into the `forsetisecurity.org` branch upon every major/minor release,
+which will trigger a new build of the forsetisecurity.org website.
