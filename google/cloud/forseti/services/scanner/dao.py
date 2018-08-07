@@ -54,6 +54,7 @@ def create_column(table, col):
                     table.name, col.name)
     except Exception as e:
         LOGGER.error(e)
+        raise
 
 
 class ScannerIndex(BASE):
