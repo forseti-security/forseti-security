@@ -67,10 +67,10 @@ This copy is static and not dynamic, so if you make changes to your local code a
 want to run the tests in Docker with your local changes, you need to do the following:
 
     ```bash
-    # If you already have a Docker container running with image "forseti/build"
-    $ docker rm -f [insert ID for Docker container; find id via "docker ps"]
+    # Find the Container ID for the Image "forseti/build"
+    docker ps
     
-    # Re-setup Docker image with updated local code
-    $ ./install/scripts/docker_setup_forseti.sh
-    $ ./install/scripts/docker_install_forseti.sh
+    # Copy the files from the local disk to the image
+    # Replace "e4d76477e7d0" with the Container ID from above
+    docker cp ./ e4d76477e7d0:/forseti-security/
     ```
