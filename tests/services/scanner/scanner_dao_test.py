@@ -12,101 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Unit Tests for Scanner DAO. """
+"""Unit Tests for Scanner DAO."""
 
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 import hashlib
 from itertools import izip
 import json
-import mock
 import os
-from sqlalchemy.orm import sessionmaker
 import unittest
+import mock
+from sqlalchemy.orm import sessionmaker
 
-from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util.index_state import IndexState
-from google.cloud.forseti.scanner import scanner
-from google.cloud.forseti.services.scanner import dao as scanner_dao
-from google.cloud.forseti.services.inventory import storage
+from tests.services.scanner import scanner_base_db
 from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
-
-FAKE_INV_INDEX_ID = 'aaa'
-FAKE_VIOLATION_HASH = (u'111111111111111111111111111111111111111111111111111111'
-                        '111111111111111111111111111111111111111111111111111111'
-                        '11111111111111111111')
-
-FAKE_VIOLATIONS = [
-    {'resource_id': 'fake_firewall_111',
-     'full_name': 'full_name_111',
-     'rule_name': 'disallow_all_ports_111',
-     'rule_index': 111,
-     'violation_data':
-         {'policy_names': ['fw-tag-match_111'],
-          'recommended_actions':
-              {'DELETE_FIREWALL_RULES': ['fw-tag-match_111']}},
-     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
-     'resource_type': 'firewall_rule',
-     'resource_data': 'inventory_data_111',
-    },
-    {'resource_id': 'fake_firewall_222',
-     'full_name': 'full_name_222',
-     'rule_name': 'disallow_all_ports_222',
-     'rule_index': 222,
-     'violation_data':
-         {'policy_names': ['fw-tag-match_222'],
-          'recommended_actions':
-              {'DELETE_FIREWALL_RULES': ['fw-tag-match_222']}},
-     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
-     'resource_type': 'firewall_rule',
-     'resource_data': 'inventory_data_222',
-     }
-]
+from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util.index_state import IndexState
+from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 
-class ScannerBaseDbTestCase(ForsetiTestCase):
-    """Base class for database centric tests."""
-
-    def setUp(self):
-        """Setup method."""
-        ForsetiTestCase.setUp(self)
-        self.engine, self.dbfile = create_test_engine_with_file()
-        _session_maker = sessionmaker()
-        self.session = _session_maker(bind=self.engine)
-        storage.initialize(self.engine)
-        scanner_dao.initialize(self.engine)
-        self.session.flush()
-        self.violation_access = scanner_dao.ViolationAccess(self.session)
-        self.inv_index_id1, self.inv_index_id2, self.inv_index_id3 = (
-                _setup_inv_indices(self.session))
-
-    def tearDown(self):
-        """Teardown method."""
-        os.unlink(self.dbfile)
-        ForsetiTestCase.tearDown(self)
-
-    def populate_db(
-        self, violations=FAKE_VIOLATIONS, inv_index_id=FAKE_INV_INDEX_ID,
-        scanner_index_id=None, succeeded=['IamPolicyScanner'], failed=[]):
-        """Populate the db with violations.
-
-        Args:
-            violations (dict): the violations to write to the test database
-            inv_index_id (str): the inventory index to use
-            scanner_index_id (str): the scanner index to use
-            succeeded (list): names of scanners that ran successfully
-            failed (list): names of scanners that failed
-        """
-        if not scanner_index_id:
-            scanner_index_id = scanner.init_scanner_index(
-                self.session, inv_index_id)
-        self.violation_access.create(violations, scanner_index_id)
-        scanner.mark_scanner_index_complete(
-            self.session, scanner_index_id, succeeded, failed)
-        return scanner_index_id
-
-
-class ScannerDaoTest(ScannerBaseDbTestCase):
+# pylint: disable=bad-indentation
+class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
     """Test scanner data access."""
 
     def setUp(self):
@@ -119,10 +46,6 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
         self.test_inventory_data = ''
         self.test_violation_data = {}
 
-    def tearDown(self):
-        """Tear down method."""
-        super(ScannerDaoTest, self).tearDown()
-
     def test_save_violations(self):
         """Test violations can be saved."""
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
@@ -130,10 +53,12 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
             scanner_index_id=scanner_index_id)
 
         expected_hash_values = [
-          (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b6904'
-            '1c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff'),
-          (u'3eff279ccb96799d9eb18e6b76055b2242d1f2e6f14c1fb3bb48f7c8c03b4ce4db'
-            '577d67c0b91c5914902d906bf1703d5bbba0ceaf29809ac90fef3bf6aa5417')
+            (u'539cfbdb1113a74ec18edf583eada77ab1a60542c6edcb4120b50f34629b6b69'
+             '041c13f0447ab7b2526d4c944c88670b6f151fa88444c30771f47a3b813552ff'
+            ),
+            (u'3eff279ccb96799d9eb18e6b76055b2242d1f2e6f14c1fb3bb48f7c8c03b4ce4'
+             'db577d67c0b91c5914902d906bf1703d5bbba0ceaf29809ac90fef3bf6aa5417'
+            ),
         ]
 
         keys = ['scanner_index_id', 'resource_id', 'full_name',
@@ -141,7 +66,8 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
                 'violation_data', 'violation_hash', 'resource_data',
                 'created_at_datetime']
 
-        for fake, saved in izip(FAKE_VIOLATIONS, saved_violations):
+        for fake, saved in izip(scanner_base_db.FAKE_VIOLATIONS,
+                                saved_violations):
             for key in keys:
                 if key == 'scanner_index_id':
                     expected_key_value = fake.get(key, scanner_index_id)
@@ -178,10 +104,12 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
                                          saved_key_value)
                     )
 
-    @mock.patch.object(scanner_dao,'_create_violation_hash')
+    @mock.patch.object(scanner_dao, '_create_violation_hash')
     def test_convert_sqlalchemy_object_to_dict(self, mock_violation_hash):
-        mock_violation_hash.side_effect = [FAKE_VIOLATION_HASH,
-                                           FAKE_VIOLATION_HASH]
+        mock_violation_hash.side_effect = [
+            scanner_base_db.FAKE_VIOLATION_HASH,
+            scanner_base_db.FAKE_VIOLATION_HASH
+        ]
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         saved_violations = self.violation_access.list(
             scanner_index_id=scanner_index_id)
@@ -200,9 +128,12 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
              'resource_type': u'firewall_rule',
              'rule_index': 111,
              'rule_name': u'disallow_all_ports_111',
-             'violation_data': u'{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}',
+             'violation_data': (
+                 u'{"policy_names": ["fw-tag-match_111"], '
+                 '"recommended_actions": {"DELETE_FIREWALL_RULES": '
+                 '["fw-tag-match_111"]}}'),
              'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_111',
-             'violation_hash': FAKE_VIOLATION_HASH,
+             'violation_hash': scanner_base_db.FAKE_VIOLATION_HASH,
             },
             {'full_name': u'full_name_222',
              'id': 2,
@@ -212,9 +143,12 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
              'resource_type': u'firewall_rule',
              'rule_index': 222,
              'rule_name': u'disallow_all_ports_222',
-             'violation_data': u'{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}',
+             'violation_data': (
+                 u'{"policy_names": ["fw-tag-match_222"], '
+                 '"recommended_actions": {"DELETE_FIREWALL_RULES": '
+                 '["fw-tag-match_222"]}}'),
              'violation_type': u'FIREWALL_BLACKLIST_VIOLATION_222',
-             'violation_hash': FAKE_VIOLATION_HASH,
+             'violation_hash': scanner_base_db.FAKE_VIOLATION_HASH,
             }
         ]
 
@@ -227,10 +161,10 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
                          converted_violations_as_dict)
 
         self.assertEqual(mock_violation_hash.call_count,
-                         len(FAKE_VIOLATIONS))
+                         len(scanner_base_db.FAKE_VIOLATIONS))
 
     def test_create_violation_hash_with_default_algorithm(self):
-        """ Test _create_violation_hash. """
+        """Test _create_violation_hash."""
         test_hash = hashlib.new('sha512')
         test_hash.update(
             json.dumps(self.test_violation_full_name) +
@@ -248,7 +182,7 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
 
     @mock.patch.object(hashlib, 'new')
     def test_create_violation_hash_with_invalid_algorithm(self, mock_hashlib):
-        """ Test _create_violation_hash with an invalid algorithm. """
+        """Test _create_violation_hash with an invalid algorithm."""
         mock_hashlib.side_effect = ValueError
 
         returned_hash = scanner_dao._create_violation_hash(
@@ -260,7 +194,7 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
 
     @mock.patch.object(json, 'dumps')
     def test_create_violation_hash_invalid_violation_data(self, mock_json):
-        """ Test _create_violation_hash returns '' when it can't hash. """
+        """Test _create_violation_hash returns '' when it can't hash."""
         expected_hash = ''
 
         # Mock json.loads has an error, e.g. invalid violation_data data.:w
@@ -274,7 +208,9 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
         self.assertEqual(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_inventory_data_not_string(self):
-        expected_hash = 'fc59c859e9a088d14627f363d629142920225c8b1ea40f2df8b450ff7296c3ad99addd6a1ab31b5b8ffb250e1f25f2a8a6ecf2068afd5f0c46bc2d810f720b9a'
+        expected_hash = ('fc59c859e9a088d14627f363d629142920225c8b1ea40f2df8b45'
+                         '0ff7296c3ad99addd6a1ab31b5b8ffb250e1f25f2a8a6ecf2068a'
+                         'fd5f0c46bc2d810f720b9a')
         returned_hash = scanner_dao._create_violation_hash(
             self.test_violation_full_name,
             ['aaa', 'bbb', 'ccc'],
@@ -282,7 +218,9 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
         self.assertEquals(expected_hash, returned_hash)
 
     def test_create_violation_hash_with_full_name_not_string(self):
-        expected_hash = 'f8813c34ab225002fb2c04ee392691b4e37c9a0eee1a08b277c36b7bb0309f9150a88231dbd3f4ec5e908a5a39a8e38515b8e532d509aa3220e71ab4844a0284'
+        expected_hash = ('f8813c34ab225002fb2c04ee392691b4e37c9a0eee1a08b277c36'
+                         'b7bb0309f9150a88231dbd3f4ec5e908a5a39a8e38515b8e532d5'
+                         '09aa3220e71ab4844a0284')
         returned_hash = scanner_dao._create_violation_hash(
             None,
             self.test_inventory_data,
@@ -315,7 +253,8 @@ class ScannerDaoTest(ScannerBaseDbTestCase):
                 self.session, expected_id))
 
     @mock.patch.object(date_time, 'get_utc_now_datetime')
-    def test_get_latest_scanner_index_id_with_failure_state(self, mock_date_time):
+    def test_get_latest_scanner_index_id_with_failure_state(self,
+                                                            mock_date_time):
         """The method under test returns the newest `ScannerIndex` row."""
         time1 = datetime.utcnow()
         time2 = time1 + timedelta(minutes=5)
@@ -344,8 +283,8 @@ class ScannerIndexTest(ForsetiTestCase):
         ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
         scanner_dao.ScannerIndex.__table__.create(bind=self.engine)
-        _session_maker = sessionmaker()
-        self.session = _session_maker(bind=self.engine)
+        session_maker = sessionmaker()
+        self.session = session_maker(bind=self.engine)
 
     def tearDown(self):
         """Teardown method."""
@@ -393,79 +332,75 @@ class ScannerIndexTest(ForsetiTestCase):
         self.assertEquals('scanner error!', db_row.scanner_index_errors)
 
 
-@mock.patch.object(date_time, 'get_utc_now_datetime')
-def _setup_inv_indices(session, mock_date_time):
-    """The method under test returns the newest `ScannerIndex` row."""
-    time1 = datetime.utcnow()
-    time2 = time1 + timedelta(minutes=5)
-    time3 = time1 + timedelta(minutes=7)
-    mock_date_time.side_effect = [time1, time2, time3]
-
-    iidx1 = storage.InventoryIndex.create()
-    iidx2 = storage.InventoryIndex.create()
-    iidx3 = storage.InventoryIndex.create()
-    session.add(iidx1)
-    session.add(iidx2)
-    session.add(iidx3)
-    session.flush()
-
-    return (iidx1.id, iidx2.id, iidx3.id)
-
-
-class ViolationListTest(ScannerBaseDbTestCase):
+class ViolationListTest(scanner_base_db.ScannerBaseDbTestCase):
     """Test the Violation.list() method."""
 
     def test_list_without_indices(self):
         self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(inv_index_id=self.inv_index_id2)
         actual_data = self.violation_access.list()
-        self.assertEquals(2 * len(FAKE_VIOLATIONS), len(actual_data))
+        self.assertEquals(2 * len(scanner_base_db.FAKE_VIOLATIONS),
+                          len(actual_data))
 
     def test_list_with_inv_index_single_successful_scan(self):
         self.populate_db(inv_index_id=self.inv_index_id1)
-        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
-        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        actual_data = self.violation_access.list(
+            inv_index_id=self.inv_index_id1)
+        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS),
+                          len(actual_data))
 
     def test_list_with_inv_index_single_failed_scan(self):
         self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
-        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
+        actual_data = self.violation_access.list(
+            inv_index_id=self.inv_index_id1)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_inv_index_multi_mixed_success_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
-        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
-        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
+        actual_data = self.violation_access.list(
+            inv_index_id=self.inv_index_id1)
+        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS),
+                          len(actual_data))
         for violation in actual_data:
             self.assertEquals(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_inv_index_multi_all_success_scan(self):
         self.populate_db(inv_index_id=self.inv_index_id2)
         self.populate_db(inv_index_id=self.inv_index_id2)
-        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id2)
-        self.assertEquals(2 * len(FAKE_VIOLATIONS), len(actual_data))
+        actual_data = self.violation_access.list(
+            inv_index_id=self.inv_index_id2)
+        self.assertEquals(2 * len(scanner_base_db.FAKE_VIOLATIONS),
+                          len(actual_data))
 
     def test_list_with_inv_index_multi_all_failed_scan(self):
         self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
         self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
-        actual_data = self.violation_access.list(inv_index_id=self.inv_index_id1)
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
+        actual_data = self.violation_access.list(
+            inv_index_id=self.inv_index_id1)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_scnr_index_single_successful_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS),
+                          len(actual_data))
         for violation in actual_data:
             self.assertEquals(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_scnr_index_single_failed_scan(self):
         scanner_index_id = self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(0, len(actual_data))
@@ -473,10 +408,12 @@ class ViolationListTest(ScannerBaseDbTestCase):
     def test_list_with_scnr_index_multi_mixed_success_scan(self):
         scanner_index_id = self.populate_db(inv_index_id=self.inv_index_id1)
         self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS), len(actual_data)
+                         )
         for violation in actual_data:
             self.assertEquals(scanner_index_id, violation.scanner_index_id)
 
@@ -485,24 +422,29 @@ class ViolationListTest(ScannerBaseDbTestCase):
         self.populate_db(inv_index_id=self.inv_index_id3)
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
-        self.assertEquals(len(FAKE_VIOLATIONS), len(actual_data))
+        self.assertEquals(len(scanner_base_db.FAKE_VIOLATIONS), len(actual_data)
+                         )
         for violation in actual_data:
             self.assertEquals(scanner_index_id, violation.scanner_index_id)
 
     def test_list_with_scnr_index_multi_all_failed_scan(self):
         scanner_index_id = self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
         self.populate_db(
-            inv_index_id=self.inv_index_id2, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id2, succeeded=[], failed=['IapScanner']
+        )
         actual_data = self.violation_access.list(
             scanner_index_id=scanner_index_id)
         self.assertEquals(0, len(actual_data))
 
     def test_list_with_both_indices(self):
         scanner_index_id = self.populate_db(
-            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id1, succeeded=[], failed=['IapScanner']
+        )
         self.populate_db(
-            inv_index_id=self.inv_index_id2, succeeded=[], failed=['IapScanner'])
+            inv_index_id=self.inv_index_id2, succeeded=[], failed=['IapScanner']
+        )
         with self.assertRaises(ValueError):
             self.violation_access.list(
                 inv_index_id='blah', scanner_index_id=scanner_index_id)

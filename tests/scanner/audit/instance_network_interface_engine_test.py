@@ -18,13 +18,12 @@ import unittest
 import mock
 import yaml
 
-from google.apputils import basetest
+from tests import unittest_utils
+from tests.scanner.test_data import fake_instance_scanner_data
+
 from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit import instance_network_interface_rules_engine as ini
-from tests.unittest_utils import ForsetiTestCase
-from tests.unittest_utils import get_datafile_path
-from tests.scanner.test_data import fake_instance_scanner_data
 
 
 def create_list_of_instence_network_interface_obj_from_data():
@@ -36,7 +35,7 @@ def create_list_of_instence_network_interface_obj_from_data():
 
 
 # TODO: Define more tests
-class InstanceNetworkInterfaceTest(basetest.TestCase):
+class InstanceNetworkInterfaceTest(unittest_utils.ForsetiTestCase):
     """Tests for the InstanceNetworkInterface."""
 
     def setUp(self):
@@ -48,7 +47,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly
         with a yaml file."""
-        rules_local_path = get_datafile_path(
+        rules_local_path = unittest_utils.get_datafile_path(
             __file__,
             'instance_network_interface_test_rules_1.yaml')
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(
@@ -77,8 +76,8 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         # Read in the rules file
         file_content = None
         with open(
-            get_datafile_path(__file__,
-                              'instance_network_interface_test_rules_1.yaml'),
+            unittest_utils.get_datafile_path(
+                __file__, 'instance_network_interface_test_rules_1.yaml'),
             'r') as rules_local_file:
             try:
                 file_content = yaml.safe_load(rules_local_file)
@@ -92,7 +91,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
 
     def test_networks_in_whitelist_and_allowed_projects(self):
         """Test to make sure violations are created"""
-        rules_local_path = get_datafile_path(
+        rules_local_path = unittest_utils.get_datafile_path(
             __file__,
             'instance_network_interface_test_rules_2.yaml')
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
@@ -109,7 +108,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
     def test_network_in_allowed_project_but_not_whitelist_with_extern_ip(self):
         """Test to make sure violations are created where the project
         is allowed but not the network is not and there is an external ip"""
-        rules_local_path = get_datafile_path(
+        rules_local_path = unittest_utils.get_datafile_path(
             __file__,
             'instance_network_interface_test_rules_3.yaml')
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(
@@ -130,7 +129,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
         """Test to make sure violations are not created where the project
         is allowed but not the network is not and there is not an
         external ip"""
-        rules_local_path = get_datafile_path(
+        rules_local_path = unittest_utils.get_datafile_path(
             __file__,
             'instance_network_interface_test_rules_4.yaml')
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
@@ -147,7 +146,7 @@ class InstanceNetworkInterfaceTest(basetest.TestCase):
     def test_network_not_in_allowed_project(self):
         """Test to make sure violations are where the project
         is not allowed"""
-        rules_local_path = get_datafile_path(
+        rules_local_path = unittest_utils.get_datafile_path(
             __file__,
             'instance_network_interface_test_rules_5.yaml')
         rules_engine = ini.InstanceNetworkInterfaceRulesEngine(rules_local_path)
