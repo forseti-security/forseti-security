@@ -45,8 +45,8 @@ NO_SCANNERS = {'scanners': [
 TWO_SCANNERS = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
     {'name': 'bucket_acl', 'enabled': True},
-    {'name': 'cloudsql_acl', 'enabled': False},
-    {'name': 'iam_policy', 'enabled': True}
+    {'name': 'cloudsql_acl', 'enabled': True},
+    {'name': 'iam_policy', 'enabled': False}
 ]}
 
 class ScannerRunnerTest(ScannerBaseDbTestCase):
