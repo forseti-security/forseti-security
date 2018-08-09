@@ -124,6 +124,7 @@ class ScannerClient(ForsetiClient):
         echo = self.stub.Ping(scanner_pb2.PingRequest(data=data)).data
         return echo == data
 
+    @require_model
     def run(self):
         """Runs the scanner
 
