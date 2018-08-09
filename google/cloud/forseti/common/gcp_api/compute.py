@@ -174,7 +174,8 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=100.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 read_only=False):
         """Constructor.
 
         Args:
@@ -183,6 +184,8 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            read_only (bool): When set to true, disables any API calls that
+                would modify a resource within the repository.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -206,7 +209,8 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             'compute', versions=['beta', 'v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter)
+            use_rate_limiter=use_rate_limiter,
+            read_only=read_only)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
