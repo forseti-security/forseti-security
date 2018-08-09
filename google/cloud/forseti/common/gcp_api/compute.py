@@ -668,8 +668,8 @@ class ComputeClient(object):
 
         # TODO: Also allow read only to be set from the global_configs.
         # Read only if either read_only or dry_run argument is True.
-        read_only=(kwargs.get('read_only', False) or
-                   kwargs.get('dry_run', False))
+        read_only = (kwargs.get('read_only', False) or
+                     kwargs.get('dry_run', False))
 
         self.repository = ComputeRepositoryClient(
             quota_max_calls=max_calls,
