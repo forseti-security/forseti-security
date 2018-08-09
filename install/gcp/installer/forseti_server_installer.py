@@ -59,6 +59,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.config.generate_cloudsql_instance()
         self.get_email_settings()
         gcloud.enable_apis(self.config.dry_run)
+        gcloud.check_network_host_project_id()
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
@@ -268,6 +269,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
+            'HOST_PROJECT': self.host_project_id,
+            'VPC_NAME': self.vpc_name,
+            'SUBNETWORK': self.subnetwork,
             'FORSETI_VERSION': self.version,
             'RAND_MINUTE': random.randint(0, 59)
         }

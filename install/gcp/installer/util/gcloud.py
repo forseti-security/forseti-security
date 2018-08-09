@@ -51,6 +51,13 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
+def check_network_host_project_id(self):
+    """Get the host project."""
+    if not self.host_project_id:
+        self.get_project()
+        self.host_project_id = self.project_id
+    print('VPC Host Project %s' % self.host_project_id)
+
 def activate_service_account(key_file):
     """Activate the service account with gcloud.
 
