@@ -29,14 +29,12 @@ class Config(object):
         Args:
             kwargs (dict): The kwargs.
         """
-
         self.datetimestamp = (kwargs.get('datetimestamp') or
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.service_account_key_file = kwargs.get('service_account_key_file')
-        self.host_project_id = kwargs.get('network_host_project_id',
-                                          self.project_id)
+        self.host_project_id = kwargs.get('network_host_project_id')
         self.vpc_name = kwargs.get('vpc_name') or 'default'
         self.subnetwork = kwargs.get('subnet_name') or 'default'
         self.config_filename = (kwargs.get('config') or
@@ -46,13 +44,6 @@ class Config(object):
         self.dry_run = bool(kwargs.get('dry_run'))
         self.bucket_location = kwargs.get('gcs_location')
         self.installation_type = None
-
-        print('### HOST PROJECT ###')
-        print(self.host_project_id)
-        print('### VPC NAME ###')
-        print(self.vpc_name)
-        print('### SUBNETWORK ###')
-        print(self.subnetwork)
 
     def generate_identifier(self, organization_id):
         """Generate resource unique identifier.

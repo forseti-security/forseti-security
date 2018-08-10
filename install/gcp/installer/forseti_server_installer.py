@@ -59,7 +59,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.config.generate_cloudsql_instance()
         self.get_email_settings()
         gcloud.enable_apis(self.config.dry_run)
-        gcloud.check_network_host_project_id()
+        gcloud.check_network_host_project_id(self)
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(
@@ -172,7 +172,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleAction.DENY,
             ['icmp', 'udp', 'tcp'],
             constants.FirewallRuleDirection.INGRESS,
-            1)
+            1,
+            self.config.vpc_name)
 
         # Rule to open only port tcp:50051 within the
         # internal network (ip-ranges - 10.128.0.0/9).
@@ -183,6 +184,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             ['tcp:50051'],
             constants.FirewallRuleDirection.INGRESS,
             0,
+            self.config.vpc_name,
             '10.128.0.0/9')
 
         # Create firewall rule to open only port tcp:22 (ssh)
@@ -195,6 +197,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             ['tcp:22'],
             constants.FirewallRuleDirection.INGRESS,
             0,
+            self.config.vpc_name,
             '0.0.0.0/0')
 
     def generate_forseti_conf(self):
@@ -269,9 +272,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
-            'HOST_PROJECT': self.host_project_id,
-            'VPC_NAME': self.vpc_name,
-            'SUBNETWORK': self.subnetwork,
+            'HOST_PROJECT': self.config.host_project_id,
+            'VPC_NAME': self.config.vpc_name,
+            'SUBNETWORK': self.config.subnetwork,
             'FORSETI_VERSION': self.version,
             'RAND_MINUTE': random.randint(0, 59)
         }

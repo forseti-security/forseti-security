@@ -31,6 +31,6 @@ rules:
   #    - type: organization
   #      applies_to: self_and_children
   #      resource_ids:
-  #        - {ORGANIZATION_ID}
+  #        - 826592752744
   #  inherit_from_parents: true
   #  allowed_direct_access_sources: '10.*,monitoring-instance-tag'

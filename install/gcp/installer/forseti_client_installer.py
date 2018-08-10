@@ -88,5 +88,9 @@ class ForsetiClientInstaller(ForsetiInstaller):
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_CLIENT_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'FORSETI_VERSION': self.version,
-            'FORSETI_SERVER_ZONE': self.server_zone
+            'FORSETI_SERVER_REGION': self.server_zone[:-2],
+            'FORSETI_SERVER_ZONE': self.server_zone,
+            'HOST_PROJECT': self.config.host_project_id,
+            'VPC_NAME': self.config.vpc_name,
+            'SUBNETWORK': self.config.subnetwork
         }

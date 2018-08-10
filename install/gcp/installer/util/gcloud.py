@@ -53,10 +53,10 @@ def get_gcloud_info():
 
 def check_network_host_project_id(self):
     """Get the host project."""
-    if not self.host_project_id:
+    if not self.config.host_project_id:
         self.get_project()
         self.host_project_id = self.project_id
-    print('VPC Host Project %s' % self.host_project_id)
+    print('VPC Host Project %s' % self.config.host_project_id)
 
 def activate_service_account(key_file):
     """Activate the service account with gcloud.
@@ -671,6 +671,7 @@ def get_vm_instance_info(instance_name, try_match=False):
                      (not try_match and instance_name == cur_instance_name))
             if match:
                 # found forseti server vm instance
+                
                 zone = instance.get('zone').split('/zones/')[1]
                 network_interfaces = instance.get('networkInterfaces')
                 internal_ip = network_interfaces[0].get('networkIP')
@@ -688,6 +689,7 @@ def create_firewall_rule(rule_name,
                          rules,
                          direction,
                          priority,
+                         network,
                          source_ranges=None):
     """Create a firewall rule for a specific gcp service account.
 
@@ -714,7 +716,7 @@ def create_firewall_rule(rule_name,
                            '--target-service-accounts',
                            format_service_accounts, '--priority',
                            str(priority), '--direction', direction.value,
-                           '--rules', format_rules]
+                           '--rules', format_rules, '--network', network]
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
