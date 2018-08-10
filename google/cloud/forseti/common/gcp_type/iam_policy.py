@@ -344,7 +344,8 @@ class IamPolicyMember(object):
 
         # Bucket IAM supports a special "allUsers" member, whose value is simply
         # "allUsers", without a colon separator and a second fragment.
-        if (self.type == self.ALL_USERS and other_member.type == self.ALL_USERS):
+        if (self.type == self.ALL_USERS and
+            other_member.type == self.ALL_USERS):
             return True
 
         # Match if:
