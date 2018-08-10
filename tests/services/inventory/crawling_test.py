@@ -17,10 +17,10 @@ import logging
 import unittest
 from tests.services.inventory import gcp_api_mocks
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
-from google.cloud.forseti.services.server import InventoryConfig
 
 
 class NullProgresser(Progresser):
@@ -117,6 +117,7 @@ class CrawlerTest(ForsetiTestCase):
             'appengine_service': {'resource': 1},
             'appengine_version': {'resource': 1},
             'backendservice': {'resource': 1},
+            'billing_account': {'resource': 2, 'iam_policy': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
@@ -142,7 +143,7 @@ class CrawlerTest(ForsetiTestCase):
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
-            'sink': {'resource': 6},
+            'sink': {'resource': 7},
             'subnetwork': {'resource': 24},
         }
 
@@ -264,6 +265,7 @@ class CrawlerTest(ForsetiTestCase):
             'appengine_service': {'resource': 1},
             'appengine_version': {'resource': 1},
             'backendservice': {'resource': 1},
+            'billing_account': {'resource': 2, 'iam_policy': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
@@ -285,7 +287,7 @@ class CrawlerTest(ForsetiTestCase):
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
-            'sink': {'resource': 6},
+            'sink': {'resource': 7},
             'subnetwork': {'resource': 24},
         }
 
