@@ -671,7 +671,6 @@ def get_vm_instance_info(instance_name, try_match=False):
                      (not try_match and instance_name == cur_instance_name))
             if match:
                 # found forseti server vm instance
-                
                 zone = instance.get('zone').split('/zones/')[1]
                 network_interfaces = instance.get('networkInterfaces')
                 internal_ip = network_interfaces[0].get('networkIP')
@@ -681,7 +680,6 @@ def get_vm_instance_info(instance_name, try_match=False):
         print('Error retrieving forseti server ip address, '
               'will leave the server ip empty for now.')
     return None, None, None
-
 
 def create_firewall_rule(rule_name,
                          service_accounts,
@@ -701,6 +699,7 @@ def create_firewall_rule(rule_name,
                     will not be used if action is passed in
         direction (FirewallRuleDirection): INGRESS, EGRESS, IN or OUT
         priority (int): Integer between 0 and 65535
+        network (str): Name of the VPC to create firewall rules in
         source_ranges (str): A list of IP address blocks that are allowed
                             to make inbound connections that match the firewall
                              rule to the instances on the network. The IP
