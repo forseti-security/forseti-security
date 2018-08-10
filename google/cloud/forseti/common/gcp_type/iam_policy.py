@@ -345,15 +345,20 @@ class IamPolicyMember(object):
         # Bucket IAM supports a special "allUsers" member, whose value is simply
         # "allUsers", without a colon separator and a second fragment.
         if (self.type == self.ALL_USERS and
-            other_member.type == self.ALL_USERS):
+                other_member.type == self.ALL_USERS):
             return True
 
         # Match if:
         # {member_type}:{member_name} regex-matches self's
         # {member_type}:{member_name} .
-        return ((self.type == other_member.type and
-                 self.name_pattern.match(other_member.name)) or
-                self._is_matching_domain(other_member))
+        if (self.type == other_member.type and
+            self.name_pattern.match(other_member.name)):
+            return True
+
+        if self._is_matching_domain(other_member):
+            return True
+
+        return False
 
 class IamAuditConfig(object):
     """IAM Audit Config.
