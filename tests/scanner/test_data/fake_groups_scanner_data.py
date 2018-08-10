@@ -38,18 +38,17 @@ group: ddddd@mycompany.com
 """
 
 class FakeGroup:
-    def __init__(self, name, member_name, type, direct_member_count):
+    def __init__(self, name, member_name, type):
         self.name = name
         self.member_name = member_name
         self.type = type
-        self.direct_member_count = direct_member_count
 
 
 ALL_GROUPS = (
-    FakeGroup('aaaaa', 'aaaaa@mycompany.com', 'admin#directory#group', 3L),
-    FakeGroup('bbbbb', 'bbbbb@mycompany.com', 'admin#directory#group', 3L),
-    FakeGroup('ccccc', 'ccccc@mycompany.com', 'admin#directory#group', 3L),
-    FakeGroup('ddddd', 'ddddd@mycompany.com', 'admin#directory#group', 3L),
+    FakeGroup('aaaaa', 'aaaaa@mycompany.com', 'admin#directory#group'),
+    FakeGroup('bbbbb', 'bbbbb@mycompany.com', 'admin#directory#group'),
+    FakeGroup('ccccc', 'ccccc@mycompany.com', 'admin#directory#group'),
+    FakeGroup('ddddd', 'ddddd@mycompany.com', 'admin#directory#group'),
 )
 
 
