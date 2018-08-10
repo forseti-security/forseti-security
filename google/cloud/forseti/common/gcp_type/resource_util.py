@@ -151,3 +151,25 @@ def type_from_name(resource_name):
             return resource_type
 
     return None
+
+
+def cast_to_gcp_resources(resources_to_cast):
+    """Get a list Resource objects from a list of dict resource descriptors
+
+    Args:
+        resources_to_cast (list): A list of resource descriptors
+            as dictionaries.
+            [{'resourceId': {'id': '3456', 'type': 'Project'}}
+            {'resourceId': {'id': '1234', 'type': 'Organization'}}]
+
+    Returns:
+        list: A list of cast Resource objects
+    """
+
+    cast_resources = []
+    for resource_to_cast in resources_to_cast:
+        resource_id = resource_to_cast['resourceId']['id']
+        resource_type = resource_to_cast['resourceId']['type']
+        cast_resource = create_resource(resource_id, resource_type)
+        cast_resources.append(cast_resource)
+    return cast_resources

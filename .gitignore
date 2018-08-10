@@ -44,3 +44,6 @@ out/
 # Coverage
 .coverage
 htmlcov/
+
+# VSCode Metadata
+.vscode/
