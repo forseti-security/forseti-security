@@ -105,8 +105,7 @@ def run():
                               help='Skip Sendgrid cofiguration')
     email_params.add_argument('--gsuite-superadmin-email',
                               help='G Suite super admin email')
-    
-    
+
     args = vars(parser.parse_args())
 
     # Set the current date time stamp
