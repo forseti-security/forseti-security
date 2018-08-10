@@ -32,6 +32,57 @@ GET_PROJECTS_BILLING_INFO_NOT_ENABLED = """
 }
 """
 
+GET_BILLING_ACCOUNTS = """
+{
+ "billingAccounts": [
+  {
+   "name": "billingAccounts/000000-111111-222222",
+   "open": true,
+   "displayName": "My Billing Account",
+   "masterBillingAccount": "billingAccounts/001122-AABBCC-DDEEFF"
+  },
+  {
+   "name": "billingAccounts/001122-AABBCC-DDEEFF",
+   "open": true,
+   "displayName": "My Master Billing Account"
+  }
+ ]
+}
+"""
+
+GET_BILLING_SUBACCOUNTS = """
+{
+ "billingAccounts": [
+  {
+   "name": "billingAccounts/000000-111111-222222",
+   "open": true,
+   "displayName": "My Billing Account",
+   "masterBillingAccount": "billingAccounts/001122-AABBCC-DDEEFF"
+  }
+ ]
+}
+"""
+
+GET_BILLING_IAM = """
+{
+ "etag": "BcDe123456z=",
+ "bindings": [
+  {
+   "role": "roles/billing.admin",
+   "members": [
+    "user:foo@example.com"
+   ]
+  },
+  {
+   "role": "roles/logging.viewer",
+   "members": [
+    "group:auditors@example.com"
+   ]
+  }
+ ]
+}
+"""
+
 # Errors
 
 PROJECT_NOT_FOUND = """
