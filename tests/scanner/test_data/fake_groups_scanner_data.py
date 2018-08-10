@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from MySQLdb.constants.REFRESH import STATUS
 
 """Test data for groups scanner tests.
 
@@ -36,104 +37,53 @@ group: ddddd@mycompany.com
   member: bbbbb@mycompany.com
 """
 
+class FakeGroup:
+    def __init__(self, name, member_name, type, direct_member_count):
+        self.name = name
+        self.member_name = member_name
+        self.type = type
+        self.direct_member_count = direct_member_count
+
+
 ALL_GROUPS = (
-    {'direct_member_count': 3L,
-     'group_email': 'aaaaa@mycompany.com',
-     'group_id': 'aaaaa',
-     'group_kind': 'admin#directory#group',
-     'id': 1L,
-    },
-    {'direct_member_count': 3L,
-     'group_email': 'bbbbb@mycompany.com',
-     'group_id': 'bbbbb',
-     'group_kind': 'admin#directory#group',
-     'id': 2L,
-    },
-    {'direct_member_count': 3L,
-     'group_email': 'ccccc@mycompany.com',
-     'group_id': 'ccccc',
-     'group_kind': 'admin#directory#group',
-     'id': 3L,
-    },
-    {'direct_member_count': 3L,
-     'group_email': 'ddddd@mycompany.com',
-     'group_id': 'ddddd',
-     'group_kind': 'admin#directory#group',
-     'id': 4L,
-    },
+    FakeGroup('aaaaa', 'aaaaa@mycompany.com', 'admin#directory#group', 3L),
+    FakeGroup('bbbbb', 'bbbbb@mycompany.com', 'admin#directory#group', 3L),
+    FakeGroup('ccccc', 'ccccc@mycompany.com', 'admin#directory#group', 3L),
+    FakeGroup('ddddd', 'ddddd@mycompany.com', 'admin#directory#group', 3L),
 )
 
-AAAAA_GROUP_MEMBERS = (
-    {'group_id': 'aaaaa',
-     'member_email': 'adam@mycompany.com',
-     'member_id': 'adam',
-     'member_role': 'OWNER',
-     'member_type': 'USER'},
-    {'group_id': 'aaaaa',
-     'member_email': 'abby@mycompany.com',
-     'member_id': 'adam',
-     'member_role': 'MEMBER',
-     'member_type': 'USER'},
-    {'group_id': 'aaaaa',
-     'member_email': 'amelia@gmail.com',
-     'member_id': 'amelia',
-     'member_role': 'MEMBER',
-     'member_type': 'USER'}
-)
 
-BBBBB_GROUP_MEMBERS = (
-    {'group_id': 'bbbbb',
-     'member_email': 'bob@mycompany.com',
-     'member_id': 'bob',
-     'member_role': 'OWNER',
-     'member_type': 'USER'},
-    {'group_id': 'bbbbb',
-     'member_email': 'beth@mycompany.com',
-     'member_id': 'beth',
-     'member_role': 'MEMBER',
-     'member_type': 'USER'},
-    {'group_id': 'bbbbb',
-     'member_email': 'ccccc@mycompany.com',
-     'member_id': 'ccccc',
-     'member_role': 'MEMBER',
-     'member_type': 'GROUP'},
-)
+class FakeMember:
+    def __init__(self, name, member_name, type, starting_node):
+        self.name = name
+        self.member_name = member_name
+        self.type = type
+        self.starting_node = starting_node
 
-CCCCC_GROUP_MEMBERS = (
-    {'group_id': 'ccccc',
-     'member_email': 'charlie@mycompany.com',
-     'member_id': 'charlie',
-     'member_role': 'OWNER',
-     'member_type': 'USER'},
-    {'group_id': 'ccccc',
-     'member_email': 'cassy@mycompany.com',
-     'member_id': 'cassy',
-     'member_role': 'MEMBER',
-     'member_type': 'USER'},
-    {'group_id': 'ccccc',
-     'member_email': 'christy@gmail.com',
-     'member_id': 'christy',
-     'member_role': 'MEMBER',
-     'member_type': 'USER'}
-)
 
-DDDDD_GROUP_MEMBERS = (
-    {'group_id': 'ddddd',
-     'member_email': 'david@mycompany.com',
-     'member_id': 'david',
-     'member_role': 'OWNER',
-     'member_type': 'USER'},
-    {'group_id': 'ddddd',
-     'member_email': 'daisy@mycompany.com',
-     'member_id': 'daisy',
-     'member_role': 'MEMBER',
-     'member_type': 'USER'},
-    {'group_id': 'ddddd',
-     'member_email': 'bbbbb@mycompany.com',
-     'member_id': 'bbbbb',
-     'member_role': 'MEMBER',
-     'member_type': 'GROUP'}
-)
+AAAAA_GROUP_MEMBERS = [
+    FakeMember('adam', 'adam@mycompany.com', 'USER', 'aaaaa'),
+    FakeMember('abby', 'abby@mycompany.com', 'USER', 'aaaaa'),
+    FakeMember('amelia', 'amelia@mycompany.com', 'USER', 'aaaaa'),
+]
+
+CCCCC_GROUP_MEMBERS = [
+    FakeMember('charlie', 'charlie@mycompany.com', 'USER', 'ccccc'),
+    FakeMember('cassy', 'cassy@mycompany.com', 'USER', 'ccccc'),
+    FakeMember('christy', 'christy@yahoo.com', 'USER', 'ccccc'),
+]
+
+BBBBB_GROUP_MEMBERS = [
+    FakeMember('bob', 'bob@mycompany.com', 'USER', 'bbbbb'),
+    FakeMember('beth', 'beth@mycompany.com', 'USER', 'bbbbb'),
+]
+BBBBB_GROUP_MEMBERS += CCCCC_GROUP_MEMBERS
+
+DDDDD_GROUP_MEMBERS = [
+    FakeMember('david', 'david@mycompany.com', 'USER', 'ddddd'),
+    FakeMember('daisy', 'daisy@mycompany.com', 'USER', 'ddddd'),
+]
+DDDDD_GROUP_MEMBERS += BBBBB_GROUP_MEMBERS
 
 # The order of these groups will be determined by the nesting structure
 # and by how the get_recursive_members() will return them.
@@ -141,10 +91,7 @@ ALL_GROUP_MEMBERS = [
     AAAAA_GROUP_MEMBERS,
     BBBBB_GROUP_MEMBERS,
     CCCCC_GROUP_MEMBERS,
-    CCCCC_GROUP_MEMBERS,
     DDDDD_GROUP_MEMBERS,
-    BBBBB_GROUP_MEMBERS,
-    CCCCC_GROUP_MEMBERS
 ]
 
 EXPECTED_MEMBERS_IN_TREE = (
@@ -152,28 +99,25 @@ EXPECTED_MEMBERS_IN_TREE = (
 |-- aaaaa@mycompany.com
 |   |-- adam@mycompany.com
 |   |-- abby@mycompany.com
-|   +-- amelia@gmail.com
+|   +-- amelia@mycompany.com
 |-- bbbbb@mycompany.com
 |   |-- bob@mycompany.com
 |   |-- beth@mycompany.com
-|   +-- ccccc@mycompany.com
-|       |-- charlie@mycompany.com
-|       |-- cassy@mycompany.com
-|       +-- christy@gmail.com
+|   |-- charlie@mycompany.com
+|   |-- cassy@mycompany.com
+|   +-- christy@yahoo.com
 |-- ccccc@mycompany.com
 |   |-- charlie@mycompany.com
 |   |-- cassy@mycompany.com
-|   +-- christy@gmail.com
+|   +-- christy@yahoo.com
 +-- ddddd@mycompany.com
     |-- david@mycompany.com
     |-- daisy@mycompany.com
-    +-- bbbbb@mycompany.com
-        |-- bob@mycompany.com
-        |-- beth@mycompany.com
-        +-- ccccc@mycompany.com
-            |-- charlie@mycompany.com
-            |-- cassy@mycompany.com
-            +-- christy@gmail.com"""
+    |-- bob@mycompany.com
+    |-- beth@mycompany.com
+    |-- charlie@mycompany.com
+    |-- cassy@mycompany.com
+    +-- christy@yahoo.com"""
 )
 
 EXPECTED_RULES_IN_TREE = (
@@ -189,10 +133,9 @@ EXPECTED_RULES_IN_TREE = (
 |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+|   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|       |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|       |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|       +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
@@ -200,11 +143,9 @@ EXPECTED_RULES_IN_TREE = (
 +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-        |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-        |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-        +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-            |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-            |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-            +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}"""
+    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+    |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+    +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}"""
 )
