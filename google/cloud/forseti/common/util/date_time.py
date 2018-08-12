@@ -16,6 +16,7 @@
 
 import calendar
 from datetime import datetime
+from dateutil import parser
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -65,6 +66,22 @@ def get_datetime_from_string(string, string_format):
         raise DateTimeValueConversionError
 
     return result
+
+
+def get_unix_timestamp_from_string(string):
+    """Parse string to a unix timestamp, as seconds since epoch.
+
+    Args:
+        string (str): The time string to parse.
+
+    Returns:
+        int: The timestamp in seconds.
+
+    Raises:
+        ValueError: Raised for unknown string formats.
+    """
+    date = parser.parse(string)
+    return calendar.timegm(date.utctimetuple())
 
 
 def get_utc_now_datetime():
