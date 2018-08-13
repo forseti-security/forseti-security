@@ -687,7 +687,7 @@ def create_firewall_rule(rule_name,
                          rules,
                          direction,
                          priority,
-                         network,
+                         vpc_host_network,
                          source_ranges=None):
     """Create a firewall rule for a specific gcp service account.
 
@@ -699,7 +699,7 @@ def create_firewall_rule(rule_name,
                     will not be used if action is passed in
         direction (FirewallRuleDirection): INGRESS, EGRESS, IN or OUT
         priority (int): Integer between 0 and 65535
-        network (str): Name of the VPC to create firewall rules in
+        vpc_host_network (str): Name of the VPC to create firewall rules in
         source_ranges (str): A list of IP address blocks that are allowed
                             to make inbound connections that match the firewall
                              rule to the instances on the network. The IP
@@ -715,7 +715,7 @@ def create_firewall_rule(rule_name,
                            '--target-service-accounts',
                            format_service_accounts, '--priority',
                            str(priority), '--direction', direction.value,
-                           '--rules', format_rules, '--network', network]
+                           '--rules', format_rules, '--network', vpc_host_network]
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
