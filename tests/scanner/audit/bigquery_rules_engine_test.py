@@ -23,6 +23,8 @@ import yaml
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import bigquery_access_controls as bq_acls
+from google.cloud.forseti.common.gcp_type import organization
+from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
@@ -61,6 +63,22 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         self.bqe = bqe
         self.bqe.LOGGER = mock.MagicMock()
         self.fake_timestamp = '12345'
+
+        self.org = organization.Organization(
+            '123456789012',
+            display_name='Organization 123456789012',
+            full_name='organization/123456789012/',
+            data='fake_org_data_123456789012',
+        )
+
+        self.project = project.Project(
+            'proj-1',
+            project_number=11223344,
+            display_name='My project 1',
+            parent=self.org,
+            full_name='organization/123456789012/project/proj-1/',
+            data='fake_project_data_2341',
+        )
 
     def test_build_rule_book_from_local_yaml_file_works(self):
         """Test that a RuleBook is built correctly with a yaml file."""
@@ -118,10 +136,10 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             'bigquery_test_rules_3.yaml')
         rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
         rules_engine.build_rule_book()
-        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        fake_bq_acls = create_list_of_bq_objects_from_data()
         actual_violations_list = []
-        for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(bqt)
+        for bqt in fake_bq_acls:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
 
@@ -132,10 +150,10 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             'bigquery_test_rules_4.yaml')
         rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
         rules_engine.build_rule_book()
-        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        fake_bq_acls = create_list_of_bq_objects_from_data()
         actual_violations_list = []
-        for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(bqt)
+        for bqt in fake_bq_acls:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,

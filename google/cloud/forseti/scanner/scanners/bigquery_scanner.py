@@ -14,6 +14,8 @@
 
 """Scanner for the Big Query rules engine."""
 
+import collections
+
 from google.cloud.forseti.common.gcp_type.bigquery_access_controls import (
     BigqueryAccessControls)
 
@@ -24,6 +26,9 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
+BigqueryAccessControlsData = collections.namedtuple(
+    'BigqueryAccessControlsData',
+    ['resource', 'bigquery_acl'])
 
 class BigqueryScanner(base_scanner.BaseScanner):
     """Scanner for BigQuery acls."""
@@ -91,11 +96,11 @@ class BigqueryScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, bigquery_data):
+    def _find_violations(self, bigquery_acl_data):
         """Find violations in the policies.
 
         Args:
-            bigquery_data (list): Big Query data to find violations in
+            bigquery_acl_data (list): Big Query data to find violations in
 
         Returns:
             list: A list of BigQuery violations
@@ -103,9 +108,9 @@ class BigqueryScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding BigQuery acl violations...')
 
-        for bigquery_acl in bigquery_data:
+        for data in bigquery_acl_data:
             violations = self.rules_engine.find_policy_violations(
-                bigquery_acl)
+                data.resource, data.bigquery_acl)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
@@ -119,7 +124,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
-            bq_acls = []
+            bq_acl_data = []
 
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
                 dataset_id = policy.parent.name
@@ -130,17 +135,23 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 # do not use project_id = policy.parent.parent.name
                 # which will cause db session conflict.
                 # Instead, parse the project_id from the full_name.
-                bq_acls.extend(
-                    BigqueryAccessControls.from_json(
-                        project_id=None,
-                        dataset_id=dataset_id,
-                        full_name=policy.full_name,
-                        acls=policy.data))
+                gen = BigqueryAccessControls.from_json(
+                    project_id=None,
+                    dataset_id=dataset_id,
+                    full_name=policy.full_name,
+                    acls=policy.data)
 
-        return bq_acls
+                for bq_acl in gen:
+                    data = BigqueryAccessControlsData(
+                        resource=policy.parent,
+                        bigquery_acl=bq_acl,
+                    )
+                    bq_acl_data.append(data)
+
+            return bq_acl_data
 
     def run(self):
         """Runs the data collection."""
-        bigquery_acls_data = self._retrieve()
-        all_violations = self._find_violations(bigquery_acls_data)
+        bigquery_acl_data = self._retrieve()
+        all_violations = self._find_violations(bigquery_acl_data)
         self._output_results(all_violations)
