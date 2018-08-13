@@ -36,7 +36,8 @@ class Config(object):
         self.service_account_key_file = kwargs.get('service_account_key_file')
         self.vpc_host_project_id = kwargs.get('vpc_host_project_id')
         self.vpc_host_network = kwargs.get('vpc_host_network') or 'default'
-        self.vpc_host_subnetwork = kwargs.get('vpc_host_subnetwork') or 'default'
+        self.vpc_host_subnetwork = kwargs.get('vpc_host_subnetwork') \
+            or 'default'
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
                                     self.datetimestamp))
