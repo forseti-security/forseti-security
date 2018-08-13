@@ -90,7 +90,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
             'FORSETI_VERSION': self.version,
             'FORSETI_SERVER_REGION': self.server_zone[:-2],
             'FORSETI_SERVER_ZONE': self.server_zone,
-            'HOST_PROJECT': self.config.vpc_host_project_id,
-            'VPC_NAME': self.config.vpc_host_network,
-            'SUBNETWORK': self.config.vpc_host_subnetwork
+            'VPC_HOST_PROJECT_ID': self.config.vpc_host_project_id,
+            'VPC_HOST_NETWORK': self.config.vpc_host_network,
+            'VPC_HOST_SUBNETWORK': self.config.vpc_host_subnetwork
         }
