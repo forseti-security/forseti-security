@@ -17,7 +17,7 @@
   mode: whitelist
   conditions:
       # Must use quotes if the condition starts with @ symbol.
-    - member_email: "@phoogle.net"
+    - member_email: "@{DOMAIN}"
     - member_email: "@gmail.com"
 
 #- name: Allow mypartner users to be in a group.
