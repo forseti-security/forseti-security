@@ -183,7 +183,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     'Missing resource ids in rule {}'.format(rule_index))
 
             rule = self._build_rule(
-               rule_def, rule_index, raw_resource)
+                rule_def, rule_index, raw_resource)
 
 
             resource_type = raw_resource.get('type')
