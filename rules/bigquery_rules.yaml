@@ -24,7 +24,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - 826592752744
+          - {ORGANIZATION_ID}
   - name: sample BigQuery rule to search for datasets accessible by users with gmail.com addresses
     dataset_id: '*'
     special_group: '*'
@@ -35,7 +35,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - 826592752744
+          - {ORGANIZATION_ID}
   - name: sample BigQuery rule to search for datasets accessible by groups with googlegroups.com addresses
     dataset_id: '*'
     special_group: '*'
@@ -46,4 +46,4 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - 826592752744
+          - {ORGANIZATION_ID}
