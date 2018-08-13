@@ -72,8 +72,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_policy_violations(
-            resource, bq_acl)
+        violations = self.rule_book.find_policy_violations(resource, bq_acl)
 
         return set(violations)
 
@@ -192,7 +191,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         violations = itertools.chain()
 
         resource_ancestors = (
-            relationship.find_ancestors(resource, bq_acl.full_name))
+            relationship.find_ancestors(resource, resource.full_name))
 
         for res in resource_ancestors:
             for rule in self.resource_rules_map.get(res, []):
