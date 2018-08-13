@@ -19,9 +19,9 @@ ADD . /forseti-security/
 WORKDIR /forseti-security/
 
 # Install host dependencies.
-RUN apt-get update -qq 1> /dev/null
-RUN apt-get install -qq -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq 1> /dev/null && \
+    apt-get install -qq -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install the CloudSDK for `gcloud`.
 RUN curl -sSL https://sdk.cloud.google.com 1> /dev/null | bash
