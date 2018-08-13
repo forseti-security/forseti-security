@@ -51,8 +51,8 @@ resources:
     image-project: ubuntu-os-cloud
     image-family: ubuntu-1804-lts
     instance-type: n1-standard-2
-    region: {FORSETI_SERVER_REGION}
-    zone: {FORSETI_SERVER_REGION}-c
+    region:  $(refs.cloudsql.region)
+    zone:  $(refs.cloudsql.region)-c
 
     service-account: {GCP_SERVER_SERVICE_ACCOUNT}
     service-account-scopes:
