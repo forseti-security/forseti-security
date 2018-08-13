@@ -352,7 +352,7 @@ class IamPolicyMember(object):
         # {member_type}:{member_name} regex-matches self's
         # {member_type}:{member_name} .
         if (self.type == other_member.type and
-            self.name_pattern.match(other_member.name)):
+                self.name_pattern.match(other_member.name)):
             return True
 
         if self._is_matching_domain(other_member):
