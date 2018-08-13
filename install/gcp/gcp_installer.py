@@ -87,12 +87,12 @@ def run():
                        default='us-central1')
 
     network = parser.add_argument_group(title='network')
-    network.add_argument('--network-host-project-id',
+    network.add_argument('--vpc-host-project-id',
                          help='The project id that is hosting the network '
                          'resources.')
-    network.add_argument('--vpc-name',
+    network.add_argument('--vpc-host-network',
                          help='The VPC name where Forseti VM will run.')
-    network.add_argument('--subnet-name',
+    network.add_argument('--vpc-host-subnetwork',
                          help='The subnetwork name where Forseti VM will run.')
 
     email_params = parser.add_argument_group(title='email')
