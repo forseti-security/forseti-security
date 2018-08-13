@@ -59,7 +59,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         self.config.generate_cloudsql_instance()
         self.get_email_settings()
         gcloud.enable_apis(self.config.dry_run)
-        gcloud.check_network_host_project_id(self)
+        gcloud.set_network_host_project_id(self)
         forseti_v1_name = None
         if not self.config.dry_run:
             _, zone, forseti_v1_name = gcloud.get_vm_instance_info(

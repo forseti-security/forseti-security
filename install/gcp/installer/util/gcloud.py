@@ -51,7 +51,7 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
-def check_network_host_project_id(self):
+def set_network_host_project_id(self):
     """Get the host project."""
     if not self.config.host_project_id:
         self.get_project()
