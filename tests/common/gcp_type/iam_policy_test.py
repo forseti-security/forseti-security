@@ -82,7 +82,7 @@ class IamPolicyTest(ForsetiTestCase):
         self.assertTrue(iam_policy_members[0].matches(self.test_members[0]))
 
         # test globs/allUsers
-        self.assertTrue(iam_policy_members[1].matches(self.members[1]))
+        self.assertTrue(iam_policy_members[1].matches(self.members[3]))
         self.assertTrue(iam_policy_members[1].matches(self.test_members[3]))
         self.assertTrue(iam_policy_members[2].matches(self.test_members[0]))
         self.assertTrue(iam_policy_members[3].matches(self.test_members[1]))
