@@ -699,7 +699,7 @@ def create_firewall_rule(rule_name,
                     will not be used if action is passed in
         direction (FirewallRuleDirection): INGRESS, EGRESS, IN or OUT
         priority (int): Integer between 0 and 65535
-        vpc_host_network (str): vpc_host_network (str): Name of the VPC network 
+        vpc_host_network (str): vpc_host_network (str): Name of the VPC network
                               to create firewall rules in
         source_ranges (str): A list of IP address blocks that are allowed
                             to make inbound connections that match the firewall
