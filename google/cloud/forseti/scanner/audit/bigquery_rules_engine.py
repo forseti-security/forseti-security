@@ -112,6 +112,58 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
 
+    @classmethod
+    def _build_rule(cls, rule_def, rule_index, raw_resource):
+        """Build a rule.
+
+        Args:
+            rule_def (dict): A dictionary containing rule definition
+                properties.
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
+            raw_resource (dict): Raw dict representing the resources the
+                rules apply for.
+
+        Returns:
+            Rule: rule for the given definition.
+        """
+        dataset_id = rule_def.get('dataset_id')
+        special_group = rule_def.get('special_group')
+        user_email = rule_def.get('user_email')
+        domain = rule_def.get('domain')
+        group_email = rule_def.get('group_email')
+        role = rule_def.get('role')
+
+        is_any_none = any(item is None for item in [
+            dataset_id,
+            special_group,
+            user_email,
+            domain,
+            group_email,
+            role])
+
+        if is_any_none:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Faulty rule {}'.format(rule_def.get('name')))
+
+        rule_def_resource = bq_acls.BigqueryAccessControls(
+            project_id='',
+            dataset_id=escape_and_globify(dataset_id),
+            full_name='',
+            special_group=escape_and_globify(special_group),
+            user_email=escape_and_globify(user_email),
+            domain=escape_and_globify(domain),
+            group_email=escape_and_globify(group_email),
+            role=escape_and_globify(role.upper()),
+            view='',
+            raw_json=json.dumps(raw_resource))
+
+        rule = Rule(rule_name=rule_def.get('name'),
+                    rule_index=rule_index,
+                    rules=rule_def_resource)
+
+        return rule
+
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
 
@@ -130,40 +182,8 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            dataset_id = rule_def.get('dataset_id')
-            special_group = rule_def.get('special_group')
-            user_email = rule_def.get('user_email')
-            domain = rule_def.get('domain')
-            group_email = rule_def.get('group_email')
-            role = rule_def.get('role')
-
-            is_any_none = any(item is None for item in [
-                dataset_id,
-                special_group,
-                user_email,
-                domain,
-                group_email,
-                role])
-
-            if is_any_none:
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Faulty rule {}'.format(rule_def.get('name')))
-
-            rule_def_resource = bq_acls.BigqueryAccessControls(
-                project_id='',
-                dataset_id=escape_and_globify(dataset_id),
-                full_name='',
-                special_group=escape_and_globify(special_group),
-                user_email=escape_and_globify(user_email),
-                domain=escape_and_globify(domain),
-                group_email=escape_and_globify(group_email),
-                role=escape_and_globify(role.upper()),
-                view='',
-                raw_json=json.dumps(raw_resource))
-
-            rule = Rule(rule_name=rule_def.get('name'),
-                        rule_index=rule_index,
-                        rules=rule_def_resource)
+            rule = self._build_rule(
+               rule_def, rule_index, raw_resource)
 
 
             resource_type = raw_resource.get('type')
