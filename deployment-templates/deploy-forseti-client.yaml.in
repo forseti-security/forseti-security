@@ -46,9 +46,9 @@ resources:
       - https://www.googleapis.com/auth/cloud-platform
     gcs-bucket: {FORSETI_BUCKET}
 
-    network-host-project: {HOST_PROJECT}
-    vpc-name: {VPC_NAME}
-    subnetwork: {SUBNETWORK}
+    vpc-host-project-id: {VPC_HOST_PROJECT_ID}
+    vpc-host-name: {VPC_HOST_NAME}
+    vpc-host-subnetwork: {VPC_HOST_SUBNETWORK}
 
     # --- Forseti version
     # "forseti-version": Can be a tag or a branch.
