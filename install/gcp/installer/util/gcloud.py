@@ -715,7 +715,8 @@ def create_firewall_rule(rule_name,
                            '--target-service-accounts',
                            format_service_accounts, '--priority',
                            str(priority), '--direction', direction.value,
-                           '--rules', format_rules, '--network', vpc_host_network]
+                           '--rules', format_rules, 
+                           '--network', vpc_host_network]
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
