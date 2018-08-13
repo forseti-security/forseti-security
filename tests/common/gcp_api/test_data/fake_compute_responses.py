@@ -1638,19 +1638,76 @@ EXPECTED_SUBNETWORKS_LIST_SELFLINKS = frozenset([
 ])
 
 GLOBAL_OPERATION_RESPONSE = """
-    {
-      "kind": "compute#operation",
-      "id": "1234",
-      "name": "operation-1234",
-      "operationType": "delete",
-      "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/global/firewalls/test-1234",
-      "targetId": "123456",
-      "status": "PENDING",
-      "user": "mock_data@example.com",
-      "progress": 0,
-      "insertTime": "2017-08-08T10:37:55.413-07:00",
-      "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
- }
+{
+ "kind": "compute#operation",
+ "id": "1234",
+ "name": "operation-1234",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/global/firewalls/test-1234",
+ "targetId": "123456",
+ "status": "PENDING",
+ "user": "mock_data@example.com",
+ "progress": 0,
+ "insertTime": "2017-08-08T10:37:55.413-07:00",
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
+}
 """
 
 FAKE_OPERATION_ID = "operation-1234"
+
+# Parameters: verb, resource_path
+PENDING_OPERATION_TEMPLATE = """
+{{
+ "kind": "compute#operation",
+ "id": "1234",
+ "name": "operation-1234",
+ "operationType": "{verb}",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/{resource_path}",
+ "targetId": "123456",
+ "status": "PENDING",
+ "user": "mock_data@example.com",
+ "progress": 0,
+ "insertTime": "2018-08-02T06:49:34.713-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/operations/operation-1234"
+}}
+"""
+
+# Parameters: verb, resource_path
+FINISHED_OPERATION_TEMPLATE = """
+{{
+ "kind": "compute#operation",
+ "id": "1234",
+ "name": "operation-1234",
+ "operationType": "{verb}",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/{resource_path}",
+ "targetId": "123456",
+ "status": "DONE",
+ "user": "mock_data@example.com",
+ "progress": 100,
+ "insertTime": "2018-08-02T06:49:34.713-07:00",
+ "startTime": "2018-08-02T06:49:35.560-07:00",
+ "endTime": "2018-08-02T06:49:42.937-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/operations/operation-1234"
+}}
+"""
+
+FAKE_FIREWALL_RULE = {
+    "kind": "compute#firewall",
+    "id": "12345",
+    "creationTimestamp": "2017-05-04T16:23:00.568-07:00",
+    "network": ("https://www.googleapis.com/compute/beta/projects/project1"
+                "/global/networks/default1"),
+    "priority": 1000,
+    "sourceRanges": ["0.0.0.0/0"],
+    "description": "Allow SSH from anywhere",
+    "allowed": [
+        {
+            "IPProtocol": "tcp",
+            "ports": ["22"]
+        }
+    ],
+    "name": "fake-firewall",
+    "direction": "INGRESS",
+    "selfLink": ("https://www.googleapis.com/compute/beta/projects/project1"
+                 "/global/firewalls/fake-firewall")
+}
