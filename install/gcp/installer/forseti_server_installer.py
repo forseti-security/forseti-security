@@ -173,7 +173,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             ['icmp', 'udp', 'tcp'],
             constants.FirewallRuleDirection.INGRESS,
             1,
-            self.config.vpc_host_project_id)
+            self.config.vpc_host_network)
 
         # Rule to open only port tcp:50051 within the
         # internal network (ip-ranges - 10.128.0.0/9).
