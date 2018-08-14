@@ -53,10 +53,10 @@ def get_gcloud_info():
 
 def set_network_host_project_id(self):
     """Get the host project."""
-    if not self.config.host_project_id:
+    if not self.config.vpc_host_project_id:
         self.get_project()
-        self.host_project_id = self.project_id
-    print('VPC Host Project %s' % self.config.host_project_id)
+        self.vpc_host_project_id = self.project_id
+    print('VPC Host Project %s' % self.config.vpc_host_project_id)
 
 def activate_service_account(key_file):
     """Activate the service account with gcloud.
