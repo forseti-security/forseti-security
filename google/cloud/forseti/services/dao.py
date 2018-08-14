@@ -573,7 +573,6 @@ def define_model(model_name, dbengine, model_seed):
                     iterations += 1
             except Exception as e:
                 LOGGER.exception(e)
-                LOGGER.error(Exception.message)
                 session.rollback()
                 raise
             finally:
