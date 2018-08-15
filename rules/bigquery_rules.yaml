@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# The BigQuery scanner rules are blacklists.
+# BigQuery scanner rules default to mode 'blacklist'.
 rules:
   - name: sample BigQuery rule to search for public datasets
     dataset_id: '*'
