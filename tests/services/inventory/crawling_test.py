@@ -13,10 +13,10 @@
 # limitations under the License.
 """Unit Tests: Inventory crawler for Forseti Server."""
 
-import logging
 import unittest
 from tests.services.inventory import gcp_api_mocks
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
@@ -28,6 +28,7 @@ class NullProgresser(Progresser):
 
     def __init__(self):
         super(NullProgresser, self).__init__()
+        self.LOGGER = logger.get_logger(__name__)
         self.errors = 0
         self.objects = 0
         self.warnings = 0
@@ -36,11 +37,11 @@ class NullProgresser(Progresser):
         self.objects += 1
 
     def on_warning(self, warning):
-        logging.error("Progressor Warning: %s", warning)
+        self.LOGGER.error("Progressor Warning: %s", warning)
         self.warnings += 1
 
     def on_error(self, error):
-        logging.exception("Progressor Error: %s", error)
+        self.LOGGER.exception("Progressor Error: %s", error)
         self.errors += 1
 
     def get_summary(self):
