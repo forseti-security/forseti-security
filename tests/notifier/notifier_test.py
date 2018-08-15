@@ -28,6 +28,9 @@ class NotifierTest(ForsetiTestCase):
     def setUp(self):
         pass
 
+    def tearDown(self):
+        reload(notifier)
+
     def test_can_convert_created_at_datetime_to_timestamp_string(self):
         violations = [
             dict(created_at_datetime=datetime(1999, 12, 25, 1, 2, 3)),
@@ -140,6 +143,7 @@ class NotifierTest(ForsetiTestCase):
         Expected outcome:
             The local find_notifiers() function is never called -> no notifiers
             are looked up, istantiated or run."""
+        reload(notifier)
         mock_dao.get_latest_scanner_index_id.return_value = None
         mock_service_cfg = mock.MagicMock()
         mock_service_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
