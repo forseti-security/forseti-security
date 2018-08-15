@@ -55,6 +55,9 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.common.util import logger
 
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import retryable_exceptions
+
 LOGGER = logger.get_logger(__name__)
 
 POOL_RECYCLE_SECONDS = 300
