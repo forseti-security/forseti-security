@@ -22,13 +22,14 @@ from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
+LOGGER = logger.get_logger(__name__)
+
 
 class NullProgresser(Progresser):
     """No-op progresser to suppress output."""
 
     def __init__(self):
         super(NullProgresser, self).__init__()
-        self.LOGGER = logger.get_logger(__name__)
         self.errors = 0
         self.objects = 0
         self.warnings = 0
@@ -37,11 +38,11 @@ class NullProgresser(Progresser):
         self.objects += 1
 
     def on_warning(self, warning):
-        self.LOGGER.error("Progressor Warning: %s", warning)
+        LOGGER.error("Progressor Warning: %s", warning)
         self.warnings += 1
 
     def on_error(self, error):
-        self.LOGGER.exception("Progressor Error: %s", error)
+        LOGGER.exception("Progressor Error: %s", error)
         self.errors += 1
 
     def get_summary(self):
