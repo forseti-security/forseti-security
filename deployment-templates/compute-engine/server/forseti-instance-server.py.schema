@@ -25,7 +25,7 @@ required:
 - zone
 - service-account
 - service-account-scopes
-- service-account-gsuite
+# - service-account-gsuite
 - scanner-bucket
 - database-name
 - src-path
