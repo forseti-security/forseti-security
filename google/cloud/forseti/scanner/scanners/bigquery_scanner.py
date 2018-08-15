@@ -134,15 +134,16 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 # dataset_policy are always in a dataset, which is always in a
                 # project.
                 dataset = policy.parent
-                if dataset.type_name != 'dataset':
+                if dataset.type != 'dataset':
                     raise ValueError(
                         'Unexpected type of dataset_policy parent: '
-                        'got %s, want dataset' % dataset.type_name)
+                        'got %s, want dataset' % dataset.type
+                    )
 
-                if dataset.parent.type_name != 'project':
+                if dataset.parent.type != 'project':
                     raise ValueError(
                         'Unexpected type of dataset_policy grandparent: '
-                        'got %s, want project' % dataset.parent.type_name
+                        'got %s, want project' % dataset.parent.type
                     )
 
                 proj = project.Project(

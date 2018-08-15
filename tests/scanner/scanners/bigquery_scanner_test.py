@@ -36,14 +36,14 @@ def _mock_gcp_resource_iter(_, resource_type):
     Resource = collections.namedtuple(
         'Resource',
         # fields based on required fields from Resource in dao.py.
-        ['full_name', 'type_name', 'name', 'parent_type_name', 'parent',
+        ['full_name', 'type', 'name', 'parent_type_name', 'parent',
          'data'],
     )
 
     for resource in fbsd.BIGQUERY_DATA:
         proj = Resource(
             full_name=resource['full_project_name'],
-            type_name='project',
+            type='project',
             name='projects/' + resource['project_id'],
             parent_type_name='',
             parent=None,
@@ -52,7 +52,7 @@ def _mock_gcp_resource_iter(_, resource_type):
 
         dataset= Resource(
             full_name=resource['full_name'],
-            type_name='dataset',
+            type='dataset',
             name='dataset/' + resource['dataset_id'],
             parent_type_name='project',
             parent=proj,
@@ -61,7 +61,7 @@ def _mock_gcp_resource_iter(_, resource_type):
 
         policy = Resource(
             full_name=resource['full_name'],
-            type_name='dataset_policy',
+            type='dataset_policy',
             parent_type_name='dataset',
             name='dataset_policies/' + resource['dataset_id'],
             parent=dataset,
