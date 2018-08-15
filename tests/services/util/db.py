@@ -17,8 +17,8 @@
 import os
 import tempfile
 
-from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.dao import create_engine
 
 LOGGER = logger.get_logger(__name__)
 
