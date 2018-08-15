@@ -21,8 +21,8 @@ from Queue import Empty, Queue
 
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
-from google.cloud.forseti.services.inventory.base import resources
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.base import resources
 
 
 LOGGER = logger.get_logger(__name__)
