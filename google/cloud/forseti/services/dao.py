@@ -55,8 +55,6 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.common.util import logger
 
-from google.cloud.forseti.common.util import logger
-
 
 LOGGER = logger.get_logger(__name__)
 
