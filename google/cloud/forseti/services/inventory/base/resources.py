@@ -718,6 +718,40 @@ class Project(Resource):
         return 'project'
 
 
+class BillingAccount(Resource):
+    """The Resource implementation for BillingAccount
+    """
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['name'].split('/', 1)[-1]
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """Get iam policy for this folder
+
+        Args:
+            client (object): GCP API client
+
+        Returns:
+            dict: Billing Account IAM Policy
+        """
+        return client.get_billing_account_iam_policy(self['name'])
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'billing_account'
+        """
+        return 'billing_account'
+
+
 class GcsBucket(Resource):
     """The Resource implementation for GcsBucket
     """
@@ -1566,6 +1600,18 @@ class FolderProjectIterator(ResourceIterator):
             yield FACTORIES['project'].create_new(data)
 
 
+class BillingAccountIterator(ResourceIterator):
+    """The Resource iterator implementation for BillingAccount"""
+
+    def iter(self):
+        """Yields:
+            Resource: BillingAccount created
+        """
+        gcp = self.client
+        for data in gcp.iter_billing_accounts():
+            yield FACTORIES['billing_account'].create_new(data)
+
+
 class BucketIterator(ResourceIterator):
     """The Resource iterator implementation for GcsBucket"""
 
@@ -2002,6 +2048,19 @@ class OrganizationSinkIterator(ResourceIterator):
             yield FACTORIES['sink'].create_new(data)
 
 
+class BillingAccountSinkIterator(ResourceIterator):
+    """The Resource iterator implementation for Billing Account Sink"""
+
+    def iter(self):
+        """Yields:
+            Resource: Sink created
+        """
+        gcp = self.client
+        for data in gcp.iter_billing_account_sinks(
+                acctid=self.resource['name']):
+            yield FACTORIES['sink'].create_new(data)
+
+
 FACTORIES = {
 
     'organization': ResourceFactory({
@@ -2014,6 +2073,7 @@ FACTORIES = {
             OrganizationRoleIterator,
             OrganizationCuratedRoleIterator,
             OrganizationSinkIterator,
+            BillingAccountIterator,
             ProjectIterator,
         ]}),
 
@@ -2050,6 +2110,13 @@ FACTORIES = {
             SubnetworkIterator,
             ProjectRoleIterator,
             ProjectSinkIterator
+        ]}),
+
+    'billing_account': ResourceFactory({
+        'dependsOn': ['organization'],
+        'cls': BillingAccount,
+        'contains': [
+            BillingAccountSinkIterator,
         ]}),
 
     'appengine_app': ResourceFactory({

@@ -17,13 +17,17 @@ import json
 import logging
 import os
 import threading
+from urlparse import urljoin
+
 import google_auth_httplib2
 import googleapiclient
-from googleapiclient.http import set_user_agent
 from googleapiclient import discovery
+from googleapiclient.http import set_user_agent
 import httplib2
 from ratelimiter import RateLimiter
 from retrying import retry
+import uritemplate
+
 import google.auth
 from google.auth.credentials import with_scopes_if_required
 
@@ -156,6 +160,7 @@ class BaseRepositoryClient(object):
                  quota_max_calls=None,
                  quota_period=None,
                  use_rate_limiter=False,
+                 read_only=False,
                  **kwargs):
         """Constructor.
 
@@ -169,6 +174,8 @@ class BaseRepositoryClient(object):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            read_only (bool): When set to true, disables any API calls that
+                would modify a resource within the repository.
             **kwargs (dict): Additional args such as version.
         """
         self._use_cached_http = False
@@ -187,6 +194,8 @@ class BaseRepositoryClient(object):
                                              period=quota_period)
         else:
             self._rate_limiter = None
+
+        self._read_only = read_only
 
         self.name = api_name
 
@@ -256,10 +265,12 @@ class BaseRepositoryClient(object):
             return repository_class(gcp_service=self.gcp_services[version],
                                     credentials=self._credentials,
                                     rate_limiter=self._rate_limiter,
-                                    use_cached_http=self._use_cached_http)
+                                    use_cached_http=self._use_cached_http,
+                                    read_only=self._read_only)
 # pylint: enable=too-many-instance-attributes
 
 # pylint: disable=too-many-instance-attributes, too-many-arguments
+# pylint: disable=too-many-locals
 class GCPRepository(object):
     """Base class for GCP APIs."""
 
@@ -267,7 +278,8 @@ class GCPRepository(object):
                  num_retries=NUM_HTTP_RETRIES, key_field='project',
                  entity_field=None, list_key_field=None, get_key_field=None,
                  max_results_field='maxResults', search_query_field='query',
-                 rate_limiter=None, use_cached_http=True):
+                 resource_path_template=None, rate_limiter=None,
+                 use_cached_http=True, read_only=False):
         """Constructor.
 
         Args:
@@ -291,12 +303,21 @@ class GCPRepository(object):
                 number of results to return in one page.
             search_query_field (str): The field name used to filter search
                 results.
+            resource_path_template (str): The path to an individual resource
+                object. Described in the discovery doc as the path for a method,
+                and usually in the documentation for the API under the get
+                request. This is used when creating fake responses when running
+                in read only mode.
             rate_limiter (object): A RateLimiter object to manage API quota.
             use_cached_http (bool): If set to true, calls to the API will use
                 a thread local shared http object. When false a new http object
                 is used for each request.
+            read_only (bool): When set to true, disables any API calls that
+                would modify a resource within the repository.
         """
         self.gcp_service = gcp_service
+        self.read_only = read_only
+
         self._credentials = credentials
         components = component.split('.')
         self._component = getattr(
@@ -316,6 +337,7 @@ class GCPRepository(object):
             self._get_key_field = key_field
         self._max_results_field = max_results_field
         self._search_query_field = search_query_field
+        self._resource_path_template = resource_path_template
         self._rate_limiter = rate_limiter
 
         self._use_cached_http = use_cached_http
@@ -376,6 +398,22 @@ class GCPRepository(object):
         """
         method = getattr(self._component, verb + '_next')
         return method(prior_request, prior_response)
+
+    def _build_resource_link(self, **kwargs):
+        """Build a full URI for a specific resource.
+
+        Args:
+            **kwargs: The args to expand in the URI template.
+
+        Returns:
+            str: The Resource URI
+
+        Raises:
+            ValueError: Raised if the resource_path_template parameter was
+                undefined when the repository was created.
+        """
+        expanded_url = uritemplate.expand(self._resource_path_template, kwargs)
+        return urljoin(self.gcp_service._baseUrl, expanded_url)  # pylint: disable=protected-access
 
     def _request_supports_pagination(self, verb):
         """Determines if the API action supports pagination.
@@ -504,3 +542,4 @@ class GCPRepository(object):
         return request.execute(http=self.http,
                                num_retries=self._num_retries)
 # pylint: enable=too-many-instance-attributes, too-many-arguments
+# pylint: enable=too-many-locals

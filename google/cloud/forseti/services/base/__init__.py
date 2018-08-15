@@ -12,12 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GOogle CLoud Forseti."""
-
-__version__ = '2.1.0'
-__package_name__ = 'forseti-security'
-
-try:
-    __import__('pkg_resources').declare_namespace(__name__)
-except ImportError:
-    __path__ = __import__('pkgutil').extend_path(__path__, __name__)
+"""Forseti Server gRPC services base classes."""

@@ -119,7 +119,7 @@ class CsccNotifier(object):
         for violation in violations:
             finding = {
                 # CSCC can't accept the full hash, so this must be shortened.
-                'id': violation.get('violation_hash')[:64],
+                'id': violation.get('violation_hash')[:32],
                 'assetIds': [
                     violation.get('full_name')
                 ],
