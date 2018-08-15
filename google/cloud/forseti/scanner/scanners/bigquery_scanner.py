@@ -121,6 +121,9 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
         Returns:
             list: BigQuery ACL data
+
+        Raises:
+            ValueError: if resources have an unexpected type.
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
