@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for BigqueryScanner."""
 
+import collections
 import json
 import unittest
 import mock
@@ -24,27 +25,47 @@ from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.scanner.scanners import bigquery_scanner
 
 
-
 def _mock_gcp_resource_iter(_, resource_type):
     """Creates a list of GCP resource mocks retrieved by the scanner."""
     resources = []
     if resource_type != 'dataset_policy':
-        raise Exception(
+        raise ValueError(
             'unexpected resource type: got %s, want dataset_policy',
             resource_type,
         )
+
+    Resource = collections.namedtuple(
+        'Resource',
+        # fields based on required fields from Resource in dao.py.
+        ['full_name', 'type_name', 'name', 'parent_type_name', 'parent',
+         'data'],
+    )
+
     for resource in fbsd.BIGQUERY_DATA:
-        parent = project.Project(
+        proj = project.Project(
             project_id=resource['project_id'],
-            name=resource['parent_name'],
-            full_name=resource['full_name'],
+            name='projects/' + resource['project_id'],
+            full_name=resource['full_project_name'],
         )
-        bigquery_acl = mock.MagicMock()
-        bigquery_acl.data = json.dumps([{}])
-        bigquery_acl.full_name = resource['full_name']
-        bigquery_acl.parent_type_name = parent.type
-        bigquery_acl.parent = parent
-        resources.append(bigquery_acl)
+
+        dataset= Resource(
+            full_name=resource['full_name'],
+            type_name='dataset',
+            name='dataset/' + resource['dataset_id'],
+            parent_type_name='project',
+            parent=proj,
+            data='',
+        )
+
+        policy = Resource(
+            full_name=resource['full_name'],
+            type_name='dataset_policy',
+            parent_type_name='dataset',
+            name='dataset_policies/' + resource['dataset_id'],
+            parent=dataset,
+            data=json.dumps([{}]),
+        )
+        resources.append(policy)
     return resources
 
 
@@ -70,17 +91,17 @@ class BigqueryScannerTest(ForsetiTestCase):
 
         bq_acl_data = self.scanner._retrieve()
 
-        expected_parents = [
+        expected_resources = [
             'organization/234/project/p1/',
             'organization/234/folder/56/project/p2/',
         ]
 
-        expected_dataset_ids = ['projects/p1', 'projects/p2']
+        expected_dataset_ids = ['dataset/d1', 'dataset/d2']
 
         self.assertEqual(2, len(bq_acl_data))
 
         for i in xrange(2):
-            self.assertEqual(expected_parents[i],
+            self.assertEqual(expected_resources[i],
                              bq_acl_data[i].resource.full_name)
 
             self.assertEqual(expected_dataset_ids[i],
