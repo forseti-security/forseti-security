@@ -19,7 +19,6 @@ from threading import Thread
 from threading import Lock
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import retryable_exceptions
 
 
 LOGGER = logger.get_logger(__name__)
