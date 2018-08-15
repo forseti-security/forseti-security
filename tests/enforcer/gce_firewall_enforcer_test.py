@@ -1179,6 +1179,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
         Expected Results:
           * Passed in rule ends up in failures list.
         """
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         response = fe.httplib2.Response({
             'status': '409',
             'content-type': 'application/json'
@@ -1201,6 +1203,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
             test_rules[0].get('name', ''),
             error_409)
         self.assertListEqual([error_str], change_errors)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     def test_apply_change_operation_status_error(self):
         """Adds the rule to failures on HttpError exception.
@@ -1231,11 +1235,15 @@ class FirewallEnforcerTest(ForsetiTestCase):
                 'test-network-allow-internal-0'])
         ]
 
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         (successes, failures, change_errors) = self.enforcer._apply_change(
             insert_function, test_rules)
         self.assertSameStructure(test_rules, failures)
         self.assertListEqual([], successes)
         self.assertListEqual([], change_errors)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     def test_apply_change_lots_of_rules(self):
         """Changing more rules than permitted by the operation semaphore works.
@@ -1335,6 +1343,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
         delete_before_insert = False
 
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         self.enforcer._rules_to_delete = ['test-network-allow-internal-0']
         with self.assertRaises(fe.FirewallEnforcementFailedError):
             self.enforcer._apply_change_set(delete_before_insert)
@@ -1352,6 +1362,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
             self.enforcer._apply_change_set(delete_before_insert)
         self.assertEqual([], self.enforcer.get_updated_rules())
         self.enforcer._rules_to_update = []
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     def testApplyChangesDeleteFirst(self):
       """Validate _ApplyChanges works with no errors.

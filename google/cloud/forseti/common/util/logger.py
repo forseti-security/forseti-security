@@ -125,7 +125,22 @@ def enable_console_log():
     LOG_TO_CONSOLE = True
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(logging.Formatter(DEFAULT_LOG_FMT))
-    _map_logger(lambda logger: logger.addHandler(console_handler))
+    for logger in LOGGERS.itervalues():
+        logger.addHandler(console_handler)
+        logger.propagate = True
+
+
+def disable_console_log():
+    """Disable console logging for all the new loggers and for
+    all existing loggers."""
+    # pylint: disable=global-statement
+    global LOG_TO_CONSOLE
+    LOG_TO_CONSOLE = False
+    for logger in LOGGERS.itervalues():
+        logger.handlers = [
+            h for h in logger.handlers
+            if not isinstance(h, logging.StreamHandler)]
+        logger.propagate = False
 
 
 def set_logger_level_from_config(level_name):

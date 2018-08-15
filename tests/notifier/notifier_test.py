@@ -140,6 +140,8 @@ class NotifierTest(ForsetiTestCase):
         Expected outcome:
             The local find_notifiers() function is never called -> no notifiers
             are looked up, istantiated or run."""
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         mock_dao.get_latest_scanner_index_id.return_value = None
         mock_service_cfg = mock.MagicMock()
         mock_service_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
@@ -154,6 +156,8 @@ class NotifierTest(ForsetiTestCase):
 
         self.assertFalse(mock_find_notifiers.called)
         self.assertFalse(mock_dao.map_by_resource.called)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.InventorySummary',
