@@ -20,7 +20,6 @@ import mock
 
 from tests.scanner.test_data import fake_bigquery_scanner_data as fbsd
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.scanner.scanners import bigquery_scanner
 
@@ -42,10 +41,13 @@ def _mock_gcp_resource_iter(_, resource_type):
     )
 
     for resource in fbsd.BIGQUERY_DATA:
-        proj = project.Project(
-            project_id=resource['project_id'],
-            name='projects/' + resource['project_id'],
+        proj = Resource(
             full_name=resource['full_project_name'],
+            type_name='project',
+            name='projects/' + resource['project_id'],
+            parent_type_name='',
+            parent=None,
+            data='',
         )
 
         dataset= Resource(

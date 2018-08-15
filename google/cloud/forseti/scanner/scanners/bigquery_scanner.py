@@ -19,6 +19,7 @@ import collections
 from google.cloud.forseti.common.gcp_type.bigquery_access_controls import (
     BigqueryAccessControls)
 
+from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import bigquery_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -130,7 +131,22 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 # dataset_policy are always in a dataset, which is always in a
                 # project.
                 dataset = policy.parent
-                project = dataset.parent
+                if dataset.type_name != 'dataset':
+                    raise ValueError(
+                        'Unexpected type of dataset_policy parent: '
+                        'got %s, want dataset' % dataset.type_name)
+
+                if dataset.parent.type_name != 'project':
+                    raise ValueError(
+                        'Unexpected type of dataset_policy grandparent: '
+                        'got %s, want project' % dataset.parent.type_name
+                    )
+
+                proj = project.Project(
+                    project_id=dataset.parent.name,
+                    full_name=dataset.parent.full_name,
+                    data=policy.data,
+                )
 
                 # There is no functional use for project_id in this scanner,
                 # other than to identify where the dataset comes from,
@@ -147,7 +163,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
                 for bq_acl in gen:
                     data = BigqueryAccessControlsData(
-                        resource=project,
+                        resource=proj,
                         bigquery_acl=bq_acl,
                     )
                     bq_acl_data.append(data)
