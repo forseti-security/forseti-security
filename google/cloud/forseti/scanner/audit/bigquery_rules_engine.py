@@ -118,9 +118,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs (dict): rule definitions dictionary.
         """
-        LOGGER.error('rules_defs: %s', rule_defs)
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
-            LOGGER.error('adding rule at %s: %s', i, rule)
             self.add_rule(rule, i)
 
     @classmethod
@@ -217,8 +215,6 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 )
                 self.resource_rules_map[resource].append(rule)
 
-                LOGGER.error('adding rule: %s', rule.rule_name)
-
 
     def find_policy_violations(self, resource, bq_acl):
         """Find acl violations in the rule book.
@@ -289,9 +285,6 @@ class Rule(object):
             rule_bigquery_acl.role: bigquery_acl.role,
         }
 
-
-        LOGGER.error('applicable map: %s',
-                     rule_regex_to_val)
         return all([
             re.match(rule_regex, acl_val)
             for (rule_regex, acl_val) in rule_regex_to_val.iteritems()
@@ -325,9 +318,6 @@ class Rule(object):
 
         has_violation = self.rules.mode == Mode.BLACKLIST and all_matched  or (
             self.rules.mode == Mode.WHITELIST and not all_matched)
-
-        LOGGER.error('mode: %s, map: %s, violation: %s',
-                     self.rules.mode, rule_regex_to_val, has_violation)
 
         if has_violation:
             yield self.RuleViolation(
