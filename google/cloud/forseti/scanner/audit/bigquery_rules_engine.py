@@ -74,7 +74,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
 
         violations = self.rule_book.find_policy_violations(resource, bq_acl)
 
-        return set(violations)
+        return violations
 
     def add_rules(self, rules):
         """Add rules to the rule book.
