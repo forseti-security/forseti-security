@@ -118,7 +118,9 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         Args:
             rule_defs (dict): rule definitions dictionary.
         """
+        LOGGER.error('rules_defs: %s', rule_defs)
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
+            LOGGER.error('adding rule at %s: %s', i, rule)
             self.add_rule(rule, i)
 
     @classmethod
@@ -239,7 +241,6 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
         for res in resource_ancestors:
             for rule in self.resource_rules_map.get(res, []):
-                LOGGER.error('checking rule: %s', rule.rule_name)
                 violations = itertools.chain(
                     violations, rule.find_policy_violations(bq_acl))
 
