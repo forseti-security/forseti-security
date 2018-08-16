@@ -1229,6 +1229,27 @@ class Network(Resource):
         return 'network'
 
 
+class Snapshot(Resource):
+    """The Resource implementation for Snapshot"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['id']
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'snapshot'
+        """
+        return 'snapshot'
+
+
 class Subnetwork(Resource):
     """The Resource implementation for Subnetwork"""
 
@@ -1845,6 +1866,20 @@ class NetworkIterator(ResourceIterator):
                 yield FACTORIES['network'].create_new(data)
 
 
+class SnapshotIterator(ResourceIterator):
+    """The Resource iterator implementation for Snapshot"""
+
+    def iter(self):
+        """Yields:
+            Resource: Snapshot created
+        """
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            for data in gcp.iter_snapshots(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['snapshot'].create_new(data)
+
+
 class SubnetworkIterator(ResourceIterator):
     """The Resource iterator implementation for Subnetwork"""
 
@@ -2105,6 +2140,7 @@ FACTORIES = {
             BackendServiceIterator,
             ForwardingRuleIterator,
             NetworkIterator,
+            SnapshotIterator,
             SubnetworkIterator,
             ProjectRoleIterator,
             ProjectSinkIterator
@@ -2232,6 +2268,12 @@ FACTORIES = {
     'network': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Network,
+        'contains': [
+        ]}),
+
+    'snapshot': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Snapshot,
         'contains': [
         ]}),
 
