@@ -1350,6 +1350,107 @@ LIST_NETWORKS_RESPONSES = [NETWORKS_LIST_PAGE1, NETWORKS_LIST_PAGE2]
 
 EXPECTED_NETWORK_NAME = [u"default1", u"default2"]
 
+SNAPSHOTS_LIST_PAGE1 = """
+{
+ "kind": "compute#snapshotList",
+ "id": "projects/project1/global/snapshots",
+ "items": [
+  {
+   "kind": "compute#snapshot",
+   "id": "314159",
+   "creationTimestamp": "2018-07-12T13:32:03.714-07:00",
+   "name": "instance-1-1531427523",
+   "description": "Daily snapshot of instance-1.",
+   "status": "READY",
+   "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/us-east1-b/disks/instance-1",
+   "sourceDiskId": "7102445878994667099",
+   "diskSizeGb": "10",
+   "storageBytes": "536550912",
+   "storageBytesStatus": "UP_TO_DATE",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/instance-1-1531427523",
+   "labelFingerprint": "foofoo123",
+   "licenseCodes": [
+    "1000205"
+   ],
+   "storageLocations": [
+    "us"
+   ]
+  },
+  {
+   "kind": "compute#snapshot",
+   "id": "6021023",
+   "creationTimestamp": "2018-07-12T13:32:03.912-07:00",
+   "name": "instance-2-1531427523",
+   "description": "Daily snapshot of instance-2.",
+   "status": "READY",
+   "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/us-east1-b/disks/instance-2",
+   "sourceDiskId": "7102445878994667099",
+   "diskSizeGb": "10",
+   "storageBytes": "536550912",
+   "storageBytesStatus": "UP_TO_DATE",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/instance-2-1531427523",
+   "labelFingerprint": "foofoo456",
+   "licenseCodes": [
+    "1000205"
+   ],
+   "storageLocations": [
+    "us"
+   ]
+  }
+ ],
+ "nextPageToken": "123",
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots"
+}
+"""
+
+SNAPSHOTS_LIST_PAGE2 = """
+{
+ "kind": "compute#snapshotList",
+ "id": "projects/project1/global/snapshots",
+ "items": [
+  {
+   "kind": "compute#snapshot",
+   "id": "271828",
+   "creationTimestamp": "2018-07-12T13:32:03.221-07:00",
+   "name": "instance-3-1531427523",
+   "description": "Daily snapshot of instance-3.",
+   "status": "READY",
+   "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/us-east1-b/disks/instance-3",
+   "sourceDiskId": "7102445878994667099",
+   "diskSizeGb": "10",
+   "storageBytes": "536550912",
+   "storageBytesStatus": "UP_TO_DATE",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/instance-3-1531427523",
+   "labelFingerprint": "foofoo789",
+   "licenseCodes": [
+    "1000205"
+   ],
+   "storageLocations": [
+    "us"
+   ]
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots"
+}
+"""
+
+LIST_SNAPSHOTS_RESPONSES = [SNAPSHOTS_LIST_PAGE1, SNAPSHOTS_LIST_PAGE2]
+
+EXPECTED_SNAPSHOTS_LIST_NAMES = frozenset([
+    "instance-1-1531427523",
+    "instance-2-1531427523",
+    "instance-3-1531427523"
+])
+
 SUBNETWORKS_AGGREGATED_LIST_PAGE1 = """
 {
  "kind": "compute#subnetworkAggregatedList",
