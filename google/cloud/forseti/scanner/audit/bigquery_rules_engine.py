@@ -215,6 +215,9 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 )
                 self.resource_rules_map[resource].append(rule)
 
+                LOGGER.error('adding rule: %s', rule.rule_name)
+
+
     def find_policy_violations(self, resource, bq_acl):
         """Find acl violations in the rule book.
 
@@ -236,6 +239,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
         for res in resource_ancestors:
             for rule in self.resource_rules_map.get(res, []):
+                LOGGER.error('checking rule: %s', rule.rule_name)
                 violations = itertools.chain(
                     violations, rule.find_policy_violations(bq_acl))
 
