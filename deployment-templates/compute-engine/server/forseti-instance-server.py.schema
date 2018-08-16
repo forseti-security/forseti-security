@@ -45,6 +45,10 @@ properties:
     type: string
     desription: The GCE instance type.
 
+  region:
+    type: string
+    description: The GCE instance region.
+
   zone:
     type: string
     description: The GCE instance zone.
@@ -85,3 +89,15 @@ properties:
     type: integer
     default: 3306
     description: The port for the database.
+  
+  vpc-host-project-id:
+    type: string
+    description: The id of the project that is hosting the shared network resources.
+  
+  vpc-host-network:
+    type: string
+    description: The name of the shared network.
+  
+  vpc-host-subnetwork:
+    type: string
+    description: The name of the subnet.
