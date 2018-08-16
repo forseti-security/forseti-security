@@ -283,6 +283,10 @@ class Rule(object):
             rule_bigquery_acl.dataset_id: bigquery_acl.dataset_id,
             rule_bigquery_acl.role: bigquery_acl.role,
         }
+
+
+        LOGGER.error('applicable map: %s',
+                     rule_regex_to_val)
         return all([
             re.match(rule_regex, acl_val)
             for (rule_regex, acl_val) in rule_regex_to_val.iteritems()
@@ -298,11 +302,10 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple.
         """
-
-        rule_bigquery_acl = self.rules.bigquery_acl
         if not self._is_applicable(bigquery_acl):
             return
 
+        rule_bigquery_acl = self.rules.bigquery_acl
         rule_regex_to_val = {
             rule_bigquery_acl.special_group: bigquery_acl.special_group,
             rule_bigquery_acl.user_email: bigquery_acl.user_email,
@@ -315,8 +318,11 @@ class Rule(object):
             for (rule_regex, acl_val) in rule_regex_to_val.iteritems()
         ])
 
-        has_violation = all_matched and self.rules.mode == Mode.BLACKLIST or (
-            not all_matched and self.rules.mode == Mode.WHITELIST)
+        has_violation = self.rules.mode == Mode.BLACKLIST and all_matched  or (
+            self.rules.mode == Mode.WHITELIST and not all_matched)
+
+        LOGGER.error('mode: %s, map: %s, violation: %s',
+                     self.rules.mode, rule_regex_to_val, has_violation)
 
         if has_violation:
             yield self.RuleViolation(
@@ -333,5 +339,5 @@ class Rule(object):
                 domain=bigquery_acl.domain,
                 group_email=bigquery_acl.group_email,
                 view=bigquery_acl.view,
-                resource_data=bigquery_acl.json
+                resource_data=bigquery_acl.json,
             )
