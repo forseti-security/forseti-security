@@ -16,7 +16,6 @@
 
 import importlib
 import inspect
-import sys
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map

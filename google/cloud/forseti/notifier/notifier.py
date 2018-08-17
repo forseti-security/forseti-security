@@ -52,7 +52,7 @@ def find_notifiers(notifier_name):
                     and obj is not BaseNotification:
                 return obj
     except ImportError:
-        LOGGER.exception('Can\'t import notifier %s: %s', notifier_name)
+        LOGGER.exception('Can\'t import notifier %s', notifier_name)
 
 # pylint: enable=inconsistent-return-statements
 

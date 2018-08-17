@@ -14,24 +14,23 @@
 
 """ Database access objects for Forseti Scanner. """
 
-from collections import defaultdict
 import hashlib
 import json
-
-from sqlalchemy import and_
-from sqlalchemy import BigInteger
-from sqlalchemy import Column
-from sqlalchemy import DateTime
-from sqlalchemy import inspect
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import Text
-from sqlalchemy.ext.declarative import declarative_base
+from collections import defaultdict
 
 from google.cloud.forseti.common.data_access import violation_map as vm
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
+from sqlalchemy import BigInteger
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import Integer
+from sqlalchemy import String
+from sqlalchemy import Text
+from sqlalchemy import and_
+from sqlalchemy import inspect
+from sqlalchemy.ext.declarative import declarative_base
 
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
@@ -353,7 +352,7 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
         violation_hash = hashlib.new(algorithm)
     except ValueError as e:
         LOGGER.exception('Cannot create hash for a violation with algorithm: '
-                     '%s\n%s', algorithm, e)
+                         '%s', algorithm)
         return ''
 
     try:
