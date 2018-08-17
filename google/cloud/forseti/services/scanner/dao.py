@@ -350,7 +350,7 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
 
     try:
         violation_hash = hashlib.new(algorithm)
-    except ValueError as e:
+    except ValueError:
         LOGGER.exception('Cannot create hash for a violation with algorithm: '
                          '%s', algorithm)
         return ''
