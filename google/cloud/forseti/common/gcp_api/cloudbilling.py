@@ -172,7 +172,6 @@ class CloudBillingClient(object):
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-
     def get_billing_info(self, project_id):
         """Gets the billing information for a project.
 

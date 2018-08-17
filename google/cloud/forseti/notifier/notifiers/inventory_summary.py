@@ -24,7 +24,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
-#pylint: enable=line-too-long
+# pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
 
