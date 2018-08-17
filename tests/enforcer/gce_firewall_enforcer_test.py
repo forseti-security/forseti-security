@@ -56,7 +56,8 @@ class ComputeFirewallAPI(ForsetiTestCase):
         self.gce_service = mock.MagicMock()
         self.firewall_api = fe.ComputeFirewallAPI(self.gce_service)
 
-    def test_is_successful(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_is_successful(self, mock_logger):
         """is_successful should know about bad responses and OK responses."""
         self.assertTrue(
             self.firewall_api.is_successful({
@@ -93,6 +94,7 @@ class ComputeFirewallAPI(ForsetiTestCase):
                     }]
                 }
             }))
+        self.assertTrue(mock_logger.error.called)
 
     def test_wait_for_any_to_complete(self):
         """Testing waiting for requests until any finish executing.
@@ -151,7 +153,8 @@ class ComputeFirewallAPI(ForsetiTestCase):
         self.assertEqual([], completed)
         self.assertEqual([], running)
 
-    def test_wait_for_any_to_complete_timeout(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_wait_for_any_to_complete_timeout(self, mock_logger):
         """Testing waiting for requests until a timeout is exceeded.
 
         Setup:
@@ -186,6 +189,7 @@ class ComputeFirewallAPI(ForsetiTestCase):
             constants.TEST_PROJECT, [pending_response], timeout=1.0)
         self.assertEqual([expected_response], completed)
         self.assertEqual([], running)
+        self.assertTrue(mock_logger.error.called)
 
     def test_wait_for_all_to_complete(self):
         """Testing waiting for requests until they all finish executing.
