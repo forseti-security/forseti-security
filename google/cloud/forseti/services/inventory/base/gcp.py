@@ -441,8 +441,13 @@ class ApiClientImpl(ApiClient):
             dict: Generator of Kubernetes Engine Cluster resources.
         """
         for cluster in self.container.get_clusters(projectid):
+
             # Don't store the master auth data in the database.
-            cluster.pop('masterAuth', None)
+            if 'masterAuth' in cluster:
+                cluster['masterAuth'] = {
+                    k: '[redacted]'
+                    for k in cluster['masterAuth'].keys()}
+
             yield cluster
 
     @create_lazy('container', _create_container)
