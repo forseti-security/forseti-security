@@ -11,28 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Core classes for firewall policy enforcement and calls to the compute API.
+"""Core classes for firewall policy enforcement.
 
 Simplifies the interface with the compute API for managing firewall policies.
 """
-
 import hashlib
 import httplib
 import json
 import operator
 import socket
 import ssl
-import time
 
-from googleapiclient import errors
 import httplib2
-from retrying import retry
-from google.apputils import datelib
+from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import logger
 
 # TODO: The next editor must remove this disable and correct issues.
 # pylint: disable=missing-type-doc,missing-return-type-doc,missing-return-doc
-# pylint: disable=missing-param-doc,missing-raises-doc,too-many-lines
+# pylint: disable=missing-param-doc,missing-raises-doc
 
 # The name of the GCE API.
 API_NAME = 'compute'
@@ -41,10 +37,7 @@ API_NAME = 'compute'
 API_ROOT = 'https://www.googleapis.com/'
 
 # The version of the GCE API to use.
-API_VERSION = 'beta'
-
-# The compute engine scope.
-SCOPE = 'https://www.googleapis.com/auth/compute'
+API_VERSION = 'v1'
 
 LOGGER = logger.get_logger(__name__)
 
@@ -54,12 +47,15 @@ RETRY_EXCEPTIONS = (httplib.ResponseNotReady, httplib.IncompleteRead,
 
 # Allowed items in a firewall rule.
 ALLOWED_RULE_ITEMS = frozenset(('allowed', 'denied', 'description', 'direction',
-                                'name', 'network', 'priority', 'sourceRanges',
-                                'destinationRanges', 'sourceTags',
-                                'targetTags'))
+                                'disabled', 'name', 'network', 'priority',
+                                'sourceRanges', 'destinationRanges',
+                                'sourceTags', 'targetTags'))
 
 # Maximum time to allow an active API operation to wait for status=Done
-OPERATION_TIMEOUT = 600.0
+OPERATION_TIMEOUT = 120.0
+
+# The number of times to retry an operation if it times out before completion.
+OPERATION_RETRY_COUNT = 5
 
 
 class Error(Exception):
@@ -145,310 +141,40 @@ def build_network_url(project, network):
                                        'version': API_VERSION}
 
 
-class ComputeFirewallAPI(object):
-    """Wrap calls to the Google Compute Engine API.
+def _is_successful(operation):
+    """Checks if the operation finished with no errors.
 
-    API calls are decorated with retry to ensure temporary network errors do not
-    cause failures.
+    If the operation response contains an 'error' key, then the error code
+    is checked. Any error code that is not ignored causes this to return
+    False.
 
-    If initialized in dry run mode, calls which could modify the compute project
-    are no-ops and always return a successful result.
+    Args:
+        operation: A Compute GlobalOperations response object from an API call.
+
+    Returns:
+        bool: True if there were no errors, or all errors are ignored, otherwise
+            False.
     """
-
-    def __init__(self, gce_service, dry_run=False):
-        """Constructor.
-
-        Args:
-          gce_service: A GCE service object built using the discovery API.
-          dry_run: Bool - True to perform a dry run for reporting firewall
-              changes.
-        """
-        self.gce_service = gce_service
-        self._dry_run = dry_run
-
-    # pylint: disable=no-self-use
-
-    @retry(
-        retry_on_exception=http_retry,
-        wait_exponential_multiplier=1000,
-        stop_max_attempt_number=4)
-    def _execute(self, request):
-        """Execute the request and retry logic."""
-
-        return request.execute(num_retries=4)
-
-    # pylint: enable=no-self-use
-
-    def list_networks(self, project, fields=None):
-        """List the networks associated with a GCE project.
-
-        Args:
-          project: The id of the project to query.
-          fields: If defined, limits the response to a subset of all fields.
-
-        Returns:
-          The GCE response.
-        """
-        LOGGER.debug('Listing networks...')
-        request = self.gce_service.networks().list(
-            project=project, fields=fields)
-        return self._execute(request)
-
-    def list_firewalls(self, project, page_token=None):
-        """List the firewalls of a given project.
-
-        Args:
-          project: The id of the project to query.
-          page_token: A str or None- if set, then a pageToken
-              to pass to the GCE api call.
-
-        Returns:
-          The GCE response.
-        """
-        LOGGER.debug('Listing firewalls...')
-        request = self.gce_service.firewalls().list(
-            project=project, pageToken=page_token)
-        return self._execute(request)
-
-    def get_firewalls_quota(self, project):
-        """Fetch the current FIREWALLS quota for the project.
-
-        Args:
-          project: The id of the project to query.
-
-        Returns:
-          A dictionary with three keys, metric, limit and usage.
-
-          An example return value:
-
-              {"metric": "FIREWALLS",
-               "limit": 100,
-               "usage": 9}
-        """
-        request = self.gce_service.projects().get(
-            project=project, fields='quotas')
-        response = self._execute(request)
-
-        for quota in response.get('quotas', []):
-            if quota.get('metric', '') == 'FIREWALLS':
-                return quota
-
-        return {}
-
-    def delete_firewall_rule(self, project, rule):
-        """Delete firewall rules.
-
-        Args:
-          project: The id of the project to modify.
-          rule: The firewall rule dict to delete.
-
-        Returns:
-          The GCE response.
-        """
-        LOGGER.info('Deleting firewall rule %s on project %s. Deleted rule: %s',
-                    rule['name'], project, json.dumps(rule))
-        if self._dry_run:
-            return self._create_dry_run_response(rule['name'])
-        request = self.gce_service.firewalls().delete(
-            firewall=rule['name'], project=project)
-        return self._execute(request)
-
-    def insert_firewall_rule(self, project, rule):
-        """Insert a firewall rule.
-
-        Args:
-          project: The id of the project to modify.
-          rule: The firewall rule dict to add.
-
-        Returns:
-          The GCE response.
-        """
-        LOGGER.info(
-            'Inserting firewall rule %s on project %s. Inserted rule: %s',
-            rule['name'], project, json.dumps(rule))
-        if self._dry_run:
-            return self._create_dry_run_response(rule['name'])
-        request = self.gce_service.firewalls().insert(
-            body=rule, project=project)
-        return self._execute(request)
-
-    def update_firewall_rule(self, project, rule):
-        """Update a firewall rule.
-
-        Args:
-          project: The id of the project to modify.
-          rule: The firewall rule dict to update.
-
-        Returns:
-          The GCE response.
-        """
-        LOGGER.info('Updating firewall rule %s on project %s. Updated rule: %s',
-                    rule['name'], project, json.dumps(rule))
-        if self._dry_run:
-            return self._create_dry_run_response(rule['name'])
-        request = self.gce_service.firewalls().update(
-            body=rule, firewall=rule['name'], project=project)
-        return self._execute(request)
-
-    # TODO: Investigate improving so we can avoid the pylint disable.
-    # pylint: disable=too-many-locals
-    def wait_for_any_to_complete(self, project, responses, timeout=0):
-        """Wait for one or more requests to complete.
-
-        Args:
-          project: The id of the project to query.
-          responses: A list of Response objects from GCE for the operation.
-          timeout: An optional maximum time in seconds to wait for an operation
-              to complete. Operations that exceed the timeout are marked as
-              Failed.
-
-        Returns:
-          A tuple of (completed, still_running) requests.
-        """
-        started_timestamp = time.time()
-
-        while True:
-            completed_operations = []
-            running_operations = []
-            for response in responses:
-                status = response['status']
-                if status == 'DONE':
-                    completed_operations.append(response)
-                    continue
-
-                operation_name = response['name']
-                LOGGER.debug('Checking on operation %s', operation_name)
-                request = self.gce_service.globalOperations().get(
-                    project=project, operation=operation_name)
-                response = self._execute(request)
-                status = response['status']
-                LOGGER.info('status of %s is %s', operation_name, status)
-                if response['status'] == 'DONE':
-                    completed_operations.append(response)
-                    continue
-
-                if timeout and time.time() - started_timestamp > timeout:
-                    # Add a timeout error to the response
-                    LOGGER.error(
-                        'Operation %s did not complete before timeout of %f, '
-                        'marking operation as failed.', operation_name, timeout)
-                    response.setdefault('error', {}).setdefault(
-                        'errors', []).append(
-                            {'code': 'OPERATION_TIMEOUT',
-                             'message': ('Operation exceeded timeout for '
-                                         'completion of %0.2f seconds' %
-                                         timeout)})
-                    completed_operations.append(response)
+    success = True
+    if 'error' in operation:
+        # 'error' should always contains an 'errors' list:
+        if 'errors' in operation['error']:
+            for err in operation['error']['errors']:
+                # We ignore the following errors:
+                # RESOURCE_ALREADY_EXISTS: Because another program somewhere
+                #     else could have already added the rule.
+                # INVALID_FIELD_VALUE: Because the network probably
+                #     disappeared out from under us.
+                if err.get('code') in ['RESOURCE_ALREADY_EXISTS',
+                                       'INVALID_FIELD_VALUE']:
+                    LOGGER.warn('Ignoring error: %s', err)
                 else:
-                    # Operation still running
-                    running_operations.append(response)
-
-            if completed_operations or not responses:
-                break
-            else:
-                time.sleep(2)
-
-        for response in completed_operations:
-            try:
-                op_insert_timestamp = datelib.Timestamp.FromString(
-                    response.get('insertTime', '')).AsSecondsSinceEpoch()
-                op_start_timestamp = datelib.Timestamp.FromString(
-                    response.get('startTime', '')).AsSecondsSinceEpoch()
-                op_end_timestamp = datelib.Timestamp.FromString(
-                    response.get('endTime', '')).AsSecondsSinceEpoch()
-            except ValueError:
-                op_insert_timestamp = op_start_timestamp = op_end_timestamp = 0
-
-            op_wait_time = op_end_timestamp - op_insert_timestamp
-            op_exec_time = op_end_timestamp - op_start_timestamp
-            LOGGER.info('Operation %s completed. Operation type: %s, '
-                        'request time: %s, start time: %s, finished time: %s, '
-                        'req->end seconds: %i, start->end seconds: %i.',
-                        response.get('name', ''),
-                        response.get('operationType', ''),
-                        response.get('insertTime', ''),
-                        response.get('startTime', ''),
-                        response.get('endTime', ''), op_wait_time, op_exec_time)
-            LOGGER.debug('Operation response object: %r', response)
-
-        return completed_operations, running_operations
-
-    def wait_for_all_to_complete(self, project, responses, timeout=0):
-        """Wait for all requests to complete.
-
-        Args:
-          project: The id of the project to query.
-          responses: A list of Response objects from GCE for the operation.
-          timeout: An optional maximum time in seconds to wait for an operation
-              to complete. Operations that exceed the timeout are marked as
-              Failed.
-
-        Returns:
-          A list of completed requests.
-        """
-        completed_operations = []
-        running_operations = responses
-
-        while running_operations:
-            (completed, running_operations) = (self.wait_for_any_to_complete(
-                project, running_operations, timeout))
-            completed_operations.extend(completed)
-
-        return completed_operations
-
-    # pylint: disable=no-self-use
-    # TODO: Investigate fixing the pylint issue.
-    def is_successful(self, response):
-        """Checks if the operation finished with no errors.
-
-        If the operation response contains an 'error' key, then the error code
-        is checked. Any error code that is not ignored causes this to return
-        False.
-
-        Args:
-          response: A GlobalOperations response object from an API call.
-
-        Returns:
-          True if there were no errors, or all errors are ignored, otherwise
-          False.
-        """
-        success = True
-        if 'error' in response:
-            # 'error' should always contains an 'errors' list:
-            if 'errors' in response['error']:
-                for error in response['error']['errors']:
-                    # TODO: Verify current codes.
-                    # We ignore the following errors:
-                    # RESOURCE_ALREADY_EXISTS: Because another program somewhere
-                    #     else could have already added the rule.
-                    # INVALID_FIELD_VALUE: Because the network probably
-                    #     disappeared out from under us.
-                    if error.get('code') in ['RESOURCE_ALREADY_EXISTS',
-                                             'INVALID_FIELD_VALUE']:
-                        LOGGER.warn('Ignoring error: %s', error)
-                    else:
-                        LOGGER.error('Response has error: %s', error)
-                        success = False
-            else:
-                LOGGER.error('Unknown error response: %s', response['error'])
-                success = False
-        return success
-
-    # pylint: disable=no-self-use
-    # TODO: Investigate fixing the pylint issue.
-    def _create_dry_run_response(self, rule_name):
-        """A fake successful completed response.
-
-        This is used for dry run execution to prevent any changes to the
-        existing firewall rules on a project.
-
-        Args:
-          rule_name: The name of the firewall rule this response is for.
-
-        Returns:
-          A fake successful completed response.
-        """
-        return {'status': 'DONE', 'name': rule_name}
+                    LOGGER.error('Operation has error: %s', err)
+                    success = False
+        else:
+            LOGGER.error('Unknown error response: %s', operation['error'])
+            success = False
+    return success
 
 
 class FirewallRules(object):
@@ -485,11 +211,11 @@ class FirewallRules(object):
         """Not Equal."""
         return self.rules != other.rules
 
-    def add_rules_from_api(self, firewall_api):
+    def add_rules_from_api(self, compute_client):
         """Loads rules from compute.firewalls().list().
 
         Args:
-          firewall_api: A ComputeFirewallAPI instance for interfacing with GCE
+          compute_client: A ComputeClient instance for interfacing with GCE
               API.
 
         Raises:
@@ -502,24 +228,12 @@ class FirewallRules(object):
                 'object with rules already added')
             return
 
-        page_token = ''
-        while True:
-            if page_token:
-                response = firewall_api.list_firewalls(
-                    self._project, page_token=page_token)
-            else:
-                response = firewall_api.list_firewalls(self._project)
-
-            for item in response.get('items', []):
-                rule = dict([(key, item[key]) for key in ALLOWED_RULE_ITEMS
-                             if key in item])
-                self.add_rule(rule)
-
-            # Are there additional pages of data?
-            if 'nextPageToken' in response:
-                page_token = response['nextPageToken']
-            else:
-                break
+        firewall_rules = compute_client.get_firewall_rules(self._project)
+        for rule in firewall_rules:
+            # Only include keys in the ALLOWED_RULE_ITEMS set.
+            scrubbed_rule = dict(
+                [(k, v) for k, v in rule.items() if k in ALLOWED_RULE_ITEMS])
+            self.add_rule(scrubbed_rule)
 
     def add_rules(self, rules, network_name=None):
         """Adds rules from a list of rule dicts.
@@ -829,7 +543,7 @@ class FirewallEnforcer(object):
 
     def __init__(self,
                  project,
-                 firewall_api,
+                 compute_client,
                  expected_rules,
                  current_rules=None,
                  project_sema=None,
@@ -839,7 +553,7 @@ class FirewallEnforcer(object):
 
         Args:
           project: The id of the cloud project to enforce the firewall on.
-          firewall_api: A ComputeFirewallAPI instance for interfacing with GCE
+          compute_client: A ComputeClient instance for interfacing with GCE
               API.
           expected_rules: A FirewallRules object with the expected rules to be
               enforced on the project.
@@ -849,14 +563,15 @@ class FirewallEnforcer(object):
               for the project.
           project_sema: An optional semaphore object, used to limit the number
               of concurrent projects getting written to.
-          operation_sema: An optional semaphore object, used to limit the number
-              of concurrent write operations on project firewalls.
+          operation_sema: [DEPRECATED] An optional semaphore object, used to
+              limit the number of concurrent write operations on project
+              firewalls.
           add_rule_callback: A callback function that checks whether a firewall
               rule should be applied. If the callback returns False, that rule
               will not be modified.
         """
         self.project = project
-        self.firewall_api = firewall_api
+        self.compute_client = compute_client
         self.expected_rules = expected_rules
 
         if current_rules:
@@ -865,7 +580,10 @@ class FirewallEnforcer(object):
             self.current_rules = None
 
         self.project_sema = project_sema
-        self.operation_sema = operation_sema
+        if operation_sema:
+            LOGGER.warn(
+                'Operation semaphore is deprecated. Argument ignored.')
+        self.operation_sema = None
 
         self._add_rule_callback = add_rule_callback
 
@@ -930,7 +648,7 @@ class FirewallEnforcer(object):
               of the project firewall, and potentially revert to the old
               firewall rules.
 
-              Any rules changed before the error occured can be retrieved by
+              Any rules changed before the error occurred can be retrieved by
               calling the Get(Deleted|Inserted|Updated)Rules methods.
         """
         # Reset change sets to empty lists
@@ -986,7 +704,7 @@ class FirewallEnforcer(object):
         """Updates the current rules for the project using the compute API."""
         current_rules = FirewallRules(self.project,
                                       add_rule_callback=self._add_rule_callback)
-        current_rules.add_rules_from_api(self.firewall_api)
+        current_rules.add_rules_from_api(self.compute_client)
 
         self.current_rules = current_rules
 
@@ -1070,10 +788,18 @@ class FirewallEnforcer(object):
         """
         delete_before_insert = False
 
-        firewalls_quota = self.firewall_api.get_firewalls_quota(self.project)
-        if firewalls_quota:
-            usage = firewalls_quota.get('usage', 0)
-            limit = firewalls_quota.get('limit', 0)
+        try:
+            firewall_quota = self.compute_client.get_firewall_quota(
+                self.project)
+        except KeyError as e:
+            LOGGER.error('Error getting quota for project %s, %s',
+                         self.project,
+                         e)
+            firewall_quota = None
+
+        if firewall_quota:
+            usage = firewall_quota.get('usage', 0)
+            limit = firewall_quota.get('limit', 0)
             if usage + insert_count > limit:
                 if usage - delete_count + insert_count > limit:
                     raise FirewallQuotaExceededError(
@@ -1127,7 +853,7 @@ class FirewallEnforcer(object):
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_insert
             ]
-            insert_function = self.firewall_api.insert_firewall_rule
+            insert_function = self.compute_client.insert_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
                 insert_function, rules)
             self._inserted_rules.extend(successes)
@@ -1149,7 +875,7 @@ class FirewallEnforcer(object):
                 self.current_rules.rules[rule_name]
                 for rule_name in self._rules_to_delete
             ]
-            delete_function = self.firewall_api.delete_firewall_rule
+            delete_function = self.compute_client.delete_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
                 delete_function, rules)
             self._deleted_rules.extend(successes)
@@ -1170,7 +896,7 @@ class FirewallEnforcer(object):
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_update
             ]
-            update_function = self.firewall_api.update_firewall_rule
+            update_function = self.compute_client.update_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
                 update_function, rules)
             self._updated_rules.extend(successes)
@@ -1183,8 +909,6 @@ class FirewallEnforcer(object):
 
         return change_count
 
-    # pylint: disable=too-many-statements,too-many-branches,too-many-locals
-    # TODO: Look at not having some of these disables.
     def _apply_change(self, firewall_function, rules):
         """Modify the firewall using the passed in function and rules.
 
@@ -1207,87 +931,34 @@ class FirewallEnforcer(object):
         if not rules:
             return applied_rules, failed_rules, change_errors
 
-        successes = []
-        failures = []
-        running_operations = []
-        finished_operations = []
-        operations = {}
         for rule in rules:
-            if self.operation_sema:
-                if not self.operation_sema.acquire(False):  # Non-blocking
-                    # No semaphore available, wait for one or more ops to
-                    # complete.
-                    if running_operations:
-                        (completed, running_operations) = (
-                            self.firewall_api.wait_for_any_to_complete(
-                                self.project, running_operations,
-                                OPERATION_TIMEOUT))
-                        finished_operations.extend(completed)
-                        for response in completed:
-                            self.operation_sema.release()
-
-                    self.operation_sema.acquire(True)  # Blocking
-
             try:
-                response = firewall_function(self.project, rule)
-            except errors.HttpError as e:
+                response = firewall_function(self.project,
+                                             rule,
+                                             blocking=True,
+                                             retry_count=OPERATION_RETRY_COUNT,
+                                             timeout=OPERATION_TIMEOUT)
+            except (api_errors.ApiNotEnabledError,
+                    api_errors.ApiExecutionError) as e:
                 LOGGER.error(
                     'Error changing firewall rule %s for project %s: %s',
                     rule.get('name', ''), self.project, e)
                 error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)
                 change_errors.append(error_str)
                 failed_rules.append(rule)
-                if self.operation_sema:
-                    self.operation_sema.release()
+                continue
+            except api_errors.OperationTimeoutError as e:
+                LOGGER.error(
+                    'Timeout changing firewall rule %s for project %s: %s',
+                    rule.get('name', ''), self.project, e)
+                error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)
+                change_errors.append(error_str)
+                failed_rules.append(rule)
                 continue
 
-            if 'name' in response:
-                operations[response['name']] = rule
-                running_operations.append(response)
+            if _is_successful(response):
+                applied_rules.append(rule)
             else:
-                LOGGER.error('The response object returned by %r(%s, %s) is '
-                             'invalid. It does not contain a "name" key: %s',
-                             firewall_function, self.project,
-                             json.dumps(rule), json.dumps(response))
                 failed_rules.append(rule)
-                if self.operation_sema:
-                    self.operation_sema.release()
-
-        responses = self.firewall_api.wait_for_all_to_complete(
-            self.project, running_operations, OPERATION_TIMEOUT)
-        finished_operations.extend(responses)
-
-        if self.operation_sema:
-            for response in responses:
-                self.operation_sema.release()
-
-        for response in finished_operations:
-            if self.firewall_api.is_successful(response):
-                successes.append(response)
-            else:
-                failures.append(response)
-
-        for result in successes:
-            operation_name = result.get('name', '')
-            if operation_name in operations:
-                applied_rules.append(operations[operation_name])
-            else:
-                LOGGER.warn(
-                    'Successful result contained an unknown operation name, '
-                    '"%s": %s', operation_name, json.dumps(result))
-
-        for result in failures:
-            operation_name = result.get('name', '')
-            if operation_name in operations:
-                LOGGER.error(
-                    'The firewall rule %s for project %s received the '
-                    'following error response during the last operation: %s',
-                    operations[operation_name], self.project,
-                    json.dumps(result))
-                failed_rules.append(operations[operation_name])
-            else:
-                LOGGER.warn(
-                    'Failure result contained an unknown operation name, '
-                    '"%s": %s', operation_name, json.dumps(result))
 
         return applied_rules, failed_rules, change_errors

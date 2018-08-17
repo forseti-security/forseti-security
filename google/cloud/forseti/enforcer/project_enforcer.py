@@ -19,11 +19,10 @@ from __future__ import division
 from __future__ import print_function
 
 import hashlib
-import threading
-from googleapiclient import errors
-from google.apputils import datelib
 
 from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import gce_firewall_enforcer as fe
@@ -47,7 +46,7 @@ class ProjectEnforcer(object):
     def __init__(self,
                  project_id,
                  global_configs=None,
-                 compute_service=None,
+                 compute_client=None,
                  dry_run=False,
                  project_sema=None,
                  max_running_operations=0):
@@ -56,7 +55,7 @@ class ProjectEnforcer(object):
         Args:
             project_id (str): The project id for the project to enforce.
             global_configs (dict): Global configurations.
-            compute_service (discovery.Resource): A Compute API service object.
+            compute_client (ComputeClient): A Compute API client.
                 If not provided, one will be created using the default
                 credentials.
             dry_run (bool): Set to true to ensure no actual changes are made to
@@ -65,31 +64,30 @@ class ProjectEnforcer(object):
             project_sema (threading.BoundedSemaphore): An optional semaphore
                 object, used to limit the number of concurrent projects getting
                 written to.
-            max_running_operations (int): Used to limit the number of concurrent
-                running operations on an API.
+            max_running_operations (int): [DEPRECATED] Used to limit the number
+                of concurrent running operations on an API.
         """
         self.project_id = project_id
 
-        if not compute_service:
-            gce_api = compute.ComputeClient(global_configs)
-            compute_service = gce_api.service
+        if not compute_client:
+            compute_client = compute.ComputeClient(global_configs,
+                                                   dry_run=dry_run)
 
-        self.firewall_api = fe.ComputeFirewallAPI(compute_service,
-                                                  dry_run=dry_run)
+        self.compute_client = compute_client
 
         self.result = enforcer_log_pb2.ProjectResult()
         self.result.status = STATUS_UNSPECIFIED
         self.result.project_id = self.project_id
-        self.result.timestamp_sec = datelib.Timestamp.now().AsMicroTimestamp()
+        self.result.timestamp_sec = date_time.get_utc_now_microtimestamp()
 
         self._dry_run = dry_run
 
         self._project_sema = project_sema
         if max_running_operations:
-            self._operation_sema = threading.BoundedSemaphore(
-                value=max_running_operations)
-        else:
-            self._operation_sema = None
+            LOGGER.warn(
+                'Max running operations is deprecated. Argument ignored.')
+
+        self._operation_sema = None
 
     def enforce_firewall_policy(self,
                                 firewall_policy,
@@ -126,15 +124,15 @@ class ProjectEnforcer(object):
             enforcer_log_pb2.ProjectResult: A proto with details on the status
             of the enforcement and an audit log with any changes made.
         """
-        if networks:
-            networks = sorted(networks)
-        else:
-            networks = self._get_project_networks()
-            if not networks:
-                self._set_error_status('no networks found for project')
-                return self.result
-
         try:
+            if networks:
+                networks = sorted(networks)
+            else:
+                networks = self._get_project_networks()
+                if not networks:
+                    self._set_error_status('no networks found for project')
+                    return self.result
+
             expected_rules = self._get_expected_rules(networks,
                                                       firewall_policy)
 
@@ -276,7 +274,7 @@ class ProjectEnforcer(object):
         """
         enforcer = fe.FirewallEnforcer(
             self.project_id,
-            self.firewall_api,
+            self.compute_client,
             expected_rules,
             rules_before_enforcement,
             project_sema=self._project_sema,
@@ -290,23 +288,38 @@ class ProjectEnforcer(object):
 
         Returns:
             list: A sorted list of network names.
+
+
+        Raises:
+            ProjectDeletedError: Raised if the project has been deleted.
+            ComputeApiDisabledError: Raised if the Compute API is not enabled on
+                the project.
+            EnforcementError: Raised if there are any exceptions raised while
+                adding the firewall rules.
         """
         networks = set()
         try:
-            response = self.firewall_api.list_networks(
-                self.project_id, fields='items/selfLink')
-        except errors.HttpError as e:
+            results = self.compute_client.get_networks(self.project_id)
+
+        except api_errors.ApiNotEnabledError as e:
             LOGGER.error('Error listing networks for project %s: %s',
                          self.project_id, e)
-        else:
-            for item in response.get('items', []):
-                if 'selfLink' in item:
-                    network_name = fe.get_network_name_from_url(
-                        item['selfLink'])
-                    networks.add(network_name)
-                else:
-                    LOGGER.error('Network URL not found in %s for project %s',
-                                 item, self.project_id)
+            raise ComputeApiDisabledError(e)
+        except api_errors.ApiExecutionError as e:
+            http_error = e.http_error
+            if _is_project_deleted_error(http_error):
+                LOGGER.warn('Project %s has been deleted.', self.project_id)
+                raise ProjectDeletedError(str(http_error))
+
+            raise EnforcementError(
+                STATUS_ERROR,
+                'error getting current networks from API: %s' % http_error)
+
+        for network in results:
+            network_name = fe.get_network_name_from_url(
+                network['selfLink'])
+            networks.add(network_name)
+
         return sorted(networks)
 
     def _get_expected_rules(self, networks, firewall_policy):
@@ -358,26 +371,21 @@ class ProjectEnforcer(object):
         current_rules = fe.FirewallRules(self.project_id,
                                          add_rule_callback=add_rule_callback)
         try:
-            current_rules.add_rules_from_api(self.firewall_api)
-        except errors.HttpError as e:
-            # Handle race condition where a project is deleted after it is
-            # enqueued.
-            error_msg = str(
-                e)  # HttpError Class decodes json encoded error into str
-            if ((e.resp.status in (400, 404) and
-                 ('Invalid value for project' in error_msg or
-                  # Error string changed.
-                  'Failed to find project' in error_msg)) or
-                    (e.resp.status == 403 and
-                     'scheduled for deletion' in error_msg)):
-                raise ProjectDeletedError(error_msg)
-            elif (e.resp.status == 403 and
-                  'Compute Engine API has not been used' in error_msg):
-                raise ComputeApiDisabledError(error_msg)
-            else:
-                raise EnforcementError(STATUS_ERROR,
-                                       'error getting current firewall '
-                                       'rules from API: %s' % e)
+            current_rules.add_rules_from_api(self.compute_client)
+        except api_errors.ApiNotEnabledError as e:
+            LOGGER.error('Error getting firewall rules for project %s: %s',
+                         self.project_id, e)
+            raise ComputeApiDisabledError(e)
+        except api_errors.ApiExecutionError as e:
+            http_error = e.http_error
+            if _is_project_deleted_error(http_error):
+                LOGGER.warn('Project %s has been deleted.', self.project_id)
+                raise ProjectDeletedError(str(http_error))
+
+            raise EnforcementError(
+                STATUS_ERROR,
+                'error getting current firewall rules from API: %s'
+                % http_error)
         except fe.InvalidFirewallRuleError as e:
             raise EnforcementError(STATUS_ERROR,
                                    'error getting current firewall '
@@ -489,6 +497,27 @@ class ProjectEnforcer(object):
                 'Project has GCE API disabled: %s' % e)
             LOGGER.warn('Project %s has the GCE API disabled: %s',
                         self.project_id, e)
+
+
+def _is_project_deleted_error(err):
+    """Checks if the error is due to the project having been deleted.
+
+    Args:
+        err (HttpError): The error message returned by the API call.
+
+    Returns:
+        bool: True if the project was deleted, else False.
+    """
+    error_msg = str(
+        err)  # HttpError Class decodes json encoded error into str
+    if ((err.resp.status in (400, 404) and
+         ('Invalid value for project' in error_msg or
+          # Error string changed.
+          'Failed to find project' in error_msg)) or
+            (err.resp.status == 403 and
+             'scheduled for deletion' in error_msg)):
+        return True
+    return False
 
 
 class Error(Exception):

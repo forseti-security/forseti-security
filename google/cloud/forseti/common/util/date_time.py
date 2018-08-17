@@ -119,6 +119,19 @@ def get_utc_now_timestamp(date=None):
     return utc_now.strftime(string_formats.DEFAULT_FORSETI_TIMESTAMP)
 
 
+def get_utc_now_unix_timestamp(date=None):
+    """Get a 64bit int representing the current time to the millisecond.
+
+    Args:
+        date (datetime): A datetime object representing current time in UTC.
+
+    Returns:
+        int: A epoch timestamp including microseconds.
+    """
+    utc_now = date or get_utc_now_datetime()
+    return calendar.timegm(utc_now.utctimetuple())
+
+
 def get_utc_now_microtimestamp(date=None):
     """Get a 64bit int representing the current time to the millisecond.
 
