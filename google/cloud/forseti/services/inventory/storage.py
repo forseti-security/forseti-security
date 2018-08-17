@@ -429,7 +429,8 @@ class DataAccess(object):
                 InventoryIndex.id == inventory_index_id).delete()
             session.commit()
             return result
-        except Exception:
+        except Exception as e:
+            LOGGER.exception(e)
             session.rollback()
             raise
 
@@ -562,7 +563,8 @@ class Storage(BaseStorage):
         try:
             index = InventoryIndex.create()
             self.session.add(index)
-        except Exception:
+        except Exception as e:
+            LOGGER.exception(e)
             self.session.rollback()
             raise
         else:
@@ -774,6 +776,7 @@ class Storage(BaseStorage):
                         self.session.add(new_dict[category])
             self.session.commit()
         except Exception as e:
+            LOGGER.exception(e)
             raise Exception('Resource Update Unsuccessful: {}'.format(e))
 
     def error(self, message):
