@@ -17,7 +17,7 @@ echo "Running pylint... "
 
 docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ install/"
 
-echo "Running pycodestyle... "
+echo "Running flake8... "
 # E501: Is line too long and should be handled by pylint.
 # E711: Comparison to None and should be handled by pylint.
 # E722: Bare except, it's been deemed OK by this project in certain cases.
