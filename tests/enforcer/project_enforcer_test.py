@@ -513,6 +513,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         # Make a change to one of the rules
         current_fw_rules[0]['sourceRanges'].append('10.0.0.0/8')
 
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         self.gce_service.firewalls().list().execute.return_value = {
             'items': current_fw_rules
         }
@@ -532,6 +534,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.expected_proto.status_reason = result.status_reason
 
         self.validate_results(self.expected_proto, result)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     def test_enforce_policy_failure_during_enforcement(self):
         """Forces an error in the middle of enforcing a policy.
@@ -569,6 +573,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         current_fw_rules.append(
             constants.DEFAULT_FIREWALL_API_RESPONSE['items'][0])
 
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         self.gce_service.firewalls().list().execute.side_effect = [
             {
                 'items': current_fw_rules
@@ -611,6 +617,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
 
         self.validate_results(self.expected_proto, result,
                               expect_rules_before=True, expect_rules_after=True)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     def test_enforce_policy_error_fetching_updated_rules(self):
         """Forces an error when requesting firewall rules after enforcement.
@@ -675,6 +683,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
           A ProjectResult proto showing status=ERROR and the correct reason
           string.
         """
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         self.gce_service.networks().list().execute.side_effect = self.error_403
 
         self.gce_service.firewalls().list().execute.return_value = {
@@ -687,6 +697,8 @@ class ProjectEnforcerTest(ForsetiTestCase):
         self.expected_proto.status_reason = 'no networks found for project'
 
         self.validate_results(self.expected_proto, result)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     def test_enforce_policy_error_listing_firewalls(self):
         """Forces an error when listing project firewall rules.

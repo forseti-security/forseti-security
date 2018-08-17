@@ -100,6 +100,12 @@ class ForsetiTestCase(unittest.TestCase):
                 failure_message += (': ' + msg)
             self.fail(failure_message)
 
+    def enableConsoleLogging(self):
+        logger.enable_console_log()
+
+    def disableConsoleLogging(self):
+        logger.disable_console_log()
+
 _INT_TYPES = (int, long)  # Sadly there is no types.IntTypes defined for us.
 
 

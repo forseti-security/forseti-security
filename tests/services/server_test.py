@@ -148,6 +148,8 @@ class ServerTest(ForsetiTestCase):
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_services_not_specified(self, mock_argparse):
         """Test main() with no service specified."""
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         expected_exit_code = 1
         mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
@@ -160,10 +162,14 @@ class ServerTest(ForsetiTestCase):
         with self.assertRaises(SystemExit) as e:
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_config_file_path_not_specified(self, mock_argparse):
         """Test main() with no config_file_path specified."""
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         expected_exit_code = 2
         mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
@@ -176,10 +182,14 @@ class ServerTest(ForsetiTestCase):
         with self.assertRaises(SystemExit) as e:
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_config_file_path_non_readable_file(self, mock_argparse):
         """Test main() with non-readable config file."""
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         expected_exit_code = 3
         mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
@@ -192,10 +202,14 @@ class ServerTest(ForsetiTestCase):
         with self.assertRaises(SystemExit) as e:
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_config_file_path_non_existent_file(self, mock_argparse):
         """Test main() with non-existent config file."""
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         expected_exit_code = 4
         mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
@@ -212,10 +226,14 @@ class ServerTest(ForsetiTestCase):
                 with self.assertRaises(SystemExit) as e:
                     server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
     def test_forseti_db_not_set(self, mock_argparse):
         """Test main() with forseti_db not set."""
+        # Tests intended to log errors. Avoid polluting logs. See #1848
+        self.disableConsoleLogging()
         expected_exit_code = 5
         mock_argparse.return_value = NameSpace(
             endpoint='[::]:50051',
@@ -232,6 +250,8 @@ class ServerTest(ForsetiTestCase):
                 with self.assertRaises(SystemExit) as e:
                     server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        # Re-enable logging.
+        self.enableConsoleLogging()
 
 
 if __name__ == '__main__':
