@@ -295,9 +295,9 @@ class ProjectEnforcer(object):
         try:
             response = self.firewall_api.list_networks(
                 self.project_id, fields='items/selfLink')
-        except errors.HttpError as e:
-            LOGGER.error('Error listing networks for project %s: %s',
-                         self.project_id, e)
+        except errors.HttpError:
+            LOGGER.exception('Error listing networks for project %s',
+                             self.project_id)
         else:
             for item in response.get('items', []):
                 if 'selfLink' in item:

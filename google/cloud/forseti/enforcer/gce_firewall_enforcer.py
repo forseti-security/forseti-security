@@ -1231,9 +1231,9 @@ class FirewallEnforcer(object):
             try:
                 response = firewall_function(self.project, rule)
             except errors.HttpError as e:
-                LOGGER.error(
-                    'Error changing firewall rule %s for project %s: %s',
-                    rule.get('name', ''), self.project, e)
+                LOGGER.exception(
+                    'Error changing firewall rule %s for project %s',
+                    rule.get('name', ''), self.project)
                 error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)
                 change_errors.append(error_str)
                 failed_rules.append(rule)

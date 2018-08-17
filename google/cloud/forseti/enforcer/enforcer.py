@@ -165,8 +165,8 @@ def main():
     try:
         configs = file_loader.read_and_parse_file(forseti_config)
     except IOError:
-        LOGGER.error('Unable to open Forseti Security config file. '
-                     'Please check your path and filename and try again.')
+        LOGGER.exception('Unable to open Forseti Security config file. '
+                         'Please check your path and filename and try again.')
         sys.exit()
     global_configs = configs.get('global')
 
