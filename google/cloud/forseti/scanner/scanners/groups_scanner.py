@@ -107,8 +107,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             if not node.member_email:
                 continue
 
-            # Skip the member if there is no rules to check against or
-            # if the member has already been visited.
+            # Skip the member if there is no rules to check against.
             if not node.rules:
                 continue
 
