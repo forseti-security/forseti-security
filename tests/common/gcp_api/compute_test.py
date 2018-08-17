@@ -224,7 +224,8 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         self.assertDictEqual(json.loads(mock_pending), e.exception.operation)
 
     @parameterized.parameterized.expand(CUD_TEST_CASES)
-    def test_cud_firewall_rule_retry(self, name, verb):
+    @mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER', autospec=True)
+    def test_cud_firewall_rule_retry(self, name, verb, mock_logger):
         """Test create/update/delete firewall rule times out."""
         mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
             verb=verb,
@@ -248,8 +249,10 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
             results = method(self.project_id,
                              rule=fake_compute.FAKE_FIREWALL_RULE,
                              blocking=True,
+                             timeout=1,
                              retry_count=3)
         self.assertDictEqual(json.loads(mock_finished), results)
+        self.assertTrue(mock_logger.warn.called)
 
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_delete_firewall_rule_errors(self, name, response, status,
