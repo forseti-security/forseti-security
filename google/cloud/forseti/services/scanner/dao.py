@@ -352,7 +352,7 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
     try:
         violation_hash = hashlib.new(algorithm)
     except ValueError as e:
-        LOGGER.error('Cannot create hash for a violation with algorithm: '
+        LOGGER.exception('Cannot create hash for a violation with algorithm: '
                      '%s\n%s', algorithm, e)
         return ''
 
@@ -363,9 +363,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
             json.dumps(resource_data, sort_keys=True) +
             json.dumps(violation_data, sort_keys=True)
         )
-    except TypeError as e:
-        LOGGER.error('Cannot create hash for a violation: %s\n%s',
-                     violation_full_name, e)
+    except TypeError:
+        LOGGER.exception('Cannot create hash for a violation: %s',
+                         violation_full_name)
         return ''
 
     return violation_hash.hexdigest()

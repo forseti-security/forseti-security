@@ -868,8 +868,8 @@ class KubernetesCluster(Resource):
             return client.fetch_container_serviceconfig(
                 self.parent().key(), zone=self.zone(), location=self.location())
         except ValueError:
-            LOGGER.error('Cluster has no zone or location: %s',
-                         self._data)
+            LOGGER.exception('Cluster has no zone or location: %s',
+                             self._data)
             return {}
 
     def key(self):

@@ -294,7 +294,7 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'project_roles', e, 'parent', parent)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_organization_roles(self, org_id):
@@ -324,7 +324,7 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'organizations_roles', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_project_roles(self, project_id):
@@ -354,7 +354,7 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'projects_roles', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_service_accounts(self, project_id):
@@ -383,7 +383,7 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'serviceAccounts', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_service_account_iam_policy(self, name):
@@ -409,7 +409,7 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'serviceAccountIamPolicy', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_service_account_keys(self, name, key_type=None):
@@ -450,5 +450,5 @@ class IAMClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'serviceAccountKeys', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
