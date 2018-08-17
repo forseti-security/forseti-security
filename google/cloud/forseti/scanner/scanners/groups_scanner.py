@@ -95,7 +95,6 @@ class GroupsScanner(base_scanner.BaseScanner):
             list: Nodes that are in violation.
         """
         all_violations = []
-        visited_members = set()
 
         for node in anytree.iterators.PreOrderIter(root):
 
@@ -110,10 +109,8 @@ class GroupsScanner(base_scanner.BaseScanner):
 
             # Skip the member if there is no rules to check against or
             # if the member has already been visited.
-            if not node.rules or node.member_email in visited_members:
+            if not node.rules:
                 continue
-
-            visited_members.add(node.member_email)
 
             node.violated_rule_names = []
             whitelist_rule_statuses = []
