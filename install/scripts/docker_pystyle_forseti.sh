@@ -22,4 +22,4 @@ echo "Running flake8... "
 # E711: Comparison to None and should be handled by pylint.
 # E722: Bare except, it's been deemed OK by this project in certain cases.
 # F841: Assigned but unused variable becuase flake/pycodestyle doesn't ignore _.
-docker -l error exec -it build /bin/bash -c "flake8 --max-line-length=80 --ignore=E501,E711,E722,F841 --exclude=*_pb2.py google/"
+docker -l error exec -it build /bin/bash -c "flake8 --max-line-length=80 --ignore=E501,E711,E722,F841 --exclude=*pb2*.py google/"
