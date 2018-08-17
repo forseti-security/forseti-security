@@ -311,6 +311,8 @@ class ProjectEnforcer(object):
                 LOGGER.warn('Project %s has been deleted.', self.project_id)
                 raise ProjectDeletedError(str(http_error))
 
+            LOGGER.exception('Error listing networks for project %s: %s',
+                             self.project_id, e)
             raise EnforcementError(
                 STATUS_ERROR,
                 'error getting current networks from API: %s' % http_error)

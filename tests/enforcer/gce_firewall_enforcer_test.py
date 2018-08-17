@@ -51,23 +51,8 @@ class HelperFunctionTest(ForsetiTestCase):
                          fe.build_network_url('example.com:testing',
                                               'mytestnet'))
 
-<<<<<<< HEAD
     def test_is_successful(self):
         """_is_successful should know about bad responses and OK responses."""
-=======
-
-class ComputeFirewallAPI(ForsetiTestCase):
-    """Tests for the ComputeFirewallAPI class."""
-
-    def setUp(self):
-        """Set up."""
-        self.gce_service = mock.MagicMock()
-        self.firewall_api = fe.ComputeFirewallAPI(self.gce_service)
-
-    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
-    def test_is_successful(self, mock_logger):
-        """is_successful should know about bad responses and OK responses."""
->>>>>>> dev
         self.assertTrue(
             fe._is_successful({
                 'kind': 'compute#operation'
@@ -103,142 +88,7 @@ class ComputeFirewallAPI(ForsetiTestCase):
                     }]
                 }
             }))
-        self.assertTrue(mock_logger.error.called)
 
-<<<<<<< HEAD
-=======
-    def test_wait_for_any_to_complete(self):
-        """Testing waiting for requests until any finish executing.
-
-        Setup:
-          * Create mock pending response.
-          * Create mock completed response.
-          * Set compute.globalOperations.get to return mock completed response.
-
-        Expected results:
-          * wait_for_any_to_complete will return the completed and running
-            responses
-        """
-        pending_responses = [{
-            'name': 'operation-1400179586831',
-            'status': 'PENDING'
-        }, {
-            'name': 'operation-1400179586832',
-            'status': 'PENDING'
-        }]
-
-        completed_response = {
-            'name': 'operation-1400179586831',
-            'status': 'DONE'
-        }
-        running_response = {
-            'name': 'operation-1400179586832',
-            'status': 'PENDING'
-        }
-
-        self.gce_service.globalOperations().get().execute.side_effect = [
-            completed_response, running_response
-        ]
-
-        (completed, running) = self.firewall_api.wait_for_any_to_complete(
-            constants.TEST_PROJECT, pending_responses)
-
-        self.assertEqual([completed_response], completed)
-        self.assertEqual([running_response], running)
-
-    def test_wait_for_any_to_complete_empty_responses_list(self):
-        """Testing waiting for requests until any finish executing.
-
-        Setup:
-          * Run wait_for_any_to_complete with an empty list for pending
-            responses.
-
-        Expected results:
-          * wait_for_any_to_complete will return an empty list for completed and
-            running responses.
-        """
-        pending_responses = []
-
-        (completed, running) = self.firewall_api.wait_for_any_to_complete(
-            constants.TEST_PROJECT, pending_responses)
-        self.assertEqual([], completed)
-        self.assertEqual([], running)
-
-    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
-    def test_wait_for_any_to_complete_timeout(self, mock_logger):
-        """Testing waiting for requests until a timeout is exceeded.
-
-        Setup:
-          * Create mock pending response.
-          * Set compute.globalOperations.get to return mock pending response.
-
-        Expected results:
-          * wait_for_any_to_complete will return the pending response with a
-            timeout error
-        """
-        pending_response = {
-            'name': 'operation-1400179586831',
-            'status': 'PENDING'
-        }
-
-        expected_response = {
-            'name': 'operation-1400179586831',
-            'status': 'PENDING',
-            'error': {
-                'errors': [{
-                    'code': 'OPERATION_TIMEOUT',
-                    'message': 'Operation exceeded timeout for '
-                               'completion of 1.00 seconds'
-                }]
-            }
-        }
-
-        self.gce_service.globalOperations().get().execute.return_value = (
-            pending_response)
-
-        (completed, running) = self.firewall_api.wait_for_any_to_complete(
-            constants.TEST_PROJECT, [pending_response], timeout=1.0)
-        self.assertEqual([expected_response], completed)
-        self.assertEqual([], running)
-        self.assertTrue(mock_logger.error.called)
-
-    def test_wait_for_all_to_complete(self):
-        """Testing waiting for requests until they all finish executing.
-
-        Setup:
-          * Create mock pending responses.
-          * Create mock completed responses.
-          * Set compute.globalOperations.get to return mock completed response.
-
-        Expected results:
-          * wait_for_all_to_complete will return the completed and running
-            responses
-        """
-        pending_responses = [{
-            'name': 'operation-1400179586831',
-            'status': 'PENDING'
-        }, {
-            'name': 'operation-1400179586832',
-            'status': 'PENDING'
-        }]
-
-        completed_responses = [{
-            'name': 'operation-1400179586831',
-            'status': 'DONE'
-        }, {
-            'name': 'operation-1400179586832',
-            'status': 'DONE'
-        }]
-
-        self.gce_service.globalOperations().get().execute.side_effect = [
-            completed_responses[0], pending_responses[1], completed_responses[1]
-        ]
-
-        completed = self.firewall_api.wait_for_all_to_complete(
-            constants.TEST_PROJECT, pending_responses)
-        self.assertEqual(completed_responses, completed)
-
->>>>>>> dev
 
 class FirewallRulesTest(ForsetiTestCase):
     """Tests for the FirewallRules class."""
