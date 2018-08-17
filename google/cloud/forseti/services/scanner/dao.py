@@ -14,14 +14,10 @@
 
 """ Database access objects for Forseti Scanner. """
 
+from collections import defaultdict
 import hashlib
 import json
-from collections import defaultdict
 
-from google.cloud.forseti.common.data_access import violation_map as vm
-from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.index_state import IndexState
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -31,6 +27,11 @@ from sqlalchemy import Text
 from sqlalchemy import and_
 from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
+
+from google.cloud.forseti.common.data_access import violation_map as vm
+from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.index_state import IndexState
 
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
