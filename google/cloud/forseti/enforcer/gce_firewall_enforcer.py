@@ -940,15 +940,16 @@ class FirewallEnforcer(object):
                                              timeout=OPERATION_TIMEOUT)
             except (api_errors.ApiNotEnabledError,
                     api_errors.ApiExecutionError) as e:
-                LOGGER.error(
+                LOGGER.exception(
                     'Error changing firewall rule %s for project %s: %s',
                     rule.get('name', ''), self.project, e)
+
                 error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)
                 change_errors.append(error_str)
                 failed_rules.append(rule)
                 continue
             except api_errors.OperationTimeoutError as e:
-                LOGGER.error(
+                LOGGER.exception(
                     'Timeout changing firewall rule %s for project %s: %s',
                     rule.get('name', ''), self.project, e)
                 error_str = 'Rule: %s\nError: %s' % (rule.get('name', ''), e)

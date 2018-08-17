@@ -302,8 +302,8 @@ class ProjectEnforcer(object):
             results = self.compute_client.get_networks(self.project_id)
 
         except api_errors.ApiNotEnabledError as e:
-            LOGGER.error('Error listing networks for project %s: %s',
-                         self.project_id, e)
+            LOGGER.exception('Error listing networks for project %s: %s',
+                             self.project_id, e)
             raise ComputeApiDisabledError(e)
         except api_errors.ApiExecutionError as e:
             http_error = e.http_error

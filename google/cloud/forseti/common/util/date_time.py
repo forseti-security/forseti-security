@@ -54,15 +54,13 @@ def get_datetime_from_string(string, string_format):
     """
     try:
         result = datetime.strptime(string, string_format)
-    except TypeError as e:
-        LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
-                     string, string_format, e)
+    except TypeError:
+        LOGGER.exception('Unable to create a datetime with %s in '
+                         'format %s', string, string_format)
         raise DateTimeTypeConversionError
-    except ValueError as e:
-        LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
-                     string, string_format, e)
+    except ValueError:
+        LOGGER.exception('Unable to create a datetime with %s in '
+                         'format %s', string, string_format)
         raise DateTimeValueConversionError
 
     return result
@@ -155,4 +153,4 @@ def get_date_from_microtimestamp(microtimestamp):
     Returns:
         datetime: The converted datetime object
     """
-    return datetime.utcfromtimestamp(microtimestamp/float(1000000.0))
+    return datetime.utcfromtimestamp(microtimestamp / float(1000000.0))

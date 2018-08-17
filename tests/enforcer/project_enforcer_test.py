@@ -462,7 +462,8 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         self.validate_results(self.expected_proto, result,
                               expect_rules_before=True, expect_rules_after=True)
 
-    def test_enforce_policy_firewall_enforcer_error(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_enforce_policy_firewall_enforcer_error(self, mock_logger):
         """Verifies that a firewall enforcer error returns a status=ERROR proto.
 
         Setup:
@@ -509,8 +510,10 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         self.expected_proto.status_reason = result.status_reason
 
         self.validate_results(self.expected_proto, result)
+        self.assertTrue(mock_logger.error.called)
 
-    def test_enforce_policy_failure_during_enforcement(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_enforce_policy_failure_during_enforcement(self, mock_logger):
         """Forces an error in the middle of enforcing a policy.
 
         Setup:
@@ -582,8 +585,10 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
 
         self.validate_results(self.expected_proto, result,
                               expect_rules_before=True, expect_rules_after=True)
+        self.assertTrue(mock_logger.error.called)
 
-    def test_enforce_policy_error_fetching_updated_rules(self):
+    @mock.patch('google.cloud.forseti.enforcer.project_enforcer.LOGGER', autospec=True)
+    def test_enforce_policy_error_fetching_updated_rules(self, mock_logger):
         """Forces an error when requesting firewall rules after enforcement.
 
         Setup:
@@ -634,8 +639,10 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         self.validate_results(self.expected_proto, result,
                               expect_rules_before=True,
                               expect_rules_after=False)
+        self.assertTrue(mock_logger.error.called)
 
-    def test_enforce_policy_error_listing_networks(self):
+    @mock.patch('google.cloud.forseti.enforcer.project_enforcer.LOGGER', autospec=True)
+    def test_enforce_policy_error_listing_networks(self, mock_logger):
         """Forces an error when listing project networks.
 
         Setup:
@@ -661,6 +668,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
                 '"Failed">')
 
         self.validate_results(self.expected_proto, result)
+        self.assertTrue(mock_logger.exception.called)
 
     def test_enforce_policy_error_listing_firewalls(self):
         """Forces an error when listing project firewall rules.

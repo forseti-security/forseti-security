@@ -229,7 +229,6 @@ class _ResourceManagerFolderV1Repository(
 class CloudResourceManagerClient(object):
     """Resource Manager Client."""
 
-
     def __init__(self, global_configs, **kwargs):
         """Initialize.
 
