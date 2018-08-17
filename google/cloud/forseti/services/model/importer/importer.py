@@ -283,7 +283,8 @@ class InventoryImporter(object):
                     self._store_iam_policy_post,
                     1000
                 )
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e: # pylint: disable=broad-except
+            LOGGER.exception(e)
             buf = StringIO()
             traceback.print_exc(file=buf)
             buf.seek(0)
