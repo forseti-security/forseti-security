@@ -123,7 +123,7 @@ class InventoryImporter(object):
         self.permission_cache = {}
         self.resource_cache = ResourceCache()
         self.membership_items = []
-        self.membership_map = {} # Maps group_name to {member_name}
+        self.membership_map = {}  # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
 
@@ -283,7 +283,7 @@ class InventoryImporter(object):
                     self._store_iam_policy_post,
                     1000
                 )
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             buf = StringIO()
             traceback.print_exc(file=buf)

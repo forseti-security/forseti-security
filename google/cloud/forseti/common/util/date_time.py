@@ -140,4 +140,4 @@ def get_date_from_microtimestamp(microtimestamp):
     Returns:
         datetime: The converted datetime object
     """
-    return datetime.utcfromtimestamp(microtimestamp/float(1000000.0))
+    return datetime.utcfromtimestamp(microtimestamp / float(1000000.0))

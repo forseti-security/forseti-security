@@ -169,8 +169,9 @@ class BatchFirewallEnforcer(object):
 
         projects_enforced_count = 0
         future_to_key = {}
-        with (concurrent.futures.ThreadPoolExecutor(
-            max_workers=self._concurrent_workers)) as executor:
+        with (
+            concurrent.futures.ThreadPoolExecutor(
+                max_workers=self._concurrent_workers)) as executor:
             for (project_id, firewall_policy) in project_policies:
                 future = executor.submit(self._enforce_project, project_id,
                                          firewall_policy, prechange_callback,

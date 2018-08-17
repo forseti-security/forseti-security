@@ -89,9 +89,9 @@ def _user_project_missing_error(error):
             error_details = json.loads(error.content.decode('utf-8'))
             all_errors = error_details.get('error', {}).get('errors', [])
             user_project_required_errors = [
-                error for error in all_errors
-                if (error.get('domain', '') == 'global' and
-                    error.get('reason', '') == 'required')
+                err for err in all_errors
+                if (err.get('domain', '') == 'global' and
+                    err.get('reason', '') == 'required')
             ]
             if (user_project_required_errors and
                     len(user_project_required_errors) == len(all_errors)):

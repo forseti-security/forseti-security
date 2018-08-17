@@ -183,6 +183,7 @@ class Violation(BASE):
         return string.format(
             self.violation_type, self.resource_type, self.rule_name)
 
+
 class ViolationAccess(object):
     """Facade for violations, implement APIs against violations table."""
 
@@ -278,7 +279,6 @@ class ViolationAccess(object):
         for violation, _ in results:
             violations.append(violation)
         return violations
-
 
 
 # pylint: disable=invalid-name
