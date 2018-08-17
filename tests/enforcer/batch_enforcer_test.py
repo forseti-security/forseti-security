@@ -26,11 +26,6 @@ from google.protobuf import text_format
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import batch_enforcer
 
-# Used anywhere a real timestamp could be generated to ensure consistent
-# comparisons in tests
-MOCK_MICROTIMESTAMP = 1514764800123456
-MOCK_DATETIME = datetime(2018, 1, 1, 0, 0, 0, 123456)
-
 
 class BatchFirewallEnforcerTest(constants.EnforcerTestCase):
     """Extended unit tests for BatchFirewallEnforcer class."""
@@ -45,9 +40,9 @@ class BatchFirewallEnforcerTest(constants.EnforcerTestCase):
 
         self.expected_summary = (
             enforcer_log_pb2.BatchResult(
-                batch_id=MOCK_MICROTIMESTAMP,
-                timestamp_start_msec=MOCK_MICROTIMESTAMP,
-                timestamp_end_msec=MOCK_MICROTIMESTAMP))
+                batch_id=constants.MOCK_MICROTIMESTAMP,
+                timestamp_start_msec=constants.MOCK_MICROTIMESTAMP,
+                timestamp_end_msec=constants.MOCK_MICROTIMESTAMP))
 
         self.expected_rules = copy.deepcopy(
             constants.EXPECTED_FIREWALL_RULES.values())
@@ -77,7 +72,8 @@ class BatchFirewallEnforcerTest(constants.EnforcerTestCase):
         self.assertEqual(self.expected_summary, results.summary)
 
         # Verify additional fields added to ProjectResults proto
-        self.assertEqual(MOCK_MICROTIMESTAMP, results.results[0].batch_id)
+        self.assertEqual(constants.MOCK_MICROTIMESTAMP,
+                         results.results[0].batch_id)
 
     def test_batch_enforcer_run_all_changed(self):
         """Validate a full pass of BatchFirewallEnforcer for a single project.
