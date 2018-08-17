@@ -95,6 +95,8 @@ class GroupsScanner(base_scanner.BaseScanner):
             list: Nodes that are in violation.
         """
         all_violations = []
+        visited_members = set()
+
         for node in anytree.iterators.PreOrderIter(root):
 
             # No need to evaluate these nodes.
@@ -105,6 +107,13 @@ class GroupsScanner(base_scanner.BaseScanner):
             # in the org.
             if not node.member_email:
                 continue
+
+            # Skip the node if there is no rules to check against the node or
+            # if the node has already been visited.
+            if not node.rules or node.member_email in visited_members:
+                continue
+
+            visited_members.add(node.member_email)
 
             node.violated_rule_names = []
             whitelist_rule_statuses = []
@@ -190,7 +199,8 @@ class GroupsScanner(base_scanner.BaseScanner):
                 # group.
                 for node in anytree.iterators.PreOrderIter(starting_node):
                     if node.member_email == rule.get('group_email'):
-                        node = self._apply_one_rule(node, rule)
+                        self._apply_one_rule(node, rule)
+                        break  # Avoid visiting the same group more than once.
 
         return starting_node
 
