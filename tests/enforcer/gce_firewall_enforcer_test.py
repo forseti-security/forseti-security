@@ -1168,7 +1168,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.assertListEqual([], failures)
         self.assertListEqual([], change_errors)
 
-    def test_apply_change_insert_http_error(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_apply_change_insert_http_error(self, mock_logger):
         """Adds the rule to failures on HttpError exception.
 
         Setup:
@@ -1201,8 +1202,10 @@ class FirewallEnforcerTest(ForsetiTestCase):
             test_rules[0].get('name', ''),
             error_409)
         self.assertListEqual([error_str], change_errors)
+        self.assertTrue(mock_logger.exception.called)
 
-    def test_apply_change_operation_status_error(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_apply_change_operation_status_error(self, mock_logger):
         """Adds the rule to failures on HttpError exception.
 
         Setup:
@@ -1236,6 +1239,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.assertSameStructure(test_rules, failures)
         self.assertListEqual([], successes)
         self.assertListEqual([], change_errors)
+        self.assertTrue(mock_logger.error.called)
 
     def test_apply_change_lots_of_rules(self):
         """Changing more rules than permitted by the operation semaphore works.
@@ -1303,7 +1307,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
             [constants.EXPECTED_FIREWALL_RULES['test-network-allow-public-0']],
             self.enforcer.get_updated_rules())
 
-    def test_apply_changes_operation_status_error(self):
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_apply_changes_operation_status_error(self, mock_logger):
         """Validate that an error on a change raises the expected exception.
 
         Setup:
@@ -1352,6 +1357,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
             self.enforcer._apply_change_set(delete_before_insert)
         self.assertEqual([], self.enforcer.get_updated_rules())
         self.enforcer._rules_to_update = []
+        self.assertTrue(mock_logger.error.called)
 
     def testApplyChangesDeleteFirst(self):
       """Validate _ApplyChanges works with no errors.
