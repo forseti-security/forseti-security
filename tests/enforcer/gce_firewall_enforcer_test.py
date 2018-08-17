@@ -1077,6 +1077,53 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         self.assertListEqual([], change_errors)
         self.assertTrue(mock_logger.error.called)
 
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_apply_change_operation_timeout_error(self, mock_logger):
+        """Adds the rule to failures on Operation Timeout exception.
+
+        Setup:
+          * Mock insert_firewall_rule to return OperationTimeoutError
+          * Run apply_change.
+
+        Expected Results:
+          * Passed in rule ends up in failures list.
+        """
+        test_rules = [
+            copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
+                'test-network-allow-internal-0'])
+        ]
+        with mock.patch.object(
+                self.gce_api_client, 'insert_firewall_rule') as mock_insert:
+
+            mock_operation = {
+                'kind': 'compute#operation',
+                'id': '1234',
+                'name': 'operation-1234',
+                'operationType': 'insert',
+                'targetLink': ('https://www.googleapis.com/compute/v1/projects/'
+                               'test-project/global/firewalls/'
+                               'test-network-allow-internal-0'),
+                'targetId': '123456',
+                'status': 'PENDING',
+                'user': 'mock_data@example.com',
+                'progress': 0,
+                'insertTime': '2018-08-02T06:49:34.713-07:00',
+                'selfLink': ('https://www.googleapis.com/compute/v1/projects/'
+                             'test-project/global/operations/operation-1234')
+            }
+            err = api_errors.OperationTimeoutError(self.project, mock_operation)
+            mock_insert.side_effect = err
+            (successes, failures, change_errors) = self.enforcer._apply_change(
+                mock_insert, test_rules)
+
+        self.assertSameStructure(test_rules, failures)
+        self.assertListEqual([], successes)
+        error_str = 'Rule: %s\nError: %s' % (
+            test_rules[0].get('name', ''),
+            err)
+        self.assertListEqual([error_str], change_errors)
+        self.assertTrue(mock_logger.exception.called)
+
     def test_apply_changes(self):
         """Validate _apply_changes works with no errors.
 
