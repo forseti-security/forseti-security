@@ -14,11 +14,13 @@
 
 """Utils for Forseti Server services testing."""
 
-import logging
 import os
 import tempfile
 
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.dao import create_engine
+
+LOGGER = logger.get_logger(__name__)
 
 
 def create_test_engine(enforce_fks=True):
@@ -33,7 +35,7 @@ def create_test_engine_with_file(enforce_fks=True):
 
     fd, tmpfile = tempfile.mkstemp('.db', 'forseti-test-')
     try:
-        logging.info('Creating database at %s', tmpfile)
+        LOGGER.info('Creating database at %s', tmpfile)
         engine = create_engine('sqlite:///{}'.format(tmpfile),
                                sqlite_enforce_fks=enforce_fks,
                                connect_args={'check_same_thread': False})

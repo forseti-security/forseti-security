@@ -11,3 +11,4 @@ google-apputils
 # Needed for CI/CD and Development.
 codecov
 pylint
+flake8
