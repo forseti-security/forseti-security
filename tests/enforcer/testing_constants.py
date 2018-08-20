@@ -12,21 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Sample data used in testing gce_enforcer.
+"""Sample data and base class used in testing enforcer."""
 
-Consists exclusively of test constants.
-"""
+from datetime import datetime
+import json
+import mock
+from tests.unittest_utils import ForsetiTestCase
+import google.auth
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.util import date_time
+from google.oauth2 import credentials
+
+# Used anywhere a real timestamp could be generated to ensure consistent
+# comparisons in tests
+MOCK_MICROTIMESTAMP = 1514764800123456
+MOCK_DATETIME = datetime(2018, 1, 1, 0, 0, 0, 123456)
 
 TEST_PROJECT = "test-project"
 TEST_NETWORK = "test-network"
 
-SAMPLE_TEST_NETWORK_SELFLINK = {
-    "items": [
+SAMPLE_TEST_NETWORK_SELFLINK = [
+    {
+        "selfLink": (u"https://www.googleapis.com/compute/v1/projects/"
+                     "test-project/global/networks/test-network")
+    },
+]
+
+TEST_PROJECT_RESPONSE = {
+    "kind": "compute#project",
+    "id": "1111111",
+    "creationTimestamp": "2016-02-25T14:01:23.140-08:00",
+    "name": "test-project",
+    "quotas": [
         {
-            "selfLink": (u"https://www.googleapis.com/compute/beta/projects/"
-                         "test-project/global/networks/test-network")
-        },
-    ]
+            "metric": "FIREWALLS",
+            "limit": 100.0,
+            "usage": 9.0
+        }
+    ],
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/test-project",
+    "defaultServiceAccount": "1111111-compute@developer.gserviceaccount.com",
+    "xpnProjectStatus": "UNSPECIFIED_XPN_PROJECT_STATUS"
 }
 
 RAW_EXPECTED_JSON_POLICY = """
@@ -110,10 +136,8 @@ RAW_EXPECTED_JSON_POLICY = """
   ]
 """
 
-EXPECTED_FIREWALL_API_RESPONSE = {
-    "id":
-        u"projects/test-project/global/firewalls",
-    "items": [{
+EXPECTED_FIREWALL_API_RESPONSE = [
+    {
         "sourceRanges": [u"10.8.0.0/24"],
         "creationTimestamp":
             u"2015-09-04T14:03:38.591-07:00",
@@ -123,7 +147,7 @@ EXPECTED_FIREWALL_API_RESPONSE = {
             u"compute#firewall",
         "description":
             u"Allow communication between instances.",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"udp",
@@ -134,13 +158,15 @@ EXPECTED_FIREWALL_API_RESPONSE = {
         }, {
             "IPProtocol": u"icmp"
         }],
+        "direction": "INGRESS",
+        "priority": 1000,
         "name":
             u"test-network-allow-internal-1"
     }, {
         "sourceRanges": [u"10.0.0.0/8"],
         "description": (u"Allow internal traffic from a range of IP "
                         "addresses."),
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"udp",
@@ -151,13 +177,15 @@ EXPECTED_FIREWALL_API_RESPONSE = {
         }, {
             "IPProtocol": u"icmp"
         }],
+        "direction": "INGRESS",
+        "priority": 1000,
         "name":
             u"test-network-allow-internal-0"
     }, {
         "sourceRanges": [u"127.0.0.1/32", u"127.0.0.2/32"],
         "description":
             u"Allow public traffic from specific IP addresses.",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"tcp",
@@ -170,15 +198,12 @@ EXPECTED_FIREWALL_API_RESPONSE = {
         }, {
             "IPProtocol": u"ah"
         }],
+        "direction": "INGRESS",
+        "priority": 1000,
         "name":
             u"test-network-allow-public-0"
-    }],
-    "kind":
-        u"compute#firewallList",
-    "selfLink": (
-        u"https://www.googleapis.com/compute/beta/projects/test-project/global/"
-        "firewalls")
-}
+    }
+]
 
 EXPECTED_FIREWALL_RULES = {
     "test-network-allow-internal-1": {
@@ -195,7 +220,7 @@ EXPECTED_FIREWALL_RULES = {
             u"Allow communication between instances.",
         "name":
             u"test-network-allow-internal-1",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "sourceRanges": [u"10.8.0.0/24"],
         "priority": 1000,
@@ -214,7 +239,7 @@ EXPECTED_FIREWALL_RULES = {
                         "addresses."),
         "name":
             u"test-network-allow-internal-0",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "sourceRanges": [u"10.0.0.0/8"],
         "priority": 1000,
@@ -235,7 +260,7 @@ EXPECTED_FIREWALL_RULES = {
             u"Allow public traffic from specific IP addresses.",
         "name":
             u"test-network-allow-public-0",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "sourceRanges": [u"127.0.0.1/32", u"127.0.0.2/32"],
         "priority": 1000,
@@ -298,10 +323,8 @@ RAW_DEFAULT_JSON_POLICY = """
     ]
 """
 
-DEFAULT_FIREWALL_API_RESPONSE = {
-    "id":
-        u"projects/test-project/global/firewalls",
-    "items": [{
+DEFAULT_FIREWALL_API_RESPONSE = [
+    {
         "sourceRanges": [u"0.0.0.0/0"],
         "creationTimestamp":
             u"2015-09-04T14:03:38.591-07:00",
@@ -311,7 +334,7 @@ DEFAULT_FIREWALL_API_RESPONSE = {
             u"compute#firewall",
         "description":
             u"Allow ICMP from anywhere",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"icmp"
@@ -321,7 +344,7 @@ DEFAULT_FIREWALL_API_RESPONSE = {
     }, {
         "sourceRanges": [u"10.240.0.0/16"],
         "description": (u"Allow internal traffic on the default network."),
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"udp",
@@ -338,7 +361,7 @@ DEFAULT_FIREWALL_API_RESPONSE = {
         "sourceRanges": [u"0.0.0.0/0"],
         "description":
             u"Allow RDP from anywhere",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [
             {
@@ -352,7 +375,7 @@ DEFAULT_FIREWALL_API_RESPONSE = {
         "sourceRanges": [u"0.0.0.0/0"],
         "description":
             u"Allow SSH from anywhere",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [
             {
@@ -362,13 +385,8 @@ DEFAULT_FIREWALL_API_RESPONSE = {
         ],
         "name":
             u"test-network-allow-ssh"
-    }],
-    "kind":
-        u"compute#firewallList",
-    "selfLink": (
-        u"https://www.googleapis.com/compute/beta/projects/test-project/global/"
-        "firewalls")
-}
+    }
+]
 
 DEFAULT_FIREWALL_RULES = {
     u"test-network-allow-icmp": {
@@ -381,7 +399,7 @@ DEFAULT_FIREWALL_RULES = {
             u"compute#firewall",
         "description":
             u"Allow ICMP from anywhere",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"icmp"
@@ -392,7 +410,7 @@ DEFAULT_FIREWALL_RULES = {
     u"test-network-allow-internal": {
         "sourceRanges": [u"10.240.0.0/16"],
         "description": (u"Allow internal traffic on the default network."),
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [{
             "IPProtocol": u"udp",
@@ -410,7 +428,7 @@ DEFAULT_FIREWALL_RULES = {
         "sourceRanges": [u"0.0.0.0/0"],
         "description":
             u"Allow RDP from anywhere",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [
             {
@@ -425,7 +443,7 @@ DEFAULT_FIREWALL_RULES = {
         "sourceRanges": [u"0.0.0.0/0"],
         "description":
             u"Allow SSH from anywhere",
-        "network": (u"https://www.googleapis.com/compute/beta/projects/"
+        "network": (u"https://www.googleapis.com/compute/v1/projects/"
                     "test-project/global/networks/test-network"),
         "allowed": [
             {
@@ -440,8 +458,8 @@ DEFAULT_FIREWALL_RULES = {
 
 SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
   project_id: 'test-project'
-  timestamp_sec: 1234567890
-  batch_id: 1234567890
+  timestamp_sec: 1514764800123456
+  batch_id: 1514764800123456
   run_context: ENFORCER_BATCH
   status: SUCCESS
   gce_firewall_enforcement {
@@ -449,7 +467,7 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
       json: '[{"allowed": [{"IPProtocol": "icmp"}], "description": '
             '"Allow ICMP from anywhere", "direction": "INGRESS", '
             '"name": "test-network-allow-icmp", '
-            '"network": "https://www.googleapis.com/compute/beta/projects/'
+            '"network": "https://www.googleapis.com/compute/v1/projects/'
             'test-project/global/networks/test-network", "priority": 1000, '
             '"sourceRanges": '
             '["0.0.0.0/0"]}, {"allowed": [{"IPProtocol": "icmp"}, '
@@ -457,24 +475,24 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '"udp", "ports": ["1-65535"]}], "description": "Allow internal '
             'traffic on the default network.", "direction": "INGRESS", "name": '
             '"test-network-allow-internal", "network": '
-            '"https://www.googleapis.com/compute/beta/projects/test-project/'
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["10.240.0.0/16"]},'
             ' {"allowed": [{"IPProtocol": "tcp", "ports": ["3389"]}], '
             '"description": "Allow RDP from anywhere", "direction": "INGRESS", '
             '"name": '
             '"test-network-allow-rdp", "network": '
-            '"https://www.googleapis.com/compute/beta/projects/test-project/'
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["0.0.0.0/0"]}, '
             '{"allowed": [{"IPProtocol": "tcp", "ports": ["22"]}], '
             '"description": "Allow SSH from anywhere", "direction": "INGRESS", '
             '"name": '
             '"test-network-allow-ssh", "network": '
-            '"https://www.googleapis.com/compute/beta/projects/test-project/'
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["0.0.0.0/0"]}]'
-      hash: "b589a2f63159e3450e07e9437fcda83c3dc3c343873bfb4c5c12f1a391ea9813"
+      hash: "95722ebeb3056d961e599db84106af51e1707a091f76a104669bd039bda18221"
     }
     rules_after {
       json: '[{"allowed": [{"IPProtocol": "icmp"}, {"IPProtocol": "tcp", '
@@ -482,7 +500,7 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '}], "description": "Allow internal traffic from a range of IP '
             'addresses.", "direction": "INGRESS", '
             '"name": "test-network-allow-internal-0", "network": '
-            '"https://www.googleapis.com/compute/beta/projects/test-project/'
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["10.0.0.0/8"]}, '
             '{"allowed": [{"IPProtocol": "icmp"}, {"IPProtocol": "tcp", '
@@ -490,7 +508,7 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '}], "description": "Allow communication between instances.", '
             '"direction": "INGRESS", "name": "test-network-allow-internal-1", '
             '"network": '
-            '"https://www.googleapis.com/compute/beta/projects/test-project/'
+            '"https://www.googleapis.com/compute/v1/projects/test-project/'
             'global/networks/test-network", "priority": 1000, "sourceRanges": '
             '["10.8.0.0/24"]}, '
             '{"allowed": [{"IPProtocol": "ah"}, {"IPProtocol": "esp"}, '
@@ -498,11 +516,11 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
             '"ports": ["9999"]}], "description": "Allow public traffic from '
             'specific IP addresses.", "direction": "INGRESS", '
             '"name": "test-network-allow-public-0", '
-            '"network": "https://www.googleapis.com/compute/beta/projects/'
+            '"network": "https://www.googleapis.com/compute/v1/projects/'
             'test-project/global/networks/test-network", "priority": 1000, '
             '"sourceRanges": '
             '["127.0.0.1/32", "127.0.0.2/32"]}]'
-      hash: "698e6912c23c5f4dee9008ce63ca1cb26da3bcd4c6bac1ab9118a744b18718ec"
+      hash: "1c609a785011a6287258c838989b3118e45e852bd5aba3958bdee14597ae2df7"
     }
     rules_added: "test-network-allow-internal-0"
     rules_added: "test-network-allow-internal-1"
@@ -516,3 +534,31 @@ SAMPLE_ENFORCER_PROJECTRESULTS_ASCIIPB = """
   }
 """
 
+
+class EnforcerTestCase(ForsetiTestCase):
+    """Base class for Enforcer."""
+
+    @classmethod
+    @mock.patch.object(
+        google.auth, "default",
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      TEST_PROJECT))
+    def setUpClass(cls, mock_google_credential):
+        """Set up."""
+        fake_global_configs = {
+            "compute": {"max_calls": 18, "period": 1}}
+        cls.gce_api_client = compute.ComputeClient(
+            global_configs=fake_global_configs, dry_run=True)
+
+    def setUp(self):
+        """Set up."""
+        self.mock_time = mock.patch.object(
+            date_time, "get_utc_now_datetime", return_value=MOCK_DATETIME
+        ).start()
+        self.gce_api_client.get_networks = mock.Mock(
+            return_value=SAMPLE_TEST_NETWORK_SELFLINK)
+        self.gce_api_client.get_project = mock.Mock(
+            return_value=TEST_PROJECT_RESPONSE)
+        self.gce_api_client.get_firewall_rules = mock.Mock()
+        self.project = TEST_PROJECT
+        self.policy = json.loads(RAW_EXPECTED_JSON_POLICY)

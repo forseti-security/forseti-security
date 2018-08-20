@@ -118,10 +118,8 @@ class SecurityCenterClient(object):
             LOGGER.debug('Created finding response in CSCC: %s', response)
             return response
         except (errors.HttpError, HttpLib2Error) as e:
-            LOGGER.error(
-                'Unable to create CSCC finding:\n%s\n'
-                'Resource: %s',
-                e, finding)
+            LOGGER.exception(
+                'Unable to create CSCC finding: Resource: %s', finding)
             full_name = (
                 finding.get('properties').get('violation_data')
                 .get('full_name'))

@@ -122,8 +122,8 @@ class EmailUtil(object):
         try:
             response = self._execute_send(email)
         except urllib2.HTTPError as e:
-            LOGGER.error('Unable to send email: %s %s',
-                         e.code, e.reason)
+            LOGGER.exception('Unable to send email: %s %s',
+                             e.code, e.reason)
             raise util_errors.EmailSendError
 
         if response.status_code == 202:
