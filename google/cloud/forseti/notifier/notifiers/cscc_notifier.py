@@ -69,7 +69,7 @@ class CsccNotifier(object):
                     'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
                     'scanner_index_id': violation.get('scanner_index_id'),
-                    'violation_data': violation.get('violation_data'),
+                    'violation_data': violation.get('violation_data')
                 }
             }
             findings.append(finding)
@@ -137,7 +137,7 @@ class CsccNotifier(object):
                     'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
                     'scanner_index_id': violation.get('scanner_index_id'),
-                    'violation_data': violation.get('violation_data'),
+                    'violation_data': violation.get('violation_data')
                 },
                 'source_id': 'FORSETI',
                 'category': violation.get('rule_name'),
