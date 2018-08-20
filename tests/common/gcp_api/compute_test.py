@@ -223,6 +223,37 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
                                  timeout=1)
         self.assertDictEqual(json.loads(mock_pending), e.exception.operation)
 
+    @parameterized.parameterized.expand(CUD_TEST_CASES)
+    @mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER', autospec=True)
+    def test_cud_firewall_rule_retry(self, name, verb, mock_logger):
+        """Test create/update/delete firewall rule times out."""
+        mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_finished = fake_compute.FINISHED_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_responses = [
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_finished)]
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        # Set initial wait to longer than the timeout
+        with mock.patch.object(self.gce_api_client,
+                               'ESTIMATED_API_COMPLETION_IN_SEC',
+                               return_value=2):
+            method = getattr(self.gce_api_client,
+                             '{}_firewall_rule'.format(verb))
+            results = method(self.project_id,
+                             rule=fake_compute.FAKE_FIREWALL_RULE,
+                             blocking=True,
+                             timeout=1,
+                             retry_count=3)
+        self.assertDictEqual(json.loads(mock_finished), results)
+        self.assertTrue(mock_logger.warn.called)
+
     @parameterized.parameterized.expand(ERROR_TEST_CASES)
     def test_delete_firewall_rule_errors(self, name, response, status,
                                        expected_exception):

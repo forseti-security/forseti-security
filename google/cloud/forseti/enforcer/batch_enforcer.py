@@ -20,9 +20,9 @@ from __future__ import print_function
 import threading
 
 import concurrent.futures
-from google.apputils import datelib
 
 from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import project_enforcer
@@ -58,9 +58,9 @@ class BatchFirewallEnforcer(object):
           project_sema (threading.BoundedSemaphore): An optional semaphore
               object, used to limit the number of concurrent projects getting
               written to.
-          max_running_operations (int): Used to limit the number of concurrent
-              write operations on a single project's firewall rules. Set to 0 to
-              allow unlimited in flight asynchronous operations.
+          max_running_operations (int): [DEPRECATED] Used to limit the number of
+              concurrent write operations on a single project's firewall rules.
+              Set to 0 to allow unlimited in flight asynchronous operations.
         """
         self.global_configs = global_configs
         self.enforcement_log = enforcer_log_pb2.EnforcerLog()
@@ -68,7 +68,11 @@ class BatchFirewallEnforcer(object):
         self._concurrent_workers = concurrent_workers
 
         self._project_sema = project_sema
-        self._max_running_operations = max_running_operations
+
+        if max_running_operations:
+            LOGGER.warn(
+                'Max running operations is deprecated. Argument ignored.')
+        self._max_running_operations = None
         self._local = LOCAL_THREAD
 
     @property
@@ -80,7 +84,7 @@ class BatchFirewallEnforcer(object):
         """
         if not hasattr(self._local, 'compute_client'):
             self._local.compute_client = compute.ComputeClient(
-                self.global_configs)
+                self.global_configs, dry_run=self._dry_run)
 
         return self._local.compute_client
 
@@ -123,24 +127,26 @@ class BatchFirewallEnforcer(object):
         self.enforcement_log.Clear()
         self.enforcement_log.summary.projects_total = len(project_policies)
 
-        started_timestamp = datelib.Timestamp.now()
-        LOGGER.info('starting enforcement wave: %s', started_timestamp)
+        started_time = date_time.get_utc_now_datetime()
+        LOGGER.info('starting enforcement wave: %s', started_time)
 
         projects_enforced_count = self._enforce_projects(project_policies,
                                                          prechange_callback,
                                                          new_result_callback,
                                                          add_rule_callback)
 
-        finished_timestamp = datelib.Timestamp.now()
-        total_time = (finished_timestamp.AsSecondsSinceEpoch() -
-                      started_timestamp.AsSecondsSinceEpoch())
+        finished_time = date_time.get_utc_now_datetime()
+
+        started_timestamp = date_time.get_utc_now_unix_timestamp(started_time)
+        finished_timestamp = date_time.get_utc_now_unix_timestamp(finished_time)
+        total_time = finished_timestamp - started_timestamp
 
         LOGGER.info('finished wave in %i seconds', total_time)
 
         self.enforcement_log.summary.timestamp_start_msec = (
-            started_timestamp.AsMicroTimestamp())
+            date_time.get_utc_now_microtimestamp(started_time))
         self.enforcement_log.summary.timestamp_end_msec = (
-            finished_timestamp.AsMicroTimestamp())
+            date_time.get_utc_now_microtimestamp(finished_time))
 
         self._summarize_results()
 
@@ -164,7 +170,7 @@ class BatchFirewallEnforcer(object):
           int: The number of projects that were enforced.
         """
         # Get a 64 bit int to use as the unique batch ID for this run.
-        batch_id = datelib.Timestamp.now().AsMicroTimestamp()
+        batch_id = date_time.get_utc_now_microtimestamp()
         self.enforcement_log.summary.batch_id = batch_id
 
         projects_enforced_count = 0
@@ -212,11 +218,9 @@ class BatchFirewallEnforcer(object):
         """
         enforcer = project_enforcer.ProjectEnforcer(
             project_id,
-            global_configs=self.global_configs,
-            compute_service=self.compute_client.service,
+            compute_client=self.compute_client,
             dry_run=self._dry_run,
-            project_sema=self._project_sema,
-            max_running_operations=self._max_running_operations)
+            project_sema=self._project_sema)
 
         result = enforcer.enforce_firewall_policy(
             firewall_policy,
