@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import time
+from uuid import uuid4
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -700,10 +701,6 @@ class ComputeClient(object):
             read_only=read_only,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-        # Default service object, currently used by enforcer.
-        # TODO: Clean up enforcer so this isn't required.
-        self.service = self.repository.gcp_services['v1']
-
     def get_backend_services(self, project_id):
         """Get the backend services for a project.
 
@@ -793,7 +790,7 @@ class ComputeClient(object):
         return flattened_results
 
     def delete_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
-                             timeout=0):
+                             retry_count=0, timeout=0):
         """Delete a firewall rule.
 
         Args:
@@ -801,9 +798,11 @@ class ComputeClient(object):
           rule (dict): The firewall rule dict to delete.
           uuid (str): An optional UUID to identify this request. If the same
               request is resent to the API, it will ignore the additional
-              requests.
+              requests. If uuid is not set, one will be generated for the
+              request.
           blocking (bool): If true, don't return until the async operation
               completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
           timeout (float): If greater than 0 and blocking is True, then raise an
               exception if timeout seconds pass before the operation completes.
 
@@ -815,6 +814,8 @@ class ComputeClient(object):
             OperationTimeoutError: Raised if the operation times out.
         """
         repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
 
         try:
             results = repository.delete(project_id, target=rule['name'],
@@ -822,13 +823,20 @@ class ComputeClient(object):
             if blocking:
                 results = self.wait_for_completion(project_id, results, timeout)
         except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error('Error deleting firewall rule %s: %s', rule['name'], e)
             api_not_enabled, details = _api_not_enabled(e)
             if api_not_enabled:
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn('Error deleting firewall rule %s: %s', rule['name'], e)
-            raise
+            LOGGER.warn(
+                'Timeout deleting firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.delete_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
 
         LOGGER.info(
             'Deleting firewall rule %s on project %s. Rule: %s, '
@@ -836,7 +844,7 @@ class ComputeClient(object):
         return results
 
     def insert_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
-                             timeout=0):
+                             retry_count=0, timeout=0):
         """Insert a firewall rule.
 
         Args:
@@ -844,9 +852,11 @@ class ComputeClient(object):
           rule (dict): The firewall rule dict to insert.
           uuid (str): An optional UUID to identify this request. If the same
               request is resent to the API, it will ignore the additional
-              requests.
+              requests. If uuid is not set, one will be generated for the
+              request.
           blocking (bool): If true, don't return until the async operation
               completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
           timeout (float): If greater than 0 and blocking is True, then raise an
               exception if timeout seconds pass before the operation completes.
 
@@ -858,18 +868,29 @@ class ComputeClient(object):
             OperationTimeoutError: Raised if the operation times out.
         """
         repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
+
         try:
             results = repository.insert(project_id, data=rule, requestId=uuid)
             if blocking:
                 results = self.wait_for_completion(project_id, results, timeout)
         except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error(
+                'Error inserting firewall rule %s: %s', rule['name'], e)
             api_not_enabled, details = _api_not_enabled(e)
             if api_not_enabled:
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn('Error inserting firewall rule %s: %s', rule['name'], e)
-            raise
+            LOGGER.warn(
+                'Timeout inserting firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.insert_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
 
         LOGGER.info(
             'Inserting firewall rule %s on project %s. Rule: %s, '
@@ -877,7 +898,7 @@ class ComputeClient(object):
         return results
 
     def update_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
-                             timeout=0):
+                             retry_count=0, timeout=0):
         """Update a firewall rule.
 
         Args:
@@ -885,9 +906,11 @@ class ComputeClient(object):
           rule (dict): The firewall rule dict to update.
           uuid (str): An optional UUID to identify this request. If the same
               request is resent to the API, it will ignore the additional
-              requests.
+              requests. If uuid is not set, one will be generated for the
+              request.
           blocking (bool): If true, don't return until the async operation
               completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
           timeout (float): If greater than 0 and blocking is True, then raise an
               exception if timeout seconds pass before the operation completes.
 
@@ -899,19 +922,29 @@ class ComputeClient(object):
             OperationTimeoutError: Raised if the operation times out.
         """
         repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
+
         try:
             results = repository.update(project_id, target=rule['name'],
                                         data=rule, requestId=uuid)
             if blocking:
                 results = self.wait_for_completion(project_id, results, timeout)
         except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error('Error updating firewall rule %s: %s', rule['name'], e)
             api_not_enabled, details = _api_not_enabled(e)
             if api_not_enabled:
                 raise api_errors.ApiNotEnabledError(details, e)
             raise api_errors.ApiExecutionError(project_id, e)
         except api_errors.OperationTimeoutError as e:
-            LOGGER.warn('Error updating firewall rule %s: %s', rule['name'], e)
-            raise
+            LOGGER.warn(
+                'Timeout updating firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.update_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
 
         LOGGER.info(
             'Updating firewall rule %s on project %s. Rule: %s, '

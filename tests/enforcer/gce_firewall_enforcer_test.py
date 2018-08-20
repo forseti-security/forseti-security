@@ -21,11 +21,15 @@ import threading
 import unittest
 import mock
 
+from googleapiclient import errors
 import parameterized
 
 from tests.enforcer import testing_constants as constants
 from tests.unittest_utils import ForsetiTestCase
 
+from google.cloud.forseti.common.gcp_api import compute
+from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.enforcer import gce_firewall_enforcer as fe
 
 class HelperFunctionTest(ForsetiTestCase):
@@ -47,24 +51,14 @@ class HelperFunctionTest(ForsetiTestCase):
                          fe.build_network_url('example.com:testing',
                                               'mytestnet'))
 
-
-class ComputeFirewallAPI(ForsetiTestCase):
-    """Tests for the ComputeFirewallAPI class."""
-
-    def setUp(self):
-        """Set up."""
-        self.gce_service = mock.MagicMock()
-        self.firewall_api = fe.ComputeFirewallAPI(self.gce_service)
-
-    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
-    def test_is_successful(self, mock_logger):
-        """is_successful should know about bad responses and OK responses."""
+    def test_is_successful(self):
+        """_is_successful should know about bad responses and OK responses."""
         self.assertTrue(
-            self.firewall_api.is_successful({
+            fe._is_successful({
                 'kind': 'compute#operation'
             }))
         self.assertFalse(
-            self.firewall_api.is_successful({
+            fe._is_successful({
                 'error': {
                     'errors': [{
                         'code': 'NOT_FOUND'
@@ -78,7 +72,7 @@ class ComputeFirewallAPI(ForsetiTestCase):
         # INVALID_FIELD_VALUE: Because the network probably disappeared
         #     out from under us.
         self.assertTrue(
-            self.firewall_api.is_successful({
+            fe._is_successful({
                 'error': {
                     'errors': [{
                         'code': 'RESOURCE_ALREADY_EXISTS'
@@ -87,145 +81,13 @@ class ComputeFirewallAPI(ForsetiTestCase):
             }))
 
         self.assertTrue(
-            self.firewall_api.is_successful({
+            fe._is_successful({
                 'error': {
                     'errors': [{
                         'code': 'INVALID_FIELD_VALUE'
                     }]
                 }
             }))
-        self.assertTrue(mock_logger.error.called)
-
-    def test_wait_for_any_to_complete(self):
-        """Testing waiting for requests until any finish executing.
-
-        Setup:
-          * Create mock pending response.
-          * Create mock completed response.
-          * Set compute.globalOperations.get to return mock completed response.
-
-        Expected results:
-          * wait_for_any_to_complete will return the completed and running
-            responses
-        """
-        pending_responses = [{
-            'name': 'operation-1400179586831',
-            'status': 'PENDING'
-        }, {
-            'name': 'operation-1400179586832',
-            'status': 'PENDING'
-        }]
-
-        completed_response = {
-            'name': 'operation-1400179586831',
-            'status': 'DONE'
-        }
-        running_response = {
-            'name': 'operation-1400179586832',
-            'status': 'PENDING'
-        }
-
-        self.gce_service.globalOperations().get().execute.side_effect = [
-            completed_response, running_response
-        ]
-
-        (completed, running) = self.firewall_api.wait_for_any_to_complete(
-            constants.TEST_PROJECT, pending_responses)
-
-        self.assertEqual([completed_response], completed)
-        self.assertEqual([running_response], running)
-
-    def test_wait_for_any_to_complete_empty_responses_list(self):
-        """Testing waiting for requests until any finish executing.
-
-        Setup:
-          * Run wait_for_any_to_complete with an empty list for pending
-            responses.
-
-        Expected results:
-          * wait_for_any_to_complete will return an empty list for completed and
-            running responses.
-        """
-        pending_responses = []
-
-        (completed, running) = self.firewall_api.wait_for_any_to_complete(
-            constants.TEST_PROJECT, pending_responses)
-        self.assertEqual([], completed)
-        self.assertEqual([], running)
-
-    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
-    def test_wait_for_any_to_complete_timeout(self, mock_logger):
-        """Testing waiting for requests until a timeout is exceeded.
-
-        Setup:
-          * Create mock pending response.
-          * Set compute.globalOperations.get to return mock pending response.
-
-        Expected results:
-          * wait_for_any_to_complete will return the pending response with a
-            timeout error
-        """
-        pending_response = {
-            'name': 'operation-1400179586831',
-            'status': 'PENDING'
-        }
-
-        expected_response = {
-            'name': 'operation-1400179586831',
-            'status': 'PENDING',
-            'error': {
-                'errors': [{
-                    'code': 'OPERATION_TIMEOUT',
-                    'message': 'Operation exceeded timeout for '
-                               'completion of 1.00 seconds'
-                }]
-            }
-        }
-
-        self.gce_service.globalOperations().get().execute.return_value = (
-            pending_response)
-
-        (completed, running) = self.firewall_api.wait_for_any_to_complete(
-            constants.TEST_PROJECT, [pending_response], timeout=1.0)
-        self.assertEqual([expected_response], completed)
-        self.assertEqual([], running)
-        self.assertTrue(mock_logger.error.called)
-
-    def test_wait_for_all_to_complete(self):
-        """Testing waiting for requests until they all finish executing.
-
-        Setup:
-          * Create mock pending responses.
-          * Create mock completed responses.
-          * Set compute.globalOperations.get to return mock completed response.
-
-        Expected results:
-          * wait_for_all_to_complete will return the completed and running
-            responses
-        """
-        pending_responses = [{
-            'name': 'operation-1400179586831',
-            'status': 'PENDING'
-        }, {
-            'name': 'operation-1400179586832',
-            'status': 'PENDING'
-        }]
-
-        completed_responses = [{
-            'name': 'operation-1400179586831',
-            'status': 'DONE'
-        }, {
-            'name': 'operation-1400179586832',
-            'status': 'DONE'
-        }]
-
-        self.gce_service.globalOperations().get().execute.side_effect = [
-            completed_responses[0], pending_responses[1], completed_responses[1]
-        ]
-
-        completed = self.firewall_api.wait_for_all_to_complete(
-            constants.TEST_PROJECT, pending_responses)
-        self.assertEqual(completed_responses, completed)
 
 
 class FirewallRulesTest(ForsetiTestCase):
@@ -233,18 +95,7 @@ class FirewallRulesTest(ForsetiTestCase):
 
     def setUp(self):
         """Set up."""
-        self.gce_service = mock.MagicMock()
-
-        self.mock_api_version = mock.patch(
-            'google.cloud.forseti.enforcer.gce_firewall_enforcer'
-            '.API_VERSION', 'beta').start()
-
-        self.firewall_api = fe.ComputeFirewallAPI(
-            self.gce_service)
         self.firewall_rules = fe.FirewallRules(constants.TEST_PROJECT)
-
-    def tearDown(self):
-      mock.patch.stopall()
 
     def test_add_rule_for_an_invalid_rule_type(self):
         """Validate that invalid rules raises an exception.
@@ -273,18 +124,12 @@ class FirewallRulesTest(ForsetiTestCase):
         Expected Results:
           * Imported rules were successfully added to the rules dictionary.
         """
-        page_one = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
-        page_one['items'] = page_one['items'][:1]
-        page_one['nextPageToken'] = 'token'
+        mock_compute_client = mock.Mock(spec=compute.ComputeClient)
 
-        page_two = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
-        page_two['items'] = page_two['items'][1:]
+        mock_compute_client.get_firewall_rules.return_value = (
+            constants.EXPECTED_FIREWALL_API_RESPONSE)
 
-        self.gce_service.firewalls().list().execute.side_effect = [
-            page_one, page_two
-        ]
-
-        self.firewall_rules.add_rules_from_api(self.firewall_api)
+        self.firewall_rules.add_rules_from_api(mock_compute_client)
 
         self.assertSameStructure(constants.EXPECTED_FIREWALL_RULES,
                                  self.firewall_rules.rules)
@@ -301,18 +146,12 @@ class FirewallRulesTest(ForsetiTestCase):
         Expected Results:
           * No rules were added to the rules dictionary
         """
-        page_one = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
-        page_one['items'] = page_one['items'][:1]
-        page_one['nextPageToken'] = 'token'
-
-        page_two = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
-        page_two['items'] = page_two['items'][1:]
-
-        (self.gce_service.firewalls().list().execute
-         .side_effect) = [page_one, page_two]
+        mock_compute_client = mock.Mock(spec=compute.ComputeClient)
+        mock_compute_client.get_firewall_rules.return_value = (
+            constants.EXPECTED_FIREWALL_API_RESPONSE)
 
         self.firewall_rules._add_rule_callback = lambda _: False
-        self.firewall_rules.add_rules_from_api(self.firewall_api)
+        self.firewall_rules.add_rules_from_api(mock_compute_client)
         self.assertEqual({}, self.firewall_rules.rules)
 
     def test_add_rules_from_api_add_rule(self):
@@ -327,21 +166,15 @@ class FirewallRulesTest(ForsetiTestCase):
         Expected Results:
           * Imported rules were successfully added to the rules dictionary
         """
-        page_one = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
-        page_one['items'] = page_one['items'][:1]
-        page_one['nextPageToken'] = 'token'
-
-        page_two = copy.deepcopy(constants.EXPECTED_FIREWALL_API_RESPONSE)
-        page_two['items'] = page_two['items'][1:]
-
-        (self.gce_service.firewalls().list().execute
-         .side_effect) = [page_one, page_two]
+        mock_compute_client = mock.Mock(spec=compute.ComputeClient)
+        mock_compute_client.get_firewall_rules.return_value = (
+            constants.EXPECTED_FIREWALL_API_RESPONSE)
 
         callback = lambda rule: (rule['name'] ==
                                  'test-network-allow-internal-1')
 
         self.firewall_rules._add_rule_callback = callback
-        self.firewall_rules.add_rules_from_api(self.firewall_api)
+        self.firewall_rules.add_rules_from_api(mock_compute_client)
         expected = {'test-network-allow-internal-1':
                     constants.EXPECTED_FIREWALL_RULES[
                         'test-network-allow-internal-1']}
@@ -519,8 +352,6 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
 
     def setUp(self):
         """Set up."""
-        self.gce_service = mock.MagicMock()
-        self.firewall_api = fe.ComputeFirewallAPI(self.gce_service)
         self.firewall_rules = fe.FirewallRules(constants.TEST_PROJECT)
 
         self.test_rule = copy.deepcopy(
@@ -704,7 +535,8 @@ class FirewallRulesCheckRuleTest(ForsetiTestCase):
         with self.assertRaises(fe.InvalidFirewallRuleError):
           self.firewall_rules._check_rule_before_adding(new_rule)
 
-class FirewallEnforcerTest(ForsetiTestCase):
+
+class FirewallEnforcerTest(constants.EnforcerTestCase):
     """Tests for the FirewallEnforcer class."""
 
     def setUp(self):
@@ -713,19 +545,16 @@ class FirewallEnforcerTest(ForsetiTestCase):
         Creates a FirewallEnforcer object with current and expected rules set to
         an empty FirewallRules object.
         """
-        self.gce_service = mock.MagicMock()
-        self.firewall_api = fe.ComputeFirewallAPI(
-            self.gce_service, dry_run=True)
+        super(FirewallEnforcerTest, self).setUp()
 
         self.expected_rules = fe.FirewallRules(constants.TEST_PROJECT)
         self.current_rules = fe.FirewallRules(constants.TEST_PROJECT)
 
         self.project_sema = threading.BoundedSemaphore(value=1)
-        self.operation_sema = threading.BoundedSemaphore(value=5)
 
         self.enforcer = fe.FirewallEnforcer(
-            constants.TEST_PROJECT, self.firewall_api, self.expected_rules,
-            self.current_rules, self.project_sema, self.operation_sema)
+            constants.TEST_PROJECT, self.gce_api_client, self.expected_rules,
+            self.current_rules, self.project_sema, None)
 
     def test_apply_firewall_no_changes(self):
         """No changes when current and expected rules match."""
@@ -789,7 +618,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.expected_rules.add_rules(
             expected_policy, network_name=constants.TEST_NETWORK)
 
-        self.gce_service.firewalls().list().execute.return_value = (
+        self.gce_api_client.get_firewall_rules.return_value = (
             constants.DEFAULT_FIREWALL_API_RESPONSE)
 
         self.enforcer.current_rules = None
@@ -901,9 +730,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.expected_rules.rules = constants.EXPECTED_FIREWALL_RULES
 
         # Add rules to current_rules
-        for rule in [
-                'test-network-allow-internal-1', 'test-network-allow-public-0'
-        ]:
+        rules = ['test-network-allow-internal-1', 'test-network-allow-public-0']
+        for rule in rules:
             new_rule = copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[rule])
             self.current_rules.add_rule(new_rule)
 
@@ -941,9 +769,8 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.expected_rules.rules = constants.EXPECTED_FIREWALL_RULES
 
         # Add rules to current_rules
-        for rule in [
-                'test-network-allow-internal-1', 'test-network-allow-public-0'
-        ]:
+        rules = ['test-network-allow-internal-1', 'test-network-allow-public-0']
+        for rule in rules:
             new_rule = copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[rule])
             self.current_rules.add_rule(new_rule)
 
@@ -960,8 +787,10 @@ class FirewallEnforcerTest(ForsetiTestCase):
             prechange_callback=prechange_callback_func)
         self.assertEqual(1, changed_count)
 
-        self.assertSameStructure(self.enforcer.get_updated_rules(
-        ), [constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-0']])
+        self.assertSameStructure(
+            self.enforcer.get_updated_rules(),
+            [constants.EXPECTED_FIREWALL_RULES['test-network-allow-internal-0']]
+        )
 
     def test_build_change_set_all_rules_differ_single_network(self):
         """Build a change set for a single network when all rules differ.
@@ -1147,9 +976,9 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
     def test_apply_change(self):
         """Validate apply_change works with no errors."""
-        delete_function = self.firewall_api.delete_firewall_rule
-        insert_function = self.firewall_api.insert_firewall_rule
-        update_function = self.firewall_api.update_firewall_rule
+        delete_function = self.gce_api_client.delete_firewall_rule
+        insert_function = self.gce_api_client.insert_firewall_rule
+        update_function = self.gce_api_client.update_firewall_rule
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
@@ -1165,7 +994,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
 
     def test_apply_change_no_rules(self):
         """Running apply_change with no rules returns empty lists."""
-        delete_function = self.firewall_api.delete_firewall_rule
+        delete_function = self.gce_api_client.delete_firewall_rule
         (successes, failures, change_errors) = self.enforcer._apply_change(
             delete_function, [])
         self.assertListEqual([], successes)
@@ -1189,9 +1018,10 @@ class FirewallEnforcerTest(ForsetiTestCase):
             'content-type': 'application/json'
         })
         response.reason = 'Duplicate Rule'
-        error_409 = fe.errors.HttpError(response, '', uri='')
+        error_409 = errors.HttpError(response, '', uri='')
+        err = api_errors.ApiExecutionError(self.project, error_409)
 
-        insert_function = mock.Mock(side_effect=error_409)
+        insert_function = mock.Mock(side_effect=err)
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
@@ -1204,7 +1034,7 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.assertListEqual([], successes)
         error_str = 'Rule: %s\nError: %s' % (
             test_rules[0].get('name', ''),
-            error_409)
+            err)
         self.assertListEqual([error_str], change_errors)
         self.assertTrue(mock_logger.exception.called)
 
@@ -1221,58 +1051,78 @@ class FirewallEnforcerTest(ForsetiTestCase):
         Expected Results:
           * Passed in rule ends up in failures list.
         """
-        insert_function = self.firewall_api.insert_firewall_rule
-        self.firewall_api._create_dry_run_response = mock.Mock()
-        self.firewall_api._create_dry_run_response.return_value = {
-            'error': {
-                'errors': [{
-                    'code': 'NOT_FOUND'
-                }]
-            },
-            'status': 'DONE',
-            'name': 'test'
-        }
+        insert_function = self.gce_api_client.insert_firewall_rule
 
         test_rules = [
             copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
                 'test-network-allow-internal-0'])
         ]
+        with mock.patch.object(
+                repository_mixins, '_create_fake_operation') as mock_dry_run:
 
-        (successes, failures, change_errors) = self.enforcer._apply_change(
-            insert_function, test_rules)
+            mock_dry_run.return_value = {
+                'status': 'DONE',
+                'name': 'test',
+                'error': {
+                    'errors': [{
+                        'code': 'ERROR'
+                    }]
+                }
+            }
+            (successes, failures, change_errors) = self.enforcer._apply_change(
+                insert_function, test_rules)
+
         self.assertSameStructure(test_rules, failures)
         self.assertListEqual([], successes)
         self.assertListEqual([], change_errors)
         self.assertTrue(mock_logger.error.called)
 
-    def test_apply_change_lots_of_rules(self):
-        """Changing more rules than permitted by the operation semaphore works.
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    def test_apply_change_operation_timeout_error(self, mock_logger):
+        """Adds the rule to failures on Operation Timeout exception.
 
         Setup:
-          * Create a new bounded semaphore with a limit of 2 operations.
-          * Create a list of 10 rules to insert.
-          * Run _apply_change.
+          * Mock insert_firewall_rule to return OperationTimeoutError
+          * Run apply_change.
 
         Expected Results:
-          * All rules end up in the successes list.
+          * Passed in rule ends up in failures list.
         """
-        insert_function = self.firewall_api.insert_firewall_rule
-        self.enforcer.operation_sema = threading.BoundedSemaphore(value=2)
+        test_rules = [
+            copy.deepcopy(constants.EXPECTED_FIREWALL_RULES[
+                'test-network-allow-internal-0'])
+        ]
+        with mock.patch.object(
+                self.gce_api_client, 'insert_firewall_rule') as mock_insert:
 
-        test_rule_name = 'test-network-allow-internal-0'
-        test_rule = constants.EXPECTED_FIREWALL_RULES[test_rule_name]
+            mock_operation = {
+                'kind': 'compute#operation',
+                'id': '1234',
+                'name': 'operation-1234',
+                'operationType': 'insert',
+                'targetLink': ('https://www.googleapis.com/compute/v1/projects/'
+                               'test-project/global/firewalls/'
+                               'test-network-allow-internal-0'),
+                'targetId': '123456',
+                'status': 'PENDING',
+                'user': 'mock_data@example.com',
+                'progress': 0,
+                'insertTime': '2018-08-02T06:49:34.713-07:00',
+                'selfLink': ('https://www.googleapis.com/compute/v1/projects/'
+                             'test-project/global/operations/operation-1234')
+            }
+            err = api_errors.OperationTimeoutError(self.project, mock_operation)
+            mock_insert.side_effect = err
+            (successes, failures, change_errors) = self.enforcer._apply_change(
+                mock_insert, test_rules)
 
-        test_rules = []
-        for i in xrange(10):
-            rule = copy.deepcopy(test_rule)
-            rule['name'] = '%s-%i' % (test_rule_name, i)
-            test_rules.append(rule)
-
-        (successes, failures, change_errors) = self.enforcer._apply_change(
-            insert_function, test_rules)
-        self.assertSameStructure(test_rules, successes)
-        self.assertListEqual([], failures)
-        self.assertListEqual([], change_errors)
+        self.assertSameStructure(test_rules, failures)
+        self.assertListEqual([], successes)
+        error_str = 'Rule: %s\nError: %s' % (
+            test_rules[0].get('name', ''),
+            err)
+        self.assertListEqual([error_str], change_errors)
+        self.assertTrue(mock_logger.exception.called)
 
     def test_apply_changes(self):
         """Validate _apply_changes works with no errors.
@@ -1331,40 +1181,43 @@ class FirewallEnforcerTest(ForsetiTestCase):
         self.current_rules.rules = constants.EXPECTED_FIREWALL_RULES
         self.expected_rules.rules = constants.EXPECTED_FIREWALL_RULES
 
-        self.firewall_api._create_dry_run_response = mock.Mock()
-        self.firewall_api._create_dry_run_response.return_value = {
-            'error': {
-                'errors': [{
-                    'code': 'NOT_FOUND'
-                }]
-            },
-            'status': 'DONE',
-            'name': 'test'
-        }
-
         delete_before_insert = False
 
         self.enforcer._rules_to_delete = ['test-network-allow-internal-0']
-        with self.assertRaises(fe.FirewallEnforcementFailedError):
-            self.enforcer._apply_change_set(delete_before_insert)
-        self.assertEqual([], self.enforcer.get_deleted_rules())
-        self.enforcer._rules_to_delete = []
+        with mock.patch.object(
+                repository_mixins, '_create_fake_operation') as mock_dry_run:
 
-        self.enforcer._rules_to_insert = ['test-network-allow-internal-0']
-        with self.assertRaises(fe.FirewallEnforcementFailedError):
-            self.enforcer._apply_change_set(delete_before_insert)
-        self.assertEqual([], self.enforcer.get_inserted_rules())
-        self.enforcer._rules_to_insert = []
+            mock_dry_run.return_value = {
+                'status': 'DONE',
+                'name': 'test',
+                'error': {
+                    'errors': [{
+                        'code': 'NOT_FOUND'
+                    }]
+                }
+            }
+            with self.assertRaises(fe.FirewallEnforcementFailedError):
+                self.enforcer._apply_change_set(delete_before_insert)
 
-        self.enforcer._rules_to_update = ['test-network-allow-internal-0']
-        with self.assertRaises(fe.FirewallEnforcementFailedError):
-            self.enforcer._apply_change_set(delete_before_insert)
-        self.assertEqual([], self.enforcer.get_updated_rules())
-        self.enforcer._rules_to_update = []
+            self.assertEqual([], self.enforcer.get_deleted_rules())
+            self.enforcer._rules_to_delete = []
+
+            self.enforcer._rules_to_insert = ['test-network-allow-internal-0']
+            with self.assertRaises(fe.FirewallEnforcementFailedError):
+                self.enforcer._apply_change_set(delete_before_insert)
+            self.assertEqual([], self.enforcer.get_inserted_rules())
+            self.enforcer._rules_to_insert = []
+
+            self.enforcer._rules_to_update = ['test-network-allow-internal-0']
+            with self.assertRaises(fe.FirewallEnforcementFailedError):
+                self.enforcer._apply_change_set(delete_before_insert)
+            self.assertEqual([], self.enforcer.get_updated_rules())
+            self.enforcer._rules_to_update = []
+
         self.assertTrue(mock_logger.error.called)
 
-    def testApplyChangesDeleteFirst(self):
-      """Validate _ApplyChanges works with no errors.
+    def test_apply_changes_delete_first(self):
+      """Validate _apply_change_set works with no errors.
 
       Setup:
         * Set current and expected rules to EXPECTED_CORP_FIREWALL_RULES
@@ -1411,10 +1264,10 @@ class FirewallEnforcerTest(ForsetiTestCase):
         ('high_quota_1', 100, 6, 10, 6, False, False),
         ('high_quota_2', 100, 85, 30, 50, False, True),
         ('unknown_quota', None, None, 1, 0, False, True)])
-    def testCheckChangeOperationOrder(self, name, quota, usage,
-                                      insert_rule_count, delete_rule_count,
-                                      expect_exception,
-                                      expect_delete_before_insert):
+    def test_check_change_operation_order(self, name, quota, usage,
+                                          insert_rule_count, delete_rule_count,
+                                          expect_exception,
+                                          expect_delete_before_insert):
 
         """Validate CheckChangeOperationOrder has expected behavior.
 
@@ -1439,12 +1292,12 @@ class FirewallEnforcerTest(ForsetiTestCase):
           * When mock project does have enough quota, the method returns False.
         """
         if quota is not None:
-          self.gce_service.projects().get().execute.return_value = {
+          self.gce_api_client.get_project.return_value = {
               'quotas': [{'metric': 'FIREWALLS',
                           'limit': quota,
                           'usage': usage}]}
         else:
-          self.gce_service.projects().get().execute.return_value = {
+          self.gce_api_client.get_project.return_value = {
               'quotas': []}
 
         if expect_exception:
