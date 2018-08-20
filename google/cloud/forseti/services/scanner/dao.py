@@ -18,14 +18,14 @@ from collections import defaultdict
 import hashlib
 import json
 
-from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
-from sqlalchemy import inspect
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy import and_
+from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.forseti.common.data_access import violation_map as vm
@@ -351,9 +351,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
 
     try:
         violation_hash = hashlib.new(algorithm)
-    except ValueError as e:
-        LOGGER.error('Cannot create hash for a violation with algorithm: '
-                     '%s\n%s', algorithm, e)
+    except ValueError:
+        LOGGER.exception('Cannot create hash for a violation with algorithm: '
+                         '%s', algorithm)
         return ''
 
     try:
@@ -363,9 +363,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
             json.dumps(resource_data, sort_keys=True) +
             json.dumps(violation_data, sort_keys=True)
         )
-    except TypeError as e:
-        LOGGER.error('Cannot create hash for a violation: %s\n%s',
-                     violation_full_name, e)
+    except TypeError:
+        LOGGER.exception('Cannot create hash for a violation: %s',
+                         violation_full_name)
         return ''
 
     return violation_hash.hexdigest()

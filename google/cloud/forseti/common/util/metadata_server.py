@@ -18,17 +18,22 @@ The metadata server is only accessible on GCE.
 """
 
 import httplib
+import os
 import socket
-
-from google.auth.compute_engine import _metadata
-from google.auth.transport import requests
 
 from google.cloud.forseti.common.util import errors
 from google.cloud.forseti.common.util import logger
 
+# This is used to ping the metadata server, it avoids the cost of a DNS
+# lookup.
+_METADATA_IP = '{}'.format(
+    os.getenv('GCE_METADATA_IP', '169.254.169.254'))
+
 METADATA_SERVER_HOSTNAME = 'metadata.google.internal'
 METADATA_SERVER_CONN_TIMEOUT = 2
-REQUIRED_METADATA_HEADER = {'Metadata-Flavor': 'Google'}
+_METADATA_FLAVOR_HEADER = 'metadata-flavor'
+_METADATA_FLAVOR_VALUE = 'Google'
+REQUIRED_METADATA_HEADER = {_METADATA_FLAVOR_HEADER: _METADATA_FLAVOR_VALUE}
 HTTP_SUCCESS = httplib.OK
 HTTP_GET = 'GET'
 
@@ -66,22 +71,28 @@ def _issue_http_request(method, path, headers):
     try:
         http_client.request(method, path, headers=headers)
         return http_client.getresponse()
-    except (socket.error, httplib.HTTPException) as e:
-        LOGGER.error('Error with request: %s', e)
+    except (socket.error, httplib.HTTPException):
+        LOGGER.exception('Error occurred while issuing http request.')
         raise errors.MetadataServerHttpError
 
 
-# TODO: Should use memoize or similar so that after the first check
-# the cached result is always returned, regardless of how often it is
-# called.
 def can_reach_metadata_server():
     """Determine if we can reach the metadata server.
 
     Returns:
         bool: True if metadata server can be reached, False otherwise.
     """
-    can_reach = _metadata.ping(requests.Request())
-    return can_reach
+    try:
+        http_client = _obtain_http_client(hostname=_METADATA_IP)
+        http_client.request('GET', '/', headers=REQUIRED_METADATA_HEADER)
+        response = http_client.getresponse()
+        metadata_flavor = response.getheader(_METADATA_FLAVOR_HEADER, '')
+        return (response.status == httplib.OK and
+                metadata_flavor == _METADATA_FLAVOR_VALUE)
+
+    except (socket.error, httplib.HTTPException) as e:
+        LOGGER.warn('Compute Engine Metadata server unreachable: %s', e)
+        return False
 
 
 def get_value_for_attribute(attribute):
@@ -98,10 +109,9 @@ def get_value_for_attribute(attribute):
         http_response = _issue_http_request(
             HTTP_GET, path, REQUIRED_METADATA_HEADER)
         return http_response.read()
-    except (TypeError, ValueError,
-            errors.MetadataServerHttpError) as e:
-        LOGGER.error('Unable to read value for attribute key %s '
-                     'from metadata server: %s', attribute, e)
+    except (TypeError, ValueError, errors.MetadataServerHttpError):
+        LOGGER.exception('Unable to read value for attribute key %s '
+                         'from metadata server.', attribute)
         return None
 
 
@@ -116,6 +126,6 @@ def get_project_id():
         http_response = _issue_http_request(
             HTTP_GET, path, REQUIRED_METADATA_HEADER)
         return http_response.read()
-    except errors.MetadataServerHttpError as e:
-        LOGGER.error('Unable to read project id from metadata server: %s', e)
+    except errors.MetadataServerHttpError:
+        LOGGER.exception('Unable to read project id from metadata server.')
         return None

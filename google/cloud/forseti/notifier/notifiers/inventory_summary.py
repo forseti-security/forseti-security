@@ -96,9 +96,9 @@ class InventorySummary(object):
                     self._get_output_filename(
                         string_formats.INVENTORY_SUMMARY_JSON_FMT))
                 file_uploader.upload_json(summary_data, gcs_upload_path)
-        except HttpError as e:
-            LOGGER.error('Unable to upload inventory summary in bucket %s:\n%s',
-                         gcs_upload_path, e.content)
+        except HttpError:
+            LOGGER.exception('Unable to upload inventory summary in bucket %s:',
+                             gcs_upload_path)
 
     def _send_email(self, summary_data):
         """Send the email for inventory summary.
@@ -138,7 +138,7 @@ class InventorySummary(object):
                 content_type='text/html')
             LOGGER.debug('Inventory summary sent successfully by email.')
         except util_errors.EmailSendError:
-            LOGGER.error('Unable to send inventory summary email')
+            LOGGER.exception('Unable to send inventory summary email')
 
     def _get_summary_data(self):
         """Get the summarized inventory data.
@@ -182,10 +182,10 @@ class InventorySummary(object):
                 inventory_notifier_config.get('gcs_summary').get('enabled'))
             is_email_summary_enabled = (
                 inventory_notifier_config.get('email_summary').get('enabled'))
-        except AttributeError as e:
-            LOGGER.error(
+        except AttributeError:
+            LOGGER.exception(
                 'Inventory summary can not be created because unable to get '
-                'inventory summary configuration:\n%s', e)
+                'inventory summary configuration.')
             return
 
         if not is_gcs_summary_enabled and not is_email_summary_enabled:
@@ -195,9 +195,9 @@ class InventorySummary(object):
         try:
             summary_data = self._get_summary_data()
         except util_errors.NoDataError:
-            LOGGER.error('Inventory summary can not be created because '
-                         'no summary data is found for index id: %s.',
-                         self.inventory_index_id)
+            LOGGER.exception('Inventory summary can not be created because '
+                             'no summary data is found for index id: %s.',
+                             self.inventory_index_id)
             return
 
         if is_gcs_summary_enabled:

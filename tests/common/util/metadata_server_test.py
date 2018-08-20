@@ -16,20 +16,18 @@
 
 import httplib
 import json
-import mock
 import socket
+from StringIO import StringIO
 import unittest
-
-from google.auth.compute_engine import _metadata
-from google.auth.transport import requests
+import mock
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.util import metadata_server
+from google.auth.transport import requests
 from google.cloud.forseti.common.util import errors
+from google.cloud.forseti.common.util import metadata_server
 
-from StringIO import StringIO
 
-
+# pylint: disable=bad-indentation
 class _MockHttpError(socket.error):
     """Mock Http Error"""
     pass
@@ -66,23 +64,6 @@ class MetadataServerTest(ForsetiTestCase):
         """
         returned_object = metadata_server._obtain_http_client()
         self.assertIsInstance(returned_object, httplib.HTTPConnection)
-
-    def test_compute_engine_metadata_ping_callable_with_expected_params(self):
-        """Test the _metadata.ping() method in compute engine module is callable
-        with the expected parameters.
-
-        Expected results:
-            * A Boolean result.
-        """
-        first_param = requests.Request()
-        try:
-            _metadata.ping(first_param)
-        except Exception as e:
-            # The ping method is either not available in the module or the
-            # signature has been changed.
-            self.fail(
-                '_metadata.ping() in compute engine module has been modified. '
-                'Error: {}'.format(str(e)))
 
     @mock.patch.object(metadata_server, '_issue_http_request', autospec=True)
     def test_get_value_for_attribute_with_exception(self, mock_meta_req):
@@ -156,6 +137,23 @@ class MetadataServerTest(ForsetiTestCase):
             actual_response = metadata_server.get_project_id()
 
         self.assertEqual(actual_response, mock_response)
+
+    @mock.patch.object(metadata_server, '_obtain_http_client', autospec=True)
+    def test_can_reach_metadata_server(self, mock_client):
+        """Verifies can_reach_metadata_server returns correctly."""
+        mock_http_resp = mock.Mock(spec=httplib.HTTPResponse)
+        mock_http_resp.return_value.status = httplib.OK
+        mock_http_resp.return_value.getheader.return_value = (
+            metadata_server._METADATA_FLAVOR_VALUE)
+        mock_client.return_value.getresponse.side_effect = mock_http_resp
+
+        self.assertTrue(metadata_server.can_reach_metadata_server())
+
+    @mock.patch.object(httplib.HTTPConnection, 'request', autospec=True)
+    def test_can_reach_metadata_server_timeout(self, mock_req):
+        """Verifies can_reach_metadata_server returns correctly."""
+        mock_req.side_effect = httplib.HTTPException()
+        self.assertFalse(metadata_server.can_reach_metadata_server())
 
 if __name__ == '__main__':
     unittest.main()

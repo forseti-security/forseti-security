@@ -323,6 +323,11 @@ def _mock_gce():
             return results.GCE_GET_NETWORKS[projectid]
         return []
 
+    def _mock_gce_get_snapshots(projectid):
+        if projectid in results.GCE_GET_SNAPSHOTS:
+            return results.GCE_GET_SNAPSHOTS[projectid]
+        return []
+
     def _mock_gce_get_subnetworks(projectid):
         if projectid in results.GCE_GET_SUBNETWORKS:
             return results.GCE_GET_SUBNETWORKS[projectid]
@@ -345,6 +350,7 @@ def _mock_gce():
     mock_gce.get_backend_services.side_effect = _mock_gce_get_backend_services
     mock_gce.get_forwarding_rules.side_effect = _mock_gce_get_forwarding_rules
     mock_gce.get_networks.side_effect = _mock_gce_get_networks
+    mock_gce.get_snapshots.side_effect = _mock_gce_get_snapshots
     mock_gce.get_subnetworks.side_effect = _mock_gce_get_subnetworks
 
     return gce_patcher

@@ -54,15 +54,13 @@ def get_datetime_from_string(string, string_format):
     """
     try:
         result = datetime.strptime(string, string_format)
-    except TypeError as e:
-        LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
-                     string, string_format, e)
+    except TypeError:
+        LOGGER.exception('Unable to create a datetime with %s in '
+                         'format %s', string, string_format)
         raise DateTimeTypeConversionError
-    except ValueError as e:
-        LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
-                     string, string_format, e)
+    except ValueError:
+        LOGGER.exception('Unable to create a datetime with %s in '
+                         'format %s', string, string_format)
         raise DateTimeValueConversionError
 
     return result
@@ -117,6 +115,19 @@ def get_utc_now_timestamp(date=None):
     """
     utc_now = date or get_utc_now_datetime()
     return utc_now.strftime(string_formats.DEFAULT_FORSETI_TIMESTAMP)
+
+
+def get_utc_now_unix_timestamp(date=None):
+    """Get a 64bit int representing the current time to the millisecond.
+
+    Args:
+        date (datetime): A datetime object representing current time in UTC.
+
+    Returns:
+        int: A epoch timestamp including microseconds.
+    """
+    utc_now = date or get_utc_now_datetime()
+    return calendar.timegm(utc_now.utctimetuple())
 
 
 def get_utc_now_microtimestamp(date=None):

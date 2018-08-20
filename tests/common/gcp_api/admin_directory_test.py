@@ -78,7 +78,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
             with self.assertRaises(exceptions.RefreshError):
                 self.ad_api_client.get_groups()
 
-        mock_logger.error.assert_called_with(admin.GSUITE_AUTH_FAILURE_MESSAGE)
+        mock_logger.exception.assert_called_with(admin.GSUITE_AUTH_FAILURE_MESSAGE)
 
     def test_get_members(self):
         http_mocks.mock_http_response(fake_admin.FAKE_MEMBERS_LIST_RESPONSE1)
@@ -114,7 +114,7 @@ class AdminDirectoryTest(unittest_utils.ForsetiTestCase):
             with self.assertRaises(exceptions.RefreshError):
                 self.ad_api_client.get_users()
 
-        mock_logger.error.assert_called_with(admin.GSUITE_AUTH_FAILURE_MESSAGE)
+        mock_logger.exception.assert_called_with(admin.GSUITE_AUTH_FAILURE_MESSAGE)
 
 if __name__ == '__main__':
     unittest.main()
