@@ -11,11 +11,12 @@
 | [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) |
 | [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
 | [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/latest/backendServices#resource) |
-| [Compute Engine Disks](https://cloud.google.com/compute/docs/reference/latest/instances#resource) |
+| [Compute Engine Disks](https://cloud.google.com/compute/docs/reference/latest/disks) |
 | [Compute Engine Instances](https://cloud.google.com/compute/docs/reference/latest/instances#resource) |
 | [Compute Engine Instance Groups](https://cloud.google.com/compute/docs/reference/latest/instanceGroups#resource) |
 | [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) |
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) |
+| [Compute Engine Snapshots](https://cloud.google.com/compute/docs/reference/latest/snapshots) |
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) |
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) |
 | [Folders Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) |
