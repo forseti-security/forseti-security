@@ -32,6 +32,7 @@ from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.server_config.service import GrpcServerConfigFactory
+from google.cloud.forseti.services.tracing import trace_server_interceptor
 
 LOGGER = logger.get_logger(__name__)
 
@@ -91,7 +92,7 @@ def serve(endpoint,
         endpoint=endpoint)
     config.update_configuration()
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers), interceptors=(trace_server_interceptor(),))
     for factory in factories:
         factory(config).create_and_register_service(server)
 

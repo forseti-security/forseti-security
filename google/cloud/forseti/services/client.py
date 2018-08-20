@@ -31,6 +31,7 @@ from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 from google.cloud.forseti.services.server_config import server_pb2
 from google.cloud.forseti.services.server_config import server_pb2_grpc
 from google.cloud.forseti.services.utils import oneof
+from google.cloud.forseti.services.tracing import trace_client_interceptor
 
 
 # pylint: disable=too-many-instance-attributes
@@ -719,6 +720,7 @@ class ClientComposition(object):
             Exception: gRPC connected but services not registered
         """
         self.channel = grpc.insecure_channel(endpoint)
+        self.channel = grpc.intercept_channel(self.channel, trace_client_interceptor(endpoint))
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)
