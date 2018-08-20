@@ -275,6 +275,7 @@ class Resource(object):
         try:
             self.accept(visitor, stack)
         except Exception as e:
+            LOGGER.exception(e)
             self.parent().add_warning(e)
             visitor.update(self.parent())
             visitor.on_child_error(e)
@@ -304,6 +305,7 @@ class Resource(object):
                     else:
                         res.try_accept(visitor, new_stack)
             except Exception as e:
+                LOGGER.exception(e)
                 self.add_warning(e)
                 visitor.on_child_error(e)
 
@@ -866,8 +868,8 @@ class KubernetesCluster(Resource):
             return client.fetch_container_serviceconfig(
                 self.parent().key(), zone=self.zone(), location=self.location())
         except ValueError:
-            LOGGER.error('Cluster has no zone or location: %s',
-                         self._data)
+            LOGGER.exception('Cluster has no zone or location: %s',
+                             self._data)
             return {}
 
     def key(self):
@@ -1227,6 +1229,27 @@ class Network(Resource):
             str: 'network'
         """
         return 'network'
+
+
+class Snapshot(Resource):
+    """The Resource implementation for Snapshot"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['id']
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'snapshot'
+        """
+        return 'snapshot'
 
 
 class Subnetwork(Resource):
@@ -1845,6 +1868,20 @@ class NetworkIterator(ResourceIterator):
                 yield FACTORIES['network'].create_new(data)
 
 
+class SnapshotIterator(ResourceIterator):
+    """The Resource iterator implementation for Snapshot"""
+
+    def iter(self):
+        """Yields:
+            Resource: Snapshot created
+        """
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            for data in gcp.iter_snapshots(
+                    projectid=self.resource['projectId']):
+                yield FACTORIES['snapshot'].create_new(data)
+
+
 class SubnetworkIterator(ResourceIterator):
     """The Resource iterator implementation for Subnetwork"""
 
@@ -2105,6 +2142,7 @@ FACTORIES = {
             BackendServiceIterator,
             ForwardingRuleIterator,
             NetworkIterator,
+            SnapshotIterator,
             SubnetworkIterator,
             ProjectRoleIterator,
             ProjectSinkIterator
@@ -2232,6 +2270,12 @@ FACTORIES = {
     'network': ResourceFactory({
         'dependsOn': ['project'],
         'cls': Network,
+        'contains': [
+        ]}),
+
+    'snapshot': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Snapshot,
         'contains': [
         ]}),
 

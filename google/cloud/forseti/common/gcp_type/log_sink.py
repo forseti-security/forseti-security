@@ -21,6 +21,7 @@ import json
 
 from google.cloud.forseti.common.gcp_type import resource
 
+
 class LogSink(resource.Resource):
     """Log Sink Resource."""
 

@@ -163,5 +163,5 @@ def _parse_yaml(data):
     try:
         return yaml.safe_load(data)
     except yaml.YAMLError as yaml_error:
-        LOGGER.error(yaml_error)
+        LOGGER.exception(yaml_error)
         raise yaml_error

@@ -15,14 +15,16 @@
 """Unit Tests: Database abstraction objects for Forseti Server."""
 
 from collections import defaultdict
-import logging
 import unittest
 from sqlalchemy.orm.exc import NoResultFound
 from tests.unittest_utils import ForsetiTestCase
 from tests.services import test_models
 from tests.services.model_tester import ModelCreator
 from tests.services.model_tester import ModelCreatorClient
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.dao import session_creator
+
+LOGGER = logger.get_logger(__name__)
 
 
 class DaoTest(ForsetiTestCase):
@@ -478,7 +480,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -503,7 +505,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
@@ -526,7 +528,7 @@ class DaoTest(ForsetiTestCase):
       for item in result:
         _, acc_res, acc_members = item
         if not (acc_res, acc_members) in access:
-            logging.warn('(%s, %s), %s', acc_res, acc_members, access)
+            LOGGER.warn('(%s, %s), %s', acc_res, acc_members, access)
         self.assertIn((acc_res, acc_members), access,
                       'Should find access in expected')
 
