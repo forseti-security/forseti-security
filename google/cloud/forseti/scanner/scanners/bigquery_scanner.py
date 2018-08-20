@@ -31,6 +31,7 @@ BigqueryAccessControlsData = collections.namedtuple(
     'BigqueryAccessControlsData',
     ['parent_project', 'bigquery_acl'])
 
+
 class BigqueryScanner(base_scanner.BaseScanner):
     """Scanner for BigQuery acls."""
 

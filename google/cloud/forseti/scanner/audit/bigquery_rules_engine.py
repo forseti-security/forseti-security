@@ -186,7 +186,6 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             rule = self._build_rule(
                 rule_def, rule_index, raw_resource)
 
-
             resource_type = raw_resource.get('type')
             for resource_id in resource_ids:
                 resource = resource_util.create_resource(
@@ -220,6 +219,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     violations, rule.find_policy_violations(bq_acl))
 
         return violations
+
 
 class Rule(object):
     """Rule properties from the rule definition file.
