@@ -104,7 +104,7 @@ PROJECT_IAM_ROLES_SERVER = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
     'roles/cloudsql.client',
-    'roles/logging.logWriter'
+    'roles/logging.logWriter',
     'roles/cloudtrace.agent',
 ]
 
