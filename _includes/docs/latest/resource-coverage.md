@@ -16,6 +16,7 @@
 | [Compute Engine Instance Groups](https://cloud.google.com/compute/docs/reference/latest/instanceGroups#resource) |
 | [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) |
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) |
+| [Compute Engine Snapshots](https://cloud.google.com/compute/docs/reference/latest/snapshots) |
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) |
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) |
 | [Folders Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) |
