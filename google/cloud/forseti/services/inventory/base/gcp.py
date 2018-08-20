@@ -673,6 +673,19 @@ class ApiClientImpl(ApiClient):
             yield network
 
     @create_lazy('compute', _create_compute)
+    def iter_snapshots(self, projectid):
+        """Iterate Compute Engine snapshots from GCP API.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of Compute Snapshots
+        """
+        for snapshot in self.compute.get_snapshots(projectid):
+            yield snapshot
+
+    @create_lazy('compute', _create_compute)
     def iter_subnetworks(self, projectid):
         """Iterate Subnetworks from GCP API.
 

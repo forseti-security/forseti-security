@@ -18,6 +18,7 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+
 class ListQueryMixin(object):
     """Mixin that implements paged List query."""
 
