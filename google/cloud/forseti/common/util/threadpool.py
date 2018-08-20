@@ -18,6 +18,11 @@ from Queue import Queue
 from threading import Thread
 from threading import Lock
 
+from google.cloud.forseti.common.util import logger
+
+
+LOGGER = logger.get_logger(__name__)
+
 
 class Worker(Thread):
     """Thread executing callables from queue."""
@@ -41,7 +46,8 @@ class Worker(Thread):
             try:
                 val = func(*args, **kargs)
                 result.put(val, False)
-            except Exception, e:
+            except Exception as e:
+                LOGGER.exception(e)
                 result.put(e, True)
             finally:
                 self.queue.task_done()

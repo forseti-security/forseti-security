@@ -55,6 +55,14 @@ class DateTimeTest(ForsetiTestCase):
         expected_result = "2018-01-01T00:00:00Z"
         self.assertEqual(expected_result, result)
 
+    def test_get_utc_now_unix_timestamp(self):
+        # 2018/01/01 00:00:00.123456
+        mock_date = datetime(2018, 1, 1, 0, 0, 0, 123456)
+        result = date_time.get_utc_now_unix_timestamp(mock_date)
+        # Expected timestamp = 1514764800
+        expected_result = 1514764800
+        self.assertEqual(expected_result, result)
+
     def test_get_utc_now_microtimestamp(self):
         # 2018/01/01 00:00:00.123456
         mock_date = datetime(2018, 1, 1, 0, 0, 0, 123456)

@@ -218,7 +218,7 @@ class AdminDirectoryClient(object):
             return flattened_results
         except RefreshError as e:
             # Authentication failed, log before raise.
-            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
+            LOGGER.exception(GSUITE_AUTH_FAILURE_MESSAGE)
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
@@ -252,7 +252,7 @@ class AdminDirectoryClient(object):
             return flattened_results
         except RefreshError as e:
             # Authentication failed, log before raise.
-            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
+            LOGGER.exception(GSUITE_AUTH_FAILURE_MESSAGE)
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('users', e)

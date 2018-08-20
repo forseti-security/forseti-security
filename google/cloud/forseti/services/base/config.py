@@ -288,11 +288,10 @@ class ServiceConfig(AbstractServiceConfig):
         try:
             forseti_config = file_loader.read_and_parse_file(
                 forseti_config_path)
-        except (AttributeError, IOError) as err:
-            err_msg = ('Unable to open Forseti Security config file. '
-                       'Please check your path and filename and try '
-                       'again. Error: {}').format(err)
-            LOGGER.error(err_msg)
+        except (AttributeError, IOError):
+            err_msg = ('Unable to open Forseti Security config file. Please '
+                       'check your path and filename and try again.')
+            LOGGER.exception(err_msg)
 
         return forseti_config, err_msg
 

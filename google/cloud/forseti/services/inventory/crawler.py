@@ -19,9 +19,13 @@ import threading
 import time
 from Queue import Empty, Queue
 
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
+
+
+LOGGER = logger.get_logger(__name__)
 
 
 class CrawlerConfig(crawler.CrawlerConfig):
@@ -115,6 +119,7 @@ class Crawler(crawler.Crawler):
 
             self.write(resource)
         except Exception as e:
+            LOGGER.exception(e)
             progresser.on_error(e)
             raise
         else:
@@ -171,6 +176,7 @@ class Crawler(crawler.Crawler):
         try:
             self.config.storage.update(resource)
         except Exception as e:
+            LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
 
@@ -273,6 +279,7 @@ class ParallelCrawler(Crawler):
             with self._write_lock:
                 self.config.storage.update(resource)
         except Exception as e:
+            LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
 

@@ -146,6 +146,7 @@ class CrawlerTest(ForsetiTestCase):
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 7},
+            'snapshot': {'resource': 3},
             'subnetwork': {'resource': 24},
         }
 
@@ -230,6 +231,7 @@ class CrawlerTest(ForsetiTestCase):
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 2},
+            'snapshot': {'resource': 2},
             'subnetwork': {'resource': 12},
         }
 
@@ -290,6 +292,7 @@ class CrawlerTest(ForsetiTestCase):
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 7},
+            'snapshot': {'resource': 3},
             'subnetwork': {'resource': 24},
         }
 

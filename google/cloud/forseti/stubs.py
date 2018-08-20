@@ -21,10 +21,8 @@ apputils run_script_module, refer to:
 https://github.com/google/google-apputils/blob/master/google/apputils/run_script_module.py
 """
 
+
 # pylint: disable=invalid-name
-
-
-
 def RunForsetiEnforcer():
     """Run Forseti Enforcer module."""
     import google.cloud.forseti.enforcer.enforcer as forseti_enforcer
