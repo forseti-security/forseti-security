@@ -65,12 +65,12 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, resource, bq_acl,
+    def find_policy_violations(self, parent_project, bq_acl,
                                force_rebuild=False):
         """Determine whether Big Query datasets violate rules.
 
         Args:
-            resource (Resource): resource the acl belongs to.
+            parent_project (Project): parent project the acl belongs to.
             bq_acl (BigqueryAccessControls): Object containing ACL data.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -81,7 +81,8 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_policy_violations(resource, bq_acl)
+        violations = self.rule_book.find_policy_violations(
+            parent_project, bq_acl)
 
         return violations
 
@@ -206,7 +207,6 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             rule = self._build_rule(
                 rule_def, rule_index, raw_resource)
 
-
             resource_type = raw_resource.get('type')
             for resource_id in resource_ids:
                 resource = resource_util.create_resource(
@@ -241,6 +241,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     violations, rule.find_policy_violations(bq_acl))
 
         return violations
+
 
 class Rule(object):
     """Rule properties from the rule definition file.

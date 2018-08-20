@@ -29,7 +29,8 @@ LOGGER = logger.get_logger(__name__)
 
 BigqueryAccessControlsData = collections.namedtuple(
     'BigqueryAccessControlsData',
-    ['resource', 'bigquery_acl'])
+    ['parent_project', 'bigquery_acl'])
+
 
 class BigqueryScanner(base_scanner.BaseScanner):
     """Scanner for BigQuery acls."""
@@ -111,7 +112,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
 
         for data in bigquery_acl_data:
             violations = self.rules_engine.find_policy_violations(
-                data.resource, data.bigquery_acl)
+                data.parent_project, data.bigquery_acl)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
@@ -159,15 +160,15 @@ class BigqueryScanner(base_scanner.BaseScanner):
                 # do not use project_id = policy.parent.parent.name
                 # which will cause db session conflict.
                 # Instead, parse the project_id from the full_name.
-                gen = BigqueryAccessControls.from_json(
+                bq_acls = list(BigqueryAccessControls.from_json(
                     project_id=None,
                     dataset_id=dataset.name,
                     full_name=policy.full_name,
-                    acls=policy.data)
+                    acls=policy.data))
 
-                for bq_acl in gen:
+                for bq_acl in bq_acls:
                     data = BigqueryAccessControlsData(
-                        resource=proj,
+                        parent_project=proj,
                         bigquery_acl=bq_acl,
                     )
                     bq_acl_data.append(data)

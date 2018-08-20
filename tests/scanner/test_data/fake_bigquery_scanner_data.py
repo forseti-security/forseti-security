@@ -20,7 +20,6 @@ from google.cloud.forseti.scanner.audit.bigquery_rules_engine import Rule
 BIGQUERY_DATA = [{
     'project_id': 'p1',
     'dataset_id': 'd1',
-    'full_project_name': 'organization/234/project/p1/',
     'full_name': 'organization/234/project/p1/dataset/d1/dataset_policy/d1/',
     'access_domain': '',
     'access_user_by_email': 'user@mockedexample.com',
@@ -32,7 +31,6 @@ BIGQUERY_DATA = [{
 }, {
     'project_id': 'p2',
     'dataset_id': 'd2',
-    'full_project_name': 'organization/234/folder/56/project/p2/',
     'full_name':  ('organization/234/folder/56/project/p2/dataset/d2/'
                    'dataset_policy/d2/'),
     'access_domain': '',
