@@ -557,6 +557,26 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         with self.assertRaises(expected_exception):
             self.gce_api_client.get_project(self.project_id)
 
+    def test_get_snapshots(self):
+        """Test get snapshots."""
+        mock_responses = []
+        for page in fake_compute.LIST_SNAPSHOTS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.gce_api_client.get_snapshots(self.project_id)
+        self.assertEquals(
+            fake_compute.EXPECTED_SNAPSHOTS_LIST_NAMES,
+            frozenset([r.get('name') for r in results]))
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_snapshots_errors(self, name, response, status,
+                                expected_exception):
+        """Verify error conditions for get snapshots templates."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.get_snapshots(self.project_id)
+
     def test_get_subnetworks(self):
         """Test get subnetworks."""
         mock_responses = []

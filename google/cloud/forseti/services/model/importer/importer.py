@@ -162,6 +162,7 @@ class InventoryImporter(object):
             'backendservice',
             'forwardingrule',
             'network',
+            'snapshot',
             'subnetwork',
             'cloudsqlinstance',
             'kubernetes_cluster',
@@ -614,6 +615,9 @@ class InventoryImporter(object):
             'network': (None,
                         self._convert_network,
                         None),
+            'snapshot': (None,
+                         self._convert_snapshot,
+                         None),
             'subnetwork': (None,
                            self._convert_subnetwork,
                            None),
@@ -1089,6 +1093,28 @@ class InventoryImporter(object):
 
         self.session.add(resource)
         self._add_to_cache(resource, network.id)
+
+    def _convert_snapshot(self, snapshot):
+        """Convert a snapshot to a database object.
+
+        Args:
+            snapshot (object): Snapshot to store.
+        """
+        data = snapshot.get_resource_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            snapshot)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=snapshot.get_resource_id(),
+            type=snapshot.get_resource_type(),
+            display_name=data.get('name', ''),
+            email=data.get('email', ''),
+            data=snapshot.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource, snapshot.id)
 
     def _convert_subnetwork(self, subnetwork):
         """Convert a subnetwork to a database object.

@@ -204,6 +204,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._networks = None
         self._projects = None
         self._region_instance_groups = None
+        self._snapshots = None
         self._subnetworks = None
 
         super(ComputeRepositoryClient, self).__init__(
@@ -320,6 +321,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             self._region_instance_groups = self._init_repository(
                 _ComputeRegionInstanceGroupsRepository)
         return self._region_instance_groups
+
+    @property
+    def snapshots(self):
+        """Returns a _ComputeSnapshotsRepository instance."""
+        if not self._snapshots:
+            self._snapshots = self._init_repository(
+                _ComputeSnapshotsRepository)
+        return self._snapshots
 
     @property
     def subnetworks(self):
@@ -618,6 +627,20 @@ class _ComputeRegionInstanceGroupsRepository(repository_mixins.ListQueryMixin,
             self, resource, verb='listInstances', **kwargs)
 
 
+class _ComputeSnapshotsRepository(repository_mixins.ListQueryMixin,
+                                  _base_repository.GCPRepository):
+    """Implementation of Compute Snapshots repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeSnapshotsRepository, self).__init__(
+            component='snapshots', **kwargs)
+
+
 class _ComputeSubnetworksRepository(repository_mixins.AggregatedListQueryMixin,
                                     repository_mixins.ListQueryMixin,
                                     _base_repository.GCPRepository):
@@ -721,6 +744,32 @@ class ComputeClient(object):
                      ' project_id = %s, zone = %s, results = %s',
                      project_id, zone, results)
         return results
+
+    def get_snapshots(self, project_id):
+        """Return the list of all snapshots in the project.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            list: A list of snapshot resources for this project.
+        """
+
+        try:
+            LOGGER.debug('Getting the list of all snapshots in project: %s',
+                         project_id)
+            repository = self.repository.snapshots
+            results = repository.list(project_id)
+            return api_helpers.flatten_list_results(results, 'items')
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                err = api_errors.ApiNotEnabledError(details, e)
+            else:
+                err = api_errors.ApiExecutionError(project_id, e)
+
+            LOGGER.warn(err)
+            raise err
 
     def get_firewall_rules(self, project_id):
         """Get the firewall rules for a given project id.
