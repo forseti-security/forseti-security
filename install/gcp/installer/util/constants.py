@@ -105,11 +105,13 @@ PROJECT_IAM_ROLES_SERVER = [
     'roles/storage.objectCreator',
     'roles/cloudsql.client',
     'roles/logging.logWriter'
+    'roles/cloudtrace.agent',
 ]
 
 PROJECT_IAM_ROLES_CLIENT = [
     'roles/storage.objectViewer',
-    'roles/logging.logWriter'
+    'roles/logging.logWriter',
+    'roles/cloudtrace.agent'
 ]
 
 SVC_ACCT_ROLES = [
@@ -137,7 +139,9 @@ REQUIRED_APIS = [
     {'name': 'Deployment Manager',
      'service': 'deploymentmanager.googleapis.com'},
     {'name': 'IAM',
-     'service': 'iam.googleapis.com'}
+     'service': 'iam.googleapis.com'},
+    {'name': 'Cloud Trace',
+     'service': 'cloudtrace.googleapis.com'}
 ]
 
 # Org Resource Types
