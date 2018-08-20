@@ -41,8 +41,12 @@ def _mock_gcp_resource_iter(_, resource_type):
     )
 
     for resource in fbsd.BIGQUERY_DATA:
+        policy_name = resource['full_name']
+        dataset_name =  '/'.join(policy_name.split('/')[:-3]) + '/'
+        proj_name = '/'.join(dataset_name.split('/')[:-3]) + '/'
+
         proj = Resource(
-            full_name=resource['full_project_name'],
+            full_name=proj_name,
             type='project',
             name='projects/' + resource['project_id'],
             parent_type_name='',
@@ -51,7 +55,7 @@ def _mock_gcp_resource_iter(_, resource_type):
         )
 
         dataset= Resource(
-            full_name=resource['full_name'],
+            full_name=dataset_name,
             type='dataset',
             name='dataset/' + resource['dataset_id'],
             parent_type_name='project',
@@ -60,7 +64,7 @@ def _mock_gcp_resource_iter(_, resource_type):
         )
 
         policy = Resource(
-            full_name=resource['full_name'],
+            full_name=policy_name,
             type='dataset_policy',
             parent_type_name='dataset',
             name='dataset_policies/' + resource['dataset_id'],
@@ -93,7 +97,7 @@ class BigqueryScannerTest(ForsetiTestCase):
 
         bq_acl_data = self.scanner._retrieve()
 
-        expected_resources = [
+        expected_projects = [
             'organization/234/project/p1/',
             'organization/234/folder/56/project/p2/',
         ]
@@ -103,8 +107,8 @@ class BigqueryScannerTest(ForsetiTestCase):
         self.assertEqual(2, len(bq_acl_data))
 
         for i in xrange(2):
-            self.assertEqual(expected_resources[i],
-                             bq_acl_data[i].resource.full_name)
+            self.assertEqual(expected_projects[i],
+                             bq_acl_data[i].parent_project.full_name)
 
             self.assertEqual(expected_dataset_ids[i],
                              bq_acl_data[i].bigquery_acl.dataset_id)
@@ -123,7 +127,7 @@ class BigqueryScannerTest(ForsetiTestCase):
         violations = self.scanner._find_violations(bq_acl_data)
 
         self.scanner.rules_engine.find_policy_violations.assert_has_calls(
-            [mock.call(d.resource, d.bigquery_acl) for d in bq_acl_data])
+            [mock.call(d.parent_project, d.bigquery_acl) for d in bq_acl_data])
 
         self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
 
