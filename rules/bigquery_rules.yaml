@@ -14,7 +14,7 @@
 
 # The BigQuery scanner rules are blacklists.
 rules:
-  - name: sample BigQuery rule to search for public datasets
+  - name: BigQuery rule to search for public datasets
     dataset_id: '*'
     special_group: 'allAuthenticatedUsers'
     user_email: '*'
@@ -25,7 +25,7 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
-  - name: sample BigQuery rule to search for datasets accessible by users with gmail.com addresses
+  - name: BigQuery rule to search for datasets accessible by users with gmail.com addresses
     dataset_id: '*'
     special_group: '*'
     user_email: '*@gmail.com'
@@ -36,7 +36,7 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
-  - name: sample BigQuery rule to search for datasets accessible by groups with googlegroups.com addresses
+  - name: BigQuery rule to search for datasets accessible by groups with googlegroups.com addresses
     dataset_id: '*'
     special_group: '*'
     user_email: '*'
