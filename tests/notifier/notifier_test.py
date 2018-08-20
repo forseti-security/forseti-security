@@ -127,8 +127,10 @@ class NotifierTest(ForsetiTestCase):
         'google.cloud.forseti.notifier.notifier.find_notifiers', autospec=True)
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.scanner_dao', autospec=True)
+    @mock.patch('google.cloud.forseti.notifier.notifier.LOGGER', autospec=True)
     def test_notifications_are_not_sent_without_valid_scanner_index_id(
-        self, mock_dao, mock_find_notifiers, mock_gcs_violations_cls, mock_email_violations_cls):
+        self, mock_logger, mock_dao, mock_find_notifiers,
+        mock_gcs_violations_cls, mock_email_violations_cls):
         """Without scanner index id, no notifications are sent.
 
         Setup:
@@ -154,6 +156,7 @@ class NotifierTest(ForsetiTestCase):
 
         self.assertFalse(mock_find_notifiers.called)
         self.assertFalse(mock_dao.map_by_resource.called)
+        self.assertTrue(mock_logger.error.called)
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifier.InventorySummary',

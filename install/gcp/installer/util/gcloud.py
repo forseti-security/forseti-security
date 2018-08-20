@@ -53,7 +53,7 @@ def get_gcloud_info():
 
 def set_network_host_project_id(self):
     """Get the host project."""
-    if not self.config.vpc_host_project_id:  
+    if not self.config.vpc_host_project_id:
         self.config.vpc_host_project_id, _, _ = get_gcloud_info()
     print('VPC Host Project %s' % self.config.vpc_host_project_id)
 

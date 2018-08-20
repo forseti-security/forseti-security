@@ -149,6 +149,7 @@ def _build_http(http=None):
 
     return set_user_agent(http, user_agent)
 
+
 # pylint: disable=too-many-instance-attributes
 class BaseRepositoryClient(object):
     """Base class for API repository for a specified Cloud API."""
@@ -267,8 +268,9 @@ class BaseRepositoryClient(object):
                                     rate_limiter=self._rate_limiter,
                                     use_cached_http=self._use_cached_http,
                                     read_only=self._read_only)
-# pylint: enable=too-many-instance-attributes
 
+
+# pylint: enable=too-many-instance-attributes
 # pylint: disable=too-many-instance-attributes, too-many-arguments
 # pylint: disable=too-many-locals
 class GCPRepository(object):

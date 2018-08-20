@@ -441,8 +441,13 @@ class ApiClientImpl(ApiClient):
             dict: Generator of Kubernetes Engine Cluster resources.
         """
         for cluster in self.container.get_clusters(projectid):
+
             # Don't store the master auth data in the database.
-            cluster.pop('masterAuth', None)
+            if 'masterAuth' in cluster:
+                cluster['masterAuth'] = {
+                    k: '[redacted]'
+                    for k in cluster['masterAuth'].keys()}
+
             yield cluster
 
     @create_lazy('container', _create_container)
@@ -666,6 +671,19 @@ class ApiClientImpl(ApiClient):
         """
         for network in self.compute.get_networks(projectid):
             yield network
+
+    @create_lazy('compute', _create_compute)
+    def iter_snapshots(self, projectid):
+        """Iterate Compute Engine snapshots from GCP API.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of Compute Snapshots
+        """
+        for snapshot in self.compute.get_snapshots(projectid):
+            yield snapshot
 
     @create_lazy('compute', _create_compute)
     def iter_subnetworks(self, projectid):
