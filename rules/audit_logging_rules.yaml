@@ -1,0 +1,62 @@
+# Copyright 2018 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# rules:
+#   # example rules
+#   - name: 'Require AUDIT_READ on all services, with exemptions.'
+#     resource:
+#       - type: project
+#         resource_ids:
+#           # NOTE: The wild card resource id is only valid for projects.
+#           - '*'
+#     service: 'allServices'
+#     log_types:
+#       - 'ADMIN_READ'
+#     allowed_exemptions:
+#       - 'user:user1@org.com'
+#       - 'user:user3@org.com'
+#   - name: 'Require DATA_WRITE logging in folder 56'
+#     resource:
+#       - type: folder
+#         resource_ids:
+#           - '56'
+#     service: 'allServices'
+#     log_types:
+#       - 'DATA_WRITE'
+#   - name: 'Require all logging for compute, with exemptions.'
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - 'proj-1'
+#           - 'proj-2'
+#     service: 'compute.googleapis.com'
+#     log_types:
+#       - 'ADMIN_READ'
+#       - 'DATA_READ'
+#       - 'DATA_WRITE'
+#     allowed_exemptions:
+#       - 'user:user1@org.com'
+#       - 'user:user2@org.com'
+#   - name: 'Require all logging for cloudsql.'
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - 'proj-1'
+#           - 'proj-3'
+#     service: 'cloudsql.googleapis.com'
+#     log_types:
+#       - 'ADMIN_READ'
+#       - 'DATA_READ'
+#       - 'DATA_WRITE'
+
