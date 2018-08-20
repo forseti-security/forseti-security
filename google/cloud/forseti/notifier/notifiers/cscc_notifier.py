@@ -40,11 +40,13 @@ class CsccNotifier(object):
         """
         self.inv_index_id = inv_index_id
 
-    def _transform_for_gcs(self, violations):
+    def _transform_for_gcs(self, violations, gcs_upload_path):
         """Transform forseti violations to GCS findings format.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
+            gcs_upload_path (str): bucket and filename where the violations
+                will be outputted on GCS
 
         Returns:
             list: violations in findings format; each violation is a dict.
@@ -55,18 +57,19 @@ class CsccNotifier(object):
                 'finding_id': violation.get('violation_hash'),
                 'finding_summary': violation.get('rule_name'),
                 'finding_source_id': 'FORSETI',
-                'finding_category': violation.get('violation_type'),
+                'finding_category': violation.get('rule_name'),
                 'finding_asset_ids': violation.get('full_name'),
                 'finding_time_event': violation.get('created_at_datetime'),
-                'finding_callback_url': None,
+                'finding_callback_url': gcs_upload_path,
                 'finding_properties': {
+                    'db_table': 'violations',
                     'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
                     'scanner_index_id': violation.get('scanner_index_id'),
-                    'violation_data': violation.get('violation_data')
+                    'violation_data': violation.get('violation_data'),
                 }
             }
             findings.append(finding)
@@ -90,15 +93,14 @@ class CsccNotifier(object):
             gcs_path (str): The GCS bucket to upload the findings.
         """
         LOGGER.info('Legacy mode detected - writing findings to GCS.')
-        findings = self._transform_for_gcs(violations)
+
+        gcs_upload_path = '{}/{}'.format(gcs_path, self._get_output_filename())
+
+        findings = self._transform_for_gcs(violations, gcs_upload_path)
 
         with tempfile.NamedTemporaryFile() as tmp_violations:
             tmp_violations.write(parser.json_stringify(findings))
             tmp_violations.flush()
-
-            gcs_upload_path = '{}/{}'.format(
-                gcs_path,
-                self._get_output_filename())
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
@@ -108,6 +110,9 @@ class CsccNotifier(object):
 
     def _transform_for_api(self, violations):
         """Transform forseti violations to findings for CSCC API.
+
+        Findings resource representation:
+        https://cloud.google.com/security-command-center/docs/reference/rest/v1alpha3/organizations.findings/create#SourceFinding
 
         Args:
             violations (dict): Violations to be sent to CSCC as findings.
@@ -125,16 +130,19 @@ class CsccNotifier(object):
                 ],
                 'eventTime': violation.get('created_at_datetime'),
                 'properties': {
+                    'db_table': 'violations',
                     'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
                     'scanner_index_id': violation.get('scanner_index_id'),
-                    'violation_data': violation.get('violation_data')
+                    'violation_data': violation.get('violation_data'),
                 },
                 'source_id': 'FORSETI',
-                'category': 'UNKNOWN_RISK'
+                'category': violation.get('rule_name'),
+                # table_name/row_id
+                'url': 'violations/' + str(violation.get('id'))
             }
             findings.append(finding)
         return findings
