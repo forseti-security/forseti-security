@@ -111,9 +111,6 @@ class CsccNotifier(object):
     def _transform_for_api(self, violations):
         """Transform forseti violations to findings for CSCC API.
 
-        Findings resource representation:
-        https://cloud.google.com/security-command-center/docs/reference/rest/v1alpha3/organizations.findings/create#SourceFinding
-
         Args:
             violations (dict): Violations to be sent to CSCC as findings.
 
