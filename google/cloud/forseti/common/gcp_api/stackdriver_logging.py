@@ -244,7 +244,7 @@ class StackdriverLoggingClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'organizations_sinks', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_folder_sinks(self, folder_id):
@@ -270,7 +270,7 @@ class StackdriverLoggingClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'folders_sinks', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_billing_account_sinks(self, account_id):
@@ -296,7 +296,7 @@ class StackdriverLoggingClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'billing_accounts_sinks', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_project_sinks(self, project_id):
@@ -322,5 +322,5 @@ class StackdriverLoggingClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'projects_sinks', e, 'name', name)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception

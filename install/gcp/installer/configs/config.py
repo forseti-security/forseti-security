@@ -29,12 +29,15 @@ class Config(object):
         Args:
             kwargs (dict): The kwargs.
         """
-
         self.datetimestamp = (kwargs.get('datetimestamp') or
                               datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
         self.identifier = None
         self.force_no_cloudshell = bool(kwargs.get('no_cloudshell'))
         self.service_account_key_file = kwargs.get('service_account_key_file')
+        self.vpc_host_project_id = kwargs.get('vpc_host_project_id')
+        self.vpc_host_network = kwargs.get('vpc_host_network') or 'default'
+        self.vpc_host_subnetwork = (
+            kwargs.get('vpc_host_subnetwork') or 'default')
         self.config_filename = (kwargs.get('config') or
                                 'forseti-setup-{}.cfg'.format(
                                     self.datetimestamp))

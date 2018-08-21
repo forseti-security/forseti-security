@@ -172,7 +172,6 @@ class CloudBillingClient(object):
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-
     def get_billing_info(self, project_id):
         """Gets the billing information for a project.
 
@@ -207,7 +206,7 @@ class CloudBillingClient(object):
                 return {}
             api_exception = api_errors.ApiExecutionError(
                 'billing_info', e, 'project_id', project_id)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_billing_accounts(self, master_account_id=None):
@@ -254,7 +253,7 @@ class CloudBillingClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'billing_accounts', e, 'filter', filters)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_billing_acct_iam_policies(self, account_id):
@@ -287,5 +286,5 @@ class CloudBillingClient(object):
             return results
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(account_id, e)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception

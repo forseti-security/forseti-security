@@ -13,14 +13,16 @@
 # limitations under the License.
 """Unit Tests: Inventory crawler for Forseti Server."""
 
-import logging
 import unittest
 from tests.services.inventory import gcp_api_mocks
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
+
+LOGGER = logger.get_logger(__name__)
 
 
 class NullProgresser(Progresser):
@@ -36,11 +38,11 @@ class NullProgresser(Progresser):
         self.objects += 1
 
     def on_warning(self, warning):
-        logging.error("Progressor Warning: %s", warning)
+        LOGGER.error("Progressor Warning: %s", warning)
         self.warnings += 1
 
     def on_error(self, error):
-        logging.exception("Progressor Error: %s", error)
+        LOGGER.exception("Progressor Error: %s", error)
         self.errors += 1
 
     def get_summary(self):
@@ -144,6 +146,7 @@ class CrawlerTest(ForsetiTestCase):
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 7},
+            'snapshot': {'resource': 3},
             'subnetwork': {'resource': 24},
         }
 
@@ -228,6 +231,7 @@ class CrawlerTest(ForsetiTestCase):
             'serviceaccount': {'iam_policy': 1, 'resource': 1},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 2},
+            'snapshot': {'resource': 2},
             'subnetwork': {'resource': 12},
         }
 
@@ -288,6 +292,7 @@ class CrawlerTest(ForsetiTestCase):
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 7},
+            'snapshot': {'resource': 3},
             'subnetwork': {'resource': 24},
         }
 

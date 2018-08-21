@@ -89,9 +89,9 @@ def _user_project_missing_error(error):
             error_details = json.loads(error.content.decode('utf-8'))
             all_errors = error_details.get('error', {}).get('errors', [])
             user_project_required_errors = [
-                error for error in all_errors
-                if (error.get('domain', '') == 'global' and
-                    error.get('reason', '') == 'required')
+                err for err in all_errors
+                if (err.get('domain', '') == 'global' and
+                    err.get('reason', '') == 'required')
             ]
             if (user_project_required_errors and
                     len(user_project_required_errors) == len(all_errors)):
@@ -415,8 +415,8 @@ class StorageClient(object):
                          ' full_bucket_path = %s, results = %s',
                          full_bucket_path, results)
             return results
-        except errors.HttpError as e:
-            LOGGER.error('Unable to download file: %s', e)
+        except errors.HttpError:
+            LOGGER.exception('Unable to download file.')
             raise
 
     def get_buckets(self, project_id):
@@ -445,7 +445,7 @@ class StorageClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'buckets', e, 'project_id', project_id)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_bucket_acls(self, bucket, user_project=None):
@@ -484,7 +484,7 @@ class StorageClient(object):
 
             api_exception = api_errors.ApiExecutionError(
                 'bucketAccessControls', e, 'bucket', bucket)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_bucket_iam_policy(self, bucket, user_project=None):
@@ -520,7 +520,7 @@ class StorageClient(object):
 
             api_exception = api_errors.ApiExecutionError(
                 'bucketIamPolicy', e, 'bucket', bucket)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_default_object_acls(self, bucket, user_project=None):
@@ -560,7 +560,7 @@ class StorageClient(object):
 
             api_exception = api_errors.ApiExecutionError(
                 'defaultObjectAccessControls', e, 'bucket', bucket)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_objects(self, bucket, user_project=None):
@@ -601,7 +601,7 @@ class StorageClient(object):
 
             api_exception = api_errors.ApiExecutionError(
                 'objects', e, 'bucket', bucket)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_object_acls(self, bucket, object_name, user_project=None):
@@ -644,7 +644,7 @@ class StorageClient(object):
 
             api_exception = api_errors.ApiExecutionError(
                 'objectAccessControls', e, 'bucket', bucket)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
 
     def get_object_iam_policy(self, bucket, object_name, user_project=None):
@@ -684,5 +684,5 @@ class StorageClient(object):
 
             api_exception = api_errors.ApiExecutionError(
                 'objectIamPolicy', e, 'bucket', bucket)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception

@@ -51,6 +51,12 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
+def set_network_host_project_id(self):
+    """Get the host project."""
+    if not self.config.vpc_host_project_id:
+        self.config.vpc_host_project_id, _, _ = get_gcloud_info()
+    print('VPC Host Project %s' % self.config.vpc_host_project_id)
+
 def activate_service_account(key_file):
     """Activate the service account with gcloud.
 
@@ -674,13 +680,13 @@ def get_vm_instance_info(instance_name, try_match=False):
               'will leave the server ip empty for now.')
     return None, None, None
 
-
 def create_firewall_rule(rule_name,
                          service_accounts,
                          action,
                          rules,
                          direction,
                          priority,
+                         vpc_host_network,
                          source_ranges=None):
     """Create a firewall rule for a specific gcp service account.
 
@@ -692,6 +698,8 @@ def create_firewall_rule(rule_name,
                     will not be used if action is passed in
         direction (FirewallRuleDirection): INGRESS, EGRESS, IN or OUT
         priority (int): Integer between 0 and 65535
+        vpc_host_network (str): vpc_host_network (str): Name of the VPC network
+                              to create firewall rules in
         source_ranges (str): A list of IP address blocks that are allowed
                             to make inbound connections that match the firewall
                              rule to the instances on the network. The IP
@@ -707,7 +715,8 @@ def create_firewall_rule(rule_name,
                            '--target-service-accounts',
                            format_service_accounts, '--priority',
                            str(priority), '--direction', direction.value,
-                           '--rules', format_rules]
+                           '--rules', format_rules,
+                           '--network', vpc_host_network]
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 

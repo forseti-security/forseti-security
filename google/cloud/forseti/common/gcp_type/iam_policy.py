@@ -360,6 +360,7 @@ class IamPolicyMember(object):
 
         return False
 
+
 class IamAuditConfig(object):
     """IAM Audit Config.
 
