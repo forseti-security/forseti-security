@@ -271,6 +271,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
+            'FORSETI_SERVER_REGION': self.config.cloudsql_region,
+            'FORSETI_SERVER_ZONE': self.config.cloudsql_region + '-c',
             'VPC_HOST_PROJECT_ID': self.config.vpc_host_project_id,
             'VPC_HOST_NETWORK': self.config.vpc_host_network,
             'VPC_HOST_SUBNETWORK': self.config.vpc_host_subnetwork,
