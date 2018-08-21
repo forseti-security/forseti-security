@@ -319,7 +319,7 @@ class Rule(object):
             for (rule_regex, acl_val) in rule_regex_to_val.iteritems()
         ])
 
-        has_violation = self.rules.mode == Mode.BLACKLIST and all_matched  or (
+        has_violation = self.rules.mode == Mode.BLACKLIST and all_matched or (
             self.rules.mode == Mode.WHITELIST and not all_matched)
 
         if has_violation:
