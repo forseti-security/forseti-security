@@ -208,7 +208,7 @@ MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'please provide a G Suite super admin email address. '
     'This step is optional. \n'
     'See https://forsetisecurity.org/docs/latest/setup/install.html'
-    'to know what will not work if you make it optional.\n'
+    'to know what will not work without G Suite integration.\n'
 )
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
