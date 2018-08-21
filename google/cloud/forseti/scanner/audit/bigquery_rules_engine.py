@@ -37,8 +37,10 @@ class Mode(enum.Enum):
     WHITELIST = 'whitelist'
     BLACKLIST = 'blacklist'
 
+
 RuleReference = collections.namedtuple(
     'RuleReference', ['bigquery_acl', 'mode'])
+
 
 class BigqueryRulesEngine(bre.BaseRulesEngine):
     """Rules engine for Big Query data sets"""
@@ -214,7 +216,6 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     resource_type=resource_type,
                 )
                 self.resource_rules_map[resource].append(rule)
-
 
     def find_policy_violations(self, resource, bq_acl):
         """Find acl violations in the rule book.
