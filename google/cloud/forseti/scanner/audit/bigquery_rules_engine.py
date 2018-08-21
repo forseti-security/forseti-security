@@ -274,6 +274,7 @@ class Rule(object):
 
     def _is_applicable(self, bigquery_acl):
         """Determine whether the rules are applicable to the given acl.
+
          Args:
             bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
          Returns:
