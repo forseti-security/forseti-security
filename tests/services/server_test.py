@@ -146,7 +146,9 @@ class ServerTest(ForsetiTestCase):
             self.assertTrue(scanner.get('enabled'))
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
-    def test_services_not_specified(self, mock_argparse):
+    @mock.patch.object(argparse.ArgumentParser, 'print_usage')
+    @mock.patch('sys.stderr', autospec=True)
+    def test_services_not_specified(self, mock_sys_error, mock_print_usage, mock_argparse):
         """Test main() with no service specified."""
         expected_exit_code = 1
         mock_argparse.return_value = NameSpace(
@@ -156,13 +158,17 @@ class ServerTest(ForsetiTestCase):
             config_file_path=None,
             log_level='info',
             enable_console_log=False)
+        mock_print_usage.return_value = None
 
         with self.assertRaises(SystemExit) as e:
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
-    def test_config_file_path_not_specified(self, mock_argparse):
+    @mock.patch.object(argparse.ArgumentParser, 'print_usage')
+    @mock.patch('sys.stderr', autospec=True)
+    def test_config_file_path_not_specified(self, mock_sys_error, mock_print_usage, mock_argparse):
         """Test main() with no config_file_path specified."""
         expected_exit_code = 2
         mock_argparse.return_value = NameSpace(
@@ -172,13 +178,17 @@ class ServerTest(ForsetiTestCase):
             config_file_path=None,
             log_level='info',
             enable_console_log=False)
+        mock_print_usage.return_value = None
 
         with self.assertRaises(SystemExit) as e:
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
-    def test_config_file_path_non_readable_file(self, mock_argparse):
+    @mock.patch.object(argparse.ArgumentParser, 'print_usage')
+    @mock.patch('sys.stderr', autospec=True)
+    def test_config_file_path_non_readable_file(self, mock_sys_error, mock_print_usage, mock_argparse):
         """Test main() with non-readable config file."""
         expected_exit_code = 3
         mock_argparse.return_value = NameSpace(
@@ -188,13 +198,17 @@ class ServerTest(ForsetiTestCase):
             config_file_path='/this/does/not/exist',
             log_level='info',
             enable_console_log=False)
+        mock_print_usage.return_value = None
 
         with self.assertRaises(SystemExit) as e:
             server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
-    def test_config_file_path_non_existent_file(self, mock_argparse):
+    @mock.patch.object(argparse.ArgumentParser, 'print_usage')
+    @mock.patch('sys.stderr', autospec=True)
+    def test_config_file_path_non_existent_file(self, mock_sys_error, mock_print_usage, mock_argparse):
         """Test main() with non-existent config file."""
         expected_exit_code = 4
         mock_argparse.return_value = NameSpace(
@@ -204,6 +218,7 @@ class ServerTest(ForsetiTestCase):
             config_file_path='/what/ever',
             log_level='info',
             enable_console_log=False)
+        mock_print_usage.return_value = None
 
         with mock.patch.object(server.os.path, "isfile") as mock_isfile:
             mock_isfile.return_value = True
@@ -212,9 +227,12 @@ class ServerTest(ForsetiTestCase):
                 with self.assertRaises(SystemExit) as e:
                     server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertTrue(mock_sys_error.write.called)
 
     @mock.patch.object(argparse.ArgumentParser, 'parse_args')
-    def test_forseti_db_not_set(self, mock_argparse):
+    @mock.patch.object(argparse.ArgumentParser, 'print_usage')
+    @mock.patch('sys.stderr', autospec=True)
+    def test_forseti_db_not_set(self, mock_sys_error, mock_print_usage,  mock_argparse):
         """Test main() with forseti_db not set."""
         expected_exit_code = 5
         mock_argparse.return_value = NameSpace(
@@ -225,6 +243,8 @@ class ServerTest(ForsetiTestCase):
             log_level='info',
             enable_console_log=False)
 
+        mock_print_usage.return_value = None
+
         with mock.patch.object(server.os.path, "isfile") as mock_isfile:
             mock_isfile.return_value = True
             with mock.patch.object(server.os, "access") as mock_access:
@@ -232,6 +252,7 @@ class ServerTest(ForsetiTestCase):
                 with self.assertRaises(SystemExit) as e:
                     server.main()
         self.assertEquals(expected_exit_code, e.exception.code)
+        self.assertTrue(mock_sys_error.write.called)
 
 
 if __name__ == '__main__':
