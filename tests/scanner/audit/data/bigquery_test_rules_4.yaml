@@ -23,4 +23,4 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - 123456789012
+          - 234
