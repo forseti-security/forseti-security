@@ -22,4 +22,4 @@ rules:
     role: 'OWNER'
     resource:
       - type: organization
-          - 123456789012
+          - 234
