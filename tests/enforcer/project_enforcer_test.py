@@ -801,7 +801,8 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
 
         self.validate_results(self.expected_proto, result)
 
-    def test_enforce_policy_firewall_enforcer_gce_api_disabled(self):
+    @mock.patch('google.cloud.forseti.enforcer.project_enforcer.LOGGER', autospec=True)
+    def test_enforce_policy_firewall_enforcer_gce_api_disabled(self, mock_logger):
         """Project returns a status=PROJECT_DELETED if GCE API is disabled.
 
         Setup:
@@ -841,6 +842,7 @@ class ProjectEnforcerTest(constants.EnforcerTestCase):
         self.expected_proto.status_reason = result.status_reason
 
         self.validate_results(self.expected_proto, result)
+        self.assertTrue(mock_logger.error.called)
 
 
 def get_rule_names(rules):
