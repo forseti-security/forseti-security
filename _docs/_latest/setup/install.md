@@ -89,10 +89,14 @@ steps below:
        [enable email notifications]({% link _docs/latest/configure/notifier/index.md %}#email-notifications-with-sendgrid).
      * Email recipient \[Optional\]: If you provide a SendGrid API key, you will
        also be asked to whom Forseti should send the email notifications.
-     * G Suite super admin email \[Not optional\]: This is part of the
-       [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
-       and is necessary. Ask your G Suite Admin if you don't know the super
-       admin email.
+     * G Suite super admin email \[Optional\]: This is part of the
+       [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %}).
+       The following functionalities will not work without G Suite integration:
+        * G Suite groups and users in Inventory
+        * Group Scanner
+        * Group expansion in Explain
+        
+       Ask your G Suite Admin if you don't know the super admin email.
 
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
