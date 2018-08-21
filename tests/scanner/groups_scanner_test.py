@@ -72,7 +72,7 @@ class GroupsScannerTest(ForsetiTestCase):
                           self._render_ascii(root, 'member_email'))
 
         # test rules will be associated to the correct nodes
-        with open('tests/scanner/test_data/fake_group_rules.yaml', 'r') as f:
+        with open('test_data/fake_group_rules.yaml', 'r') as f:
             rules = yaml.load(f)
         root_with_rules = scanner._apply_all_rules(root, rules)
         self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
