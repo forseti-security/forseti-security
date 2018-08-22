@@ -58,7 +58,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         expected_findings = [
             {'assetIds': ['full_name_111'],
-             'category': 'UNKNOWN_RISK',
+             'category': 'disallow_all_ports_111',
              'eventTime': '2010-08-28T10:20:30Z',
              'id': '539cfbdb1113a74ec18edf583eada77a',
              'properties': {
@@ -69,9 +69,10 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                  'rule_index': 111,
                  'scanner_index_id': 1282990830000000,
                  'violation_data': '{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}'},
-                 'source_id': 'FORSETI'},
+                 'source_id': 'FORSETI',
+                 'url': 'table:violations/id:1'},
             {'assetIds': ['full_name_222'],
-             'category': 'UNKNOWN_RISK',
+             'category': 'disallow_all_ports_222',
              'eventTime': '2010-08-28T10:20:30Z',
              'id': '3eff279ccb96799d9eb18e6b76055b22',
              'properties': {
@@ -82,7 +83,8 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                  'rule_index': 222,
                  'scanner_index_id': 1282990830000000,
                  'violation_data': '{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}'},
-                 'source_id': 'FORSETI'}]
+                 'source_id': 'FORSETI',
+                 'url': 'table:violations/id:2'}]
 
         violations_as_dict = self._populate_and_retrieve_violations()
 
@@ -104,7 +106,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
              'finding_category': 'FIREWALL_BLACKLIST_VIOLATION_111', 
              'finding_asset_ids': 'full_name_111',
              'finding_time_event': '2010-08-28T10:20:30Z',
-             'finding_callback_url': None,
+             'finding_callback_url': 'gs://foo_bucket',
              'finding_properties':
                  {'scanner_index_id': 1282990830000000,
                   'inventory_index_id': 'iii',
@@ -119,7 +121,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
             'finding_category': 'FIREWALL_BLACKLIST_VIOLATION_222',
             'finding_asset_ids': 'full_name_222',
             'finding_time_event': '2010-08-28T10:20:30Z',
-            'finding_callback_url': None,
+            'finding_callback_url': 'gs://foo_bucket',
             'finding_properties':
                 {'scanner_index_id': 1282990830000000,
                  'inventory_index_id': 'iii',
@@ -134,7 +136,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
 
         finding_results = (
             cscc_notifier.CsccNotifier('iii')._transform_for_gcs(
-                violations_as_dict)
+                violations_as_dict, 'gs://foo_bucket')
         )
 
         self.assertEquals(expected_findings, finding_results)
