@@ -140,7 +140,7 @@ class CsccNotifier(object):
                 },
                 'source_id': 'FORSETI',
                 'category': violation.get('rule_name'),
-                'url': '{}/{}'.format(VIOLATIONS_TABLE, violation.get('id'))
+                'url': 'table:{}/id:{}'.format(VIOLATIONS_TABLE, violation.get('id'))
             }
             findings.append(finding)
         return findings
