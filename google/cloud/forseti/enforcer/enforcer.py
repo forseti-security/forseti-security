@@ -51,14 +51,17 @@ def initialize_batch_enforcer(global_configs, concurrent_threads,
             execute.
         max_write_threads (str): The maximum number of enforcement threads that
             can be actively updating project firewalls.
-        max_running_operations (str): The maximum number of write operations per
-            enforcement thread.
+        max_running_operations (str): [DEPRECATED] The maximum number of write
+            operations per enforcement thread.
         dry_run (boolean): If True, will simply log what action would have been
             taken without actually applying any modifications.
 
     Returns:
         BatchFirewallEnforcer: A BatchFirewallEnforcer instance.
     """
+    if max_running_operations:
+        LOGGER.warn('Deprecated argument max_running_operations set.')
+
     if max_write_threads:
         project_sema = threading.BoundedSemaphore(value=max_write_threads)
     else:
@@ -68,8 +71,7 @@ def initialize_batch_enforcer(global_configs, concurrent_threads,
         global_configs=global_configs,
         dry_run=dry_run,
         concurrent_workers=concurrent_threads,
-        project_sema=project_sema,
-        max_running_operations=max_running_operations)
+        project_sema=project_sema)
 
     return enforcer
 
