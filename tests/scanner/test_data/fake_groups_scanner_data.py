@@ -122,13 +122,13 @@ EXPECTED_MEMBERS_IN_TREE = (
 EXPECTED_RULES_IN_TREE = (
 """{'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in a group.'}
+|   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in a group.'}
+|   |   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|   |   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in a group.'}
+|   |   {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
 |   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-|       {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in a group.'}
+|       {'group_email': 'aaaaa@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in AAAAA group.'}
 |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
@@ -136,9 +136,13 @@ EXPECTED_RULES_IN_TREE = (
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
 |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+|   {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+|   |   {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
 |   |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+|   |   {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
 |   +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
+|       {'group_email': 'ccccc@mycompany.com', 'conditions': [{'member_email': '@gmail.com'}], 'mode': 'whitelist', 'name': 'Allow gmail users to be in CCCCC group.'}
 +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
@@ -146,5 +150,4 @@ EXPECTED_RULES_IN_TREE = (
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
     |-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}
-    +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}"""
-)
+    +-- {'group_email': 'my_customer', 'conditions': [{'member_email': '@mycompany.com'}], 'mode': 'whitelist', 'name': 'Allow my company users to be in my company groups.'}""")

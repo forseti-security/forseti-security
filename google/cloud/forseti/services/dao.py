@@ -55,6 +55,7 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.common.util import logger
 
+
 LOGGER = logger.get_logger(__name__)
 
 POOL_RECYCLE_SECONDS = 300
@@ -571,8 +572,8 @@ def define_model(model_name, dbengine, model_seed):
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
-            except Exception:
-                LOGGER.error(Exception.message)
+            except Exception as e:
+                LOGGER.exception(e)
                 session.rollback()
                 raise
             finally:

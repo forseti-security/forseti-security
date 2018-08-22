@@ -15,41 +15,23 @@
 
 """Tests for google.cloud.forseti.enforcer.enforcer."""
 
-import mock
 import unittest
+import mock
 
 from tests.enforcer import testing_constants as constants
-from tests.unittest_utils import ForsetiTestCase
-from google.protobuf import text_format
 from tests.unittest_utils import get_datafile_path
 
-from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import enforcer
-
-# Used anywhere a real timestamp could be generated to ensure consistent
-# comparisons in tests
-MOCK_TIMESTAMP = 1234567890
+from google.cloud.forseti.enforcer import enforcer_log_pb2
+from google.protobuf import text_format
 
 
-class EnforcerTest(ForsetiTestCase):
+class EnforcerTest(constants.EnforcerTestCase):
     """Extended unit tests for BatchFirewallEnforcer class."""
 
     def setUp(self):
         """Set up."""
-        self.mock_compute = mock.patch.object(enforcer.batch_enforcer.compute,
-                                              'ComputeClient').start()
-
-        self.gce_service = self.mock_compute().service
-        self.gce_service.networks().list().execute.return_value = (
-            constants.SAMPLE_TEST_NETWORK_SELFLINK)
-
-        self.project = constants.TEST_PROJECT
-
-        self.mock_time = mock.patch.object(enforcer.batch_enforcer.datelib,
-                                           'Timestamp').start()
-
-        self.mock_time.now().AsMicroTimestamp.return_value = MOCK_TIMESTAMP
-        self.mock_time.now().AsSecondsSinceEpoch.return_value = MOCK_TIMESTAMP
+        super(EnforcerTest, self).setUp()
 
         self.enforcer = enforcer.initialize_batch_enforcer(
             {},
@@ -57,12 +39,14 @@ class EnforcerTest(ForsetiTestCase):
             max_write_threads=1,
             max_running_operations=0,
             dry_run=True)
+        self.enforcer._local = mock.Mock(
+            compute_client=self.gce_api_client)
 
         self.expected_summary = (
             enforcer_log_pb2.BatchResult(
-                batch_id=MOCK_TIMESTAMP,
-                timestamp_start_msec=MOCK_TIMESTAMP,
-                timestamp_end_msec=MOCK_TIMESTAMP))
+                batch_id=constants.MOCK_MICROTIMESTAMP,
+                timestamp_start_msec=constants.MOCK_MICROTIMESTAMP,
+                timestamp_end_msec=constants.MOCK_MICROTIMESTAMP))
 
         self.addCleanup(mock.patch.stopall)
 
@@ -81,7 +65,7 @@ class EnforcerTest(ForsetiTestCase):
       Expected Results:
         * The results proto returned matches the expected results.
       """
-      self.gce_service.firewalls().list().execute.side_effect = [
+      self.gce_api_client.get_firewall_rules.side_effect = [
           constants.DEFAULT_FIREWALL_API_RESPONSE,
           constants.EXPECTED_FIREWALL_API_RESPONSE]
 

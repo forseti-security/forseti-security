@@ -44,6 +44,7 @@ SUBNETWORK_ID_PREFIX = "115"
 SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 GCE_IMAGE_ID_PREFIX = "117"
 GCE_DISK_ID_PREFIX = "118"
+SNAPSHOT_ID_PREFIX = "119"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -1529,6 +1530,45 @@ GCE_GET_NETWORKS = {
     "project2": [
         json.loads(
             NETWORK_TEMPLATE.format(id=2, name="default", project="project2")),
+    ]
+}
+
+
+# Fields: id, name, project, zone
+SNAPSHOT_TEMPLATE = """
+{{
+ "kind": "compute#snapshot",
+ "id": "119{id}",
+ "creationTimestamp": "2018-07-12T13:32:03.912-07:00",
+ "name": "{name}",
+ "description": "",
+ "status": "READY",
+ "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/{zone}/disks/{name}",
+ "sourceDiskId": "7102445878994667099",
+ "diskSizeGb": "10",
+ "storageBytes": "536550912",
+ "storageBytesStatus": "UP_TO_DATE",
+ "licenses": [
+  "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+ ],
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/{name}",
+ "labelFingerprint": "foofoo456",
+ "licenseCodes": [
+  "1000205"
+ ],
+ "storageLocations": [
+  "us"
+ ]
+}}
+"""
+
+GCE_GET_SNAPSHOTS = {
+    "project1": [
+        json.loads(SNAPSHOT_TEMPLATE.format(id=1, name='snap-1', project='project1', zone='us-east1-b')),
+        json.loads(SNAPSHOT_TEMPLATE.format(id=2, name='snap-2', project='project1', zone='europe-west4-a'))
+    ],
+    "project2": [
+        json.loads(SNAPSHOT_TEMPLATE.format(id=3, name='snap-1', project='project2', zone='asia-south1-c')),
     ]
 }
 
