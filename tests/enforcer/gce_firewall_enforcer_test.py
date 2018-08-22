@@ -1300,15 +1300,18 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
           self.gce_api_client.get_project.return_value = {
               'quotas': []}
 
-        if expect_exception:
-          with self.assertRaises(fe.FirewallQuotaExceededError):
-            self.enforcer._check_change_operation_order(
-                insert_rule_count, delete_rule_count)
-        else:
-          delete_before_insert = self.enforcer._check_change_operation_order(
-              insert_rule_count, delete_rule_count)
 
-          self.assertEqual(expect_delete_before_insert, delete_before_insert)
+        with mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER') as mock_logger:
+          with mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER') as mock_logger_two:
+            if expect_exception:
+              with self.assertRaises(fe.FirewallQuotaExceededError):
+                self.enforcer._check_change_operation_order(
+                    insert_rule_count, delete_rule_count)
+            else:
+              delete_before_insert = self.enforcer._check_change_operation_order(
+                  insert_rule_count, delete_rule_count)
+
+              self.assertEqual(expect_delete_before_insert, delete_before_insert)
 
 
 class FirewallRulesAreEqualTest(ForsetiTestCase):
