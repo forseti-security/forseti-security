@@ -100,7 +100,6 @@ steps below:
         * Group Scanner
         * Group expansion in Explain
         
-
   1. After you install the server, a cron job automatically runs every other hour
      to get the latest configuration file and execute the following commands on
      your Cloud Storage bucket:
