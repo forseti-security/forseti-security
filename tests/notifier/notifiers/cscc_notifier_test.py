@@ -108,7 +108,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
              'finding_time_event': '2010-08-28T10:20:30Z',
              'finding_callback_url': 'gs://foo_bucket',
              'finding_properties':
-                 {'db_table': 'violations',
+                 {'db_source': 'table:violations/id:1',
                   'inventory_index_id': 'iii',
                   'resource_id': 'fake_firewall_111',
                   'resource_data': 'inventory_data_111',
@@ -124,7 +124,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
             'finding_time_event': '2010-08-28T10:20:30Z',
             'finding_callback_url': 'gs://foo_bucket',
             'finding_properties':
-                {'db_table': 'violations',
+                {'db_source': 'table:violations/id:2',
                  'inventory_index_id': 'iii',
                  'resource_id': 'fake_firewall_222',
                  'resource_data': 'inventory_data_222',
