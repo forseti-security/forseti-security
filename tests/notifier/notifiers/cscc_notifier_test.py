@@ -62,7 +62,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
              'eventTime': '2010-08-28T10:20:30Z',
              'id': '539cfbdb1113a74ec18edf583eada77a',
              'properties': {
-                 'db_table': 'violations',
+                 'db_source': 'table:violations/id:1',
                  'inventory_index_id': 'iii',
                  'resource_data': 'inventory_data_111',
                  'resource_id': 'fake_firewall_111',
@@ -70,14 +70,13 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                  'rule_index': 111,
                  'scanner_index_id': 1282990830000000,
                  'violation_data': '{"policy_names": ["fw-tag-match_111"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_111"]}}'},
-                 'source_id': 'FORSETI',
-                 'url': 'table:violations/id:1'},
+                 'source_id': 'FORSETI'},
             {'assetIds': ['full_name_222'],
              'category': 'disallow_all_ports_222',
              'eventTime': '2010-08-28T10:20:30Z',
              'id': '3eff279ccb96799d9eb18e6b76055b22',
              'properties': {
-                 'db_table': 'violations',
+                 'db_source': 'table:violations/id:2',
                  'inventory_index_id': 'iii',
                  'resource_data': 'inventory_data_222',
                  'resource_id': 'fake_firewall_222',
@@ -85,8 +84,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
                  'rule_index': 222,
                  'scanner_index_id': 1282990830000000,
                  'violation_data': '{"policy_names": ["fw-tag-match_222"], "recommended_actions": {"DELETE_FIREWALL_RULES": ["fw-tag-match_222"]}}'},
-                 'source_id': 'FORSETI',
-                 'url': 'table:violations/id:2'}]
+                 'source_id': 'FORSETI'}]
 
         violations_as_dict = self._populate_and_retrieve_violations()
 

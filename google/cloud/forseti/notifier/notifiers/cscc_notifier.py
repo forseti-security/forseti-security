@@ -26,8 +26,6 @@ from google.cloud.forseti.common.util import string_formats
 
 LOGGER = logger.get_logger(__name__)
 
-VIOLATIONS_TABLE = 'violations'
-
 
 class CsccNotifier(object):
     """Send violations to CSCC via API or via GCS bucket."""
@@ -129,7 +127,8 @@ class CsccNotifier(object):
                 ],
                 'eventTime': violation.get('created_at_datetime'),
                 'properties': {
-                    'db_table': VIOLATIONS_TABLE,
+                    'db_source': 'table:{}/id:{}'.format(
+                        'violations', violation.get('id')),
                     'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
@@ -139,9 +138,7 @@ class CsccNotifier(object):
                     'violation_data': violation.get('violation_data')
                 },
                 'source_id': 'FORSETI',
-                'category': violation.get('rule_name'),
-                'url': 'table:{}/id:{}'.format(
-                    VIOLATIONS_TABLE, violation.get('id'))
+                'category': violation.get('rule_name')
             }
             findings.append(finding)
         return findings
