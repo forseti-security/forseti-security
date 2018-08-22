@@ -63,7 +63,8 @@ class CsccNotifier(object):
                 'finding_callback_url': gcs_upload_path,
                 'finding_properties': {
                     'db_source': 'table:{}/id:{}'.format(
-                        'violations', violation.get('id')),                    'inventory_index_id': self.inv_index_id,
+                        'violations', violation.get('id')),
+                    'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
