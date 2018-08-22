@@ -57,7 +57,7 @@ class CsccNotifier(object):
                 'finding_id': violation.get('violation_hash'),
                 'finding_summary': violation.get('rule_name'),
                 'finding_source_id': 'FORSETI',
-                'finding_category': violation.get('rule_name'),
+                'finding_category': violation.get('types'),
                 'finding_asset_ids': violation.get('full_name'),
                 'finding_time_event': violation.get('created_at_datetime'),
                 'finding_callback_url': gcs_upload_path,
