@@ -355,7 +355,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def get_email_settings(self):
         """Ask user for specific install values."""
         utils.print_banner('Configuring GSuite Admin Information')
-        # User has to enter a G Suite super admin email.
         print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
         self.config.gsuite_superadmin_email = raw_input(
             constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
