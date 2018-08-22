@@ -17,14 +17,13 @@ import collections
 import enum
 import itertools
 import json
-import re
 
 from google.cloud.forseti.common.gcp_type import (
     bigquery_access_controls as bq_acls)
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.regular_exp import escape_and_globify
+from google.cloud.forseti.common.util import regular_exp
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
@@ -170,13 +169,13 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         rule_def_resource = RuleReference(
             bigquery_acl=bq_acls.BigqueryAccessControls(
                 project_id='',
-                dataset_id=escape_and_globify(dataset_id),
+                dataset_id=regular_exp.escape_and_globify(dataset_id),
                 full_name='',
-                special_group=escape_and_globify(special_group),
-                user_email=escape_and_globify(user_email),
-                domain=escape_and_globify(domain),
-                group_email=escape_and_globify(group_email),
-                role=escape_and_globify(role.upper()),
+                special_group=regular_exp.escape_and_globify(special_group),
+                user_email=regular_exp.escape_and_globify(user_email),
+                domain=regular_exp.escape_and_globify(domain),
+                group_email=regular_exp.escape_and_globify(group_email),
+                role=regular_exp.escape_and_globify(role.upper()),
                 view={},
                 raw_json=json.dumps(raw_resource)),
             mode=mode,
@@ -288,10 +287,7 @@ class Rule(object):
             rule_bigquery_acl.role: bigquery_acl.role,
         }
 
-        return all([
-            re.match(rule_regex, acl_val)
-            for (rule_regex, acl_val) in rule_regex_to_val.iteritems()
-        ])
+        return regular_exp.all_match(rule_regex_to_val)
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, bigquery_acl):
@@ -314,10 +310,7 @@ class Rule(object):
             rule_bigquery_acl.group_email: bigquery_acl.group_email,
         }
 
-        all_matched = all([
-            re.match(rule_regex, acl_val)
-            for (rule_regex, acl_val) in rule_regex_to_val.iteritems()
-        ])
+        all_matched = regular_exp.all_match(rule_regex_to_val)
 
         has_violation = self.rules.mode == Mode.BLACKLIST and all_matched or (
             self.rules.mode == Mode.WHITELIST and not all_matched)

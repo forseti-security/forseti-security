@@ -39,3 +39,19 @@ def escape_and_globify(pattern_string):
     if pattern_string == '*':
         return '^.*$'
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+?'))
+
+
+def all_match(pattern_to_val):
+    """Lazily determines whether the given regexes match the values.
+
+    Args:
+      pattern_to_val (Dict[string: string]): Regex and corresponding
+          value to match.
+
+    Returns:
+      bool: True if all regexes matched the corresponding values, else False.
+    """
+    for regex, val in pattern_to_val.iteritems():
+        if not re.match(regex, val):
+            return False
+    return True
