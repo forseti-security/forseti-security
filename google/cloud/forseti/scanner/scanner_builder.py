@@ -16,7 +16,6 @@
 
 import importlib
 import inspect
-import sys
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
@@ -61,8 +60,8 @@ class ScannerBuilder(object):
                     .get('module_name'))
                 try:
                     module = importlib.import_module(module_name)
-                except (ImportError, TypeError, ValueError) as e:
-                    LOGGER.error('Unable to import %s\n%s', module_name, e)
+                except (ImportError, TypeError, ValueError):
+                    LOGGER.exception('Unable to import %s\n', module_name)
                     continue
 
                 class_name = (
@@ -72,8 +71,7 @@ class ScannerBuilder(object):
                 try:
                     scanner_class = getattr(module, class_name)
                 except AttributeError:
-                    LOGGER.error('Unable to instantiate %s\n%s',
-                                 class_name, sys.exc_info()[0])
+                    LOGGER.exception('Unable to instantiate %s', class_name)
                     continue
 
                 # Simple way to find the path to folders directory no matter
