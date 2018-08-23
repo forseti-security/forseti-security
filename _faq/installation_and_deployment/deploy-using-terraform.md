@@ -5,4 +5,5 @@ order: 8
 
 {::options auto_ids="false" /}
 
-* There is now a [Terraform module](https://github.com/terraform-google-modules/terraform-google-forseti) that is available for deploying Forseti.
+* There is now a [Terraform module](https://github.com/terraform-google-modules/terraform-google-forseti)
+that is available for deploying Forseti.
