@@ -1,0 +1,7 @@
+google.cloud.forseti.services.inventory.crawler module
+======================================================
+
+.. automodule:: google.cloud.forseti.services.inventory.crawler
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,17 @@
+google.cloud.forseti.services.server\_config package
+====================================================
+
+.. automodule:: google.cloud.forseti.services.server_config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.services.server_config.server_pb2
+   google.cloud.forseti.services.server_config.server_pb2_grpc
+   google.cloud.forseti.services.server_config.service
+

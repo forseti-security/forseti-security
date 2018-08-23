@@ -1,0 +1,7 @@
+google.cloud.forseti.services.cli module
+========================================
+
+.. automodule:: google.cloud.forseti.services.cli
+    :members:
+    :undoc-members:
+    :show-inheritance:

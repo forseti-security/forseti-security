@@ -1,6 +1,6 @@
 ---
 title: I have an idea or found a bug. What do I do next?
-order: 2
+order: 1
 ---
 {::options auto_ids="false" /}
 

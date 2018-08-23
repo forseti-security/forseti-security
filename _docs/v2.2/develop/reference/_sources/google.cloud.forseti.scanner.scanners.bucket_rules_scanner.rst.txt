@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanners.bucket\_rules\_scanner module
+===================================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanners.bucket_rules_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:
