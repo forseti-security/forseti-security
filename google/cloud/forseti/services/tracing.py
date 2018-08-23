@@ -14,11 +14,15 @@
 
 """Forseti gRPC tracing setup."""
 
+from google.cloud.forseti.common.util import logger
 from opencensus.trace.tracer import Tracer
 from opencensus.trace.samplers.always_on import AlwaysOnSampler
 from opencensus.trace.exporters.stackdriver_exporter import StackdriverExporter
 from opencensus.trace.ext.grpc.client_interceptor import OpenCensusClientInterceptor
 from opencensus.trace.ext.grpc.server_interceptor import OpenCensusServerInterceptor
+from opencensus.trace.exporters.transports.background_thread import BackgroundThreadTransport
+
+LOGGER = logger.get_logger(__name__)
 
 def trace_client_interceptor(endpoint):
     """Intercept gRPC calls on client-side and add tracing information
@@ -30,7 +34,7 @@ def trace_client_interceptor(endpoint):
     Returns:
         OpenCensusClientInterceptor: a gRPC client-side interceptor.
     """
-    exporter = StackdriverExporter()
+    exporter = setup_exporter()
     tracer = Tracer(exporter=exporter)
     return OpenCensusClientInterceptor(
             tracer,
@@ -43,8 +47,17 @@ def trace_server_interceptor():
     Returns:
         OpenCensusServerInterceptor: a gRPC server-side interceptor.
     """
-    exporter = StackdriverExporter()
+    
+    exporter = setup_exporter()
     sampler = AlwaysOnSampler()
     return OpenCensusServerInterceptor(
             sampler,
             exporter)
+
+def setup_exporter()
+    try:
+        return StackdriverExporter(transport=BackgroundThreadTransport)
+    except Exception as e:
+        LOGGER.exception(e)
+        LOGGER.info("StackdriverExporter set up failed. Using FileExporter instead.")
+        return FileExporter(transport=BackgroundThreadTransport)
