@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanner\_requirements\_map module
+==============================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanner_requirements_map
+    :members:
+    :undoc-members:
+    :show-inheritance:
