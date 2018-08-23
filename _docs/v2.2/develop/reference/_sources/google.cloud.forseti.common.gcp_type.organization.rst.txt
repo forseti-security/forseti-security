@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.organization module
+=========================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.organization
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+google.cloud.forseti.notifier.notifiers.email\_violations module
+================================================================
+
+.. automodule:: google.cloud.forseti.notifier.notifiers.email_violations
+    :members:
+    :undoc-members:
+    :show-inheritance:
