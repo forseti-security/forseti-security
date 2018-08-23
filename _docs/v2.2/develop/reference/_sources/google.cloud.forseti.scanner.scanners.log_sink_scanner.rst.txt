@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanners.log\_sink\_scanner module
+===============================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanners.log_sink_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:

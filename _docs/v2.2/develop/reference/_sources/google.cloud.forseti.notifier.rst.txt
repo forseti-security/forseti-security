@@ -1,0 +1,22 @@
+google.cloud.forseti.notifier package
+=====================================
+
+.. automodule:: google.cloud.forseti.notifier
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    google.cloud.forseti.notifier.notifiers
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.notifier.notifier
+

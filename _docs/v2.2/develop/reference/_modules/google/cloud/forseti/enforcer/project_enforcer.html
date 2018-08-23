@@ -1,0 +1,586 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.enforcer.project_enforcer"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.enforcer.project_enforcer</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Manages enforcement of policies for a single cloud project.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">hashlib</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">compute</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">date_time</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.enforcer</span> <span class="k">import</span> <span class="n">enforcer_log_pb2</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.enforcer</span> <span class="k">import</span> <span class="n">gce_firewall_enforcer</span> <span class="k">as</span> <span class="n">fe</span>
+
+<span class="n">STATUS_SUCCESS</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">SUCCESS</span>
+<span class="n">STATUS_ERROR</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">ERROR</span>
+<span class="n">STATUS_SKIPPED</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">SKIPPED</span>
+<span class="n">STATUS_DELETED</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">PROJECT_DELETED</span>
+<span class="n">STATUS_UNSPECIFIED</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">ENFORCEMENT_STATUS_UNSPECIFIED</span>
+
+<span class="c1"># Default number of times to try applying the firewall policy to a project</span>
+<span class="c1"># before the status is changed to ERROR and the enforcement fails.</span>
+<span class="n">MAX_ENFORCEMENT_RETRIES</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ProjectEnforcer"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer">[docs]</a><span class="k">class</span> <span class="nc">ProjectEnforcer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Manages enforcement of policies for a single cloud project.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">project_id</span><span class="p">,</span>
+                 <span class="n">global_configs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">compute_client</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">project_sema</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">max_running_operations</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project id for the project to enforce.</span>
+<span class="sd">            global_configs (dict): Global configurations.</span>
+<span class="sd">            compute_client (ComputeClient): A Compute API client.</span>
+<span class="sd">                If not provided, one will be created using the default</span>
+<span class="sd">                credentials.</span>
+<span class="sd">            dry_run (bool): Set to true to ensure no actual changes are made to</span>
+<span class="sd">                the project. EnforcePolicy will still return a ProjectResult</span>
+<span class="sd">                proto showing the changes that would have been made.</span>
+<span class="sd">            project_sema (threading.BoundedSemaphore): An optional semaphore</span>
+<span class="sd">                object, used to limit the number of concurrent projects getting</span>
+<span class="sd">                written to.</span>
+<span class="sd">            max_running_operations (int): [DEPRECATED] Used to limit the number</span>
+<span class="sd">                of concurrent running operations on an API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">project_id</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">compute_client</span><span class="p">:</span>
+            <span class="n">compute_client</span> <span class="o">=</span> <span class="n">compute</span><span class="o">.</span><span class="n">ComputeClient</span><span class="p">(</span><span class="n">global_configs</span><span class="p">,</span>
+                                                   <span class="n">dry_run</span><span class="o">=</span><span class="n">dry_run</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span> <span class="o">=</span> <span class="n">compute_client</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">ProjectResult</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">STATUS_UNSPECIFIED</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">timestamp_sec</span> <span class="o">=</span> <span class="n">date_time</span><span class="o">.</span><span class="n">get_utc_now_microtimestamp</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dry_run</span> <span class="o">=</span> <span class="n">dry_run</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_project_sema</span> <span class="o">=</span> <span class="n">project_sema</span>
+        <span class="k">if</span> <span class="n">max_running_operations</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Max running operations is deprecated. Argument ignored.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_operation_sema</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ProjectEnforcer.enforce_firewall_policy"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer.enforce_firewall_policy">[docs]</a>    <span class="k">def</span> <span class="nf">enforce_firewall_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">firewall_policy</span><span class="p">,</span>
+                                <span class="n">networks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">allow_empty_ruleset</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">prechange_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">add_rule_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">retry_on_dry_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                <span class="n">maximum_retries</span><span class="o">=</span><span class="n">MAX_ENFORCEMENT_RETRIES</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enforces the firewall policy on the project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            firewall_policy (list): A list of firewall rules that should be</span>
+<span class="sd">                configured on the project networks.</span>
+<span class="sd">            networks (list): A list of networks on the project that the</span>
+<span class="sd">                policy applies to. If undefined, then the policy will be applied</span>
+<span class="sd">                to all networks.</span>
+<span class="sd">            allow_empty_ruleset (bool): If set to true and firewall_policy has</span>
+<span class="sd">                no rules, all current firewall rules will be deleted from the</span>
+<span class="sd">                project.</span>
+<span class="sd">            prechange_callback (Callable): See FirewallEnforcer.apply_firewall()</span>
+<span class="sd">                docstring for more details.</span>
+<span class="sd">            add_rule_callback (Callable): A callback function that checks</span>
+<span class="sd">                whether a firewall rule should be applied. If the callback</span>
+<span class="sd">                returns False, that rule will not be modified.</span>
+<span class="sd">            retry_on_dry_run (bool): Set to True to retry applying firewall</span>
+<span class="sd">                rules when the expected policy does not match the current policy</span>
+<span class="sd">                when dry_run is enabled.</span>
+<span class="sd">            maximum_retries (int): The number of times enforce_firewall_policy</span>
+<span class="sd">                will attempt to set the current firewall policy to the expected</span>
+<span class="sd">                firewall policy. Set to 0 to disable retry behavior.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            enforcer_log_pb2.ProjectResult: A proto with details on the status</span>
+<span class="sd">            of the enforcement and an audit log with any changes made.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">networks</span><span class="p">:</span>
+                <span class="n">networks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">networks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_project_networks</span><span class="p">()</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">networks</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_set_error_status</span><span class="p">(</span><span class="s1">&#39;no networks found for project&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span>
+
+            <span class="n">expected_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_expected_rules</span><span class="p">(</span><span class="n">networks</span><span class="p">,</span>
+                                                      <span class="n">firewall_policy</span><span class="p">)</span>
+
+            <span class="n">rules_before_enforcement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_fw_rules</span><span class="p">(</span>
+                <span class="n">add_rule_callback</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">EnforcementError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_error_status</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">())</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">ComputeApiDisabledError</span><span class="p">,</span> <span class="n">ProjectDeletedError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_deleted_status</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+
+            <span class="n">firewall_enforcer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_firewall_enforcer</span><span class="p">(</span>
+                <span class="n">expected_rules</span><span class="p">,</span> <span class="n">rules_before_enforcement</span><span class="p">,</span>
+                <span class="n">add_rule_callback</span><span class="p">)</span>
+
+            <span class="n">rules_after_enforcement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_firewall_policy</span><span class="p">(</span>
+                <span class="n">firewall_enforcer</span><span class="p">,</span>
+                <span class="n">expected_rules</span><span class="p">,</span>
+                <span class="n">networks</span><span class="p">,</span>
+                <span class="n">allow_empty_ruleset</span><span class="p">,</span>
+                <span class="n">prechange_callback</span><span class="p">,</span>
+                <span class="n">add_rule_callback</span><span class="p">,</span>
+                <span class="n">retry_on_dry_run</span><span class="p">,</span>
+                <span class="n">maximum_retries</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">STATUS_UNSPECIFIED</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">STATUS_SUCCESS</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_fw_results</span><span class="p">(</span><span class="n">firewall_enforcer</span><span class="p">,</span>
+                                    <span class="n">rules_before_enforcement</span><span class="p">,</span>
+                                    <span class="n">rules_after_enforcement</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">gce_firewall_enforcement</span><span class="o">.</span><span class="n">rules_modified_count</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Firewall policy not changed for </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._apply_firewall_policy"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._apply_firewall_policy">[docs]</a>    <span class="k">def</span> <span class="nf">_apply_firewall_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">firewall_enforcer</span><span class="p">,</span>
+                               <span class="n">expected_rules</span><span class="p">,</span>
+                               <span class="n">networks</span><span class="p">,</span>
+                               <span class="n">allow_empty_ruleset</span><span class="p">,</span>
+                               <span class="n">prechange_callback</span><span class="p">,</span>
+                               <span class="n">add_rule_callback</span><span class="p">,</span>
+                               <span class="n">retry_on_dry_run</span><span class="p">,</span>
+                               <span class="n">maximum_retries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attempt to enforce the expected rules until successful.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            firewall_enforcer (fe.FirewallEnforcer): The firewall enforcer</span>
+<span class="sd">                instance to use for updating the firewall rules.</span>
+<span class="sd">            expected_rules (fe.FirewallRules): A list of expected firewall</span>
+<span class="sd">                rules to apply to the project.</span>
+<span class="sd">            networks (list): A list of networks on the project that the policy</span>
+<span class="sd">                applies to.</span>
+<span class="sd">            allow_empty_ruleset (bool): If set to true and firewall_policy has</span>
+<span class="sd">                no rules, all current firewall rules will be deleted from the</span>
+<span class="sd">                project.</span>
+<span class="sd">            prechange_callback (Callable): See FirewallEnforcer.apply_firewall()</span>
+<span class="sd">                docstring for more details.</span>
+<span class="sd">            add_rule_callback (Callable): A callback function that checks</span>
+<span class="sd">                whether a firewall rule should be applied. If the callback</span>
+<span class="sd">                returns False, that rule will not be modified.</span>
+<span class="sd">            retry_on_dry_run (bool): Set to True to retry applying firewall</span>
+<span class="sd">                rules when the expected policy does not match the current policy</span>
+<span class="sd">                when dry_run is enabled.</span>
+<span class="sd">            maximum_retries (int): The number of times enforce_firewall_policy</span>
+<span class="sd">                will attempt to set the current firewall policy to the expected</span>
+<span class="sd">                firewall policy. Set to 0 to disable retry behavior.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fe.FirewallRules: A FirewallRules instance with the firewall rules</span>
+<span class="sd">                configured on the project after enforcement.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rules_after_enforcement</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">retry_enforcement_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">STATUS_ERROR</span><span class="p">,</span> <span class="n">STATUS_DELETED</span><span class="p">):</span>
+            <span class="n">change_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">change_count</span> <span class="o">=</span> <span class="n">firewall_enforcer</span><span class="o">.</span><span class="n">apply_firewall</span><span class="p">(</span>
+                    <span class="n">prechange_callback</span><span class="o">=</span><span class="n">prechange_callback</span><span class="p">,</span>
+                    <span class="n">allow_empty_ruleset</span><span class="o">=</span><span class="n">allow_empty_ruleset</span><span class="p">,</span>
+                    <span class="n">networks</span><span class="o">=</span><span class="n">networks</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">fe</span><span class="o">.</span><span class="n">FirewallEnforcementFailedError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_error_status</span><span class="p">(</span>
+                    <span class="s1">&#39;error enforcing firewall for project: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="n">change_count</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rules_after_enforcement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_fw_rules</span><span class="p">(</span>
+                    <span class="n">add_rule_callback</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">EnforcementError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_error_status</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">())</span>
+                <span class="n">change_count</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">change_count</span><span class="p">:</span>
+                <span class="c1"># Don&#39;t attempt to retry if there were no changes. This can be</span>
+                <span class="c1"># caused by the prechange callback returning false or an</span>
+                <span class="c1"># exception.</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_dry_run</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">retry_on_dry_run</span><span class="p">)</span> <span class="ow">or</span>
+                    <span class="n">rules_after_enforcement</span> <span class="o">==</span> <span class="n">expected_rules</span><span class="p">):</span>
+                <span class="k">break</span>
+
+            <span class="n">retry_enforcement_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">retry_enforcement_count</span> <span class="o">&lt;=</span> <span class="n">maximum_retries</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;New firewall rules do not match the expected &#39;</span>
+                            <span class="s1">&#39;rules enforced by the policy for project </span><span class="si">%s</span><span class="s1">, &#39;</span>
+                            <span class="s1">&#39;retrying. (Retry #</span><span class="si">%d</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                            <span class="n">retry_enforcement_count</span><span class="p">)</span>
+                <span class="n">firewall_enforcer</span><span class="o">.</span><span class="n">refresh_current_rules</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_error_status</span><span class="p">(</span><span class="s1">&#39;New firewall rules do not match &#39;</span>
+                                       <span class="s1">&#39;the expected rules enforced by &#39;</span>
+                                       <span class="s1">&#39;the policy&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rules_after_enforcement</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._initialize_firewall_enforcer"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._initialize_firewall_enforcer">[docs]</a>    <span class="k">def</span> <span class="nf">_initialize_firewall_enforcer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                      <span class="n">expected_rules</span><span class="p">,</span>
+                                      <span class="n">rules_before_enforcement</span><span class="p">,</span>
+                                      <span class="n">add_rule_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets current and expected rules, returns a FirewallEnforcer object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            expected_rules (fe.FirewallRules): A list of expected firewall</span>
+<span class="sd">                rules to apply to the project.</span>
+<span class="sd">            rules_before_enforcement (fe.FirewallRules): The list of current</span>
+<span class="sd">                firewall rules configured on the project.</span>
+<span class="sd">            add_rule_callback (Callable): A callback function that checks</span>
+<span class="sd">                whether a firewall rule should be applied. If the callback</span>
+<span class="sd">                returns False, that rule will not be modified.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fe.FirewallEnforcer: A new FirewallEnforcer object configured with</span>
+<span class="sd">                the expected policy for the project.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">enforcer</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">FirewallEnforcer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="p">,</span>
+            <span class="n">expected_rules</span><span class="p">,</span>
+            <span class="n">rules_before_enforcement</span><span class="p">,</span>
+            <span class="n">project_sema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_project_sema</span><span class="p">,</span>
+            <span class="n">operation_sema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_operation_sema</span><span class="p">,</span>
+            <span class="n">add_rule_callback</span><span class="o">=</span><span class="n">add_rule_callback</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">enforcer</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._get_project_networks"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._get_project_networks">[docs]</a>    <span class="k">def</span> <span class="nf">_get_project_networks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Enumerate the current project networks and returns a sorted list.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A sorted list of network names.</span>
+
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ProjectDeletedError: Raised if the project has been deleted.</span>
+<span class="sd">            ComputeApiDisabledError: Raised if the Compute API is not enabled on</span>
+<span class="sd">                the project.</span>
+<span class="sd">            EnforcementError: Raised if there are any exceptions raised while</span>
+<span class="sd">                adding the firewall rules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">networks</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="o">.</span><span class="n">get_networks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiNotEnabledError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Error listing networks for project </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ComputeApiDisabledError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">http_error</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">http_error</span>
+            <span class="k">if</span> <span class="n">_is_project_deleted_error</span><span class="p">(</span><span class="n">http_error</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> has been deleted.&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ProjectDeletedError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">http_error</span><span class="p">))</span>
+
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Error listing networks for project </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">EnforcementError</span><span class="p">(</span>
+                <span class="n">STATUS_ERROR</span><span class="p">,</span>
+                <span class="s1">&#39;error getting current networks from API: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">http_error</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">network_name</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">get_network_name_from_url</span><span class="p">(</span>
+                <span class="n">network</span><span class="p">[</span><span class="s1">&#39;selfLink&#39;</span><span class="p">])</span>
+            <span class="n">networks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">network_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">networks</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._get_expected_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._get_expected_rules">[docs]</a>    <span class="k">def</span> <span class="nf">_get_expected_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">networks</span><span class="p">,</span> <span class="n">firewall_policy</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds a FirewallRules object with the rules that should be defined.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            networks (list): A list of networks on the project that the</span>
+<span class="sd">                policy applies to.</span>
+<span class="sd">            firewall_policy (list): A list of firewall rules that should be</span>
+<span class="sd">                configured on the project networks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fe.FirewallRules: A new FirewallRules object with the expected</span>
+<span class="sd">                policy.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            EnforcementError: Raised if one or more firewall rules in the policy</span>
+<span class="sd">                are invalid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">expected_rules</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">FirewallRules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">network_name</span> <span class="ow">in</span> <span class="n">networks</span><span class="p">:</span>
+                <span class="n">expected_rules</span><span class="o">.</span><span class="n">add_rules</span><span class="p">(</span>
+                    <span class="n">firewall_policy</span><span class="p">,</span> <span class="n">network_name</span><span class="o">=</span><span class="n">network_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">fe</span><span class="o">.</span><span class="n">InvalidFirewallRuleError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EnforcementError</span><span class="p">(</span><span class="n">STATUS_ERROR</span><span class="p">,</span> <span class="s1">&#39;error adding the expected &#39;</span>
+                                   <span class="s1">&#39;firewall rules from the policy: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">expected_rules</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._get_current_fw_rules"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._get_current_fw_rules">[docs]</a>    <span class="k">def</span> <span class="nf">_get_current_fw_rules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_rule_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a new FirewallRules object with the current rules.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            add_rule_callback (Callable): A callback function that checks</span>
+<span class="sd">                whether a firewall rule should be applied. If the callback</span>
+<span class="sd">                returns False, that rule will not be modified.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fe.FirewallRules: A new FirewallRules object with the current rules</span>
+<span class="sd">                added to it.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ProjectDeletedError: Raised if the project has been deleted.</span>
+<span class="sd">            ComputeApiDisabledError: Raised if the Compute API is not enabled on</span>
+<span class="sd">                the project.</span>
+<span class="sd">            EnforcementError: Raised if there are any exceptions raised while</span>
+<span class="sd">                adding the firewall rules.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current_rules</span> <span class="o">=</span> <span class="n">fe</span><span class="o">.</span><span class="n">FirewallRules</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span>
+                                         <span class="n">add_rule_callback</span><span class="o">=</span><span class="n">add_rule_callback</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">current_rules</span><span class="o">.</span><span class="n">add_rules_from_api</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_client</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiNotEnabledError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Error getting firewall rules for project </span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ComputeApiDisabledError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">http_error</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">http_error</span>
+            <span class="k">if</span> <span class="n">_is_project_deleted_error</span><span class="p">(</span><span class="n">http_error</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> has been deleted.&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">ProjectDeletedError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">http_error</span><span class="p">))</span>
+
+            <span class="k">raise</span> <span class="n">EnforcementError</span><span class="p">(</span>
+                <span class="n">STATUS_ERROR</span><span class="p">,</span>
+                <span class="s1">&#39;error getting current firewall rules from API: </span><span class="si">%s</span><span class="s1">&#39;</span>
+                <span class="o">%</span> <span class="n">http_error</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">fe</span><span class="o">.</span><span class="n">InvalidFirewallRuleError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EnforcementError</span><span class="p">(</span><span class="n">STATUS_ERROR</span><span class="p">,</span>
+                                   <span class="s1">&#39;error getting current firewall &#39;</span>
+                                   <span class="s1">&#39;rules from API: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">current_rules</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._update_fw_results"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._update_fw_results">[docs]</a>    <span class="k">def</span> <span class="nf">_update_fw_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">firewall_enforcer</span><span class="p">,</span>
+                           <span class="n">rules_before_enforcement</span><span class="p">,</span>
+                           <span class="n">rules_after_enforcement</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update the result proto with details on any changes made.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            firewall_enforcer (fe.FirewallEnforcer): The firewall enforcer</span>
+<span class="sd">                instance to use for updating the firewall rules.</span>
+<span class="sd">            rules_before_enforcement (fe.FirewallRules): The firewall rules</span>
+<span class="sd">                before enforcer made any changes.</span>
+<span class="sd">            rules_after_enforcement (fe.FirewallRules): The firewall rules</span>
+<span class="sd">                after enforcer made any changes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">gce_firewall_enforcement</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">rules_modified_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">firewall_enforcer</span><span class="o">.</span><span class="n">get_inserted_rules</span><span class="p">()]):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_added</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_modified_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">firewall_enforcer</span><span class="o">.</span><span class="n">get_deleted_rules</span><span class="p">()]):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_removed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_modified_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">firewall_enforcer</span><span class="o">.</span><span class="n">get_updated_rules</span><span class="p">()]):</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_updated</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_modified_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># If an error occurred during enforcement, rules_after_enforcement may</span>
+        <span class="c1"># not exist yet.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">rules_after_enforcement</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> could not list firewall rules after enforcement&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+
+            <span class="c1"># Ensure original rules are in audit log in case roll back is</span>
+            <span class="c1"># required</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_before</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">rules_before_enforcement</span><span class="o">.</span><span class="n">as_json</span><span class="p">()</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_before</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">rules_before</span><span class="o">.</span><span class="n">json</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">rules_before_enforcement</span> <span class="o">!=</span> <span class="n">rules_after_enforcement</span><span class="p">:</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_before</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">rules_before_enforcement</span><span class="o">.</span><span class="n">as_json</span><span class="p">()</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_before</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">rules_before</span><span class="o">.</span><span class="n">json</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_after</span><span class="o">.</span><span class="n">json</span> <span class="o">=</span> <span class="n">rules_after_enforcement</span><span class="o">.</span><span class="n">as_json</span><span class="p">()</span>
+            <span class="n">results</span><span class="o">.</span><span class="n">rules_after</span><span class="o">.</span><span class="n">hash</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">rules_after</span><span class="o">.</span><span class="n">json</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">rule_name</span><span class="p">,</span>
+             <span class="n">rule</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rules_after_enforcement</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">rule</span> <span class="o">==</span> <span class="n">rules_before_enforcement</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">rule_name</span><span class="p">,</span> <span class="p">{}):</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">rules_unchanged</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="n">STATUS_SUCCESS</span> <span class="ow">and</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">rules_modified_count</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">results</span><span class="o">.</span><span class="n">rules_updated</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">results</span><span class="o">.</span><span class="n">rules_unchanged</span><span class="p">):</span>
+            <span class="c1"># Check if all previous rules were deleted and all current rules</span>
+            <span class="c1"># were added during this enforcement. If so, this is a newly</span>
+            <span class="c1"># enforced project.</span>
+            <span class="n">previous_fw_rules_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rules_before_enforcement</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span>
+            <span class="n">current_fw_rules_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rules_after_enforcement</span><span class="o">.</span><span class="n">rules</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">rules_removed</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">previous_fw_rules_count</span> <span class="ow">and</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">rules_added</span><span class="p">)</span> <span class="o">==</span> <span class="n">current_fw_rules_count</span><span class="p">):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> had all of its firewall rules changed..&#39;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">)</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">all_rules_changed</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._set_error_status"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._set_error_status">[docs]</a>    <span class="k">def</span> <span class="nf">_set_error_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set status to result ERROR and update the reason string from msg.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg (str): The error message to use as the status reason.</span>
+<span class="sd">            *args (list): Optional args to format the msg string with.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">%=</span> <span class="n">args</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">STATUS_ERROR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status_reason</span> <span class="o">=</span> <span class="n">msg</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> had an error: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProjectEnforcer._set_deleted_status"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectEnforcer._set_deleted_status">[docs]</a>    <span class="k">def</span> <span class="nf">_set_deleted_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set status of result to DELETED and update reason string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            e (Exception): The exception raised.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">STATUS_DELETED</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ProjectDeletedError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status_reason</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;Project scheduled for deletion: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> scheduled for deletion: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ComputeApiDisabledError</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">status_reason</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s1">&#39;Project has GCE API disabled: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Project </span><span class="si">%s</span><span class="s1"> has the GCE API disabled: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="_is_project_deleted_error"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer._is_project_deleted_error">[docs]</a><span class="k">def</span> <span class="nf">_is_project_deleted_error</span><span class="p">(</span><span class="n">err</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks if the error is due to the project having been deleted.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        err (HttpError): The error message returned by the API call.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        bool: True if the project was deleted, else False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">error_msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span>
+        <span class="n">err</span><span class="p">)</span>  <span class="c1"># HttpError Class decodes json encoded error into str</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">err</span><span class="o">.</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">404</span><span class="p">)</span> <span class="ow">and</span>
+         <span class="p">(</span><span class="s1">&#39;Invalid value for project&#39;</span> <span class="ow">in</span> <span class="n">error_msg</span> <span class="ow">or</span>
+          <span class="c1"># Error string changed.</span>
+          <span class="s1">&#39;Failed to find project&#39;</span> <span class="ow">in</span> <span class="n">error_msg</span><span class="p">))</span> <span class="ow">or</span>
+            <span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="mi">403</span> <span class="ow">and</span>
+             <span class="s1">&#39;scheduled for deletion&#39;</span> <span class="ow">in</span> <span class="n">error_msg</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base error class for the module.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="EnforcementError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.EnforcementError">[docs]</a><span class="k">class</span> <span class="nc">EnforcementError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error encountered while enforcing firewall on project.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            status (int): The status code to use for the error.</span>
+<span class="sd">            reason (str): The reason to use for the error.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status_string</span> <span class="o">=</span> <span class="n">enforcer_log_pb2</span><span class="o">.</span><span class="n">EnforcementStatus</span><span class="o">.</span><span class="n">Name</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reason</span> <span class="o">=</span> <span class="n">reason</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">EnforcementError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+
+<div class="viewcode-block" id="EnforcementError.status"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.EnforcementError.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return status.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Status code.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span></div>
+
+<div class="viewcode-block" id="EnforcementError.reason"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.EnforcementError.reason">[docs]</a>    <span class="k">def</span> <span class="nf">reason</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return reason.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Status reason.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reason</span></div>
+
+<div class="viewcode-block" id="EnforcementError.__str__"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.EnforcementError.__str__">[docs]</a>    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stringify.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The stringified error message.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_status_string</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reason</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ProjectDeletedError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ProjectDeletedError">[docs]</a><span class="k">class</span> <span class="nc">ProjectDeletedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error raised if a project to be enforced has been marked for deletion.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ComputeApiDisabledError"><a class="viewcode-back" href="../../../../../google.cloud.forseti.enforcer.project_enforcer.html#google.cloud.forseti.enforcer.project_enforcer.ComputeApiDisabledError">[docs]</a><span class="k">class</span> <span class="nc">ComputeApiDisabledError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error raised if a project to be enforced has the compute API disabled.&quot;&quot;&quot;</span></div>
+</pre></div>
