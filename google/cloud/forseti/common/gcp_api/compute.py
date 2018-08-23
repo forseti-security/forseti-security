@@ -13,8 +13,12 @@
 # limitations under the License.
 
 """Wrapper for Compute API client."""
+# pylint: disable=too-many-lines
 import json
+import logging
 import os
+import time
+from uuid import uuid4
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -22,6 +26,7 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
+from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -56,9 +61,9 @@ def _api_not_enabled(error):
             error_details = json.loads(error.content.decode('utf-8'))
             all_errors = error_details.get('error', {}).get('errors', [])
             api_disabled_errors = [
-                error for error in all_errors
-                if (error.get('domain') == 'usageLimits' and
-                    error.get('reason') == 'accessNotConfigured')
+                err for err in all_errors
+                if (err.get('domain') == 'usageLimits' and
+                    err.get('reason') == 'accessNotConfigured')
             ]
             if (api_disabled_errors and
                     len(api_disabled_errors) == len(all_errors)):
@@ -98,8 +103,6 @@ def _flatten_aggregated_list_results(project_id, paged_results, item_key,
         if api_not_enabled:
             raise api_errors.ApiNotEnabledError(details, e)
         raise api_errors.ApiExecutionError(project_id, e)
-
-
 # pylint: enable=invalid-name
 
 
@@ -130,6 +133,41 @@ def _flatten_list_results(project_id, paged_results, item_key):
         raise api_errors.ApiExecutionError(project_id, e)
 
 
+def _debug_operation_response_time(project_id, operation):
+    """Log timing details for a running operation if debug logs enabled.
+
+    Args:
+        project_id (str): The project id the operation was for.
+        operation (dict): The last Operation resource returned from the
+            API server.
+    """
+    if LOGGER.getEffectiveLevel() > logging.DEBUG:
+        # Don't compute times if DEBUG logging is not enabled.
+        return
+
+    try:
+        op_insert_timestamp = date_time.get_unix_timestamp_from_string(
+            operation.get('insertTime', ''))
+        op_start_timestamp = date_time.get_unix_timestamp_from_string(
+            operation.get('startTime', ''))
+        op_end_timestamp = date_time.get_unix_timestamp_from_string(
+            operation.get('endTime', ''))
+    except ValueError:
+        op_insert_timestamp = op_start_timestamp = op_end_timestamp = 0
+
+    op_wait_time = op_end_timestamp - op_insert_timestamp
+    op_exec_time = op_end_timestamp - op_start_timestamp
+    LOGGER.debug('Operation %s completed for project %s. Operation type: %s, '
+                 'request time: %s, start time: %s, finished time: %s, '
+                 'req->end seconds: %i, start->end seconds: %i.',
+                 operation.get('name', ''),
+                 project_id,
+                 operation.get('operationType', ''),
+                 operation.get('insertTime', ''),
+                 operation.get('startTime', ''),
+                 operation.get('endTime', ''), op_wait_time, op_exec_time)
+
+
 # pylint: disable=too-many-instance-attributes
 class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
     """Compute API Respository."""
@@ -137,7 +175,8 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=100.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 read_only=False):
         """Constructor.
 
         Args:
@@ -146,6 +185,8 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            read_only (bool): When set to true, disables any API calls that
+                would modify a resource within the repository.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -163,13 +204,15 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._networks = None
         self._projects = None
         self._region_instance_groups = None
+        self._snapshots = None
         self._subnetworks = None
 
         super(ComputeRepositoryClient, self).__init__(
             'compute', versions=['beta', 'v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter)
+            use_rate_limiter=use_rate_limiter,
+            read_only=read_only)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -194,11 +237,9 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
     @property
     def firewalls(self):
         """Returns a _ComputeFirewallsRepository instance."""
-        # The beta api provides more complete firewall rules data.
-        # TODO: Remove beta when it becomes GA.
         if not self._firewalls:
             self._firewalls = self._init_repository(
-                _ComputeFirewallsRepository, version='beta')
+                _ComputeFirewallsRepository)
         return self._firewalls
 
     @property
@@ -282,6 +323,14 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         return self._region_instance_groups
 
     @property
+    def snapshots(self):
+        """Returns a _ComputeSnapshotsRepository instance."""
+        if not self._snapshots:
+            self._snapshots = self._init_repository(
+                _ComputeSnapshotsRepository)
+        return self._snapshots
+
+    @property
     def subnetworks(self):
         """Returns a _ComputeSubnetworksRepository instance."""
         if not self._subnetworks:
@@ -343,8 +392,11 @@ class _ComputeDisksRepository(repository_mixins.AggregatedListQueryMixin,
 
 
 class _ComputeFirewallsRepository(repository_mixins.ListQueryMixin,
+                                  repository_mixins.InsertResourceMixin,
+                                  repository_mixins.UpdateResourceMixin,
+                                  repository_mixins.DeleteResourceMixin,
                                   _base_repository.GCPRepository):
-    """Implementation of Compute Forwarding Rules repository."""
+    """Implementation of Compute Firewall Rules repository."""
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -353,7 +405,9 @@ class _ComputeFirewallsRepository(repository_mixins.ListQueryMixin,
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ComputeFirewallsRepository, self).__init__(
-            component='firewalls', **kwargs)
+            component='firewalls', entity_field='firewall',
+            resource_path_template='{project}/global/firewalls/{firewall}',
+            **kwargs)
 
 
 class _ComputeForwardingRulesRepository(
@@ -573,6 +627,20 @@ class _ComputeRegionInstanceGroupsRepository(repository_mixins.ListQueryMixin,
             self, resource, verb='listInstances', **kwargs)
 
 
+class _ComputeSnapshotsRepository(repository_mixins.ListQueryMixin,
+                                  _base_repository.GCPRepository):
+    """Implementation of Compute Snapshots repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ComputeSnapshotsRepository, self).__init__(
+            component='snapshots', **kwargs)
+
+
 class _ComputeSubnetworksRepository(repository_mixins.AggregatedListQueryMixin,
                                     repository_mixins.ListQueryMixin,
                                     _base_repository.GCPRepository):
@@ -605,8 +673,12 @@ class _ComputeSubnetworksRepository(repository_mixins.AggregatedListQueryMixin,
     # pylint: enable=arguments-differ
 
 
+# pylint: disable=too-many-public-methods
 class ComputeClient(object):
     """Compute Client."""
+
+    # Estimation of how long to initially wait for an async API to complete.
+    ESTIMATED_API_COMPLETION_IN_SEC = 7
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -618,17 +690,16 @@ class ComputeClient(object):
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
             global_configs, 'compute')
 
+        # TODO: Also allow read only to be set from the global_configs.
+        # Read only if either read_only or dry_run argument is True.
+        read_only = (kwargs.get('read_only', False) or
+                     kwargs.get('dry_run', False))
+
         self.repository = ComputeRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
+            read_only=read_only,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
-
-        # Default service object, currently used by enforcer.
-        # TODO: Clean up enforcer so this isn't required.
-        self.service = self.repository.gcp_services['beta']
-
-    # TODO: Migrate helper functions from gce_firewall_enforcer.py
-    # ComputeFirewallAPI class.
 
     def get_backend_services(self, project_id):
         """Get the backend services for a project.
@@ -674,6 +745,32 @@ class ComputeClient(object):
                      project_id, zone, results)
         return results
 
+    def get_snapshots(self, project_id):
+        """Return the list of all snapshots in the project.
+
+        Args:
+            project_id (str): The project id.
+
+        Returns:
+            list: A list of snapshot resources for this project.
+        """
+
+        try:
+            LOGGER.debug('Getting the list of all snapshots in project: %s',
+                         project_id)
+            repository = self.repository.snapshots
+            results = repository.list(project_id)
+            return api_helpers.flatten_list_results(results, 'items')
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                err = api_errors.ApiNotEnabledError(details, e)
+            else:
+                err = api_errors.ApiExecutionError(project_id, e)
+
+            LOGGER.warn(err)
+            raise err
+
     def get_firewall_rules(self, project_id):
         """Get the firewall rules for a given project id.
 
@@ -691,6 +788,168 @@ class ComputeClient(object):
                      'project_id = %s, flattened_results = %s',
                      project_id, flattened_results)
         return flattened_results
+
+    def delete_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
+                             retry_count=0, timeout=0):
+        """Delete a firewall rule.
+
+        Args:
+          project_id (str): The project id.
+          rule (dict): The firewall rule dict to delete.
+          uuid (str): An optional UUID to identify this request. If the same
+              request is resent to the API, it will ignore the additional
+              requests. If uuid is not set, one will be generated for the
+              request.
+          blocking (bool): If true, don't return until the async operation
+              completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
+          timeout (float): If greater than 0 and blocking is True, then raise an
+              exception if timeout seconds pass before the operation completes.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            OperationTimeoutError: Raised if the operation times out.
+        """
+        repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
+
+        try:
+            results = repository.delete(project_id, target=rule['name'],
+                                        requestId=uuid)
+            if blocking:
+                results = self.wait_for_completion(project_id, results, timeout)
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error('Error deleting firewall rule %s: %s', rule['name'], e)
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+        except api_errors.OperationTimeoutError as e:
+            LOGGER.warn(
+                'Timeout deleting firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.delete_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
+
+        LOGGER.info(
+            'Deleting firewall rule %s on project %s. Rule: %s, '
+            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+        return results
+
+    def insert_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
+                             retry_count=0, timeout=0):
+        """Insert a firewall rule.
+
+        Args:
+          project_id (str): The project id.
+          rule (dict): The firewall rule dict to insert.
+          uuid (str): An optional UUID to identify this request. If the same
+              request is resent to the API, it will ignore the additional
+              requests. If uuid is not set, one will be generated for the
+              request.
+          blocking (bool): If true, don't return until the async operation
+              completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
+          timeout (float): If greater than 0 and blocking is True, then raise an
+              exception if timeout seconds pass before the operation completes.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            OperationTimeoutError: Raised if the operation times out.
+        """
+        repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
+
+        try:
+            results = repository.insert(project_id, data=rule, requestId=uuid)
+            if blocking:
+                results = self.wait_for_completion(project_id, results, timeout)
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error(
+                'Error inserting firewall rule %s: %s', rule['name'], e)
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+        except api_errors.OperationTimeoutError as e:
+            LOGGER.warn(
+                'Timeout inserting firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.insert_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
+
+        LOGGER.info(
+            'Inserting firewall rule %s on project %s. Rule: %s, '
+            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+        return results
+
+    def update_firewall_rule(self, project_id, rule, uuid=None, blocking=False,
+                             retry_count=0, timeout=0):
+        """Update a firewall rule.
+
+        Args:
+          project_id (str): The project id.
+          rule (dict): The firewall rule dict to update.
+          uuid (str): An optional UUID to identify this request. If the same
+              request is resent to the API, it will ignore the additional
+              requests. If uuid is not set, one will be generated for the
+              request.
+          blocking (bool): If true, don't return until the async operation
+              completes on the backend or timeout seconds pass.
+          retry_count (int): If greater than 0, retry on operation timeout.
+          timeout (float): If greater than 0 and blocking is True, then raise an
+              exception if timeout seconds pass before the operation completes.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            OperationTimeoutError: Raised if the operation times out.
+        """
+        repository = self.repository.firewalls
+        if not uuid:
+            uuid = uuid4()
+
+        try:
+            results = repository.update(project_id, target=rule['name'],
+                                        data=rule, requestId=uuid)
+            if blocking:
+                results = self.wait_for_completion(project_id, results, timeout)
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.error('Error updating firewall rule %s: %s', rule['name'], e)
+            api_not_enabled, details = _api_not_enabled(e)
+            if api_not_enabled:
+                raise api_errors.ApiNotEnabledError(details, e)
+            raise api_errors.ApiExecutionError(project_id, e)
+        except api_errors.OperationTimeoutError as e:
+            LOGGER.warn(
+                'Timeout updating firewall rule %s: %s', rule['name'], e)
+            if retry_count:
+                retry_count -= 1
+                return self.update_firewall_rule(
+                    project_id, rule, uuid, blocking, retry_count, timeout)
+            else:
+                raise
+
+        LOGGER.info(
+            'Updating firewall rule %s on project %s. Rule: %s, '
+            'Result: %s', rule['name'], project_id, json.dumps(rule), results)
+        return results
 
     def get_forwarding_rules(self, project_id, region=None):
         """Get the forwarding rules for a project.
@@ -1077,3 +1336,44 @@ class ComputeClient(object):
             if api_not_enabled:
                 return False
             raise api_errors.ApiExecutionError(project_id, e)
+
+    def wait_for_completion(self, project_id, operation, timeout=0,
+                            initial_delay=None):
+        """Wait for the operation to complete.
+
+        Args:
+            project_id (str): The project id.
+            operation (dict): The global operation response from an API call.
+            timeout (float): The maximum time to wait for the operation to
+                complete.
+            initial_delay (float): The time to wait before first checking if the
+                API has completed.
+
+        Returns:
+            dict: Global Operation status and info.
+            https://cloud.google.com/compute/docs/reference/latest/globalOperations/get
+
+        Raises:
+            OperationTimeoutError: Raised if the operation times out.
+        """
+        if operation.get('status', '') == 'DONE':
+            return operation
+
+        if initial_delay is None:
+            initial_delay = self.ESTIMATED_API_COMPLETION_IN_SEC
+
+        started_timestamp = time.time()
+        time.sleep(initial_delay)
+
+        while True:
+            operation_name = operation['name']
+            operation = self.get_global_operation(project_id,
+                                                  operation_id=operation_name)
+            if operation.get('status', '') == 'DONE':
+                _debug_operation_response_time(project_id, operation)
+                return operation
+
+            if timeout and time.time() - started_timestamp > timeout:
+                raise api_errors.OperationTimeoutError(project_id, operation)
+
+            time.sleep(2)

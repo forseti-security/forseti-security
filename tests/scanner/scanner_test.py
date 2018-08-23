@@ -22,7 +22,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner import dao as scanner_dao
-from tests.services.scanner.scanner_dao_test import ScannerBaseDbTestCase
+from tests.services.scanner import scanner_base_db
 
 
 Session = sessionmaker()
@@ -45,11 +45,11 @@ NO_SCANNERS = {'scanners': [
 TWO_SCANNERS = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
     {'name': 'bucket_acl', 'enabled': True},
-    {'name': 'cloudsql_acl', 'enabled': False},
-    {'name': 'iam_policy', 'enabled': True}
+    {'name': 'cloudsql_acl', 'enabled': True},
+    {'name': 'iam_policy', 'enabled': False}
 ]}
 
-class ScannerRunnerTest(ScannerBaseDbTestCase):
+class ScannerRunnerTest(scanner_base_db.ScannerBaseDbTestCase):
 
     def setUp(self):
         """Setup method."""
@@ -64,7 +64,8 @@ class ScannerRunnerTest(ScannerBaseDbTestCase):
     @mock.patch(
         'google.cloud.forseti.scanner.scanners.bucket_rules_scanner.buckets_rules_engine', autospec=True)
     @mock.patch(
-        'google.cloud.forseti.services.server.ServiceConfig', autospec=True)
+        'google.cloud.forseti.services.base.config.ServiceConfig',
+        autospec=True)
     def test_scanner_index_id_can_be_correctly_initialized(
         self, mock_service_config, mock_bucket_rules_engine,
         mock_iam_rules_engine):

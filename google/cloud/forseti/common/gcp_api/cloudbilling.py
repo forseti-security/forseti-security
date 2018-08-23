@@ -19,6 +19,7 @@ from httplib2 import HttpLib2Error
 from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
@@ -43,6 +44,7 @@ class CloudBillingRepositoryClient(_base_repository.BaseRepositoryClient):
         if not quota_max_calls:
             use_rate_limiter = False
 
+        self._billing_accounts = None
         self._projects = None
 
         super(CloudBillingRepositoryClient, self).__init__(
@@ -54,6 +56,17 @@ class CloudBillingRepositoryClient(_base_repository.BaseRepositoryClient):
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
     @property
+    def billing_accounts(self):
+        """Returns a _CloudBillingBillingAccountsRepository instance."""
+        if not self._billing_accounts:
+            self._billing_accounts = self._init_repository(
+                _CloudBillingBillingAccountsRepository)
+        return self._billing_accounts
+    # pylint: enable=missing-return-doc, missing-return-type-doc
+
+    # Turn off docstrings for properties.
+    # pylint: disable=missing-return-doc, missing-return-type-doc
+    @property
     def projects(self):
         """Returns a _CloudBillingProjectsRepository instance."""
         if not self._projects:
@@ -61,6 +74,38 @@ class CloudBillingRepositoryClient(_base_repository.BaseRepositoryClient):
                 _CloudBillingProjectsRepository)
         return self._projects
     # pylint: enable=missing-return-doc, missing-return-type-doc
+
+
+class _CloudBillingBillingAccountsRepository(
+        repository_mixins.GetIamPolicyQueryMixin,
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Cloud Billing BillingAccounts repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_CloudBillingBillingAccountsRepository, self).__init__(
+            list_key_field=None, max_results_field='pageSize',
+            component='billingAccounts', **kwargs)
+
+    @staticmethod
+    def get_name(account_id):
+        """Format's a billing account ID to pass to the API
+
+        Args:
+            account_id (str): The billing account id to query, either just the
+                id or the id prefixed with 'billingAccounts/'.
+
+        Returns:
+            str: The formatted resource name.
+        """
+        if account_id and not account_id.startswith('billingAccounts/'):
+            account_id = 'billingAccounts/{}'.format(account_id)
+        return account_id
 
 
 class _CloudBillingProjectsRepository(_base_repository.GCPRepository):
@@ -95,7 +140,7 @@ class _CloudBillingProjectsRepository(_base_repository.GCPRepository):
 
     @staticmethod
     def get_name(project_id):
-        """Format's an organization_id to pass in to .get().
+        """Format's a project_id to pass in to .get().
 
         Args:
             project_id (str): The project id to query, either just the
@@ -110,7 +155,7 @@ class _CloudBillingProjectsRepository(_base_repository.GCPRepository):
 
 
 class CloudBillingClient(object):
-    """CloudSQL Client."""
+    """Cloud Billing Client."""
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -126,7 +171,6 @@ class CloudBillingClient(object):
             quota_max_calls=max_calls,
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
-
 
     def get_billing_info(self, project_id):
         """Gets the billing information for a project.
@@ -162,5 +206,85 @@ class CloudBillingClient(object):
                 return {}
             api_exception = api_errors.ApiExecutionError(
                 'billing_info', e, 'project_id', project_id)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
+            raise api_exception
+
+    def get_billing_accounts(self, master_account_id=None):
+        """Gets all billing accounts the authenticated user has access to.
+
+        If no master account is specified, then all billing accounts the caller
+        has visibility to are returned. Otherwise retuns all subaccounts of the
+        specified master billing account.
+
+
+        Args:
+            master_account_id (str): If set, only return subaccounts under this
+                master billing account.
+
+        Returns:
+            list: A list of BillingAccount resources.
+            https://cloud.google.com/billing/reference/rest/v1/billingAccounts
+
+            {
+              "name": string,
+              "open": boolean,
+              "displayName": string,
+              "masterBillingAccount": string,
+            }
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        filters = ''
+        if master_account_id:
+            filters = 'master_billing_account={}'.format(
+                self.repository.billing_accounts.get_name(master_account_id))
+
+        try:
+            paged_results = self.repository.billing_accounts.list(
+                filter=filters)
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'billingAccounts')
+            LOGGER.debug('Getting billing_accounts,'
+                         ' master_account_id = %s, flattened_results = %s',
+                         master_account_id, flattened_results)
+            return flattened_results
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_exception = api_errors.ApiExecutionError(
+                'billing_accounts', e, 'filter', filters)
+            LOGGER.exception(api_exception)
+            raise api_exception
+
+    def get_billing_acct_iam_policies(self, account_id):
+        """Gets the IAM policies for the given billing account.
+
+        Args:
+            account_id (str): The billing account id.
+
+        Returns:
+            dict: An IAM Policy resource.
+            https://cloud.google.com/billing/reference/rest/v1/Policy
+
+            {
+              "bindings": list,
+              "auditConfigs": list,
+              "etag": string,
+            }
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        name = self.repository.billing_accounts.get_name(account_id)
+
+        try:
+            results = self.repository.billing_accounts.get_iam_policy(
+                name, include_body=False)
+            LOGGER.debug('Getting IAM policies for a given billing account,'
+                         ' account_id = %s, results = %s', account_id, results)
+            return results
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_exception = api_errors.ApiExecutionError(account_id, e)
+            LOGGER.exception(api_exception)
             raise api_exception

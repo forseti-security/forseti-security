@@ -153,10 +153,22 @@ def _mock_cloudbilling():
             return results.BILLING_GET_INFO[projectid]
         return {}
 
+    def _mock_billing_get_billing_accounts():
+        return results.BILLING_GET_ACCOUNTS
+
+    def _mock_billing_get_billing_acct_iam_policies(accountid):
+        if accountid in results.BILLING_IAM_POLICIES:
+            return results.BILLING_IAM_POLICIES[accountid]
+        return {}
+
     cloudbilling_patcher = mock.patch(
         MODULE_PATH + 'cloudbilling.CloudBillingClient', spec=True)
     mock_billing = cloudbilling_patcher.start().return_value
     mock_billing.get_billing_info.side_effect = _mock_billing_get_billing_info
+    mock_billing.get_billing_accounts.side_effect = (
+        _mock_billing_get_billing_accounts)
+    mock_billing.get_billing_acct_iam_policies.side_effect = (
+        _mock_billing_get_billing_acct_iam_policies)
 
     return cloudbilling_patcher
 
@@ -311,6 +323,11 @@ def _mock_gce():
             return results.GCE_GET_NETWORKS[projectid]
         return []
 
+    def _mock_gce_get_snapshots(projectid):
+        if projectid in results.GCE_GET_SNAPSHOTS:
+            return results.GCE_GET_SNAPSHOTS[projectid]
+        return []
+
     def _mock_gce_get_subnetworks(projectid):
         if projectid in results.GCE_GET_SUBNETWORKS:
             return results.GCE_GET_SUBNETWORKS[projectid]
@@ -333,6 +350,7 @@ def _mock_gce():
     mock_gce.get_backend_services.side_effect = _mock_gce_get_backend_services
     mock_gce.get_forwarding_rules.side_effect = _mock_gce_get_forwarding_rules
     mock_gce.get_networks.side_effect = _mock_gce_get_networks
+    mock_gce.get_snapshots.side_effect = _mock_gce_get_snapshots
     mock_gce.get_subnetworks.side_effect = _mock_gce_get_subnetworks
 
     return gce_patcher

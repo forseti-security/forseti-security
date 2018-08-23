@@ -162,6 +162,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is not None:
             self.rule_book.add_rules(rules)
 
+
 # pylint: disable=anomalous-backslash-in-string
 class IamRuleBook(bre.BaseRuleBook):
     """The RuleBook for organization resources.

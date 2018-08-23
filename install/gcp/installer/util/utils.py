@@ -373,7 +373,6 @@ def run_command(cmd_args, number_of_retry=5,
         str: Output, if command was successful.
         err: Error output, if there was an error.
     """
-
     proc = subprocess.Popen(cmd_args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)

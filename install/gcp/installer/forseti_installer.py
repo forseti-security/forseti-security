@@ -97,6 +97,7 @@ class ForsetiInstaller(object):
         self.config = config
         if previous_installer:
             self.populate_installer_environment(previous_installer)
+        gcloud.set_network_host_project_id(self)
 
     def run_setup(self,
                   setup_continuation=False,
@@ -205,8 +206,7 @@ class ForsetiInstaller(object):
             self.check_if_authed_user_in_domain(
                 self.organization_id, authed_user)
         else:
-            gcloud.activate_service_account(authed_user,
-                                            service_account_key_file)
+            gcloud.activate_service_account(service_account_key_file)
 
         gcloud.check_billing_enabled(self.project_id, self.organization_id)
 

@@ -22,9 +22,6 @@ from google.oauth2 import credentials
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_crm_responses
 from tests.common.gcp_api.test_data import http_mocks
-from tests.common.gcp_type.test_data import fake_folders
-from tests.common.gcp_type.test_data import fake_orgs
-from tests.common.gcp_type.test_data import fake_projects
 from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_type.resource import LifecycleState
@@ -72,22 +69,24 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
 
     def test_get_projects_active(self):
         """Test get_projects() for ACTIVE projects."""
-        response = json.dumps(fake_projects.FAKE_ACTIVE_PROJECTS_API_RESPONSE)
+        response = json.dumps(
+            fake_crm_responses.FAKE_ACTIVE_PROJECTS_API_RESPONSE)
         http_mocks.mock_http_response(response)
 
         result = list(self.crm_api_client.get_projects(
             parent_id=fake_crm_responses.FAKE_ORG_ID,
             parent_type='organization',
             lifecycleState=LifecycleState.ACTIVE))
-        self.assertEquals(fake_projects.EXPECTED_FAKE_ACTIVE_PROJECTS1, result)
+        self.assertEquals(
+            fake_crm_responses.EXPECTED_FAKE_ACTIVE_PROJECTS1, result)
 
     def test_get_projects_all(self):
         """Test get_projects() for all lifecycle_states."""
-        response = json.dumps(fake_projects.FAKE_PROJECTS_API_RESPONSE1)
+        response = json.dumps(fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1)
         http_mocks.mock_http_response(response)
 
         result = list(self.crm_api_client.get_projects())
-        self.assertEquals(fake_projects.EXPECTED_FAKE_PROJECTS1, result)
+        self.assertEquals(fake_crm_responses.EXPECTED_FAKE_PROJECTS1, result)
 
     def test_get_projects_api_error(self):
         """Test get_projects() raises ApiExecutionError on HTTP error."""
@@ -165,9 +164,9 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
 
     def test_get_organizations(self):
         """Test get organizations."""
-        fake_orgs_response = json.dumps(fake_orgs.FAKE_ORGS_RESPONSE)
+        fake_orgs_response = json.dumps(fake_crm_responses.FAKE_ORGS_RESPONSE)
         http_mocks.mock_http_response(fake_orgs_response)
-        expected_orgs = fake_orgs.EXPECTED_FAKE_ORGS_FROM_API
+        expected_orgs = fake_crm_responses.EXPECTED_FAKE_ORGS_FROM_API
 
         result = self.crm_api_client.get_organizations()
         self.assertEquals(expected_orgs, result)
@@ -249,9 +248,9 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
     def test_get_folders_all(self):
         """Test get_folders()."""
         fake_folders_response = json.dumps(
-            fake_folders.FAKE_FOLDERS_API_RESPONSE1)
+            fake_crm_responses.FAKE_FOLDERS_API_RESPONSE1)
         http_mocks.mock_http_response(fake_folders_response)
-        expected_folders = fake_folders.EXPECTED_FAKE_FOLDERS1
+        expected_folders = fake_crm_responses.EXPECTED_FAKE_FOLDERS1
 
         result = self.crm_api_client.get_folders(show_deleted=True)
         self.assertEquals(expected_folders, result)
@@ -259,9 +258,9 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
     def test_get_folders_parent(self):
         """Test get_folders()."""
         fake_folders_response = json.dumps(
-            fake_folders.FAKE_FOLDERS_LIST_API_RESPONSE1)
+            fake_crm_responses.FAKE_FOLDERS_LIST_API_RESPONSE1)
         http_mocks.mock_http_response(fake_folders_response)
-        expected_folders = fake_folders.EXPECTED_FAKE_FOLDERS_LIST1
+        expected_folders = fake_crm_responses.EXPECTED_FAKE_FOLDERS_LIST1
         parent = 'organizations/9999'
 
         result = self.crm_api_client.get_folders(parent=parent)
@@ -271,10 +270,10 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
         """Test get_folders() only for lifecycle_state=ACTIVE."""
 
         fake_folders_response = json.dumps(
-            fake_folders.FAKE_ACTIVE_FOLDERS_API_RESPONSE1)
+            fake_crm_responses.FAKE_ACTIVE_FOLDERS_API_RESPONSE1)
         http_mocks.mock_http_response(fake_folders_response)
 
-        expected_folders = fake_folders.EXPECTED_FAKE_ACTIVE_FOLDERS1
+        expected_folders = fake_crm_responses.EXPECTED_FAKE_ACTIVE_FOLDERS1
 
         result = self.crm_api_client.get_folders(show_deleted=False)
         self.assertEquals(expected_folders, result)

@@ -1350,6 +1350,107 @@ LIST_NETWORKS_RESPONSES = [NETWORKS_LIST_PAGE1, NETWORKS_LIST_PAGE2]
 
 EXPECTED_NETWORK_NAME = [u"default1", u"default2"]
 
+SNAPSHOTS_LIST_PAGE1 = """
+{
+ "kind": "compute#snapshotList",
+ "id": "projects/project1/global/snapshots",
+ "items": [
+  {
+   "kind": "compute#snapshot",
+   "id": "314159",
+   "creationTimestamp": "2018-07-12T13:32:03.714-07:00",
+   "name": "instance-1-1531427523",
+   "description": "Daily snapshot of instance-1.",
+   "status": "READY",
+   "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/us-east1-b/disks/instance-1",
+   "sourceDiskId": "7102445878994667099",
+   "diskSizeGb": "10",
+   "storageBytes": "536550912",
+   "storageBytesStatus": "UP_TO_DATE",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/instance-1-1531427523",
+   "labelFingerprint": "foofoo123",
+   "licenseCodes": [
+    "1000205"
+   ],
+   "storageLocations": [
+    "us"
+   ]
+  },
+  {
+   "kind": "compute#snapshot",
+   "id": "6021023",
+   "creationTimestamp": "2018-07-12T13:32:03.912-07:00",
+   "name": "instance-2-1531427523",
+   "description": "Daily snapshot of instance-2.",
+   "status": "READY",
+   "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/us-east1-b/disks/instance-2",
+   "sourceDiskId": "7102445878994667099",
+   "diskSizeGb": "10",
+   "storageBytes": "536550912",
+   "storageBytesStatus": "UP_TO_DATE",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/instance-2-1531427523",
+   "labelFingerprint": "foofoo456",
+   "licenseCodes": [
+    "1000205"
+   ],
+   "storageLocations": [
+    "us"
+   ]
+  }
+ ],
+ "nextPageToken": "123",
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots"
+}
+"""
+
+SNAPSHOTS_LIST_PAGE2 = """
+{
+ "kind": "compute#snapshotList",
+ "id": "projects/project1/global/snapshots",
+ "items": [
+  {
+   "kind": "compute#snapshot",
+   "id": "271828",
+   "creationTimestamp": "2018-07-12T13:32:03.221-07:00",
+   "name": "instance-3-1531427523",
+   "description": "Daily snapshot of instance-3.",
+   "status": "READY",
+   "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/us-east1-b/disks/instance-3",
+   "sourceDiskId": "7102445878994667099",
+   "diskSizeGb": "10",
+   "storageBytes": "536550912",
+   "storageBytesStatus": "UP_TO_DATE",
+   "licenses": [
+    "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+   ],
+   "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/instance-3-1531427523",
+   "labelFingerprint": "foofoo789",
+   "licenseCodes": [
+    "1000205"
+   ],
+   "storageLocations": [
+    "us"
+   ]
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots"
+}
+"""
+
+LIST_SNAPSHOTS_RESPONSES = [SNAPSHOTS_LIST_PAGE1, SNAPSHOTS_LIST_PAGE2]
+
+EXPECTED_SNAPSHOTS_LIST_NAMES = frozenset([
+    "instance-1-1531427523",
+    "instance-2-1531427523",
+    "instance-3-1531427523"
+])
+
 SUBNETWORKS_AGGREGATED_LIST_PAGE1 = """
 {
  "kind": "compute#subnetworkAggregatedList",
@@ -1638,19 +1739,76 @@ EXPECTED_SUBNETWORKS_LIST_SELFLINKS = frozenset([
 ])
 
 GLOBAL_OPERATION_RESPONSE = """
-    {
-      "kind": "compute#operation",
-      "id": "1234",
-      "name": "operation-1234",
-      "operationType": "delete",
-      "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/global/firewalls/test-1234",
-      "targetId": "123456",
-      "status": "PENDING",
-      "user": "mock_data@example.com",
-      "progress": 0,
-      "insertTime": "2017-08-08T10:37:55.413-07:00",
-      "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
- }
+{
+ "kind": "compute#operation",
+ "id": "1234",
+ "name": "operation-1234",
+ "operationType": "delete",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/global/firewalls/test-1234",
+ "targetId": "123456",
+ "status": "PENDING",
+ "user": "mock_data@example.com",
+ "progress": 0,
+ "insertTime": "2017-08-08T10:37:55.413-07:00",
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/operations/operation-1234"
+}
 """
 
 FAKE_OPERATION_ID = "operation-1234"
+
+# Parameters: verb, resource_path
+PENDING_OPERATION_TEMPLATE = """
+{{
+ "kind": "compute#operation",
+ "id": "1234",
+ "name": "operation-1234",
+ "operationType": "{verb}",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/{resource_path}",
+ "targetId": "123456",
+ "status": "PENDING",
+ "user": "mock_data@example.com",
+ "progress": 0,
+ "insertTime": "2018-08-02T06:49:34.713-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/operations/operation-1234"
+}}
+"""
+
+# Parameters: verb, resource_path
+FINISHED_OPERATION_TEMPLATE = """
+{{
+ "kind": "compute#operation",
+ "id": "1234",
+ "name": "operation-1234",
+ "operationType": "{verb}",
+ "targetLink": "https://www.googleapis.com/compute/v1/projects/{resource_path}",
+ "targetId": "123456",
+ "status": "DONE",
+ "user": "mock_data@example.com",
+ "progress": 100,
+ "insertTime": "2018-08-02T06:49:34.713-07:00",
+ "startTime": "2018-08-02T06:49:35.560-07:00",
+ "endTime": "2018-08-02T06:49:42.937-07:00",
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/operations/operation-1234"
+}}
+"""
+
+FAKE_FIREWALL_RULE = {
+    "kind": "compute#firewall",
+    "id": "12345",
+    "creationTimestamp": "2017-05-04T16:23:00.568-07:00",
+    "network": ("https://www.googleapis.com/compute/beta/projects/project1"
+                "/global/networks/default1"),
+    "priority": 1000,
+    "sourceRanges": ["0.0.0.0/0"],
+    "description": "Allow SSH from anywhere",
+    "allowed": [
+        {
+            "IPProtocol": "tcp",
+            "ports": ["22"]
+        }
+    ],
+    "name": "fake-firewall",
+    "direction": "INGRESS",
+    "selfLink": ("https://www.googleapis.com/compute/beta/projects/project1"
+                 "/global/firewalls/fake-firewall")
+}

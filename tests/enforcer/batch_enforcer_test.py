@@ -16,51 +16,33 @@
 """Tests for google.cloud.forseti.enforcer.batch_enforcer."""
 
 import copy
-import json
-import httplib2
-import mock
+from datetime import datetime
 import unittest
+import mock
 
 from tests.enforcer import testing_constants as constants
-from tests.unittest_utils import ForsetiTestCase
 from google.protobuf import text_format
 
 from google.cloud.forseti.enforcer import enforcer_log_pb2
 from google.cloud.forseti.enforcer import batch_enforcer
 
-# Used anywhere a real timestamp could be generated to ensure consistent
-# comparisons in tests
-MOCK_TIMESTAMP = 1234567890
 
-
-class BatchFirewallEnforcerTest(ForsetiTestCase):
+class BatchFirewallEnforcerTest(constants.EnforcerTestCase):
     """Extended unit tests for BatchFirewallEnforcer class."""
 
     def setUp(self):
         """Set up."""
-        self.mock_compute = mock.patch.object(batch_enforcer.compute,
-                                              'ComputeClient').start()
-
-        self.gce_service = self.mock_compute().service
-        self.gce_service.networks().list().execute.return_value = (
-            constants.SAMPLE_TEST_NETWORK_SELFLINK)
-
-        self.project = constants.TEST_PROJECT
-        self.policy = json.loads(constants.RAW_EXPECTED_JSON_POLICY)
+        super(BatchFirewallEnforcerTest, self).setUp()
         self.batch_enforcer = batch_enforcer.BatchFirewallEnforcer(
             dry_run=True)
-
-        self.mock_time = mock.patch.object(batch_enforcer.datelib,
-                                           'Timestamp').start()
-
-        self.mock_time.now().AsMicroTimestamp.return_value = MOCK_TIMESTAMP
-        self.mock_time.now().AsSecondsSinceEpoch.return_value = MOCK_TIMESTAMP
+        self.batch_enforcer._local = mock.Mock(
+            compute_client=self.gce_api_client)
 
         self.expected_summary = (
             enforcer_log_pb2.BatchResult(
-                batch_id=MOCK_TIMESTAMP,
-                timestamp_start_msec=MOCK_TIMESTAMP,
-                timestamp_end_msec=MOCK_TIMESTAMP))
+                batch_id=constants.MOCK_MICROTIMESTAMP,
+                timestamp_start_msec=constants.MOCK_MICROTIMESTAMP,
+                timestamp_end_msec=constants.MOCK_MICROTIMESTAMP))
 
         self.expected_rules = copy.deepcopy(
             constants.EXPECTED_FIREWALL_RULES.values())
@@ -77,7 +59,7 @@ class BatchFirewallEnforcerTest(ForsetiTestCase):
         Expected results:
           An EnforcerLog proto showing 1 success.
         """
-        self.gce_service.firewalls().list().execute.return_value = (
+        self.gce_api_client.get_firewall_rules.return_value = (
             constants.EXPECTED_FIREWALL_API_RESPONSE)
 
         project_policies = [(self.project, self.policy)]
@@ -90,7 +72,8 @@ class BatchFirewallEnforcerTest(ForsetiTestCase):
         self.assertEqual(self.expected_summary, results.summary)
 
         # Verify additional fields added to ProjectResults proto
-        self.assertEqual(MOCK_TIMESTAMP, results.results[0].batch_id)
+        self.assertEqual(constants.MOCK_MICROTIMESTAMP,
+                         results.results[0].batch_id)
 
     def test_batch_enforcer_run_all_changed(self):
         """Validate a full pass of BatchFirewallEnforcer for a single project.
@@ -105,7 +88,7 @@ class BatchFirewallEnforcerTest(ForsetiTestCase):
           An EnforcerLog proto showing 1 success, 1 project changed, and 1
           projects with all_rules_changed.
         """
-        self.gce_service.firewalls().list().execute.side_effect = [
+        self.gce_api_client.get_firewall_rules.side_effect = [
             constants.DEFAULT_FIREWALL_API_RESPONSE,
             constants.EXPECTED_FIREWALL_API_RESPONSE]
 
@@ -131,7 +114,7 @@ class BatchFirewallEnforcerTest(ForsetiTestCase):
         Expected results:
           An EnforcerLog proto showing 1 success, 1 project unchanged.
         """
-        self.gce_service.firewalls().list().execute.return_value = (
+        self.gce_api_client.get_firewall_rules.return_value = (
             constants.DEFAULT_FIREWALL_API_RESPONSE)
 
         project_policies = [(self.project, self.policy)]
@@ -184,7 +167,7 @@ class BatchFirewallEnforcerTest(ForsetiTestCase):
             self.assertEqual(expected_result, result)
             callback_called[0] += 1
 
-        self.gce_service.firewalls().list().execute.side_effect = [
+        self.gce_api_client.get_firewall_rules.side_effect = [
             constants.DEFAULT_FIREWALL_API_RESPONSE,
             constants.EXPECTED_FIREWALL_API_RESPONSE]
 

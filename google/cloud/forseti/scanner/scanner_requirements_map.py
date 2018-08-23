@@ -70,6 +70,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'ke_version_scanner',
          'class_name': 'KeVersionScanner',
          'rules_filename': 'ke_rules.yaml'},
+    'log_sink':
+        {'module_name': 'log_sink_scanner',
+         'class_name': 'LogSinkScanner',
+         'rules_filename': 'log_sink_rules.yaml'},
     'service_account_key':
         {'module_name': 'service_account_key_scanner',
          'class_name': 'ServiceAccountKeyScanner',
