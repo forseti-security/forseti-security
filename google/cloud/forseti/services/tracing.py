@@ -54,7 +54,7 @@ def trace_server_interceptor():
             sampler,
             exporter)
 
-def setup_exporter()
+def setup_exporter():
     try:
         return StackdriverExporter(transport=BackgroundThreadTransport)
     except Exception as e:
