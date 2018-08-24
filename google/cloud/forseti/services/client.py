@@ -720,7 +720,9 @@ class ClientComposition(object):
             Exception: gRPC connected but services not registered
         """
         self.channel = grpc.insecure_channel(endpoint)
-        self.channel = grpc.intercept_channel(self.channel, trace_client_interceptor(endpoint))
+        self.channel = grpc.intercept_channel(
+            self.channel,
+            trace_client_interceptor(endpoint))
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)
