@@ -71,6 +71,26 @@ class ApiNotEnabledError(Error):
         self.http_error = e
 
 
+class OperationTimeoutError(Error):
+    """Operation timed out before completing."""
+
+    CUSTOM_ERROR_MESSAGE = ('GCP operation on project {0} timed out before '
+                            'completing, Operation name: {1}')
+
+    def __init__(self, project_id, operation):
+        """Initialize.
+
+        Args:
+            project_id (str): The project id the operation was for.
+            operation (dict): The last Operation resource returned from the
+                API server.
+        """
+        super(OperationTimeoutError, self).__init__(
+            self.CUSTOM_ERROR_MESSAGE.format(project_id, operation.get('name')))
+        self.project_id = project_id
+        self.operation = operation
+
+
 class ApiInitializationError(Error):
     """Error initializing the API."""
 

@@ -97,6 +97,7 @@ class ForsetiInstaller(object):
         self.config = config
         if previous_installer:
             self.populate_installer_environment(previous_installer)
+        gcloud.set_network_host_project_id(self)
 
     def run_setup(self,
                   setup_continuation=False,

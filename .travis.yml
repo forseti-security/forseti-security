@@ -31,7 +31,7 @@ install:
 script:
   - ./install/scripts/docker_install_forseti.sh
   - ./install/scripts/docker_unittest_forseti.sh
-  - ./install/scripts/docker_pylint_forseti.sh
+  - ./install/scripts/docker_pystyle_forseti.sh
 
 after_success:
   # Collect codecov results.

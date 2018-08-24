@@ -251,7 +251,7 @@ class InventorySummaryTest(ForsetiTestCase):
 
         self.assertTrue(
             ('unable to get inventory summary configuration'
-             in mock_logger.error.call_args[0][0]))
+             in mock_logger.exception.call_args[0][0]))
 
     @mock.patch('google.cloud.forseti.notifier.notifiers.inventory_summary.LOGGER', autospec=True)
     def test_inventory_summary_not_enabled_in_config(self, mock_logger):
@@ -288,9 +288,9 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier._get_summary_data.side_effect = util_errors.NoDataError
         notifier.run()
 
-        self.assertTrue(mock_logger.error.called)
+        self.assertTrue(mock_logger.exception.called)
         self.assertTrue('no summary data is found'
-                        in mock_logger.error.call_args[0][0])
+                        in mock_logger.exception.call_args[0][0])
 
     def test_inventory_summary_can_run_successfully(self):
         mock_inventory_index = mock.MagicMock()

@@ -18,16 +18,14 @@ from collections import defaultdict
 import hashlib
 import json
 
-import migrate.changeset
-from sqlalchemy import and_
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
-from sqlalchemy import inspect
 from sqlalchemy import Integer
 from sqlalchemy import String
 from sqlalchemy import Text
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import and_
+from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 
 from google.cloud.forseti.common.data_access import violation_map as vm
@@ -202,7 +200,6 @@ class Violation(BASE):
         return string.format(
             self.violation_type, self.resource_type, self.rule_name)
 
-    @staticmethod
     def schema_update(table):
         """Maintain all the schema changes for this table.
 
@@ -311,7 +308,6 @@ class ViolationAccess(object):
         return violations
 
 
-
 # pylint: disable=invalid-name
 def convert_sqlalchemy_object_to_dict(sqlalchemy_obj):
     """Convert a sqlalchemy row/record object to a dictionary.
@@ -382,9 +378,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
 
     try:
         violation_hash = hashlib.new(algorithm)
-    except ValueError as e:
-        LOGGER.error('Cannot create hash for a violation with algorithm: '
-                     '%s\n%s', algorithm, e)
+    except ValueError:
+        LOGGER.exception('Cannot create hash for a violation with algorithm: '
+                         '%s', algorithm)
         return ''
 
     try:
@@ -394,9 +390,9 @@ def _create_violation_hash(violation_full_name, resource_data, violation_data):
             json.dumps(resource_data, sort_keys=True) +
             json.dumps(violation_data, sort_keys=True)
         )
-    except TypeError as e:
-        LOGGER.error('Cannot create hash for a violation: %s\n%s',
-                     violation_full_name, e)
+    except TypeError:
+        LOGGER.exception('Cannot create hash for a violation: %s',
+                         violation_full_name)
         return ''
 
     return violation_hash.hexdigest()

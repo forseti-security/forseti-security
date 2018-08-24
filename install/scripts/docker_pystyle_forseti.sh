@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2017 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,21 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rules:
-  - name: Cloud SQL rule to search for publicly exposed instances
-    instance_name: '*'
-    authorized_networks: '0.0.0.0/0'
-    ssl_enabled: 'False'
-    resource:
-      - type: organization
-        resource_ids:
-          - {ORGANIZATION_ID}
-  - name: Cloud SQL rule to search for publicly exposed instances (SSL enabled)
-    instance_name: '*'
-    authorized_networks: '0.0.0.0/0'
-    ssl_enabled: 'True'
-    resource:
-      - type: organization
-        resource_ids:
-          - {ORGANIZATION_ID}
+echo "Running pylint... "
 
+docker -l error exec -it build /bin/bash -c "pylint --rcfile=pylintrc google/ install/"
+
+echo "Running flake8... "
+# E501: Is line too long and should be handled by pylint.
+# E711: Comparison to None and should be handled by pylint.
+# E722: Bare except, it's been deemed OK by this project in certain cases.
+# F841: Assigned but unused variable becuase flake/pycodestyle doesn't ignore _.
+docker -l error exec -it build /bin/bash -c "flake8 --max-line-length=80 --ignore=E501,E711,E722,F841 --exclude=*pb2*.py google/"

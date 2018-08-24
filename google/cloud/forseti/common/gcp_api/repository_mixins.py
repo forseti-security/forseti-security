@@ -14,6 +14,10 @@
 
 """Mixin classes for _base_repository.GCPRepository implementations."""
 
+from google.cloud.forseti.common.util import logger
+
+LOGGER = logger.get_logger(__name__)
+
 
 class ListQueryMixin(object):
     """Mixin that implements paged List query."""
@@ -302,3 +306,170 @@ class CreateQueryMixin(object):
             arguments.update(kwargs.get('arguments'))
 
         return self.execute_query(verb=verb, verb_arguments=arguments)
+
+
+class InsertResourceMixin(object):
+    """Mixin that implements the Insert API command for resources."""
+
+    def insert(self, resource, data, verb='insert', **kwargs):
+        """Insert a new resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): Name of the parent resource to insert the resource
+                under.
+            data (dict): The json representation of the resource to add.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the api.
+
+        Returns:
+            dict: The API response containing the async operation.
+
+        Raises:
+            ValueError: When get_key_field was not defined in the base
+                GCPRepository instance.
+        """
+        if not self._get_key_field:
+            raise ValueError('Repository was created without a valid '
+                             'key_field argument. Cannot execute insert '
+                             'request.')
+        arguments = {
+            self._get_key_field: resource,
+            'body': data,
+        }
+        if kwargs:
+            arguments.update(kwargs)
+
+        if self.read_only:
+            LOGGER.info(
+                'Insert called on a read only repository, no action taken on '
+                'resource %s for data %s', resource, data)
+            target = data.get('name', '')
+            if self._entity_field and target:
+                arguments[self._entity_field] = target
+            resource_link = self._build_resource_link(**arguments)
+            return _create_fake_operation(resource_link, verb, target)
+
+        return self.execute_command(verb=verb, verb_arguments=arguments)
+
+
+class UpdateResourceMixin(object):
+    """Mixin that implements the Update API command for resources."""
+
+    def update(self, resource, data, target=None, verb='update', **kwargs):
+        """Update an existing resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): Name of the parent resource to update the resource
+                under.
+            data (dict): The json representation of the resource to update, this
+                will replace the existing resource.
+            target (str): Name of the entity to update.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the api.
+
+        Returns:
+            dict: The API response containing the async operation.
+
+        Raises:
+            ValueError: When get_key_field was not defined in the base
+                GCPRepository instance.
+        """
+        if not self._get_key_field:
+            raise ValueError('Repository was created without a valid '
+                             'key_field argument. Cannot execute update '
+                             'request.')
+
+        arguments = {
+            self._get_key_field: resource,
+            'body': data,
+        }
+
+        # Most APIs take both a resource and a target when calling update, but
+        # for APIs that the resource itself is the target, then setting
+        # 'entity' to None when initializing the GCPRepository instance will
+        # ensure the correct parameters are passed to the API method.
+        if self._entity_field and target:
+            arguments[self._entity_field] = target
+        if kwargs:
+            arguments.update(kwargs)
+
+        if self.read_only:
+            LOGGER.info(
+                'Update called on a read only repository, no action taken on '
+                'target %s, resource %s for data %s.', target, resource, data)
+            resource_link = self._build_resource_link(**arguments)
+            return _create_fake_operation(resource_link, verb, target)
+
+        return self.execute_command(verb=verb, verb_arguments=arguments)
+
+
+class DeleteResourceMixin(object):
+    """Mixin that implements the Delete API command for resources."""
+
+    def delete(self, resource, target=None, verb='delete', **kwargs):
+        """Delete an existing resource.
+
+        Args:
+            self (GCPRespository): An instance of a GCPRespository class.
+            resource (str): Name of the parent resource to delete the resource
+                under.
+            target (str): Name of the entity to delete.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Optional additional arguments to pass to the api.
+
+        Returns:
+            dict: The API response containing the async operation.
+
+        Raises:
+            ValueError: When get_key_field was not defined in the base
+                GCPRepository instance.
+        """
+        if not self._get_key_field:
+            raise ValueError('Repository was created without a valid '
+                             'key_field argument. Cannot execute delete '
+                             'request.')
+
+        arguments = {
+            self._get_key_field: resource,
+        }
+
+        # Most APIs take both a resource and a target when calling delete, but
+        # for APIs that the resource itself is the target, then setting
+        # 'entity' to None when initializing the GCPRepository instance will
+        # ensure the correct parameters are passed to the API method.
+        if self._entity_field and target:
+            arguments[self._entity_field] = target
+        if kwargs:
+            arguments.update(kwargs)
+
+        if self.read_only:
+            LOGGER.info(
+                'Delete called on a read only repository, no action taken on '
+                'target %s under resource %s.', target, resource)
+            resource_link = self._build_resource_link(**arguments)
+            return _create_fake_operation(resource_link, verb, target)
+
+        return self.execute_command(verb=verb, verb_arguments=arguments)
+
+
+def _create_fake_operation(resource_link, verb, name):
+    """Creates a fake operation resource dictionary for dry run.
+
+    Args:
+        resource_link (str): The full URL to the resource the operation would
+            have modified.
+        verb (str): The API method the operation would have been for.
+        name (str): The operation name, can be any string.
+
+    Returns:
+        dict: A fake Operation resource.
+    """
+    return {
+        'targetLink': resource_link,
+        'operationType': verb,
+        'name': name,
+        'status': 'DONE',
+        'progress': 100,
+    }

@@ -282,7 +282,8 @@ class AuditLoggingRuleBook(bre.BaseRuleBook):
             iterable: A generator of the rule violations.
         """
         violations = itertools.chain()
-       # Check for rules on all ancestors, and the wildcard rule.
+
+        # Check for rules on all ancestors, and the wildcard rule.
         resource_ancestors = (
             relationship.find_ancestors(project, project.full_name))
         resource_ancestors.append(resource_util.create_resource(

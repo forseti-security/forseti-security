@@ -127,5 +127,5 @@ class CloudsqlClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'instances', e, 'project_id', project_id)
-            LOGGER.error(api_exception)
+            LOGGER.exception(api_exception)
             raise api_exception
