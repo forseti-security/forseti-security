@@ -18,6 +18,7 @@ from collections import defaultdict
 import hashlib
 import json
 
+import migrate.changeset
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -37,22 +38,6 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 SUCCESS_STATES = [IndexState.SUCCESS, IndexState.PARTIAL_SUCCESS]
-
-
-def create_column(table, col):
-    """Create a new column in a table.
-
-    Args:
-        table (Table): Table to add the column to.
-        col (Column): Column to be created."""
-    try:
-        col.create(table, populate_default=True)
-    except OperationalError:
-        LOGGER.info('Column already exists, table=%s, column=%s',
-                    table.name, col.name)
-    except Exception as e:
-        LOGGER.error(e)
-        raise
 
 
 class ScannerIndex(BASE):
@@ -406,28 +391,3 @@ def initialize(engine):
     """
     # Create tables if not exists.
     BASE.metadata.create_all(engine)
-    BASE.metadata.bind = engine
-
-    # Update schema changes.
-    # Find all the child classes inherited from declarative base class.
-    base_subclasses = _find_subclasses(BASE)
-
-    # Find all the Table objects for each of the classes.
-    # The format of tables is: {table_name: Table object}.
-    tables = BASE.metadata.tables
-
-    schema_update_method_name = 'schema_update'
-
-    for subclass in base_subclasses:
-        schema_update = getattr(subclass, schema_update_method_name, None)
-        if callable(schema_update) and subclass.__tablename__ in tables:
-            LOGGER.info('Updating table %s', subclass.__tablename__)
-            # schema_update will require the Table object.
-            schema_update(tables.get(subclass.__tablename__))
-
-
-def _find_subclasses(cls):
-    results = []
-    for sc in cls.__subclasses__():
-        results.append(sc)
-    return results
