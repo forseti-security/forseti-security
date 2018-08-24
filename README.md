@@ -6,8 +6,8 @@
 [More info on the branches.](https://forsetisecurity.org/docs/latest/develop/branch-management.html)
 
 # Forseti Security
-A community-driven collection of open source tools to improve the security
-of your Google Cloud Platform environments.
+A community-driven collection of open source tools to improve the security of 
+your Google Cloud Platform environments.
 
 [Get Started](https://forsetisecurity.org/docs/latest/setup/install.html)
 with Forseti Security.
