@@ -15,36 +15,63 @@
 """Forseti gRPC tracing setup."""
 
 from opencensus.trace.tracer import Tracer
-from opencensus.trace.samplers.always_on import AlwaysOnSampler
-from opencensus.trace.exporters.stackdriver_exporter import StackdriverExporter
-from opencensus.trace.ext.grpc.client_interceptor import OpenCensusClientInterceptor
-from opencensus.trace.ext.grpc.server_interceptor import OpenCensusServerInterceptor
+from opencensus.trace.samplers import always_on
+from opencensus.trace.exporters import stackdriver_exporter, file_exporter
+from opencensus.trace.exporters.transports import background_thread
+from opencensus.trace.ext.grpc import client_interceptor, server_interceptor
+
+from google.cloud.forseti.common.util import logger
+
+LOGGER = logger.get_logger(__name__)
+
 
 def trace_client_interceptor(endpoint):
     """Intercept gRPC calls on client-side and add tracing information
     to the request.
-    
+
     Args:
         endpoint (str): The gRPC channel endpoint (e.g: localhost:5001).
 
     Returns:
         OpenCensusClientInterceptor: a gRPC client-side interceptor.
     """
-    exporter = StackdriverExporter()
+    exporter = setup_exporter()
     tracer = Tracer(exporter=exporter)
-    return OpenCensusClientInterceptor(
-            tracer,
-            host_port=endpoint)
+    return client_interceptor.OpenCensusClientInterceptor(
+        tracer,
+        host_port=endpoint)
+
 
 def trace_server_interceptor():
     """Intercept gRPC calls on server-side and add tracing information
     to the request.
-    
+
     Returns:
         OpenCensusServerInterceptor: a gRPC server-side interceptor.
     """
-    exporter = StackdriverExporter()
-    sampler = AlwaysOnSampler()
-    return OpenCensusServerInterceptor(
-            sampler,
-            exporter)
+
+    exporter = setup_exporter()
+    sampler = always_on.AlwaysOnSampler()
+    return server_interceptor.OpenCensusServerInterceptor(
+        sampler,
+        exporter)
+
+
+def setup_exporter():
+    """Setup an exporter for traces.
+
+    The default exporter is the StackdriverExporter. If it fails to initialize,
+    the FileExporter will be used instead.
+
+    Returns:
+        `StackdriverExporter`: A Stackdriver exporter.
+        `FileExporter`: A file exporter.
+    """
+    try:
+        return stackdriver_exporter.StackdriverExporter(
+            transport=background_thread.BackgroundThreadTransport)
+    except Exception as e:
+        LOGGER.exception(e)
+        LOGGER.info('StackdriverExporter set up failed. Using FileExporter.')
+        return file_exporter.FileExporter(
+            transport=background_thread.BackgroundThreadTransport)
