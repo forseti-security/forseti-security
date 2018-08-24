@@ -19,6 +19,7 @@ import mock
 from tests.unittest_utils import ForsetiTestCase
 from tests.unittest_utils import get_datafile_path
 
+from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.log_sink import LogSink
 from google.cloud.forseti.common.gcp_type.organization import Organization
@@ -36,6 +37,9 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
         self.lsre.LOGGER = mock.MagicMock()
 
         # Set up resources in the following hierarchy:
+        #             +-----> billing_acct_abcd
+        #             |
+        #             |
         #             +-----------------------> proj-1
         #             |
         #             |
@@ -48,6 +52,12 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             display_name='Organization 234',
             full_name='organization/234/',
             data='fake_org_data_234')
+
+        self.billing_acct_abcd = BillingAccount(
+            'ABCD-1234',
+            display_name='Billing Account ABCD',
+            full_name='organization/234/billingAccount/ABCD-1234',
+            data='fake_billing_account_data_abcd')
 
         self.folder_56 = Folder(
             '56',
@@ -94,15 +104,15 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
         # Creates 'self' rules for 5 difference resources and 'children' rules
         # for 2.
         self.assertEqual(
-            5, len(rules_engine.rule_book.resource_rules_map['self']))
+            6, len(rules_engine.rule_book.resource_rules_map['self']))
         self.assertEqual(
             2, len(rules_engine.rule_book.resource_rules_map['children']))
         self_rule_resources = []
         for resource in rules_engine.rule_book.resource_rules_map['self']:
             self_rule_resources.append(resource.name)
         expected_rule_resources = [
-            'folders/56', 'organizations/234', 'projects/proj-1',
-            'projects/proj-2', 'projects/proj-3']
+            'billingAccounts/ABCD-1234', 'folders/56', 'organizations/234',
+            'projects/proj-1', 'projects/proj-2', 'projects/proj-3']
         self.assertEqual(expected_rule_resources, sorted(self_rule_resources))
 
         child_rule_resources = []
@@ -159,6 +169,27 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
 
         # Rules disallow any folder-level LogSinks.
         actual_violations = rules_engine.find_violations(self.folder_56, [])
+        self.assertEqual(set(), actual_violations)
+
+    def test_billing_account_with_no_violations(self):
+        """Tests that no violations are produced for a correct billing acct."""
+        rules_engine = self.get_engine_with_valid_rules()
+
+        log_sinks = [
+            LogSink(
+                sink_id='billing_logs',
+                destination=('bigquery.googleapis.com/projects/my-audit-logs/'
+                             'datasets/billing_logs'),
+                sink_filter='',
+                include_children=False,
+                writer_identity='serviceAccount:logs@test.gserviceaccount.com',
+                parent=self.billing_acct_abcd,
+                raw_json='__SINK_1__'
+            ),
+        ]
+
+        actual_violations = rules_engine.find_violations(
+            self.billing_acct_abcd, log_sinks)
         self.assertEqual(set(), actual_violations)
 
     def test_org_with_no_violations(self):
@@ -328,6 +359,43 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
         ])
         self.assertEqual(expected_violations, actual_violations)
 
+    def test_billing_account_with_whitelist_violations(self):
+        """Tests violations are produced for billing account sinks."""
+        rules_engine = self.get_engine_with_valid_rules()
+
+        log_sinks = [
+            LogSink(
+                sink_id='billing_logs',
+                destination=('bigquery.googleapis.com/projects/my-audit-logs/'
+                             'datasets/wrong_dataset'),
+                sink_filter='',
+                include_children=False,
+                writer_identity='serviceAccount:logs@test.gserviceaccount.com',
+                parent=self.billing_acct_abcd,
+                raw_json='__SINK_1__'
+            ),
+        ]
+
+        actual_violations = rules_engine.find_violations(
+            self.billing_acct_abcd, log_sinks)
+        expected_violations = set([
+            lsre.Rule.RuleViolation(
+                resource_type='sink',
+                resource_id='billing_logs',
+                full_name='billingAccounts/ABCD-1234/sinks/billing_logs',
+                rule_name=('Only allow Billing Account sinks to audit logs '
+                           'project.'),
+                rule_index=6,
+                violation_type='LOG_SINK_VIOLATION',
+                sink_destination=('bigquery.googleapis.com/projects/'
+                                  'my-audit-logs/datasets/wrong_dataset'),
+                sink_filter='',
+                sink_include_children=False,
+                resource_data='__SINK_1__')
+
+        ])
+        self.assertEqual(expected_violations, actual_violations)
+
     def test_org_missing_required_sinks(self):
         """Tests violations are produced for an org missing required sinks."""
         rules_engine = self.get_engine_with_valid_rules()
@@ -424,6 +492,15 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
                   'type': 'folder',
                   'applies_to': 'self_and_children',
                   'resource_ids': ['56']
+              }],
+              'sink': valid_sink_spec,
+              'mode': 'whitelist'
+          }, {
+              'name': 'Bad applies to type',
+              'resource': [{
+                  'type': 'billing_account',
+                  'applies_to': 'children',
+                  'resource_ids': ['ABCD-1234']
               }],
               'sink': valid_sink_spec,
               'mode': 'whitelist'
