@@ -2097,7 +2097,6 @@ class BillingAccountSinkIterator(ResourceIterator):
 
 
 FACTORIES = {
-
     'organization': ResourceFactory({
         'dependsOn': [],
         'cls': Organization,

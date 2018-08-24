@@ -40,11 +40,13 @@ class CsccNotifier(object):
         """
         self.inv_index_id = inv_index_id
 
-    def _transform_for_gcs(self, violations):
+    def _transform_for_gcs(self, violations, gcs_upload_path):
         """Transform forseti violations to GCS findings format.
 
         Args:
             violations (dict): Violations to be uploaded as findings.
+            gcs_upload_path (str): bucket and filename where the violations
+                will be outputted on GCS
 
         Returns:
             list: violations in findings format; each violation is a dict.
@@ -58,8 +60,10 @@ class CsccNotifier(object):
                 'finding_category': violation.get('violation_type'),
                 'finding_asset_ids': violation.get('full_name'),
                 'finding_time_event': violation.get('created_at_datetime'),
-                'finding_callback_url': None,
+                'finding_callback_url': gcs_upload_path,
                 'finding_properties': {
+                    'db_source': 'table:{}/id:{}'.format(
+                        'violations', violation.get('id')),
                     'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
@@ -90,15 +94,14 @@ class CsccNotifier(object):
             gcs_path (str): The GCS bucket to upload the findings.
         """
         LOGGER.info('Legacy mode detected - writing findings to GCS.')
-        findings = self._transform_for_gcs(violations)
+
+        gcs_upload_path = '{}/{}'.format(gcs_path, self._get_output_filename())
+
+        findings = self._transform_for_gcs(violations, gcs_upload_path)
 
         with tempfile.NamedTemporaryFile() as tmp_violations:
             tmp_violations.write(parser.json_stringify(findings))
             tmp_violations.flush()
-
-            gcs_upload_path = '{}/{}'.format(
-                gcs_path,
-                self._get_output_filename())
 
             if gcs_upload_path.startswith('gs://'):
                 storage_client = storage.StorageClient()
@@ -125,6 +128,8 @@ class CsccNotifier(object):
                 ],
                 'eventTime': violation.get('created_at_datetime'),
                 'properties': {
+                    'db_source': 'table:{}/id:{}'.format(
+                        'violations', violation.get('id')),
                     'inventory_index_id': self.inv_index_id,
                     'resource_data': violation.get('resource_data'),
                     'resource_id': violation.get('resource_id'),
@@ -134,7 +139,7 @@ class CsccNotifier(object):
                     'violation_data': violation.get('violation_data')
                 },
                 'source_id': 'FORSETI',
-                'category': 'UNKNOWN_RISK'
+                'category': violation.get('rule_name')
             }
             findings.append(finding)
         return findings
