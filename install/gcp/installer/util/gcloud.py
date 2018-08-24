@@ -52,30 +52,29 @@ def get_gcloud_info():
     return project_id, authed_user, is_devshell
 
 
-def activate_service_account(service_account, key_file):
+def set_network_host_project_id(self):
+    """Get the host project."""
+    if not self.config.vpc_host_project_id:
+        self.config.vpc_host_project_id, _, _ = get_gcloud_info()
+    print('VPC Host Project %s' % self.config.vpc_host_project_id)
+
+
+def activate_service_account(key_file):
     """Activate the service account with gcloud.
 
     Args:
-        service_account (str): Service account email
         key_file (str): Absolute path to service account key file
     """
 
     return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
-         service_account, '--key-file=' + key_file])
+         '--key-file=' + key_file])
 
     if return_code:
         print(err)
         sys.exit(1)
 
     print('Service account activated')
-
-
-def set_network_host_project_id(self):
-    """Get the host project."""
-    if not self.config.vpc_host_project_id:
-        self.config.vpc_host_project_id, _, _ = get_gcloud_info()
-    print('VPC Host Project %s' % self.config.vpc_host_project_id)
 
 
 def verify_gcloud_information(project_id,
