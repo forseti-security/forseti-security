@@ -40,6 +40,7 @@ REQUIRED_PACKAGES = [
     'google-api-python-client>=1.6.1',
     'google-auth>=1.4.1',
     'google-auth-httplib2>=0.0.3',
+    'google-cloud-trace==0.19.0',
     'Jinja2>=2.9.5',
     'MySQL-python>=1.2.5',
     'netaddr>=0.7.19',
