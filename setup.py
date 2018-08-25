@@ -51,6 +51,7 @@ REQUIRED_PACKAGES = [
     'sendgrid>=3.6.3',
     'simple-crypt>=4.1.7',
     'unicodecsv>=0.14.1',
+    'opencensus==0.1.6',
     # Setup related.
     'google-apputils>=0.4.2',
     'grpcio',
