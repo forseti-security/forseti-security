@@ -23,6 +23,10 @@ LOG_SINK_RESOURCES = [
         'sink_name': 'org_sink_1',
     },
     {
+        'parent': 'billing_account/ABCD-1234',
+        'sink_name': 'billing_sink',
+    },
+    {
         'parent': 'folder/56',
         'sink_name': 'folder_sink',
     },
@@ -48,6 +52,7 @@ LOG_SINK_RESOURCES = [
 # Names of parent GCP resources by type.
 GCP_RESOURCES = {
     'organization': ['organization/234/'],
+    'billing_account': ['organization/234/billing_account/ABCD-1234/'],
     'folder': ['organization/234/folder/56/'],
     'project': [
         'organization/234/project/proj-1/',
