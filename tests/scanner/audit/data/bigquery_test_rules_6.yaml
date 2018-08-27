@@ -15,10 +15,7 @@
   - name: BigQuery test rule
     mode: whitelist
     dataset_id: 'dne'
-    special_group: '*'
     user_email: 'dne@google.com'
-    domain: '*'
-    group_email: '*'
     role: 'READER'
     resource:
       - type: organization
