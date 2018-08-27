@@ -16,8 +16,10 @@
 
 import importlib
 import os
+import yaml
 
 from google.cloud.forseti.common.util import file_loader
+
 
 def validate(actions_config_path):
     """Validates the actions config.
