@@ -14,7 +14,8 @@
 
 rules:
   - name: BigQuery test rule
-    role: 'OWNER'
     resource:
       - type: organization
           - 234
+    bindings:
+      - role: 'OWNER'

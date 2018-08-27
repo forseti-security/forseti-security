@@ -15,8 +15,9 @@
   - name: BigQuery test rule
     mode: whitelist
     dataset_id: 'xza'
-    user_email: '*@mockedexample.com'
-    role: 'OWNER'
+    bindings:
+      - role: 'OWNER'
+        user_email: '*@mockedexample.com'
     resource:
       - type: organization
         resource_ids:
