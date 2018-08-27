@@ -193,6 +193,11 @@ bash ./install/gcp/scripts/initialize_forseti_services.sh
 echo "Starting services."
 systemctl start cloudsqlproxy
 sleep 5
+
+echo "Attempting to upgrade database."
+python $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
+sleep 5
+
 systemctl start forseti
 echo "Success! The Forseti API server has been started."
 

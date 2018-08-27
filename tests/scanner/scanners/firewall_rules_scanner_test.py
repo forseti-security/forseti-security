@@ -115,6 +115,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id='p1',
+                resource_name='policy1',
                 full_name='fake_full_name111',
                 rule_id='rule1',
                 violation_type='violation1',
@@ -125,6 +126,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id='p2',
+                resource_name='deleteme',
                 full_name='fake_full_name222',
                 rule_id='rule2',
                 violation_type='violation2',
@@ -169,6 +171,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 {
                     'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
+                    'resource_name': 'policy1',
                     'full_name': 'fake_full_name000',
                     'rule_id': 'no_rdp_to_linux',
                     'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -195,6 +198,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 {
                     'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
+                    'resource_name': 'policy1',
                     'full_name': 'organization/1/folder/test_instances/project/project1/firewall/policy1/',
                     'rule_id': 'test_instances_rule',
                     'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -280,6 +284,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
                 {
                     'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
+                    'resource_name': 'policy1,deleteme',
                     'full_name': 'fake_full_name111',
                     'rule_id': 'golden_policy',
                     'violation_type': 'FIREWALL_MATCHES_VIOLATION',

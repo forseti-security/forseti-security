@@ -18,7 +18,10 @@ from collections import defaultdict
 import hashlib
 import json
 
-import migrate.changeset
+# Importing migrate.changeset adds some new methods to existing SQLAlchemy
+# objects but we will not be calling the library directly.
+import migrate.changeset  # pylint: disable=unused-import
+
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -185,6 +188,7 @@ class Violation(BASE):
         return string.format(
             self.violation_type, self.resource_type, self.rule_name)
 
+    @staticmethod
     def schema_update(table):
         """Maintain all the schema changes for this table.
 

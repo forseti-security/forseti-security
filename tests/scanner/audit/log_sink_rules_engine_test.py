@@ -386,6 +386,7 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             lsre.Rule.RuleViolation(
                 resource_type='sink',
                 resource_id='billing_logs',
+                resource_name='billingAccounts/ABCD-1234/sinks/billing_logs',
                 full_name='billingAccounts/ABCD-1234/sinks/billing_logs',
                 rule_name=('Only allow Billing Account sinks to audit logs '
                            'project.'),
