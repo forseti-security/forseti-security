@@ -1264,10 +1264,14 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
         ('high_quota_1', 100, 6, 10, 6, False, False),
         ('high_quota_2', 100, 85, 30, 50, False, True),
         ('unknown_quota', None, None, 1, 0, False, True)])
+    @mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER', autospec=True)
+    @mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER', autospec=True)
     def test_check_change_operation_order(self, name, quota, usage,
                                           insert_rule_count, delete_rule_count,
                                           expect_exception,
-                                          expect_delete_before_insert):
+                                          expect_delete_before_insert,
+                                          mock_logger_enforcer,
+                                          mock_logger_compute):
 
         """Validate CheckChangeOperationOrder has expected behavior.
 
@@ -1301,17 +1305,15 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
               'quotas': []}
 
 
-        with mock.patch('google.cloud.forseti.enforcer.gce_firewall_enforcer.LOGGER') as mock_logger:
-          with mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER') as mock_logger_two:
-            if expect_exception:
-              with self.assertRaises(fe.FirewallQuotaExceededError):
-                self.enforcer._check_change_operation_order(
-                    insert_rule_count, delete_rule_count)
-            else:
-              delete_before_insert = self.enforcer._check_change_operation_order(
-                  insert_rule_count, delete_rule_count)
+        if expect_exception:
+          with self.assertRaises(fe.FirewallQuotaExceededError):
+            self.enforcer._check_change_operation_order(
+                insert_rule_count, delete_rule_count)
+        else:
+          delete_before_insert = self.enforcer._check_change_operation_order(
+              insert_rule_count, delete_rule_count)
 
-              self.assertEqual(expect_delete_before_insert, delete_before_insert)
+          self.assertEqual(expect_delete_before_insert, delete_before_insert)
 
 
 class FirewallRulesAreEqualTest(ForsetiTestCase):
