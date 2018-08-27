@@ -16,8 +16,8 @@
 
 import importlib
 import os
-import yaml
 
+from google.cloud.forseti.common.util import file_loader
 
 def validate(actions_config_path):
     """Validates the actions config.
@@ -74,7 +74,7 @@ def _load_and_validate_yaml(path):
     """
     with open(os.path.abspath(path), 'rb') as filep:
         try:
-            config = yaml.safe_load(filep)
+            config = file_loader.read_and_parse_file(filep)
         except yaml.YAMLError as yaml_error:
             raise ConfigLoadError(yaml_error)
     return config

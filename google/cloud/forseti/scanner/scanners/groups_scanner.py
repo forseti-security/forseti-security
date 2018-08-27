@@ -14,10 +14,10 @@
 
 """Scanner for Google Groups."""
 
-import yaml
 import anytree
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
@@ -262,7 +262,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         root = self._retrieve()
 
         with open(self.rules, 'r') as f:
-            group_rules = yaml.load(f)
+            group_rules = file_loader.read_and_parse_file(f)
 
         root = self._apply_all_rules(root, group_rules)
 
