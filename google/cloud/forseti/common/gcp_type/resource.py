@@ -29,6 +29,7 @@ class ResourceType(object):
 
     # Org resources
     ORGANIZATION = resources.Organization.type()
+    BILLING_ACCOUNT = resources.BillingAccount.type()
     FOLDER = resources.Folder.type()
     PROJECT = resources.Project.type()
 
@@ -66,6 +67,7 @@ class ResourceType(object):
 
     resource_types = frozenset([
         ORGANIZATION,
+        BILLING_ACCOUNT,
         FOLDER,
         PROJECT,
         BUCKET,

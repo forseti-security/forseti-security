@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Log Sinks/Exports rules engine for organizations, folders, and projects.
+"""Log Sinks/Exports rules engine.
 
 Builds the RuleBook (LogSinkRuleBook) from the rule definitions (file either
 stored locally or in GCS) and compares a resource's log sinks against the
-RuleBook to determine whether there are violations.
+RuleBook to determine whether there are violations. Log Sinks rules can be
+defined on organization, folder, billing_account and project.
 """
 
 import collections
@@ -135,8 +136,8 @@ class LogSinkRuleBook(bre.BaseRuleBook):
     """The RuleBook for Log Sink configs.
 
     Rules from the rules definition file are parsed and placed into a map, which
-    associates the applies_to value and GCP resource (project, folder or
-    organization) with the rules defined for it.
+    associates the applies_to value and GCP resource (project, folder,
+    billing_account or organization) with the rules defined for it.
 
     Resources are evaulated against matching rules defined with applies_to =
     "self". Project resources are also evaulated against rules for ancestor
@@ -146,6 +147,7 @@ class LogSinkRuleBook(bre.BaseRuleBook):
     supported_resource_types = frozenset([
         'project',
         'folder',
+        'billing_account',
         'organization',
     ])
 
@@ -285,10 +287,11 @@ class LogSinkRuleBook(bre.BaseRuleBook):
                     raise audit_errors.InvalidRulesSchemaError(
                         'Invalid applies_to type in rule {}'.format(rule_index))
 
-                if resource_type == 'project' and applies_to == 'children':
+                if applies_to == 'children' and resource_type in [
+                        'project', 'billing_account']:
                     raise audit_errors.InvalidRulesSchemaError(
-                        'Rule cannot apply to children of a project {}'.format(
-                            rule_index))
+                        'Rule {} cannot apply to children of a {}'.format(
+                            rule_index, resource_type))
 
                 if not resource_ids:
                     raise audit_errors.InvalidRulesSchemaError(

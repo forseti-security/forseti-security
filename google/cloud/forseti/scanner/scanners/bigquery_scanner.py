@@ -152,7 +152,6 @@ class BigqueryScanner(base_scanner.BaseScanner):
                     full_name=dataset.parent.full_name,
                     data=policy.data,
                 )
-
                 # There is no functional use for project_id in this scanner,
                 # other than to identify where the dataset comes from,
                 # which can now be done with full_name.

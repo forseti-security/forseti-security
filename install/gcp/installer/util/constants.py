@@ -165,12 +165,6 @@ DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'
 VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 
 # Message templates
-MESSAGE_GSUITE_DATA_COLLECTION = (
-    'To complete setup for G Suite Groups data collection, '
-    'follow the steps here:\n\n    '
-    'https://forsetisecurity.org/docs/latest/configure/'
-    'inventory/gsuite.html\n')
-
 MESSAGE_SKIP_EMAIL = (
     'If you would like to enable email notifications via '
     'SendGrid, please refer to:\n\n'
@@ -206,7 +200,10 @@ MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS = (
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'To read G Suite Groups and Users data, '
     'please provide a G Suite super admin email address. '
-    'This step is NOT optional.')
+    'This step is optional. \n'
+    'See https://forsetisecurity.org/docs/latest/setup/install.html '
+    'to know what will not work without G Suite integration.\n'
+)
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
