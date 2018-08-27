@@ -15,8 +15,6 @@
 """Actions configuration validator."""
 
 import importlib
-import os
-import yaml
 
 from google.cloud.forseti.common.util import file_loader
 
