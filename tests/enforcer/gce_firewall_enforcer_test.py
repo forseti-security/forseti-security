@@ -1304,7 +1304,6 @@ class FirewallEnforcerTest(constants.EnforcerTestCase):
           self.gce_api_client.get_project.return_value = {
               'quotas': []}
 
-
         if expect_exception:
           with self.assertRaises(fe.FirewallQuotaExceededError):
             self.enforcer._check_change_operation_order(
