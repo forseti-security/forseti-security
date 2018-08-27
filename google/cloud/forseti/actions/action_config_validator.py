@@ -74,11 +74,8 @@ def _load_and_validate_yaml(path):
     Raises:
       ConfigLoadError: If the config cannot be loaded.
     """
-    with open(os.path.abspath(path), 'rb') as filep:
-        try:
-            config = file_loader.read_and_parse_file(filep)
-        except yaml.YAMLError as yaml_error:
-            raise ConfigLoadError(yaml_error)
+    config = file_loader.read_and_parse_file(path)
+
     return config
 
 
