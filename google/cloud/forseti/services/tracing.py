@@ -68,10 +68,17 @@ def setup_exporter():
         `FileExporter`: A file exporter.
     """
     try:
-        return stackdriver_exporter.StackdriverExporter(
+        exporter = stackdriver_exporter.StackdriverExporter(
             transport=background_thread.BackgroundThreadTransport)
+        LOGGER.info(
+            'StackdriverExporter set up successfully for project %s.',
+            exporter.project_id)
     except Exception as e:
         LOGGER.exception(e)
-        LOGGER.info('StackdriverExporter set up failed. Using FileExporter.')
-        return file_exporter.FileExporter(
+        LOGGER.warning('StackdriverExporter set up failed. Using FileExporter.')
+        exporter = file_exporter.FileExporter(
             transport=background_thread.BackgroundThreadTransport)
+        LOGGER.info(
+            'FileExporter set up successfully. Writing to file: %s.',
+            exporter.file_name)
+    return exporter

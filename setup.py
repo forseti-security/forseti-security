@@ -40,7 +40,6 @@ REQUIRED_PACKAGES = [
     'google-api-python-client>=1.6.1',
     'google-auth>=1.4.1',
     'google-auth-httplib2>=0.0.3',
-    'google-cloud-trace==0.19.0',
     'Jinja2>=2.9.5',
     'MySQL-python>=1.2.5',
     'netaddr>=0.7.19',
@@ -52,7 +51,6 @@ REQUIRED_PACKAGES = [
     'sendgrid>=3.6.3',
     'simple-crypt>=4.1.7',
     'unicodecsv>=0.14.1',
-    'opencensus==0.1.6',
     # Setup related.
     'google-apputils>=0.4.2',
     'grpcio',
@@ -66,6 +64,13 @@ REQUIRED_PACKAGES = [
     'pylint-quotes',
     'SQLAlchemy>=1.1.9',
 ]
+
+OPTIONAL_PACKAGES = {
+    'tracing': [
+        'opencensus==0.1.6',
+        'google-cloud-trace==0.19.0',
+    ]
+}
 
 if sys.version_info < (2, 7):
     sys.exit('Sorry, Python < 2.7 is not supported.')
@@ -128,6 +133,7 @@ setup(
     install_requires=REQUIRED_PACKAGES,
     setup_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES,
+    extras_require=OPTIONAL_PACKAGES,
     packages=find_packages(exclude=[
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
