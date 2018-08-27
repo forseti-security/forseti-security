@@ -192,7 +192,7 @@ class Violation(BASE):
             table (Table): The table object of this class.
         """
         col = Column('resource_name', String(256), default='')
-        create_column(table, col)
+        col.create(table, populate_default=True)
 
 
 class ViolationAccess(object):
