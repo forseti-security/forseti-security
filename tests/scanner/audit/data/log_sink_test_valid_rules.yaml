@@ -67,3 +67,14 @@ rules:
       destination: '*'
       filter: ''
       include_children: '*'
+  - name: 'Only allow Billing Account sinks to audit logs project.'
+    mode: whitelist
+    resource:
+      - type: billing_account
+        applies_to: self
+        resource_ids:
+          - ABCD-1234
+    sink:
+      destination: 'bigquery.googleapis.com/projects/my-audit-logs/datasets/billing_logs'
+      filter: ''
+      include_children: '*'
