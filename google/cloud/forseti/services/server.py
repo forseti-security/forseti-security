@@ -345,7 +345,7 @@ class ServiceConfig(AbstractServiceConfig):
                 forseti_inventory_config.get('domain_super_admin_email', ''),
                 forseti_inventory_config.get('api_quota', {}),
                 forseti_inventory_config.get('retention_days', -1))
-
+            
             # TODO: Create Config classes to store scanner and notifier configs.
             forseti_scanner_config = forseti_config.get('scanner', {})
 
