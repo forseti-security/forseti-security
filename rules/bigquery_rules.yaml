@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# The following fields will default to a catch-all glob ('*') if not present:
+#   - dataset_id, special_group, user_email, domain, group_email, role.
 
 rules:
   - name: BigQuery rule to search for public datasets
