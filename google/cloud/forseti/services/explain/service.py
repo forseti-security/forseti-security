@@ -144,11 +144,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of list of roles
         """
-        
-        print '22222'
-        print self.explainer.config.inventory_config.root_resource_id
-        print 
-        
         handle = self._get_handle(context)
         role_names = self.explainer.list_roles(handle,
                                                request.prefix)
