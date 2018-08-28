@@ -25,10 +25,10 @@ rules:
     bindings:
       - role: roles/resourcemanager.organizationAdmin
         members:
-          - user:*@henrychang.mygbiz.com
-          - group:*@henrychang.mygbiz.com
+          - user:*@{DOMAIN}
+          - group:*@{DOMAIN}
 
-  - name: Prevent allUsers access to buckets via IAM
+  - name: Prevent public users from having access to buckets via IAM
     mode: blacklist
     resource:
       - type: bucket
