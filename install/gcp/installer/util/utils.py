@@ -27,6 +27,7 @@ import threading
 import time
 
 import constants
+import installer_errors
 
 
 def id_from_name(name):
