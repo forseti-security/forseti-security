@@ -16,10 +16,7 @@
 import collections
 import enum
 import itertools
-import json
 
-from google.cloud.forseti.common.gcp_type import (
-    bigquery_access_controls as bq_acls)
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
@@ -37,8 +34,14 @@ class Mode(enum.Enum):
     BLACKLIST = 'blacklist'
 
 
+# Rule definition wrappers.
+# TODO: allow for multiple dataset ids.
 RuleReference = collections.namedtuple(
-    'RuleReference', ['bigquery_acl', 'mode'])
+    'RuleReference', ['mode', 'dataset_id', 'bindings'])
+Binding = collections.namedtuple('Binding', ['role', 'members'])
+Member = collections.namedtuple(
+    'Member', ['domain', 'group_email', 'user_email', 'special_group'],
+)
 
 
 class BigqueryRulesEngine(bre.BaseRulesEngine):
@@ -124,7 +127,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             self.add_rule(rule, i)
 
     @classmethod
-    def _build_rule(cls, rule_def, rule_index, raw_resource):
+    def _build_rule(cls, rule_def, rule_index):
         """Build a rule.
 
         Args:
@@ -132,18 +135,35 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 properties.
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
-            raw_resource (dict): Raw dict representing the resources the
-                rules apply for.
 
         Returns:
             Rule: rule for the given definition.
         """
-        dataset_id = rule_def.get('dataset_id', '*')
-        special_group = rule_def.get('special_group', '*')
-        user_email = rule_def.get('user_email', '*')
-        domain = rule_def.get('domain', '*')
-        group_email = rule_def.get('group_email', '*')
-        role = rule_def.get('role', '*')
+        dataset_id = regular_exp.escape_and_globify(
+            rule_def.get('dataset_id', '*'))
+
+
+        bindings = []
+
+        for raw_binding in rule_def.get('bindings', []):
+            role = raw_binding.get('role', '*')
+
+            members = []
+            for raw_member in raw_binding.get('members', []):
+                domain = regular_exp.escape_and_globify(
+                    raw_member.get('domain', '*'))
+                group_email = regular_exp.escape_and_globify(
+                    raw_member.get('group_email', '*'))
+                user_email = regular_exp.escape_and_globify(
+                    raw_member.get('user_email', '*'))
+                special_group = regular_exp.escape_and_globify(
+                    raw_member.get('special_group', '*'))
+                members.append(Member(
+                    domain, group_email, user_email, special_group))
+
+
+            bindings.append(Binding(role, members))
+
 
         def_mode = rule_def.get('mode')
         if def_mode:
@@ -155,23 +175,14 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             mode = Mode.BLACKLIST
 
         rule_def_resource = RuleReference(
-            bigquery_acl=bq_acls.BigqueryAccessControls(
-                project_id='',
-                dataset_id=regular_exp.escape_and_globify(dataset_id),
-                full_name='',
-                special_group=regular_exp.escape_and_globify(special_group),
-                user_email=regular_exp.escape_and_globify(user_email),
-                domain=regular_exp.escape_and_globify(domain),
-                group_email=regular_exp.escape_and_globify(group_email),
-                role=regular_exp.escape_and_globify(role.upper()),
-                view={},
-                raw_json=json.dumps(raw_resource)),
+            dataset_id=dataset_id,
+            bindings=bindings,
             mode=mode,
         )
 
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
-                    rules=rule_def_resource)
+                    rule_reference=rule_def_resource)
 
         return rule
 
@@ -193,8 +204,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            rule = self._build_rule(
-                rule_def, rule_index, raw_resource)
+            rule = self._build_rule(rule_def, rule_index)
 
             resource_type = raw_resource.get('type')
             for resource_id in resource_ids:
@@ -247,35 +257,18 @@ class Rule(object):
         'RuleViolation',
         frozen_rule_attributes)
 
-    def __init__(self, rule_name, rule_index, rules):
+    def __init__(self, rule_name, rule_index, rule_reference):
         """Initialize.
 
         Args:
             rule_name (str): Name of the loaded rule.
             rule_index (int): The index of the rule from the rule definitions.
-            rules (RuleReference): The rules from the file and corresponding
-                values.
+            rule_reference (RuleReference): The rules from the file and
+              corresponding values.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.rules = rules
-
-    def _is_applicable(self, bigquery_acl):
-        """Determine whether the rules are applicable to the given acl.
-
-         Args:
-            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
-         Returns:
-            bool: True if the rules are applicable to the given acl, False
-                otherwise.
-        """
-        rule_bigquery_acl = self.rules.bigquery_acl
-        rule_regex_to_val = {
-            rule_bigquery_acl.dataset_id: bigquery_acl.dataset_id,
-            rule_bigquery_acl.role: bigquery_acl.role,
-        }
-
-        return regular_exp.all_match(rule_regex_to_val)
+        self.rule_reference = rule_reference
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, bigquery_acl):
@@ -287,21 +280,34 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple.
         """
-        if not self._is_applicable(bigquery_acl):
+        matches = []
+
+        for binding in self.rule_reference.bindings:
+            if not self._is_binding_applicable(binding, bigquery_acl):
+                continue
+
+            # no members should be counted as a single member which matched all
+            if not binding.members:
+                matches.append(True)
+                continue
+
+
+            for member in binding.members:
+                rule_regex_to_val = {
+                    member.domain: bigquery_acl.domain,
+                    member.user_email: bigquery_acl.user_email,
+                    member.group_email: bigquery_acl.group_email,
+                    member.special_group: bigquery_acl.special_group,
+                }
+                matches.append(regular_exp.all_match(rule_regex_to_val))
+
+        if not matches:
             return
 
-        rule_bigquery_acl = self.rules.bigquery_acl
-        rule_regex_to_val = {
-            rule_bigquery_acl.special_group: bigquery_acl.special_group,
-            rule_bigquery_acl.user_email: bigquery_acl.user_email,
-            rule_bigquery_acl.domain: bigquery_acl.domain,
-            rule_bigquery_acl.group_email: bigquery_acl.group_email,
-        }
-
-        all_matched = regular_exp.all_match(rule_regex_to_val)
-
-        has_violation = self.rules.mode == Mode.BLACKLIST and all_matched or (
-            self.rules.mode == Mode.WHITELIST and not all_matched)
+        has_violation = (
+            self.rule_reference.mode == Mode.BLACKLIST and any(matches) or
+            self.rule_reference.mode == Mode.WHITELIST and not any(matches)
+        )
 
         if has_violation:
             yield self.RuleViolation(
@@ -320,3 +326,19 @@ class Rule(object):
                 view=bigquery_acl.view,
                 resource_data=bigquery_acl.json,
             )
+
+    def _is_binding_applicable(self, binding, bigquery_acl):
+        """Determine whether the binding is applicable to the acl.
+
+         Args:
+            binding (Binding): rules binding to check against.
+            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
+         Returns:
+            bool: True if the rules are applicable to the given acl, False
+                otherwise.
+        """
+        rule_regex_to_val = {
+            self.rule_reference.dataset_id: bigquery_acl.dataset_id,
+            binding.role: bigquery_acl.role,
+        }
+        return regular_exp.all_match(rule_regex_to_val)

@@ -17,8 +17,8 @@
     resource:
       - type: organization
         resource_ids:
-          - 111
+          - 234
     bindings:
-      - role: 'READER'
-      - members:
-        - user_email: 'dne@google.com'
+      - role: 'OWNER'
+        members:
+          - user_email: 'dne@google.com'
