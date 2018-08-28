@@ -117,7 +117,7 @@ for example, `deploy-forseti-server-79c4374.yaml`.
 1. Review [`deploy-forseti-server.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti-server.yaml.in) 
 and [`deploy-forseti-client.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti-client.yaml.in) 
 for any new properties that you need to copy to your previous deployment template. To compare what's changed, use
-the `git diff` command. For example, to see the diff between the latest (HEAD) and the most recent revision, run:
+the `git diff` command. For example, to see the diff between v2.1.0 and v2.2.0, run:
 
    ```bash
    $ git diff v2.1.0..v2.2.0 -- deployment-templates/deploy-forseti-server.yaml.in
