@@ -126,6 +126,8 @@ REQUIRED_APIS = [
      'service': 'bigquery-json.googleapis.com'},
     {'name': 'Cloud Billing',
      'service': 'cloudbilling.googleapis.com'},
+    {'name': 'Cloud Datastore API',
+     'service': 'datastore.googleapis.com'},
     {'name': 'Cloud Resource Manager',
      'service': 'cloudresourcemanager.googleapis.com'},
     {'name': 'Cloud SQL',
@@ -136,8 +138,26 @@ REQUIRED_APIS = [
      'service': 'compute.googleapis.com'},
     {'name': 'Deployment Manager',
      'service': 'deploymentmanager.googleapis.com'},
+    {'name': 'Google Cloud APIs',
+     'serivce': 'cloudapis.googleapis.com'},
+    {'name': 'Google Cloud Storage JSON API',
+     'service': 'storage-api.googleapis.com'},
+    {'name': 'Google Cloud Storage',
+     'service': 'storage-component.googleapis.com'},
     {'name': 'IAM',
-     'service': 'iam.googleapis.com'}
+     'service': 'iam.googleapis.com'},
+    {'name': 'Service Management API',
+     'service': 'servicemanagement.googleapis.com'},
+    {'name': 'Service Usage API',
+     'service': 'serviceusage.googleapis.com'},
+    {'name': 'Stackdriver Debugger API',
+     'service': 'clouddebugger.googleapis.com'},
+    {'name': 'Stackdriver Logging API',
+     'service': 'logging.googleapis.com'},
+    {'name': 'Stackdriver Monitoring API',
+     'service': 'monitoring.googleapis.com'},
+    {'name': 'Stackdriver Trace API',
+     'service': 'cloudtrace.googleapis.com'}
 ]
 
 # Org Resource Types
