@@ -138,24 +138,12 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         Returns:
             Rule: rule for the given definition.
         """
-        dataset_id = rule_def.get('dataset_id')
-        special_group = rule_def.get('special_group')
-        user_email = rule_def.get('user_email')
-        domain = rule_def.get('domain')
-        group_email = rule_def.get('group_email')
-        role = rule_def.get('role')
-
-        is_any_none = any(item is None for item in [
-            dataset_id,
-            special_group,
-            user_email,
-            domain,
-            group_email,
-            role])
-
-        if is_any_none:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Faulty rule {}'.format(rule_def.get('name')))
+        dataset_id = rule_def.get('dataset_id', '*')
+        special_group = rule_def.get('special_group', '*')
+        user_email = rule_def.get('user_email', '*')
+        domain = rule_def.get('domain', '*')
+        group_email = rule_def.get('group_email', '*')
+        role = rule_def.get('role', '*')
 
         def_mode = rule_def.get('mode')
         if def_mode:

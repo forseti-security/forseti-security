@@ -11,40 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# The following fields will default to a catch-all glob ('*') if not present:
+#   - dataset_id, special_group, user_email, domain, group_email, role.
 
 rules:
   - name: BigQuery rule to search for public datasets
     mode: blacklist
-    dataset_id: '*'
     special_group: 'allAuthenticatedUsers'
-    user_email: '*'
-    domain: '*'
-    group_email: '*'
-    role: '*'
     resource:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
   - name: BigQuery rule to search for datasets accessible by users with gmail.com addresses
     mode: blacklist
-    dataset_id: '*'
-    special_group: '*'
     user_email: '*@gmail.com'
-    domain: '*'
-    group_email: '*'
-    role: '*'
     resource:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
   - name: BigQuery rule to search for datasets accessible by groups with googlegroups.com addresses
     mode: blacklist
-    dataset_id: '*'
-    special_group: '*'
-    user_email: '*'
-    domain: '*'
     group_email: '*@googlegroups.com'
-    role: '*'
     resource:
       - type: organization
         resource_ids:
