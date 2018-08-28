@@ -15,10 +15,7 @@
   - name: BigQuery test rule
     mode: whitelist
     dataset_id: 'xza'
-    special_group: '*'
     user_email: '*@mockedexample.com'
-    domain: '*'
-    group_email: '*'
     role: 'OWNER'
     resource:
       - type: organization

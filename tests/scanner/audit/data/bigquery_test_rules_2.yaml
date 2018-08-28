@@ -14,11 +14,6 @@
 
 rules:
   - name: BigQuery test rule
-    dataset_id: '*'
-    special_group: '*'
-    user_email: '*'
-    domain: '*'
-    group_email: '*'
     role: 'OWNER'
     resource:
       - type: organization
