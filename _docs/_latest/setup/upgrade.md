@@ -114,12 +114,13 @@ for example, `deploy-forseti-server-79c4374.yaml`.
 
 ### Change deployment properties
 
-1. Review `deploy-forseti-server.yaml.sample` and `deploy-forseti-client.yaml.sample` for any
-new properties that you need to copy to your previous deployment template. To compare what's changed, use
+1. Review [`deploy-forseti-server.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti-server.yaml.in) 
+and [`deploy-forseti-client.yaml.in`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/deployment-templates/deploy-forseti-client.yaml.in) 
+for any new properties that you need to copy to your previous deployment template. To compare what's changed, use
 the `git diff` command. For example, to see the diff between the latest (HEAD) and the most recent revision, run:
 
    ```bash
-   $ git diff origin..HEAD~1 -- deploy-forseti-server.yaml.sample
+   $ git diff origin..HEAD~1 -- deploy-forseti-server.yaml.in
    ```
 
 1. Edit `deploy-forseti-{forseti_instance_type}-{hash}.yaml` and update the field `forseti-version:` under
