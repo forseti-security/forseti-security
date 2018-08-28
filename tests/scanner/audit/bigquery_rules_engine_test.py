@@ -129,104 +129,104 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         with self.assertRaises(InvalidRulesSchemaError):
             rules_engine.build_rule_book()
 
-    # def test_find_violations_with_no_violations(self):
-    #     """Test that a rule for a given rule there are no violations."""
-    #     rules_local_path = get_datafile_path(
-    #         __file__,
-    #         'bigquery_test_rules_3.yaml')
-    #     rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-    #     rules_engine.build_rule_book()
-    #     fake_bq_acls = create_list_of_bq_objects_from_data()
-    #     actual_violations_list = []
-    #     for bqt in fake_bq_acls:
-    #         violation = rules_engine.find_policy_violations(self.project, bqt)
-    #         actual_violations_list.extend(violation)
-    #     self.assertEqual([], actual_violations_list)
+    def test_find_violations_with_no_violations(self):
+        """Test that a rule for a given rule there are no violations."""
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_3.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
 
-    # def test_find_violations_with_violations(self):
-    #     """Test that a rule for a given rule there are violations."""
-    #     rules_local_path = get_datafile_path(
-    #         __file__,
-    #         'bigquery_test_rules_4.yaml')
-    #     rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-    #     rules_engine.build_rule_book()
-    #     fake_bq_acls = create_list_of_bq_objects_from_data()
-    #     actual_violations_list = []
-    #     for bqt in fake_bq_acls:
-    #         violation = rules_engine.find_policy_violations(self.project, bqt)
-    #         actual_violations_list.extend(violation)
-    #     self.assertEqual(
-    #         fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
-    #         actual_violations_list)
+    def test_find_violations_with_violations(self):
+        """Test that a rule for a given rule there are violations."""
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_4.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual(
+            fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
+            actual_violations_list)
 
-    # def test_find_violations_inapplicable_resource(self):
-    #     # rules are set on org 234
-    #     org = organization.Organization(
-    #         '000',
-    #         display_name='Organization 000',
-    #         full_name='organization/000/',
-    #         data='fake_org_data_000',
-    #     )
+    def test_find_violations_inapplicable_resource(self):
+        # rules are set on org 234
+        org = organization.Organization(
+            '000',
+            display_name='Organization 000',
+            full_name='organization/000/',
+            data='fake_org_data_000',
+        )
 
-    #     proj = project.Project(
-    #         '111',
-    #         project_number=111,
-    #         display_name='My project 111',
-    #         parent=org,
-    #         full_name='organization/000/project/111/',
-    #         data='fake_project_data_111',
-    #     )
+        proj = project.Project(
+            '111',
+            project_number=111,
+            display_name='My project 111',
+            parent=org,
+            full_name='organization/000/project/111/',
+            data='fake_project_data_111',
+        )
 
-    #     rules_local_path = get_datafile_path(
-    #         __file__,
-    #         'bigquery_test_rules_4.yaml')
-    #     rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-    #     rules_engine.build_rule_book()
-    #     fake_bq_acls = create_list_of_bq_objects_from_data()
-    #     actual_violations_list = []
-    #     for bqt in fake_bq_acls:
-    #         violation = rules_engine.find_policy_violations(proj, bqt)
-    #         actual_violations_list.extend(violation)
-    #     self.assertEqual([], actual_violations_list)
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_4.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls:
+            violation = rules_engine.find_policy_violations(proj, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
 
-    # def test_find_violations_whitelist_no_violations(self):
-    #     rules_local_path = get_datafile_path(
-    #         __file__,
-    #         'bigquery_test_rules_5.yaml')
-    #     rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-    #     rules_engine.build_rule_book()
-    #     fake_bq_acls_data = create_list_of_bq_objects_from_data()
-    #     actual_violations_list = []
-    #     for bqt in fake_bq_acls_data:
-    #         violation = rules_engine.find_policy_violations(self.project, bqt)
-    #         actual_violations_list.extend(violation)
-    #     self.assertEqual([], actual_violations_list)
+    def test_find_violations_whitelist_no_violations(self):
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_5.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls_data:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
 
-    # def test_find_violations_whitelist_inapplicable_dataset(self):
-    #     rules_local_path = get_datafile_path(
-    #         __file__,
-    #         'bigquery_test_rules_6.yaml')
-    #     rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-    #     rules_engine.build_rule_book()
-    #     fake_bq_acls_data = create_list_of_bq_objects_from_data()
-    #     actual_violations_list = []
-    #     for bqt in fake_bq_acls_data:
-    #         violation = rules_engine.find_policy_violations(self.project, bqt)
-    #         actual_violations_list.extend(violation)
-    #     self.assertEqual([], actual_violations_list)
+    def test_find_violations_whitelist_inapplicable_dataset(self):
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_6.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls_data:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
 
-    # def test_find_violations_whitelist_inapplicable_resource(self):
-    #     rules_local_path = get_datafile_path(
-    #         __file__,
-    #         'bigquery_test_rules_7.yaml')
-    #     rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-    #     rules_engine.build_rule_book()
-    #     fake_bq_acls_data = create_list_of_bq_objects_from_data()
-    #     actual_violations_list = []
-    #     for bqt in fake_bq_acls_data:
-    #         violation = rules_engine.find_policy_violations(self.project, bqt)
-    #         actual_violations_list.extend(violation)
-    #     self.assertEqual([], actual_violations_list)
+    def test_find_violations_whitelist_inapplicable_resource(self):
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_7.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls_data:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
 
     def test_find_violations_whitelist_with_violations(self):
         rules_local_path = get_datafile_path(
