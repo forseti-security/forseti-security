@@ -120,7 +120,7 @@ for any new properties that you need to copy to your previous deployment templat
 the `git diff` command. For example, to see the diff between the latest (HEAD) and the most recent revision, run:
 
    ```bash
-   $ git diff origin..HEAD~1 -- deploy-forseti-server.yaml.in
+   $ git diff v2.1.0..v2.2.0 -- deployment-templates/deploy-forseti-server.yaml.in
    ```
 
 1. Edit `deploy-forseti-{forseti_instance_type}-{hash}.yaml` and update the field `forseti-version:` under
