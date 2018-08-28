@@ -20,7 +20,7 @@ import json
 
 # Importing migrate.changeset adds some new methods to existing SQLAlchemy
 # objects but we will not be calling the library directly.
-import migrate.changeset  # pylint: disable=unused-import
+import migrate.changeset  # pylint: disable=unused-import, noqa: F401
 
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
