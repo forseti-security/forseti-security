@@ -20,5 +20,5 @@
           - 111
     bindings:
       - role: 'READER'
-      - members:
-        - user_email: 'dne@google.com'
+        members:
+          - user_email: 'dne@google.com'
