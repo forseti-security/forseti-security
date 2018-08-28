@@ -32,7 +32,7 @@ def migrate_schema(engine, base):
     # The format of tables is: {table_name: Table object}.
     tables = base.metadata.tables
 
-    schema_update_method_name = 'schema_update'
+    schema_update_method_name = 'update_schema'
 
     for subclass in base_subclasses:
         schema_update = getattr(subclass, schema_update_method_name, None)
@@ -44,8 +44,10 @@ def migrate_schema(engine, base):
             except OperationalError:
                 LOGGER.info('Failed to update db schema, table=%s',
                             subclass.__tablename__)
-            except Exception as e:
-                LOGGER.error(e)
+            except Exception:
+                LOGGER.exception('Unexpected error happened when attempting '
+                                 'to update database schema, table: %s',
+                                 subclass.__tablename__)
 
 
 def _find_subclasses(cls):
@@ -64,8 +66,7 @@ if __name__ == '__main__':
     sql_engine = general_dao.create_engine(DB_CONN_STR,
                                            pool_recycle=3600)
 
-    # Upgrade Scanner tables.
-    migrate_schema(sql_engine, scanner_dao.BASE)
+    declaritive_bases = [scanner_dao.BASE, inventory_dao.BASE]
 
-    # Upgrade Inventory tables.
-    migrate_schema(sql_engine, inventory_dao.BASE)
+    for base in declaritive_bases:
+        migrate_schema(sql_engine, base)

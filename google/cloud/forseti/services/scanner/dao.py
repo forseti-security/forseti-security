@@ -189,13 +189,15 @@ class Violation(BASE):
             self.violation_type, self.resource_type, self.rule_name)
 
     @staticmethod
-    def schema_update(table):
+    def update_schema(table):
         """Maintain all the schema changes for this table.
 
         Args:
             table (Table): The table object of this class.
         """
-        col = Column('resource_name', String(256), default='')
+        col_name = 'resource_name'
+        LOGGER.info('Attempting to create column: %s', col_name)
+        col = Column(col_name, String(256), default='')
         col.create(table, populate_default=True)
 
 
