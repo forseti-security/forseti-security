@@ -814,8 +814,8 @@ def check_vm_init_status(vm_name, zone):
 
     if err:
         print('Error occurred when sshing to the VM, will skip waiting for '
-              'the instance to be initialized and proceed with the '
-              'installation.')
+              'the instance to be initialized and proceed with the rest of '
+              'the installation.')
         print(err)
         raise installer_errors.SSHError
 
