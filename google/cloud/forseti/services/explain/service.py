@@ -38,8 +38,6 @@ def check_if_explainer_can_run():
             
             LOGGER.debug('Root resource id is: %s', root_resource_id)
             
-            print root_resource_id
-
             if 'organizations' not in root_resource_id:
                 reply_message = (
                     'Explainer can not run. Root resource id is not '
@@ -49,7 +47,6 @@ def check_if_explainer_can_run():
                 reply.message = reply_message
                 return reply
             
-            print '222'
             return func(*args, **kwargs)
         
         return wrapper
