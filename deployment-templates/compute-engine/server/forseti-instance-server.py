@@ -194,7 +194,7 @@ echo "Starting services."
 systemctl start cloudsqlproxy
 sleep 5
 
-echo "Attempting to update database schema. if necessary."
+echo "Attempting to update database schema, if necessary."
 python $USER_HOME/forseti-security/install/gcp/upgrade_tools/db_migrator.py
 
 systemctl start forseti
