@@ -314,7 +314,9 @@ class ForsetiInstaller(object):
                 exit_condition_checker=status_checker,
                 message=loading_message)
         except installer_errors.SSHError:
-            # Expected error, don't need to do anything.
+            # There is problem when SSHing to the VM, maybe there is a
+            # firewall rule setting that is blocking the SSH from the
+            # cloud shell. We will skip waiting for the VM to be initialized.
             pass
 
     def check_run_properties(self):

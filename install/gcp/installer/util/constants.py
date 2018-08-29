@@ -298,8 +298,16 @@ MESSAGE_DEPLOYMENT_ERROR = (
     'Error occurred during the deployment, please check the Forseti '
     'FAQ for more information ('
     'https://forsetisecurity.org/docs/latest/faq/#installation-and-deployment'
-    '), exiting...'
-)
+    '), exiting...')
+
+MESSAGE_SSH_ERROR = (
+    'Error occurred when sshing to the VM.  Unable to verify if the VM is '
+    'fully initialized. This is a non-fatal error, but you should verify '
+    'the VM is fully initialized before use. You can do so by SSHing to the '
+    'VM, run command "tail -n1 /tmp/deployment.log" and make you get '
+    '"Execution of startup script finished" in response. Will skip waiting '
+    'for the instance to be initialized and proceed with the rest of the '
+    'installation.')
 
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (

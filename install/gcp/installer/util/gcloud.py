@@ -813,9 +813,7 @@ def check_vm_init_status(vm_name, zone):
     # i.e. It will create a folder at ~/.ssh and generate a new ssh key
 
     if err:
-        print('Error occurred when sshing to the VM, will skip waiting for '
-              'the instance to be initialized and proceed with the rest of '
-              'the installation.')
+        print(constants.MESSAGE_SSH_ERROR)
         print(err)
         raise installer_errors.SSHError
 
