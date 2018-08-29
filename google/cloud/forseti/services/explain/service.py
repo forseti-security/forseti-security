@@ -16,6 +16,8 @@
 
 from collections import defaultdict
 
+from grpc import StatusCode
+
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.explain import explainer
@@ -27,31 +29,7 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 
-def check_if_explainer_can_run():
-    
-    def decorate(func):
-        
-        def wrapper(*args, **kwargs):
-            
-            root_resource_id = (
-                args[0].explainer.config.inventory_config.root_resource_id)
-            
-            LOGGER.debug('Root resource id is: %s', root_resource_id)
-            
-            if 'organizations' not in root_resource_id:
-                reply_message = (
-                    'Explainer can not run. Root resource id is not '
-                    'organization type: %s', root_resource_id)
-                LOGGER.debug(reply_message)
-                reply = explain_pb2.GenericReply()
-                reply.message = reply_message
-                return reply
-            
-            return func(*args, **kwargs)
-        
-        return wrapper
-    
-    return decorate
+FAILED_PRECONDITION_MESSAGE = 'Explainer is not supported for use.'
     
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
@@ -74,6 +52,20 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             metadata_dict[key] = value
         return metadata_dict[self.HANDLE_KEY]
 
+    def _determine_is_supported(self):
+        """
+        Args:
+            explainer (object): explainer library
+
+        Returns:
+            bool: True if Explainer module can be used.
+        """
+        root_resource_id = (
+            self.explainer.config.inventory_config.root_resource_id)
+        if 'organizations' in root_resource_id:
+            return True
+        return False
+
     def __init__(self, explainer_api):
         """Initialize
 
@@ -82,8 +74,8 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         """
         super(GrpcExplainer, self).__init__()
         self.explainer = explainer_api
+        self.is_supported = self._determine_is_supported()
 
-    @check_if_explainer_can_run()
     def Ping(self, request, _):
         """Provides the capability to check for service availability.
 
@@ -97,7 +89,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
 
         return explain_pb2.PingReply(data=request.data)
 
-    @check_if_explainer_can_run()
     def ListResources(self, request, context):
         """Lists resources in the model.
 
@@ -108,14 +99,19 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of list of resources
         """
+        reply = explain_pb2.ListResourcesReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         handle = self._get_handle(context)
         resources = self.explainer.list_resources(handle,
                                                   request.prefix)
-        reply = explain_pb2.ListResourcesReply()
         reply.full_resource_names.extend([r.type_name for r in resources])
         return reply
 
-    @check_if_explainer_can_run()
     def ListGroupMembers(self, request, context):
         """Lists members in the model.
 
@@ -126,14 +122,20 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of list of members
         """
+        reply = explain_pb2.ListGroupMembersReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         handle = self._get_handle(context)
         member_names = self.explainer.list_group_members(handle,
                                                          request.prefix)
-        reply = explain_pb2.ListGroupMembersReply()
+
         reply.member_names.extend(member_names)
         return reply
 
-    @check_if_explainer_can_run()
     def ListRoles(self, request, context):
         """List roles from the model.
 
@@ -144,14 +146,18 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of list of roles
         """
-        handle = self._get_handle(context)
-        role_names = self.explainer.list_roles(handle,
-                                               request.prefix)
         reply = explain_pb2.ListRolesReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+        
+        handle = self._get_handle(context)
+        role_names = self.explainer.list_roles(handle, request.prefix)
         reply.role_names.extend(role_names)
         return reply
 
-    @check_if_explainer_can_run()
     def GetIamPolicy(self, request, context):
         """Gets the policy for a resource.
 
@@ -162,11 +168,16 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of IAM policy
         """
+        reply = explain_pb2.GetIamPolicyReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         handle = self._get_handle(context)
         policy = self.explainer.get_iam_policy(handle,
                                                request.resource)
-
-        reply = explain_pb2.GetIamPolicyReply()
 
         etag = policy['etag']
         bindings = []
@@ -181,7 +192,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.policy.etag = etag
         return reply
 
-    @check_if_explainer_can_run()
     def CheckIamPolicy(self, request, context):
         """Checks access according to policy to a specified resource.
 
@@ -192,16 +202,21 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of whether access granted
         """
+        reply = explain_pb2.CheckIamPolicyReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         handle = self._get_handle(context)
         authorized = self.explainer.check_iam_policy(handle,
                                                      request.resource,
                                                      request.permission,
                                                      request.identity)
-        reply = explain_pb2.CheckIamPolicyReply()
         reply.result = authorized
         return reply
 
-    @check_if_explainer_can_run()
     def ExplainDenied(self, request, context):
         """Provides information on how to grant access.
 
@@ -212,13 +227,20 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of explain denied result
         """
+        reply = explain_pb2.ExplainDeniedReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply        
+
         model_name = self._get_handle(context)
         binding_strategies = self.explainer.explain_denied(model_name,
                                                            request.member,
                                                            request.resources,
                                                            request.permissions,
                                                            request.roles)
-        reply = explain_pb2.ExplainDeniedReply()
+
         strategies = []
         for overgranting, bindings in binding_strategies:
             strategy = explain_pb2.BindingStrategy(overgranting=overgranting)
@@ -228,7 +250,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply.strategies.extend(strategies)
         return reply
 
-    @check_if_explainer_can_run()
     def ExplainGranted(self, request, context):
         """Provides information on why a member has access to a resource.
 
@@ -239,13 +260,20 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of explain granted result
         """
+        reply = explain_pb2.ExplainGrantedReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         model_name = self._get_handle(context)
         result = self.explainer.explain_granted(model_name,
                                                 request.member,
                                                 request.resource,
                                                 request.role,
                                                 request.permission)
-        reply = explain_pb2.ExplainGrantedReply()
+
         bindings, member_graph, resource_names = result
         memberships = []
         for child, parents in member_graph.iteritems():
@@ -261,7 +289,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return reply
 
     @autoclose_stream
-    @check_if_explainer_can_run()
     def GetAccessByPermissions(self, request, context):
         """Returns stream of access based on permission/role.
 
@@ -272,6 +299,11 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Yields:
             object: Generator for access tuples.
         """
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            yield explain_pb2.Access()
+        
         model_name = self._get_handle(context)
         for role, resource, members in (
                 self.explainer.get_access_by_permissions(
@@ -284,7 +316,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                                      role=role,
                                      resource=resource)
 
-    @check_if_explainer_can_run()
     def GetAccessByResources(self, request, context):
         """Returns members having access to the specified resource.
 
@@ -295,6 +326,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of access tuples by resource
         """
+        reply = explain_pb2.GetAccessByResourcesReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         model_name = self._get_handle(context)
         mapping = self.explainer.get_access_by_resources(
             model_name,
@@ -307,11 +345,9 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                 role=role, resource=request.resource_name, members=members)
             accesses.append(access)
 
-        reply = explain_pb2.GetAccessByResourcesReply()
         reply.accesses.extend(accesses)
         return reply
 
-    @check_if_explainer_can_run()
     def GetAccessByMembers(self, request, context):
         """Returns resources which can be accessed by the specified members.
 
@@ -322,6 +358,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of access tuples by members
         """
+        reply = explain_pb2.GetAccessByMembersReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+
         model_name = self._get_handle(context)
         accesses = []
         for role, resources in \
@@ -332,11 +375,10 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             access = explain_pb2.GetAccessByMembersReply.Access(
                 role=role, resources=resources, member=request.member_name)
             accesses.append(access)
-        reply = explain_pb2.GetAccessByMembersReply()
+
         reply.accesses.extend(accesses)
         return reply
 
-    @check_if_explainer_can_run()
     def GetPermissionsByRoles(self, request, context):
         """Returns permissions for the specified roles.
 
@@ -347,6 +389,13 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Returns:
             object: proto message of access tuples by permission
         """
+        reply = explain_pb2.GetPermissionsByRolesReply()
+
+        if not self.is_supported:
+            context.set_code(StatusCode.FAILED_PRECONDITION)
+            context.set_details(FAILED_PRECONDITION_MESSAGE)
+            return reply
+        
         model_name = self._get_handle(context)
         result = self.explainer.get_permissions_by_roles(model_name,
                                                          request.role_names,
@@ -362,7 +411,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
                 explain_pb2.GetPermissionsByRolesReply.PermissionsByRole(
                     role=role, permissions=permissions))
 
-        reply = explain_pb2.GetPermissionsByRolesReply()
         reply.permissionsbyroles.extend(permissions_by_roles_list)
         return reply
 
