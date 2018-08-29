@@ -117,6 +117,11 @@ SVC_ACCT_ROLES = [
 ]
 
 # Required APIs
+# Some of these may already be enabled when creating a project
+# the Cloud Console. However, projects have been known to change default APIs,
+# so these are explicitly enabled by the install script.  This also allows
+# users to create their projects via GDM without specifying the same default
+# APIs as the default project.
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
      'service': 'admin.googleapis.com'},
@@ -140,6 +145,8 @@ REQUIRED_APIS = [
      'service': 'storage-api.googleapis.com'},
     {'name': 'IAM',
      'service': 'iam.googleapis.com'},
+    {'name': 'Kubernetes Engine API',
+     'service': 'container.googleapis.com'},
     {'name': 'Service Management API',
      'service': 'servicemanagement.googleapis.com'},
     {'name': 'Stackdriver Logging API',
