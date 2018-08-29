@@ -30,7 +30,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 FAILED_PRECONDITION_MESSAGE = 'Explainer is not supported for use.'
-    
+
 
 class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
     """Explain gRPC implementation."""
@@ -53,9 +53,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         return metadata_dict[self.HANDLE_KEY]
 
     def _determine_is_supported(self):
-        """
-        Args:
-            explainer (object): explainer library
+        """Determine whether Explainer is supported for clients to use.
 
         Returns:
             bool: True if Explainer module can be used.
@@ -152,7 +150,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             context.set_code(StatusCode.FAILED_PRECONDITION)
             context.set_details(FAILED_PRECONDITION_MESSAGE)
             return reply
-        
+
         handle = self._get_handle(context)
         role_names = self.explainer.list_roles(handle, request.prefix)
         reply.role_names.extend(role_names)
@@ -232,7 +230,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         if not self.is_supported:
             context.set_code(StatusCode.FAILED_PRECONDITION)
             context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply        
+            return reply
 
         model_name = self._get_handle(context)
         binding_strategies = self.explainer.explain_denied(model_name,
@@ -303,7 +301,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             context.set_code(StatusCode.FAILED_PRECONDITION)
             context.set_details(FAILED_PRECONDITION_MESSAGE)
             yield explain_pb2.Access()
-        
+
         model_name = self._get_handle(context)
         for role, resource, members in (
                 self.explainer.get_access_by_permissions(
@@ -395,7 +393,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             context.set_code(StatusCode.FAILED_PRECONDITION)
             context.set_details(FAILED_PRECONDITION_MESSAGE)
             return reply
-        
+
         model_name = self._get_handle(context)
         result = self.explainer.get_permissions_by_roles(model_name,
                                                          request.role_names,

@@ -193,7 +193,3 @@ message GetAccessByMembersReply {
   }
   repeated Access accesses = 1;
 }
-
-message GenericReply {
-  string message = 1;
-}
