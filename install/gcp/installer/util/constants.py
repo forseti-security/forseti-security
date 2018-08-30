@@ -119,6 +119,11 @@ SVC_ACCT_ROLES = [
 ]
 
 # Required APIs
+# Some of these may already be enabled when creating a project
+# the Cloud Console. However, projects have been known to change default APIs,
+# so these are explicitly enabled by the install script.  This also allows
+# users to create their projects via GDM without specifying the same default
+# APIs as the default project.
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
      'service': 'admin.googleapis.com'},
@@ -138,10 +143,18 @@ REQUIRED_APIS = [
      'service': 'compute.googleapis.com'},
     {'name': 'Deployment Manager',
      'service': 'deploymentmanager.googleapis.com'},
+    {'name': 'Google Cloud Storage JSON API',
+     'service': 'storage-api.googleapis.com'},
     {'name': 'IAM',
      'service': 'iam.googleapis.com'},
     {'name': 'Cloud Trace',
-     'service': 'cloudtrace.googleapis.com'}
+     'service': 'cloudtrace.googleapis.com'},
+    {'name': 'Kubernetes Engine API',
+     'service': 'container.googleapis.com'},
+    {'name': 'Service Management API',
+     'service': 'servicemanagement.googleapis.com'},
+    {'name': 'Stackdriver Logging API',
+     'service': 'logging.googleapis.com'}
 ]
 
 # Org Resource Types
@@ -169,12 +182,6 @@ DEPLOYMENT_TEMPLATE_OUTPUT_PATH = '{}/deployment_templates/'
 VERSIONFILE_REGEX = r'__version__ = \'(.*)\''
 
 # Message templates
-MESSAGE_GSUITE_DATA_COLLECTION = (
-    'To complete setup for G Suite Groups data collection, '
-    'follow the steps here:\n\n    '
-    'https://forsetisecurity.org/docs/latest/configure/'
-    'inventory/gsuite.html\n')
-
 MESSAGE_SKIP_EMAIL = (
     'If you would like to enable email notifications via '
     'SendGrid, please refer to:\n\n'
@@ -210,7 +217,10 @@ MESSAGE_FORSETI_SENDGRID_INSTRUCTIONS = (
 MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL = (
     'To read G Suite Groups and Users data, '
     'please provide a G Suite super admin email address. '
-    'This step is NOT optional.')
+    'This step is optional. \n'
+    'See https://forsetisecurity.org/docs/latest/setup/install.html '
+    'to know what will not work without G Suite integration.\n'
+)
 
 MESSAGE_ASK_SENDGRID_API_KEY = (
     'Forseti can send email notifications through SendGrid '
@@ -305,8 +315,16 @@ MESSAGE_DEPLOYMENT_ERROR = (
     'Error occurred during the deployment, please check the Forseti '
     'FAQ for more information ('
     'https://forsetisecurity.org/docs/latest/faq/#installation-and-deployment'
-    '), exiting...'
-)
+    '), exiting...')
+
+MESSAGE_SSH_ERROR = (
+    'Error occurred when sshing to the VM.  Unable to verify if the VM is '
+    'fully initialized. This is a non-fatal error, but you should verify '
+    'the VM is fully initialized before use. You can do so by SSHing to the '
+    'VM, run command "tail -n1 /tmp/deployment.log" and make you get '
+    '"Execution of startup script finished" in response. Will skip waiting '
+    'for the instance to be initialized and proceed with the rest of the '
+    'installation.')
 
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (

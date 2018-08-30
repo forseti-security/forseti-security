@@ -11,23 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-rules:
-- name: sample bucket acls rule to search for exposed buckets
-  bucket: '*'
-  entity: sssssssssss
-  email: '*'
-  domain: '*'
-  role: '*'
-  resource:
-  - resource_ids:
-    - OLD_RESOURCE_ID_1
-- name: sample bucket acls rule to search for exposed buckets1
-  bucket: '*'
-  entity: allAuthenticatedUsers
-  email: '*'
-  domain: '*'
-  role: '*'
-  resource:
-  - resource_ids:
-    - OLD_RESOURCE_ID_2
+ rules:
+  - name: BigQuery test rule
+    mode: whitelist
+    dataset_id: 'dne'
+    user_email: 'dne@google.com'
+    role: 'READER'
+    resource:
+      - type: organization
+        resource_ids:
+          - 234

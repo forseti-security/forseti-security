@@ -69,6 +69,7 @@ class LogSinkScannerTest(ForsetiTestCase):
 
         expected_parents = [
             'organization/234/',
+            'organization/234/billing_account/ABCD-1234/',
             'organization/234/folder/56/',
             'organization/234/project/proj-1/',
             'organization/234/folder/56/project/proj-2/',
@@ -76,15 +77,16 @@ class LogSinkScannerTest(ForsetiTestCase):
         ]
         expected_log_sinks = [
             ['org_sink_1', 'org_sink_2'],
+            ['billing_sink'],
             ['folder_sink'],
             [],
             ['p2_sink_1', 'p2_sink_2'],
             ['p3_sink'],
         ]
 
-        self.assertEqual(5, len(log_sink_data))
+        self.assertEqual(len(expected_log_sinks), len(log_sink_data))
 
-        for i in xrange(5):
+        for i in range(len(expected_log_sinks)):
             actual_parent, actual_log_sink_configs = log_sink_data[i]
             self.assertEqual(expected_parents[i], actual_parent.full_name)
             actual_log_sinks = [sink.id for sink in actual_log_sink_configs]

@@ -14,21 +14,31 @@
 
 """Rules engine for Big Query data sets."""
 import collections
+import enum
 import itertools
 import json
-import re
 
 from google.cloud.forseti.common.gcp_type import (
     bigquery_access_controls as bq_acls)
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.regular_exp import escape_and_globify
+from google.cloud.forseti.common.util import regular_exp
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
+
+
+class Mode(enum.Enum):
+    """Rule modes."""
+    WHITELIST = 'whitelist'
+    BLACKLIST = 'blacklist'
+
+
+RuleReference = collections.namedtuple(
+    'RuleReference', ['bigquery_acl', 'mode'])
 
 
 class BigqueryRulesEngine(bre.BaseRulesEngine):
@@ -128,36 +138,36 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         Returns:
             Rule: rule for the given definition.
         """
-        dataset_id = rule_def.get('dataset_id')
-        special_group = rule_def.get('special_group')
-        user_email = rule_def.get('user_email')
-        domain = rule_def.get('domain')
-        group_email = rule_def.get('group_email')
-        role = rule_def.get('role')
+        dataset_id = rule_def.get('dataset_id', '*')
+        special_group = rule_def.get('special_group', '*')
+        user_email = rule_def.get('user_email', '*')
+        domain = rule_def.get('domain', '*')
+        group_email = rule_def.get('group_email', '*')
+        role = rule_def.get('role', '*')
 
-        is_any_none = any(item is None for item in [
-            dataset_id,
-            special_group,
-            user_email,
-            domain,
-            group_email,
-            role])
+        def_mode = rule_def.get('mode')
+        if def_mode:
+            mode = Mode(def_mode)
+        else:
+            # Default mode to blacklist for backwards compatibility as that was
+            # the behaviour before mode was configurable.
+            # TODO: make mode required?
+            mode = Mode.BLACKLIST
 
-        if is_any_none:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Faulty rule {}'.format(rule_def.get('name')))
-
-        rule_def_resource = bq_acls.BigqueryAccessControls(
-            project_id='',
-            dataset_id=escape_and_globify(dataset_id),
-            full_name='',
-            special_group=escape_and_globify(special_group),
-            user_email=escape_and_globify(user_email),
-            domain=escape_and_globify(domain),
-            group_email=escape_and_globify(group_email),
-            role=escape_and_globify(role.upper()),
-            view='',
-            raw_json=json.dumps(raw_resource))
+        rule_def_resource = RuleReference(
+            bigquery_acl=bq_acls.BigqueryAccessControls(
+                project_id='',
+                dataset_id=regular_exp.escape_and_globify(dataset_id),
+                full_name='',
+                special_group=regular_exp.escape_and_globify(special_group),
+                user_email=regular_exp.escape_and_globify(user_email),
+                domain=regular_exp.escape_and_globify(domain),
+                group_email=regular_exp.escape_and_globify(group_email),
+                role=regular_exp.escape_and_globify(role.upper()),
+                view={},
+                raw_json=json.dumps(raw_resource)),
+            mode=mode,
+        )
 
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
@@ -243,11 +253,29 @@ class Rule(object):
         Args:
             rule_name (str): Name of the loaded rule.
             rule_index (int): The index of the rule from the rule definitions.
-            rules (dict): The rules from the file.
+            rules (RuleReference): The rules from the file and corresponding
+                values.
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
         self.rules = rules
+
+    def _is_applicable(self, bigquery_acl):
+        """Determine whether the rules are applicable to the given acl.
+
+         Args:
+            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
+         Returns:
+            bool: True if the rules are applicable to the given acl, False
+                otherwise.
+        """
+        rule_bigquery_acl = self.rules.bigquery_acl
+        rule_regex_to_val = {
+            rule_bigquery_acl.dataset_id: bigquery_acl.dataset_id,
+            rule_bigquery_acl.role: bigquery_acl.role,
+        }
+
+        return regular_exp.all_match(rule_regex_to_val)
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, bigquery_acl):
@@ -259,38 +287,23 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple.
         """
-        is_dataset_id_violated = True
-        is_special_group_violated = True
-        is_user_email_bool_violated = True
-        is_domain_violated = True
-        is_group_email_violated = True
-        is_role_violated = True
+        if not self._is_applicable(bigquery_acl):
+            return
 
-        is_dataset_id_violated = re.match(self.rules.dataset_id,
-                                          bigquery_acl.dataset_id)
+        rule_bigquery_acl = self.rules.bigquery_acl
+        rule_regex_to_val = {
+            rule_bigquery_acl.special_group: bigquery_acl.special_group,
+            rule_bigquery_acl.user_email: bigquery_acl.user_email,
+            rule_bigquery_acl.domain: bigquery_acl.domain,
+            rule_bigquery_acl.group_email: bigquery_acl.group_email,
+        }
 
-        is_special_group_violated = re.match(self.rules.special_group,
-                                             bigquery_acl.special_group)
+        all_matched = regular_exp.all_match(rule_regex_to_val)
 
-        is_user_email_bool_violated = re.match(self.rules.user_email,
-                                               bigquery_acl.user_email)
+        has_violation = self.rules.mode == Mode.BLACKLIST and all_matched or (
+            self.rules.mode == Mode.WHITELIST and not all_matched)
 
-        is_domain_violated = re.match(self.rules.domain, bigquery_acl.domain)
-
-        is_group_email_violated = re.match(self.rules.group_email,
-                                           bigquery_acl.group_email)
-
-        is_role_violated = re.match(self.rules.role, bigquery_acl.role)
-
-        should_raise_violation = all([
-            is_dataset_id_violated,
-            is_special_group_violated,
-            is_user_email_bool_violated,
-            is_domain_violated,
-            is_group_email_violated,
-            is_role_violated])
-
-        if should_raise_violation:
+        if has_violation:
             yield self.RuleViolation(
                 resource_type=resource_mod.ResourceType.BIGQUERY,
                 resource_id=bigquery_acl.dataset_id,
@@ -305,5 +318,5 @@ class Rule(object):
                 domain=bigquery_acl.domain,
                 group_email=bigquery_acl.group_email,
                 view=bigquery_acl.view,
-                resource_data=bigquery_acl.json
+                resource_data=bigquery_acl.json,
             )

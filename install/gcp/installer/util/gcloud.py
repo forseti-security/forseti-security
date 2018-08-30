@@ -20,6 +20,7 @@ import re
 import sys
 
 import constants
+import installer_errors
 import utils
 
 
@@ -51,11 +52,13 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
+
 def set_network_host_project_id(self):
     """Get the host project."""
     if not self.config.vpc_host_project_id:
         self.config.vpc_host_project_id, _, _ = get_gcloud_info()
     print('VPC Host Project %s' % self.config.vpc_host_project_id)
+
 
 def activate_service_account(key_file):
     """Activate the service account with gcloud.
@@ -680,6 +683,7 @@ def get_vm_instance_info(instance_name, try_match=False):
               'will leave the server ip empty for now.')
     return None, None, None
 
+
 def create_firewall_rule(rule_name,
                          service_accounts,
                          action,
@@ -801,12 +805,17 @@ def check_vm_init_status(vm_name, zone):
 
     check_script_executed = 'tail -n1 /tmp/deployment.log'
 
-    _, out, _ = utils.run_command(
+    _, out, err = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
          '--zone', zone, '--command', check_script_executed, '--quiet'])
     # --quiet flag is needed to eliminate the prompting for user input
     # which will hang the run_command function
     # i.e. It will create a folder at ~/.ssh and generate a new ssh key
+
+    if err:
+        print(constants.MESSAGE_SSH_ERROR)
+        print(err)
+        raise installer_errors.SSHError
 
     if 'Execution of startup script finished' in out:
         return True

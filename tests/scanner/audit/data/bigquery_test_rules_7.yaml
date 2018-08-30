@@ -11,9 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""A sample action class for examples and testing."""
-
-
-class SampleAction(object):
-    """SampleAction object."""
+ rules:
+  - name: BigQuery test rule
+    mode: whitelist
+    user_email: 'dne@google.com'
+    role: 'OWNER'
+    resource:
+      - type: organization
+        resource_ids:
+          - 234
