@@ -18,6 +18,7 @@ import mock
 import unittest
 
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type import iam_policy
@@ -45,6 +46,9 @@ class IamRulesScannerTest(ForsetiTestCase):
     def _add_ancestor_bindings_test_data(self):
         """Establishes the hierarchy below.
 
+               +-----------> billing_acct_abcd
+               |
+               |
                +----------------------------> proj_1
                |
                |
@@ -60,6 +64,13 @@ class IamRulesScannerTest(ForsetiTestCase):
             display_name='Organization 234',
             full_name='organization/234/',
             data='fake_org_data_234')
+
+        self.billing_acct_abcd = BillingAccount(
+            'ABCD-1234',
+            display_name='Billing Account ABCD',
+            parent=self.org_234,
+            full_name='organization/234/billing_account/ABCD-1234/',
+            data='fake_billing_account_data_abcd')
 
         self.proj_1 = Project(
             'proj-1',
@@ -116,6 +127,11 @@ class IamRulesScannerTest(ForsetiTestCase):
         self.org_234_policy_resource = mock.MagicMock()
         self.org_234_policy_resource.full_name = (
             'organization/234/iam_policy/organization:234/')
+
+        self.billing_acct_abcd_policy_resource = mock.MagicMock()
+        self.billing_acct_abcd_policy_resource.full_name = (
+            'organization/234/billing_account/ABCD-1234/iam_policy'
+            '/billing_account:ABCD-1234/')
 
         self.folder_1_policy_resource = mock.MagicMock()
         self.folder_1_policy_resource.full_name = (
@@ -906,6 +922,70 @@ class IamRulesScannerTest(ForsetiTestCase):
             for b in expected_policy.get('bindings')])
 
         self.assertEqual(expected_bindings, bucket_bindings)
+
+    def test_retrieve_finds_billing_account_policies(self):
+        """IamPolicyScanner::_retrieve() finds billing account policies.
+        """
+        policy_resources = []
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/iam_policy/organization:234/'
+        pr.type_name = 'iam_policy/organization:234'
+        pr.name = 'organization:234'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["domain:gcp.work"], "role": "roles/billing.user"}, {"members": ["user:da@gcp.work"], "role": "roles/owner"}], "etag": "BwVmVJ0OeTs="}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'organization'
+        pr.parent.name = '234'
+        pr.parent.full_name = 'organization/234/'
+        policy_resources.append(pr)
+
+        pr = mock.MagicMock()
+        pr.full_name = 'organization/234/billing_account/ABCD-1234/iam_policy/billing_account:ABCD-1234/'
+        pr.type_name = 'iam_policy/billing_account:ABCD-1234'
+        pr.name = 'billing_account:ABCD-1234'
+        pr.type = 'iam_policy'
+        pr.data = '{"bindings": [{"members": ["user:cfo@gcp.work"], "role": "roles/billing.admin"}, {"members": ["group:auditors@gcp.work"], "role": "roles/logging.viewer"}], "etag": "BwVmQ+cRxiA="}'
+        pr.parent = mock.MagicMock()
+        pr.parent.type = 'billing_account'
+        pr.parent.name = 'ABCD-1234'
+        pr.parent.full_name = 'organization/234/billing_account/ABCD-1234/'
+        policy_resources.append(pr)
+
+        mock_data_access = mock.MagicMock()
+        mock_data_access.scanner_iter.return_value = policy_resources
+        mock_service_config = mock.MagicMock()
+        mock_service_config.model_manager = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = mock.MagicMock(), mock_data_access
+        self.scanner.service_config = mock_service_config
+
+        # Call the method under test.
+        policy_data, resource_counts = self.scanner._retrieve()
+
+        # Check the Billing Account policy was retrieved
+        self.assertEqual(1, resource_counts['billing_account'])
+        [(billing_acct, billing_acct_bindings)] = [
+                (r, bs) for (r, _, bs) in policy_data
+                if r.type == 'billing_account']
+
+        self.assertEqual('ABCD-1234', billing_acct.id)
+        self.assertEqual('billing_account', billing_acct.type)
+
+        expected_bindings = [
+            iam_policy.IamPolicyBinding.create_from({
+                'role': 'roles/billing.admin',
+                'members': [
+                    'user:cfo@gcp.work',
+                ]
+            }),
+            iam_policy.IamPolicyBinding.create_from({
+                'role': 'roles/logging.viewer',
+                'members': [
+                    'group:auditors@gcp.work',
+                ]
+            })]
+
+        self.assertEqual(expected_bindings, billing_acct_bindings)
 
 
 if __name__ == '__main__':
