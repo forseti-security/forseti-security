@@ -344,15 +344,12 @@ class Rule(object):
                 rule_regex_to_val.pop(None, None)
                 matches.append(regular_exp.all_match(rule_regex_to_val))
 
-        if not has_applicable_rules:
-            return
-
         has_violation = (
             self.rule_reference.mode == Mode.BLACKLIST and any(matches) or
             self.rule_reference.mode == Mode.WHITELIST and not any(matches)
         )
 
-        if has_violation:
+        if has_applicable_rules and has_violation:
             yield self.RuleViolation(
                 resource_type=resource_mod.ResourceType.BIGQUERY,
                 resource_id=bigquery_acl.dataset_id,
