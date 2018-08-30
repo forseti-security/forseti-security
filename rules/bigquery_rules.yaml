@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#   - dataset_id, special_group, user_email, domain, group_email, role.
+#  The following optional fields can be set as binding members:
+#   domain, group_email, user_email, special_group.
+#  Only member fields that are set will be considered when searching for
+#  violations.
 
 rules:
   - name: BigQuery rule to search for public datasets
