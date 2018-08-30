@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# The field 'dataset_id' defaults to '*'
-# The 'role' field :
 #   - dataset_id, special_group, user_email, domain, group_email, role.
 
 rules:
@@ -23,6 +21,7 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
+    dataset_id: '*'
     bindings:
       - role: '*'
         members:
@@ -33,6 +32,7 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
+    dataset_id: '*'
     bindings:
       - role: '*'
         members:
@@ -43,6 +43,7 @@ rules:
       - type: organization
         resource_ids:
           - {ORGANIZATION_ID}
+    dataset_id: '*'
     bindings:
       - role: '*'
         members:

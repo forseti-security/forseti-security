@@ -17,5 +17,6 @@ rules:
     resource:
       - type: organization
           - 234
+    dataset_id: '*'
     bindings:
       - role: 'OWNER'

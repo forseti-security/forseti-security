@@ -18,6 +18,7 @@
       - type: organization
         resource_ids:
           - 111
+    dataset_id: '*'
     bindings:
       - role: 'READER'
         members:

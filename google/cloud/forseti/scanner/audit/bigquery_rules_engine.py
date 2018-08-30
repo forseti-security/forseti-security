@@ -139,14 +139,19 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         Returns:
             Rule: rule for the given definition.
         """
-        dataset_id = regular_exp.escape_and_globify(
-            rule_def.get('dataset_id', '*'))
+        if 'dataset_id' not in rule_def:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Missing dataset_id in rule {}'.format(rule_index))
 
+        dataset_id = regular_exp.escape_and_globify(rule_def['dataset_id'])
 
         bindings = []
 
         # The following block is only to support old style configs.
-        # TODO: stop supporting this
+        # Add a single binding if any of the old fields are set.
+        # Default to glob as default as that is what the fields used to be set
+        # to prior.
+        # TODO: stop supporting this.
         keys = ['role', 'domain', 'group_email', 'user_email', 'special_group']
         for key in keys:
             if key in rule_def:
@@ -191,7 +196,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             role = escape_and_globify(raw_binding['role'])
 
             if 'members' not in raw_binding:
-                                raise audit_errors.InvalidRulesSchemaError(
+                raise audit_errors.InvalidRulesSchemaError(
                     'Missing members in binding in rule {}'.format(rule_index))
 
             members = []
@@ -335,6 +340,8 @@ class Rule(object):
                     member.group_email: bigquery_acl.group_email,
                     member.special_group: bigquery_acl.special_group,
                 }
+
+                # only compare fields that were set
                 rule_regex_to_val.pop(None, None)
                 matches.append(regular_exp.all_match(rule_regex_to_val))
 
@@ -378,5 +385,8 @@ class Rule(object):
             self.rule_reference.dataset_id: bigquery_acl.dataset_id,
             binding.role: bigquery_acl.role,
         }
+
+        # only compare fields that were set
         rule_regex_to_val.pop(None, None)
+
         return regular_exp.all_match(rule_regex_to_val)
