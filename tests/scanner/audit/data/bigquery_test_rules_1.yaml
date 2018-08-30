@@ -20,3 +20,4 @@ rules:
           - 234
     bindings:
       - role: 'OWNER'
+        members: []

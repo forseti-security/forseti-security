@@ -20,3 +20,5 @@
           - 234
     bindings:
       - role: 'OWNER'
+        members:
+          - user_email: '*'

@@ -177,27 +177,40 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             # TODO: make mode required?
             mode = Mode.BLACKLIST
 
-        default = '*' if mode == Mode.BLACKLIST else ''
 
+        escape_and_globify = (
+            lambda s:
+            regular_exp.escape_and_globify(s)
+            if s is not None else None
+        )
 
         for raw_binding in rule_def.get('bindings', []):
-            role = regular_exp.escape_and_globify(raw_binding.get('role', default))
+            if 'role' not in raw_binding:
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Missing role in binding in rule {}'.format(rule_index))
+            role = escape_and_globify(raw_binding['role'])
+
+            if 'members' not in raw_binding:
+                                raise audit_errors.InvalidRulesSchemaError(
+                    'Missing members in binding in rule {}'.format(rule_index))
 
             members = []
             for raw_member in raw_binding.get('members', []):
-                domain = regular_exp.escape_and_globify(
-                    raw_member.get('domain', default))
-                group_email = regular_exp.escape_and_globify(
-                    raw_member.get('group_email', default))
-                user_email = regular_exp.escape_and_globify(
-                    raw_member.get('user_email', default))
-                special_group = regular_exp.escape_and_globify(
-                    raw_member.get('special_group', default))
-                members.append(Member(
-                    domain, group_email, user_email, special_group))
+                domain = escape_and_globify(raw_member.get('domain'))
+                group_email = escape_and_globify(raw_member.get('group_email'))
+                user_email = escape_and_globify(raw_member.get('user_email'))
+                special_group = escape_and_globify(
+                    raw_member.get('special_group'))
 
+                members.append(
+                    Member(domain, group_email, user_email, special_group)
+                )
 
             bindings.append(Binding(role, members))
+
+        if not bindings:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Missing bindings in rule {}'.format(rule_index))
 
 
         rule_def_resource = RuleReference(
@@ -308,15 +321,12 @@ class Rule(object):
         """
         matches = []
 
+        has_applicable_rules = False
         for binding in self.rule_reference.bindings:
             if not self._is_binding_applicable(binding, bigquery_acl):
                 continue
 
-            # no members should be counted as a single member which matched all
-            if not binding.members:
-                matches.append(True)
-                continue
-
+            has_applicable_rules = True
 
             for member in binding.members:
                 rule_regex_to_val = {
@@ -325,9 +335,10 @@ class Rule(object):
                     member.group_email: bigquery_acl.group_email,
                     member.special_group: bigquery_acl.special_group,
                 }
+                rule_regex_to_val.pop(None, None)
                 matches.append(regular_exp.all_match(rule_regex_to_val))
 
-        if not matches:
+        if not has_applicable_rules:
             return
 
         has_violation = (
@@ -367,4 +378,5 @@ class Rule(object):
             self.rule_reference.dataset_id: bigquery_acl.dataset_id,
             binding.role: bigquery_acl.role,
         }
+        rule_regex_to_val.pop(None, None)
         return regular_exp.all_match(rule_regex_to_val)

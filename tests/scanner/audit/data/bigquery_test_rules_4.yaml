@@ -14,9 +14,12 @@
 
 rules:
   - name: BigQuery test rule
+    mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - 234
     bindings:
       - role: 'OWNER'
+        members:
+          - user_email: '*'

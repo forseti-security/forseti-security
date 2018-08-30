@@ -20,3 +20,8 @@ rules:
           - 234
     bindings:
       - role: 'READER'
+        members:
+          - domain: '*'
+          - user_email: '*'
+          - group_email: '*'
+          - special_group: '*'
