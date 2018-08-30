@@ -195,9 +195,8 @@ class Violation(BASE):
         Args:
             table (Table): The table object of this class.
         """
-        col_name = 'resource_name'
-        LOGGER.info('Attempting to create column: %s', col_name)
-        col = Column(col_name, String(256), default='')
+        col = Column('resource_name', String(256), default='')
+        LOGGER.info('Attempting to create column: %s', col.name)
         col.create(table, populate_default=True)
 
 
