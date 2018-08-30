@@ -76,6 +76,7 @@ def migrate_schema(engine, base):
                 table = tables.get(subclass.__tablename__)
                 columnMapping = schema_update()
                 for columnAction, column in columnMapping.iteritems():
+                    columnAction = columnAction.upper()
                     if columnAction in ColumnActionMap:
                         ColumnActionMap.get(columnAction)(table, column)
                     else:

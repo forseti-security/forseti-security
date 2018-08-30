@@ -189,12 +189,11 @@ class Violation(BASE):
         """Maintain all the schema changes for this table.
 
         Returns:
-            dict: A mapping of ColumnAction: Column.
+            dict: A mapping of Action: Column.
         """
-        from install.gcp.upgrade_tools.db_migrator import ColumnAction
-        columnMapping = {ColumnAction.CREATE: Column('resource_name',
-                                                     String(256),
-                                                     default='')}
+        columnMapping = {'CREATE': Column('resource_name',
+                                          String(256),
+                                          default='')}
         return columnMapping
 
 
