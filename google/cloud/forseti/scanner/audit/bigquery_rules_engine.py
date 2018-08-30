@@ -145,25 +145,28 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
         bindings = []
 
-        for raw_binding in rule_def.get('bindings', []):
-            role = raw_binding.get('role', '*')
-
-            members = []
-            for raw_member in raw_binding.get('members', []):
-                domain = regular_exp.escape_and_globify(
-                    raw_member.get('domain', '*'))
-                group_email = regular_exp.escape_and_globify(
-                    raw_member.get('group_email', '*'))
-                user_email = regular_exp.escape_and_globify(
-                    raw_member.get('user_email', '*'))
-                special_group = regular_exp.escape_and_globify(
-                    raw_member.get('special_group', '*'))
-                members.append(Member(
-                    domain, group_email, user_email, special_group))
-
-
-            bindings.append(Binding(role, members))
-
+        # The following block is only to support old style configs.
+        # TODO: stop supporting this
+        keys = ['role', 'domain', 'group_email', 'user_email', 'special_group']
+        for key in keys:
+            if key in rule_def:
+                bindings.append(
+                    Binding(
+                        role=regular_exp.escape_and_globify(
+                            rule_def.get('role', '*')),
+                        members=[Member(
+                            regular_exp.escape_and_globify(
+                                rule_def.get('domain', '*')),
+                            regular_exp.escape_and_globify(
+                                rule_def.get('group_email', '*')),
+                            regular_exp.escape_and_globify(
+                                rule_def.get('user_email', '*')),
+                            regular_exp.escape_and_globify(
+                                rule_def.get('special_group', '*')),
+                        )]
+                    )
+                )
+                break
 
         def_mode = rule_def.get('mode')
         if def_mode:
@@ -173,6 +176,29 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             # the behaviour before mode was configurable.
             # TODO: make mode required?
             mode = Mode.BLACKLIST
+
+        default = '*' if mode == Mode.BLACKLIST else ''
+
+
+        for raw_binding in rule_def.get('bindings', []):
+            role = regular_exp.escape_and_globify(raw_binding.get('role', default))
+
+            members = []
+            for raw_member in raw_binding.get('members', []):
+                domain = regular_exp.escape_and_globify(
+                    raw_member.get('domain', default))
+                group_email = regular_exp.escape_and_globify(
+                    raw_member.get('group_email', default))
+                user_email = regular_exp.escape_and_globify(
+                    raw_member.get('user_email', default))
+                special_group = regular_exp.escape_and_globify(
+                    raw_member.get('special_group', default))
+                members.append(Member(
+                    domain, group_email, user_email, special_group))
+
+
+            bindings.append(Binding(role, members))
+
 
         rule_def_resource = RuleReference(
             dataset_id=dataset_id,
