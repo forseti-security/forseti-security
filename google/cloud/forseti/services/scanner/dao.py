@@ -18,10 +18,6 @@ from collections import defaultdict
 import hashlib
 import json
 
-# Importing migrate.changeset adds some new methods to existing SQLAlchemy
-# objects but we will not be calling the library directly.
-import migrate.changeset  # noqa: F401, pylint: disable=unused-import
-
 from sqlalchemy import BigInteger
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -189,15 +185,17 @@ class Violation(BASE):
             self.violation_type, self.resource_type, self.rule_name)
 
     @staticmethod
-    def update_schema(table):
+    def update_schema():
         """Maintain all the schema changes for this table.
 
-        Args:
-            table (Table): The table object of this class.
+        Returns:
+            dict: A mapping of ColumnAction: Column.
         """
-        col = Column('resource_name', String(256), default='')
-        LOGGER.info('Attempting to create column: %s', col.name)
-        col.create(table, populate_default=True)
+        from install.gcp.upgrade_tools.db_migrator import ColumnAction
+        columnMapping = {ColumnAction.CREATE: Column('resource_name',
+                                                     String(256),
+                                                     default='')}
+        return columnMapping
 
 
 class ViolationAccess(object):
