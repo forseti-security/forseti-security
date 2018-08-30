@@ -189,11 +189,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             if s is not None else None
         )
 
-        if 'bindings' not in rule_def:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Missing bindings in rule {}'.format(rule_index))
-
-        for raw_binding in rule_def['bindings']):
+        for raw_binding in rule_def.get('bindings', []):
             if 'role' not in raw_binding:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing role in binding in rule {}'.format(rule_index))
@@ -216,6 +212,10 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 )
 
             bindings.append(Binding(role, members))
+
+        if not bindings:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Missing bindings in rule {}'.format(rule_index))
 
         rule_def_resource = RuleReference(
             dataset_id=dataset_id,
