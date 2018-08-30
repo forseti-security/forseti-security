@@ -22,7 +22,7 @@
 #     See: https://cloud.google.com/resource-manager/docs/cloud-platform-resource-hierarchy
 #   c. Return the first applicable rules.
 # 3. For each applicable rule, check if the policy is a superset of one of the "match_policies" defined in the rule.
-# 4. For any rule with a matching policy, check if the policy is a superset of any of the "verify_policies"
+# 4. For any rule with a matching policy, check if the policy is a subset of any of the "verify_policies"
 #     if it is, create a RuleViolation.
 rules:
 
