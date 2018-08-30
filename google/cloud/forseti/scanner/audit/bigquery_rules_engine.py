@@ -200,7 +200,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     'Missing members in binding in rule {}'.format(rule_index))
 
             members = []
-            for raw_member in raw_binding.get('members', []):
+            for raw_member in raw_binding['members']:
                 domain = escape_and_globify(raw_member.get('domain'))
                 group_email = escape_and_globify(raw_member.get('group_email'))
                 user_email = escape_and_globify(raw_member.get('user_email'))
