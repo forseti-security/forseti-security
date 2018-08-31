@@ -148,19 +148,15 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         bindings = []
 
         # TODO: stop supporting this.
-        binding = cls._get_binding_from_old_style_syntax(rule_def)
+        binding = cls._get_binding_from_old_syntax(rule_def)
         if binding:
             bindings.append(binding)
 
 
-        def_mode = rule_def.get('mode')
-        if def_mode:
-            mode = Mode(def_mode)
-        else:
-            # Default mode to blacklist for backwards compatibility as that was
-            # the behaviour before mode was configurable.
-            # TODO: make mode required?
-            mode = Mode.BLACKLIST
+        # Default mode to blacklist for backwards compatibility as that was
+        # the behaviour before mode was configurable.
+        # TODO: make mode required?
+        mode = Mode(rule_def.get('mode', 'blacklist'))
 
         for raw_binding in rule_def.get('bindings', []):
             if 'role' not in raw_binding:
@@ -193,20 +189,17 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             raise audit_errors.InvalidRulesSchemaError(
                 'Missing bindings in rule {}'.format(rule_index))
 
-        rule_def_resource = RuleReference(
-            dataset_id=dataset_id,
-            bindings=bindings,
-            mode=mode,
-        )
-
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
-                    rule_reference=rule_def_resource)
+                    rule_reference=RuleReference(
+                       dataset_id=dataset_id,
+                       bindings=bindings,
+                       mode=mode))
 
         return rule
 
     @classmethod
-    def _get_binding_from_old_style_syntax(cls, rule_def):
+    def _get_binding_from_old_syntax(cls, rule_def):
         """Get a binding for configs set with the old syntax.
 
         Default fields to glob as default as that is what the fields used to be
@@ -236,6 +229,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                             rule_def.get('special_group', '*')),
                     )]
                 )
+        return None
 
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
