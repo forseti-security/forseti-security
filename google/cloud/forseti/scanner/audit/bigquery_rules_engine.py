@@ -179,15 +179,13 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
                 # only one key should be set per member
                 num_fields_set = sum(
-                    [val is not None for _, val in fields.iteritems()]
+                    [val is not None for val in fields.values()]
                 )
                 if num_fields_set != 1:
                     raise audit_errors.InvalidRulesSchemaError(
                         'At most one member field may be set in rule {}'.format(
                             rule_index))
-                members.append(
-                    Member(**fields)
-                )
+                members.append(Member(**fields))
 
             bindings.append(Binding(role, members))
 
