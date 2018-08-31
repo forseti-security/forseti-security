@@ -170,17 +170,23 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
             members = []
             for raw_member in raw_binding['members']:
-                domain = regular_exp.escape_and_globify(
-                    raw_member.get('domain'))
-                group_email = regular_exp.escape_and_globify(
-                    raw_member.get('group_email'))
-                user_email = regular_exp.escape_and_globify(
-                    raw_member.get('user_email'))
-                special_group = regular_exp.escape_and_globify(
-                    raw_member.get('special_group'))
+                fields = {
+                    field: regular_exp.escape_and_globify(raw_member.get(field))
+                    for field in [
+                        'domain', 'group_email', 'user_email', 'special_group'
+                    ]
+                }
 
+                # only one key should be set per member
+                num_fields_set = sum(
+                    [val is not None for _, val in fields.iteritems()]
+                )
+                if num_fields_set != 1:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'At most one member field may be set in rule {}'.format(
+                            rule_index))
                 members.append(
-                    Member(domain, group_email, user_email, special_group)
+                    Member(**fields)
                 )
 
             bindings.append(Binding(role, members))
@@ -383,8 +389,5 @@ class Rule(object):
             self.rule_reference.dataset_id: bigquery_acl.dataset_id,
             binding.role: bigquery_acl.role,
         }
-
-        # only compare fields that were set
-        rule_regex_to_val.pop(None, None)
 
         return regular_exp.all_match(rule_regex_to_val)
