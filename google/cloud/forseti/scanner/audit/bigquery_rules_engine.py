@@ -192,9 +192,9 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
                     rule_reference=RuleReference(
-                       dataset_id=dataset_id,
-                       bindings=bindings,
-                       mode=mode))
+                        dataset_id=dataset_id,
+                        bindings=bindings,
+                        mode=mode))
 
         return rule
 
