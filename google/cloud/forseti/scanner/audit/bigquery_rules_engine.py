@@ -147,31 +147,11 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
         bindings = []
 
-        # The following block is only to support old style configs.
-        # Add a single binding if any of the old fields are set.
-        # Default to glob as default as that is what the fields used to be set
-        # to prior.
         # TODO: stop supporting this.
-        keys = ['role', 'domain', 'group_email', 'user_email', 'special_group']
-        for key in keys:
-            if key in rule_def:
-                bindings.append(
-                    Binding(
-                        role=regular_exp.escape_and_globify(
-                            rule_def.get('role', '*')),
-                        members=[Member(
-                            regular_exp.escape_and_globify(
-                                rule_def.get('domain', '*')),
-                            regular_exp.escape_and_globify(
-                                rule_def.get('group_email', '*')),
-                            regular_exp.escape_and_globify(
-                                rule_def.get('user_email', '*')),
-                            regular_exp.escape_and_globify(
-                                rule_def.get('special_group', '*')),
-                        )]
-                    )
-                )
-                break
+        binding = cls._get_binding_from_old_style_syntax(rule_def)
+        if binding:
+            bindings.append(binding)
+
 
         def_mode = rule_def.get('mode')
         if def_mode:
@@ -182,18 +162,11 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             # TODO: make mode required?
             mode = Mode.BLACKLIST
 
-
-        escape_and_globify = (
-            lambda s:
-            regular_exp.escape_and_globify(s)
-            if s is not None else None
-        )
-
         for raw_binding in rule_def.get('bindings', []):
             if 'role' not in raw_binding:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Missing role in binding in rule {}'.format(rule_index))
-            role = escape_and_globify(raw_binding['role'])
+            role = regular_exp.escape_and_globify(raw_binding['role'])
 
             if 'members' not in raw_binding:
                 raise audit_errors.InvalidRulesSchemaError(
@@ -201,10 +174,13 @@ class BigqueryRuleBook(bre.BaseRuleBook):
 
             members = []
             for raw_member in raw_binding['members']:
-                domain = escape_and_globify(raw_member.get('domain'))
-                group_email = escape_and_globify(raw_member.get('group_email'))
-                user_email = escape_and_globify(raw_member.get('user_email'))
-                special_group = escape_and_globify(
+                domain = regular_exp.escape_and_globify(
+                    raw_member.get('domain'))
+                group_email = regular_exp.escape_and_globify(
+                    raw_member.get('group_email'))
+                user_email = regular_exp.escape_and_globify(
+                    raw_member.get('user_email'))
+                special_group = regular_exp.escape_and_globify(
                     raw_member.get('special_group'))
 
                 members.append(
@@ -228,6 +204,38 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                     rule_reference=rule_def_resource)
 
         return rule
+
+    @classmethod
+    def _get_binding_from_old_style_syntax(cls, rule_def):
+        """Get a binding for configs set with the old syntax.
+
+        Default fields to glob as default as that is what the fields used to be
+        set.
+
+        Args:
+          rule_def (dict): raw rule definition.
+
+        Returns:
+          Binding: If an old style config field is set, returns a single binding
+            with a single member.
+        """
+        keys = ['role', 'domain', 'group_email', 'user_email', 'special_group']
+        for key in keys:
+            if key in rule_def:
+                return Binding(
+                    role=regular_exp.escape_and_globify(
+                        rule_def.get('role', '*')),
+                    members=[Member(
+                        regular_exp.escape_and_globify(
+                            rule_def.get('domain', '*')),
+                        regular_exp.escape_and_globify(
+                            rule_def.get('group_email', '*')),
+                        regular_exp.escape_and_globify(
+                            rule_def.get('user_email', '*')),
+                        regular_exp.escape_and_globify(
+                            rule_def.get('special_group', '*')),
+                    )]
+                )
 
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
