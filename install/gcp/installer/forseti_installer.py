@@ -23,6 +23,7 @@ import sys
 from util import constants
 from util import files
 from util import gcloud
+from util import installer_errors
 from util import utils
 
 
@@ -169,7 +170,7 @@ class ForsetiInstaller(object):
 
         If authed user is not in the current domain that Forseti is being
         installed to, then user needs to be warned to add an additional
-        osLoginExternalUser role, in order to have sshe access to the
+        osLoginExternalUser role, in order to have ssh access to the
         client VM.
 
         Args:
@@ -307,10 +308,16 @@ class ForsetiInstaller(object):
         loading_message = ('Waiting for Forseti {} to be initialized...'
                            .format(installation_type))
 
-        _ = utils.start_loading(
-            max_loading_time=constants.MAXIMUM_LOADING_TIME_IN_SECONDS,
-            exit_condition_checker=status_checker,
-            message=loading_message)
+        try:
+            _ = utils.start_loading(
+                max_loading_time=constants.MAXIMUM_LOADING_TIME_IN_SECONDS,
+                exit_condition_checker=status_checker,
+                message=loading_message)
+        except installer_errors.SSHError:
+            # There is problem when SSHing to the VM, maybe there is a
+            # firewall rule setting that is blocking the SSH from the
+            # cloud shell. We will skip waiting for the VM to be initialized.
+            pass
 
     def check_run_properties(self):
         """Check script run properties."""
