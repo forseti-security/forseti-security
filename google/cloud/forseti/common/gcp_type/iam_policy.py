@@ -348,6 +348,10 @@ class IamPolicyMember(object):
                 other_member.type == self.ALL_USERS):
             return True
 
+        if (self.type == self.ALL_AUTH_USERS and
+                other_member.type == self.ALL_AUTH_USERS):
+            return True
+
         # Match if:
         # {member_type}:{member_name} regex-matches self's
         # {member_type}:{member_name} .

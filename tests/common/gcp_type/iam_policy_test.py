@@ -52,7 +52,8 @@ class IamPolicyTest(ForsetiTestCase):
             'serviceAccount:abc@def.gserviceaccount.com',
             'user:someone@somewhere.tld',
             'allUsers',
-            'user:anything'
+            'user:anything',
+            'allAuthenticatedUsers'
         ]
 
     # Test IamPolicyMember
@@ -77,6 +78,7 @@ class IamPolicyTest(ForsetiTestCase):
             IamPolicyMember.create_from(self.members[5]), # *@company.com
             IamPolicyMember.create_from(self.members[6]), # *@*.gserviceaccount
             IamPolicyMember.create_from(self.members[7]), # user:*
+            IamPolicyMember.create_from(self.members[4]) # allAuthenticatedUsers
         ]
 
         self.assertTrue(iam_policy_members[0].matches(self.test_members[0]))
@@ -88,6 +90,8 @@ class IamPolicyTest(ForsetiTestCase):
         self.assertTrue(iam_policy_members[3].matches(self.test_members[1]))
         self.assertTrue(iam_policy_members[4].matches(self.test_members[2]))
         self.assertTrue(iam_policy_members[4].matches(self.test_members[4]))
+        self.assertTrue(iam_policy_members[5].matches(self.test_members[5]))
+
 
         # test non matches
         self.assertFalse(iam_policy_members[0].matches(
