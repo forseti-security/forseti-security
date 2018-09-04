@@ -117,6 +117,11 @@ SVC_ACCT_ROLES = [
 ]
 
 # Required APIs
+# Some of these may already be enabled when creating a project
+# the Cloud Console. However, projects have been known to change default APIs,
+# so these are explicitly enabled by the install script.  This also allows
+# users to create their projects via GDM without specifying the same default
+# APIs as the default project.
 REQUIRED_APIS = [
     {'name': 'Admin SDK',
      'service': 'admin.googleapis.com'},
@@ -136,8 +141,16 @@ REQUIRED_APIS = [
      'service': 'compute.googleapis.com'},
     {'name': 'Deployment Manager',
      'service': 'deploymentmanager.googleapis.com'},
+    {'name': 'Google Cloud Storage JSON API',
+     'service': 'storage-api.googleapis.com'},
     {'name': 'IAM',
-     'service': 'iam.googleapis.com'}
+     'service': 'iam.googleapis.com'},
+    {'name': 'Kubernetes Engine API',
+     'service': 'container.googleapis.com'},
+    {'name': 'Service Management API',
+     'service': 'servicemanagement.googleapis.com'},
+    {'name': 'Stackdriver Logging API',
+     'service': 'logging.googleapis.com'}
 ]
 
 # Org Resource Types
@@ -298,8 +311,16 @@ MESSAGE_DEPLOYMENT_ERROR = (
     'Error occurred during the deployment, please check the Forseti '
     'FAQ for more information ('
     'https://forsetisecurity.org/docs/latest/faq/#installation-and-deployment'
-    '), exiting...'
-)
+    '), exiting...')
+
+MESSAGE_SSH_ERROR = (
+    'Error occurred when sshing to the VM.  Unable to verify if the VM is '
+    'fully initialized. This is a non-fatal error, but you should verify '
+    'the VM is fully initialized before use. You can do so by SSHing to the '
+    'VM, run command "tail -n1 /tmp/deployment.log" and make you get '
+    '"Execution of startup script finished" in response. Will skip waiting '
+    'for the instance to be initialized and proceed with the rest of the '
+    'installation.')
 
 # Questions templates
 QUESTION_ENABLE_WRITE_ACCESS = (

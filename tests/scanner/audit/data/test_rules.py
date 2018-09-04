@@ -480,3 +480,42 @@ RULES13 = {
         },
     ]
 }
+
+# Billing Account rules, whitelisting specific users for billing roles in the
+# billing account, and blacklisting all user-level bindings for logging roles.
+RULES14 = {
+    'rules': [
+        {
+            'name': 'this rule whitelists specific users in billing roles',
+            'mode': 'whitelist',
+            'resource': [{
+                    'type': 'billing_account',
+                    'applies_to': 'self',
+                    'resource_ids': ['000000-111111-222222']
+                }],
+            'inherit_from_parents': False,
+            'bindings': [{
+                    'role': 'roles/billing.*',
+                    'members': [
+                        'user:ceo@xyz.edu',
+                        'user:cfo@xyz.edu',
+                    ]
+                }]
+        },
+        {
+            'name': (
+                'this rule blacklists groups in billing account logging roles'),
+            'mode': 'blacklist',
+            'resource': [{
+                    'type': 'billing_account',
+                    'applies_to': 'self',
+                    'resource_ids': ['000000-111111-222222']
+                }],
+            'inherit_from_parents': False,
+            'bindings': [{
+                    'role': 'roles/logging.*',
+                    'members': ['user:*'],
+                }]
+        },
+    ]
+}
