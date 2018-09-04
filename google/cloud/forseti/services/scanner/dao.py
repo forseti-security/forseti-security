@@ -185,16 +185,16 @@ class Violation(BASE):
             self.violation_type, self.resource_type, self.rule_name)
 
     @staticmethod
-    def update_schema():
+    def get_schema_update_actions():
         """Maintain all the schema changes for this table.
 
         Returns:
             dict: A mapping of Action: Column.
         """
-        columnMapping = {'CREATE': Column('resource_name',
-                                          String(256),
-                                          default='')}
-        return columnMapping
+        column_mapping = {'CREATE': [Column('resource_name',
+                                            String(256),
+                                            default='')]}
+        return column_mapping
 
 
 class ViolationAccess(object):

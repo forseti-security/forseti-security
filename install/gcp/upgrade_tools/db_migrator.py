@@ -22,28 +22,30 @@ class ColumnAction:
     CREATE = 'CREATE'
 
 
-def create_col(table, col):
+def create_column(table, column):
     """Create Column.
 
     Args:
-        table (Table): The table object.
-        col (Column): The column object."""
-    LOGGER.info('Attempting to create column: %s', col.name)
-    col.create(table, populate_default=True)
+        table (sqlalchemy.schema.Table): The sql alchemy table object.
+        column (sqlalchemy.schema.Column): The sql alchemy column object.
+    """
+    LOGGER.info('Attempting to create column: %s', column.name)
+    column.create(table, populate_default=True)
 
 
-def drop_col(table, col):
+def drop_column(table, column):
     """Create Column.
 
     Args:
-        table (Table): The table object.
-        col (Column): The column object."""
-    LOGGER.info('Attempting to drop column: %s', col.name)
-    col.drop(table)
+        table (sqlalchemy.schema.Table): The sql alchemy table object.
+        column (sqlalchemy.schema.Column): The sql alchemy column object.
+    """
+    LOGGER.info('Attempting to drop column: %s', column.name)
+    column.drop(table)
 
 
-ColumnActionMap = {ColumnAction.DROP: drop_col,
-                   ColumnAction.CREATE: create_col}
+column_action_mapping = {ColumnAction.DROP: drop_column,
+                         ColumnAction.CREATE: create_column}
 
 
 def migrate_schema(engine, base):
@@ -65,30 +67,33 @@ def migrate_schema(engine, base):
     # The format of tables is: {table_name: Table object}.
     tables = base.metadata.tables
 
-    schema_update_method_name = 'update_schema'
+    schema_update_actions_method = 'get_schema_update_actions'
 
     for subclass in base_subclasses:
-        schema_update = getattr(subclass, schema_update_method_name, None)
-        if callable(schema_update) and subclass.__tablename__ in tables:
+        update_actions = getattr(subclass, schema_update_actions_method, None)
+        if callable(update_actions) and subclass.__tablename__ in tables:
             LOGGER.info('Updating table %s', subclass.__tablename__)
             # schema_update will require the Table object.
-            try:
-                table = tables.get(subclass.__tablename__)
-                columnMapping = schema_update()
-                for columnAction, column in columnMapping.iteritems():
-                    columnAction = columnAction.upper()
-                    if columnAction in ColumnActionMap:
-                        ColumnActionMap.get(columnAction)(table, column)
-                    else:
-                        LOGGER.warn('Column: %s, ColumnAction %s doesn\'t '
-                                    'exist.', column, columnAction)
-            except OperationalError:
-                LOGGER.info('Failed to update db schema, table=%s',
-                            subclass.__tablename__)
-            except Exception:
-                LOGGER.exception('Unexpected error happened when attempting '
-                                 'to update database schema, table: %s',
-                                 subclass.__tablename__)
+            table = tables.get(subclass.__tablename__)
+            column_mapping = update_actions()
+            for column_action, columns in column_mapping.iteritems():
+                column_action = column_action.upper()
+                if column_action in column_action_mapping:
+                    for column in columns:
+                        try:
+                            column_action_mapping.get(column_action)(table,
+                                                                     column)
+                        except OperationalError:
+                            LOGGER.info('Failed to update db schema, table=%s',
+                                        subclass.__tablename__)
+                        except Exception:
+                            LOGGER.exception(
+                                'Unexpected error happened when attempting '
+                                'to update database schema, table: %s',
+                                subclass.__tablename__)
+                else:
+                    LOGGER.warn('Columns: %s, ColumnAction %s doesn\'t '
+                                'exist.', columns, column_action)
 
 
 def _find_subclasses(cls):
