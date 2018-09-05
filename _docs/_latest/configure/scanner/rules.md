@@ -335,21 +335,21 @@ rules:
 
 ### Rule definition
 
-BigQuery scanner rules serve as blacklists, for example:
+BigQuery scanner rules can be blacklists or whitelists, for example:
 
 ```yaml
 rules:
   - name: sample BigQuery rule to search for public datasets
-    dataset_id: '*'
-    special_group: 'allAuthenticatedUsers'
-    user_email: '*'
-    domain: '*'
-    group_email: '*'
-    role: '*'
+    mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - YOUR_ORG_ID / YOUR_PROJECT_ID
+    dataset_ids: ['*']
+    bindings:
+      - role: '*'
+        members:
+          - special_group: 'allAuthenticatedUsers'
 ```
 
 * `name`
@@ -365,35 +365,58 @@ rules:
     * **Description**: A list of one or more resource ids to match.
     * **Valid values**: String, you can use `*` to match for all.
 
-* `dataset_id`
-  * **Description**: The BigQuery dataset to which you want to apply the rule.
+* `dataset_ids`
+  * **Description**: List of BigQuery datasets to which you want to apply the rule.
   * **Valid values**: String, you can use `*` to match for all.
 
+* `bindings`
+  * **Description**: The BigQuery ACL rule bindings to bind members to a role.
+    * `role`
+      * **Description**: A [BigQuery ACL role](https://cloud.google.com/storage/docs/access-control/lists).
+      * **Valid values**: One of `OWNER`, `WRITER` or `READER`.
+    * `members`
+      * **Description**: A list of members. You can also use an empty list. Only a single field must be set per member.
+        * `domain` 
+          * **Description**: Domain.
+          *  **Valid values**: String.
+        * `group_email`
+          * **Description**: Group email.
+          * **Valid values**: String.
+        * `user_email`
+          * **Description**: User email.
+          * **Valid values**: String.
+        * `special_group`
+          * **Description**: Special group.
+          * **Valid values**: String.
+
 * `special_group`
-  * **Description**: The special group.
+  * **Description**: The special group. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
 * `domain`
-  * **Description**: Domain.
+  * **Description**: Domain. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
 * `role`
-  * **Description**: The BigQuery dataset to which you want to apply the rule.
-  * **Valid values**: String, you can use `*` to match for all.
+  * **Description**: Role. ***DEPRECATED, please use bindings instead.***
+  * **Valid values**: One of `OWNER`, `WRITER` or `READER`.
 
 * `group_email`
-  * **Description**: Group email.
+  * **Description**: Group email. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
-* `role`
-  * **Description**: Role.
+* `user_email`
+  * **Description**: User email. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
-The BigQuery Scanner rules specify entities that aren't allowed to access
-your datasets. When you set a value of `*` for `special_group`, `user_email`,
-`domain`, and `group_email`, Scanner checks to make sure that no entities can
-access your datasets. If you specify any other value, Scanner only checks to
-make sure that the entity you specified doesn't have access.
+The BigQuery Scanner rules specify entities that are allowed or not allowed 
+(depending on mode) to access your datasets. 
+For blacklists, when you set a value of `*` for `special_group`, `user_email`,
+`domain`, or `group_email`, the Scanner checks to make sure that no entities that 
+have the field set can access your datasets. If you specify any other value, the 
+Scanner only checks to make sure that the entity you specified doesn't have access.
+For whitelists, the specified entity specifies who has access to your datasets.
+Any entity that does not match a whitelist binding will be marked as a violation.
 
 ## Enabled APIs rules
 
