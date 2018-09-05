@@ -19,10 +19,8 @@ rules:
         resource_ids:
           - 234
     dataset_id: '*'
-    bindings:
-      - role: 'READER'
-        members:
-          - domain: '*'
-          - user_email: '*'
-          - group_email: '*'
-          - special_group: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*'
+    role: '*'

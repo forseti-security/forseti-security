@@ -35,6 +35,9 @@ def escape_and_globify(pattern_string):
         str: The pattern string, escaped except for the "*", which is
             transformed into ".+" (match on one or more characters).
     """
+    if pattern_string is None:
+        return None
+
     # pylint: enable=anomalous-backslash-in-string
     if pattern_string == '*':
         return '^.*$'
