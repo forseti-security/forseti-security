@@ -262,7 +262,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
             actual_violations_list)
 
-    def test_multiple_dataset_ids(self):
+    def test_find_violations_multiple_dataset_ids(self):
         rules_local_path = get_datafile_path(
             __file__,
             'bigquery_test_rules_10.yaml')
