@@ -278,5 +278,18 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             [fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST[0]],
             actual_violations_list)
 
+    def test_find_violations_unset_acl_field(self):
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bigquery_test_rules_11.yaml')
+        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
+        rules_engine.build_rule_book()
+        fake_bq_acls_data = create_list_of_bq_objects_from_data()
+        actual_violations_list = []
+        for bqt in fake_bq_acls_data:
+            violation = rules_engine.find_policy_violations(self.project, bqt)
+            actual_violations_list.extend(violation)
+        self.assertEqual([], actual_violations_list)
+
 if __name__ == '__main__':
     unittest.main()

@@ -347,23 +347,24 @@ class Rule(object):
             has_applicable_rules = True
 
             for member in binding.members:
-                rule_regex_to_val = {
-                    member.domain: bigquery_acl.domain,
-                    member.user_email: bigquery_acl.user_email,
-                    member.group_email: bigquery_acl.group_email,
-                    member.special_group: bigquery_acl.special_group,
-                }
+                rule_regex_and_vals = [
+                    (member.domain, bigquery_acl.domain),
+                    (member.user_email, bigquery_acl.user_email),
+                    (member.group_email, bigquery_acl.group_email),
+                    (member.special_group, bigquery_acl.special_group),
+                ]
 
                 # only compare fields that were set
-                remove_keys = [None]
-                remove_keys.extend([
-                    key for key, val in rule_regex_to_val.iteritems()
-                    if val is None
-                ])
-                for key in remove_keys:
-                    rule_regex_to_val.pop(key, None)
+                keep = []
+                for key, val in rule_regex_and_vals:
+                    if key is not None and val is not None:
+                        keep.append((key, val))
 
-                matches.append(regular_exp.all_match(rule_regex_to_val))
+                if not keep:
+                    continue
+
+                matches.append(regular_exp.all_match(keep))
+
 
         has_violation = (
             self.rule_reference.mode == Mode.BLACKLIST and any(matches) or
@@ -398,11 +399,12 @@ class Rule(object):
             bool: True if the rules are applicable to the given acl, False
                 otherwise.
         """
-        rule_regex_to_val = {
+        rule_regex_and_vals = [
             # only one dataset needs to match, so union all dataset ids into one
             # regex expression
-            '|'.join(self.rule_reference.dataset_ids): bigquery_acl.dataset_id,
-            binding.role: bigquery_acl.role,
-        }
+            ('|'.join(self.rule_reference.dataset_ids),
+             bigquery_acl.dataset_id),
+            (binding.role, bigquery_acl.role),
+        ]
 
-        return regular_exp.all_match(rule_regex_to_val)
+        return regular_exp.all_match(rule_regex_and_vals)

@@ -44,17 +44,17 @@ def escape_and_globify(pattern_string):
     return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+?'))
 
 
-def all_match(pattern_to_val):
+def all_match(pattern_and_vals):
     """Lazily determines whether the given regexes match the values.
 
     Args:
-      pattern_to_val (Dict[string: string]): Regex pattern and corresponding
-          value to match against.
+      pattern_and_vals (List[Tuple[string, string]): List of tuple pairs of
+        regex pattern and corresponding value to match against.
 
     Returns:
       bool: True if all regexes matched the corresponding values, else False.
     """
-    for pattern, val in pattern_to_val.iteritems():
+    for pattern, val in pattern_and_vals:
         if not re.match(pattern, val):
             return False
     return True
