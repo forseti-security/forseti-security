@@ -348,7 +348,6 @@ class Rule(object):
             has_applicable_rules = True
 
             for member in binding.members:
-
                 rule_regex_and_vals = [
                     (member.domain, bigquery_acl.domain),
                     (member.user_email, bigquery_acl.user_email),
