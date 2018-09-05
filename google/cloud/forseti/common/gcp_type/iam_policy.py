@@ -342,8 +342,9 @@ class IamPolicyMember(object):
         else:
             other_member = IamPolicyMember.create_from(other)
 
-        # Bucket IAM supports a special "allUsers" member, whose value is simply
-        # "allUsers", without a colon separator and a second fragment.
+        # Bucket IAM supports a special "allUsers" and "allAuthenticatedUsers"
+        # members, whose value is simply "allUsers" and "allAuthenticatedUsers",
+        #  without a colon separator and a second fragment.
         if (self.type == self.ALL_USERS and
                 other_member.type == self.ALL_USERS):
             return True

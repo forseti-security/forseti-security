@@ -52,8 +52,8 @@ class IamPolicyTest(ForsetiTestCase):
             'serviceAccount:abc@def.gserviceaccount.com',
             'user:someone@somewhere.tld',
             'allUsers',
-            'user:anything',
-            'allAuthenticatedUsers'
+            'allAuthenticatedUsers',
+            'user:anything'
         ]
 
     # Test IamPolicyMember
@@ -69,6 +69,11 @@ class IamPolicyTest(ForsetiTestCase):
         self.assertEqual('allUsers', iam_member2.type)
         self.assertIsNone(iam_member2.name)
         self.assertIsNone(iam_member2.name_pattern)
+
+        iam_member3 = IamPolicyMember.create_from(self.members[4])
+        self.assertEqual('allAuthenticatedUsers', iam_member3.type)
+        self.assertIsNone(iam_member3.name)
+        self.assertIsNone(iam_member3.name_pattern)
 
     def test_member_match_works(self):
         """Test the member match against wildcard and non-wildcard members."""
@@ -89,8 +94,8 @@ class IamPolicyTest(ForsetiTestCase):
         self.assertTrue(iam_policy_members[2].matches(self.test_members[0]))
         self.assertTrue(iam_policy_members[3].matches(self.test_members[1]))
         self.assertTrue(iam_policy_members[4].matches(self.test_members[2]))
-        self.assertTrue(iam_policy_members[4].matches(self.test_members[4]))
-        self.assertTrue(iam_policy_members[5].matches(self.test_members[5]))
+        self.assertTrue(iam_policy_members[4].matches(self.test_members[5]))
+        self.assertTrue(iam_policy_members[5].matches(self.test_members[4]))
 
 
         # test non matches
