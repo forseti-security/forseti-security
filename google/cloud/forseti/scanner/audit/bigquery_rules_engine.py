@@ -355,7 +355,14 @@ class Rule(object):
                 }
 
                 # only compare fields that were set
-                rule_regex_to_val.pop(None, None)
+                remove_keys = [None]
+                remove_keys.extend([
+                    key for key, val in rule_regex_to_val.iteritems()
+                    if val is None
+                ])
+                for key in remove_keys:
+                    rule_regex_to_val.pop(key, None)
+
                 matches.append(regular_exp.all_match(rule_regex_to_val))
 
         has_violation = (
