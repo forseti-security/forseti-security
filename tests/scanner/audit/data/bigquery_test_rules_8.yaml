@@ -11,18 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-rules:
+ rules:
   - name: BigQuery test rule
+    mode: whitelist
     resource:
       - type: organization
         resource_ids:
           - 234
     dataset_id: '*'
     bindings:
-      - role: 'READER'
+      - role: 'OWNER'
         members:
-          - domain: '*'
-          - user_email: '*'
-          - group_email: '*'
-          - special_group: '*'
+          - user_email: 'dne@google.com'
