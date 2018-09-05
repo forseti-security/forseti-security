@@ -37,7 +37,7 @@ class Mode(enum.Enum):
 # Rule definition wrappers.
 # TODO: allow for multiple dataset ids.
 RuleReference = collections.namedtuple(
-    'RuleReference', ['mode', 'dataset_id', 'bindings'])
+    'RuleReference', ['mode', 'dataset_ids', 'bindings'])
 Binding = collections.namedtuple('Binding', ['role', 'members'])
 Member = collections.namedtuple(
     'Member', ['domain', 'group_email', 'user_email', 'special_group'],
@@ -139,11 +139,20 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         Returns:
             Rule: rule for the given definition.
         """
-        if 'dataset_id' not in rule_def:
-            raise audit_errors.InvalidRulesSchemaError(
-                'Missing dataset_id in rule {}'.format(rule_index))
+        dataset_ids = []
+        for dataset_id in rule_def.get('dataset_ids', []):
+            dataset_ids.append(regular_exp.escape_and_globify(dataset_id))
 
-        dataset_id = regular_exp.escape_and_globify(rule_def['dataset_id'])
+        # Check `dataset_id` for backwards compatibility.
+        # TODO: stop supporting this.
+        if 'dataset_id' in rule_def:
+            dataset_ids.append(
+                regular_exp.escape_and_globify(rule_def['dataset_id'])
+            )
+
+        if not dataset_ids:
+            raise audit_errors.InvalidRulesSchemaError(
+                'Missing dataset_ids in rule {}'.format(rule_index))
 
         bindings = []
 
@@ -195,7 +204,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         rule = Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
                     rule_reference=RuleReference(
-                        dataset_id=dataset_id,
+                        dataset_ids=dataset_ids,
                         bindings=bindings,
                         mode=mode))
 
@@ -383,7 +392,9 @@ class Rule(object):
                 otherwise.
         """
         rule_regex_to_val = {
-            self.rule_reference.dataset_id: bigquery_acl.dataset_id,
+            # only one dataset needs to match, so union all dataset ids into one
+            # regex expression
+            '|'.join(self.rule_reference.dataset_ids): bigquery_acl.dataset_id,
             binding.role: bigquery_acl.role,
         }
 

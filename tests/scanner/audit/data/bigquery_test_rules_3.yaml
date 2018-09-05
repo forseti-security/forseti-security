@@ -18,7 +18,7 @@ rules:
       - type: organization
         resource_ids:
           - 234
-    dataset_id: '*'
+    dataset_ids: ['*']
     bindings:
       - role: 'READER'
         members:
