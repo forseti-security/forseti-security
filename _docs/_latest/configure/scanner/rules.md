@@ -390,23 +390,23 @@ rules:
           * **Valid values**: String.
 
 * `special_group`
-  * **Description**: The special group. ***DEPRECATED, prefer to use bindings.***
+  * **Description**: The special group. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
 * `domain`
-  * **Description**: Domain. ***DEPRECATED, prefer to use bindings.***
+  * **Description**: Domain. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
 * `role`
-  * **Description**: Role. ***DEPRECATED, prefer to use bindings.***
+  * **Description**: Role. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: One of `OWNER`, `WRITER` or `READER`.
 
 * `group_email`
-  * **Description**: Group email. ***DEPRECATED, prefer to use bindings.***
+  * **Description**: Group email. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
 * `user_email`
-  * **Description**: User email. ***DEPRECATED, prefer to use bindings.***
+  * **Description**: User email. ***DEPRECATED, please use bindings instead.***
   * **Valid values**: String, you can use `*` to match for all.
 
 The BigQuery Scanner rules specify entities that are allowed or not allowed 
