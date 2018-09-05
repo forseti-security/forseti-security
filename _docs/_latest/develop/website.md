@@ -6,8 +6,8 @@ order: 200
 #  {{ page.title }}
 
 The instructions below are aimed at developers using Linux, particularly Debian
-or Ubuntu. This pages shows you how to install and run the website server
-lcoally, so that you can test your documentation changes before merging.
+or Ubuntu. This page shows you how to install and run the website server
+locally, so that you can test your documentation changes before merging.
 
 ---
 
