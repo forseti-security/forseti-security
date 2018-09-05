@@ -41,7 +41,7 @@ rules:
         members:
           - allUsers
 
-  - name: Allow only members in my domain to be an OrgAdmin
+  - name: Prevent public authenticated users from having access to buckets via IAM
     mode: blacklist
     resource:
       - type: bucket

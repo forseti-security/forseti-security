@@ -97,7 +97,6 @@ class IamPolicyTest(ForsetiTestCase):
         self.assertTrue(iam_policy_members[4].matches(self.test_members[5]))
         self.assertTrue(iam_policy_members[5].matches(self.test_members[4]))
 
-
         # test non matches
         self.assertFalse(iam_policy_members[0].matches(
             'user:not-user@company.com'))
