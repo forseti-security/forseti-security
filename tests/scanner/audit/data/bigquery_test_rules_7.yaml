@@ -14,9 +14,12 @@
  rules:
   - name: BigQuery test rule
     mode: whitelist
-    user_email: 'dne@google.com'
-    role: 'OWNER'
     resource:
       - type: organization
         resource_ids:
-          - 234
+          - 111
+    dataset_id: '*'
+    bindings:
+      - role: 'READER'
+        members:
+          - user_email: 'dne@google.com'

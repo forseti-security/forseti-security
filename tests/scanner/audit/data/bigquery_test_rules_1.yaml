@@ -14,8 +14,11 @@
 
 rules:
   - name: BigQuery test rule
-    role: 'OWNER'
     resource:
       - type: organization
         resource_ids:
           - 234
+    dataset_id: '*'
+    bindings:
+      - role: 'OWNER'
+        members: []
