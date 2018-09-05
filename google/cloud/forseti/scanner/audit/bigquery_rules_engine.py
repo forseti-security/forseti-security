@@ -152,7 +152,6 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         if binding:
             bindings.append(binding)
 
-
         # Default mode to blacklist for backwards compatibility as that was
         # the behaviour before mode was configurable.
         # TODO: make mode required?
