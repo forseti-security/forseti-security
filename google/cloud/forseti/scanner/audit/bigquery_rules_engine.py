@@ -354,10 +354,23 @@ class Rule(object):
                     (member.group_email, bigquery_acl.group_email),
                     (member.special_group, bigquery_acl.special_group),
                 ]
-                for regex, val in rule_regex_and_vals:
-                    if regex is not None and val is not None:
-                        matches.append(re.match(regex, val))
-                        break # only one member field is supposed to be set
+
+                # Note: bindings should only have 1 member field set, so only
+                # one of the regex value pairs should be non-None. However,
+                # old style configs had to set all fields, so for backwards
+                # compatibility we have to check all.
+                # TODO: Once we are no longer  supporting backwards
+                # compatibility, just match the first non-None pair and break.
+                sub_matches = [
+                    re.match(regex, val)
+                    for regex, val in rule_regex_and_vals
+                    if regex is not None and val is not None
+                ]
+
+                if not sub_matches:
+                    continue
+
+                matches.append(all(sub_matches))
 
         has_violation = (
             self.rule_reference.mode == Mode.BLACKLIST and any(matches) or
