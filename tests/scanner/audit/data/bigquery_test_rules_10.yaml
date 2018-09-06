@@ -19,7 +19,9 @@ rules:
       - type: organization
         resource_ids:
           - 234
-    dataset_ids: ['*']
+    dataset_ids:
+      - 'd1'
+      - 'dne'
     bindings:
       - role: 'OWNER'
         members:
