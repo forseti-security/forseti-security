@@ -388,9 +388,9 @@ class Rule(object):
                 dataset_id=bigquery_acl.dataset_id,
                 role=bigquery_acl.role,
                 special_group=bigquery_acl.special_group or '',
-                user_email=bigquery_acl.user_email  or '',
-                domain=bigquery_acl.domain  or '',
-                group_email=bigquery_acl.group_email  or '',
+                user_email=bigquery_acl.user_email or '',
+                domain=bigquery_acl.domain or '',
+                group_email=bigquery_acl.group_email or '',
                 view=bigquery_acl.view,
                 resource_data=bigquery_acl.json,
             )
