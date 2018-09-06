@@ -18,7 +18,7 @@
       - type: organization
         resource_ids:
           - 111
-    dataset_id: '*'
+    dataset_ids: ['*']
     bindings:
       - role: 'READER'
         members:
