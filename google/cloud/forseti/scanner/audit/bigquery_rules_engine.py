@@ -16,6 +16,7 @@
 import collections
 import enum
 import itertools
+import re
 
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
@@ -347,16 +348,29 @@ class Rule(object):
             has_applicable_rules = True
 
             for member in binding.members:
-                rule_regex_to_val = {
-                    member.domain: bigquery_acl.domain,
-                    member.user_email: bigquery_acl.user_email,
-                    member.group_email: bigquery_acl.group_email,
-                    member.special_group: bigquery_acl.special_group,
-                }
+                rule_regex_and_vals = [
+                    (member.domain, bigquery_acl.domain),
+                    (member.user_email, bigquery_acl.user_email),
+                    (member.group_email, bigquery_acl.group_email),
+                    (member.special_group, bigquery_acl.special_group),
+                ]
 
-                # only compare fields that were set
-                rule_regex_to_val.pop(None, None)
-                matches.append(regular_exp.all_match(rule_regex_to_val))
+                # Note: bindings should only have 1 member field set, so at most
+                # one of the regex value pairs should be non-None. However,
+                # old style configs had to set all fields, so for backwards
+                # compatibility we have to check all.
+                # TODO: Once we are no longer  supporting backwards
+                # compatibility, just match the first non-None pair and break.
+                sub_matches = [
+                    re.match(regex, val)
+                    for regex, val in rule_regex_and_vals
+                    if regex is not None and val is not None
+                ]
+
+                if not sub_matches:
+                    continue
+
+                matches.append(all(sub_matches))
 
         has_violation = (
             self.rule_reference.mode == Mode.BLACKLIST and any(matches) or
@@ -373,10 +387,10 @@ class Rule(object):
                 violation_type='BIGQUERY_VIOLATION',
                 dataset_id=bigquery_acl.dataset_id,
                 role=bigquery_acl.role,
-                special_group=bigquery_acl.special_group,
-                user_email=bigquery_acl.user_email,
-                domain=bigquery_acl.domain,
-                group_email=bigquery_acl.group_email,
+                special_group=bigquery_acl.special_group or '',
+                user_email=bigquery_acl.user_email or '',
+                domain=bigquery_acl.domain or '',
+                group_email=bigquery_acl.group_email or '',
                 view=bigquery_acl.view,
                 resource_data=bigquery_acl.json,
             )
@@ -391,11 +405,10 @@ class Rule(object):
             bool: True if the rules are applicable to the given acl, False
                 otherwise.
         """
-        rule_regex_to_val = {
-            # only one dataset needs to match, so union all dataset ids into one
-            # regex expression
-            '|'.join(self.rule_reference.dataset_ids): bigquery_acl.dataset_id,
-            binding.role: bigquery_acl.role,
-        }
-
-        return regular_exp.all_match(rule_regex_to_val)
+        # only one dataset needs to match, so union all dataset ids into one
+        # regex expression
+        dataset_ids_matched = re.match(
+            '|'.join(self.rule_reference.dataset_ids), bigquery_acl.dataset_id,
+        )
+        role_matched = re.match(binding.role, bigquery_acl.role)
+        return dataset_ids_matched and role_matched
