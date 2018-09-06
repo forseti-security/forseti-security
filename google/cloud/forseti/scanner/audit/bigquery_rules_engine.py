@@ -405,7 +405,6 @@ class Rule(object):
             bool: True if the rules are applicable to the given acl, False
                 otherwise.
         """
-
         # only one dataset needs to match, so union all dataset ids into one
         # regex expression
         dataset_ids_matched = re.match(
