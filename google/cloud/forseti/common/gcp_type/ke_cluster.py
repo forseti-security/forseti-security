@@ -37,7 +37,7 @@ class KeCluster(object):
                  current_node_version, create_time, status, status_message,
                  node_ipv4_cidr_size, instance_group_urls, current_node_count,
                  expire_time, server_config=None, resource_full_name=None,
-                 raw_json=None):
+                 raw_json=None, raw_dict=None):
         """Initialize."""
 
         self.project_id = project_id
@@ -77,6 +77,7 @@ class KeCluster(object):
         self.server_config = server_config
         self.resource_full_name = resource_full_name
         self._json = raw_json
+        self.as_dict = raw_dict
 
     @classmethod
     def from_dict(cls, project_id, server_config, cluster,
@@ -128,7 +129,8 @@ class KeCluster(object):
             expire_time=cluster.get('expireTime'),
             server_config=server_config,
             resource_full_name=resource_full_name,
-            raw_json=json.dumps(cluster)
+            raw_json=json.dumps(cluster),
+            raw_dict=cluster,
         )
 
     @staticmethod
