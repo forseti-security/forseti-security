@@ -355,7 +355,7 @@ class Rule(object):
                     (member.special_group, bigquery_acl.special_group),
                 ]
 
-                # Note: bindings should only have 1 member field set, so only
+                # Note: bindings should only have 1 member field set, so at most
                 # one of the regex value pairs should be non-None. However,
                 # old style configs had to set all fields, so for backwards
                 # compatibility we have to check all.
