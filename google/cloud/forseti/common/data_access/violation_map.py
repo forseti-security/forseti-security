@@ -38,6 +38,7 @@ VIOLATION_RESOURCES = {
     'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
     'GROUP_VIOLATION': 'groups_violations',
     'KE_VERSION_VIOLATION': 'ke_version_violations',
+    'KE_JMESPATH_VIOLATION': 'ke_jmespath_violations',
     'IAM_POLICY_VIOLATION': 'iam_policy_violations',
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (

@@ -1,0 +1,115 @@
+rules:
+  - name: default mode (whitelist)
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    values:
+      - fake-cluster
+
+  - name: explicit whitelist, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    mode: whitelist
+    values:
+      - fake-cluster
+
+  - name: explicit whitelist, fail
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    mode: whitelist
+    values:
+      - real-cluster
+
+  - name: explicit blacklist, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    mode: blacklist
+    values:
+      - real-cluster
+
+  - name: explicit blacklist, fail
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    mode: blacklist
+    values:
+      - fake-cluster
+
+  - name: multiple values, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    values:
+      - real-cluster
+      - fake-cluster
+
+  - name: multiple values, fail
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: name
+    values:
+      - real-cluster
+      - imaginary-cluster
+
+  - name: nested keys, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: addonsConfig.kubernetesDashboard.disabled
+    values:
+      - True
+
+  - name: use projection to look for a list, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: nodePools[*].config.imageType
+    values:
+      - ["COS", "COS"]
+
+  - name: use projection, look for a list, fail
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: nodePools[*].config.imageType
+    values:
+      - ["COS"]
+      - ["Ubuntu", "COS"]
+
+  - name: simple function, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: length(nodePools)
+    values:
+      - 2
+
+  - name: all nodePools use COS, pass
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    key: 'length(nodePools) == length(nodePools[].{name: config.imageType}[?name==`COS`])'
+    values:
+      - True

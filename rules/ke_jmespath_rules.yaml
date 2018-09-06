@@ -1,0 +1,88 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2018 Ross Vandegrift. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Rule Keys:
+# name: unique name describing the rule
+# resource: A mapping of resources that this rule applies to.
+#  * type: The type of resource, can be organization, folder, or project.
+#  * resource_ids: A list of one or more numeric ids to match, or '*' for all.
+# mode: blacklist or whitelist, defaults to whitelist
+# key: jmespath to the values you'd like to check
+# values: a list of values to blacklist/whitelist according to mode
+
+rules:
+  - name: logging should be enabled
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: loggingService
+    values:
+      - logging.googleapis.com
+
+# # Example rules:
+#   - name: stackdriver monitoring should be enabled
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - '*'
+#     key: monitoringService
+#     values:
+#       - monitoring.googleapis.com
+
+#   - name: ABAC should be disabled
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - '*'
+#     key: legacyAbac.enabled
+#     values:
+#       - true
+
+#   - name: kubernetes dashboard should be disabled
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - '*'
+#     key: addonsConfig.kubernetesDashboard.disabled
+#     values:
+#       - true
+
+#   - name: basic auth should be disabled
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - '*'
+#     key: masterAuth.password
+#     values:
+#       - null
+
+#   - name: network policy should be enabled
+#     resource:
+#       - type: project
+#         resource_ids:
+#           - '*'
+#     key: networkPolicy.enabled
+#     values:
+#       - true
+      
+#   - name: all nodePools use COS
+#     resource:
+#       - type: organization
+#         resource_ids:
+#           - '*'
+#     key: 'length(nodePools) == length(nodePools[].{name: config.imageType}[?name==`COS`])'
+#     values:
+#       - True
