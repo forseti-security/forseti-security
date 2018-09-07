@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Do not add forseti source in this file to avoid rebuilding base during development.
+
 FROM ubuntu:18.04
 
-# Add only the apt dependencies to avoid rebuilding base during development
+# Add the apt dependencies
 ADD install/dependencies/apt_packages.txt /tmp
 
 # Install host dependencies.
