@@ -14,7 +14,7 @@
 
 FROM forseti/build
 
-RUN pip install git+https://github.com/sphinx-doc/sphinx
+RUN pip install sphinx==1.7.7
 RUN sphinx-apidoc -P -F -M -e -o . google *.eggs/
 COPY data/conf.py data/index.rst ./
 COPY data/*.html _templates/

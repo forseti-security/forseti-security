@@ -1,0 +1,68 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.server module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.server">
+<span id="google-cloud-forseti-services-server-module"></span><h1>google.cloud.forseti.services.server module<a class="headerlink" href="#module-google.cloud.forseti.services.server" title="Permalink to this headline">¶</a></h1>
+<p>Forseti Server program.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.services.server.check_args">
+<code class="descname">check_args</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server.html#check_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server.check_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure the required args are present and valid.</p>
+<p>The exit codes are arbitrary and just serve the purpose of facilitating
+distinction betweeen the various error cases.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>args</strong> (<em>dict</em>) – the command line args</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">2-tuple with an exit code and error message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.server.main">
+<code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.server.serve">
+<code class="descname">serve</code><span class="sig-paren">(</span><em>endpoint</em>, <em>services</em>, <em>forseti_db_connect_string</em>, <em>config_file_path</em>, <em>log_level</em>, <em>enable_console_log</em>, <em>max_workers=32</em>, <em>wait_shutdown_secs=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/server.html#serve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.server.serve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate the services and serves them via gRPC.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>endpoint</strong> (<em>str</em>) – the server channel endpoint</li>
+<li><strong>services</strong> (<em>list</em>) – services to register on the server</li>
+<li><strong>forseti_db_connect_string</strong> (<em>str</em>) – Forseti database string</li>
+<li><strong>config_file_path</strong> (<em>str</em>) – Path to Forseti configuration file.</li>
+<li><strong>log_level</strong> (<em>str</em>) – Sets the threshold for Forseti’s logger.</li>
+<li><strong>enable_console_log</strong> (<em>bool</em>) – Enable console logging.</li>
+<li><strong>max_workers</strong> (<em>int</em>) – maximum number of workers for the crawler</li>
+<li><strong>wait_shutdown_secs</strong> (<em>int</em>) – seconds to wait before shutdown</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">Exception</span></code> – No services to start</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
