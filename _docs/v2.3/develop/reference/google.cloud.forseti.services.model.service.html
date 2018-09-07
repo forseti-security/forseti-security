@@ -1,0 +1,205 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.model.service module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.model.service">
+<span id="google-cloud-forseti-services-model-service-module"></span><h1>google.cloud.forseti.services.model.service module<a class="headerlink" href="#module-google.cloud.forseti.services.model.service" title="Permalink to this headline">¶</a></h1>
+<p>Forseti Server model gRPC service.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller">
+<em class="property">class </em><code class="descname">GrpcModeller</code><span class="sig-paren">(</span><em>modeller_api</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.model.model_pb2_grpc.ModellerServicer</span></code></p>
+<p>Modeller gRPC implementation.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller.CreateModel">
+<code class="descname">CreateModel</code><span class="sig-paren">(</span><em>request</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller.CreateModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller.CreateModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new model from an import source.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – pb2 object of CreateModelRequest</li>
+<li><strong>context</strong> (<em>object</em>) – gRPC context</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pb2 object of ModelSimplified</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller.DeleteModel">
+<code class="descname">DeleteModel</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller.DeleteModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller.DeleteModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a model and all associated data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – pb2 object of DeleteModelRequest</li>
+<li><strong>_</strong> (<em>object</em>) – Not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pb2 object of DeleteModelReply</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller.GetModel">
+<code class="descname">GetModel</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller.GetModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller.GetModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get details of a model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – pb2 object of GetModelRequest</li>
+<li><strong>_</strong> (<em>object</em>) – Not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pb2 object of ModelDetails</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller.HANDLE_KEY">
+<code class="descname">HANDLE_KEY</code><em class="property"> = 'handle'</em><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller.HANDLE_KEY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller.ListModel">
+<code class="descname">ListModel</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller.ListModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller.ListModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all models.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – pb2 object of ListModelRequest</li>
+<li><strong>_</strong> (<em>object</em>) – Not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first last"><em>object</em> – pb2 object of ModelSimplified</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller.Ping">
+<code class="descname">Ping</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller.Ping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller.Ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the capability to check for service availability.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>object</em>) – pb2 object of PingRequest</li>
+<li><strong>_</strong> (<em>object</em>) – Not used</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">pb2 object of the PingReply</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller._get_handle">
+<code class="descname">_get_handle</code><span class="sig-paren">(</span><em>context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller._get_handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller._get_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the handle associated with the gRPC call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>context</strong> (<em>object</em>) – GRPC context</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">handle of the GRPC call</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.services.model.service.GrpcModeller._get_model_created_at_str">
+<em class="property">static </em><code class="descname">_get_model_created_at_str</code><span class="sig-paren">(</span><em>model</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModeller._get_model_created_at_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModeller._get_model_created_at_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get model created_at datetime in human readable string format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> (<a class="reference internal" href="google.cloud.forseti.services.dao.html#google.cloud.forseti.services.dao.Model" title="google.cloud.forseti.services.dao.Model"><em>Model</em></a>) – Model dao object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">created_at datetime in string format.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.model.service.GrpcModellerFactory">
+<em class="property">class </em><code class="descname">GrpcModellerFactory</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModellerFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModellerFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Factory class for model service gRPC interface</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.model.service.GrpcModellerFactory.create_and_register_service">
+<code class="descname">create_and_register_service</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/model/service.html#GrpcModellerFactory.create_and_register_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.model.service.GrpcModellerFactory.create_and_register_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and register the Model service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>server</strong> (<em>object</em>) – Server to register service to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The instantiated gRPC service for model.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
