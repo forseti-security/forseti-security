@@ -14,13 +14,12 @@
 
 FROM ubuntu:18.04
 
-# Expose our source so we can read in dependencies.
-ADD . /forseti-security/
-WORKDIR /forseti-security/
+# Add only the apt dependencies to avoid rebuilding base during development
+ADD install/dependencies/apt_packages.txt /tmp
 
 # Install host dependencies.
 RUN apt-get update -qq 1> /dev/null && \
-    apt-get install -qq -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null && \
+    apt-get install -qq -y $(cat /tmp/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null && \
     rm -rf /var/lib/apt/lists/*
 
 # Install the CloudSDK for `gcloud`.
