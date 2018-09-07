@@ -31,6 +31,12 @@ Before you run unit tests and pylint checkers, make sure you have
 Install Forseti in a docker image:
 
   ```bash
+  ./install/scripts/docker_setup_forseti.sh
+  ```
+
+Start the forseti container:
+
+  ```bash
   ./install/scripts/docker_install_forseti.sh
   ```
 
@@ -43,7 +49,7 @@ Run all the unit tests:
 Run pylint checkers:
 
   ```bash
-  ./install/scripts/docker_pylint_forseti.sh
+  ./install/scripts/docker_pystyle_forseti.sh
   ```
 
 ### Executing Individual Tests
