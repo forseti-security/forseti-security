@@ -37,7 +37,7 @@ Install Forseti in a docker image:
 Start the forseti container:
 
   ```bash
-  ./install/scripts/docker_install_forseti.sh
+  ./install/scripts/docker_run_forseti.sh
   ```
 
 Run all the unit tests:
