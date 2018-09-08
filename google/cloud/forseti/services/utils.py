@@ -15,8 +15,8 @@
 """Forseti Server utilities."""
 
 from itertools import izip
-import logging
 import imp
+import logging
 
 
 # pylint: disable=protected-access
