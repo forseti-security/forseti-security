@@ -22,6 +22,7 @@ from google.cloud.forseti.services.utils import logcall
 from google.cloud.forseti.services.utils import split_type_name
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
+from google.cloud.forseti.services.utils import is_opencensus_enabled
 
 
 class ServerUtilsTest(ForsetiTestCase):
@@ -100,6 +101,20 @@ class ServerUtilsTest(ForsetiTestCase):
             self.assertEquals(expected_resources[counter],
                               (resource_type, resource_id))
             counter += 1
+
+    @mock.patch('imp.find_module')
+    def test_opencensus_import(self, mock):
+        """Test is_opencensus_enabled when importing OpenCensus works."""
+        ret = is_opencensus_enabled()
+        self.assertTrue(ret)
+
+    @mock.patch('imp.find_module', side_effect=ImportError('fail'))
+    @mock.patch('logging.warning')
+    def test_opencensus_import_fail(self, mock_imp, mock_logging):
+        """Test is_opencensus_enabled when importing OpenCensus fails."""
+        ret = is_opencensus_enabled()
+        self.assertTrue(mock_logging.called)
+        self.assertEqual(ret, False)
 
 
 if __name__ == '__main__':

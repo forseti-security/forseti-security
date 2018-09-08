@@ -261,7 +261,7 @@ def get_resource_id_from_type_name(type_name):
     return type_name
 
 
-def opencensus_enabled():
+def is_opencensus_enabled():
     """Check if `opencensus` instrumentation library can be imported.
 
     Returns:
@@ -272,7 +272,7 @@ def opencensus_enabled():
         imp.find_module('opencensus')
         return True
     except ImportError:
-        logging.warning('Cannot enable tracing because the `opencensus` library\
-            was not found. \
-            Run `pip install .[tracing]` to install tracing libraries.')
+        logging.warning(
+            'Cannot enable tracing because the `opencensus` library was not '
+            'found. Run `pip install .[tracing]` to install tracing libraries.')
         return False
