@@ -64,6 +64,24 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
             return True
         return False
 
+    @staticmethod
+    def _set_not_supported_status(context, reply):
+        """Return the status if service is not supported.
+
+        Args:
+            context (object): gRPC context.
+            reply (object): proto message, depends on the service call
+                invoking this method
+
+        Returns:
+            object: proto message, depends on the service call invoking
+                this method.
+        """
+        context.set_code(StatusCode.FAILED_PRECONDITION)
+        context.set_details(FAILED_PRECONDITION_MESSAGE)
+        return reply
+
+
     def __init__(self, explainer_api):
         """Initialize
 
@@ -100,9 +118,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.ListResourcesReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         resources = self.explainer.list_resources(handle,
@@ -123,9 +139,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.ListGroupMembersReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         member_names = self.explainer.list_group_members(handle,
@@ -147,9 +161,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.ListRolesReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         role_names = self.explainer.list_roles(handle, request.prefix)
@@ -169,9 +181,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.GetIamPolicyReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         policy = self.explainer.get_iam_policy(handle,
@@ -203,9 +213,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.CheckIamPolicyReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         handle = self._get_handle(context)
         authorized = self.explainer.check_iam_policy(handle,
@@ -228,9 +236,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.ExplainDeniedReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         binding_strategies = self.explainer.explain_denied(model_name,
@@ -261,9 +267,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.ExplainGrantedReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         result = self.explainer.explain_granted(model_name,
@@ -327,9 +331,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.GetAccessByResourcesReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         mapping = self.explainer.get_access_by_resources(
@@ -359,9 +361,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.GetAccessByMembersReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         accesses = []
