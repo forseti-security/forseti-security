@@ -390,9 +390,7 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         reply = explain_pb2.GetPermissionsByRolesReply()
 
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            return reply
+            return self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         result = self.explainer.get_permissions_by_roles(model_name,
