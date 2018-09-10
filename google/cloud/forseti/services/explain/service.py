@@ -301,10 +301,10 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         Yields:
             object: Generator for access tuples.
         """
+        reply = explain_pb2.Access()
+
         if not self.is_supported:
-            context.set_code(StatusCode.FAILED_PRECONDITION)
-            context.set_details(FAILED_PRECONDITION_MESSAGE)
-            yield explain_pb2.Access()
+            yield self._set_not_supported_status(context, reply)
 
         model_name = self._get_handle(context)
         for role, resource, members in (
