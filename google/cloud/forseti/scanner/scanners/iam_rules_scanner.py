@@ -17,6 +17,7 @@
 import json
 import sys
 
+from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type import iam_policy
@@ -192,11 +193,9 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
             policy_data = []
             supported_iam_types = [
-                'organization', 'folder', 'project', 'bucket']
-            org_iam_policy_counter = 0
-            folder_iam_policy_counter = 0
-            project_iam_policy_counter = 0
-            bucket_iam_policy_counter = 0
+                ResourceType.ORGANIZATION, ResourceType.BILLING_ACCOUNT,
+                ResourceType.FOLDER, ResourceType.PROJECT, ResourceType.BUCKET]
+            resource_counts = {iam_type: 0 for iam_type in supported_iam_types}
 
             for policy in data_access.scanner_iter(session, 'iam_policy'):
                 if policy.parent.type not in supported_iam_types:
@@ -206,30 +205,33 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                     iam_policy.IamPolicyBinding.create_from(b)
                     for b in json.loads(policy.data).get('bindings', [])])
 
-                if policy.parent.type == 'bucket':
-                    bucket_iam_policy_counter += 1
+                resource_counts[policy.parent.type] += 1
+                if policy.parent.type == ResourceType.BUCKET:
                     policy_data.append(
                         (Bucket(policy.parent.name,
                                 policy.parent.full_name,
                                 policy.data),
                          policy, policy_bindings))
-                if policy.parent.type == 'project':
-                    project_iam_policy_counter += 1
+                elif policy.parent.type == ResourceType.PROJECT:
                     policy_data.append(
                         (Project(policy.parent.name,
                                  policy.parent.full_name,
                                  policy.data),
                          policy, policy_bindings))
-                elif policy.parent.type == 'folder':
-                    folder_iam_policy_counter += 1
+                elif policy.parent.type == ResourceType.FOLDER:
                     policy_data.append(
                         (Folder(
                             policy.parent.name,
                             policy.parent.full_name,
                             policy.data),
                          policy, policy_bindings))
-                elif policy.parent.type == 'organization':
-                    org_iam_policy_counter += 1
+                elif policy.parent.type == ResourceType.BILLING_ACCOUNT:
+                    policy_data.append(
+                        (BillingAccount(policy.parent.name,
+                                        policy.parent.full_name,
+                                        policy.data),
+                         policy, policy_bindings))
+                elif policy.parent.type == ResourceType.ORGANIZATION:
                     policy_data.append(
                         (Organization(
                             policy.parent.name,
@@ -240,13 +242,6 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         if not policy_data:
             LOGGER.warn('No policies found. Exiting.')
             sys.exit(1)
-
-        resource_counts = {
-            ResourceType.ORGANIZATION: org_iam_policy_counter,
-            ResourceType.FOLDER: folder_iam_policy_counter,
-            ResourceType.PROJECT: project_iam_policy_counter,
-            ResourceType.BUCKET: bucket_iam_policy_counter,
-        }
 
         return policy_data, resource_counts
 

@@ -14,13 +14,13 @@
 
 rules:
   - name: BigQuery test rule
-    mode: blacklist
     resource:
       - type: organization
         resource_ids:
           - 234
-    dataset_ids: ['*']
-    bindings:
-      - role: 'OWNER'
-        members:
-          - user_email: '*'
+    dataset_id: '*'
+    special_group: '*'
+    user_email: '*'
+    domain: '*'
+    group_email: '*'
+    role: '*'
