@@ -1,0 +1,367 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.appengine module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.appengine">
+<span id="google-cloud-forseti-common-gcp-api-appengine-module"></span><h1>google.cloud.forseti.common.gcp_api.appengine module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.appengine" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for AppEngine API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient">
+<em class="property">class </em><code class="descname">AppEngineClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>AppEngine Client.</p>
+<p><a class="reference external" href="https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps">https://cloud.google.com/appengine/docs/admin-api/reference/rest/v1/apps</a></p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_app">
+<code class="descname">get_app</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.get_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets information about an application.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The id of the project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The response of retrieving the AppEngine app.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_instance">
+<code class="descname">get_instance</code><span class="sig-paren">(</span><em>project_id</em>, <em>service_id</em>, <em>version_id</em>, <em>instances_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.get_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets information about a specific instance of a service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The id of the project.</li>
+<li><strong>service_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>version_id</strong> (<em>str</em>) – The id of the version to query.</li>
+<li><strong>instances_id</strong> (<em>str</em>) – The id of the instance to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An Instance resource dict for a given project_id,
+service_id and version_id.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_service">
+<code class="descname">get_service</code><span class="sig-paren">(</span><em>project_id</em>, <em>service_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.get_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets information about a specific service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The id of the project.</li>
+<li><strong>service_id</strong> (<em>str</em>) – The id of the service to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A Service resource dict for a given project_id and
+service_id.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_version">
+<code class="descname">get_version</code><span class="sig-paren">(</span><em>project_id</em>, <em>service_id</em>, <em>version_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.get_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.get_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets information about a specific version of a service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The id of the project.</li>
+<li><strong>service_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>version_id</strong> (<em>str</em>) – The id of the version to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A Version resource dict for a given project_id and
+service_id.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.list_instances">
+<code class="descname">list_instances</code><span class="sig-paren">(</span><em>project_id</em>, <em>service_id</em>, <em>version_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.list_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.list_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists instances of a given service and version.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The id of the project.</li>
+<li><strong>service_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>version_id</strong> (<em>str</em>) – The id of the version to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of Instance resource dicts for a given Version.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.list_services">
+<code class="descname">list_services</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.list_services"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.list_services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists services of a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The id of the project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of Service resource dicts for a project_id.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.list_versions">
+<code class="descname">list_versions</code><span class="sig-paren">(</span><em>project_id</em>, <em>service_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineClient.list_versions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineClient.list_versions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists versions of a given service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The id of the project.</li>
+<li><strong>service_id</strong> (<em>str</em>) – The id of the service to query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of Version resource dicts for a given Service.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient">
+<em class="property">class </em><code class="descname">AppEngineRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=1.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#AppEngineRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>AppEngine API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.app_services">
+<code class="descname">app_services</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.app_services" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an _AppEngineAppsServicesRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.apps">
+<code class="descname">apps</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.apps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an _AppEngineAppsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.service_versions">
+<code class="descname">service_versions</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.service_versions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an _AppEngineAppsServicesVersionsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.version_instances">
+<code class="descname">version_instances</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine.AppEngineRepositoryClient.version_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an _AppEngineAppsServicesVersionsInstancesRepository.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsRepository">
+<em class="property">class </em><code class="descname">_AppEngineAppsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of AppEngine Apps repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesRepository">
+<em class="property">class </em><code class="descname">_AppEngineAppsServicesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of AppEngine Apps Services repository.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsInstancesRepository">
+<em class="property">class </em><code class="descname">_AppEngineAppsServicesVersionsInstancesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesVersionsInstancesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsInstancesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of AppEngine Apps Services Versions Instances repo.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsInstancesRepository.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>resource</em>, <em>target</em>, <em>services_id</em>, <em>versions_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesVersionsInstancesRepository.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsInstancesRepository.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get specific entity of a given resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The id of the resource to query.</li>
+<li><strong>target</strong> (<em>str</em>) – Name of the entity to fetch.</li>
+<li><strong>services_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>versions_id</strong> (<em>str</em>) – The id of the version to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Optional additional arguments to pass to the query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An API response containing the entity resource.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsInstancesRepository.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>resource</em>, <em>services_id</em>, <em>versions_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesVersionsInstancesRepository.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsInstancesRepository.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List subresources of a given resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The id of the resource to query.</li>
+<li><strong>services_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>versions_id</strong> (<em>str</em>) – The id of the version to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Optional additional arguments to pass to the query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsRepository">
+<em class="property">class </em><code class="descname">_AppEngineAppsServicesVersionsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesVersionsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of AppEngine Apps Services Versions repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsRepository.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>resource</em>, <em>target</em>, <em>services_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesVersionsRepository.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsRepository.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get specific entity of a given resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The id of the resource to query.</li>
+<li><strong>target</strong> (<em>str</em>) – Name of the entity to fetch.</li>
+<li><strong>services_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Optional additional arguments to pass to the query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An API response containing the entity resource.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsRepository.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>resource</em>, <em>services_id</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_AppEngineAppsServicesVersionsRepository.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._AppEngineAppsServicesVersionsRepository.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List subresources of a given resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource</strong> (<em>str</em>) – The id of the resource to query.</li>
+<li><strong>services_id</strong> (<em>str</em>) – The id of the service to query.</li>
+<li><strong>**kwargs</strong> (<em>dict</em>) – Optional additional arguments to pass to the query.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">An iterator over each page of results from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">iterator</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.appengine._is_status_not_found">
+<code class="descname">_is_status_not_found</code><span class="sig-paren">(</span><em>error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/appengine.html#_is_status_not_found"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.appengine._is_status_not_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decodes the error from the API to check if status is NOT_FOUND.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>error</strong> (<em>errors.HttpError</em>) – The error response from the API.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if the error is application not found, else False.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

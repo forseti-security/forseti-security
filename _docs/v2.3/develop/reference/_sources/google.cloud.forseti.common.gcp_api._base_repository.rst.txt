@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.\_base\_repository module
+==============================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api._base_repository
+    :members:
+    :undoc-members:
+    :show-inheritance:

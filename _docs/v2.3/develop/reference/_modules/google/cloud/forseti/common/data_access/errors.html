@@ -1,0 +1,69 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.data_access.errors"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.data_access.errors</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Errors related to data access.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.data_access.errors.html#google.cloud.forseti.common.data_access.errors.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for errors.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MySQLError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.data_access.errors.html#google.cloud.forseti.common.data_access.errors.MySQLError">[docs]</a><span class="k">class</span> <span class="nc">MySQLError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error for mysql exceptions.&quot;&quot;&quot;</span>
+
+    <span class="n">CUSTOM_ERROR_MESSAGE</span> <span class="o">=</span> <span class="s1">&#39;Error with MySQL for </span><span class="si">{0}</span><span class="s1">:</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_name (str): The name of the resource.</span>
+<span class="sd">            e (Exception): The exception.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MySQLError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CUSTOM_ERROR_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="NoResultsError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.data_access.errors.html#google.cloud.forseti.common.data_access.errors.NoResultsError">[docs]</a><span class="k">class</span> <span class="nc">NoResultsError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error for no results found.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="CSVFileError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.data_access.errors.html#google.cloud.forseti.common.data_access.errors.CSVFileError">[docs]</a><span class="k">class</span> <span class="nc">CSVFileError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error for csv file.&quot;&quot;&quot;</span>
+
+    <span class="n">CUSTOM_ERROR_MESSAGE</span> <span class="o">=</span> <span class="s1">&#39;Unable to create csv file for </span><span class="si">{0}</span><span class="s1">:</span><span class="se">\n</span><span class="si">{1}</span><span class="s1">&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_name (str): The name of the resource.</span>
+<span class="sd">            e (Exception): The exception.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CSVFileError</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CUSTOM_ERROR_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span><span class="p">))</span></div>
+</pre></div>
