@@ -12,15 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Do not add forseti source in this file to avoid rebuilding base during development.
+
 FROM ubuntu:18.04
 
-# Expose our source so we can read in dependencies.
-ADD . /forseti-security/
-WORKDIR /forseti-security/
+# Add the apt dependencies
+ADD install/dependencies/apt_packages.txt /tmp
 
 # Install host dependencies.
 RUN apt-get update -qq 1> /dev/null && \
-    apt-get install -qq -y $(cat install/dependencies/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null && \
+    apt-get install -qq -y $(cat /tmp/apt_packages.txt | grep -v "#" | xargs) 1> /dev/null && \
     rm -rf /var/lib/apt/lists/*
 
 # Install the CloudSDK for `gcloud`.
