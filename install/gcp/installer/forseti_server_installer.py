@@ -136,23 +136,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
             '10.128.0.0/9')
 
         # Create firewall rule to open only port tcp:22 (ssh)
-        # to all the external traffics from the internet to ssh into server VM.
+        # to all the external traffic from the internet to ssh into server VM.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name(
                 'forseti-server-allow-ssh-external'),
-            [self.gcp_service_acct_email],
-            constants.FirewallRuleAction.ALLOW,
-            ['tcp:22'],
-            constants.FirewallRuleDirection.INGRESS,
-            0,
-            self.config.vpc_host_network,
-            '0.0.0.0/0')
-
-        # Create firewall rule to open only port tcp:22 (ssh)
-        # to all the external traffics from the internet to ssh into client VM.
-        gcloud.create_firewall_rule(
-            self.format_firewall_rule_name(
-                'forseti-client-allow-ssh-external'),
             [self.gcp_service_acct_email],
             constants.FirewallRuleAction.ALLOW,
             ['tcp:22'],
