@@ -106,6 +106,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             # Create firewall rules.
             self.create_firewall_rules()
 
+            # Delete firewall rules
+            self.delete_firewall_rules()
+
         return success, deployment_name
 
     def create_firewall_rules(self):
