@@ -731,6 +731,14 @@ def create_firewall_rule(rule_name,
         print (err)
 
 def delete_firewall_rule(rule_name):
+    """Delete a firewall rule for a specific gcp service account.
+
+     Args:
+         rule_name (str): Name of the firewall rule
+
+     Raises:
+         Exception: Not enough arguments to execute command
+     """
     gcloud_command_args = ['gcloud', 'compute', 'firewall-rules', 'delete',
                            rule_name, '--quiet']
     return_code, _, err = utils.run_command(gcloud_command_args)

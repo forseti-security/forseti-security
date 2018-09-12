@@ -154,10 +154,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
         if len(self.firewall_rules_to_be_deleted) > 0:
             for rule in self.firewall_rules_to_be_deleted:
                 gcloud.delete_firewall_rule(rule)
-            print('Default rules were deleted')
+            print('Firewall rules were successfully deleted')
         else:
-            print('Default rules not found')
-
+            print('Couldn\'t find rules to delete')
 
     def format_firewall_rule_name(self, rule_name):
         """Format firewall rule name.
