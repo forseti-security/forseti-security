@@ -35,11 +35,13 @@ class ServiceTest(ForsetiTestCase):
         """Tear down method."""
         ForsetiTestCase.tearDown(self)
 
-    def test_determine_is_supported(self):
+    def test_determine_explain_is_supported(self):
         inventory_config = self.grpc_explainer.explainer.config.inventory_config
         inventory_config.root_resource_id = 'organizations/11111'
         self.assertTrue(self.grpc_explainer._determine_is_supported())
 
+    def test_determine_explain_is_not_supported(self):
+        inventory_config = self.grpc_explainer.explainer.config.inventory_config
         inventory_config.root_resource_id = 'folders/22222'
         self.assertFalse(self.grpc_explainer._determine_is_supported())
 
