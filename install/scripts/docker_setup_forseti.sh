@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+trap 'return_code=$?' ERR
+
 # Delete all running containers if we're not on Travis.
 if [ -z ${TRAVIS+x} ]; then
     # We are not on Travis.
     echo "Force removing any running containers... "
     if [[ $(docker ps -a -q) ]]; then
-        docker -l error rm -f $(docker ps -a -q | xargs)
+        docker rm -f $(docker ps -a -q | xargs)
     fi
 fi
 
@@ -36,9 +38,11 @@ fi
 # This assumes the script is run from the top of the source-tree.
 if [ -x "$(command -v docker)" ]; then
     echo "Building our Docker base image... "
-    docker -l error build -t forseti/base -f install/docker/base .
+    docker build -t forseti/base -f install/docker/base .
     echo "Building our Forseti image from the Docker base image... "
-    docker -l error build -t forseti/build -f install/docker/forseti --no-cache .
+    docker build -t forseti/build -f install/docker/forseti --no-cache .
 else
     echo "ERROR: Docker must be installed and it isn't, exiting." && exit 1
 fi
+
+exit ${return_code}
