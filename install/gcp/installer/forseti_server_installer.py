@@ -158,17 +158,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
         else:
             print('Couldn\'t find rules to delete')
 
-    def format_firewall_rule_name(self, rule_name):
-        """Format firewall rule name.
-
-        Args:
-            rule_name (str): Name of the firewall rule.
-
-        Returns:
-            str: Firewall rule name.
-        """
-        return '{}-{}'.format(rule_name, self.config.identifier)
-
     def get_deployment_values(self):
         """Get deployment values.
 
