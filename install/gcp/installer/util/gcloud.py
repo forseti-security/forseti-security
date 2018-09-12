@@ -548,7 +548,6 @@ def check_billing_enabled(project_id, organization_id):
         _billing_not_enabled()
 
 
-
 def lookup_organization(project_id):
     """Infer the organization from the project's parent.
 
@@ -722,7 +721,6 @@ def create_firewall_rule(rule_name,
                            str(priority), '--direction', direction.value,
                            '--rules', format_rules,
                            '--network', vpc_host_network]
-
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
