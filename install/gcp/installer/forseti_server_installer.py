@@ -24,6 +24,7 @@ from util import files
 from util import gcloud
 from util import utils
 
+
 class ForsetiServerInstaller(ForsetiInstaller):
     """Forseti server installer."""
 
@@ -35,7 +36,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
     access_target = None
     target_id = None
     user_can_grant_roles = True
-    firewall_rules_to_be_deleted = ["default-allow-icmp", "default-allow-internal", "default-allow-rdp", "default-allow-ssh"]
 
     def __init__(self, config, previous_installer=None):
         """Init.

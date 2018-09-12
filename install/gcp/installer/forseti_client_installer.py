@@ -15,9 +15,9 @@
 """Forseti CLI installer."""
 
 from forseti_installer import ForsetiInstaller
-
 from util import gcloud
 from util import constants
+
 
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
@@ -61,10 +61,10 @@ class ForsetiClientInstaller(ForsetiInstaller):
                 self.config.installation_type,
                 self.config.identifier)
             zone = '{}-c'.format(self.config.bucket_location)
-            # Create firewall rules.
-            self.create_firewall_rules()
             gcloud.enable_os_login(instance_name, zone)
             self.wait_until_vm_initialized(instance_name)
+            # Create firewall rules.
+            self.create_firewall_rules()
         return success, deployment_name
 
     def get_configuration_values(self):
