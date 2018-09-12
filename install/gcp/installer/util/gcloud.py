@@ -548,6 +548,7 @@ def check_billing_enabled(project_id, organization_id):
         _billing_not_enabled()
 
 
+
 def lookup_organization(project_id):
     """Infer the organization from the project's parent.
 
@@ -721,6 +722,7 @@ def create_firewall_rule(rule_name,
                            str(priority), '--direction', direction.value,
                            '--rules', format_rules,
                            '--network', vpc_host_network]
+
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
@@ -728,6 +730,12 @@ def create_firewall_rule(rule_name,
     if return_code:
         print (err)
 
+def delete_firewall_rule(rule_name):
+    gcloud_command_args = ['gcloud', 'compute', 'firewall-rules', 'delete',
+                           rule_name]
+    return_code, _, err = utils.run_command(gcloud_command_args)
+    if return_code:
+        print(err)
 
 def enable_os_login(instance_name, zone):
     """Enable os login for the given VM instance.

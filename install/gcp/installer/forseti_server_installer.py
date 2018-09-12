@@ -24,7 +24,6 @@ from util import files
 from util import gcloud
 from util import utils
 
-
 class ForsetiServerInstaller(ForsetiInstaller):
     """Forseti server installer."""
 
@@ -36,6 +35,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
     access_target = None
     target_id = None
     user_can_grant_roles = True
+    firewall_rules_to_be_deleted = ["default-allow-icmp", "default-allow-internal", "default-allow-rdp", "default-allow-ssh"]
 
     def __init__(self, config, previous_installer=None):
         """Init.
@@ -144,6 +144,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
             0,
             self.config.vpc_host_network,
             '0.0.0.0/0')
+
+    def delete_firewall_rules(self):
+        """Deletes default firewall rules as the forseti service account rules
+        serves the purpose"""
+        if len(self.firewall_rules_to_be_deleted) > 0:
+            for rule in self.firewall_rules_to_be_deleted:
+                gcloud.delete_firewall_rule(rule)
+            print('Default rules were deleted')
+        else:
+            print('Default rules not found')
 
 
     def format_firewall_rule_name(self, rule_name):
