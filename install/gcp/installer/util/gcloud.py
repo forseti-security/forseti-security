@@ -732,7 +732,7 @@ def create_firewall_rule(rule_name,
 
 def delete_firewall_rule(rule_name):
     gcloud_command_args = ['gcloud', 'compute', 'firewall-rules', 'delete',
-                           rule_name]
+                           rule_name, '--quiet']
     return_code, _, err = utils.run_command(gcloud_command_args)
     if return_code:
         print(err)
