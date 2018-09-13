@@ -37,6 +37,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
     target_id = None
     user_can_grant_roles = True
 
+    firewall_rules_to_be_deleted = ["default-allow-icmp",
+                                    "default-allow-internal",
+                                    "default-allow-rdp",
+                                    "default-allow-ssh"]
+
     def __init__(self, config, previous_installer=None):
         """Init.
 

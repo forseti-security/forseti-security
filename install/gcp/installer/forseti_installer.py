@@ -30,11 +30,6 @@ from util import utils
 class ForsetiInstructions(object):
     """Forseti setup instructions."""
 
-    firewall_rules_to_be_deleted = ["default-allow-icmp",
-                                    "default-allow-internal",
-                                    "default-allow-rdp",
-                                    "default-allow-ssh"]
-
     def __init__(self):
         """Init."""
         self.deployed_branch = ''
