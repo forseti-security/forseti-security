@@ -28,6 +28,32 @@ rules:
           - user:*@{DOMAIN}
           - group:*@{DOMAIN}
 
+  - name: Prevent public users from having access to buckets via IAM
+    mode: blacklist
+    resource:
+      - type: bucket
+        applies_to: self
+        resource_ids:
+          - '*'
+    inherit_from_parents: true
+    bindings:
+      - role: '*'
+        members:
+          - allUsers
+
+  - name: Prevent public authenticated users from having access to buckets via IAM
+    mode: blacklist
+    resource:
+      - type: bucket
+        applies_to: self
+        resource_ids:
+          - '*'
+    inherit_from_parents: true
+    bindings:
+      - role: '*'
+        members:
+          - allAuthenticatedUsers
+
   # Below are the example rules that you can reference to create your own custom rule.
   #- name: Allow only service accounts to have access
   #  mode: whitelist

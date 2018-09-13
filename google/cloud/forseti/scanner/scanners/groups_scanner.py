@@ -14,10 +14,10 @@
 
 """Scanner for Google Groups."""
 
-import yaml
 import anytree
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
@@ -95,6 +95,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             list: Nodes that are in violation.
         """
         all_violations = []
+
         for node in anytree.iterators.PreOrderIter(root):
 
             # No need to evaluate these nodes.
@@ -104,6 +105,10 @@ class GroupsScanner(base_scanner.BaseScanner):
             # This represents the auto-generated group, containing all the users
             # in the org.
             if not node.member_email:
+                continue
+
+            # Skip the member if there is no rules to check against.
+            if not node.rules:
                 continue
 
             node.violated_rule_names = []
@@ -190,7 +195,8 @@ class GroupsScanner(base_scanner.BaseScanner):
                 # group.
                 for node in anytree.iterators.PreOrderIter(starting_node):
                     if node.member_email == rule.get('group_email'):
-                        node = self._apply_one_rule(node, rule)
+                        self._apply_one_rule(node, rule)
+                        break  # Avoid visiting the same group more than once.
 
         return starting_node
 
@@ -256,7 +262,7 @@ class GroupsScanner(base_scanner.BaseScanner):
         root = self._retrieve()
 
         with open(self.rules, 'r') as f:
-            group_rules = yaml.load(f)
+            group_rules = file_loader.read_and_parse_file(f)
 
         root = self._apply_all_rules(root, group_rules)
 

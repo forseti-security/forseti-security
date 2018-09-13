@@ -33,12 +33,11 @@ from tests.services.util.mock import MockServerConfig
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services import db
+from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
-from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
-from google.cloud.forseti.services.server import InventoryConfig
 
 
 class TestServiceConfig(MockServerConfig):

@@ -14,7 +14,7 @@
 
 """GOogle CLoud Forseti."""
 
-__version__ = '2.0.0'
+__version__ = '2.2.0'
 __package_name__ = 'forseti-security'
 
 try:

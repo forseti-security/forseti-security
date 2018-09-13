@@ -13,11 +13,13 @@
 # limitations under the License.
 
 """Tests the Compute client."""
+import json
 import unittest
+import uuid
 import mock
+import parameterized
 import google.auth
 from google.oauth2 import credentials
-import parameterized
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_compute_responses as fake_compute
@@ -30,6 +32,13 @@ ERROR_TEST_CASES = [
      api_errors.ApiNotEnabledError),
     ('access_denied', fake_compute.ACCESS_DENIED, '403',
      api_errors.ApiExecutionError),
+]
+
+# Test create, update and delete operations.
+CUD_TEST_CASES = [
+    ('delete', 'delete'),
+    ('insert', 'insert'),
+    ('update', 'update'),
 ]
 
 
@@ -124,6 +133,153 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
             list(self.gce_api_client.get_firewall_rules(self.project_id))
+
+    @parameterized.parameterized.expand(CUD_TEST_CASES)
+    def test_cud_firewall_rule(self, name, verb):
+        """Test create/update/delete firewall rule."""
+        mock_response = fake_compute.PENDING_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        http_mocks.mock_http_response(mock_response)
+        method = getattr(self.gce_api_client,
+                         '{}_firewall_rule'.format(verb))
+
+        results = method(self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE,
+                         uuid=uuid.uuid4())
+        self.assertDictEqual(json.loads(mock_response), results)
+
+    @parameterized.parameterized.expand(CUD_TEST_CASES)
+    def test_cud_firewall_rule_read_only(self, name, verb):
+        """Test create/update/delete firewall rule."""
+        with mock.patch.object(self.gce_api_client.repository.firewalls,
+                               'read_only', return_value=True):
+            method = getattr(self.gce_api_client,
+                             '{}_firewall_rule'.format(verb))
+            results = method(self.project_id,
+                             rule=fake_compute.FAKE_FIREWALL_RULE)
+            expected_result = {
+                'targetLink': (
+                    'https://www.googleapis.com/compute/v1/projects/'
+                    'project1/global/firewalls/fake-firewall'),
+                'operationType': verb,
+                'name': 'fake-firewall',
+                'status': 'DONE',
+                'progress': 100,
+            }
+            self.assertDictEqual(expected_result, results)
+
+    @parameterized.parameterized.expand(CUD_TEST_CASES)
+    def test_cud_firewall_rule_blocking(self, name, verb):
+        """Test create/update/delete firewall rule blocking until complete."""
+        mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_finished = fake_compute.FINISHED_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_responses = [
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_finished)]
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        # Don't wait for API to complete in test.
+        with mock.patch.object(self.gce_api_client,
+                               'ESTIMATED_API_COMPLETION_IN_SEC',
+                               return_value=0):
+            method = getattr(self.gce_api_client,
+                             '{}_firewall_rule'.format(verb))
+            results = method(self.project_id,
+                             rule=fake_compute.FAKE_FIREWALL_RULE,
+                             blocking=True)
+        self.assertDictEqual(json.loads(mock_finished), results)
+
+    @parameterized.parameterized.expand(CUD_TEST_CASES)
+    def test_cud_firewall_rule_timeout(self, name, verb):
+        """Test create/update/delete firewall rule times out."""
+        mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_finished = fake_compute.FINISHED_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_responses = [
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_finished)]
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        # Set initial wait to longer than the timeout
+        with mock.patch.object(self.gce_api_client,
+                               'ESTIMATED_API_COMPLETION_IN_SEC',
+                               return_value=2):
+            with self.assertRaises(api_errors.OperationTimeoutError) as e:
+                method = getattr(self.gce_api_client,
+                                 '{}_firewall_rule'.format(verb))
+                results = method(self.project_id,
+                                 rule=fake_compute.FAKE_FIREWALL_RULE,
+                                 blocking=True,
+                                 timeout=1)
+        self.assertDictEqual(json.loads(mock_pending), e.exception.operation)
+
+    @parameterized.parameterized.expand(CUD_TEST_CASES)
+    @mock.patch('google.cloud.forseti.common.gcp_api.compute.LOGGER', autospec=True)
+    def test_cud_firewall_rule_retry(self, name, verb, mock_logger):
+        """Test create/update/delete firewall rule times out."""
+        mock_pending = fake_compute.PENDING_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_finished = fake_compute.FINISHED_OPERATION_TEMPLATE.format(
+            verb=verb,
+            resource_path='project1/global/firewalls/fake-firewall')
+        mock_responses = [
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_pending),
+            ({'status': '200'}, mock_finished)]
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        # Set initial wait to longer than the timeout
+        with mock.patch.object(self.gce_api_client,
+                               'ESTIMATED_API_COMPLETION_IN_SEC',
+                               return_value=2):
+            method = getattr(self.gce_api_client,
+                             '{}_firewall_rule'.format(verb))
+            results = method(self.project_id,
+                             rule=fake_compute.FAKE_FIREWALL_RULE,
+                             blocking=True,
+                             timeout=1,
+                             retry_count=3)
+        self.assertDictEqual(json.loads(mock_finished), results)
+        self.assertTrue(mock_logger.warn.called)
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_delete_firewall_rule_errors(self, name, response, status,
+                                       expected_exception):
+        """Verify error conditions for delete firewall rule."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.delete_firewall_rule(
+                self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_insert_firewall_rule_errors(self, name, response, status,
+                                       expected_exception):
+        """Verify error conditions for insert firewall rule."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.insert_firewall_rule(
+                self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_update_firewall_rule_errors(self, name, response, status,
+                                       expected_exception):
+        """Verify error conditions for update firewall rule."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.update_firewall_rule(
+                self.project_id, rule=fake_compute.FAKE_FIREWALL_RULE)
 
     def test_get_global_operation(self):
         """Test get_global_operations."""
@@ -400,6 +556,26 @@ class ComputeTest(unittest_utils.ForsetiTestCase):
         http_mocks.mock_http_response(response, status)
         with self.assertRaises(expected_exception):
             self.gce_api_client.get_project(self.project_id)
+
+    def test_get_snapshots(self):
+        """Test get snapshots."""
+        mock_responses = []
+        for page in fake_compute.LIST_SNAPSHOTS_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.gce_api_client.get_snapshots(self.project_id)
+        self.assertEquals(
+            fake_compute.EXPECTED_SNAPSHOTS_LIST_NAMES,
+            frozenset([r.get('name') for r in results]))
+
+    @parameterized.parameterized.expand(ERROR_TEST_CASES)
+    def test_get_snapshots_errors(self, name, response, status,
+                                expected_exception):
+        """Verify error conditions for get snapshots templates."""
+        http_mocks.mock_http_response(response, status)
+        with self.assertRaises(expected_exception):
+            self.gce_api_client.get_snapshots(self.project_id)
 
     def test_get_subnetworks(self):
         """Test get subnetworks."""

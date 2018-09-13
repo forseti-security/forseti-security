@@ -28,28 +28,8 @@ from tests.scanner.test_data import fake_groups_scanner_data as fake_data
 
 class GroupsScannerTest(ForsetiTestCase):
 
-    def _pickle_dump(self, obj, filename):
-        """Dump object to pickle file.
-
-        Args:
-            obj: Any object to be pickled.
-            filename: String of the pickle filename.
-
-        Returns:
-             None
-        """
-        pickle.dump(obj, open('tests/scanner/test_data/' + filename, 'wb'))
-
-    def _pickle_load(self, filename):
-        """Loads a pickle file.
-
-        Args:
-            filename: String of the pickle filename to load.
-
-        Returns:
-            The object that was pickled.
-        """
-        return pickle.load(open('tests/scanner/test_data/' + filename, 'rb'))
+    def setUp(self):
+        pass
 
     def _render_ascii(self, starting_node, attr):
         """Render an ascii representation of the tree structure.
@@ -64,49 +44,47 @@ class GroupsScannerTest(ForsetiTestCase):
             starting_node,
             style=anytree.AsciiStyle()).by_attr(attr)
 
-    def setUp(self):
-        pass
+    def _create_mock_service_config(self):
+        mock_data_access = mock.MagicMock()
+        mock_data_access.iter_groups.return_value = fake_data.ALL_GROUPS
+        mock_data_access.return_value = fake_data.ALL_GROUPS
 
-    @unittest.skip("Broken since renaming")
-    @mock.patch('google.cloud.forseti.scanner.scanners.groups_scanner.group_dao.GroupDao', spec=True)
-    def test_build_group_tree(self, mock_dao):
+        mock_data_access.expand_members.side_effect = [
+            fake_data.AAAAA_GROUP_MEMBERS,
+            fake_data.BBBBB_GROUP_MEMBERS,
+            fake_data.CCCCC_GROUP_MEMBERS,
+            fake_data.DDDDD_GROUP_MEMBERS]
 
-        mock_dao.get_all_groups.return_value = fake_data.ALL_GROUPS
-        mock_dao.get_group_members.side_effect = fake_data.ALL_GROUP_MEMBERS
+        mock_service_config = mock.MagicMock()
+        mock_service_config.model_manager.get.return_value = (
+            mock.MagicMock(), mock_data_access)
+        
+        return mock_service_config
 
-        scanner = groups_scanner.GroupsScanner({}, {}, '', '')
-        scanner.dao = mock_dao
-        root = scanner._build_group_tree('')
+    def test_groups_scanner(self):
 
+        # test tree of groups can be built successfully
+        mock_service_config = self._create_mock_service_config()
+        scanner = groups_scanner.GroupsScanner(
+            {}, {}, mock_service_config, '', '', '')
+        root = scanner._build_group_tree()
         self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
                           self._render_ascii(root, 'member_email'))
 
-    @unittest.skip("Broken since renaming")
-    @mock.patch('google.cloud.forseti.scanner.scanners.groups_scanner.group_dao.GroupDao', spec=True)
-    def test_apply_rule(self, mock_dao):
-
-        root = self._pickle_load('expected_root_without_rules.pickle')
+        # test rules will be associated to the correct nodes
         with open('tests/scanner/test_data/fake_group_rules.yaml', 'r') as f:
             rules = yaml.load(f)
-
-        scanner = groups_scanner.GroupsScanner({}, {}, '', '')
         root_with_rules = scanner._apply_all_rules(root, rules)
-
         self.assertEquals(fake_data.EXPECTED_MEMBERS_IN_TREE,
                           self._render_ascii(root_with_rules, 'member_email'))
         self.assertEquals(fake_data.EXPECTED_RULES_IN_TREE,
                           self._render_ascii(root_with_rules, 'rules'))
 
-    @unittest.skip("Broken since renaming")
-    @mock.patch('google.cloud.forseti.scanner.scanners.groups_scanner.group_dao.GroupDao', spec=True)
-    def test_find_violations(self, mock_dao):
-        root = self._pickle_load('expected_root_with_rules.pickle')
-        scanner = groups_scanner.GroupsScanner({}, {}, '', '')
-        all_violations = scanner._find_violations(root)
-
+        # test violations are found correctly
+        all_violations = scanner._find_violations(root_with_rules)
         self.assertEquals(3, len(all_violations))
         for violation in all_violations:
-            self.assertEquals('christy@gmail.com', violation.member_email)
+            self.assertEquals('christy@yahoo.com', violation.member_email)
 
 
 if __name__ == '__main__':

@@ -20,6 +20,7 @@ import re
 import sys
 
 import constants
+import installer_errors
 import utils
 
 
@@ -51,17 +52,24 @@ def get_gcloud_info():
             sys.exit(1)
     return project_id, authed_user, is_devshell
 
-def activate_service_account(service_account, key_file):
+
+def set_network_host_project_id(self):
+    """Get the host project."""
+    if not self.config.vpc_host_project_id:
+        self.config.vpc_host_project_id, _, _ = get_gcloud_info()
+    print('VPC Host Project %s' % self.config.vpc_host_project_id)
+
+
+def activate_service_account(key_file):
     """Activate the service account with gcloud.
 
     Args:
-        service_account (str): Service account email
         key_file (str): Absolute path to service account key file
     """
 
     return_code, _, err = utils.run_command(
         ['gcloud', 'auth', 'activate-service-account',
-         service_account, '--key-file=' + key_file])
+         '--key-file=' + key_file])
 
     if return_code:
         print(err)
@@ -682,6 +690,7 @@ def create_firewall_rule(rule_name,
                          rules,
                          direction,
                          priority,
+                         vpc_host_network,
                          source_ranges=None):
     """Create a firewall rule for a specific gcp service account.
 
@@ -693,6 +702,8 @@ def create_firewall_rule(rule_name,
                     will not be used if action is passed in
         direction (FirewallRuleDirection): INGRESS, EGRESS, IN or OUT
         priority (int): Integer between 0 and 65535
+        vpc_host_network (str): vpc_host_network (str): Name of the VPC network
+                              to create firewall rules in
         source_ranges (str): A list of IP address blocks that are allowed
                             to make inbound connections that match the firewall
                              rule to the instances on the network. The IP
@@ -708,7 +719,8 @@ def create_firewall_rule(rule_name,
                            '--target-service-accounts',
                            format_service_accounts, '--priority',
                            str(priority), '--direction', direction.value,
-                           '--rules', format_rules]
+                           '--rules', format_rules,
+                           '--network', vpc_host_network]
     if source_ranges:
         gcloud_command_args.extend(['--source-ranges', source_ranges])
 
@@ -793,12 +805,17 @@ def check_vm_init_status(vm_name, zone):
 
     check_script_executed = 'tail -n1 /tmp/deployment.log'
 
-    _, out, _ = utils.run_command(
+    _, out, err = utils.run_command(
         ['gcloud', 'compute', 'ssh', vm_name,
          '--zone', zone, '--command', check_script_executed, '--quiet'])
     # --quiet flag is needed to eliminate the prompting for user input
     # which will hang the run_command function
     # i.e. It will create a folder at ~/.ssh and generate a new ssh key
+
+    if err:
+        print(constants.MESSAGE_SSH_ERROR)
+        print(err)
+        raise installer_errors.SSHError
 
     if 'Execution of startup script finished' in out:
         return True

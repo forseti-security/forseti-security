@@ -30,11 +30,15 @@ if [ ! -f "${FORSETI_SERVER_CONF}" ]; then
     exit 1
 fi
 
-# Reload the server configuration settings
-forseti server configuration reload
+# Restart the server to avoid auth problem, this is a temp fix to
+# https://github.com/GoogleCloudPlatform/forseti-security/issues/1832
+sudo systemctl restart forseti.service
 
 # Wait until the service is started
 sleep 10s
+
+# Reload the server configuration settings
+forseti server configuration reload
 
 # Set the output format to json
 forseti config format json

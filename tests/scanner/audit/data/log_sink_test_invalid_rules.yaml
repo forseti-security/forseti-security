@@ -1,0 +1,24 @@
+rules:
+  - name: 'Valid rule'
+    mode: required
+    resource:
+      - type: organization
+        applies_to: children
+        resource_ids:
+          - 11223344
+    sink:
+      destination: 'bigquery.googleapis.com/projects/my-audit-logs/datasets/*'
+      filter: ''
+      include_children: '*'
+  - name: 'Invalid rule - bad applies_to for project'
+    mode: blacklist
+    resource:
+      - type: project
+        applies_to: children
+        resource_ids:
+          - proj-1
+          - proj-2
+    sink:
+      destination: 'bigquery.googleapis.com/*'
+      filter: '*'
+      include_children: '*'

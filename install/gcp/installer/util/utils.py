@@ -268,8 +268,8 @@ def infer_version(advanced_mode):
 
     if not cur_version:
         print('Unable to determine the current Forseti version, please check '
-              'https://forsetisecurity.org/faq/#installation-and-deployment '
-              'for more information.')
+              'https://forsetisecurity.org/docs/latest/faq/'
+              '#installation-and-deployment for more information.')
         sys.exit(1)
 
     if not advanced_mode:
@@ -373,7 +373,6 @@ def run_command(cmd_args, number_of_retry=5,
         str: Output, if command was successful.
         err: Error output, if there was an error.
     """
-
     proc = subprocess.Popen(cmd_args,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE)

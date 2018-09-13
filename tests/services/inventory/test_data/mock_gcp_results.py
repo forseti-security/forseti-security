@@ -45,6 +45,7 @@ SUBNETWORK_ID_PREFIX = "115"
 SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 GCE_IMAGE_ID_PREFIX = "117"
 GCE_DISK_ID_PREFIX = "118"
+SNAPSHOT_ID_PREFIX = "119"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -1533,6 +1534,45 @@ GCE_GET_NETWORKS = {
     ]
 }
 
+
+# Fields: id, name, project, zone
+SNAPSHOT_TEMPLATE = """
+{{
+ "kind": "compute#snapshot",
+ "id": "119{id}",
+ "creationTimestamp": "2018-07-12T13:32:03.912-07:00",
+ "name": "{name}",
+ "description": "",
+ "status": "READY",
+ "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/{zone}/disks/{name}",
+ "sourceDiskId": "7102445878994667099",
+ "diskSizeGb": "10",
+ "storageBytes": "536550912",
+ "storageBytesStatus": "UP_TO_DATE",
+ "licenses": [
+  "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
+ ],
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/{name}",
+ "labelFingerprint": "foofoo456",
+ "licenseCodes": [
+  "1000205"
+ ],
+ "storageLocations": [
+  "us"
+ ]
+}}
+"""
+
+GCE_GET_SNAPSHOTS = {
+    "project1": [
+        json.loads(SNAPSHOT_TEMPLATE.format(id=1, name='snap-1', project='project1', zone='us-east1-b')),
+        json.loads(SNAPSHOT_TEMPLATE.format(id=2, name='snap-2', project='project1', zone='europe-west4-a'))
+    ],
+    "project2": [
+        json.loads(SNAPSHOT_TEMPLATE.format(id=3, name='snap-1', project='project2', zone='asia-south1-c')),
+    ]
+}
+
 # Fields: id, name, project, ippart, region
 SUBNETWORK_TEMPLATE = """
 {{
@@ -2081,6 +2121,48 @@ BILLING_GET_INFO = {
             BILLING_DISABLED_TEMPLATE.format(project="project4")),
 }
 
+BILLING_MASTER_ACCOUNT = "001122-AABBCC-DDEEFF"
+BILLING_TEAM_ACCOUNT = "000000-111111-222222"
+
+BILLING_GET_ACCOUNTS = [{
+    "name": "billingAccounts/" + BILLING_MASTER_ACCOUNT,
+    "open": True,
+    "displayName": "Master Billing Account",
+}, {
+    "name": "billingAccounts/" + BILLING_TEAM_ACCOUNT,
+    "open": True,
+    "displayName": "Team Billing Account",
+    "masterBillingAccount": "billingAccounts/" + BILLING_MASTER_ACCOUNT,
+}]
+
+# Fields: admin
+BILLING_IAM_POLICY_TEMPLATE = """
+{{
+ "etag": "BcDe123456z=",
+ "bindings": [
+  {{
+   "role": "roles/billing.admin",
+   "members": [
+    "user:{admin}"
+   ]
+  }},
+  {{
+   "role": "roles/logging.viewer",
+   "members": [
+    "group:auditors@forseti.test"
+   ]
+  }}
+ ]
+}}
+"""
+
+BILLING_IAM_POLICIES = {
+   "billingAccounts/" + BILLING_MASTER_ACCOUNT: json.loads(
+       BILLING_IAM_POLICY_TEMPLATE.format(admin="org-admin@forseti.test")),
+   "billingAccounts/" + BILLING_TEAM_ACCOUNT: json.loads(
+       BILLING_IAM_POLICY_TEMPLATE.format(admin="team-admin@forseti.test")),
+}
+
 APPENGINE_API_ENABLED = """
 {
  "serviceName": "appengine.googleapis.com",
@@ -2201,7 +2283,7 @@ LOGGING_GET_FOLDER_SINKS = {
     ]
 }
 LOGGING_GET_BILLING_ACCOUNT_SINKS = {
-    "000000-111111-222222": [
+    "billingAccounts/" + BILLING_TEAM_ACCOUNT: [
         json.loads(
             LOG_SINK_TEMPLATE.format(
                 name="billing-audit-logs",

@@ -21,6 +21,7 @@ import mock
 import yaml
 import unittest
 
+from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.iam_policy import IamPolicyBinding
@@ -49,6 +50,20 @@ class IamRulesEngineTest(ForsetiTestCase):
             display_name='My org',
             full_name='fake_org_full_name111',
             data='fake_org_data111')
+
+        self.billing_acct1 = BillingAccount(
+            '000000-111111-222222',
+            display_name='My billing account',
+            parent=self.org789,
+            full_name='fake_billing_acct_full_name111',
+            data='fake_billing_acct_data111')
+
+        self.billing_acct2 = BillingAccount(
+            '999999-AAAAAA-BBBBBB',
+            display_name='Another billing account',
+            parent=self.org789,
+            full_name='fake_billing_acct_full_name222',
+            data='fake_billing_acct_data222')
 
         self.project1 = Project(
             'my-project-1',
@@ -83,6 +98,14 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_org_policy_resource = mock.MagicMock()
         self.mock_org_policy_resource.full_name = (
             'organization/778899/')
+
+        self.mock_billing_acct1_policy_resource = mock.MagicMock()
+        self.mock_billing_acct1_policy_resource.full_name = (
+            'organization/778899/billing_account/000000-111111-222222/')
+
+        self.mock_billing_acct2_policy_resource = mock.MagicMock()
+        self.mock_billing_acct2_policy_resource.full_name = (
+            'organization/778899/billing_account/999999-AAAAAA-BBBBBB/')
 
         self.mock_folder1_policy_resource = mock.MagicMock()
         self.mock_folder1_policy_resource.full_name = (
@@ -1826,6 +1849,176 @@ class IamRulesEngineTest(ForsetiTestCase):
                 role='roles/objectViewer',
                 members=tuple(expected_outstanding['roles/objectViewer']),
                 resource_data=self.bucket_2_1.data),
+        ])
+
+        self.assertEqual(expected_violations, actual_violations)
+
+    def test_billing_account_policy_succeeds(self):
+        """Tests policicies applied to a billing account.
+
+        Test a policy where billing roles (inheritied) are applied to
+        whitelisted users, and logging roles (not inherited) are applied to
+        groups in the domain.
+
+        Setup:
+            * Create a Rules Engine
+            * Create the policy bindings.
+            * Created expected violations list.
+
+        Expected results:
+            No policy violations found.
+        """
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES14, self.fake_timestamp)
+
+        billing1_policy = {
+            'bindings': [{
+                'role': 'roles/billing.admin',
+                'members': ['user:cfo@xyz.edu']
+            }, {
+                'role': 'roles/logging.admin',
+                'members': ['group:auditors@xyz.edu']
+            }]
+        }
+        billing1_bindings = [
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in billing1_policy.get('bindings')]
+
+        # Rule does not apply to billing account 2.
+        billing2_policy = {
+            'bindings': [{
+                'role': 'roles/billing.admin',
+                'members': ['user:tester@xyz.edu']
+            }, {
+                'role': 'roles/logging.admin',
+                'members': ['user:tester@xyz.edu']
+            }]
+        }
+        billing2_bindings = [
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in billing2_policy.get('bindings')]
+
+        self.mock_billing_acct1_policy_resource.data = json.dumps(
+            billing1_policy)
+        self.mock_billing_acct2_policy_resource.data = json.dumps(
+            billing2_policy)
+        actual_violations = set(itertools.chain(
+            rules_engine.find_policy_violations(
+                self.billing_acct1, self.mock_billing_acct1_policy_resource,
+                billing1_bindings),
+            rules_engine.find_policy_violations(
+                self.billing_acct2, self.mock_billing_acct2_policy_resource,
+                billing2_bindings),
+        ))
+
+        expected_violations = set()
+
+        self.assertEqual(expected_violations, actual_violations)
+
+    def test_billing_account_policy_whitelist_fails(self):
+        """Test a policy where the billing account grants non-whitelisted roles.
+
+        Setup:
+            * Create a Rules Engine
+            * Create the policy bindings.
+            * Created expected violations list.
+
+        Expected results:
+            The user is not whitelisted and this violation is detected.
+        """
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES14, self.fake_timestamp)
+
+        billing_policy = {
+            'bindings': [{
+                'role': 'roles/billing.admin',
+                'members': ['user:ceo@xyz.edu', 'group:bad_billers@xyz.edu']
+            }]
+        }
+        billing_bindings = [
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in billing_policy.get('bindings')]
+
+        self.mock_billing_acct1_policy_resource.data = json.dumps(
+            billing_policy)
+        actual_violations = set(rules_engine.find_policy_violations(
+            self.billing_acct1, self.mock_billing_acct1_policy_resource,
+            billing_bindings))
+
+        expected_outstanding = {
+            'roles/billing.admin': [
+                IamPolicyMember.create_from('group:bad_billers@xyz.edu')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=0,
+                rule_name=test_rules.RULES14['rules'][0]['name'],
+                resource_id=self.billing_acct1.id,
+                resource_type=self.billing_acct1.type,
+                full_name=self.billing_acct1.full_name,
+                violation_type='IAM_POLICY_VIOLATION',
+                role='roles/billing.admin',
+                members=tuple(expected_outstanding['roles/billing.admin']),
+                resource_data=self.billing_acct1.data),
+        ])
+
+        self.assertEqual(expected_violations, actual_violations)
+
+    def test_billing_account_policy_blacklist_fails(self):
+        """Test a policy where the billing account grants blacklisted roles.
+
+        Setup:
+            * Create a Rules Engine
+            * Create the policy bindings.
+            * Created expected violations list.
+
+        Expected results:
+            User logging roles are blacklisted and this violation is detected.
+        """
+        rules_local_path = get_datafile_path(__file__, 'test_rules_1.yaml')
+        rules_engine = ire.IamRulesEngine(rules_local_path)
+        rules_engine.rule_book = ire.IamRuleBook(
+            {}, test_rules.RULES14, self.fake_timestamp)
+
+        billing_policy = {
+            'bindings': [{
+                'role': 'roles/logging.admin',
+                'members': ['user:ceo@xyz.edu']
+            }]
+        }
+        billing_bindings = [
+            iam_policy.IamPolicyBinding.create_from(b)
+            for b in billing_policy.get('bindings')]
+
+        self.mock_billing_acct1_policy_resource.data = json.dumps(
+            billing_policy)
+        actual_violations = set(rules_engine.find_policy_violations(
+            self.billing_acct1, self.mock_billing_acct1_policy_resource,
+            billing_bindings))
+
+        expected_outstanding = {
+            'roles/logging.admin': [
+                IamPolicyMember.create_from('user:ceo@xyz.edu')
+            ]
+        }
+
+        expected_violations = set([
+            scanner_rules.RuleViolation(
+                rule_index=1,
+                rule_name=test_rules.RULES14['rules'][1]['name'],
+                resource_id=self.billing_acct1.id,
+                resource_type=self.billing_acct1.type,
+                full_name=self.billing_acct1.full_name,
+                violation_type='IAM_POLICY_VIOLATION',
+                role='roles/logging.admin',
+                members=tuple(expected_outstanding['roles/logging.admin']),
+                resource_data=self.billing_acct1.data),
         ])
 
         self.assertEqual(expected_violations, actual_violations)

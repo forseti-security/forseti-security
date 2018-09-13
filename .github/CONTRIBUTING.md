@@ -86,16 +86,16 @@ To submit a pull request for Forseti, follow the process below:
       logical, self-contained unit of work, feature, or fix. This simplifies
       troubleshooting and rollbacks.
       - Learn how to execute
-      [Inventory](http://forsetisecurity.org/docs/quickstarts/inventory/),
-      [Scanner](http://forsetisecurity.org/docs/quickstarts/scanner/), or
-      [Enforcer](http://forsetisecurity.org/docs/quickstarts/enforcer/).
+      [Inventory](https://forsetisecurity.org/docs/latest/use/cli/inventory.html),
+      [Scanner](https://forsetisecurity.org/docs/latest/use/cli/scanner.html), or
+      [Enforcer](https://forsetisecurity.org/docs/latest/use/cli/enforcer.html).
 
   1. Create tests for your change.
 
      - You should write applicable unit tests for your changes, especially for 
        changes involving substantial logic.
      - Learn how to
-       [run the tests](http://forsetisecurity.org/docs/guides/testing#executing-tests).
+       [run the tests](https://forsetisecurity.org/docs/latest/develop/dev/testing.html).
 
   1. Commit your changes and push them to your development branch:
 

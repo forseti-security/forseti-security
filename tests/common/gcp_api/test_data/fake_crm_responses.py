@@ -175,6 +175,109 @@ LIST_ORG_POLICIES = """
 
 TEST_ORG_POLICY_CONSTRAINT = "constraints/compute.disableSerialPortAccess"
 
+FAKE_FOLDERS_API_RESPONSE1 = {
+    'folders': [
+        {
+            'displayName': 'folder-1',
+            'name': 'folders/111',
+            'lifecycleState': 'ACTIVE',
+            'parent': 'organizations/9999'
+        },
+        {
+            'displayName': 'folder-2',
+            'name': 'folders/222',
+            'parent': 'folders/2222222',
+            'lifecycleState': 'DELETE_REQUESTED'
+        },
+        {
+            'displayName': 'folder-3',
+            'name': 'folders/333',
+            'parent': 'folders/3333333',
+            'lifecycleState': 'ACTIVE'
+        },
+    ]
+}
+
+EXPECTED_FAKE_FOLDERS1 = FAKE_FOLDERS_API_RESPONSE1['folders']
+
+FAKE_FOLDERS_LIST_API_RESPONSE1 = {
+    'folders': [
+        f for f in FAKE_FOLDERS_API_RESPONSE1['folders']
+            if f['parent'] == 'organizations/9999'
+    ]
+}
+
+EXPECTED_FAKE_FOLDERS_LIST1 = FAKE_FOLDERS_LIST_API_RESPONSE1['folders']
+
+FAKE_ACTIVE_FOLDERS_API_RESPONSE1 = {
+    'folders': [
+        f for f in FAKE_FOLDERS_API_RESPONSE1['folders']
+            if f['lifecycleState'] == 'ACTIVE'
+    ]
+}
+
+EXPECTED_FAKE_ACTIVE_FOLDERS1 = FAKE_ACTIVE_FOLDERS_API_RESPONSE1['folders']
+
+FAKE_ORGS_RESPONSE = {
+    'organizations': [
+        {
+            'name': 'organizations/1111111111',
+            'display_name': 'Organization1',
+            'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'organizations/2222222222',
+            'display_name': 'Organization2',
+            'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'organizations/3333333333',
+            'display_name': 'Organization3',
+            'lifecycleState': 'ACTIVE',
+        }
+    ]
+}
+
+EXPECTED_FAKE_ORGS_FROM_API = FAKE_ORGS_RESPONSE['organizations']
+
+FAKE_PROJECTS_API_RESPONSE1 = {
+    'projects': [
+        {
+            'name': 'project1',
+            'projectId': 'project1',
+            'projectNumber': '25621943694',
+            'lifecycleState': 'ACTIVE',
+        },
+        {
+            'name': 'project2',
+            'projectId': 'project2',
+            'projectNumber': '94226340476',
+            'lifecycleState': 'DELETE_REQUESTED',
+        },
+        {
+            'name': 'project3',
+            'projectId': 'project3',
+            'projectNumber': '133851422272',
+            'lifecycleState': 'ACTIVE',
+        }]
+}
+
+FAKE_ACTIVE_PROJECTS_API_RESPONSE = {
+    'projects': [
+        p for p in FAKE_PROJECTS_API_RESPONSE1['projects']
+        if p['lifecycleState'] == 'ACTIVE'
+    ]
+}
+
+EXPECTED_FAKE_PROJECTS1 = [FAKE_PROJECTS_API_RESPONSE1]
+
+EXPECTED_FAKE_ACTIVE_PROJECTS1 = [{
+    'projects': [
+        p for p in FAKE_PROJECTS_API_RESPONSE1['projects']
+            if p['lifecycleState'] == 'ACTIVE'
+    ]
+}]
+
 # Errors
 
 GET_PROJECT_NOT_FOUND = """

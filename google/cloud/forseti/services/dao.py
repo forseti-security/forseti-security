@@ -55,6 +55,7 @@ from google.cloud.forseti.services import db
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.common.util import logger
 
+
 LOGGER = logger.get_logger(__name__)
 
 POOL_RECYCLE_SECONDS = 300
@@ -288,8 +289,8 @@ def define_model(model_name, dbengine, model_seed):
         parent_type_name = Column(
             get_string_by_dialect(dbengine.dialect.name, 512),
             ForeignKey('{}.type_name'.format(resources_tablename)))
-        name = Column(String(128), nullable=False)
-        type = Column(String(64), nullable=False)
+        name = Column(String(256), nullable=False)
+        type = Column(String(128), nullable=False)
         policy_update_counter = Column(Integer, default=0)
         display_name = Column(String(256), default='')
         email = Column(String(256), default='')
@@ -367,7 +368,7 @@ def define_model(model_name, dbengine, model_seed):
         __tablename__ = members_tablename
         name = Column(String(256), primary_key=True)
         type = Column(String(64))
-        member_name = Column(String(128))
+        member_name = Column(String(256))
 
         parents = relationship(
             'Member',
@@ -571,8 +572,8 @@ def define_model(model_name, dbengine, model_seed):
 
                     rows_affected = bool(session.execute(qry).rowcount)
                     iterations += 1
-            except Exception:
-                LOGGER.error(Exception.message)
+            except Exception as e:
+                LOGGER.exception(e)
                 session.rollback()
                 raise
             finally:

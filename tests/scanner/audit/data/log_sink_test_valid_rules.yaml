@@ -1,0 +1,80 @@
+rules:
+  - name: 'Require Audit Log sinks in all projects.'
+    mode: required
+    resource:
+      - type: organization
+        applies_to: children
+        resource_ids:
+          - 234
+    sink:
+      destination: 'bigquery.googleapis.com/projects/my-audit-logs/datasets/*'
+      filter: 'logName:"logs/cloudaudit.googleapis.com"'
+      include_children: '*'
+  - name: 'Require an Org Level audit log sink.'
+    mode: required
+    resource:
+      - type: organization
+        applies_to: self
+        resource_ids:
+          - 234
+    sink:
+      destination: '*'
+      filter: 'logName:"logs/cloudaudit.googleapis.com"'
+      include_children: 'True'
+  - name: 'Disallow folder sinks.'
+    mode: blacklist
+    resource:
+      - type: folder
+        applies_to: self
+        resource_ids:
+          - 56
+    sink:
+      destination: '*'
+      filter: '*'
+      include_children: '*'
+  - name: 'Require a PubSub sink in folder-56 projects.'
+    mode: required
+    resource:
+      - type: folder
+        applies_to: children
+        resource_ids:
+          - 56
+    sink:
+      destination: 'pubsub.googleapis.com/*'
+      filter: ''
+      include_children: '*'
+  - name: 'Only allow BigQuery sinks in Proj-1 and Proj-3.'
+    mode: whitelist
+    resource:
+      - type: project
+        applies_to: self
+        resource_ids:
+          - proj-1
+          - proj-3
+    sink:
+      destination: 'bigquery.googleapis.com/*'
+      filter: '*'
+      include_children: '*'
+  - name: 'Disallow filter-less sinks in Proj-1 and Proj-2.'
+    mode: blacklist
+    resource:
+      - type: project
+        applies_to: self
+        resource_ids:
+          - proj-1
+          - proj-2
+    sink:
+      destination: '*'
+      filter: ''
+      include_children: '*'
+  - name: 'Only allow Billing Account sinks to audit logs project.'
+    mode: whitelist
+    resource:
+      - type: billing_account
+        applies_to: self
+        resource_ids:
+          - ABCD-1234
+    sink:
+      destination: 'bigquery.googleapis.com/projects/my-audit-logs/datasets/billing_logs'
+      filter: ''
+      include_children: '*'

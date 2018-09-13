@@ -29,6 +29,7 @@ class ResourceType(object):
 
     # Org resources
     ORGANIZATION = resources.Organization.type()
+    BILLING_ACCOUNT = resources.BillingAccount.type()
     FOLDER = resources.Folder.type()
     PROJECT = resources.Project.type()
 
@@ -61,13 +62,18 @@ class ResourceType(object):
     # Kubernetes Engine
     KE_CLUSTER = resources.KubernetesCluster.type()
 
+    # Logging
+    LOG_SINK = resources.Sink.type()
+
     resource_types = frozenset([
         ORGANIZATION,
+        BILLING_ACCOUNT,
         FOLDER,
         PROJECT,
         BUCKET,
         GROUP,
         FORWARDING_RULE,
+        LOG_SINK,
     ])
 
     @classmethod

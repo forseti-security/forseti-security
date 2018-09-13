@@ -441,8 +441,13 @@ class ApiClientImpl(ApiClient):
             dict: Generator of Kubernetes Engine Cluster resources.
         """
         for cluster in self.container.get_clusters(projectid):
+
             # Don't store the master auth data in the database.
-            cluster.pop('masterAuth', None)
+            if 'masterAuth' in cluster:
+                cluster['masterAuth'] = {
+                    k: '[redacted]'
+                    for k in cluster['masterAuth'].keys()}
+
             yield cluster
 
     @create_lazy('container', _create_container)
@@ -668,6 +673,19 @@ class ApiClientImpl(ApiClient):
             yield network
 
     @create_lazy('compute', _create_compute)
+    def iter_snapshots(self, projectid):
+        """Iterate Compute Engine snapshots from GCP API.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of Compute Snapshots
+        """
+        for snapshot in self.compute.get_snapshots(projectid):
+            yield snapshot
+
+    @create_lazy('compute', _create_compute)
     def iter_subnetworks(self, projectid):
         """Iterate Subnetworks from GCP API.
 
@@ -841,6 +859,28 @@ class ApiClientImpl(ApiClient):
             dict: Project Billing Info resource.
         """
         return self.cloudbilling.get_billing_info(projectid)
+
+    @create_lazy('cloudbilling', _create_cloudbilling)
+    def iter_billing_accounts(self):
+        """Iterate visible Billing Accounts in an organization from GCP API.
+
+        Yields:
+            dict: Generator of billing accounts.
+        """
+        for account in self.cloudbilling.get_billing_accounts():
+            yield account
+
+    @create_lazy('cloudbilling', _create_cloudbilling)
+    def get_billing_account_iam_policy(self, accountid):
+        """Gets IAM policy of a Billing Account from GCP API.
+
+        Args:
+            accountid (str): id of the billing account to get policy.
+
+        Returns:
+            dict: Billing Account IAM policy
+        """
+        return self.cloudbilling.get_billing_acct_iam_policies(accountid)
 
     @create_lazy('servicemanagement', _create_servicemanagement)
     def get_enabled_apis(self, projectid):
