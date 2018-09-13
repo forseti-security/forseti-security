@@ -15,14 +15,16 @@
 
 import unittest
 
+from grpc._channel import _Rendezvous
+
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.server import InventoryConfig
-from tests.services.inventory import gcp_api_mocks
 from tests.services.api_tests.api_tester import ModelTestRunner
 from tests.services.api_tests.model_test import MODEL
+from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
 
@@ -67,15 +69,12 @@ def create_tester(inventory_config):
 class ExplainerTest(ForsetiTestCase):
     """Test based on declarative model."""
 
-    def setUp(self):
-        pass
-
     def test_explain_is_supported(self):
         """Test explain is supported."""
 
         inventory_config_with_organization_root = (
-            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, '')                                                   )
-        self.setup = create_tester(
+            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, ''))
+        setup = create_tester(
             inventory_config_with_organization_root)
 
         def test(client):
@@ -90,24 +89,24 @@ class ExplainerTest(ForsetiTestCase):
             self.assertEqual(expected_reply,
                              set(actual_reply.role_names))
 
-        self.setup.run(test)
+        setup.run(test)
 
     def test_explain_is_not_supported(self):
         """Test explain is not supported."""
 
         inventory_config_with_folder_root = (
-            InventoryConfig(gcp_api_mocks.FOLDER_ID, '', {}, '')                                                   )
-        self.setup = create_tester(inventory_config_with_folder_root)
+            InventoryConfig(gcp_api_mocks.FOLDER_ID, '', {}, ''))
+        setup = create_tester(inventory_config_with_folder_root)
 
         def test(client):
             """Test implementation with API client."""
-            try:
-                client.explain.list_roles('')
-            except Exception as e:
-                self.assertEquals("FAILED_PRECONDITION", e._state.code._name_)
+            self.assertRaisesRegexp(
+                _Rendezvous,
+                'FAILED_PRECONDITION',
+                client.explain.list_roles,
+                '')
 
-        self.setup.run(test)
-
+        setup.run(test)
 
 if __name__ == '__main__':
     unittest.main()
