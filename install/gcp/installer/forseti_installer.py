@@ -85,10 +85,6 @@ class ForsetiInstaller(object):
     organization_id = None
     gcp_service_acct_email = None
     user_can_grant_roles = True
-    firewall_rules_to_be_deleted = ["default-allow-icmp",
-                                    "default-allow-internal",
-                                    "default-allow-rdp",
-                                    "default-allow-ssh"]
 
     @abstractmethod
     def __init__(self, config=None, previous_installer=None):
@@ -293,20 +289,7 @@ class ForsetiInstaller(object):
                 deployment_tpl_path, deployment_tpl_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
 
-            # Delete firewall rules.
-            self.delete_firewall_rules()
-
         return deployment_completed, deployment_name
-
-    def delete_firewall_rules(self):
-        """Deletes default firewall rules as the forseti service account rules
-        serves the purpose"""
-        if len(self.firewall_rules_to_be_deleted) > 0:
-            for rule in self.firewall_rules_to_be_deleted:
-                gcloud.delete_firewall_rule(rule)
-            print('Firewall rules were successfully deleted')
-        else:
-            print('Couldn\'t find rules to delete')
 
     def wait_until_vm_initialized(self, vm_name):
         """Check vm init status.

@@ -63,8 +63,10 @@ class ForsetiClientInstaller(ForsetiInstaller):
             zone = '{}-c'.format(self.config.bucket_location)
             gcloud.enable_os_login(instance_name, zone)
             self.wait_until_vm_initialized(instance_name)
+
             # Create firewall rules.
             self.create_firewall_rules()
+
         return success, deployment_name
 
     def get_configuration_values(self):
