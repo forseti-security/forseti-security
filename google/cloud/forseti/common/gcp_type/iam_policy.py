@@ -342,13 +342,29 @@ class IamPolicyMember(object):
         else:
             other_member = IamPolicyMember.create_from(other)
 
-        # Match if member type is "allUsers" or if the
+        # Bucket IAM supports a special "allUsers" and "allAuthenticatedUsers"
+        # members, whose value is simply "allUsers" and "allAuthenticatedUsers",
+        # without a colon separator and a second fragment.
+        if (self.type == self.ALL_USERS and
+                other_member.type == self.ALL_USERS):
+            return True
+
+        if (self.type == self.ALL_AUTH_USERS and
+                other_member.type == self.ALL_AUTH_USERS):
+            return True
+
+        # Match if:
         # {member_type}:{member_name} regex-matches self's
         # {member_type}:{member_name} .
-        return ((self.type == self.ALL_USERS) or
-                (self.type == other_member.type and
-                 self.name_pattern.match(other_member.name)) or
-                self._is_matching_domain(other_member))
+        if (self.type == other_member.type and
+                self.name_pattern.match(other_member.name)):
+            return True
+
+        if self._is_matching_domain(other_member):
+            return True
+
+        return False
+
 
 class IamAuditConfig(object):
     """IAM Audit Config.

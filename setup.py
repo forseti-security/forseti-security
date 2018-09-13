@@ -59,7 +59,7 @@ REQUIRED_PACKAGES = [
     # Testing related.
     'mock>=2.0.0',
     'parameterized>=0.6.1',
-    'ruamel.yaml>=0.15.35',
+    'ruamel.yaml==0.15.37',
     'pylint',
     'pylint-quotes',
     'SQLAlchemy>=1.1.9',
@@ -130,7 +130,8 @@ setup(
         '*.tests', '*.tests.*', 'tests.*', 'tests']),
     include_package_data=True,
     package_data={
-        '': ['cloud/forseti/common/email_templates/*.jinja']
+        '': ['cloud/forseti/common/email_templates/*.jinja',
+             'cloud/forseti/common/gcp_api/discovery_documents/*.json']
     },
     namespace_packages=NAMESPACE_PACKAGES,
     google_test_dir='tests',

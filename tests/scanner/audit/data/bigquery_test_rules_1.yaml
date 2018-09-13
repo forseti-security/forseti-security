@@ -14,13 +14,11 @@
 
 rules:
   - name: BigQuery test rule
-    dataset_id: '*'
-    special_group: '*'
-    user_email: '*'
-    domain: '*'
-    group_email: '*'
-    role: 'OWNER'
     resource:
       - type: organization
         resource_ids:
-          - 123456789012
+          - 234
+    dataset_ids: ['*']
+    bindings:
+      - role: 'OWNER'
+        members: []

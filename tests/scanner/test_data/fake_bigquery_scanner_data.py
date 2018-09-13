@@ -18,58 +18,54 @@ from google.cloud.forseti.scanner.audit.bigquery_rules_engine import Rule
 
 
 BIGQUERY_DATA = [{
-    'project_id': '12345678',
-    'dataset_id': 'xza',
-    'full_name': '/org/1111/dataset/222',
-    'access_domain': '',
+    'project_id': 'p1',
+    'dataset_id': 'd1',
+    'full_name': 'organization/234/project/p1/dataset/d1/dataset_policy/d1/',
     'access_user_by_email': 'user@mockedexample.com',
-    'access_group_by_email': '',
-    'access_special_group': '',
     'role': 'OWNER',
     'view': '',
-    'resource_data': 'inventory_dataset222'
+    'resource_data': 'inventory_dataset222',
 }, {
-    'project_id': '12345678',
-    'dataset_id': 'xza',
-    'full_name': '/org/1111/dataset/333',
-    'access_domain': '',
+    'project_id': 'p2',
+    'dataset_id': 'd2',
+    'full_name':  ('organization/234/folder/56/project/p2/dataset/d2/'
+                   'dataset_policy/d2/'),
     'access_user_by_email': 'user1@mockedexample.com',
-    'access_group_by_email': '',
-    'access_special_group': '',
     'role': 'OWNER',
     'view': '',
-    'resource_data': 'inventory_dataset333'
+    'resource_data': 'inventory_dataset333',
 }]
 
 BIGQUERY_EXPECTED_VIOLATION_LIST = [
     Rule.RuleViolation(
         domain='',
-        resource_id='xza',
-        full_name='/org/1111/dataset/222',
+        resource_id='d1',
+        full_name='organization/234/project/p1/dataset/d1/dataset_policy/d1/',
         special_group='',
         group_email='',
         rule_name='BigQuery test rule',
         role='OWNER',
         user_email='user@mockedexample.com',
         rule_index=0,
-        dataset_id='xza',
+        dataset_id='d1',
         violation_type='BIGQUERY_VIOLATION',
         resource_type=resource_mod.ResourceType.BIGQUERY,
-        view='',
+        view={},
         resource_data='inventory_dataset222'),
     Rule.RuleViolation(
         domain='',
-        resource_id='xza',
-        full_name='/org/1111/dataset/333',
+        resource_id='d2',
+        full_name=('organization/234/folder/56/project/p2/dataset/d2/'
+                   'dataset_policy/d2/'),
         special_group='',
         group_email='',
         rule_name='BigQuery test rule',
         role='OWNER',
         user_email='user1@mockedexample.com',
         rule_index=0,
-        dataset_id='xza',
+        dataset_id='d2',
         violation_type='BIGQUERY_VIOLATION',
         resource_type=resource_mod.ResourceType.BIGQUERY,
-        view='',
+        view={},
         resource_data='inventory_dataset333')
 ]

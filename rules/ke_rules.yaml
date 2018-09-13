@@ -60,14 +60,29 @@ rules:
     check_serverconfig_valid_node_versions: false
     check_serverconfig_valid_master_versions: false
     allowed_nodepool_versions:
+        # Note: We must use = here because using >= will also allow earlier
+        # versions of 11-gke.* and 12-gke.* (e.g. 11-gke.1) which might have
+        # the vulnerabilities.
       - major: '1.8'
-        minor: '12-gke.1'
+        minor: '10-gke.2'
+        operator: '='
+      - major: '1.8'
+        minor: '12-gke.3'
         operator: '>='
       - major: '1.9'
-        minor: '7-gke.1'
+        minor: '6-gke.2'
+        operator: '='
+      - major: '1.9'
+        minor: '7-gke.5'
         operator: '>='
       - major: '1.10'
-        minor: '2-gke.1'
+        minor: '2-gke.4'
+        operator: '='
+      - major: '1.10'
+        minor: '4-gke.3'
+        operator: '='
+      - major: '1.10'
+        minor: '5-gke.4'
         operator: '>='
       - major: '1.11'
         operator: '>='

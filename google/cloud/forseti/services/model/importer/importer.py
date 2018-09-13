@@ -123,7 +123,7 @@ class InventoryImporter(object):
         self.permission_cache = {}
         self.resource_cache = ResourceCache()
         self.membership_items = []
-        self.membership_map = {} # Maps group_name to {member_name}
+        self.membership_map = {}  # Maps group_name to {member_name}
         self.member_cache = {}
         self.member_cache_policies = {}
 
@@ -141,6 +141,7 @@ class InventoryImporter(object):
             'organization',
             'folder',
             'project',
+            'billing_account',
             'role',
             'appengine_app',
             'appengine_service',
@@ -161,6 +162,7 @@ class InventoryImporter(object):
             'backendservice',
             'forwardingrule',
             'network',
+            'snapshot',
             'subnetwork',
             'cloudsqlinstance',
             'kubernetes_cluster',
@@ -280,7 +282,8 @@ class InventoryImporter(object):
                     self._store_iam_policy_post,
                     1000
                 )
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
+            LOGGER.exception(e)
             buf = StringIO()
             traceback.print_exc(file=buf)
             buf.seek(0)
@@ -544,6 +547,9 @@ class InventoryImporter(object):
             'project': (None,
                         self._convert_project,
                         None),
+            'billing_account': (None,
+                                self._convert_billing_account,
+                                None),
             'role': (self._convert_role_pre,
                      self._convert_role,
                      self._convert_role_post),
@@ -607,6 +613,9 @@ class InventoryImporter(object):
             'network': (None,
                         self._convert_network,
                         None),
+            'snapshot': (None,
+                         self._convert_snapshot,
+                         None),
             'subnetwork': (None,
                            self._convert_subnetwork,
                            None),
@@ -1083,6 +1092,28 @@ class InventoryImporter(object):
         self.session.add(resource)
         self._add_to_cache(resource, network.id)
 
+    def _convert_snapshot(self, snapshot):
+        """Convert a snapshot to a database object.
+
+        Args:
+            snapshot (object): Snapshot to store.
+        """
+        data = snapshot.get_resource_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            snapshot)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=snapshot.get_resource_id(),
+            type=snapshot.get_resource_type(),
+            display_name=data.get('name', ''),
+            email=data.get('email', ''),
+            data=snapshot.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+        self._add_to_cache(resource, snapshot.id)
+
     def _convert_subnetwork(self, subnetwork):
         """Convert a subnetwork to a database object.
 
@@ -1185,7 +1216,7 @@ class InventoryImporter(object):
         data = folder.get_resource_data()
         if self._is_root(folder):
             parent, type_name = None, self._type_name(folder)
-            full_res_name = type_name
+            full_res_name = to_full_resource_name('', type_name)
         else:
             parent, full_res_name, type_name = self._full_resource_name(
                 folder)
@@ -1210,7 +1241,7 @@ class InventoryImporter(object):
         data = project.get_resource_data()
         if self._is_root(project):
             parent, type_name = None, self._type_name(project)
-            full_res_name = type_name
+            full_res_name = to_full_resource_name('', type_name)
         else:
             parent, full_res_name, type_name = self._full_resource_name(
                 project)
@@ -1224,6 +1255,27 @@ class InventoryImporter(object):
             parent=parent)
         self.session.add(resource)
         self._add_to_cache(resource, project.id)
+
+    def _convert_billing_account(self, billing_account):
+        """Convert a billing account to a database object.
+
+        Args:
+            billing_account (object): billing account to store.
+        """
+
+        data = billing_account.get_resource_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            billing_account)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=billing_account.get_resource_id(),
+            type=billing_account.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            data=billing_account.get_resource_data_raw(),
+            parent=parent)
+        self.session.add(resource)
+        self._add_to_cache(resource, billing_account.id)
 
     def _convert_role_pre(self):
         """Executed before roles are handled. Prepares for bulk insert."""

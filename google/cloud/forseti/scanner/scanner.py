@@ -104,7 +104,6 @@ def run(model_name=None, progress_queue=None, service_config=None):
             global_configs, scanner_configs, service_config, model_name,
             None).build()
 
-        # pylint: disable=bare-except
         succeeded = []
         failed = []
         for scanner in runnable_scanners:
@@ -112,11 +111,11 @@ def run(model_name=None, progress_queue=None, service_config=None):
                 scanner.run()
                 progress_queue.put('Running {}...'.format(
                     scanner.__class__.__name__))
-            except:
+            except Exception:  # pylint: disable=broad-except
                 log_message = 'Error running scanner: {}'.format(
                     scanner.__class__.__name__)
                 progress_queue.put(log_message)
-                LOGGER.error(log_message, exc_info=True)
+                LOGGER.exception(log_message)
                 failed.append(scanner.__class__.__name__)
             else:
                 succeeded.append(scanner.__class__.__name__)

@@ -16,6 +16,7 @@
 
 import calendar
 from datetime import datetime
+from dateutil import parser
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
@@ -53,18 +54,32 @@ def get_datetime_from_string(string, string_format):
     """
     try:
         result = datetime.strptime(string, string_format)
-    except TypeError as e:
-        LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
-                     string, string_format, e)
+    except TypeError:
+        LOGGER.exception('Unable to create a datetime with %s in '
+                         'format %s', string, string_format)
         raise DateTimeTypeConversionError
-    except ValueError as e:
-        LOGGER.error('Unable to create a datetime with %s in format '
-                     '%s\nError: %s',
-                     string, string_format, e)
+    except ValueError:
+        LOGGER.exception('Unable to create a datetime with %s in '
+                         'format %s', string, string_format)
         raise DateTimeValueConversionError
 
     return result
+
+
+def get_unix_timestamp_from_string(string):
+    """Parse string to a unix timestamp, as seconds since epoch.
+
+    Args:
+        string (str): The time string to parse.
+
+    Returns:
+        int: The timestamp in seconds.
+
+    Raises:
+        ValueError: Raised for unknown string formats.
+    """
+    date = parser.parse(string)
+    return calendar.timegm(date.utctimetuple())
 
 
 def get_utc_now_datetime():
@@ -102,6 +117,19 @@ def get_utc_now_timestamp(date=None):
     return utc_now.strftime(string_formats.DEFAULT_FORSETI_TIMESTAMP)
 
 
+def get_utc_now_unix_timestamp(date=None):
+    """Get a 64bit int representing the current time to the millisecond.
+
+    Args:
+        date (datetime): A datetime object representing current time in UTC.
+
+    Returns:
+        int: A epoch timestamp including microseconds.
+    """
+    utc_now = date or get_utc_now_datetime()
+    return calendar.timegm(utc_now.utctimetuple())
+
+
 def get_utc_now_microtimestamp(date=None):
     """Get a 64bit int representing the current time to the millisecond.
 
@@ -125,4 +153,4 @@ def get_date_from_microtimestamp(microtimestamp):
     Returns:
         datetime: The converted datetime object
     """
-    return datetime.utcfromtimestamp(microtimestamp/float(1000000.0))
+    return datetime.utcfromtimestamp(microtimestamp / float(1000000.0))

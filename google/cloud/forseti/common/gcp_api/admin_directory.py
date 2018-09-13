@@ -35,8 +35,8 @@ GSUITE_AUTH_FAILURE_MESSAGE = (
     'failure. Please make sure your forseti_server_config.yaml '
     'file contains the most updated information and enable G '
     'Suite Groups Collection if you haven\'t done so. Instructions'
-    ' on how to enable: https://forsetisecurity.org/docs/howto/'
-    'configure/gsuite-group-collection.html')
+    ' on how to enable: https://forsetisecurity.org/docs/latest/'
+    'configure/inventory/gsuite.html')
 
 
 class AdminDirectoryRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -218,7 +218,7 @@ class AdminDirectoryClient(object):
             return flattened_results
         except RefreshError as e:
             # Authentication failed, log before raise.
-            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
+            LOGGER.exception(GSUITE_AUTH_FAILURE_MESSAGE)
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('groups', e)
@@ -252,7 +252,7 @@ class AdminDirectoryClient(object):
             return flattened_results
         except RefreshError as e:
             # Authentication failed, log before raise.
-            LOGGER.error(GSUITE_AUTH_FAILURE_MESSAGE)
+            LOGGER.exception(GSUITE_AUTH_FAILURE_MESSAGE)
             raise e
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('users', e)
