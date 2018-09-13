@@ -61,6 +61,8 @@ class ForsetiClientInstaller(ForsetiInstaller):
                 self.config.installation_type,
                 self.config.identifier)
             zone = '{}-c'.format(self.config.bucket_location)
+            # Create firewall rules.
+            self.create_firewall_rules()
             gcloud.enable_os_login(instance_name, zone)
             self.wait_until_vm_initialized(instance_name)
             # Create firewall rules.
@@ -111,3 +113,14 @@ class ForsetiClientInstaller(ForsetiInstaller):
             0,
             self.config.vpc_host_network,
             '0.0.0.0/0')
+
+    def format_firewall_rule_name(self, rule_name):
+        """Format firewall rule name.
+
+        Args:
+            rule_name (str): Name of the firewall rule.
+
+        Returns:
+            str: Firewall rule name.
+        """
+        return '{}-{}'.format(rule_name, self.config.identifier)
