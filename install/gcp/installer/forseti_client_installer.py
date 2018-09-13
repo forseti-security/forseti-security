@@ -18,7 +18,6 @@ from forseti_installer import ForsetiInstaller
 from util import gcloud
 from util import constants
 
-
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
 
