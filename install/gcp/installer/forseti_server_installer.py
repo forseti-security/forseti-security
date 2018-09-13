@@ -106,10 +106,10 @@ class ForsetiServerInstaller(ForsetiInstaller):
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
                 self.config.identifier)
-            self.wait_until_vm_initialized(instance_name)
 
             # Create firewall rules.
             self.create_firewall_rules()
+            self.wait_until_vm_initialized(instance_name)
 
             # Delete firewall rules.
             self.delete_firewall_rules()
