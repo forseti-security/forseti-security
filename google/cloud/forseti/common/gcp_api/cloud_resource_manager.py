@@ -50,6 +50,7 @@ class CloudResourceManagerRepositoryClient(
         self._organizations = None
         self._folders = None
         self._folders_v1 = None
+        self._liens = None
 
         super(CloudResourceManagerRepositoryClient, self).__init__(
             'cloudresourcemanager', versions=['v1', 'v2'],
@@ -92,6 +93,14 @@ class CloudResourceManagerRepositoryClient(
                 _ResourceManagerFolderV1Repository, version='v1')
         return self._folders_v1
     # pylint: enable=missing-return-doc, missing-return-type-doc
+
+    @property
+    def liens(self):
+        """Returns a _ResourceManagerLiensRepository instance."""
+        if not self._liens:
+            self._liens = self._init_repository(
+                _ResourceManagerLiensRepository)
+        return self._liens
 
 
 class _ResourceManagerProjectsRepository(
@@ -225,6 +234,15 @@ class _ResourceManagerFolderV1Repository(
             list_key_field='parent', get_key_field='name',
             max_results_field='pageSize', component='folders', **kwargs)
 
+class _ResourceManagerLiensRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """ """
+
+    def __init__(self, **kwargs):
+        super(_ResourceManagerLiensRepository, self).__init__(
+            list_key_field='parent', max_results_field='pageSize',
+            component='liens', **kwargs)
 
 class CloudResourceManagerClient(object):
     """Resource Manager Client."""
@@ -516,6 +534,20 @@ class CloudResourceManagerClient(object):
             else:
                 resource_name = 'All Folders'
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_project_liens(self, project_id):
+        """
+        """
+        project_id = self.repository.projects.get_name(project_id)
+        try:
+            paged_results = self.repository.liens.list(
+                project_id)
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'liens')
+            return flattened_results
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(project_id, e)
+
 
     def get_folder_iam_policies(self, folder_id):
         """Get all the iam policies of a folder.

@@ -158,6 +158,7 @@ class InventoryImporter(object):
             'instancegroupmanager',
             'instancetemplate',
             'instance',
+            'lien',
             'firewall',
             'backendservice',
             'forwardingrule',
@@ -603,6 +604,9 @@ class InventoryImporter(object):
             'instance': (None,
                          self._convert_instance,
                          None),
+            'lien': (None,
+                     self._convert_lien,
+                     None),
             'firewall': (None,
                          self._convert_firewall,
                          None),
@@ -1005,6 +1009,21 @@ class InventoryImporter(object):
 
         self.session.add(resource)
         self._add_to_cache(resource, instance.id)
+
+    def _convert_lien(self, lien):
+        """
+        """
+
+        data = lien.get_resource_data()
+        parent, full_res_name, type_name = self._full_resource_name(lien)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=lien.get_resource_id(),
+            type=lien.get_resource_type(),
+            display_name=data.get('name', ''),
+            data=lien.get_resource_data_raw(),
+            parent=parent)
 
     def _convert_firewall(self, firewall):
         """Convert a firewall to a database object.
