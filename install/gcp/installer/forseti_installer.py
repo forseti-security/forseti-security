@@ -278,6 +278,9 @@ class ForsetiInstaller(object):
             print('Copying the Forseti {} configuration file to:\n\t{}'
                   .format(self.config.installation_type, conf_output_path))
 
+            # Delete firewall rules.
+            self.delete_firewall_rules()
+
             files.copy_file_to_destination(
                 conf_file_path, conf_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
@@ -292,9 +295,6 @@ class ForsetiInstaller(object):
             files.copy_file_to_destination(
                 deployment_tpl_path, deployment_tpl_output_path,
                 is_directory=False, dry_run=self.config.dry_run)
-
-            # Delete firewall rules.
-            self.delete_firewall_rules()
 
         return deployment_completed, deployment_name
 

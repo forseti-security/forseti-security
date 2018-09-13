@@ -112,6 +112,16 @@ class ForsetiClientInstaller(ForsetiInstaller):
             self.config.vpc_host_network,
             '0.0.0.0/0')
 
+        # Rule to block out all the ingress traffic on client VM.
+        gcloud.create_firewall_rule(
+            self.format_firewall_rule_name('forseti-client-deny-all'),
+            [self.gcp_service_acct_email],
+            constants.FirewallRuleAction.DENY,
+            ['icmp', 'udp', 'tcp'],
+            constants.FirewallRuleDirection.INGRESS,
+            1,
+            self.config.vpc_host_network)
+
     def format_firewall_rule_name(self, rule_name):
         """Format firewall rule name.
 
