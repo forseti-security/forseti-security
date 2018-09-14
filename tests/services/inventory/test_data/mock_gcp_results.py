@@ -20,6 +20,7 @@ tests/services/model/importer/update_test_dbs.py.
 import json
 
 ORGANIZATION_ID = "organizations/111222333"
+FOLDER_ID = "folders/444555666"
 
 GSUITE_CUSTOMER_ID = "ABC123DEF"
 
