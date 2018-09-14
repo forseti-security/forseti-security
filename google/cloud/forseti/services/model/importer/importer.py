@@ -1025,6 +1025,8 @@ class InventoryImporter(object):
             data=lien.get_resource_data_raw(),
             parent=parent)
 
+        self.session.add(resource)
+
     def _convert_firewall(self, firewall):
         """Convert a firewall to a database object.
 

@@ -1219,7 +1219,7 @@ class Lien(Resource):
         Returns:
             str: key of this resource
         """
-        return self['name']
+        return self['name'].split('/')[-1]
 
     @staticmethod
     def type():
