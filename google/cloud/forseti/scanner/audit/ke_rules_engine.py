@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for check KE clusters with generic jmespath expressions."""
+"""Rules engine for checking arbitrary properties ofKE clusters."""
 
 from collections import namedtuple
 import threading
@@ -29,8 +29,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 LOGGER = logger.get_logger(__name__)
 
 
-class KeJmespathRulesEngine(bre.BaseRulesEngine):
-    """Rules engine for KE Jmespath scanner."""
+class KeRulesEngine(bre.BaseRulesEngine):
+    """Rules engine for KE scanner."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -41,25 +41,25 @@ class KeJmespathRulesEngine(bre.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(KeJmespathRulesEngine,
+        super(KeRulesEngine,
               self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
         self.snapshot_timestamp = snapshot_timestamp
         self._lock = threading.Lock()
 
     def build_rule_book(self, global_configs=None):
-        """Build KeJmespathRuleBook from the rules definition file.
+        """Build KeRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
         """
         with self._lock:
-            self.rule_book = KeJmespathRuleBook(
+            self.rule_book = KeRuleBook(
                 self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, ke_cluster, force_rebuild=False):
-        """Check if KE cluster satisfies provided Jmespath rules.
+        """Check if KE cluster satisfies provided  rules.
 
         Args:
             ke_cluster (KeCluster): A KE Cluster object to check.
@@ -74,16 +74,16 @@ class KeJmespathRulesEngine(bre.BaseRulesEngine):
         return self.rule_book.find_violations(ke_cluster)
 
 
-class KeJmespathRuleBook(bre.BaseRuleBook):
-    """The RuleBook for KE Jmespath rules."""
+class KeRuleBook(bre.BaseRuleBook):
+    """The RuleBook for KE rules."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
 
         Args:
-            rule_defs (list): KE Jmespath rule definition dicts
+            rule_defs (list): KE rule definition dicts
         """
-        super(KeJmespathRuleBook, self).__init__()
+        super(KeRuleBook, self).__init__()
         self._lock = threading.Lock()
         self.resource_rules_map = {}
         if not rule_defs:
@@ -306,7 +306,7 @@ class Rule(object):
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_policy_violations(self, ke_cluster):
-        """Find KE Jmespath violations in based on the rule.
+        """Find KE violations in based on the rule.
 
         Args:
             ke_cluster (KeCluster): KE Cluster and ServerConfig data.
@@ -357,7 +357,7 @@ class Rule(object):
             rule_mode=self.rule_mode,
             rule_values=self.rule_values,
             actual_value=actual,
-            violation_type='KE_JMESPATH_VIOLATION',
+            violation_type='KE_VIOLATION',
             violation_reason=violation_reason,
             project_id=ke_cluster.project_id,
             cluster_name=ke_cluster.name,
@@ -413,7 +413,7 @@ class Rule(object):
 # resource_id: string
 # rule_name: string
 # rule_index: int
-# violation_type: KE_JMESPATH_VIOLATION
+# violation_type: KE_VIOLATION
 # violation_reason: string
 # project_id: string
 # cluster_name: string

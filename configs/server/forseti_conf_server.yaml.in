@@ -109,10 +109,10 @@ scanner:
           enabled: true
         - name: instance_network_interface
           enabled: false
+        - name: ke_scanner
+          enabled: false
         - name: ke_version_scanner
           enabled: true
-        - name: ke_jmespath_scanner
-          enabled: false
         - name: log_sink
           enabled: true
         - name: service_account_key
@@ -294,7 +294,7 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
-        - resource: ke_jmespath_violations
+        - resource: ke_violations
           should_notify: true
           notifiers:
             # Email violations

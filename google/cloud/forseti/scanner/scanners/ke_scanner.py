@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the KE jmespath rules engine."""
+"""Scanner for the KE rules engine."""
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import ke_jmespath_rules_engine
+from google.cloud.forseti.scanner.audit import ke_rules_engine
 from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
 
-class KeJmespathScanner(ke_base_scanner.KeBaseScanner):
-    """Implement scanning for arbitrary jmespath expressions.
+class KeScanner(ke_base_scanner.KeBaseScanner):
+    """Implement scanning for arbitrary KE cluster properties.
 
     This scanner allows the user to write rules that extract arbitrary
     values from a KE cluster's JSON representation, and match them
@@ -30,5 +30,5 @@ class KeJmespathScanner(ke_base_scanner.KeBaseScanner):
     whitelist or a blacklist.
 
     """
-    _scanner_name = 'jmespath'
-    _rules_engine_cls = ke_jmespath_rules_engine.KeJmespathRulesEngine
+    _scanner_name = 'ke_scanner'
+    _rules_engine_cls = ke_rules_engine.KeRulesEngine

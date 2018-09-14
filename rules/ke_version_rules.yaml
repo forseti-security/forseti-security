@@ -1,0 +1,101 @@
+# Copyright 2017 The Forseti Security Authors. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Rule Keys:
+# name: The unique name describing the rule
+# resource: A mapping of resources that this rule applies to.
+#  * type: The type of resource, can be organization, folder, or project.
+#  * resource_ids: A list of one or more numeric ids to match, or '*' for all.
+# check_serverconfig_valid_node_versions: If true, will raise a violation for
+#    any node pool running a version that is not listed as supported for the'
+#    zone the cluster is running in.
+# check_serverconfig_valid_master_versions: If true, will raise a violation for
+#    any cluster running an out of date master version. New clusters can only
+#    be created with a supported master version.
+# allowed_nodepool_versions: Optional, if not included all versions are allowed.
+#        The list of rules for what versions are allowed on nodes.
+#  * major: The major version that is allowed.
+#  * minor: Optional, the minor version that is allowed. If not included, all
+#        minor versions are allowed.
+#  * operator: Optional, defaults to =, can be one of (=, >, <, >=, <=). The
+#        operator determines how the current version compares with the allowed
+#        version. If a minor version is not included, the operator applies to
+#        major version. Otherwise it applies to minor versions within a single
+#        major version.
+
+rules:
+# The default KE rule alerts if any node pool is running a version of
+# kubernetes that is no longer supported
+  - name: Unsupported node pool version
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    check_serverconfig_valid_node_versions: true
+
+    # Set check_serverconfig_valid_master_versions to true to check if the
+    # master version is supported as well. Newly created clusters can only use
+    # one of the supported master versions.
+    # Master versions are always greater or equal to the node pool version.
+    check_serverconfig_valid_master_versions: false
+
+# This rule checks for any node pools that are running a version
+# that is not patched for current known and patched critical CVEs.
+  - name: Nodepool version not patched for critical security vulnerabilities
+    resource:
+      - type: organization
+        resource_ids:
+          - '*'
+    check_serverconfig_valid_node_versions: false
+    check_serverconfig_valid_master_versions: false
+    allowed_nodepool_versions:
+        # Note: We must use = here because using >= will also allow earlier
+        # versions of 11-gke.* and 12-gke.* (e.g. 11-gke.1) which might have
+        # the vulnerabilities.
+      - major: '1.8'
+        minor: '10-gke.2'
+        operator: '='
+      - major: '1.8'
+        minor: '12-gke.3'
+        operator: '>='
+      - major: '1.9'
+        minor: '6-gke.2'
+        operator: '='
+      - major: '1.9'
+        minor: '7-gke.5'
+        operator: '>='
+      - major: '1.10'
+        minor: '2-gke.4'
+        operator: '='
+      - major: '1.10'
+        minor: '4-gke.3'
+        operator: '='
+      - major: '1.10'
+        minor: '5-gke.4'
+        operator: '>='
+      - major: '1.11'
+        operator: '>='
+
+# Example rules.
+#  - name: Only allow supported versions of 1.9 on projects under folder 123456
+#    resource:
+#      - type: folder
+#        resource_ids:
+#          - '123456'
+#    check_serverconfig_valid_node_versions: true
+#    check_serverconfig_valid_master_versions: false
+#    allowed_nodepool_versions:
+#      - major: '1.9'
+#        minor: '0'
+#        operator: '>='

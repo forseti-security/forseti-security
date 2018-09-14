@@ -106,7 +106,7 @@ scanner:
           enabled: true
         - name: instance_network_interface
           enabled: false
-        - name: ke_jmespath_scanner
+        - name: ke_scanner
           enabled: false
         - name: ke_version_scanner
           enabled: true
