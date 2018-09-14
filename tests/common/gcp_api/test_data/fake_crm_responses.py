@@ -164,7 +164,7 @@ GET_LIENS = """
 {
   "liens": [
     {
-      "name": "liens/forseti-system-test-lien1",
+      "name": "liens/test-lien1",
       "parent": "projects/forseti-system-test",
       "restrictions": [
         "resourcemanager.projects.delete"
@@ -177,7 +177,7 @@ GET_LIENS = """
 """
 
 EXPECTED_LIENS = [{
-    "name": "liens/forseti-system-test-lien1",
+    "name": "liens/test-lien1",
     "parent": "projects/forseti-system-test",
     "restrictions": [
     "resourcemanager.projects.delete"
