@@ -99,6 +99,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
         }
 
     def create_firewall_rules(self):
+        """Create firewall rules for Forseti server instance."""
         # Create firewall rule to open only port tcp:22 (ssh)
         # to all the external traffic from the internet to ssh into client VM.
         gcloud.create_firewall_rule(
@@ -123,4 +124,3 @@ class ForsetiClientInstaller(ForsetiInstaller):
             constants.FirewallRuleDirection.INGRESS,
             200,
             self.config.vpc_host_network)
-

@@ -334,4 +334,3 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 if notifier['name'] == 'gcs_violations':
                     return notifier['configuration']['gcs_path']
         return ''
-
