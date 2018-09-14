@@ -1874,6 +1874,7 @@ class InstanceTemplateIterator(ResourceIterator):
                     projectid=self.resource['projectId']):
                 yield FACTORIES['instancetemplate'].create_new(data)
 
+
 class NetworkIterator(ResourceIterator):
     """The Resource iterator implementation for Network"""
 
@@ -2064,6 +2065,7 @@ class GsuiteMemberIterator(ResourceIterator):
             elif data['type'] == 'GROUP':
                 yield FACTORIES['gsuite_group_member'].create_new(data)
 
+
 class ProjectLienIterator(ResourceIterator):
     """The Resource iterator implementation for Project Liens."""
 
@@ -2075,6 +2077,7 @@ class ProjectLienIterator(ResourceIterator):
             for data in self.client.iter_project_liens(
                     project_id=self.resource['projectId']):
                 yield FACTORIES['lien'].create_new(data)
+
 
 class ProjectSinkIterator(ResourceIterator):
     """The Resource iterator implementation for Project Sink"""

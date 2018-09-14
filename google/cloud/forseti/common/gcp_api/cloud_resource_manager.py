@@ -103,6 +103,7 @@ class CloudResourceManagerRepositoryClient(
 
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
+
 class _ResourceManagerProjectsRepository(
         repository_mixins.GetQueryMixin,
         repository_mixins.GetIamPolicyQueryMixin,
@@ -234,6 +235,7 @@ class _ResourceManagerFolderV1Repository(
             list_key_field='parent', get_key_field='name',
             max_results_field='pageSize', component='folders', **kwargs)
 
+
 class _ResourceManagerLiensRepository(
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
@@ -248,6 +250,7 @@ class _ResourceManagerLiensRepository(
         super(_ResourceManagerLiensRepository, self).__init__(
             list_key_field='parent', max_results_field='pageSize',
             component='liens', **kwargs)
+
 
 class CloudResourceManagerClient(object):
     """Resource Manager Client."""
