@@ -112,6 +112,9 @@ class ForsetiClientInstaller(ForsetiInstaller):
             '0.0.0.0/0')
 
         # Rule to block out all the ingress traffic on client VM.
+        # We need a service account deny for ingress that is more
+        # specific to service account with higher priority.
+        # This rule overrides the implied deny for ingress.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-client-deny-all'),
             [self.gcp_service_acct_email],
