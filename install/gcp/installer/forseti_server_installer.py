@@ -163,8 +163,6 @@ class ForsetiServerInstaller(ForsetiInstaller):
             for rule in self.firewall_rules_to_be_deleted:
                 gcloud.delete_firewall_rule(rule)
                 print('Deleted:', rule)
-        else:
-            print('Couldn\'t find rules to delete')
 
     def get_deployment_values(self):
         """Get deployment values.
