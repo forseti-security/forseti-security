@@ -81,7 +81,6 @@ class GrpcExplainer(explain_pb2_grpc.ExplainServicer):
         context.set_details(FAILED_PRECONDITION_MESSAGE)
         return reply
 
-
     def __init__(self, explainer_api):
         """Initialize
 
