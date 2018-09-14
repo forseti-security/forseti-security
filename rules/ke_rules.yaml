@@ -76,12 +76,3 @@ rules:
 #     key: networkPolicy.enabled
 #     values:
 #       - true
-      
-#   - name: all nodePools use COS
-#     resource:
-#       - type: organization
-#         resource_ids:
-#           - '*'
-#     key: 'length(nodePools) == length(nodePools[].{name: config.imageType}[?name==`COS`])'
-#     values:
-#       - True
