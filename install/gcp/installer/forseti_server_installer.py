@@ -118,10 +118,8 @@ class ForsetiServerInstaller(ForsetiInstaller):
 
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
-        # Rule to block out all the ingress traffic on server VM.
-        # We need a service account deny for ingress that is more
-        # specific to service account with higher priority.
-        # This rule overrides the implied deny for ingress.
+        # This rule overrides the implied deny for ingress
+        # because it has higher priority and is specific to service account.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_acct_email],

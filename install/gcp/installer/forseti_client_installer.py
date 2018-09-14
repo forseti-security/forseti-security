@@ -15,8 +15,9 @@
 """Forseti CLI installer."""
 
 from forseti_installer import ForsetiInstaller
-from util import gcloud
 from util import constants
+from util import gcloud
+
 
 class ForsetiClientInstaller(ForsetiInstaller):
     """Forseti command line interface installer"""
@@ -111,10 +112,8 @@ class ForsetiClientInstaller(ForsetiInstaller):
             self.config.vpc_host_network,
             '0.0.0.0/0')
 
-        # Rule to block out all the ingress traffic on client VM.
-        # We need a service account deny for ingress that is more
-        # specific to service account with higher priority.
-        # This rule overrides the implied deny for ingress.
+        # This rule overrides the implied deny for ingress
+        # because it has higher priority and is specific to service account.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-client-deny-all'),
             [self.gcp_service_acct_email],
