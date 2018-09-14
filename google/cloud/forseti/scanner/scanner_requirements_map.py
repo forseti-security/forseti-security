@@ -66,10 +66,14 @@ REQUIREMENTS_MAP = {
         {'module_name': 'instance_network_interface_scanner',
          'class_name': 'InstanceNetworkInterfaceScanner',
          'rules_filename': 'instance_network_interface_rules.yaml'},
+    'ke_scanner':
+        {'module_name': 'ke_scanner',
+         'class_name': 'KeScanner',
+         'rules_filename': 'ke_rules.yaml'},
     'ke_version_scanner':
         {'module_name': 'ke_version_scanner',
          'class_name': 'KeVersionScanner',
-         'rules_filename': 'ke_rules.yaml'},
+         'rules_filename': 'ke_version_rules.yaml'},
     'log_sink':
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',
