@@ -14,6 +14,7 @@
 
 """Wrapper for Cloud Asset API client."""
 import time
+
 from googleapiclient import errors
 from httplib2 import HttpLib2Error
 
@@ -269,9 +270,11 @@ class CloudAssetClient(object):
             timeout (float): The maximum time to wait for the operation to
                 complete.
             initial_delay (float): The time to wait before first checking if the
-                API has completed. If None then the default value is used.
+                API has completed. If None then the default value, configured as
+                CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.
             retry_delay (float): The time to wait between checking if the
-                API has completed. If None then the default value is used.
+                API has completed. If None then the default value, configured as
+                CloudAssetClient.OPERATION_DELAY_IN_SEC, is used.
 
         Returns:
             dict: Operation status and info.
