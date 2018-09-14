@@ -1011,9 +1011,11 @@ class InventoryImporter(object):
         self._add_to_cache(resource, instance.id)
 
     def _convert_lien(self, lien):
-        """
-        """
+        """Convert a lien to a database object.
 
+        Args:
+            lien (object): Lien to store.
+        """
         data = lien.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(lien)
         resource = self.dao.TBL_RESOURCE(

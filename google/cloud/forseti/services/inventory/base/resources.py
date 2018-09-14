@@ -2065,10 +2065,11 @@ class GsuiteMemberIterator(ResourceIterator):
                 yield FACTORIES['gsuite_group_member'].create_new(data)
 
 class ProjectLienIterator(ResourceIterator):
-    """"""
+    """The Resource iterator implementation for Project Liens."""
 
     def iter(self):
-        """
+        """Yields:
+            Resource: Lien created
         """
         if self.resource.enumerable():
             for data in self.client.iter_project_liens(

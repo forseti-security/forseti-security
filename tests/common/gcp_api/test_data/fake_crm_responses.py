@@ -180,7 +180,7 @@ EXPECTED_LIENS = [{
     "name": "liens/test-lien1",
     "parent": "projects/forseti-system-test",
     "restrictions": [
-    "resourcemanager.projects.delete"
+        "resourcemanager.projects.delete"
     ],
     "origin": "testing",
     "createTime": "2018-09-05T14:45:46.534Z"

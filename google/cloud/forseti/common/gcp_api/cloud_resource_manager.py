@@ -92,7 +92,6 @@ class CloudResourceManagerRepositoryClient(
             self._folders_v1 = self._init_repository(
                 _ResourceManagerFolderV1Repository, version='v1')
         return self._folders_v1
-    # pylint: enable=missing-return-doc, missing-return-type-doc
 
     @property
     def liens(self):
@@ -102,6 +101,7 @@ class CloudResourceManagerRepositoryClient(
                 _ResourceManagerLiensRepository)
         return self._liens
 
+    # pylint: enable=missing-return-doc, missing-return-type-doc
 
 class _ResourceManagerProjectsRepository(
         repository_mixins.GetQueryMixin,
@@ -237,9 +237,14 @@ class _ResourceManagerFolderV1Repository(
 class _ResourceManagerLiensRepository(
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
-    """ """
+    """Implementation of Cloud Resource Manager Liens repository."""
 
     def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
         super(_ResourceManagerLiensRepository, self).__init__(
             list_key_field='parent', max_results_field='pageSize',
             component='liens', **kwargs)
@@ -536,7 +541,16 @@ class CloudResourceManagerClient(object):
             raise api_errors.ApiExecutionError(resource_name, e)
 
     def get_project_liens(self, project_id):
-        """
+        """Get all liens for this project.
+
+        Args:
+            project_id (str): the id of the project.
+
+        Returns:
+            list: A list of Lien dicts as returned by the API.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
         """
         project_id = self.repository.projects.get_name(project_id)
         try:
