@@ -16,12 +16,12 @@
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import ke_version_rules_engine
-from google.cloud.forseti.scanner.scanners import base_scanner
+from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
 
-class KeVersionScanner(base_scanner.KeBaseScanner):
+class KeVersionScanner(ke_base_scanner.KeBaseScanner):
     """Check if the version of running KE clusters and nodes are allowed."""
     _scanner_name = 'version'
     _rules_engine_cls = ke_version_rules_engine.KeVersionRulesEngine

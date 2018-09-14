@@ -16,12 +16,12 @@
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import ke_jmespath_rules_engine
-from google.cloud.forseti.scanner.scanners import base_scanner
+from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
 
-class KeJmespathScanner(base_scanner.KeBaseScanner):
+class KeJmespathScanner(ke_base_scanner.KeBaseScanner):
     """Implement scanning for arbitrary jmespath expressions.
 
     This scanner allows the user to write rules that extract arbitrary
