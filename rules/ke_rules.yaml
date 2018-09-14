@@ -48,7 +48,7 @@ rules:
 #           - '*'
 #     key: legacyAbac.enabled
 #     values:
-#       - true
+#       - null
 
 #   - name: kubernetes dashboard should be disabled
 #     resource:
