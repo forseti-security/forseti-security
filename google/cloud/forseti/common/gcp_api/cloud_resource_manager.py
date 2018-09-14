@@ -565,7 +565,6 @@ class CloudResourceManagerClient(object):
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
 
-
     def get_folder_iam_policies(self, folder_id):
         """Get all the iam policies of a folder.
 
