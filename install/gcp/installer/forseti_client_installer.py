@@ -113,7 +113,8 @@ class ForsetiClientInstaller(ForsetiInstaller):
             '0.0.0.0/0')
 
         # This rule overrides the implied deny for ingress
-        # because it has higher priority and is specific to service account.
+        # because it is specific to service account with a higher priority
+        # that would be harder to be overriden.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-client-deny-all'),
             [self.gcp_service_acct_email],
