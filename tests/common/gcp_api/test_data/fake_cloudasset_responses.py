@@ -46,7 +46,7 @@ EXPORT_ASSETS_PROJECT_RESOURCES_DONE = """
     "contentType": "RESOURCE",
     "outputConfig": {
       "gcsDestination": {
-        "uri": "gs://ahoying-cai-test/ahoying-test.json"
+        "uri": "gs://forseti-test-bucket/test-export.txt"
       }
     }
   },
@@ -94,7 +94,7 @@ EXPORT_ASSETS_ORGANIZATION_RESOURCES_DONE = """
     "contentType": "RESOURCE",
     "outputConfig": {
       "gcsDestination": {
-        "uri": "gs://ahoying-cai-test/ahoying-test.json"
+        "uri": "gs://forseti-test-bucket/test-export.txt"
       }
     }
   },
