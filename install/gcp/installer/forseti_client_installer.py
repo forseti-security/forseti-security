@@ -108,7 +108,7 @@ class ForsetiClientInstaller(ForsetiInstaller):
             constants.FirewallRuleAction.ALLOW,
             ['tcp:22'],
             constants.FirewallRuleDirection.INGRESS,
-            0,
+            100,
             self.config.vpc_host_network,
             '0.0.0.0/0')
 
@@ -119,8 +119,8 @@ class ForsetiClientInstaller(ForsetiInstaller):
             self.format_firewall_rule_name('forseti-client-deny-all'),
             [self.gcp_service_acct_email],
             constants.FirewallRuleAction.DENY,
-            ['icmp', 'udp', 'tcp'],
+            ['all'],
             constants.FirewallRuleDirection.INGRESS,
-            1,
+            200,
             self.config.vpc_host_network)
 

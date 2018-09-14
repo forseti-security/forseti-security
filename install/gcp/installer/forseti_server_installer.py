@@ -125,9 +125,9 @@ class ForsetiServerInstaller(ForsetiInstaller):
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_acct_email],
             constants.FirewallRuleAction.DENY,
-            ['icmp', 'udp', 'tcp'],
+            ['all'],
             constants.FirewallRuleDirection.INGRESS,
-            1,
+            200,
             self.config.vpc_host_network)
 
         # Rule to open only port tcp:50051 within the
@@ -138,7 +138,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleAction.ALLOW,
             ['tcp:50051'],
             constants.FirewallRuleDirection.INGRESS,
-            0,
+            100,
             self.config.vpc_host_network,
             '10.128.0.0/9')
 
@@ -151,7 +151,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleAction.ALLOW,
             ['tcp:22'],
             constants.FirewallRuleDirection.INGRESS,
-            0,
+            100,
             self.config.vpc_host_network,
             '0.0.0.0/0')
 
