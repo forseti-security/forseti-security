@@ -30,8 +30,8 @@ from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 from google.cloud.forseti.services.server_config import server_pb2
 from google.cloud.forseti.services.server_config import server_pb2_grpc
-from google.cloud.forseti.services.utils import oneof
 from google.cloud.forseti.services.utils import is_opencensus_enabled
+from google.cloud.forseti.services.utils import oneof
 
 # pylint: disable=too-many-instance-attributes
 
