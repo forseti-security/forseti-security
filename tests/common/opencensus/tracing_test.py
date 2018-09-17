@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for firewall_rule."""
+"""Tests for tracing."""
 import json
 import unittest
 import mock
