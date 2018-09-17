@@ -32,7 +32,6 @@ except ImportError:
     logging.exception('failed to import tracing libs.')
     tracing_libs = False
 
-
 from tests.unittest_utils import ForsetiTestCase
 
 
