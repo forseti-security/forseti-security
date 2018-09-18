@@ -70,13 +70,16 @@ def migrate_schema(engine, base):
     schema_update_actions_method = 'get_schema_update_actions'
 
     for subclass in base_subclasses:
-        update_actions = getattr(subclass, schema_update_actions_method, None)
-        if callable(update_actions) and subclass.__tablename__ in tables:
+        get_schema_update_actions = getattr(subclass,
+                                            schema_update_actions_method,
+                                            None)
+        if (callable(get_schema_update_actions) and
+                subclass.__tablename__ in tables):
             LOGGER.info('Updating table %s', subclass.__tablename__)
             # schema_update will require the Table object.
             table = tables.get(subclass.__tablename__)
-            column_mapping = update_actions()
-            for column_action, columns in column_mapping.iteritems():
+            schema_update_mapping = get_schema_update_actions()
+            for column_action, columns in schema_update_mapping.iteritems():
                 column_action = column_action.upper()
                 if column_action in column_action_mapping:
                     for column in columns:
