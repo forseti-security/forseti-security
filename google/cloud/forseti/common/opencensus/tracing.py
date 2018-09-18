@@ -75,11 +75,11 @@ def trace_integrations(integrations=DEFAULT_INTEGRATIONS):
         list: The integrated libraries names.
     """
     tracer = execution_context.get_opencensus_tracer()
-    integrated = config_integration.trace_integrations(
+    integrated_libraries = config_integration.trace_integrations(
         integrations,
         tracer)
-    LOGGER.info('Tracing integration libraries: %s', integrated)
-    return integrated
+    LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
+    return integrated_libraries
 
 
 def create_exporter(transport=background_thread.BackgroundThreadTransport):
