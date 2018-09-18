@@ -104,7 +104,7 @@ def create_exporter(transport=background_thread.BackgroundThreadTransport):
             'StackdriverExporter set up successfully for project %s.',
             exporter.project_id)
         return exporter
-    except Exception: # pylint: disable=broad-except
+    except Exception:  # pylint: disable=broad-except
         LOGGER.exception(
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
