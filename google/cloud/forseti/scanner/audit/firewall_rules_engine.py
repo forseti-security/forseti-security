@@ -663,11 +663,11 @@ def is_rule_exists_violation(rule, policies, exact_match=True):
                 result.append(False)
         final_result = not any(result)
         return final_result
-    rule_policy_match = []
+    result = []
     for policy in policies:
         if policy.is_equilvalent(rule):
-            rule_policy_match.append(True)
+            result.append(True)
         else:
-            rule_policy_match.append(False)
-    rule_is_present = not any(rule_policy_match)
-    return rule_is_present
+            result.append(False)
+    final_result = not any(result)
+    return final_result
