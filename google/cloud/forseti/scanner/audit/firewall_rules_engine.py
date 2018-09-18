@@ -666,4 +666,4 @@ def is_rule_exists_violation(rule, policies, exact_match=True):
             rule_policy_match.append(True)
         else:
             rule_policy_match.append(False)
-        return not any(rule_policy_match)
+    return not any(rule_policy_match)
