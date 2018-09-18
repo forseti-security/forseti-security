@@ -375,6 +375,19 @@ class ApiClientImpl(ApiClient):
         for folder in self.crm.get_folders(parent_id):
             yield folder
 
+    @create_lazy('crm', _create_crm)
+    def iter_project_liens(self, project_id):
+        """Iterate Liens from GCP API.
+
+        Args:
+            project_id (str): id of the parent project of the lien.
+
+        Yields:
+            dict: Generator of liens
+        """
+        for lien in self.crm.get_project_liens(project_id):
+            yield lien
+
     @create_lazy('appengine', _create_appengine)
     def fetch_gae_app(self, projectid):
         """Fetch the AppEngine App.
