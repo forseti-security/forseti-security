@@ -202,14 +202,12 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             raise audit_errors.InvalidRulesSchemaError(
                 'Missing bindings in rule {}'.format(rule_index))
 
-        rule = Rule(rule_name=rule_def.get('name'),
+        return Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
                     rule_reference=RuleReference(
                         dataset_ids=dataset_ids,
                         bindings=bindings,
                         mode=mode))
-
-        return rule
 
     @classmethod
     def _get_binding_from_old_syntax(cls, rule_def):

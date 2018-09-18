@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+trap 'return_code=$?' ERR
+
 # Check to see that the docker command is available to us.
 if [ -x "$(command -v docker)" ]; then
     # Docker command does exist.
@@ -24,11 +26,11 @@ if [ -x "$(command -v docker)" ]; then
         CI_ENV=`bash <(curl -s https://codecov.io/env)`
         # Start the container for testing and code verification.
         echo "Starting our container for testing and code verification... "
-        docker -l error run ${CI_ENV} -it -d --name build forseti/build /bin/bash
+        docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash
     else
         # We're not on Travis, run without the CI_ENV environment variable.
         echo "Starting our container for testing and code verification... "
-        docker -l error run -it -d --name build forseti/build /bin/bash
+        docker run -it -d --name build forseti/build /bin/bash
     fi
 else
     echo "Can\'t run docker, exiting."
@@ -38,6 +40,8 @@ fi
 # Test to see Forseti Security was installed, these should match the entry
 # points in setup.py
 echo "Testing the container for a successfull Forseti Security installation... "
-docker -l error exec -it build /bin/bash -c "hash forseti" || exit 1
-docker -l error exec -it build /bin/bash -c "hash forseti_enforcer" || exit 1
-docker -l error exec -it build /bin/bash -c "hash forseti_server" || exit 1
+docker exec -it build /bin/bash -c "hash forseti" || exit 1
+docker exec -it build /bin/bash -c "hash forseti_enforcer" || exit 1
+docker exec -it build /bin/bash -c "hash forseti_server" || exit 1
+
+exit ${return_code}
