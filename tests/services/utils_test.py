@@ -18,11 +18,11 @@ import mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.services.utils import autoclose_stream
 from google.cloud.forseti.services.utils import get_resources_from_full_name
+from google.cloud.forseti.services.utils import is_opencensus_enabled
 from google.cloud.forseti.services.utils import logcall
 from google.cloud.forseti.services.utils import split_type_name
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
-from google.cloud.forseti.services.utils import is_opencensus_enabled
 
 
 class ServerUtilsTest(ForsetiTestCase):
