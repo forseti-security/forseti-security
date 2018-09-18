@@ -1,0 +1,6 @@
+# Run command `pip install -r requirements.txt` to install all the dependencies.
+
+numpy
+panadas
+scipy
+scikit-learn
