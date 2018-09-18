@@ -13,6 +13,22 @@
 # limitations under the License.
 
 
+"""
+Flatten the following attributes in firewall rules.
+IPProtocol, ports,
+
+Example:
+"allowed": [{"IPProtocol": "tcp,udp", "ports": ["1","50051"]}]
+This will generate 4 Firewall rule objects
+- action: allowed, IPProtocol: tcp, ports: 1
+- action: allowed, IPProtocol: tcp, ports: 1
+- action: allowed, IPProtocol: udp, ports: 50051
+- action: allowed, IPProtocol: udp, ports: 50051
+
+
+"""
+
+
 DIRECTION_ENCODING = {
     'INGRESS': [0, 1],
     'EGRESS': [1, 0]
