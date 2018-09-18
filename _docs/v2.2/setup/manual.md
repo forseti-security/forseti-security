@@ -84,7 +84,7 @@ by their tags:
     ```bash
     git clone https://github.com/GoogleCloudPlatform/forseti-security.git
 
-    git checkout tags/<tag_number>
+    git checkout tags/v<version_number>
     ```
 
 1. To install Forseti server and necessary components like Fluentd
@@ -180,7 +180,7 @@ by their tags:
     ```bash
     git clone https://github.com/GoogleCloudPlatform/forseti-security.git
 
-    git checkout tags/<tag_number>
+    git checkout tags/v<version_number>
     ```
 
 1. To install the Foresti command-line interface (CLI), follow the setup
