@@ -236,6 +236,9 @@ def _mock_crm(has_org_access):
     def _mock_crm_get_iam_policies(folderid):
         return results.CRM_GET_IAM_POLICIES[folderid]
 
+    def _mock_crm_get_project_liens(projectid):
+        return results.CRM_GET_PROJECT_LIENS[projectid]
+
     def _mock_permission_denied(parentid):
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
@@ -259,6 +262,7 @@ def _mock_crm(has_org_access):
     mock_crm.get_projects.side_effect = _mock_crm_get_projects
     mock_crm.get_folder_iam_policies.side_effect = _mock_crm_get_iam_policies
     mock_crm.get_project_iam_policies.side_effect = _mock_crm_get_iam_policies
+    mock_crm.get_project_liens.side_effect = _mock_crm_get_project_liens
 
     return crm_patcher
 

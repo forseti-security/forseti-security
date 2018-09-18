@@ -46,6 +46,7 @@ SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 GCE_IMAGE_ID_PREFIX = "117"
 GCE_DISK_ID_PREFIX = "118"
 SNAPSHOT_ID_PREFIX = "119"
+LIEN_ID_PREFIX = "120"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -562,6 +563,18 @@ CRM_GET_IAM_POLICIES = {
     "project2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
     "project3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
     "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
+}
+
+CRM_GET_PROJECT_LIENS = {
+    "project1": [{
+        "name": "liens/" + LIEN_ID_PREFIX,
+        "parent": "projects/project1",
+        "restrictions": [
+            "resourcemanager.projects.delete"
+        ],
+        "origin": "testing",
+        "createTime": "2018-09-05T14:45:46.534Z",
+    }],
 }
 
 GCP_PERMISSION_DENIED_TEMPLATE = """

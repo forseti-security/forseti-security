@@ -32,6 +32,7 @@ class ResourceType(object):
     BILLING_ACCOUNT = resources.BillingAccount.type()
     FOLDER = resources.Folder.type()
     PROJECT = resources.Project.type()
+    LIEN = resources.Lien.type()
 
     # Groups
     GROUP = resources.GsuiteGroup.type()
@@ -73,6 +74,7 @@ class ResourceType(object):
         BUCKET,
         GROUP,
         FORWARDING_RULE,
+        LIEN,
         LOG_SINK,
     ])
 
