@@ -103,18 +103,18 @@ class ServerUtilsTest(ForsetiTestCase):
             counter += 1
 
     @mock.patch('imp.find_module')
-    def test_opencensus_import(self, mock):
+    def test_opencensus_import(self, mock_find_module):
         """Test is_opencensus_enabled when importing OpenCensus works."""
-        ret = is_opencensus_enabled()
-        self.assertTrue(ret)
+        opencensus_enabled_status = is_opencensus_enabled()
+        self.assertTrue(opencensus_enabled_status)
 
     @mock.patch('imp.find_module', side_effect=ImportError('fail'))
     @mock.patch('logging.warning')
-    def test_opencensus_import_fail(self, mock_imp, mock_logging):
+    def test_opencensus_import_fail(self, mock_find_module, mock_logging_warning):
         """Test is_opencensus_enabled when importing OpenCensus fails."""
-        ret = is_opencensus_enabled()
-        self.assertTrue(mock_logging.called)
-        self.assertEqual(ret, False)
+        opencensus_enabled_status = is_opencensus_enabled()
+        self.assertTrue(mock_logging_warning.called)
+        self.assertEqual(opencensus_enabled_status, False)
 
 
 if __name__ == '__main__':
