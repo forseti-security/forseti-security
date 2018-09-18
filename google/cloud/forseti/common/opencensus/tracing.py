@@ -65,7 +65,7 @@ def create_server_interceptor(extras=True):
         exporter)
 
 
-def trace_integrations(integrations=DEFAULT_INTEGRATIONS):
+def trace_integrations(integrations=None):
     """Add tracing to supported OpenCensus integration libraries.
 
     Args:
@@ -74,6 +74,8 @@ def trace_integrations(integrations=DEFAULT_INTEGRATIONS):
     Returns:
         list: The integrated libraries names.
     """
+    if integrations is None:
+        integrations = DEFAULT_INTEGRATIONS
     tracer = execution_context.get_opencensus_tracer()
     integrated_libraries = config_integration.trace_integrations(
         integrations,
@@ -101,8 +103,8 @@ def create_exporter(transport=background_thread.BackgroundThreadTransport):
         LOGGER.info(
             'StackdriverExporter set up successfully for project %s.',
             exporter.project_id)
-    except Exception:
+        return exporter
+    except Exception: # pylint: disable=broad-except
         LOGGER.exception(
             'StackdriverExporter set up failed. Using FileExporter.')
-        exporter = file_exporter.FileExporter(transport=transport)
-    return exporter
+        return file_exporter.FileExporter(transport=transport)
