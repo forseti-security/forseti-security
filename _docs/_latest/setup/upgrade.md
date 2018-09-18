@@ -7,6 +7,13 @@ order: 002
 
 This guide explains how to upgrade your Forseti instance.
 
+For version 2.0.0 and later, we will provide upgrade instructions from one minor
+version to the next minor version. This means, if you want to upgrade from
+version 2.2.0 to 2.4.0, you should follow the upgrade instruction from
+version 2.2.0 to 2.3.0 first, and then follow the upgrade instruction from
+version 2.3.0 to 2.4.0.  This ensures the upgrade process is easier to manage
+and to test.
+
 ---
 
 {% capture 1x_upgrade %}
@@ -153,6 +160,31 @@ Learn more about [Updating a Deployment](https://cloud.google.com/deployment-man
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.X installations" content=2x_upgrade uid=1 %}
+
+{% capture upgrading_2_0_0_to_2_1_0 %}
+TBD
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.0.0 to 2.1.0" content=2_0_0_to_2_1_0 uid=1 %}
+
+{% capture upgrading_2_1_0_to_2_2_0 %}
+TBD
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.1.0 to 2.2.0" content=2_1_0_to_2_2_0 uid=1 %}
+
+{% capture upgrading_2_2_0_to_2_3_0 %}
+TBD
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.2.0 to 2.3.0" content=2_2_0_to_2_3_0 uid=1 %}
+
+{% capture upgrading_2_3_0_to_2_4_0 %}
+2.4.0 does not contain any schema changes in deployment manager templates,
+server configurations, or scanner rule files.
+
+You can update by modifying `forseti-version` in your server and client
+deployment manager templates to version 2.4.0, and run the [deployment manager
+update command](https://forsetisecurity.org/docs/latest/setup/upgrade.html#zippy-1).
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=2_3_0_to_2_4_0 uid=1 %}
 
 ## What's next
 
