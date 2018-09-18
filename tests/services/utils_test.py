@@ -114,7 +114,7 @@ class ServerUtilsTest(ForsetiTestCase):
         """Test is_opencensus_enabled when importing OpenCensus fails."""
         opencensus_enabled_status = is_opencensus_enabled()
         self.assertTrue(mock_logging_warning.called)
-        self.assertEqual(opencensus_enabled_status, False)
+        self.assertFalse(opencensus_enabled_status)
 
 
 if __name__ == '__main__':
