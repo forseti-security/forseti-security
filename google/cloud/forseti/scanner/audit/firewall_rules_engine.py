@@ -619,7 +619,8 @@ def is_whitelist_violation(rules, policy):
             policy_subset_check.append(True)
         else:
             policy_subset_check.append(False)
-    return not any(policy_subset_check)
+    result = not any(policy_subset_check)
+    return result
 
 
 def is_blacklist_violation(rules, policy):
@@ -638,7 +639,8 @@ def is_blacklist_violation(rules, policy):
             policy_superset_check.append(True)
         else:
             policy_superset_check.append(False)
-    return not any(policy_superset_check)
+    result = not any(policy_superset_check)
+    return result
 
 
 def is_rule_exists_violation(rule, policies, exact_match=True):
@@ -659,11 +661,13 @@ def is_rule_exists_violation(rule, policies, exact_match=True):
                 result.append(True)
             else:
                 result.append(False)
-        return not any(result)
+        final_result = not any(result)
+        return final_result
     rule_policy_match = []
     for policy in policies:
         if policy.is_equilvalent(rule):
             rule_policy_match.append(True)
         else:
             rule_policy_match.append(False)
-    return not any(rule_policy_match)
+    rule_is_present = not any(rule_policy_match)
+    return rule_is_present
