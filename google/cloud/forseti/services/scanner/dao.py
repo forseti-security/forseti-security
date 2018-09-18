@@ -195,8 +195,8 @@ class Violation(BASE):
                                     String(256),
                                     default='')]
 
-        schema_update_mapping = {'CREATE': columns_to_create}
-        return schema_update_mapping
+        schema_update_actions = {'CREATE': columns_to_create}
+        return schema_update_actions
 
 
 class ViolationAccess(object):

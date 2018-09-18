@@ -100,8 +100,8 @@ def migrate_schema(engine, base):
         LOGGER.info('Updating table %s', subclass.__tablename__)
         # schema_update will require the Table object.
         table = tables.get(subclass.__tablename__)
-        schema_update_mapping = get_schema_update_actions()
-        for column_action, columns in schema_update_mapping.iteritems():
+        schema_update_actions = get_schema_update_actions()
+        for column_action, columns in schema_update_actions.iteritems():
             column_action = column_action.upper()
             if column_action in COLUMN_ACTION_MAPPING:
                 for column in columns:
