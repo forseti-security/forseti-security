@@ -24,6 +24,7 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 MODULE_PATH = 'google.cloud.forseti.common.gcp_api.'
 
 ORGANIZATION_ID = results.ORGANIZATION_ID
+FOLDER_ID = results.FOLDER_ID
 
 
 # pylint: disable=bad-indentation

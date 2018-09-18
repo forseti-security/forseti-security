@@ -14,8 +14,15 @@
 
 rules:
   - name: BigQuery test rule
-    role: 'READER'
     resource:
       - type: organization
         resource_ids:
           - 234
+    dataset_ids: ['*']
+    bindings:
+      - role: 'READER'
+        members:
+          - domain: '*'
+          - user_email: '*'
+          - group_email: '*'
+          - special_group: '*'

@@ -205,8 +205,6 @@ class InventoryImporter(object):
                     self.found_root = True
                 if not self.found_root:
                     LOGGER.debug('Root resource is not organization: %s.', root)
-                    raise Exception(
-                        'Cannot import inventory without organization root')
 
                 last_res_type = None
                 item_counter = 0
