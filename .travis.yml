@@ -29,7 +29,7 @@ install:
   -
 
 script:
-  - ./install/scripts/docker_install_forseti.sh
+  - ./install/scripts/docker_run_forseti.sh
   - ./install/scripts/docker_unittest_forseti.sh
   - ./install/scripts/docker_pystyle_forseti.sh
 

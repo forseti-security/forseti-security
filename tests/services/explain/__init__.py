@@ -12,15 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-rules:
-  - name: BigQuery test rule
-    mode: blacklist
-    resource:
-      - type: organization
-        resource_ids:
-          - 234
-    dataset_ids: ['*']
-    bindings:
-      - role: 'OWNER'
-        members:
-          - user_email: '*'
+"""Tests for Forseti services."""

@@ -21,6 +21,6 @@ rules:
           - 234
     dataset_ids: ['*']
     bindings:
-      - role: 'OWNER'
+      - role: '*'
         members:
-          - user_email: '*'
+          - domain: '*'
