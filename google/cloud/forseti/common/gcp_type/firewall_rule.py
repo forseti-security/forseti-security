@@ -522,8 +522,13 @@ class FirewallRule(object):
         source_ranges = ips_in_list(self.source_ranges, other.source_ranges)
         destination_ranges = ips_in_list(self.destination_ranges,
                                          other.destination_ranges)
-        result = (direction and network and source_tags and target_tags
-                  and firewall_action and source_ranges and destination_ranges)
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  firewall_action and
+                  source_ranges and
+                  destination_ranges)
         return result
 
     def __gt__(self, other):
@@ -542,16 +547,22 @@ class FirewallRule(object):
         direction = (self.direction is None or
                      other.direction is None or
                      self.direction == other.direction)
-        network = (self.network is None or other.network is None or
-                 self.network == other.network)
+        network = (self.network is None or
+                   other.network is None or
+                   self.network == other.network)
         source_tags = set(other.source_tags).issubset(self.source_tags)
         target_tags = set(other.target_tags).issubset(self.target_tags)
         firewall_action = self.firewall_action > other.firewall_action
         source_ranges = ips_in_list(other.source_ranges, self.source_ranges)
         destination_ranges = ips_in_list(other.destination_ranges,
                                          self.destination_ranges)
-        result = (direction and network and source_tags and target_tags
-                  and firewall_action and source_ranges and destination_ranges)
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  firewall_action and
+                  source_ranges and
+                  destination_ranges)
         return result
 
     # pylint: disable=protected-access
@@ -572,8 +583,13 @@ class FirewallRule(object):
         source_ranges = self.source_ranges == other.source_ranges
         destination_ranges = self.destination_ranges == other.destination_ranges
         firewall_action = self.firewall_action == other.firewall_action
-        result = (direction and network and source_tags and target_tags and
-                  source_ranges and destination_ranges and firewall_action)
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  source_ranges and
+                  destination_ranges and
+                  firewall_action)
         return result
 
     # pylint: enable=protected-access
@@ -596,8 +612,13 @@ class FirewallRule(object):
         destination_ranges = self.destination_ranges == other.destination_ranges
         firewall_action = (self.firewall_action.
                            is_equivalent(other.firewall_action))
-        result = (direction and network and source_tags and target_tags and
-                  source_ranges and destination_ranges and firewall_action)
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  source_ranges and
+                  destination_ranges and
+                  firewall_action)
         return result
     # pylint: enable=protected-access
 
