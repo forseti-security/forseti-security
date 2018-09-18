@@ -48,9 +48,9 @@ class TracingTest(ForsetiTestCase):
             self.skipTest('Package `opencensus` not installed.')
 
     @mock.patch('opencensus.trace.ext.grpc.client_interceptor.OpenCensusClientInterceptor')
-    def test_create_client_interceptor(self, mock):
+    def test_create_client_interceptor(self, mock_client_interceptor):
         create_client_interceptor('localhost')
-        self.assertTrue(mock.called)
+        self.assertTrue(mock_client_interceptor.called)
 
     @mock.patch('opencensus.trace.ext.grpc.server_interceptor.OpenCensusServerInterceptor')
     @mock.patch('google.cloud.forseti.common.opencensus.tracing.trace_integrations')
@@ -69,17 +69,17 @@ class TracingTest(ForsetiTestCase):
     @mock.patch(
         'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
         spec=StackdriverExporter)
-    def test_create_exporter(self, mock):
+    def test_create_exporter(self, mock_stackdriver_exporter):
         e = create_exporter()
         e_class = e.__class__.__name__
         t_class = e.transport.__class__.__name__
-        self.assertTrue(mock.called)
+        self.assertTrue(mock_stackdriver_exporter.called)
         self.assertEqual(t_class, "BackgroundThreadTransport")
 
     @mock.patch(
         'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
         side_effect=Exception())
-    def test_create_exporter_default_fail(self, mock):
+    def test_create_exporter_default_fail(self, mock_stackdriver_exporter):
         e = create_exporter()
         e_class = e.__class__.__name__
         self.assertEqual(e_class, "FileExporter")
