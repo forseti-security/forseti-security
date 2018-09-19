@@ -49,6 +49,7 @@ steps below:
 
       ```bash
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
+      cd forseti-security
       ```
 
   1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`:
