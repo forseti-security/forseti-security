@@ -6,7 +6,6 @@ protobuf
 grpcio
 grpcio-tools
 pyYAML
-google-apputils
 googleapis-common-protos
 
 # Needed for CI/CD and Development.

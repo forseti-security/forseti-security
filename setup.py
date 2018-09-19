@@ -52,7 +52,6 @@ REQUIRED_PACKAGES = [
     'simple-crypt>=4.1.7',
     'unicodecsv>=0.14.1',
     # Setup related.
-    'google-apputils>=0.4.2',
     'grpcio',
     'grpcio-tools',
     'protobuf>=3.2.0',
