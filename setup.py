@@ -63,6 +63,7 @@ REQUIRED_PACKAGES = [
     'pylint',
     'pylint-quotes',
     'SQLAlchemy>=1.1.9',
+    'sqlalchemy-migrate>=0.11.0'
 ]
 
 if sys.version_info < (2, 7):

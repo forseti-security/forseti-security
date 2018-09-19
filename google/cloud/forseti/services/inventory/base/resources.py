@@ -1210,6 +1210,27 @@ class InstanceTemplate(Resource):
         return 'instancetemplate'
 
 
+class Lien(Resource):
+    """The Resource implementation for Lien"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['name'].split('/')[-1]
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'lien'
+        """
+        return 'lien'
+
+
 class Network(Resource):
     """The Resource implementation for Network"""
 
@@ -2045,6 +2066,19 @@ class GsuiteMemberIterator(ResourceIterator):
                 yield FACTORIES['gsuite_group_member'].create_new(data)
 
 
+class ProjectLienIterator(ResourceIterator):
+    """The Resource iterator implementation for Project Liens."""
+
+    def iter(self):
+        """Yields:
+            Resource: Lien created
+        """
+        if self.resource.enumerable():
+            for data in self.client.iter_project_liens(
+                    project_id=self.resource['projectId']):
+                yield FACTORIES['lien'].create_new(data)
+
+
 class ProjectSinkIterator(ResourceIterator):
     """The Resource iterator implementation for Project Sink"""
 
@@ -2143,6 +2177,7 @@ FACTORIES = {
             NetworkIterator,
             SnapshotIterator,
             SubnetworkIterator,
+            ProjectLienIterator,
             ProjectRoleIterator,
             ProjectSinkIterator
         ]}),
@@ -2337,6 +2372,12 @@ FACTORIES = {
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],
         'cls': GsuiteGroupMember,
+        'contains': [
+        ]}),
+
+    'lien': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Lien,
         'contains': [
         ]}),
 

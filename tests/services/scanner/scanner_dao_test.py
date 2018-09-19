@@ -122,6 +122,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
         expected_violations_as_dict = [
             {'full_name': u'full_name_111',
              'id': 1,
+             'resource_name': 'fw-tag-match_111',
              'resource_data': u'inventory_data_111',
              'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_111',
@@ -137,6 +138,7 @@ class ScannerDaoTest(scanner_base_db.ScannerBaseDbTestCase):
             },
             {'full_name': u'full_name_222',
              'id': 2,
+             'resource_name': 'fw-tag-match_222',
              'resource_data': u'inventory_data_222',
              'scanner_index_id': scanner_index_id,
              'resource_id': u'fake_firewall_222',
