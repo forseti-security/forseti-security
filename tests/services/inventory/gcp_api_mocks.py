@@ -237,7 +237,7 @@ def _mock_crm(has_org_access):
         return results.CRM_GET_IAM_POLICIES[folderid]
 
     def _mock_crm_get_project_liens(projectid):
-        return results.CRM_GET_PROJECT_LIENS[projectid]
+        return results.CRM_GET_PROJECT_LIENS.get(projectid, [])
 
     def _mock_permission_denied(parentid):
         response = httplib2.Response(

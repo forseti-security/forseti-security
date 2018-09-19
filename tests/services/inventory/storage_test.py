@@ -15,7 +15,6 @@
 
 
 from datetime import datetime
-import mock
 import os
 from sqlalchemy.orm import sessionmaker
 import unittest

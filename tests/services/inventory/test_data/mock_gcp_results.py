@@ -156,6 +156,14 @@ AD_GET_GROUP_MEMBERS = {
             AD_GROUP_MEMBER_TEMPLATE.format(
                 id=5, email="b_grp@forseti.test", type="GROUP")),
     ],
+    GROUP_ID_PREFIX + "4": [
+        json.loads(
+            AD_GROUP_MEMBER_TEMPLATE.format(
+                id=3, email="c_user@forseti.test", type="USER")),
+        json.loads(
+            AD_GROUP_MEMBER_TEMPLATE.format(
+                id=5, email="b_grp@forseti.test", type="GROUP")),
+    ],
 }
 
 # Fields: project

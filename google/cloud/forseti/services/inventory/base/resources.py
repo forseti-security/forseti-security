@@ -485,6 +485,15 @@ class Organization(Resource):
             self.add_warning(e)
             return None
 
+    def has_directory_resource_id(self):
+        """Whether this organization has a directoryCustomerId.
+
+        Returns:
+            bool: True if the data exists, else False.
+        """
+        return ('owner' in self._data and
+                    'directoryCustomerId' in self['owner'])
+
     def key(self):
         """Get key of this resource
 
@@ -2033,9 +2042,10 @@ class GsuiteGroupIterator(ResourceIterator):
             Resource: GsuiteGroup created
         """
         gsuite = self.client
-        for data in gsuite.iter_groups(
-                self.resource['owner']['directoryCustomerId']):
-            yield FACTORIES['gsuite_group'].create_new(data)
+        if self.resource.has_directory_resource_id():
+            for data in gsuite.iter_groups(
+                    self.resource['owner']['directoryCustomerId']):
+                yield FACTORIES['gsuite_group'].create_new(data)
 
 
 class GsuiteUserIterator(ResourceIterator):
@@ -2046,9 +2056,10 @@ class GsuiteUserIterator(ResourceIterator):
             Resource: GsuiteUser created
         """
         gsuite = self.client
-        for data in gsuite.iter_users(
-                self.resource['owner']['directoryCustomerId']):
-            yield FACTORIES['gsuite_user'].create_new(data)
+        if self.resource.has_directory_resource_id():
+            for data in gsuite.iter_users(
+                    self.resource['owner']['directoryCustomerId']):
+                yield FACTORIES['gsuite_user'].create_new(data)
 
 
 class GsuiteMemberIterator(ResourceIterator):

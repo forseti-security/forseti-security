@@ -812,7 +812,7 @@ class Storage(BaseStorage):
             CaiTemporaryStore.asset_type == asset_type,
             CaiTemporaryStore.parent_name == parent_name,
         ]
-        base_query = self.session.query(CaiTemporaryStore.asset_data)
+        base_query = self.session.query(CaiTemporaryStore)
 
         for qry_filter in filters:
             base_query = base_query.filter(qry_filter)
@@ -836,7 +836,7 @@ class Storage(BaseStorage):
         if not self.has_cai_data:
             return {}
 
-        row = self.session.query(CaiTemporaryStore.asset_data).filter(
+        row = self.session.query(CaiTemporaryStore).filter(
             CaiTemporaryStore.content_type == content_type).filter(
                 CaiTemporaryStore.asset_type == asset_type).filter(
                     CaiTemporaryStore.name == name).one()
