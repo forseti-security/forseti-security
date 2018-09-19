@@ -61,6 +61,10 @@ inventory:
           max_calls: 1
           period: 1.1
 
+    cai:
+        enabled: False
+        gcs_path: ""
+
     # Number of days to retain inventory data:
     #  -1 : (default) keep all previous data forever
     #   0 : delete all previous inventory data before running
