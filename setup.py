@@ -45,6 +45,7 @@ REQUIRED_PACKAGES = [
     'netaddr>=0.7.19',
     'PyYAML>=3.12',
     'pygraph>=0.2.1',
+    'python-dateutil>=2.7.3',
     'ratelimiter>=1.1.0',
     'retrying>=1.3.3',
     'requests[security]>=2.18.4',
