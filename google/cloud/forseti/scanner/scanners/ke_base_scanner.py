@@ -34,8 +34,12 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
         rules_engine_cls (BaseRulesEngine): a BaseRulesEngine subclass
             to implement the rules engine for the scanner subclass.
 
+    Raises:
+        TypeError: if rules_engine_cls isn't a BaseRulesEngine
+
     Returns:
-        class, a subclass of KeBaseScanner.
+        class: a subclass of KeBaseScanner.
+
     """
     if not issubclass(rules_engine_cls, bre.BaseRulesEngine):
         raise TypeError('rules_engine_cls must be derived from BaseRulesEngine')
@@ -65,8 +69,10 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
                 scanner_configs (dict): Scanner configurations.
                 service_config (ServiceConfig): Forseti 2.0 service configs
                 model_name (str): name of the data model
-                snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
-                rules (str): Fully-qualified path and filename of the rules file.
+                snapshot_timestamp (str): Timestamp, formatted as
+                    YYYYMMDDTHHMMSSZ.
+                rules (str): Fully-qualified path and filename of the rules
+                    file.
 
             Raises:
                 NotImplementedError: subclasses must provide class variables
@@ -85,7 +91,6 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
                 snapshot_timestamp,
                 rules)
 
-            # pylint: disable=not-callable
             self.rules_engine = type(self)._RULES_ENGINE_CLS(
                 rules_file_path=self.rules,
                 snapshot_timestamp=self.snapshot_timestamp,
@@ -153,7 +158,10 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
                 list: All violations.
             """
             all_violations = []
-            LOGGER.info('Finding ke cluster %s violations...', self._SCANNER_NAME)
+            LOGGER.info(
+                'Finding ke cluster %s violations...',
+                self._SCANNER_NAME,
+            )
 
             for ke_cluster in ke_clusters:
                 violations = self.rules_engine.find_policy_violations(
@@ -186,7 +194,8 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
             with scoped_session as session:
                 for ke_cluster in ke_clusters:
                     position = (
-                        ke_cluster.resource_full_name.find('kubernetes_cluster'))
+                        ke_cluster.resource_full_name.find('kubernetes_cluster')
+                    )
                     ke_cluster_type_name = (
                         ke_cluster.resource_full_name[position:][:-1])
 
