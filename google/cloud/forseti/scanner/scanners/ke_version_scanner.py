@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the KE version rules engine."""
+"""Scanner for the KE version rules engine.
+
+Check if the version of running KE clusters and nodes are allowed.
+
+"""
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import ke_version_rules_engine
@@ -21,17 +25,7 @@ from google.cloud.forseti.scanner.scanners import ke_base_scanner
 LOGGER = logger.get_logger(__name__)
 
 
-class KeVersionScanner(ke_base_scanner.KeBaseScanner):
-    """Check if the version of running KE clusters and nodes are allowed."""
-    _scanner_name = 'version'
-    _rules_engine_cls = ke_version_rules_engine.KeVersionRulesEngine
-
-    def _fill_extra_violation_data(self, violation, violation_data):
-        """Add node pool info to the violation data.
-
-        Args:
-            violation (RuleViolation): the violation being processed.
-            violation_data (dict): dict to be modified with the
-            additional data.
-        """
-        violation_data['node_pool_name'] = violation.node_pool_name
+KeVersionScanner = ke_base_scanner.ke_scanner_factory(
+    'version',
+    ke_version_rules_engine.KeVersionRulesEngine
+)
