@@ -30,6 +30,9 @@ inventory:
         bigquery:
           max_calls: 160
           period: 1.0
+        cloudasset:
+          max_calls: 1
+          period: 1.0
         cloudbilling:
           max_calls: 5
           period: 1.2
