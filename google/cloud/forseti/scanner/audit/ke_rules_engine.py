@@ -195,20 +195,20 @@ class KeRuleBook(bre.BaseRuleBook):
                 # we will skip the child as it's not part of the ancestor.
                 continue
 
-            resource_rule = self.get_resource_rules(curr_resource)
-            if resource_rule:
+            resource_rules = self.get_resource_rules(curr_resource)
+            if resource_rules:
                 violations.extend(
-                    resource_rule.find_policy_violations(ke_cluster))
+                    resource_rules.find_policy_violations(ke_cluster))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
             if wildcard_resource in checked_wildcards:
                 continue
             checked_wildcards.add(wildcard_resource)
-            resource_rule = self.get_resource_rules(wildcard_resource)
-            if resource_rule:
+            resource_rules = self.get_resource_rules(wildcard_resource)
+            if resource_rules:
                 violations.extend(
-                    resource_rule.find_policy_violations(ke_cluster))
+                    resource_rules.find_policy_violations(ke_cluster))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
