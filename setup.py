@@ -135,7 +135,6 @@ setup(
              'cloud/forseti/common/gcp_api/discovery_documents/*.json']
     },
     namespace_packages=NAMESPACE_PACKAGES,
-    google_test_dir='tests',
     license='Apache 2.0',
     keywords='gcp google cloud platform security tools',
     entry_points={
