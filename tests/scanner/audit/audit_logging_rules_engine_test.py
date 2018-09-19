@@ -156,6 +156,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='proj-2',
+                resource_name='My project 2',
                 full_name='organization/234/folder/56/project/proj-2/',
                 rule_name='Require DATA_WRITE logging in folder 56',
                 rule_index=1,
@@ -167,6 +168,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='proj-2',
+                resource_name='My project 2',
                 full_name='organization/234/folder/56/project/proj-2/',
                 rule_name='Require all logging for compute, with exemptions.',
                 rule_index=2,
@@ -210,6 +212,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require AUDIT_READ on all services, with exmptions.',
                 rule_index=0,
@@ -221,6 +224,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require all logging for cloudsql.',
                 rule_index=3,
@@ -233,6 +237,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require all logging for cloudsql.',
                 rule_index=3,
@@ -244,6 +249,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require all logging for cloudsql.',
                 rule_index=3,
@@ -275,6 +281,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require AUDIT_READ on all services, with exmptions.',
                 rule_index=0,
@@ -286,6 +293,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require all logging for cloudsql.',
                 rule_index=3,
@@ -297,6 +305,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require all logging for cloudsql.',
                 rule_index=3,
@@ -308,6 +317,7 @@ class AuditLoggingRulesEngineTest(ForsetiTestCase):
             alre.Rule.RuleViolation(
                 resource_type='project',
                 resource_id='project-3',
+                resource_name='My project 3',
                 full_name='organization/234/project/proj-3/',
                 rule_name='Require all logging for cloudsql.',
                 rule_index=3,

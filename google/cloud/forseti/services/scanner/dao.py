@@ -163,6 +163,7 @@ class Violation(BASE):
     created_at_datetime = Column(DateTime())
     full_name = Column(String(1024))
     resource_data = Column(Text(16777215))
+    resource_name = Column(String(256), default='')
     resource_id = Column(String(256), nullable=False)
     resource_type = Column(String(256), nullable=False)
     rule_index = Column(Integer, default=0)
@@ -182,6 +183,20 @@ class Violation(BASE):
                   'rule_name={})>')
         return string.format(
             self.violation_type, self.resource_type, self.rule_name)
+
+    @staticmethod
+    def get_schema_update_actions():
+        """Maintain all the schema changes for this table.
+
+        Returns:
+            dict: A mapping of Action: Column.
+        """
+        columns_to_create = [Column('resource_name',
+                                    String(256),
+                                    default='')]
+
+        schema_update_actions = {'CREATE': columns_to_create}
+        return schema_update_actions
 
 
 class ViolationAccess(object):
@@ -215,6 +230,7 @@ class ViolationAccess(object):
                 created_at_datetime=created_at_datetime,
                 full_name=violation.get('full_name'),
                 resource_data=violation.get('resource_data'),
+                resource_name=violation.get('resource_name'),
                 resource_id=violation.get('resource_id'),
                 resource_type=violation.get('resource_type'),
                 rule_index=violation.get('rule_index'),
@@ -377,4 +393,5 @@ def initialize(engine):
     Args:
         engine (object): Database engine to operate on.
     """
+    # Create tables if not exists.
     BASE.metadata.create_all(engine)

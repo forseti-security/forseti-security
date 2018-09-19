@@ -426,7 +426,7 @@ class Rule(object):
         'RuleViolation',
         ['resource_type', 'resource_id', 'full_name', 'rule_name', 'rule_index',
          'violation_type', 'sink_destination', 'sink_filter',
-         'sink_include_children', 'resource_data'])
+         'sink_include_children', 'resource_data', 'resource_name'])
 
     def __init__(self, rule_name, rule_index, rule):
         """Initialize.
@@ -456,6 +456,7 @@ class Rule(object):
             if _required_sink_missing(self.rule['sink'], log_sinks):
                 sink = self.rule['sink']
                 yield self.RuleViolation(
+                    resource_name=resource.id,
                     resource_type=resource.type,
                     resource_id=resource.id,
                     full_name=resource.name,
@@ -478,6 +479,7 @@ class Rule(object):
             # Return a violation for each sink that violates black/whitelist.
             for sink in violating_sinks:
                 yield self.RuleViolation(
+                    resource_name=sink.name,
                     resource_type=sink.type,
                     resource_id=sink.id,
                     full_name=sink.name,
