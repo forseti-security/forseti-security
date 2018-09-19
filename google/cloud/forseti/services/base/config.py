@@ -60,6 +60,7 @@ def _validate_cai_enabled(root_resource_id, cai_configs):
 
     return True
 
+
 class AbstractInventoryConfig(dict):
     """Abstract base class for service configuration.
 

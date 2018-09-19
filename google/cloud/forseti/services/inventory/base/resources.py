@@ -492,7 +492,7 @@ class Organization(Resource):
             bool: True if the data exists, else False.
         """
         return ('owner' in self._data and
-                    'directoryCustomerId' in self['owner'])
+                'directoryCustomerId' in self['owner'])
 
     def key(self):
         """Get key of this resource
