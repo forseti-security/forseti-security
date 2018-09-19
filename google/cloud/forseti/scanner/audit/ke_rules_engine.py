@@ -323,7 +323,7 @@ class Rule(object):
             if actual not in self.rule_values:
                 violations.append(self._make_violation(
                     ke_cluster,
-                    '%s has value %, which is not in the whitelist (%s)' % (
+                    '%s has value %s, which is not in the whitelist (%s)' % (
                         self.rule_jmespath.expression,
                         actual,
                         self.rule_values,
@@ -335,7 +335,7 @@ class Rule(object):
             if actual in self.rule_values:
                 violations.append(self._make_violation(
                     ke_cluster,
-                    '%s has value %, which is in the blacklist (%s)' % (
+                    '%s has value %s, which is in the blacklist (%s)' % (
                         self.rule_jmespath.expression,
                         actual,
                         self.rule_values,
