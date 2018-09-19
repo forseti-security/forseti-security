@@ -36,7 +36,7 @@ REQUIRED_PACKAGES = [
     # Installation related.
     'anytree>=2.1.4',
     'futures>=3.0.5',
-    'googleapis-common-protos[grpc]==1.5.3'
+    'googleapis-common-protos[grpc]==1.5.3',
     'google-api-python-client>=1.6.1',
     'google-auth>=1.4.1',
     'google-auth-httplib2>=0.0.3',
