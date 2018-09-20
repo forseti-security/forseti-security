@@ -261,8 +261,7 @@ class GroupsScanner(base_scanner.BaseScanner):
 
         root = self._retrieve()
 
-        with open(self.rules, 'r') as f:
-            group_rules = file_loader.read_and_parse_file(f)
+        group_rules = file_loader.read_and_parse_file(self.rules)
 
         root = self._apply_all_rules(root, group_rules)
 
