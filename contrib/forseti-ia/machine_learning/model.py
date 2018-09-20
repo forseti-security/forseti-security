@@ -15,7 +15,7 @@
 """
 Code skeleton for the Machine Learning module.
 
-TODO: Add the  architecture for model.
+TODO: Add the architecture for model.
 
 """
 from __future__ import absolute_import
@@ -41,6 +41,5 @@ def embedding_model():
   Returns the learnt embedding for each cluster input.
 
   """
-
 
   return
