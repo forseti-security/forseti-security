@@ -27,17 +27,6 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-
-# Rule definition wrappers.
-# TODO: allow for multiple dataset ids.
-RuleReference = collections.namedtuple(
-    'RuleReference', ['mode', 'dataset_ids', 'bindings'])
-Binding = collections.namedtuple('Binding', ['role', 'members'])
-Member = collections.namedtuple(
-    'Member', ['domain', 'group_email', 'user_email', 'special_group'],
-)
-
-
 class LienRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for Liens."""
 
@@ -100,7 +89,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
             rule_defs (dict): rule definitons dictionary.
         """
         super(LienRuleBook, self).__init__()
-        self.resource_rules_map = collections.defaultdict(list)
+        self.resource_to_rules = collections.defaultdict(list)
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -172,7 +161,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     raise audit_errors.InvalidRulesSchemaError(
                         'Invalid resource in rule {} (id: {}, type: {})'.format(
                             rule_index, resource_id, resource_type))
-                self.resource_rules_map[resource].append(rule)
+                self.resource_to_rules[resource].append(rule)
 
     def find_violations(self, liens):
         """Find acl violations in the rule book.
@@ -190,23 +179,34 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         violations = itertools.chain()
 
+        matched_rules = set()
+
         for lien in liens:
             resource_ancestors = (
                 relationship.find_ancestors(lien.parent, lien.parent.full_name))
 
             for res in resource_ancestors:
-                for rule in self.resource_rules_map.get(res, []):
+                applicable_rules = self.resource_to_rules.get(res, [])
+                for rule in applicable_rules:
+                    matched_rules.add(rule)
                     violations = itertools.chain(
                         violations, rule.find_violations(lien))
 
+        for resource, rules in self.resource_to_rules.iteritems():
+            for rule in rules:
+                if rule not in matched_rules:
+                    violations = itertools.chain(
+                        violations, [RuleViolation(
+                            resource_id=resource.id,
+                            resource_type=resource.type,
+                            full_name = '{}/{}'.format(
+                                resource.type, resource.id),
+                            rule_index=rule.index,
+                            rule_name=rule.name,
+                            violation_type='LIEN_VIOLATION',
+                            resource_data='')])
+
         return violations
-
-
-RuleViolation = collections.namedtuple(
-    'RuleViolation',
-    ['resource_id', 'resource_type', 'full_name', 'rule_index',
-     'rule_name', 'violation_type', 'resource_data']
-)
 
 class Rule(object):
     """Rule properties from the rule definition file.
@@ -246,20 +246,9 @@ class Rule(object):
                 resource_data=lien.raw_json,
             )
 
-    # def _is_applicable(self, lien):
-    #     """Determine whether the binding is applicable to the acl.
 
-    #      Args:
-    #         binding (Binding): rules binding to check against.
-    #         bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
-    #      Returns:
-    #         bool: True if the rules are applicable to the given acl, False
-    #             otherwise.
-    #     """
-    #     # only one dataset needs to match, so union all dataset ids into one
-    #     # regex expression
-    #     dataset_ids_matched = re.match(
-    #         '|'.join(self.rule_reference.dataset_ids), bigquery_acl.dataset_id,
-    #     )
-    #     role_matched = re.match(binding.role, bigquery_acl.role)
-    #     return dataset_ids_matched and role_matched
+RuleViolation = collections.namedtuple(
+    'RuleViolation',
+    ['resource_id', 'resource_type', 'full_name', 'rule_index',
+     'rule_name', 'violation_type', 'resource_data']
+)
