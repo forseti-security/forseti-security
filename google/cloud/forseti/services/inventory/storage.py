@@ -31,6 +31,7 @@ from sqlalchemy import or_
 from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
 from sqlalchemy import Text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
 
@@ -774,7 +775,7 @@ class Storage(BaseStorage):
         """
         try:
             num_rows = CaiTemporaryStore.delete_all(self.session)
-        except Exception as e:
+        except SQLAlchemyError as e:
             LOGGER.exception('Attempt to delete data from CAI temporary store '
                              'failed, disabling the use of CAI: %s', e)
         finally:
@@ -793,16 +794,21 @@ class Storage(BaseStorage):
         Returns:
             int: The number of rows inserted
         """
-        buffer = BufferedDbWriter(self.session, commit_on_flush=True)
+        commit_buffer = BufferedDbWriter(self.session, commit_on_flush=True)
         num_rows = 0
-        for line in data:
-            if not line:
-                continue
-            row = CaiTemporaryStore.from_json(line.strip())
-            buffer.add(row)
-            num_rows += 1
-        buffer.flush()
-        self.has_cai_data = True
+        try:
+            for line in data:
+                if not line:
+                    continue
+                row = CaiTemporaryStore.from_json(line.strip())
+                commit_buffer.add(row)
+                num_rows += 1
+            commit_buffer.flush()
+            self.has_cai_data = True
+        except SQLAlchemyError as e:
+            LOGGER.exception('Error populating CAI data: %s', e)
+            self.session.rollback()
+            self.has_cai_data = False
         return num_rows
 
     def iter_cai_assets(self, content_type, asset_type, parent_name):
