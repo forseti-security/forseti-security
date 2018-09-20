@@ -145,12 +145,13 @@ class LienScanner(base_scanner.BaseScanner):
 
                 liens.append(lien.Lien.from_json(
                     parent=proj,
-                    lien_dict=lien_resource.data))
+                    name=lien_resource.type_name,
+                    json_string=lien_resource.data))
 
             return liens
 
     def run(self):
         """Runs the data collection."""
-        bigquery_acl_data = self._retrieve()
-        all_violations = self._find_violations(bigquery_acl_data)
+        liens = self._retrieve()
+        all_violations =  self.rules_engine.find_violations(liens)
         self._output_results(all_violations)

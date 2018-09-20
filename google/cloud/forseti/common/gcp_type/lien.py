@@ -37,15 +37,16 @@ class Lien(resource.Resource):
             name='{}/{}'.format(parent.name, name),
             display_name=name,
             parent=parent)
+        self.full_name = '{}{}/'.format(parent.full_name, name)
         self.restrictions = restrictions
         self.raw_json = raw_json
 
     @classmethod
-    def from_json(cls, parent, json_string):
+    def from_json(cls,parent, name, json_string):
         lien_dict = json.loads(json_string)
         return cls(
             parent=parent,
-            name=lien_dict.get('name'),
+            name=name,
             restrictions=lien_dict.get('restrictions'),
             raw_json=json_string,
         )

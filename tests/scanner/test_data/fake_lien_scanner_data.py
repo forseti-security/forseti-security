@@ -19,21 +19,4 @@ from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.scanner.audit import lien_rules_engine
 
 
-LIEN_DATA = [{
-    'name': 'liens/l1',
-    'parent': 'projects/p1',
-    'full_name': 'organization/234/project/p1/lien/l1/',
-    'restrictions': ['resourcemanager.projects.delete'],
-}]
-
-EXPECTED_LIEN_VIOLATIONS = [
-    lien_rules_engine.RuleViolation(
-        resource_id='l1',
-        resource_type=resource.ResourceType.LIEN,
-        full_name='organization/234/project/p1/lien/l1/',
-        rule_index=0,
-        rule_name='Lien test rule',
-        violation_type='LIEN_VIOLATION',
-        resource_data=json.dumps(LIEN_DATA[0]),
-    ),
-]
+LIEN_DATA = []
