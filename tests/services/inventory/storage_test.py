@@ -16,9 +16,9 @@
 
 from datetime import datetime
 import os
-from sqlalchemy.orm import sessionmaker
 import unittest
-
+from sqlalchemy.orm import sessionmaker
+from StringIO import StringIO
 
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
@@ -229,13 +229,15 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
 
     def _add_resources(self, storage):
         """Add CAI resources to temporary table."""
-        rows = storage.populate_cai_data(CAI_RESOURCE_DATA)
+        resource_data = StringIO(CAI_RESOURCE_DATA)
+        rows = storage.populate_cai_data(resource_data)
         expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 
     def _add_iam_policies(self, storage):
         """Add CAI IAM Policies to temporary table."""
-        rows = storage.populate_cai_data(CAI_IAM_POLICY_DATA)
+        iam_policy_data = StringIO(CAI_IAM_POLICY_DATA)
+        rows = storage.populate_cai_data(iam_policy_data)
         expected_rows = len(CAI_IAM_POLICY_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 

@@ -495,16 +495,19 @@ class CaiTemporaryStore(BASE):
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1024):
+    def __init__(self, session, max_size=1024, commit_on_flush=False):
         """Initialize
 
         Args:
             session (object): db session
             max_size (int): max size of buffer
+            commit_on_flush (bool): If true, the session is committed to the
+                database when the data is flushed.
         """
         self.session = session
         self.buffer = []
         self.max_size = max_size
+        self.commit_on_flush = commit_on_flush
 
     def add(self, obj):
         """Add an object to the buffer to write to db.
@@ -522,6 +525,8 @@ class BufferedDbWriter(object):
 
         self.session.add_all(self.buffer)
         self.session.flush()
+        if self.commit_on_flush:
+            self.session.commit()
         self.buffer = []
 
 
@@ -767,29 +772,36 @@ class Storage(BaseStorage):
         Returns:
             int: The number of rows deleted.
         """
-        num_rows = CaiTemporaryStore.delete_all(self.session)
-        self.has_cai_data = False
+        try:
+            num_rows = CaiTemporaryStore.delete_all(self.session)
+        except Exception as e:
+            LOGGER.exception('Attempt to delete data from CAI temporary store '
+                             'failed, disabling the use of CAI: %s', e)
+        finally:
+            self.has_cai_data = False
+
         return num_rows
 
     def populate_cai_data(self, data):
         """Add assets from cai data dump into cai temporary table.
 
         Args:
-            data (str): Line delimeted text dump of json data representing
-                assets from Cloud Asset Inventory ExportAssets API.
+            data (file): A file like object, line delimeted text dump of json
+                data representing assets from Cloud Asset Inventory exportAssets
+                API.
 
         Returns:
             int: The number of rows inserted
         """
+        buffer = BufferedDbWriter(self.session, commit_on_flush=True)
         num_rows = 0
-        for line in data.split('\n'):
+        for line in data:
             if not line:
                 continue
-            row = CaiTemporaryStore.from_json(line)
-            self.buffer.add(row)
+            row = CaiTemporaryStore.from_json(line.strip())
+            buffer.add(row)
             num_rows += 1
-        self.buffer.flush()
-        self.session.commit()
+        buffer.flush()
         self.has_cai_data = True
         return num_rows
 
@@ -836,10 +848,17 @@ class Storage(BaseStorage):
         if not self.has_cai_data:
             return {}
 
-        row = self.session.query(CaiTemporaryStore).filter(
-            CaiTemporaryStore.content_type == content_type).filter(
-                CaiTemporaryStore.asset_type == asset_type).filter(
-                    CaiTemporaryStore.name == name).one()
+        filters = [
+            CaiTemporaryStore.content_type == content_type,
+            CaiTemporaryStore.asset_type == asset_type,
+            CaiTemporaryStore.name == name,
+        ]
+        base_query = self.session.query(CaiTemporaryStore)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        row = base_query.one()
 
         if row:
             return row.extract_asset_data(content_type)
