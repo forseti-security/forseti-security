@@ -73,7 +73,7 @@ class ExplainerTest(ForsetiTestCase):
         """Test explain is supported."""
 
         inventory_config_with_organization_root = (
-            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, ''))
+            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, '', {}))
         setup = create_tester(
             inventory_config_with_organization_root)
 
@@ -95,7 +95,7 @@ class ExplainerTest(ForsetiTestCase):
         """Test explain is not supported."""
 
         inventory_config_with_folder_root = (
-            InventoryConfig(gcp_api_mocks.FOLDER_ID, '', {}, ''))
+            InventoryConfig(gcp_api_mocks.FOLDER_ID, '', {}, '', {}))
         setup = create_tester(inventory_config_with_folder_root)
 
         def test(client):
