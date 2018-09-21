@@ -17,9 +17,11 @@
 
 import threading
 import time
-from Queue import Empty, Queue
+from Queue import Empty
+from Queue import Queue
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
@@ -302,8 +304,13 @@ def run_crawler(storage,
 
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
+    if config.get_cai_enabled():
+          asset_count = cloudasset.load_cloudasset_data(storage, config)
+          LOGGER.info('%s total assets loaded from Cloud Asset data.',
+                      asset_count)
 
     root_id = config.get_root_resource_id()
+    # TODO: Switch to CaiClientImpl if CAI is enabled and data imported.
     client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
