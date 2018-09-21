@@ -13,10 +13,10 @@
 # limitations under the License.
 # rules:
 #   # Example rules.
-#   - name: Require project deletion liens for all projects
+#   - name: Require project deletion liens for all projects in organization
 #     mode: required
 #     resource:
-#       - type: project
+#       - type: organization
 #         resource_ids:
-#           - *
+#           - {ORGANIZATION_ID}
 #     restrictions: [resourcemanager.projects.delete]
