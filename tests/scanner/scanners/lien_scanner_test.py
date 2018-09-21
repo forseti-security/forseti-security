@@ -40,39 +40,33 @@ def _mock_gcp_resource_iter(_, resource_type):
          'data'],
     )
 
-    for resource in fake_lien_scanner_data.LIEN_DATA:
-        policy_name = resource['full_name']
-        proj_name = '/'.join(dataset_name.split('/')[:-3]) + '/'
-
-        proj = Resource(
-            full_name=proj_name,
+    for lien in fake_lien_scanner_data.LIENS:
+        project_resource = Resource(
+            full_name=fake_lien_scanner_data.PROJECT_WITH_LIEN.full_name,
             type='project',
-            name='projects/' + resource['project_id'],
+            name=fake_lien_scanner_data.PROJECT_WITH_LIEN.id,
             parent_type_name='',
             parent=None,
             data='',
         )
 
-        lien = Resource(
-            full_name=policy_name,
+        lien_resource = Resource(
+            full_name=fake_lien_scanner_data.LIENS[0].full_name,
             type='lien',
             parent_type_name='project',
-            name=resource['name'],
-            parent=proj,
-            data=json.dumps(resource),
+            name=fake_lien_scanner_data.LIENS[0].full_name.split('/')[-2],
+            parent=project_resource,
+            data=lien.raw_json,
         )
-        resources.append(policy)
+        resources.append(lien_resource)
     return resources
 
 
-class BigqueryScannerTest(ForsetiTestCase):
+class LienScannerTest(ForsetiTestCase):
 
-    @mock.patch(
-        'google.cloud.forseti.scanner.scanners.bigquery_scanner.'
-        'bigquery_rules_engine',
-        autospec=True)
+    @mock.patch.object(lien_scanner, 'lien_rules_engine', autospec=True)
     def setUp(self, _):
-        self.scanner = bigquery_scanner.BigqueryScanner(
+        self.scanner = lien_scanner.LienScanner(
             {}, {}, mock.MagicMock(), '', '', '')
 
     def test_retrieve(self):
@@ -85,41 +79,12 @@ class BigqueryScannerTest(ForsetiTestCase):
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
 
-        bq_acl_data = self.scanner._retrieve()
+        liens = self.scanner._retrieve()
 
-        expected_projects = [
-            'organization/234/project/p1/',
-            'organization/234/folder/56/project/p2/',
-        ]
-
-        expected_dataset_ids = ['dataset/d1', 'dataset/d2']
-
-        self.assertEqual(2, len(bq_acl_data))
-
-        for i in xrange(2):
-            self.assertEqual(expected_projects[i],
-                             bq_acl_data[i].parent_project.full_name)
-
-            self.assertEqual(expected_dataset_ids[i],
-                             bq_acl_data[i].bigquery_acl.dataset_id)
-
-    def test_find_violations(self):
-        """Tests _find_violations passes log sink configs to the rule engine."""
-        bq_acl_data = [
-            bigquery_scanner.BigqueryAccessControlsData('resource-1', 'acl-1'),
-            bigquery_scanner.BigqueryAccessControlsData('resource-2', 'acl-2'),
-            bigquery_scanner.BigqueryAccessControlsData('resource-3', 'acl-3'),
-        ]
-
-        self.scanner.rules_engine.find_policy_violations.side_effect = [
-            ['viol-1', 'viol-2'], [], ['viol-3']]
-
-        violations = self.scanner._find_violations(bq_acl_data)
-
-        self.scanner.rules_engine.find_policy_violations.assert_has_calls(
-            [mock.call(d.parent_project, d.bigquery_acl) for d in bq_acl_data])
-
-        self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)
+        self.assertEqual(1, len(liens))
+        self.assertEqual(liens[0].parent.full_name,
+                         'organization/234/project/p1/')
+        self.assertEqual(liens[0].name, 'projects/p1/liens/l1')
 
 
 if __name__ == '__main__':

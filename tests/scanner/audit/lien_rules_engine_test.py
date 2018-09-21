@@ -24,15 +24,13 @@ import yaml
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import lien
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import lien_rules_engine
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.test_data import fake_lien_scanner_data
+from tests.scanner.test_data import fake_lien_scanner_data as data
 
 class Rules(object):
     base_rule = """
@@ -55,51 +53,6 @@ rules:
         resource_ids: {ids}
 """
 
-class Data(object):
-    lien_json = """{
-    "name": "liens/l1",
-    "parent": "projects/p1",
-    "restrictions": ["resourcemanager.projects.delete"],
-    "origin": "testing",
-    "createTime": "2018-09-05T14:45:46.534Z"
-}
-"""
-    organization_with_lien = organization.Organization(
-        '234',
-        display_name='Organization 234',
-        full_name='organization/234/',
-        data='fake_org_data_234',
-    )
-
-    project_with_lien = project.Project(
-        'p1',
-        project_number=11223344,
-        display_name='Project with lien',
-        parent=organization,
-        full_name='organization/234/project/p1/',
-        data='fake_project_data_2341',
-    )
-
-    project_without_lien = project.Project(
-        'p2',
-        project_number=11223345,
-        display_name='Project without lien',
-        parent=organization,
-        full_name='organization/234/project/p2/',
-        data='fake_project_data_2342',
-    )
-
-    liens = [lien.Lien.from_json(project_with_lien, 'lien/l1', lien_json)]
-
-    violations = [lien_rules_engine.RuleViolation(
-        resource_id='lien/l1',
-        resource_type=resource.ResourceType.LIEN,
-        full_name='organization/234/project/p1/lien/l1/',
-        rule_index=0,
-        rule_name='Lien test rule',
-        violation_type='LIEN_VIOLATION',
-        resource_data=lien_json,
-    )]
 
 def get_rules_engine_with_rule(rule):
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
@@ -118,7 +71,7 @@ class LienRulesEngineTest(ForsetiTestCase):
         lien_rules_engine.LOGGER = mock.MagicMock()
 
     def test_build_rule_book_from_local_yaml_file(self):
-        rule = Rules.organization_rule.format(id=Data.organization_with_lien.id)
+        rule = Rules.organization_rule.format(id=data.ORGANIZATION_WITH_LIEN.id)
         rules_engine = get_rules_engine_with_rule(rule)
         self.assertEqual(1, len(rules_engine.rule_book.resource_to_rules))
 
@@ -128,31 +81,30 @@ class LienRulesEngineTest(ForsetiTestCase):
             get_rules_engine_with_rule(rule)
 
     def test_find_violations_project_rule_no_violations(self):
-        rule = Rules.projects_rule.format(ids=[Data.project_with_lien.id])
+        rule = Rules.projects_rule.format(ids=[data.PROJECT_WITH_LIEN.id])
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(Data.liens))
+        got_violations = list(rules_engine.find_violations(data.LIENS))
         self.assertEqual(got_violations, [])
 
     def test_find_violations_project_rule_missing_restrictions(self):
-        rule = Rules.projects_rule.format(ids=[Data.project_with_lien.id])
+        rule = Rules.projects_rule.format(ids=[data.PROJECT_WITH_LIEN.id])
         rule = rule.replace('resourcemanager.projects.delete', 'foo')
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(Data.liens))
-        self.assertEqual(got_violations, Data.violations)
+        got_violations = list(rules_engine.find_violations(data.LIENS))
+        self.assertEqual(got_violations, data.VIOLATIONS)
 
     def test_find_violations_organization_rule(self):
-        rule = Rules.organization_rule.format(id=Data.organization_with_lien.id)
+        rule = Rules.organization_rule.format(id=data.ORGANIZATION_WITH_LIEN.id)
         rule = rule.replace('resourcemanager.projects.delete', 'foo')
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(Data.liens))
-        self.assertEqual(got_violations, Data.violations)
-
+        got_violations = list(rules_engine.find_violations(data.LIENS))
+        self.assertEqual(got_violations, data.VIOLATIONS)
 
     def test_find_violations_missing_lien(self):
-        project = Data.project_without_lien
+        project = data.PROJECT_WITHOUT_LIEN
         rule = Rules.projects_rule.format(ids=[project.id])
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(Data.liens))
+        got_violations = list(rules_engine.find_violations(data.LIENS))
         want_violations = [lien_rules_engine.RuleViolation(
             resource_id=project.id,
             resource_type=project.type,

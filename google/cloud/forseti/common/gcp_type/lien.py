@@ -34,10 +34,10 @@ class Lien(resource.Resource):
         super(Lien, self).__init__(
             resource_id=name,
             resource_type=resource.ResourceType.LIEN,
-            name='{}/{}'.format(parent.name, name),
+            name='{}/liens/{}'.format(parent.name, name),
             display_name=name,
             parent=parent)
-        self.full_name = '{}{}/'.format(parent.full_name, name)
+        self.full_name = '{}lien/{}/'.format(parent.full_name, name)
         self.restrictions = restrictions
         self.raw_json = raw_json
 

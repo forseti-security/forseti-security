@@ -51,14 +51,14 @@ class LienTest(ForsetiTestCase):
     "restrictions": ["resourcemanager.projects.delete"]
 }
 """
-        lien_resource = lien.Lien.from_json(self.proj_1, json_string)
+        lien_resource = lien.Lien.from_json(self.proj_1, 'lien-1', json_string)
         self.assertEqual('lien-1', lien_resource.id)
         self.assertEqual('lien', lien_resource.type)
         self.assertEqual('projects/proj-1/liens/lien-1', lien_resource.name)
         self.assertEqual(['resourcemanager.projects.delete'],
                         lien_resource.restrictions)
-        self.assertFalse(sink.include_children)
-        self.assertEqual(json.loads(json_string), json.loads(sink.raw_json))
+        self.assertEqual(json.loads(json_string),
+                         json.loads(lien_resource.raw_json))
 
 
 if __name__ == '__main__':

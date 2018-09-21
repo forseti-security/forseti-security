@@ -15,15 +15,12 @@
 """Rules engine for Liens."""
 import collections
 import itertools
-import re
 
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import regular_exp
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine
-from google.cloud.forseti.scanner.audit import errors as audit_errors
+from google.cloud.forseti.scanner.audit import errors
 
 LOGGER = logger.get_logger(__name__)
 
@@ -90,6 +87,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         super(LienRuleBook, self).__init__()
         self.resource_to_rules = collections.defaultdict(list)
+        self.all_rules = []
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -106,7 +104,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
             self.add_rule(rule, i)
 
     @classmethod
-    def _build_rule(cls, rule_def, rule_index):
+    def _build_rule(cls, resource, rule_def, rule_index):
         """Build a rule.
 
         Args:
@@ -120,10 +118,11 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         for field in ['name', 'restrictions']:
             if field not in rule_def:
-             raise audit_errors.InvalidRulesSchemaError(
+             raise errors.InvalidRulesSchemaError(
                     'Missing field "{}" in rule {}'.format(field, rule_index))
 
-        return Rule(name=rule_def.get('name'),
+        return Rule(resource=resource,
+                    name=rule_def.get('name'),
                     index=rule_index,
                     restrictions=rule_def.get('restrictions'))
 
@@ -138,17 +137,17 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         resources = rule_def.get('resource')
         if not resources:
-            raise audit_errors.InvalidRulesSchemaError(
+            raise errors.InvalidRulesSchemaError(
                     'Missing field "resource" in rule {}'.format(rule_index))
 
         for raw_resource in resources:
             resource_ids = raw_resource.get('resource_ids')
 
             if not resource_ids:
-                raise audit_errors.InvalidRulesSchemaError(
+                raise errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-            rule = self._build_rule(rule_def, rule_index)
+
 
             resource_type = raw_resource.get('type')
 
@@ -158,10 +157,13 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     resource_type=resource_type,
                 )
                 if not resource:
-                    raise audit_errors.InvalidRulesSchemaError(
+                    raise errors.InvalidRulesSchemaError(
                         'Invalid resource in rule {} (id: {}, type: {})'.format(
                             rule_index, resource_id, resource_type))
+
+                rule = self._build_rule(resource, rule_def, rule_index)
                 self.resource_to_rules[resource].append(rule)
+                self.all_rules.append(rule)
 
     def find_violations(self, liens):
         """Find acl violations in the rule book.
@@ -179,7 +181,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         violations = itertools.chain()
 
-        matched_rules = set()
+        unmatched_rules = set(self.all_rules)
 
         for lien in liens:
             resource_ancestors = (
@@ -188,23 +190,23 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
             for res in resource_ancestors:
                 applicable_rules = self.resource_to_rules.get(res, [])
                 for rule in applicable_rules:
-                    matched_rules.add(rule)
+                    unmatched_rules.discard(rule)
                     violations = itertools.chain(
                         violations, rule.find_violations(lien))
 
-        for resource, rules in self.resource_to_rules.iteritems():
-            for rule in rules:
-                if rule not in matched_rules:
-                    violations = itertools.chain(
-                        violations, [RuleViolation(
-                            resource_id=resource.id,
-                            resource_type=resource.type,
-                            full_name = '{}/{}'.format(
-                                resource.type, resource.id),
-                            rule_index=rule.index,
-                            rule_name=rule.name,
-                            violation_type='LIEN_VIOLATION',
-                            resource_data='')])
+        for rule in unmatched_rules:
+            violations = itertools.chain(
+                violations, [RuleViolation(
+                    resource_id=rule.resource.id,
+                    resource_type=rule.resource.type,
+                    # TODO: fix full name to be the actual full name of the
+                    # resource
+                    full_name = '{}/{}'.format(
+                        rule.resource.type, rule.resource.id),
+                    rule_index=rule.index,
+                    rule_name=rule.name,
+                    violation_type='LIEN_VIOLATION',
+                    resource_data='')])
 
         return violations
 
@@ -213,7 +215,7 @@ class Rule(object):
        Also finds violations.
     """
 
-    def __init__(self, name, index, restrictions):
+    def __init__(self, resource, name, index, restrictions):
         """Initialize.
 
         Args:
@@ -222,6 +224,7 @@ class Rule(object):
             rule_reference (RuleReference): The rules from the file and
               corresponding values.
         """
+        self.resource = resource
         self.name = name
         self.index = index
         self.restrictions = restrictions

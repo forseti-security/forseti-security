@@ -14,8 +14,6 @@
 
 """Scanner for the Lien rules engine."""
 
-import collections
-
 from google.cloud.forseti.common.gcp_type import lien
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
@@ -24,11 +22,6 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 
 
 LOGGER = logger.get_logger(__name__)
-
-BigqueryAccessControlsData = collections.namedtuple(
-    'BigqueryAccessControlsData',
-    ['parent_project', 'bigquery_acl'])
-
 
 class LienScanner(base_scanner.BaseScanner):
     """Scanner for Liens."""
@@ -69,13 +62,6 @@ class LienScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {'dataset_id': violation.dataset_id,
-                              'full_name': violation.full_name,
-                              'access_domain': violation.domain,
-                              'access_user_by_email': violation.user_email,
-                              'access_special_group': violation.special_group,
-                              'access_group_by_email': violation.group_email,
-                              'role': violation.role, 'view': violation.view}
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
@@ -83,7 +69,7 @@ class LienScanner(base_scanner.BaseScanner):
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': violation_data,
+                'violation_data': {'lien': violation.resource_data},
                 'resource_data': violation.resource_data
             }
 
@@ -95,25 +81,6 @@ class LienScanner(base_scanner.BaseScanner):
         """
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
-
-    def _find_violations(self, bigquery_acl_data):
-        """Find violations in the policies.
-
-        Args:
-            bigquery_acl_data (list): Big Query data to find violations in
-
-        Returns:
-            list: A list of BigQuery violations
-        """
-        all_violations = []
-        LOGGER.info('Finding BigQuery acl violations...')
-
-        for data in bigquery_acl_data:
-            violations = self.rules_engine.find_policy_violations(
-                data.parent_project, data.bigquery_acl)
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
 
     def _retrieve(self):
         """Retrieves the data for scanner.
@@ -145,7 +112,7 @@ class LienScanner(base_scanner.BaseScanner):
 
                 liens.append(lien.Lien.from_json(
                     parent=proj,
-                    name=lien_resource.type_name,
+                    name=lien_resource.name,
                     json_string=lien_resource.data))
 
             return liens
