@@ -639,7 +639,7 @@ def is_blacklist_violation(rules, policy):
             policy_superset_check.append(True)
         else:
             policy_superset_check.append(False)
-    result = not any(policy_superset_check)
+    result = any(policy_superset_check)
     return result
 
 
