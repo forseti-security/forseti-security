@@ -299,7 +299,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                     fake_storage.FAKE_OBJECT_NAME))
 
-    def test_download_file(self):
+    def test_download(self):
         """Test download file returns a valid response."""
         mock_responses = [
             ({'status': '200',
@@ -311,7 +311,7 @@ class StorageTest(unittest_utils.ForsetiTestCase):
 
         expected_result = b'12345'
         output_file = StringIO.StringIO()
-        file_size = self.gcs_api_client.download_file(
+        file_size = self.gcs_api_client.download(
             'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                 fake_storage.FAKE_OBJECT_NAME),
             output_file=output_file)
@@ -319,12 +319,12 @@ class StorageTest(unittest_utils.ForsetiTestCase):
         self.assertEqual(expected_result, output_file.getvalue())
         output_file.close()
 
-    def test_download_file_raises(self):
+    def test_download_raises(self):
         """Test download file returns not found error."""
         http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
         output_file = StringIO.StringIO()
         with self.assertRaises(storage.errors.HttpError):
-            self.gcs_api_client.download_file(
+            self.gcs_api_client.download(
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                     fake_storage.FAKE_OBJECT_NAME),
                 output_file=output_file)

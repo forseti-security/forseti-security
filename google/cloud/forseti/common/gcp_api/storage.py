@@ -314,10 +314,12 @@ class _StorageObjectsRepository(
 
     def download_to_file(self, bucket, object_name, output_file):
         """Download an object from a bucket.
+
          Args:
             bucket (str): The name of the bucket to read from.
             object_name (str): The name of the object to read.
             output_file (file): The file object to write the data to.
+
          Returns:
             int: Total size in bytes of file.
         """
@@ -442,13 +444,16 @@ class StorageClient(object):
             LOGGER.exception('Unable to download file.')
             raise
 
-    def download_file(self, full_bucket_path, output_file):
+    def download(self, full_bucket_path, output_file):
         """Downloads a copy of a file from GCS.
+
          Args:
             full_bucket_path (str): The full path of the bucket object.
             output_file (file): The file object to write the data to.
+
          Returns:
             int: Total size in bytes of file.
+
          Raises:
             HttpError: HttpError is raised if the call to the GCP storage API
                 fails
