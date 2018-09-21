@@ -240,6 +240,7 @@ class Rule(object):
                        for config in instance_network_interface.access_configs
                        if 'natIP' in config]
                 yield self.RuleViolation(
+                    resource_name=instance_network_interface.name,
                     resource_type=resource_mod.ResourceType.INSTANCE,
                     resource_id=instance_network_interface.name,
                     full_name=instance_network_interface.full_name,
@@ -262,4 +263,5 @@ class Rule(object):
     RuleViolation = namedtuple('RuleViolation',
                                ['resource_type', 'resource_id', 'full_name',
                                 'rule_name', 'rule_index', 'violation_type',
-                                'project', 'network', 'ip', 'resource_data'])
+                                'project', 'network', 'ip', 'resource_data',
+                                'resource_name'])

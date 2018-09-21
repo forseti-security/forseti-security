@@ -485,6 +485,15 @@ class Organization(Resource):
             self.add_warning(e)
             return None
 
+    def has_directory_resource_id(self):
+        """Whether this organization has a directoryCustomerId.
+
+        Returns:
+            bool: True if the data exists, else False.
+        """
+        return ('owner' in self._data and
+                'directoryCustomerId' in self['owner'])
+
     def key(self):
         """Get key of this resource
 
@@ -1208,6 +1217,27 @@ class InstanceTemplate(Resource):
             str: 'instancetemplate'
         """
         return 'instancetemplate'
+
+
+class Lien(Resource):
+    """The Resource implementation for Lien"""
+
+    def key(self):
+        """Get key of this resource
+
+        Returns:
+            str: key of this resource
+        """
+        return self['name'].split('/')[-1]
+
+    @staticmethod
+    def type():
+        """Get type of this resource
+
+        Returns:
+            str: 'lien'
+        """
+        return 'lien'
 
 
 class Network(Resource):
@@ -2012,9 +2042,10 @@ class GsuiteGroupIterator(ResourceIterator):
             Resource: GsuiteGroup created
         """
         gsuite = self.client
-        for data in gsuite.iter_groups(
-                self.resource['owner']['directoryCustomerId']):
-            yield FACTORIES['gsuite_group'].create_new(data)
+        if self.resource.has_directory_resource_id():
+            for data in gsuite.iter_groups(
+                    self.resource['owner']['directoryCustomerId']):
+                yield FACTORIES['gsuite_group'].create_new(data)
 
 
 class GsuiteUserIterator(ResourceIterator):
@@ -2025,9 +2056,10 @@ class GsuiteUserIterator(ResourceIterator):
             Resource: GsuiteUser created
         """
         gsuite = self.client
-        for data in gsuite.iter_users(
-                self.resource['owner']['directoryCustomerId']):
-            yield FACTORIES['gsuite_user'].create_new(data)
+        if self.resource.has_directory_resource_id():
+            for data in gsuite.iter_users(
+                    self.resource['owner']['directoryCustomerId']):
+                yield FACTORIES['gsuite_user'].create_new(data)
 
 
 class GsuiteMemberIterator(ResourceIterator):
@@ -2043,6 +2075,19 @@ class GsuiteMemberIterator(ResourceIterator):
                 yield FACTORIES['gsuite_user_member'].create_new(data)
             elif data['type'] == 'GROUP':
                 yield FACTORIES['gsuite_group_member'].create_new(data)
+
+
+class ProjectLienIterator(ResourceIterator):
+    """The Resource iterator implementation for Project Liens."""
+
+    def iter(self):
+        """Yields:
+            Resource: Lien created
+        """
+        if self.resource.enumerable():
+            for data in self.client.iter_project_liens(
+                    project_id=self.resource['projectId']):
+                yield FACTORIES['lien'].create_new(data)
 
 
 class ProjectSinkIterator(ResourceIterator):
@@ -2143,6 +2188,7 @@ FACTORIES = {
             NetworkIterator,
             SnapshotIterator,
             SubnetworkIterator,
+            ProjectLienIterator,
             ProjectRoleIterator,
             ProjectSinkIterator
         ]}),
@@ -2337,6 +2383,12 @@ FACTORIES = {
     'gsuite_group_member': ResourceFactory({
         'dependsOn': ['gsuite_group'],
         'cls': GsuiteGroupMember,
+        'contains': [
+        ]}),
+
+    'lien': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': Lien,
         'contains': [
         ]}),
 

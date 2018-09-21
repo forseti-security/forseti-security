@@ -97,7 +97,8 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             {},
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -138,6 +139,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 2},
             'instancetemplate': {'resource': 2},
             'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
@@ -159,7 +161,8 @@ class CrawlerTest(ForsetiTestCase):
             'folders/1032',
             '',
             {},
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -197,7 +200,8 @@ class CrawlerTest(ForsetiTestCase):
             'projects/1041',
             '',
             {},
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -225,6 +229,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 2},
             'instancetemplate': {'resource': 2},
             'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
             'network': {'resource': 1},
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
@@ -244,7 +249,8 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             {},
-            '')
+            '',
+            {})
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -284,6 +290,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 2},
             'instancetemplate': {'resource': 2},
             'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,

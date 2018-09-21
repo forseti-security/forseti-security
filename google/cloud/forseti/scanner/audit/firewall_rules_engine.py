@@ -579,6 +579,7 @@ class Rule(object):
         for policy in policies:
             inventory_data.append(policy.as_json())
         return RuleViolation(
+            resource_name=','.join([p.name for p in policies]),
             resource_type=resource_mod.ResourceType.FIREWALL_RULE,
             resource_id=policies[0].project_id,
             full_name=policies[0].full_name,
@@ -600,7 +601,8 @@ class Rule(object):
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'full_name',
                             'rule_id', 'violation_type', 'policy_names',
-                            'recommended_actions', 'resource_data'])
+                            'recommended_actions', 'resource_data',
+                            'resource_name'])
 
 
 def is_whitelist_violation(rules, policy):

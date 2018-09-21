@@ -304,9 +304,9 @@ class Rule(object):
 
     RuleViolation = collections.namedtuple(
         'RuleViolation',
-        ['resource_type', 'resource_id', 'full_name', 'rule_name', 'rule_index',
-         'violation_type', 'service', 'log_type', 'unexpected_exemptions',
-         'resource_data'])
+        ['resource_type', 'resource_id', 'resource_name', 'full_name',
+         'rule_name', 'rule_index', 'violation_type', 'service', 'log_type',
+         'unexpected_exemptions', 'resource_data'])
 
     def __init__(self, rule_name, rule_index, rule):
         """Initialize.
@@ -339,6 +339,7 @@ class Rule(object):
                 yield self.RuleViolation(
                     resource_type=project.type,
                     resource_id=project.id,
+                    resource_name=project.display_name,
                     full_name=project.full_name,
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,
@@ -365,6 +366,7 @@ class Rule(object):
                     if unexpected_exemptions:
                         # Report the service where the exemption is specified.
                         yield self.RuleViolation(
+                            resource_name=project.display_name,
                             resource_type=project.type,
                             resource_id=project.id,
                             full_name=project.full_name,

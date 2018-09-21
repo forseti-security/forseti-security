@@ -369,7 +369,7 @@ class Rule(object):
     RuleViolation = collections.namedtuple(
         'RuleViolation',
         ['resource_type', 'resource_id', 'full_name', 'rule_name', 'rule_index',
-         'violation_type', 'apis', 'resource_data'])
+         'violation_type', 'apis', 'resource_data', 'resource_name'])
 
     def __init__(self, rule_name, rule_index, rule):
         """Initialize.
@@ -397,6 +397,7 @@ class Rule(object):
 
         if violating_apis:
             yield self.RuleViolation(
+                resource_name=project.display_name,
                 resource_type=project.type,
                 resource_id=project.id,
                 full_name=project.full_name,
