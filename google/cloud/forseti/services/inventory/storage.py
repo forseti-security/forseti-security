@@ -388,7 +388,8 @@ class CaiTemporaryStore(BASE):
 
     __tablename__ = 'cai_temporary_store'
 
-    name = Column(String(255), nullable=False)
+    # Set collation so that unique index is case sensitive.
+    name = Column(String(255, collation='utf8_bin'), nullable=False)
     parent_name = Column(String(255), nullable=True)
     content_type = Column(Enum(ContentTypes), nullable=False)
     asset_type = Column(String(255), nullable=False)
@@ -485,7 +486,8 @@ class CaiTemporaryStore(BASE):
         if asset_pb.resource.parent:
             return asset_pb.resource.parent
 
-        if asset_pb.asset_type.startswith('google.appengine'):
+        if (asset_pb.asset_type.startswith('google.appengine') or
+                asset_pb.asset_type.startswith('google.bigquery')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 
@@ -800,7 +802,13 @@ class Storage(BaseStorage):
             for line in data:
                 if not line:
                     continue
-                row = CaiTemporaryStore.from_json(line.strip())
+
+                try:
+                    row = CaiTemporaryStore.from_json(line.strip())
+                except json_format.ParseError as e:
+                    LOGGER.error('Line %s had a parse error %s, skipping.',
+                                 line.strip(), e)
+                    continue
                 commit_buffer.add(row)
                 num_rows += 1
             commit_buffer.flush()

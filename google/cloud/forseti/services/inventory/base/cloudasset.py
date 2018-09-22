@@ -37,7 +37,8 @@ def load_cloudasset_data(storage,
         config (object): Inventory configuration on server
 
     Returns:
-        int: TBD
+        int: The count of assets imported into the database, or None if there
+            is an error.
     """
     client_config = config.get_api_quota_configs()
     root_id = config.get_root_resource_id()
