@@ -388,6 +388,13 @@ class Inventory(BASE):
 class CaiTemporaryStore(object):
     """CAI temporary inventory table."""
 
+    # Class members created in initialize() by mapper()
+    name = None
+    parent_name = None
+    content_type = None
+    asset_type = None
+    asset_data = None
+
     def __init__(self, name, parent_name, content_type, asset_type, asset_data):
         """Initialize database column.
 
@@ -409,9 +416,9 @@ class CaiTemporaryStore(object):
 
     @classmethod
     def initialize(cls, metadata, collation='utf8_bin'):
-        """Create the table schema based on based in arguments.
+        """Create the table schema based on run time arguments.
 
-        Used to fix the collation value for non-MySQL database engines.
+        Used to fix the column collation value for non-MySQL database engines.
 
         Args:
             metadata (object): The sqlalchemy MetaData to associate the table
@@ -476,7 +483,7 @@ class CaiTemporaryStore(object):
         else:
             return None
 
-        return CaiTemporaryStore(
+        return cls(
             name=asset_pb.name,
             parent_name=parent_name,
             content_type=content_type,
@@ -674,13 +681,18 @@ class DataAccess(object):
         return inventory_indexes
 
 
-def initialize(engine, collation='utf8_bin'):
+def initialize(engine):
     """Create all tables in the database if not existing.
 
     Args:
         engine (object): Database engine to operate on.
-        collation (str): The collation value to use for case sensitive columns.
     """
+    dialect = engine.dialect.name
+    if dialect == 'sqlite':
+        collation = 'binary'
+    else:
+        collation = 'utf8_bin'
+
     CaiTemporaryStore.initialize(BASE.metadata, collation)
     BASE.metadata.create_all(engine)
 

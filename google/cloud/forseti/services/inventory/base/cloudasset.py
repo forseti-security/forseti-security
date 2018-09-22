@@ -103,9 +103,6 @@ def _clear_cai_data(storage):
 
     Args:
         storage (object): Storage implementation to use.
-
-    Returns:
-        None
     """
     LOGGER.debug('Deleting Cloud Asset data from database.')
     count = storage.clear_cai_data()

@@ -74,7 +74,7 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         self.engine, self.dbfile = create_test_engine_with_file()
         _session_maker = sessionmaker()
         session = _session_maker(bind=self.engine)
-        storage.initialize(self.engine, collation='binary')
+        storage.initialize(self.engine)
         self.storage = storage.Storage(session)
         self.inventory_config = InventoryConfig('organizations/987654321',
                                                 '',

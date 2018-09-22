@@ -305,9 +305,9 @@ def run_crawler(storage,
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
     if config.get_cai_enabled():
-          asset_count = cloudasset.load_cloudasset_data(storage, config)
-          LOGGER.info('%s total assets loaded from Cloud Asset data.',
-                      asset_count)
+        asset_count = cloudasset.load_cloudasset_data(storage, config)
+        LOGGER.info('%s total assets loaded from Cloud Asset data.',
+                    asset_count)
 
     root_id = config.get_root_resource_id()
     # TODO: Switch to CaiClientImpl if CAI is enabled and data imported.
