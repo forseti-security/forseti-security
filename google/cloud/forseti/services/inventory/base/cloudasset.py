@@ -78,6 +78,7 @@ def load_cloudasset_data(storage,
                          '%s', results)
             return _clear_cai_data(storage)
 
+        temporary_file = None
         try:
             LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
             temporary_file = file_loader.copy_file_from_gcs(export_path)
@@ -91,7 +92,8 @@ def load_cloudasset_data(storage,
             LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
             return _clear_cai_data(storage)
         finally:
-            os.unlink(temporary_file)
+            if temporary_file:
+                os.unlink(temporary_file)
 
     return imported_assets
 

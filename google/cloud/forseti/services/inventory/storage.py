@@ -30,10 +30,12 @@ from sqlalchemy import LargeBinary
 from sqlalchemy import or_
 from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
+from sqlalchemy import Table
 from sqlalchemy import Text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import mapper
 
 from google.cloud.asset_v1beta1.proto import assets_pb2
 from google.protobuf import json_format
@@ -383,25 +385,56 @@ class Inventory(BASE):
         return self.inventory_errors
 
 
-class CaiTemporaryStore(BASE):
+class CaiTemporaryStore(object):
     """CAI temporary inventory table."""
 
-    __tablename__ = 'cai_temporary_store'
+    def __init__(self, name, parent_name, content_type, asset_type, asset_data):
+        """Initialize database column.
 
-    # Set collation so that unique index is case sensitive.
-    name = Column(String(255, collation='utf8_bin'), nullable=False)
-    parent_name = Column(String(255), nullable=True)
-    content_type = Column(Enum(ContentTypes), nullable=False)
-    asset_type = Column(String(255), nullable=False)
-    asset_data = Column(LargeBinary(), nullable=False)
+        Manually defined so that the collation value can be overriden at run
+        time for this database table.
 
-    __table_args__ = (
-        Index('idx_parent_name',
-              'parent_name'),
-        PrimaryKeyConstraint('content_type',
-                             'asset_type',
-                             'name',
-                             name='cai_temporary_store_pk'))
+        Args:
+            name (str): The asset name.
+            parent_name (str): The asset name of the parent resource.
+            content_type (ContentTypes): The asset data content type.
+            asset_type (str): The asset data type.
+            asset_data (str): The asset data as a serialized binary blob.
+        """
+        self.name = name
+        self.parent_name = parent_name
+        self.content_type = content_type
+        self.asset_type = asset_type
+        self.asset_data = asset_data
+
+    @classmethod
+    def initialize(cls, metadata, collation='utf8_bin'):
+        """Create the table schema based on based in arguments.
+
+        Used to fix the collation value for non-MySQL database engines.
+
+        Args:
+            metadata (object): The sqlalchemy MetaData to associate the table
+                with.
+            collation (str): The collation value to use.
+        """
+        if 'cai_temporary_store' not in metadata.tables:
+            my_table = Table('cai_temporary_store', metadata,
+                             Column('name', String(255, collation=collation),
+                                    nullable=False),
+                             Column('parent_name', String(255), nullable=True),
+                             Column('content_type', Enum(ContentTypes),
+                                    nullable=False),
+                             Column('asset_type', String(255), nullable=False),
+                             Column('asset_data', LargeBinary(),
+                                    nullable=False),
+                             Index('idx_parent_name', 'parent_name'),
+                             PrimaryKeyConstraint('content_type',
+                                                  'asset_type',
+                                                  'name',
+                                                  name='cai_temp_store_pk'))
+
+            mapper(cls, my_table)
 
     def extract_asset_data(self, content_type):
         """Extracts the data from the asset protobuf based on the content type.
@@ -641,13 +674,14 @@ class DataAccess(object):
         return inventory_indexes
 
 
-def initialize(engine):
+def initialize(engine, collation='utf8_bin'):
     """Create all tables in the database if not existing.
 
     Args:
         engine (object): Database engine to operate on.
+        collation (str): The collation value to use for case sensitive columns.
     """
-
+    CaiTemporaryStore.initialize(BASE.metadata, collation)
     BASE.metadata.create_all(engine)
 
 
