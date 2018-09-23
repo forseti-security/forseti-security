@@ -202,3 +202,92 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
         return super(CaiApiClientImpl, self).get_project_iam_policy(projectid)
+
+    def fetch_gae_app(self, projectid):
+        """Fetch the AppEngine App from Cloud Asset data.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Returns:
+            dict: AppEngine App resource.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.resource,
+            'google.appengine.Application',
+            '//appengine.googleapis.com/apps/{}'.format(projectid),
+            self.session)
+        return resource
+
+    def iter_gae_services(self, projectid):
+        """Iterate gae services from Cloud Asset data.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of AppEngine Service resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.appengine.Service',
+            '//appengine.googleapis.com/apps/{}'.format(projectid),
+            self.session)
+        for service in resources:
+            yield service
+
+    def iter_gae_versions(self, projectid, serviceid):
+        """Iterate gae versions from Cloud Asset data.
+
+        Args:
+            projectid (str): id of the project to query
+            serviceid (str): id of the appengine service
+
+        Yields:
+            dict: Generator of AppEngine Version resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.appengine.Service',
+            '//appengine.googleapis.com/apps/{}/services/{}'.format(projectid,
+                                                                    serviceid),
+            self.session)
+        for version in resources:
+            yield version
+
+    def iter_buckets(self, projectid):
+        """Iterate Buckets from Cloud Asset data.
+
+        Args:
+            projectid (str): id of the project to query
+
+        Yields:
+            dict: Generator of Bucket resources
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.storage.Bucket',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                projectid),
+            self.session)
+        for bucket in resources:
+            yield bucket
+
+    def get_bucket_iam_policy(self, bucketid):
+        """Bucket IAM policy Iterator from Cloud Asset data.
+
+        Args:
+            bucketid (str): id of the bucket to query
+
+        Returns:
+            dict: Bucket IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.storage.Bucket',
+            '//storage.googleapis.com/{}'.format(bucketid),
+            self.session)
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).get_bucket_iam_policy(bucketid)
