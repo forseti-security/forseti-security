@@ -30,8 +30,7 @@ LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
 
 
-def load_cloudasset_data(session,
-                         config):
+def load_cloudasset_data(session, config):
     """Export asset data from Cloud Asset API and load into storage.
 
     Args:
