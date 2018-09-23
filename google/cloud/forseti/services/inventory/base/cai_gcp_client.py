@@ -97,11 +97,11 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of Project resources
         """
-        resources = self.dao.iter_cai_assets(
+        resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Project',
             '//cloudresourcemanager.googleapis.com/{}s/{}'.format(parent_type,
-                                                                  parent_id))
+                                                                  parent_id)))
         for project in resources:
             yield project
 
@@ -114,10 +114,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of folders
         """
-        resources = self.dao.iter_cai_assets(
+        resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(parent_id))
+            '//cloudresourcemanager.googleapis.com/{}'.format(parent_id)))
         for folder in resources:
             yield folder
 
