@@ -249,7 +249,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.appengine.Service',
+            'google.appengine.Version',
             '//appengine.googleapis.com/apps/{}/services/{}'.format(projectid,
                                                                     serviceid),
             self.session)
@@ -323,7 +323,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for rule in resources:
             yield rule
 
-    @gcp.create_lazy('compute', gcp.ApiClientImpl._create_compute)
     def iter_computeinstancegroups(self, projectid):
         """Iterate Compute Engine groups from Cloud Asset data.
 
@@ -333,22 +332,10 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of Compute Instance group.
         """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.InstanceGroup',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for instancegroup in resources:
-            # Instance group instances not included in CAI data, add from API.
-            instancegroup['instance_urls'] = (
-                self.compute.get_instance_group_instances(
-                    projectid,
-                    instancegroup.get('name'),
-                    # Turn zone and region URLs into a names
-                    zone=os.path.basename(instancegroup.get('zone', '')),
-                    region=os.path.basename(instancegroup.get('region', ''))))
-            yield instancegroup
+        # Fall back to live API because CAI does not yet have all instance
+        # groups yet.
+        return super(CaiApiClientImpl, self).iter_computeinstancegroups(
+            projectid)
 
     def iter_computedisks(self, projectid):
         """Iterate Compute Engine disks from Cloud Asset data.
