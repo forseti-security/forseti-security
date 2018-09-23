@@ -881,7 +881,7 @@ class Storage(BaseStorage):
         if not self.has_cai_data:
             return
 
-        with self.config.scoped_session() as session:
+        with self.service_config.scoped_session() as session:
             filters = [
                 CaiTemporaryStore.content_type == content_type,
                 CaiTemporaryStore.asset_type == asset_type,
@@ -911,7 +911,7 @@ class Storage(BaseStorage):
         if not self.has_cai_data:
             return {}
 
-        with self.config.scoped_session() as session:
+        with self.service_config.scoped_session() as session:
             filters = [
                 CaiTemporaryStore.content_type == content_type,
                 CaiTemporaryStore.asset_type == asset_type,
