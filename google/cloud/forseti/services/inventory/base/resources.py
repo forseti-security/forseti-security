@@ -539,6 +539,14 @@ class Folder(Resource):
         """
         return self['name'].split('/', 1)[-1]
 
+    def should_dispatch(self):
+        """Folder resources should run in parallel threads.
+
+        Returns:
+            bool: whether folder resources should run in parallel threads.
+        """
+        return True
+
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy for this folder
@@ -1526,6 +1534,14 @@ class GsuiteGroup(Resource):
             str: id key of this resource
         """
         return self['id']
+
+    def should_dispatch(self):
+        """GSuite Group resources should run in parallel threads.
+
+        Returns:
+            bool: whether gsuite group resources should run in parallel threads.
+        """
+        return True
 
     @staticmethod
     def type():
