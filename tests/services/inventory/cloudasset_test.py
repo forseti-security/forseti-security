@@ -108,37 +108,26 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
             'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            '//cloudresourcemanager.googleapis.com/organizations/111222333',
             self.session)
         expected_resource = {
-            'creationTime': '2016-09-02T18:55:58.783Z',
-            'displayName': 'test.forseti',
-            'lastModifiedTime': '2017-02-14T05:43:45.012Z',
+            'creationTime': '2015-09-09T19:34:18.591Z',
+            'displayName': 'forseti.test',
             'lifecycleState': 'ACTIVE',
-            'name': 'organizations/1234567890',
-            'organizationId': '1234567890',
-            'owner': {'directoryCustomerId': 'C00h00n00'}
-        }
+            'name': 'organizations/111222333',
+            'owner': {'directoryCustomerId': 'ABC123DEF'}}
         self.assertEqual(expected_resource, resource)
 
         iam_policy = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            'google.cloud.resourcemanager.Folder',
+            '//cloudresourcemanager.googleapis.com/folders/1033',
             self.session)
         expected_iam_policy = {
-            'etag': 'BwVvLqcT+M4=',
             'bindings': [
-                {'role': 'roles/Owner',
-                 'members': ['user:user1@test.forseti']
-                },
-                {'role': 'roles/Viewer',
-                 'members': [('serviceAccount:forseti-server-gcp-d9fffac'
-                              '@forseti-test-project.iam.gserviceaccount.com'),
-                             'user:user1@test.forseti']
-                }
-            ]
-        }
+                {'members': ['user:a_user@forseti.test'],
+                 'role': 'roles/resourcemanager.folderAdmin'}],
+            'version': 1}
         self.assertEqual(expected_iam_policy, iam_policy)
 
     def validate_no_data_in_table(self):
@@ -146,15 +135,15 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
             'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            '//cloudresourcemanager.googleapis.com/organizations/111222333',
             self.session)
         expected_resource = {}
         self.assertEqual(expected_resource, resource)
 
         iam_policy = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            'google.cloud.resourcemanager.Folder',
+            '//cloudresourcemanager.googleapis.com/folders/1033',
             self.session)
         expected_iam_policy = {}
         self.assertEqual(expected_iam_policy, iam_policy)
@@ -188,8 +177,8 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
         results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
-        # 15 resources total in mock dump files
-        expected_results = 15
+        # 66 resources total in mock dump files, will change over time
+        expected_results = 68
         self.assertEqual(expected_results, results)
         self.validate_data_in_table()
 

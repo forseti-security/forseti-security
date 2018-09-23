@@ -107,10 +107,11 @@ class Storage(object):
 class Memory(Storage):
     """The storage in memory"""
 
-    def __init__(self):
+    def __init__(self, session=None):
         """Initialize"""
         super(Memory, self).__init__()
         self.mem = {}
+        self.session = session
 
     def open(self, handle=None):
         """Open the memory storage

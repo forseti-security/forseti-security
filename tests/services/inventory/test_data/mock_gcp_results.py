@@ -330,7 +330,8 @@ CRM_GET_FOLDER = {
     "folders/" + FOLDER_ID_PREFIX + "3":
         json.loads(
             CRM_FOLDER_TEMPLATE.format(
-                id=3, parent="folders/2", name="Folder 3")),
+                id=3, parent="folders/" + FOLDER_ID_PREFIX + "2",
+                name="Folder 3")),
 }
 
 CRM_GET_FOLDERS = {
@@ -384,7 +385,7 @@ CRM_GET_PROJECT = {
                 id="project3",
                 name="Project 3",
                 parent_type="folder",
-                parent_id="1")),
+                parent_id=FOLDER_ID_PREFIX + "1")),
     PROJECT_ID_PREFIX + "4":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
@@ -392,7 +393,7 @@ CRM_GET_PROJECT = {
                 id="project4",
                 name="Project 4",
                 parent_type="folder",
-                parent_id="3")),
+                parent_id=FOLDER_ID_PREFIX + "3")),
 }
 
 CRM_GET_PROJECTS = {
@@ -1565,7 +1566,7 @@ SNAPSHOT_TEMPLATE = """
  "name": "{name}",
  "description": "",
  "status": "READY",
- "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/{zone}/disks/{name}",
+ "sourceDisk": "https://www.googleapis.com/compute/beta/projects/{project}/zones/{zone}/disks/{name}",
  "sourceDiskId": "7102445878994667099",
  "diskSizeGb": "10",
  "storageBytes": "536550912",
@@ -1573,7 +1574,7 @@ SNAPSHOT_TEMPLATE = """
  "licenses": [
   "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
  ],
- "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/{name}",
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/{project}/global/snapshots/{name}",
  "labelFingerprint": "foofoo456",
  "licenseCodes": [
   "1000205"
