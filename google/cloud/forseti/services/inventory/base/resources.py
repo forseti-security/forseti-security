@@ -591,7 +591,7 @@ class Project(Resource):
             dict: Project IAM Policy
         """
         if self.enumerable():
-            return client.get_project_iam_policy(self['projectId'])
+            return client.get_project_iam_policy(self['projectNumber'])
         return {}
 
     @cached('billing_info')

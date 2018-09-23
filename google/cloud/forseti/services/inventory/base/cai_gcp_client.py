@@ -120,3 +120,58 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             '//cloudresourcemanager.googleapis.com/{}'.format(parent_id))
         for folder in resources:
             yield folder
+
+    def get_folder_iam_policy(self, folderid):
+        """Folder IAM policy in a folder from Cloud Asset data.
+
+        Args:
+            folderid (str): id of the folder to get policy.
+
+        Returns:
+            dict: Folder IAM policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Folder',
+            '//cloudresourcemanager.googleapis.com/{}'.format(folderid))
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).get_folder_iam_policy(folderid)
+
+    def get_organization_iam_policy(self, orgid):
+        """Organization IAM policy from Cloud Asset data.
+
+        Args:
+            orgid (str): id of the organization to get policy.
+
+        Returns:
+            dict: Organization IAM policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(orgid))
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).get_organization_iam_policy(orgid)
+
+    def get_project_iam_policy(self, projectid):
+        """Project IAM policy from Cloud Asset data.
+
+        Args:
+            projectid (str): id of the project to query.
+
+        Returns:
+            dict: Project IAM Policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Project',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                projectid))
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).get_project_iam_policy(projectid)
