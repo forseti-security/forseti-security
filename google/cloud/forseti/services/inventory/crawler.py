@@ -311,7 +311,6 @@ def run_crawler(storage,
 
     if config.get_cai_enabled() and storage.has_cai_data:
         client = cai_gcp_client.CaiApiClientImpl(client_config, storage)
-        parallel = False
     else:
         client = gcp.ApiClientImpl(client_config)
 

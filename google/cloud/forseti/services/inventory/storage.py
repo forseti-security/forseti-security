@@ -701,16 +701,18 @@ class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
     # pylint: disable=too-many-instance-attributes
-    def __init__(self, session, existing_id=0, readonly=False):
+    def __init__(self, session, service_config, existing_id=0, readonly=False):
         """Initialize
 
         Args:
-            session (object): db session
+            session (object): db session.
+            service_config (object): Service configuration.
             existing_id (int64): The inventory id if wants to open an existing
                 inventory.
-            readonly (bool): whether to keep the inventory read-only
+            readonly (bool): whether to keep the inventory read-only.
         """
         self.session = session
+        self.service_config = service_config
         self.opened = False
         self.inventory_index = None
         self.buffer = BufferedDbWriter(self.session)
@@ -879,20 +881,21 @@ class Storage(BaseStorage):
         if not self.has_cai_data:
             return
 
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.parent_name == parent_name,
-        ]
-        base_query = self.session.query(CaiTemporaryStore)
+        with self.config.scoped_session() as session:
+            filters = [
+                CaiTemporaryStore.content_type == content_type,
+                CaiTemporaryStore.asset_type == asset_type,
+                CaiTemporaryStore.parent_name == parent_name,
+            ]
+            base_query = session.query(CaiTemporaryStore)
 
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
+            for qry_filter in filters:
+                base_query = base_query.filter(qry_filter)
 
-        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
+            base_query = base_query.order_by(CaiTemporaryStore.name.asc())
 
-        for row in base_query.yield_per(PER_YIELD):
-            yield row.extract_asset_data(content_type)
+            for row in base_query.yield_per(PER_YIELD):
+                yield row.extract_asset_data(content_type)
 
     def fetch_cai_asset(self, content_type, asset_type, name):
         """Returns a single resource from the cai temporary store.
@@ -908,22 +911,23 @@ class Storage(BaseStorage):
         if not self.has_cai_data:
             return {}
 
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.name == name,
-        ]
-        base_query = self.session.query(CaiTemporaryStore)
+        with self.config.scoped_session() as session:
+            filters = [
+                CaiTemporaryStore.content_type == content_type,
+                CaiTemporaryStore.asset_type == asset_type,
+                CaiTemporaryStore.name == name,
+            ]
+            base_query = self.session.query(CaiTemporaryStore)
 
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
+            for qry_filter in filters:
+                base_query = base_query.filter(qry_filter)
 
-        row = base_query.one_or_none()
+            row = base_query.one_or_none()
 
-        if row:
-            return row.extract_asset_data(content_type)
+            if row:
+                return row.extract_asset_data(content_type)
 
-        return {}
+            return {}
 
     def open(self, handle=None):
         """Open the storage, potentially create a new index.
