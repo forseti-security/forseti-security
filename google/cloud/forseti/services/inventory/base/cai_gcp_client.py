@@ -43,7 +43,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Organization'
+            'google.cloud.resourcemanager.Organization',
             '//cloudresourcemanager.googleapis.com/{}'.format(orgid))
         if resource:
             return resource
@@ -61,7 +61,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Folder'
+            'google.cloud.resourcemanager.Folder',
             '//cloudresourcemanager.googleapis.com/{}'.format(folderid))
         if resource:
             return resource
