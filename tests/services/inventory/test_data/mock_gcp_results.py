@@ -1791,12 +1791,12 @@ SERVICEACCOUNT_TEMPLATE = """
 """
 
 IAM_GET_SERVICEACCOUNTS = {
-    PROJECT_ID_PREFIX + "1": [
+    "project1": [
         json.loads(
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project1", num=PROJECT_ID_PREFIX + "1", id=1)),
     ],
-    PROJECT_ID_PREFIX + "2": [
+    "project2": [
         json.loads(
             SERVICEACCOUNT_TEMPLATE.format(
                 project="project2", num=PROJECT_ID_PREFIX + "2", id=2)),
@@ -1822,8 +1822,8 @@ SERVICEACCOUNT_EMPTY_IAM_POLICY = """
 }
 """
 
-SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS[PROJECT_ID_PREFIX + "1"][0]["name"]
-SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS[PROJECT_ID_PREFIX + "2"][0]["name"]
+SERVICEACCOUNT1 = IAM_GET_SERVICEACCOUNTS["project1"][0]["name"]
+SERVICEACCOUNT2 = IAM_GET_SERVICEACCOUNTS["project2"][0]["name"]
 
 IAM_GET_SERVICEACCOUNT_IAM_POLICY = {
     SERVICEACCOUNT1: json.loads(SERVICEACCOUNT_IAM_POLICY),
@@ -2011,7 +2011,7 @@ PROJECT_ROLES_TEMPLATE = """
 """
 
 IAM_GET_PROJECT_ROLES = {
-    PROJECT_ID_PREFIX + "4": [
+    "project4": [
         json.loads(
             PROJECT_ROLES_TEMPLATE.format(project="project4", role="role1")),
     ]

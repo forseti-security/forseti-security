@@ -1978,7 +1978,7 @@ class ServiceAccountIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_serviceaccounts(
-                    projectid=self.resource['projectNumber']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -2005,7 +2005,7 @@ class ProjectRoleIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_project_roles(
-                    projectid=self.resource['projectNumber']):
+                    projectid=self.resource['projectId']):
                 yield FACTORIES['role'].create_new(data)
 
 
