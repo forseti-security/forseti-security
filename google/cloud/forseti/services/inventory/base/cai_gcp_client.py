@@ -323,7 +323,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for rule in resources:
             yield rule
 
-    @create_lazy('compute', _create_compute)
+    @gcp.create_lazy('compute', gcp.ApiClientImpl._create_compute)
     def iter_computeinstancegroups(self, projectid):
         """Iterate Compute Engine groups from Cloud Asset data.
 

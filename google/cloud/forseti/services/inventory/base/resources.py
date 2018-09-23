@@ -605,7 +605,7 @@ class Project(Resource):
             dict: Project Billing Info resource.
         """
         if self.enumerable():
-            return client.get_project_billing_info(self['projectNumber])
+            return client.get_project_billing_info(self['projectNumber'])
         return {}
 
     @cached('enabled_apis')
@@ -620,7 +620,7 @@ class Project(Resource):
         """
         enabled_apis = []
         if self.enumerable():
-            enabled_apis = client.get_enabled_apis(self['projectNumber])
+            enabled_apis = client.get_enabled_apis(self['projectNumber'])
 
         self._enabled_service_names = frozenset(
             (api.get('serviceName') for api in enabled_apis))
@@ -1768,7 +1768,7 @@ class KubernetesClusterIterator(ResourceIterator):
         gcp = self.client
         if self.resource.container_api_enabled():
             for data in gcp.iter_container_clusters(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 
@@ -1824,7 +1824,7 @@ class FirewallIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_computefirewalls(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['firewall'].create_new(data)
 
 
@@ -1838,7 +1838,7 @@ class ImageIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_images(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['image'].create_new(data)
 
 
@@ -1852,7 +1852,7 @@ class InstanceGroupIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_computeinstancegroups(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
@@ -1866,7 +1866,7 @@ class InstanceGroupManagerIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_ig_managers(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['instancegroupmanager'].create_new(data)
 
 
@@ -1880,7 +1880,7 @@ class InstanceTemplateIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_instancetemplates(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['instancetemplate'].create_new(data)
 
 
@@ -1894,7 +1894,7 @@ class NetworkIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_networks(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['network'].create_new(data)
 
 
@@ -1908,7 +1908,7 @@ class SnapshotIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_snapshots(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['snapshot'].create_new(data)
 
 
@@ -1922,7 +1922,7 @@ class SubnetworkIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_subnetworks(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['subnetwork'].create_new(data)
 
 
@@ -1936,7 +1936,7 @@ class BackendServiceIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_backendservices(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['backendservice'].create_new(data)
 
 
@@ -1950,7 +1950,7 @@ class ForwardingRuleIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             for data in gcp.iter_forwardingrules(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['forwardingrule'].create_new(data)
 
 
@@ -1964,7 +1964,7 @@ class CloudSqlIterator(ResourceIterator):
         gcp = self.client
         if self.resource.cloudsql_api_enabled():
             for data in gcp.iter_cloudsqlinstances(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
 
 
@@ -1978,7 +1978,7 @@ class ServiceAccountIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_serviceaccounts(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -2005,7 +2005,7 @@ class ProjectRoleIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_project_roles(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['role'].create_new(data)
 
 
@@ -2086,7 +2086,7 @@ class ProjectLienIterator(ResourceIterator):
         """
         if self.resource.enumerable():
             for data in self.client.iter_project_liens(
-                    project_id=self.resource['projectNumber]):
+                    project_id=self.resource['projectNumber']):
                 yield FACTORIES['lien'].create_new(data)
 
 
@@ -2100,7 +2100,7 @@ class ProjectSinkIterator(ResourceIterator):
         gcp = self.client
         if self.resource.enumerable():
             for data in gcp.iter_project_sinks(
-                    projectid=self.resource['projectNumber]):
+                    projectid=self.resource['projectNumber']):
                 yield FACTORIES['sink'].create_new(data)
 
 
