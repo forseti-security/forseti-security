@@ -23,17 +23,18 @@ from google.cloud.forseti.common.gcp_api import cloudasset
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 
 LOGGER = logger.get_logger(__name__)
 CONTENT_TYPES = ['RESOURCE', 'IAM_POLICY']
 
 
-def load_cloudasset_data(storage,
+def load_cloudasset_data(session,
                          config):
     """Export asset data from Cloud Asset API and load into storage.
 
     Args:
-        storage (object): Storage implementation to use.
+        session (object): Database session.
         config (object): Inventory configuration on server
 
     Returns:
@@ -44,7 +45,7 @@ def load_cloudasset_data(storage,
     root_id = config.get_root_resource_id()
 
     # Start by ensuring that there is no existing CAI data in storage.
-    _clear_cai_data(storage)
+    _clear_cai_data(session)
 
     cloudasset_client = cloudasset.CloudAssetClient(client_config)
     imported_assets = 0
@@ -68,15 +69,15 @@ def load_cloudasset_data(storage,
                          content_type, root_id, export_path, results)
         except api_errors.ApiExecutionError as e:
             LOGGER.warn('API Error getting cloud asset data: %s', e)
-            return _clear_cai_data(storage)
+            return _clear_cai_data(session)
         except api_errors.OperationTimeoutError as e:
             LOGGER.warn('Timeout getting cloud asset data: %s', e)
-            return _clear_cai_data(storage)
+            return _clear_cai_data(session)
 
         if 'error' in results:
             LOGGER.error('Export of cloud asset data had an error, aborting: '
                          '%s', results)
-            return _clear_cai_data(storage)
+            return _clear_cai_data(session)
 
         temporary_file = None
         try:
@@ -85,12 +86,12 @@ def load_cloudasset_data(storage,
             LOGGER.debug('Importing Cloud Asset data from %s to database.',
                          temporary_file)
             with open(temporary_file, 'r') as cai_data:
-                rows = storage.populate_cai_data(cai_data)
+                rows = CaiDataAccess.populate_cai_data(cai_data, session)
                 imported_assets += rows
                 LOGGER.info('%s assets imported to database.', rows)
         except errors.HttpError as e:
             LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
-            return _clear_cai_data(storage)
+            return _clear_cai_data(session)
         finally:
             if temporary_file:
                 os.unlink(temporary_file)
@@ -98,14 +99,14 @@ def load_cloudasset_data(storage,
     return imported_assets
 
 
-def _clear_cai_data(storage):
+def _clear_cai_data(session):
     """Clear CAI data from storage.
 
     Args:
-        storage (object): Storage implementation to use.
+        session (object): Database session.
     """
     LOGGER.debug('Deleting Cloud Asset data from database.')
-    count = storage.clear_cai_data()
+    count = CaiDataAccess.clear_cai_data(session)
     LOGGER.debug('%s assets deleted from database.', count)
     return None
 

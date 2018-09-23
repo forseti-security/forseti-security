@@ -11,10 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """GCP API client fassade."""
 
-# pylint: disable=invalid-name,arguments-differ
+# pylint: disable=invalid-name,too-many-lines
 # pylint: disable=too-many-public-methods,too-many-instance-attributes
 
 import abc
@@ -33,7 +32,6 @@ from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
 
-# pylint: disable=bad-indentation
 class ApiClient(object):
     """The gcp api client interface"""
     __metaclass__ = abc.ABCMeta

@@ -567,10 +567,10 @@ CRM_GET_IAM_POLICIES = {
     "folders/" + FOLDER_ID_PREFIX + "1": json.loads(CRM_FOLDER_IAM_POLICY),
     "folders/" + FOLDER_ID_PREFIX + "2": json.loads(CRM_FOLDER_IAM_POLICY),
     "folders/" + FOLDER_ID_PREFIX + "3": json.loads(CRM_FOLDER_IAM_POLICY),
-    "project1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
-    "project2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
-    "project3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
-    "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
+    PROJECT_ID_PREFIX + "1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
+    PROJECT_ID_PREFIX + "2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
+    PROJECT_ID_PREFIX + "3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
+    PROJECT_ID_PREFIX + "4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
 }
 
 CRM_GET_PROJECT_LIENS = {

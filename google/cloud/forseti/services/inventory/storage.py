@@ -573,6 +573,121 @@ class BufferedDbWriter(object):
         self.buffer = []
 
 
+class CaiDataAccess(object):
+    """Access to the CAI temporary store table."""
+
+    @staticmethod
+    def clear_cai_data(session):
+        """Deletes all temporary CAI data from the cai temporary table.
+
+        Args:
+            session (object): Database session.
+
+        Returns:
+            int: The number of rows deleted.
+        """
+        num_rows = 0
+        try:
+            num_rows = CaiTemporaryStore.delete_all(session)
+        except SQLAlchemyError as e:
+            LOGGER.exception('Attempt to delete data from CAI temporary store '
+                             'failed, disabling the use of CAI: %s', e)
+
+        return num_rows
+
+    @staticmethod
+    def populate_cai_data(data, session):
+        """Add assets from cai data dump into cai temporary table.
+
+        Args:
+            data (file): A file like object, line delimeted text dump of json
+                data representing assets from Cloud Asset Inventory exportAssets
+                API.
+            session (object): Database session.
+
+        Returns:
+            int: The number of rows inserted
+        """
+        commit_buffer = BufferedDbWriter(session, commit_on_flush=True)
+        num_rows = 0
+        try:
+            for line in data:
+                if not line:
+                    continue
+
+                try:
+                    row = CaiTemporaryStore.from_json(line.strip())
+                except json_format.ParseError as e:
+                    LOGGER.error('Line %s had a parse error %s, skipping.',
+                                 line.strip(), e)
+                    continue
+                commit_buffer.add(row)
+                num_rows += 1
+            commit_buffer.flush()
+        except SQLAlchemyError as e:
+            LOGGER.exception('Error populating CAI data: %s', e)
+            session.rollback()
+        return num_rows
+
+    @staticmethod
+    def iter_cai_assets(content_type, asset_type, parent_name, session):
+        """Iterate the objects in the cai temporary table.
+
+        Args:
+            content_type (ContentTypes): The content type to return.
+            asset_type (str): The asset type to return.
+            parent_name (str): The parent resource to iter children under.
+            session (object): Database session.
+
+        Yields:
+            object: The content_type data for each resource.
+        """
+        filters = [
+            CaiTemporaryStore.content_type == content_type,
+            CaiTemporaryStore.asset_type == asset_type,
+            CaiTemporaryStore.parent_name == parent_name,
+        ]
+        base_query = session.query(CaiTemporaryStore)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
+
+        for row in base_query.yield_per(PER_YIELD):
+            yield row.extract_asset_data(content_type)
+
+    @staticmethod
+    def fetch_cai_asset(content_type, asset_type, name, session):
+        """Returns a single resource from the cai temporary store.
+
+        Args:
+            content_type (ContentTypes): The content type to return.
+            asset_type (str): The asset type to return.
+            name (str): The resource to return.
+            session (object): Database session.
+
+        Returns:
+            dict: The content data for the specified resource.
+        """
+        filters = [
+            CaiTemporaryStore.content_type == content_type,
+            CaiTemporaryStore.asset_type == asset_type,
+            CaiTemporaryStore.name == name,
+        ]
+        base_query = session.query(CaiTemporaryStore)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        row = base_query.one_or_none()
+
+        if row:
+            return row.extract_asset_data(content_type)
+
+        return {}
+
+
 class DataAccess(object):
     """Access to inventory for services."""
 
@@ -700,7 +815,6 @@ def initialize(engine):
 class Storage(BaseStorage):
     """Inventory storage used during creation."""
 
-    # pylint: disable=too-many-instance-attributes
     def __init__(self, session, existing_id=0, readonly=False):
         """Initialize
 
@@ -716,7 +830,6 @@ class Storage(BaseStorage):
         self.buffer = BufferedDbWriter(self.session)
         self._existing_id = existing_id
         self.session_completed = False
-        self.has_cai_data = False
         self.readonly = readonly
 
     def _require_opened(self):
@@ -814,116 +927,6 @@ class Storage(BaseStorage):
             return row.id
 
         return 0
-
-    def clear_cai_data(self):
-        """Deletes all temporary CAI data from the cai temporary table.
-
-        Returns:
-            int: The number of rows deleted.
-        """
-        try:
-            num_rows = CaiTemporaryStore.delete_all(self.session)
-        except SQLAlchemyError as e:
-            LOGGER.exception('Attempt to delete data from CAI temporary store '
-                             'failed, disabling the use of CAI: %s', e)
-        finally:
-            self.has_cai_data = False
-
-        return num_rows
-
-    def populate_cai_data(self, data):
-        """Add assets from cai data dump into cai temporary table.
-
-        Args:
-            data (file): A file like object, line delimeted text dump of json
-                data representing assets from Cloud Asset Inventory exportAssets
-                API.
-
-        Returns:
-            int: The number of rows inserted
-        """
-        commit_buffer = BufferedDbWriter(self.session, commit_on_flush=True)
-        num_rows = 0
-        try:
-            for line in data:
-                if not line:
-                    continue
-
-                try:
-                    row = CaiTemporaryStore.from_json(line.strip())
-                except json_format.ParseError as e:
-                    LOGGER.error('Line %s had a parse error %s, skipping.',
-                                 line.strip(), e)
-                    continue
-                commit_buffer.add(row)
-                num_rows += 1
-            commit_buffer.flush()
-            self.has_cai_data = True
-        except SQLAlchemyError as e:
-            LOGGER.exception('Error populating CAI data: %s', e)
-            self.session.rollback()
-            self.has_cai_data = False
-        return num_rows
-
-    def iter_cai_assets(self, content_type, asset_type, parent_name):
-        """Iterate the objects in the cai temporary table.
-
-        Args:
-            content_type (ContentTypes): The content type to return
-            asset_type (str): The asset type to return
-            parent_name (str): The parent resource to iter children under.
-
-        Yields:
-            object: The content_type data for each resource.
-        """
-        if not self.has_cai_data:
-            return
-
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.parent_name == parent_name,
-        ]
-        base_query = self.session.query(CaiTemporaryStore)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
-
-        for row in base_query.yield_per(PER_YIELD):
-            yield row.extract_asset_data(content_type)
-
-    def fetch_cai_asset(self, content_type, asset_type, name):
-        """Returns a single resource from the cai temporary store.
-
-        Args:
-            content_type (ContentTypes): The content type to return
-            asset_type (str): The asset type to return
-            name (str): The resource to return.
-
-        Returns:
-            dict: The content data for the specified resource.
-        """
-        if not self.has_cai_data:
-            return {}
-
-        filters = [
-            CaiTemporaryStore.content_type == content_type,
-            CaiTemporaryStore.asset_type == asset_type,
-            CaiTemporaryStore.name == name,
-        ]
-        base_query = self.session.query(CaiTemporaryStore)
-
-        for qry_filter in filters:
-            base_query = base_query.filter(qry_filter)
-
-        row = base_query.one_or_none()
-
-        if row:
-            return row.extract_asset_data(content_type)
-
-        return {}
 
     def open(self, handle=None):
         """Open the storage, potentially create a new index.

@@ -73,9 +73,8 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
         _session_maker = sessionmaker()
-        session = _session_maker(bind=self.engine)
+        self.session = _session_maker(bind=self.engine)
         storage.initialize(self.engine)
-        self.storage = storage.Storage(session)
         self.inventory_config = InventoryConfig('organizations/987654321',
                                                 '',
                                                 {},
@@ -104,6 +103,62 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         # Stop mocks before unlinking the database file.
         os.unlink(self.dbfile)
 
+    def validate_data_in_table(self):
+        """Validate there is actual data in the CAI table."""
+        resource = storage.CaiDataAccess.fetch_cai_asset(
+            storage.ContentTypes.resource,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
+        expected_resource = {
+            'creationTime': '2016-09-02T18:55:58.783Z',
+            'displayName': 'test.forseti',
+            'lastModifiedTime': '2017-02-14T05:43:45.012Z',
+            'lifecycleState': 'ACTIVE',
+            'name': 'organizations/1234567890',
+            'organizationId': '1234567890',
+            'owner': {'directoryCustomerId': 'C00h00n00'}
+        }
+        self.assertEqual(expected_resource, resource)
+
+        iam_policy = storage.CaiDataAccess.fetch_cai_asset(
+            storage.ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
+        expected_iam_policy = {
+            'etag': 'BwVvLqcT+M4=',
+            'bindings': [
+                {'role': 'roles/Owner',
+                 'members': ['user:user1@test.forseti']
+                },
+                {'role': 'roles/Viewer',
+                 'members': [('serviceAccount:forseti-server-gcp-d9fffac'
+                              '@forseti-test-project.iam.gserviceaccount.com'),
+                             'user:user1@test.forseti']
+                }
+            ]
+        }
+        self.assertEqual(expected_iam_policy, iam_policy)
+
+    def validate_no_data_in_table(self):
+        """Validate there is not data in the CAI table."""
+        resource = storage.CaiDataAccess.fetch_cai_asset(
+            storage.ContentTypes.resource,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
+        expected_resource = {}
+        self.assertEqual(expected_resource, resource)
+
+        iam_policy = storage.CaiDataAccess.fetch_cai_asset(
+            storage.ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
+        expected_iam_policy = {}
+        self.assertEqual(expected_iam_policy, iam_policy)
+
     def test_get_gcs_path(self):
         """Validate _get_gcs_path returns expected values."""
         result = cloudasset._get_gcs_path('gs://test-bucket',
@@ -131,12 +186,12 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
         self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
-        results = cloudasset.load_cloudasset_data(self.storage,
+        results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
         # 15 resources total in mock dump files
         expected_results = 15
         self.assertEqual(expected_results, results)
-        self.assertTrue(self.storage.has_cai_data)
+        self.validate_data_in_table()
 
     def test_load_cloudasset_data_cai_apierror(self):
         """Validate load_cloud_asset handles an API error from CAI."""
@@ -148,30 +203,30 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         self.mock_export_assets.side_effect = (
             api_errors.ApiExecutionError('organizations/987654321', error_403)
         )
-        results = cloudasset.load_cloudasset_data(self.storage,
+        results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
-        self.assertFalse(self.storage.has_cai_data)
+        self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_cai_timeout(self):
         """Validate load_cloud_asset handles a timeout error."""
         self.mock_export_assets.side_effect = (
             api_errors.OperationTimeoutError('organizations/987654321', {}))
-        results = cloudasset.load_cloudasset_data(self.storage,
+        results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
-        self.assertFalse(self.storage.has_cai_data)
+        self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_cai_error_response(self):
         """Validate load_cloud_asset handles an error result from CAI."""
         self.mock_export_assets.return_value = EXPORT_ASSETS_ERROR
-        results = cloudasset.load_cloudasset_data(self.storage,
+        results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
         self.assertIsNone(results)
         self.assertFalse(self.mock_copy_file_from_gcs.called)
-        self.assertFalse(self.storage.has_cai_data)
+        self.validate_no_data_in_table()
 
     def test_load_cloudasset_data_download_error(self):
         """Validate load_cloud_asset handles an error downloading from GCS."""
@@ -184,10 +239,10 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         error_403 = errors.HttpError(response, content)
         self.mock_copy_file_from_gcs.side_effect = error_403
 
-        results = cloudasset.load_cloudasset_data(self.storage,
+        results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
         self.assertIsNone(results)
-        self.assertFalse(self.storage.has_cai_data)
+        self.validate_no_data_in_table()
 
 if __name__ == '__main__':
     unittest.main()

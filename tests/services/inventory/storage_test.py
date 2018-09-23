@@ -16,21 +16,21 @@
 
 from datetime import datetime
 import os
+from StringIO import StringIO
 import unittest
 from sqlalchemy.orm import sessionmaker
-from StringIO import StringIO
 
 from tests.services.util.db import create_test_engine
+from tests.services.util.db import create_test_engine_with_file
 from tests.unittest_utils import ForsetiTestCase
-
 
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base.resources import Resource
+from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 from google.cloud.forseti.services.inventory.storage import ContentTypes
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.services.inventory.storage import Storage
-from tests.services.util.db import create_test_engine_with_file
 
 
 class ResourceMock(Resource):
@@ -227,73 +227,71 @@ class CaiTemporaryStoreTest(ForsetiTestCase):
         self.session = _session_maker(bind=self.engine)
         initialize(self.engine)
 
-    def _add_resources(self, storage):
+    def _add_resources(self):
         """Add CAI resources to temporary table."""
         resource_data = StringIO(CAI_RESOURCE_DATA)
-        rows = storage.populate_cai_data(resource_data)
+        rows = CaiDataAccess.populate_cai_data(resource_data, self.session)
         expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 
-    def _add_iam_policies(self, storage):
+    def _add_iam_policies(self):
         """Add CAI IAM Policies to temporary table."""
         iam_policy_data = StringIO(CAI_IAM_POLICY_DATA)
-        rows = storage.populate_cai_data(iam_policy_data)
+        rows = CaiDataAccess.populate_cai_data(iam_policy_data, self.session)
         expected_rows = len(CAI_IAM_POLICY_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
 
     def test_populate_cai_data(self):
         """Validate CAI data insert."""
-        storage = Storage(self.session)
-        self._add_resources(storage)
-        self._add_iam_policies(storage)
-        self.assertTrue(storage.has_cai_data)
+        self._add_resources()
+        self._add_iam_policies()
 
     def test_clear_cai_data(self):
         """Validate CAI data delete."""
-        storage = Storage(self.session)
-        self._add_resources(storage)
+        self._add_resources()
 
-        rows = storage.clear_cai_data()
+        rows = CaiDataAccess.clear_cai_data(self.session)
         expected_rows = len(CAI_RESOURCE_DATA.split('\n'))
         self.assertEqual(expected_rows, rows)
-        self.assertFalse(storage.has_cai_data)
 
-        results = storage.iter_cai_assets(
+        results = CaiDataAccess.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890')
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
         self.assertEqual(0, len(list(results)))
 
     def test_iter_cai_assets(self):
         """Validate querying CAI asset data."""
-        storage = Storage(self.session)
-        self._add_resources(storage)
+        self._add_resources()
 
-        results = storage.iter_cai_assets(
+        results = CaiDataAccess.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890')
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
 
         expected_names = ['folders/11111']
         self.assertEqual(expected_names, [asset['name'] for asset in results])
 
-        results = storage.iter_cai_assets(
+        results = CaiDataAccess.iter_cai_assets(
             ContentTypes.resource,
             'google.appengine.Service',
-            '//appengine.googleapis.com/apps/forseti-test-project')
+            '//appengine.googleapis.com/apps/forseti-test-project',
+            self.session)
 
         expected_names = ['apps/forseti-test-project/services/default']
         self.assertEqual(expected_names, [asset['name'] for asset in results])
 
     def test_fetch_cai_asset(self):
         """Validate querying single CAI asset."""
-        storage = Storage(self.session)
-        self._add_iam_policies(storage)
+        self._add_iam_policies()
 
-        results = storage.fetch_cai_asset(
+        results = CaiDataAccess.fetch_cai_asset(
             ContentTypes.iam_policy,
             'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/organizations/1234567890')
+            '//cloudresourcemanager.googleapis.com/organizations/1234567890',
+            self.session)
         expected_iam_policy = {
             'etag': 'BwVvLqcT+M4=',
             'bindings': [

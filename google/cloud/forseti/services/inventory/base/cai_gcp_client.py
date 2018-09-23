@@ -13,24 +13,43 @@
 # limitations under the License.
 
 """Cloud Asset and GCP API hybrid client fassade."""
+import threading
 
+from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base import gcp
+from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 from google.cloud.forseti.services.inventory.storage import ContentTypes
 
+LOCAL_THREAD = threading.local()
 
-# pylint: disable=bad-indentation
+
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
 
-    def __init__(self, config, storage):
+    def __init__(self, config, engine):
         """Initialize.
 
         Args:
             config (dict): GCP API client configuration.
-            storage (Storage): The inventory storage DAO class.
+            engine (object): Database engine to operate on.
         """
         super(CaiApiClientImpl, self).__init__(config)
-        self.dao = storage
+        self.dao = CaiDataAccess()
+        self.engine = engine
+        self._local = LOCAL_THREAD
+
+    @property
+    def session(self):
+        """Return a thread local CAI read only session object.
+
+        Returns:
+            object: A thread local Session.
+        """
+        if hasattr(self._local, 'cai_session'):
+            return self._local.cai_session
+
+        self._local.cai_session = db.create_readonly_session(engine=self.engine)
+        return self._local.cai_session
 
     def fetch_organization(self, orgid):
         """Fetch Organization data from Cloud Asset data.
@@ -44,7 +63,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/{}'.format(orgid))
+            '//cloudresourcemanager.googleapis.com/{}'.format(orgid),
+            self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -62,7 +82,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(folderid))
+            '//cloudresourcemanager.googleapis.com/{}'.format(folderid),
+            self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -81,7 +102,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'google.cloud.resourcemanager.Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid))
+                projectid),
+            self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -97,11 +119,12 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of Project resources
         """
-        resources = list(self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Project',
             '//cloudresourcemanager.googleapis.com/{}s/{}'.format(parent_type,
-                                                                  parent_id)))
+                                                                  parent_id),
+            self.session)
         for project in resources:
             yield project
 
@@ -114,10 +137,11 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of folders
         """
-        resources = list(self.dao.iter_cai_assets(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(parent_id)))
+            '//cloudresourcemanager.googleapis.com/{}'.format(parent_id),
+            self.session)
         for folder in resources:
             yield folder
 
@@ -133,7 +157,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(folderid))
+            '//cloudresourcemanager.googleapis.com/{}'.format(folderid),
+            self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -151,7 +176,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
             'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/{}'.format(orgid))
+            '//cloudresourcemanager.googleapis.com/{}'.format(orgid),
+            self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
@@ -170,7 +196,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.iam_policy,
             'google.cloud.resourcemanager.Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid))
+                projectid),
+            self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
