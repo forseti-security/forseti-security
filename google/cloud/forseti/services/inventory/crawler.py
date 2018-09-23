@@ -311,7 +311,8 @@ def run_crawler(storage,
                     asset_count)
 
     if config.get_cai_enabled() and asset_count:
-        client = cai_gcp_client.CaiApiClientImpl(client_config, storage)
+        client = cai_gcp_client.CaiApiClientImpl(client_config,
+                                                 storage.session.get_bind())
     else:
         client = gcp.ApiClientImpl(client_config)
 
