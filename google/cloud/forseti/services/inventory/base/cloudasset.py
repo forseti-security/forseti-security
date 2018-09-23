@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2018 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,76 +35,94 @@ def load_cloudasset_data(session, config):
 
     Args:
         session (object): Database session.
-        config (object): Inventory configuration on server
+        config (object): Inventory configuration on server.
 
     Returns:
         int: The count of assets imported into the database, or None if there
             is an error.
     """
-    client_config = config.get_api_quota_configs()
-    root_id = config.get_root_resource_id()
-
     # Start by ensuring that there is no existing CAI data in storage.
     _clear_cai_data(session)
 
-    cloudasset_client = cloudasset.CloudAssetClient(client_config)
+    cloudasset_client = cloudasset.CloudAssetClient(
+        config.get_api_quota_configs())
     imported_assets = 0
-    timestamp = int(time.time())
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        future_to_key = {}
+        futures = []
         for content_type in CONTENT_TYPES:
-            export_path = _get_gcs_path(config.get_cai_gcs_path(),
-                                        content_type,
-                                        root_id,
-                                        timestamp)
-            LOGGER.info('Starting Cloud Asset export for %s under %s to '
-                        'GCS object %s.', content_type, root_id, export_path)
-            future = executor.submit(cloudasset_client.export_assets,
-                                     root_id,
-                                     export_path,
-                                     content_type=content_type,
-                                     blocking=True,
-                                     timeout=3600)
-            future_to_key[future] = (content_type, export_path)
+            futures.append(executor.submit(_export_assets,
+                                           cloudasset_client,
+                                           config,
+                                           content_type))
 
-        for future in concurrent.futures.as_completed(future_to_key):
-            content_type, export_path = future_to_key[future]
+        for future in concurrent.futures.as_completed(futures):
             try:
-                results = future.result()
-                LOGGER.debug('Cloud Asset export for %s under %s to GCS '
-                             'object %s completed, result: %s.',
-                             content_type, root_id, export_path, results)
-            except api_errors.ApiExecutionError as e:
-                LOGGER.warn('API Error getting cloud asset data: %s', e)
-                return _clear_cai_data(session)
-            except api_errors.OperationTimeoutError as e:
-                LOGGER.warn('Timeout getting cloud asset data: %s', e)
-                return _clear_cai_data(session)
+                temporary_file = future.result()
+                if not temporary_file:
+                    return _clear_cai_data(session)
 
-            if 'error' in results:
-                LOGGER.error('Export of cloud asset data had an error, aborting: '
-                             '%s', results)
-                return _clear_cai_data(session)
-
-            temporary_file = None
-            try:
-                LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
-                temporary_file = file_loader.copy_file_from_gcs(export_path)
                 LOGGER.debug('Importing Cloud Asset data from %s to database.',
                              temporary_file)
                 with open(temporary_file, 'r') as cai_data:
                     rows = CaiDataAccess.populate_cai_data(cai_data, session)
                     imported_assets += rows
                     LOGGER.info('%s assets imported to database.', rows)
-            except errors.HttpError as e:
-                LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
-                return _clear_cai_data(session)
             finally:
                 if temporary_file:
                     os.unlink(temporary_file)
 
     return imported_assets
+
+
+def _export_assets(cloudasset_client, config, content_type):
+    """Worker function for exporting assets and downloading dump from GCS.
+
+    Args:
+        cloudasset_client (CloudAssetClient): CloudAsset API client interface.
+        config (object): Inventory configuration on server.
+        content_type (ContentTypes): The content type to export.
+
+    Returns:
+        str: The path to the temporary file downloaded from GCS or None on
+            error.
+    """
+    root_id = config.get_root_resource_id()
+    timestamp = int(time.time())
+    export_path = _get_gcs_path(config.get_cai_gcs_path(),
+                                content_type,
+                                root_id,
+                                timestamp)
+
+    try:
+        LOGGER.info('Starting Cloud Asset export for %s under %s to GCS object '
+                    '%s.', content_type, root_id, export_path)
+        results = cloudasset_client.export_assets(root_id,
+                                                  export_path,
+                                                  content_type=content_type,
+                                                  blocking=True,
+                                                  timeout=3600)
+        LOGGER.debug('Cloud Asset export for %s under %s to GCS '
+                     'object %s completed, result: %s.',
+                     content_type, root_id, export_path, results)
+    except api_errors.ApiExecutionError as e:
+        LOGGER.warn('API Error getting cloud asset data: %s', e)
+        return None
+    except api_errors.OperationTimeoutError as e:
+        LOGGER.warn('Timeout getting cloud asset data: %s', e)
+        return None
+
+    if 'error' in results:
+        LOGGER.error('Export of cloud asset data had an error, aborting: '
+                     '%s', results)
+        return None
+
+    try:
+        LOGGER.debug('Downloading Cloud Asset data from GCS to disk.')
+        return file_loader.copy_file_from_gcs(export_path)
+    except errors.HttpError as e:
+        LOGGER.warn('Download of CAI dump from GCS failed: %s', e)
+        return None
 
 
 def _clear_cai_data(session):

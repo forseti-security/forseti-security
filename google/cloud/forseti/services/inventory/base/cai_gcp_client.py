@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Cloud Asset and GCP API hybrid client fassade."""
-import os
 import threading
 
 from google.cloud.forseti.services import db
@@ -24,6 +23,7 @@ from google.cloud.forseti.services.inventory.storage import ContentTypes
 LOCAL_THREAD = threading.local()
 
 
+# pylint: disable=too-many-public-methods
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
 
@@ -256,17 +256,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for version in resources:
             yield version
 
-    def iter_buckets(self, projectid):
-        """Iterate Buckets from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query
-
-        Yields:
-            dict: Generator of Bucket resources
-        """
-        # Fall back to live API because CAI does not yet have bucket ACLs.
-        return super(CaiApiClientImpl, self).iter_buckets(projectid)
+    # Use live API because CAI does not yet have bucket ACLs.
+    # def iter_buckets(self, projectid):
 
     def get_bucket_iam_policy(self, bucketid):
         """Bucket IAM policy Iterator from Cloud Asset data.
@@ -323,19 +314,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for rule in resources:
             yield rule
 
-    def iter_computeinstancegroups(self, projectid):
-        """Iterate Compute Engine groups from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Instance group.
-        """
-        # Fall back to live API because CAI does not yet have all instance
-        # groups yet.
-        return super(CaiApiClientImpl, self).iter_computeinstancegroups(
-            projectid)
+    # Use live API because CAI does not yet have all instance groups.
+    # def iter_computeinstancegroups(self, projectid):
 
     def iter_computedisks(self, projectid):
         """Iterate Compute Engine disks from Cloud Asset data.
@@ -373,18 +353,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for backendservice in resources:
             yield backendservice
 
-    def iter_forwardingrules(self, projectid):
-        """Iterate Forwarding Rules from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of forwarding rule resources.
-        """
-        # Fall back to live API because CAI does not yet have forwarding rules.
-        return super(CaiApiClientImpl, self).iter_forwardingrules(projectid)
-
     def iter_images(self, projectid):
         """Iterate Images from Cloud Asset data.
 
@@ -402,18 +370,6 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.session)
         for image in resources:
             yield image
-
-    def iter_ig_managers(self, projectid):
-        """Iterate Instance Group Manager from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of instance group manager resources.
-        """
-        # Fall back to live API because CAI does not yet have IG Managers.
-        return super(CaiApiClientImpl, self).iter_ig_managers(projectid)
 
     def iter_instancetemplates(self, projectid):
         """Iterate Instance Templates from Cloud Asset data.
