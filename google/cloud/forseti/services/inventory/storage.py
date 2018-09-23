@@ -918,7 +918,7 @@ class Storage(BaseStorage):
         for qry_filter in filters:
             base_query = base_query.filter(qry_filter)
 
-        row = base_query.one()
+        row = base_query.one_or_none()
 
         if row:
             return row.extract_asset_data(content_type)
