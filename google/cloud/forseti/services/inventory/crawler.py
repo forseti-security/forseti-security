@@ -14,13 +14,13 @@
 
 """Crawler implementation."""
 
-
-import threading
-import time
 from Queue import Empty
 from Queue import Queue
+import threading
+import time
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.base import cai_gcp_client
 from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
@@ -309,9 +309,12 @@ def run_crawler(storage,
         LOGGER.info('%s total assets loaded from Cloud Asset data.',
                     asset_count)
 
+    if config.get_cai_enabled() and storage.has_cai_data:
+        client = cai_gcp_client.CaiApiClientImpl(client_config, storage)
+    else:
+        client = gcp.ApiClientImpl(client_config)
+
     root_id = config.get_root_resource_id()
-    # TODO: Switch to CaiClientImpl if CAI is enabled and data imported.
-    client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
         crawler_config = ParallelCrawlerConfig(storage, progresser, client)
