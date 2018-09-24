@@ -189,8 +189,11 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         for res in resource_ancestors:
             applicable_rules.extend(self.resource_to_rules.get(res, []))
 
-        if applicable_rules and not liens:
-            for rule in applicable_rules:
+        for rule in applicable_rules:
+            if liens:
+                violations = itertools.chain(
+                    violations, rule.find_violations(liens))
+            else:
                 # TODO: fill resource_data with what the lien should be so that
                 # we can create it automatically in the enforcer.
                 violation = RuleViolation(
@@ -202,12 +205,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     violation_type='LIEN_VIOLATION',
                     resource_data='')
 
-                violations = itertools.chain(
-                    violations, [violation])
-
-        for rule in applicable_rules:
-            violations = itertools.chain(
-                violations, rule.find_violations(liens))
+                violations = itertools.chain(violations, [violation])
 
         return violations
 
