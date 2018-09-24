@@ -81,7 +81,8 @@ class LienScanner(base_scanner.BaseScanner):
         Args:
             all_violations (list): A list of BigQuery violations.
         """
-        all_violations = self._flatten_violations(all_violations)
+        all_violations = list(self._flatten_violations(all_violations))
+        Logger.info(all_violations)
         self._output_results_to_db(all_violations)
 
 
@@ -141,7 +142,7 @@ class LienScanner(base_scanner.BaseScanner):
             list: A list of all violations
         """
         all_violations = []
-        LOGGER.info('Finding log sink violations...')
+        LOGGER.info('Finding lien violations...')
 
         for parent_resource, liens in parent_resource_to_liens.iteritems():
             violations = self.rules_engine.find_violations(
