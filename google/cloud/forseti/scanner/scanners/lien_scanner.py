@@ -14,6 +14,8 @@
 
 """Scanner for the Lien rules engine."""
 
+import collections
+
 from google.cloud.forseti.common.gcp_type import lien
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
@@ -82,19 +84,20 @@ class LienScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
+
     def _retrieve(self):
         """Retrieves the data for scanner.
 
         Returns:
-            list: BigQuery ACL data
+            Map(): Lien data.
 
         Raises:
             ValueError: if resources have an unexpected type.
         """
-        model_manager = self.service_config.model_manager
-        scoped_session, data_access = model_manager.get(self.model_name)
+        scoped_session, data_access = self.service_config.model_manager.get(
+            self.model_name)
         with scoped_session as session:
-            liens = []
+            parent_resource_to_liens = collections.defaultdict(list)
 
             for lien_resource in data_access.scanner_iter(session, 'lien'):
                 parent_resource = lien_resource.parent
@@ -110,15 +113,45 @@ class LienScanner(base_scanner.BaseScanner):
                     full_name=parent_resource.full_name,
                 )
 
-                liens.append(lien.Lien.from_json(
+                parent_resource_to_liens[proj].append(lien.Lien.from_json(
                     parent=proj,
                     name=lien_resource.name,
                     json_string=lien_resource.data))
 
-            return liens
+            for project_resource in data_access.scanner_iter(
+                    session, 'project'):
+
+                proj = project.Project(
+                    project_id=project_resource.name,
+                    full_name=project_resource.full_name,
+                )
+
+                if proj not in parent_resource_to_liens:
+                    parent_resource_to_liens[proj] = []
+
+            return parent_resource_to_liens
+
+    def _find_violations(self, parent_to_liens):
+        """Find violations in log sinks.
+
+        Args:
+            log_sink_data (list): log sink data to find violations in.
+
+        Returns:
+            list: A list of all violations
+        """
+        all_violations = []
+        LOGGER.info('Finding log sink violations...')
+
+        for parent_resource, liens in parent_to_liens:
+            violations = self.rules_engine.find_violations(
+                parent_resource, liens)
+            LOGGER.debug(violations)
+            all_violations.extend(violations)
+        return all_violations
 
     def run(self):
         """Runs the data collection."""
-        liens = self._retrieve()
-        all_violations =  self.rules_engine.find_violations(liens)
+        parent_resource_to_liens = self._retrieve()
+        all_violations = self._find_violations(parent_resource_to_liens)
         self._output_results(all_violations)

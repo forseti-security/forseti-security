@@ -71,7 +71,7 @@ class LienRulesEngineTest(ForsetiTestCase):
         lien_rules_engine.LOGGER = mock.MagicMock()
 
     def test_build_rule_book_from_local_yaml_file(self):
-        rule = Rules.organization_rule.format(id=data.ORGANIZATION_WITH_LIEN.id)
+        rule = Rules.organization_rule.format(id=data.ORGANIZATION.id)
         rules_engine = get_rules_engine_with_rule(rule)
         self.assertEqual(1, len(rules_engine.rule_book.resource_to_rules))
 
@@ -81,40 +81,43 @@ class LienRulesEngineTest(ForsetiTestCase):
             get_rules_engine_with_rule(rule)
 
     def test_find_violations_project_rule_no_violations(self):
-        rule = Rules.projects_rule.format(ids=[data.PROJECT_WITH_LIEN.id])
+        rule = Rules.projects_rule.format(ids=[data.PROJECT.id])
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(data.LIENS))
+        got_violations = list(rules_engine.find_violations(
+            data.PROJECT, [data.LIEN]))
         self.assertEqual(got_violations, [])
 
     def test_find_violations_project_rule_missing_restrictions(self):
-        rule = Rules.projects_rule.format(ids=[data.PROJECT_WITH_LIEN.id])
+        rule = Rules.projects_rule.format(ids=[data.PROJECT.id])
         rule = rule.replace('resourcemanager.projects.delete', 'foo')
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(data.LIENS))
+        got_violations = list(rules_engine.find_violations(
+            data.PROJECT, [data.LIEN]))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
     def test_find_violations_organization_rule(self):
-        rule = Rules.organization_rule.format(id=data.ORGANIZATION_WITH_LIEN.id)
+        rule = Rules.organization_rule.format(id=data.ORGANIZATION.id)
         rule = rule.replace('resourcemanager.projects.delete', 'foo')
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(data.LIENS))
+        got_violations = list(rules_engine.find_violations(
+            data.PROJECT, [data.LIEN]))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
-    def test_find_violations_missing_lien(self):
-        project = data.PROJECT_WITHOUT_LIEN
-        rule = Rules.projects_rule.format(ids=[project.id])
+    def test_find_violations_project_missing_lien(self):
+        rule = Rules.projects_rule.format(ids=[data.PROJECT.id])
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations(data.LIENS))
+        got_violations = list(rules_engine.find_violations(data.PROJECT, []))
         want_violations = [lien_rules_engine.RuleViolation(
-            resource_id=project.id,
-            resource_type=project.type,
-            full_name='project/p2',
+            resource_id=data.PROJECT.id,
+            resource_type=data.PROJECT.type,
+            full_name='organization/234/project/p1/',
             rule_index=0,
             rule_name='Lien test rule',
             violation_type='LIEN_VIOLATION',
             resource_data='',
         )]
         self.assertEqual(got_violations, want_violations)
+
 
 if __name__ == '__main__':
     unittest.main()

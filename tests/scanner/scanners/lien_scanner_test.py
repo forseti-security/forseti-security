@@ -18,20 +18,15 @@ import json
 import unittest
 import mock
 
-from tests.scanner.test_data import fake_lien_scanner_data
+from tests.scanner.test_data import fake_lien_scanner_data as data
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.gcp_type import resource as resource_mod
+from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.scanners import lien_scanner
 
 
 def _mock_gcp_resource_iter(_, resource_type):
     """Creates a list of GCP resource mocks retrieved by the scanner."""
-    resources = []
-    if resource_type != 'lien':
-        raise ValueError(
-            'unexpected resource type: got %s, want lien',
-            resource_type,
-        )
+
 
     Resource = collections.namedtuple(
         'Resource',
@@ -40,26 +35,29 @@ def _mock_gcp_resource_iter(_, resource_type):
          'data'],
     )
 
-    for lien in fake_lien_scanner_data.LIENS:
-        project_resource = Resource(
-            full_name=fake_lien_scanner_data.PROJECT_WITH_LIEN.full_name,
-            type='project',
-            name=fake_lien_scanner_data.PROJECT_WITH_LIEN.id,
-            parent_type_name='',
-            parent=None,
-            data='',
-        )
+    project_resource = Resource(
+        full_name=data.PROJECT.full_name,
+        type='project',
+        name=data.PROJECT.id,
+        parent_type_name='',
+        parent=None,
+        data='',
+    )
 
+    if resource_type == 'project':
+        return [project_resource]
+    elif resource_type == 'lien':
         lien_resource = Resource(
-            full_name=fake_lien_scanner_data.LIENS[0].full_name,
+            full_name=data.LIEN.full_name,
             type='lien',
             parent_type_name='project',
-            name=fake_lien_scanner_data.LIENS[0].full_name.split('/')[-2],
+            name=data.LIEN.full_name.split('/')[-2],
             parent=project_resource,
-            data=lien.raw_json,
+            data=data.LIEN.raw_json,
         )
-        resources.append(lien_resource)
-    return resources
+        return [lien_resource]
+    else:
+        raise ValueError('Unexpected resource type: ' + resource_type)
 
 
 class LienScannerTest(ForsetiTestCase):
@@ -79,12 +77,9 @@ class LienScannerTest(ForsetiTestCase):
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
 
-        liens = self.scanner._retrieve()
-
-        self.assertEqual(1, len(liens))
-        self.assertEqual(liens[0].parent.full_name,
-                         'organization/234/project/p1/')
-        self.assertEqual(liens[0].name, 'projects/p1/liens/l1')
+        got = self.scanner._retrieve()
+        want = {data.PROJECT: [data.LIEN]}
+        self.assertEqual(got, want)
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ class Lien(resource.Resource):
         self.raw_json = raw_json
 
     @classmethod
-    def from_json(cls,parent, name, json_string):
+    def from_json(cls, parent, name, json_string):
         lien_dict = json.loads(json_string)
         return cls(
             parent=parent,

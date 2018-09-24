@@ -20,29 +20,20 @@ from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.scanner.audit import lien_rules_engine
 
 
-ORGANIZATION_WITH_LIEN = organization.Organization(
+ORGANIZATION = organization.Organization(
     '234',
     display_name='Organization 234',
     full_name='organization/234/',
     data='fake_org_data_234',
 )
 
-PROJECT_WITH_LIEN = project.Project(
+PROJECT = project.Project(
     'p1',
     project_number=11223344,
     display_name='Project with lien',
-    parent=organization,
+    parent=ORGANIZATION,
     full_name='organization/234/project/p1/',
     data='fake_project_data_2341',
-)
-
-PROJECT_WITHOUT_LIEN = project.Project(
-    'p2',
-    project_number=11223345,
-    display_name='Project without lien',
-    parent=organization,
-    full_name='organization/234/project/p2/',
-    data='fake_project_data_2342',
 )
 
 _LIEN_JSON = """{
@@ -54,7 +45,7 @@ _LIEN_JSON = """{
 }
 """
 
-LIENS = [lien.Lien.from_json(PROJECT_WITH_LIEN, 'l1', _LIEN_JSON)]
+LIEN = lien.Lien.from_json(PROJECT, 'l1', _LIEN_JSON)
 
 VIOLATIONS = [lien_rules_engine.RuleViolation(
     resource_id='l1',

@@ -48,7 +48,7 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
         """
         self.rule_book = LienRuleBook(self._load_rule_definitions())
 
-    def find_violations(self, liens, force_rebuild=False):
+    def find_violations(self, parent_resource, liens, force_rebuild=False):
         """Determine whether Big Query datasets violate rules.
 
         Args:
@@ -63,7 +63,7 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_violations(liens)
+        violations = self.rule_book.find_violations(parent_resource, liens)
         return violations
 
     def add_rules(self, rules):
@@ -118,7 +118,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         for field in ['name', 'restrictions']:
             if field not in rule_def:
-             raise errors.InvalidRulesSchemaError(
+                raise errors.InvalidRulesSchemaError(
                     'Missing field "{}" in rule {}'.format(field, rule_index))
 
         return Rule(resource=resource,
@@ -138,7 +138,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         resources = rule_def.get('resource')
         if not resources:
             raise errors.InvalidRulesSchemaError(
-                    'Missing field "resource" in rule {}'.format(rule_index))
+                'Missing field "resource" in rule {}'.format(rule_index))
 
         for raw_resource in resources:
             resource_ids = raw_resource.get('resource_ids')
@@ -165,7 +165,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                 self.resource_to_rules[resource].append(rule)
                 self.all_rules.append(rule)
 
-    def find_violations(self, liens):
+    def find_violations(self, parent_resource, liens):
         """Find acl violations in the rule book.
 
         Args:
@@ -181,32 +181,33 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         violations = itertools.chain()
 
-        unmatched_rules = set(self.all_rules)
+        resource_ancestors = relationship.find_ancestors(
+            parent_resource, parent_resource.full_name)
 
-        for lien in liens:
-            resource_ancestors = (
-                relationship.find_ancestors(lien.parent, lien.parent.full_name))
+        applicable_rules = []
 
-            for res in resource_ancestors:
-                applicable_rules = self.resource_to_rules.get(res, [])
-                for rule in applicable_rules:
-                    unmatched_rules.discard(rule)
-                    violations = itertools.chain(
-                        violations, rule.find_violations(lien))
+        for res in resource_ancestors:
+            applicable_rules.extend(self.resource_to_rules.get(res, []))
 
-        for rule in unmatched_rules:
-            violations = itertools.chain(
-                violations, [RuleViolation(
-                    resource_id=rule.resource.id,
-                    resource_type=rule.resource.type,
-                    # TODO: fix full name to be the actual full name of the
-                    # resource
-                    full_name = '{}/{}'.format(
-                        rule.resource.type, rule.resource.id),
+        if applicable_rules and not liens:
+            for rule in applicable_rules:
+                # TODO: fill resource_data with what the lien should be so that
+                # we can create it automatically in the enforcer.
+                violation = RuleViolation(
+                    resource_id=parent_resource.id,
+                    resource_type=parent_resource.type,
+                    full_name=parent_resource.full_name,
                     rule_index=rule.index,
                     rule_name=rule.name,
                     violation_type='LIEN_VIOLATION',
-                    resource_data='')])
+                    resource_data='')
+
+                violations = itertools.chain(
+                    violations, [violation])
+
+        for rule in applicable_rules:
+            violations = itertools.chain(
+                violations, rule.find_violations(liens))
 
         return violations
 
@@ -229,7 +230,7 @@ class Rule(object):
         self.index = index
         self.restrictions = restrictions
 
-    def find_violations(self, lien):
+    def find_violations(self, liens):
         """Find BigQuery acl violations in the rule book.
 
         Args:
@@ -238,16 +239,17 @@ class Rule(object):
         Yields:
             namedtuple: Returns RuleViolation named tuple.
         """
-        if sorted(self.restrictions) != sorted(lien.restrictions):
-            yield RuleViolation(
-                resource_id=lien.id,
-                resource_type=lien.type,
-                full_name = lien.full_name,
-                rule_index=self.index,
-                rule_name=self.name,
-                violation_type='LIEN_VIOLATION',
-                resource_data=lien.raw_json,
-            )
+        for lien in liens:
+            if sorted(self.restrictions) != sorted(lien.restrictions):
+                yield RuleViolation(
+                    resource_id=lien.id,
+                    resource_type=lien.type,
+                    full_name=lien.full_name,
+                    rule_index=self.index,
+                    rule_name=self.name,
+                    violation_type='LIEN_VIOLATION',
+                    resource_data=lien.raw_json,
+                )
 
 
 RuleViolation = collections.namedtuple(
