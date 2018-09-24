@@ -398,7 +398,6 @@ class ApiClient(object):
             project_number (str): id of the project to query.
         """
 
-
     @abc.abstractmethod
     def iter_stackdriver_billing_account_sinks(self, acct_id):
         """Iterate Billing Account logging sinks from GCP API.
@@ -635,7 +634,6 @@ class ApiClientImpl(ApiClient):
             dict: Dataset Policy.
         """
         return self.bigquery.get_dataset_access(project_id, dataset_id)
-
 
     @create_lazy('bigquery', _create_bq)
     def iter_bigquery_datasets(self, project_number):
