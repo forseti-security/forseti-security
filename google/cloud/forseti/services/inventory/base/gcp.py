@@ -1311,5 +1311,5 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of objects.
         """
-        for object in self.storage.get_objects(bucket_name=bucket_id):
-            yield object
+        for gcs_object in self.storage.get_objects(bucket_name=bucket_id):
+            yield gcs_object
