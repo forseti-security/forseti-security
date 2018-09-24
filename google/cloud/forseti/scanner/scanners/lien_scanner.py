@@ -146,7 +146,7 @@ class LienScanner(base_scanner.BaseScanner):
         for parent_resource, liens in parent_to_liens:
             violations = self.rules_engine.find_violations(
                 parent_resource, liens)
-                LOGGER.info(parent_resource, liens)
+            LOGGER.info(parent_resource, liens)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
