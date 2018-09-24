@@ -180,8 +180,37 @@ copy the deployment name for Forseti server.
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
 1. Repeat step `3-9` for Forseti client.
-1. Please refer to the [release notes](https://github.com/GoogleCloudPlatform/forseti-security/releases/tag/v2.1.0) 
-for any configurations/scanner rules updates.
+1. Configuration file `forseti_conf_server.yaml` updates:  
+Follow instructions [here]({% _latest/configure/general/index.html#configuring-settings %}) to 
+update the configuration file.  
+
+    **Inventory**
+    - Update the `api_quota` section to include `logging`.
+    ```
+    api_quota:
+        ...
+        logging:
+          max_calls: 1
+          period: 1.1
+        ...
+    ```
+    
+    **Notifier**
+    - Update the `CSCC` section to include `mode` and `organization_id`.
+    ```
+    notifier:
+        ...
+        violation:
+            cscc:
+                enabled: true
+                mode: api
+                organization_id: organizations/<your_organization_id>
+                # gcs_path should begin with "gs://"
+                gcs_path: <your_cscc_gcs_path>
+        ...
+    ```
+1. Rule files updates:  
+**No changes to the configuration file.**
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.0.0 to 2.1.0" content=upgrading_2_0_0_to_2_1_0 uid=2 %}
@@ -237,8 +266,10 @@ copy the deployment name for Forseti server.
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
 1. Repeat step `3-10` for Forseti client.
-1. Please refer to the [release notes](https://github.com/GoogleCloudPlatform/forseti-security/releases/tag/v2.1.0) 
-for any configurations/scanner rules updates.
+1. Configuration file `forseti_conf_server.yaml` updates:  
+**No changes to the configuration file.**
+1. Rule files updates:  
+**No changes to the configuration file.**
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.1.0 to 2.2.0" content=upgrading_2_1_0_to_2_2_0 uid=3 %}
@@ -265,8 +296,51 @@ copy the deployment name for Forseti server.
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
 1. Repeat step `3-9` for Forseti client.
-1. Please refer to the [release notes](https://github.com/GoogleCloudPlatform/forseti-security/releases/tag/v2.1.0) 
-for any configurations/scanner rules updates.
+1. Configuration file `forseti_conf_server.yaml` updates:  
+Follow instructions [here]({% _latest/configure/general/index.html#configuring-settings %}) to 
+update the configuration file.   
+
+    **Scanner**
+    - Update the `scanners` section to include `log_sink`.
+    ```
+    scanner:
+    ...
+        scanners:
+            ...
+            - name: log_sink
+              enabled: true
+            ...
+    ```
+    
+    **Notifier**
+    - Update the `resources` section to include `mode` and `organization_id`.
+    ```
+    notifier:
+        ...
+        resources:
+            ...
+            - resource: log_sink_violations
+              should_notify: true
+              notifiers:
+                # Email violations
+                - name: email_violations
+                  configuration:
+                    sendgrid_api_key: {SENDGRID_API_KEY}
+                    sender: {EMAIL_SENDER}
+                    recipient: {EMAIL_RECIPIENT}
+                # Upload violations to GCS.
+                - name: gcs_violations
+                  configuration:
+                    data_format: csv
+                    # gcs_path should begin with "gs://"
+                    gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+            ...
+        ...
+    ```
+1. Rule files updates:  
+    1. Add [Log Sink rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.3.0/rules/log_sink_rules.yaml)
+    to `rules/` under your Forseti server GCS bucket to use the LogSink scanner.
+    1. BigQuery rule syntax has been [updated (backward compatible)]({% _docs/latest/configure/scanner/rules.html#bigquery-rules %}).
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.2.0 to 2.3.0" content=upgrading_2_2_0_to_2_3_0 uid=4 %}
@@ -293,8 +367,8 @@ copy the deployment name for Forseti server.
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
 1. Repeat step `3-9` for Forseti client.
-1. Please refer to the [release notes](https://github.com/GoogleCloudPlatform/forseti-security/releases/tag/v2.1.0) 
-for any configurations/scanner rules updates.
+1. Configuration file `forseti_conf_server.yaml` updates:  
+Forseti is updated to be usable on a non organization resource.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=upgrading_2_3_0_to_2_4_0 uid=5 %}
