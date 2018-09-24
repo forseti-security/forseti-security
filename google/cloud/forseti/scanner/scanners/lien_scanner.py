@@ -82,7 +82,7 @@ class LienScanner(base_scanner.BaseScanner):
             all_violations (list): A list of BigQuery violations.
         """
         all_violations = list(self._flatten_violations(all_violations))
-        Logger.info(all_violations)
+        LOGGER.info(all_violations)
         self._output_results_to_db(all_violations)
 
 
