@@ -51,7 +51,8 @@ class TestServiceConfig(MockServerConfig):
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
                                                 {},
-                                                '')
+                                                '',
+                                                {})
 
     def run_in_background(self, func):
         """Stub."""
