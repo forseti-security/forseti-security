@@ -33,7 +33,8 @@ def autoencoder_model(input_shape):
   """
   The model function which computes the embedding.
 
-  This is based on the implementation mentioned here:https://arxiv.org/pdf/1511.06335.pdf
+  This is based on the implementation mentioned here:
+  https://arxiv.org/pdf/1511.06335.pdf
 
   """
   input_layer = layers.Input(shape=input_shape)
