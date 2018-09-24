@@ -52,30 +52,176 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
-    def fetch_organization(self, orgid):
-        """Fetch Organization data from Cloud Asset data.
+    def iter_compute_backendservices(self, project_number):
+        """Iterate Backend services from Cloud Asset data.
 
         Args:
-            orgid (str): id of the organization to get.
+            project_number (str): id of the project to query.
 
-        Returns:
-            dict: Organization resource.
+        Yields:
+            dict: Generator of backend service.
         """
-        resource = self.dao.fetch_cai_asset(
+        resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/{}'.format(orgid),
+            'google.compute.BackendService',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
             self.session)
-        if resource:
-            return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_organization(orgid)
+        for backendservice in resources:
+            yield backendservice
 
-    def fetch_folder(self, folderid):
+    def iter_compute_disks(self, project_number):
+        """Iterate Compute Engine disks from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of Compute Disk.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Disk',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for disk in resources:
+            yield disk
+
+    def iter_compute_firewalls(self, project_number):
+        """Iterate Compute Engine Firewalls from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of Compute Engine Firewall.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Firewall',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for rule in resources:
+            yield rule
+
+    def iter_compute_images(self, project_number):
+        """Iterate Images from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of image resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Image',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for image in resources:
+            yield image
+
+    # Use live API because CAI does not yet have all instance groups.
+    # def iter_compute_instancegroups(self, project_number):
+
+    def iter_compute_instances(self, project_number):
+        """Iterate compute engine instance from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of Compute Engine Instance resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Instance',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for instance in resources:
+            yield instance
+
+    def iter_compute_instancetemplates(self, project_number):
+        """Iterate Instance Templates from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of instance template resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.InstanceTemplate',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for instancetemplate in resources:
+            yield instancetemplate
+
+    def iter_compute_networks(self, project_number):
+        """Iterate Networks from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of network resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Network',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for network in resources:
+            yield network
+
+    def iter_compute_snapshots(self, project_number):
+        """Iterate Compute Engine snapshots from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of Compute Snapshots.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Snapshot',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for snapshot in resources:
+            yield snapshot
+
+    def iter_compute_subnetworks(self, project_number):
+        """Iterate Subnetworks from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Yields:
+            dict: Generator of subnetwork resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.compute.Subnetwork',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for subnetwork in resources:
+            yield subnetwork
+
+    def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.
 
         Args:
-            folderid (str): id of the folder to query.
+            folder_id (str): id of the folder to query.
 
         Returns:
             dict: Folder resource.
@@ -83,18 +229,77 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
             'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(folderid),
+            '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
             self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_folder(folderid)
+        return super(CaiApiClientImpl, self).fetch_crm_folder(folder_id)
 
-    def fetch_project(self, projectid):
+    def fetch_crm_folder_iam_policy(self, folder_id):
+        """Folder IAM policy in a folder from Cloud Asset data.
+
+        Args:
+            folder_id (str): id of the folder to get policy.
+
+        Returns:
+            dict: Folder IAM policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Folder',
+            '//cloudresourcemanager.googleapis.com/{}'.format(folder_id),
+            self.session)
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).fetch_crm_folder_iam_policy(
+            folder_id)
+
+    def fetch_crm_organization(self, org_id):
+        """Fetch Organization data from Cloud Asset data.
+
+        Args:
+            org_id (str): id of the organization to get.
+
+        Returns:
+            dict: Organization resource.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.resource,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.session)
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).fetch_crm_organization(org_id)
+
+    def fetch_crm_organization_iam_policy(self, org_id):
+        """Organization IAM policy from Cloud Asset data.
+
+        Args:
+            org_id (str): id of the organization to get policy.
+
+        Returns:
+            dict: Organization IAM policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Organization',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.session)
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).fetch_crm_organization_iam_policy(
+            org_id)
+
+    def fetch_crm_project(self, project_number):
         """Fetch Project data from Cloud Asset data.
 
         Args:
-            projectid (str): id of the project to query.
+            project_number (str): id of the project to query.
 
         Returns:
             dict: Project resource.
@@ -103,14 +308,52 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             ContentTypes.resource,
             'google.cloud.resourcemanager.Project',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
+                project_number),
             self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_project(projectid)
+        return super(CaiApiClientImpl, self).fetch_crm_project(project_number)
 
-    def iter_projects(self, parent_type, parent_id):
+    def fetch_crm_project_iam_policy(self, project_number):
+        """Project IAM policy from Cloud Asset data.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Returns:
+            dict: Project IAM Policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.resourcemanager.Project',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        if resource:
+            return resource
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).fetch_crm_project_iam_policy(
+            project_number)
+
+    def iter_crm_folders(self, parent_id):
+        """Iterate Folders from Cloud Asset data.
+
+        Args:
+            parent_id (str): id of the parent of the folder
+
+        Yields:
+            dict: Generator of folders
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.resourcemanager.Folder',
+            '//cloudresourcemanager.googleapis.com/{}'.format(parent_id),
+            self.session)
+        for folder in resources:
+            yield folder
+
+    def iter_crm_projects(self, parent_type, parent_id):
         """Iterate Projects from Cloud Asset data.
 
         Args:
@@ -129,86 +372,11 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for project in resources:
             yield project
 
-    def iter_folders(self, parent_id):
-        """Iterate Folders from Cloud Asset data.
-
-        Args:
-            parent_id (str): id of the parent of the folder
-
-        Yields:
-            dict: Generator of folders
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(parent_id),
-            self.session)
-        for folder in resources:
-            yield folder
-
-    def get_folder_iam_policy(self, folderid):
-        """Folder IAM policy in a folder from Cloud Asset data.
-
-        Args:
-            folderid (str): id of the folder to get policy.
-
-        Returns:
-            dict: Folder IAM policy.
-        """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Folder',
-            '//cloudresourcemanager.googleapis.com/{}'.format(folderid),
-            self.session)
-        if resource:
-            return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).get_folder_iam_policy(folderid)
-
-    def get_organization_iam_policy(self, orgid):
-        """Organization IAM policy from Cloud Asset data.
-
-        Args:
-            orgid (str): id of the organization to get policy.
-
-        Returns:
-            dict: Organization IAM policy.
-        """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Organization',
-            '//cloudresourcemanager.googleapis.com/{}'.format(orgid),
-            self.session)
-        if resource:
-            return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).get_organization_iam_policy(orgid)
-
-    def get_project_iam_policy(self, projectid):
-        """Project IAM policy from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Returns:
-            dict: Project IAM Policy.
-        """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.cloud.resourcemanager.Project',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        if resource:
-            return resource
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).get_project_iam_policy(projectid)
-
-    def fetch_gae_app(self, projectid):
+    def fetch_gae_app(self, project_id):
         """Fetch the AppEngine App from Cloud Asset data.
 
         Args:
-            projectid (str): id of the project to query
+            project_id (str): id of the project to query
 
         Returns:
             dict: AppEngine App resource.
@@ -216,15 +384,15 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.resource,
             'google.appengine.Application',
-            '//appengine.googleapis.com/apps/{}'.format(projectid),
+            '//appengine.googleapis.com/apps/{}'.format(project_id),
             self.session)
         return resource
 
-    def iter_gae_services(self, projectid):
+    def iter_gae_services(self, project_id):
         """Iterate gae services from Cloud Asset data.
 
         Args:
-            projectid (str): id of the project to query
+            project_id (str): id of the project to query
 
         Yields:
             dict: Generator of AppEngine Service resources.
@@ -232,17 +400,17 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.appengine.Service',
-            '//appengine.googleapis.com/apps/{}'.format(projectid),
+            '//appengine.googleapis.com/apps/{}'.format(project_id),
             self.session)
         for service in resources:
             yield service
 
-    def iter_gae_versions(self, projectid, serviceid):
+    def iter_gae_versions(self, project_id, service_id):
         """Iterate gae versions from Cloud Asset data.
 
         Args:
-            projectid (str): id of the project to query
-            serviceid (str): id of the appengine service
+            project_id (str): id of the project to query
+            service_id (str): id of the appengine service
 
         Yields:
             dict: Generator of AppEngine Version resources.
@@ -250,20 +418,17 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.appengine.Version',
-            '//appengine.googleapis.com/apps/{}/services/{}'.format(projectid,
-                                                                    serviceid),
+            '//appengine.googleapis.com/apps/{}/services/{}'.format(project_id,
+                                                                    service_id),
             self.session)
         for version in resources:
             yield version
 
-    # Use live API because CAI does not yet have bucket ACLs.
-    # def iter_buckets(self, projectid):
-
-    def get_bucket_iam_policy(self, bucketid):
+    def fetch_storage_bucket_iam_policy(self, bucket_id):
         """Bucket IAM policy Iterator from Cloud Asset data.
 
         Args:
-            bucketid (str): id of the bucket to query
+            bucket_id (str): id of the bucket to query
 
         Returns:
             dict: Bucket IAM policy
@@ -271,174 +436,13 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
             'google.cloud.storage.Bucket',
-            '//storage.googleapis.com/{}'.format(bucketid),
+            '//storage.googleapis.com/{}'.format(bucket_id),
             self.session)
         if resource:
             return resource
         # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).get_bucket_iam_policy(bucketid)
+        return super(CaiApiClientImpl, self).fetch_storage_bucket_iam_policy(
+            bucket_id)
 
-    def iter_computeinstances(self, projectid):
-        """Iterate compute engine instance from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Engine Instance resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Instance',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for instance in resources:
-            yield instance
-
-    def iter_computefirewalls(self, projectid):
-        """Iterate Compute Engine Firewalls from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Engine Firewall.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Firewall',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for rule in resources:
-            yield rule
-
-    # Use live API because CAI does not yet have all instance groups.
-    # def iter_computeinstancegroups(self, projectid):
-
-    def iter_computedisks(self, projectid):
-        """Iterate Compute Engine disks from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Disk.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Disk',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for disk in resources:
-            yield disk
-
-    def iter_backendservices(self, projectid):
-        """Iterate Backend services from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of backend service.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.BackendService',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for backendservice in resources:
-            yield backendservice
-
-    def iter_images(self, projectid):
-        """Iterate Images from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of image resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Image',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for image in resources:
-            yield image
-
-    def iter_instancetemplates(self, projectid):
-        """Iterate Instance Templates from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of instance template resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.InstanceTemplate',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for instancetemplate in resources:
-            yield instancetemplate
-
-    def iter_networks(self, projectid):
-        """Iterate Networks from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of network resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Network',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for network in resources:
-            yield network
-
-    def iter_snapshots(self, projectid):
-        """Iterate Compute Engine snapshots from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Snapshots.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Snapshot',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for snapshot in resources:
-            yield snapshot
-
-    def iter_subnetworks(self, projectid):
-        """Iterate Subnetworks from Cloud Asset data.
-
-        Args:
-            projectid (str): id of the project to query.
-
-        Yields:
-            dict: Generator of subnetwork resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Subnetwork',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                projectid),
-            self.session)
-        for subnetwork in resources:
-            yield subnetwork
+    # Use live API because CAI does not yet have bucket ACLs.
+    # def iter_storage_buckets(self, project_number):
