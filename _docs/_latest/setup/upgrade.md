@@ -158,33 +158,176 @@ change a certain resource, you'll need to create a new deployment of Forseti.
 
 Learn more about [Updating a Deployment](https://cloud.google.com/deployment-manager/docs/deployments/updating-deployments).
 
-{% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.X installations" content=2x_upgrade uid=1 %}
-
 {% capture upgrading_2_0_0_to_2_1_0 %}
-TBD
+
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.1.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory, 
+    run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone` to clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.1.0` to checkout version `v2.1.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
+bucket (located under `forseti-server-xxxxxx/deployment_templates`).
+1. Update the `forseti-version` inside the deployment template to `v2.1.0`.
+1. Create file `forseti_server_v2_1_0.yaml` under `forseti-security/deployment-templates`.
+1. Copy and paste the content of the deployment template to file `forseti_server_v2_1_0.yaml`.
+1. Upload file `forseti_server_v2_1_0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_1_0.yaml`
+If you see errors while running the deployment manager update command, please refer to below section 
+`Error while running deployment manager` for details on how to workaround the error.
+1. Repeat step `3-9` for Forseti client.
+
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.0.0 to 2.1.0" content=2_0_0_to_2_1_0 uid=1 %}
+{% include site/zippy/item.html title="Upgrading 2.0.0 to 2.1.0" content=upgrading_2_0_0_to_2_1_0 uid=2 %}
 
 {% capture upgrading_2_1_0_to_2_2_0 %}
-TBD
+
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.2.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory, 
+    run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone` to clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.2.0` to checkout version `v2.2.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
+bucket (located under `forseti-server-xxxxxx/deployment_templates`).
+1. Add the following fields to the compute engine section inside your deployment template.  
+    `region` - The region of your VM, e.g. us-central1,  
+    `vpc-host-project-id` - VPC host project ID, by default if you are not using VPC, 
+    you can default it to your Forseti project ID,  
+    `vpc-host-network` - VPC host network, by default if you are not using VPC, you can default it to `default`,  
+    `vpc-host-subnetwork`- VPC host subnetwork, by default if you are not using VPC, you can default it to `default`  
+    ```
+    
+    # Compute Engine
+    - name: forseti-instance-server
+      type: forseti-instance-server.py
+      properties:
+        # GCE instance properties
+        image-project: ubuntu-os-cloud
+        image-family: ubuntu-1804-lts
+        instance-type: n1-standard-2
+        
+        <pre>
+        <b>
+        # V2.2.0 newly added fields
+        region: **{YOUR FORSETI VM REGION, e.g. us-central1}**
+        vpc-host-project-id: {YOUR_FORSETI_PROJECT_ID}
+        vpc-host-network: default
+        vpc-host-subnetwork: default
+        </b>
+        </pre>
+        ...
+        run-frequency: ...
+        
+    ```
+1. Update the `forseti-version` inside the deployment template to `v2.2.0`.
+1. Create file `forseti_server_v2_2_0.yaml` under `forseti-security/deployment-templates`.
+1. Copy and paste the content of the deployment template to file `forseti_server_v2_2_0.yaml`.
+1. Upload file `forseti_server_v2_2_0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_2_0.yaml`  
+If you see errors while running the deployment manager update command, please refer to below section 
+`Error while running deployment manager` for details on how to workaround the error.
+1. Repeat step `3-10` for Forseti client.
+
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.1.0 to 2.2.0" content=2_1_0_to_2_2_0 uid=1 %}
+{% include site/zippy/item.html title="Upgrading 2.1.0 to 2.2.0" content=upgrading_2_1_0_to_2_2_0 uid=3 %}
 
 {% capture upgrading_2_2_0_to_2_3_0 %}
-TBD
+
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.3.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory, 
+    run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone` to clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.3.0` to checkout version `v2.3.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
+bucket (located under `forseti-server-xxxxxx/deployment_templates`).
+1. Update the `forseti-version` inside the deployment template to `v2.3.0`.
+1. Create file `forseti_server_v2_3_0.yaml` under `forseti-security/deployment-templates`.
+1. Copy and paste the content of the deployment template to file `forseti_server_v2_3_0.yaml`.
+1. Upload file `forseti_server_v2_3_0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_3_0.yaml`
+If you see errors while running the deployment manager update command, please refer to below section 
+`Error while running deployment manager` for details on how to workaround the error.
+1. Repeat step `3-9` for Forseti client.
+
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.2.0 to 2.3.0" content=2_2_0_to_2_3_0 uid=1 %}
+{% include site/zippy/item.html title="Upgrading 2.2.0 to 2.3.0" content=upgrading_2_2_0_to_2_3_0 uid=4 %}
 
 {% capture upgrading_2_3_0_to_2_4_0 %}
-2.4.0 does not contain any schema changes in deployment manager templates,
-server configurations, or scanner rule files.
 
-You can update by modifying `forseti-version` in your server and client
-deployment manager templates to version 2.4.0, and run the [deployment manager
-update command](https://forsetisecurity.org/docs/latest/setup/upgrade.html#zippy-1).
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.4.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory, 
+    run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone` to clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.4.0` to checkout version `v2.4.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
+bucket (located under `forseti-server-xxxxxx/deployment_templates`).
+1. Update the `forseti-version` inside the deployment template to `v2.4.0`.
+1. Create file `forseti_server_v2_4_0.yaml` under `forseti-security/deployment-templates`.
+1. Copy and paste the content of the deployment template to file `forseti_server_v2_4_0.yaml`.
+1. Upload file `forseti_server_v2_4_0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_4_0.yaml`
+If you see errors while running the deployment manager update command, please refer to below section 
+`Error while running deployment manager` for details on how to workaround the error.
+1. Repeat step `3-9` for Forseti client.
+
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=2_3_0_to_2_4_0 uid=1 %}
+{% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=upgrading_2_3_0_to_2_4_0 uid=5 %}
+
+{% capture deployment_manager_error %}
+
+If you get the following error while running the deployment manager:
+```
+The fingerprint of the deployment is .....
+Waiting for update [operation-xxx-xxx-xxx-xxx]...failed.
+ERROR: (gcloud.deployment-manager.deployments.update) Error in Operation [operation-xxx-xxx-xxx-xxx]: errors:
+- code: NO_METHOD_TO_UPDATE_FIELD
+  message: No method found to update field 'networkInterfaces' on resource 'forseti-server-vm-xxxxx'
+    of type 'compute.v1.instance'. The resource may need to be recreated with the
+    new field.
+```
+
+You can follow the following steps to workaround this deployment manager problem:
+1. Copy the compute engine section inside your deployment template and paste it to a text editor.
+```
+# Compute Engine
+- name: forseti-instance-server
+  type: forseti-instance-server.py
+  properties:
+    # GCE instance properties
+    image-project: ubuntu-os-cloud
+    image-family: ubuntu-1804-lts
+    instance-type: n1-standard-2
+    ...
+    run-frequency: ...
+```
+1. Remove the compute engine section from the deployment template.
+1. Run the deployment manager uppdate command on the updated deployment template.  
+`gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
+This will remove your VM instance.
+1. Paste the compute engine section back to the deployment template, and run the update command again.  
+`gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
+This will recreate the VM with updated fields.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Error while running deployment manager" content=deployment_manager_error uid=50 %}
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.X installations" content=2x_upgrade uid=1 %}
 
 ## What's next
 
