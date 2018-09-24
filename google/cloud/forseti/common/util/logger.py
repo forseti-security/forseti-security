@@ -21,11 +21,12 @@ import logging
 import logging.handlers
 import os
 
+from google.cloud.forseti import __version__
 
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 
-SYSLOG_LOG_FMT = ('%(levelname)s [forseti-security] '
+SYSLOG_LOG_FMT = ('%(levelname)s [forseti-security] %(__version__)s '
                   '%(name)s(%(funcName)s): %(message).1024s')
 
 # %(asctime)s is used as the marker by multiline parser to determine
