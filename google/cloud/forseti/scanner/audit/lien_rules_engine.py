@@ -205,8 +205,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     violation_type='LIEN_VIOLATION',
                     resource_data='')
 
-                LOGGER.info(parent_resource)
-
                 violations = itertools.chain(violations, [violation])
 
         return violations
