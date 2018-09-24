@@ -25,15 +25,34 @@ from __future__ import print_function
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
+import tensorflow.keras.layers as layers
+import tensorflow.keras.Model as Model
 
 
-def autoencoder_model():
+def autoencoder_model(input_shape):
   """
   The model function which computes the embedding.
 
-  """
+  This is based on the implementation mentioned here:https://arxiv.org/pdf/1511.06335.pdf
 
-  return
+  """
+  input_layer = layers.Input(shape=input_shape)
+  encoder_1 = layers.Dense(500, act='relu')(input_layer)
+  encoder_2 = layers.Dense(500, act='relu')(encoder_1)
+  encoder_3 = layers.Dense(2000, act='relu')(encoder_2)
+  encoder_4 = layers.Dense(10, act='relu')(encoder_3)
+
+  hidden = layers.Dense(10, act='relu')(encoder_4)
+
+  decoder_1 = layers.Dense(10, act='relu')(hidden)
+  decoder_2 = layers.Dense(2000, act='relu')(decoder_1)
+  decoder_3 = layers.Dense(500, act='relu')(decoder_2)
+  decoder_4 = layers.Dense(500, act='relu')(decoder_3)
+
+  output_layer = layers.Dense(input_shape)(decoder_4)
+  model = Model(inputs=input_layer, outputs=output_layer)
+
+  return model
 
 
 def embedding_model():
@@ -41,5 +60,7 @@ def embedding_model():
   Returns the learnt embedding for each cluster input.
 
   """
+
+
 
   return
