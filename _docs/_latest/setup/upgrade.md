@@ -9,9 +9,9 @@ This guide explains how to upgrade your Forseti instance.
 
 For version 2.0.0 and later, we will provide upgrade instructions from one minor
 version to the next minor version. This means, if you want to upgrade from
-version 2.2.0 to 2.4.0, you should follow the upgrade instruction from
-version 2.2.0 to 2.3.0 first, and then follow the upgrade instruction from
-version 2.3.0 to 2.4.0.  This ensures the upgrade process is easier to manage
+version 2.2.0 to 2.4.0, you should follow the upgrade instruction for
+version 2.2.0 to 2.3.0 first, and then follow the upgrade instruction for
+version 2.3.0 to 2.4.0. This ensures the upgrade process is easier to manage
 and to test.
 
 ---
@@ -211,15 +211,14 @@ bucket (located under `forseti-server-xxxxxx/deployment_templates`).
         image-family: ubuntu-1804-lts
         instance-type: n1-standard-2
         
-        <pre>
-        <b>
-        # V2.2.0 newly added fields
+
+        # ---- V2.2.0 newly added fields ----
         region: **{YOUR FORSETI VM REGION, e.g. us-central1}**
         vpc-host-project-id: {YOUR_FORSETI_PROJECT_ID}
         vpc-host-network: default
         vpc-host-subnetwork: default
-        </b>
-        </pre>
+
+
         ...
         run-frequency: ...
         
