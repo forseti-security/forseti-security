@@ -97,7 +97,18 @@ class LienScanner(base_scanner.BaseScanner):
         scoped_session, data_access = self.service_config.model_manager.get(
             self.model_name)
         with scoped_session as session:
-            parent_resource_to_liens = collections.defaultdict(list)
+            parent_resource_to_liens = {}
+
+            # liens can only be defined on a project currently
+            for project_resource in data_access.scanner_iter(
+                    session, 'project'):
+
+                proj = project.Project(
+                    project_id=project_resource.name,
+                    full_name=project_resource.full_name,
+                )
+
+                parent_resource_to_liens[proj] = []
 
             for lien_resource in data_access.scanner_iter(session, 'lien'):
                 parent_resource = lien_resource.parent
@@ -118,18 +129,6 @@ class LienScanner(base_scanner.BaseScanner):
                     name=lien_resource.name,
                     json_string=lien_resource.data))
 
-            # liens can only be defined on a project currently
-            for project_resource in data_access.scanner_iter(
-                    session, 'project'):
-
-                proj = project.Project(
-                    project_id=project_resource.name,
-                    full_name=project_resource.full_name,
-                )
-
-                if proj not in parent_resource_to_liens:
-                    parent_resource_to_liens[proj] = []
-
             return parent_resource_to_liens
 
     def _find_violations(self, parent_resource_to_liens):
@@ -144,7 +143,7 @@ class LienScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding log sink violations...')
 
-        for parent_resource, liens in parent_resource_to_liens:
+        for parent_resource, liens in parent_resource_to_liens.iteritems():
             violations = self.rules_engine.find_violations(
                 parent_resource, liens)
             LOGGER.debug(violations)
@@ -154,6 +153,5 @@ class LienScanner(base_scanner.BaseScanner):
     def run(self):
         """Runs the data collection."""
         parent_resource_to_liens = self._retrieve()
-        LOGGER.info(parent_resource_to_liens)
         all_violations = self._find_violations(parent_resource_to_liens)
         self._output_results(all_violations)
