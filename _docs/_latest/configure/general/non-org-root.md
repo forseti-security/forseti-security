@@ -25,7 +25,7 @@ Follow the process below:
    and point the `root_resource_id` to the target folder:
    `folders/<foo_folder_id>`. Grant the Forseti server service account to have
    the same roles on the target folder, as was [originally granted on the
-   organization]{% link docs/latest/forseti-server-gcp-required-roles.md %}.
+   organization]({% link _docs/latest/concepts/service-accounts.md %}).
    1. If you want Forseti to run on projects that you own, leave the
    `root_resource_id` pointed to the organization. Grant project
    viewer role to the Forseti server service account, on these specific
