@@ -11,8 +11,8 @@ resource hierarchy.
 
 But, you also have the option to run Forseti even if you only own a subset
 of resources, such as a specific folder, or projects that are directly under
-the organization. You will be able to inventory and audit these subset
-of resources, sbut not be able to use Explain.
+the organization. Inventory and Scanner will be supported for use on these
+subset of resources, but Explain will not be supported.
 
 ## How to Install and Configure
 
@@ -20,7 +20,7 @@ Follow the process below:
 
    1. Run the Forseti [installer]({% link _docs/latest/setup/install.md %}).
    The installer will try to assign org-level roles, but you can safely ignore
-   this.s
+   this.
    1. If you want Forseti to run from a folder, edit `forseti_conf_server.yaml`
    and point the `root_resource_id` to the target folder:
    `folders/<foo_folder_id>`. Grant the Forseti server service account to have
