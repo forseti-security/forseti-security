@@ -35,8 +35,7 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(LienRulesEngine,
-              self).__init__(rules_file_path=rules_file_path)
+        super(LienRulesEngine,self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
