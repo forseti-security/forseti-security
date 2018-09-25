@@ -138,7 +138,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                 self.resource_to_rules[resource].append(rule)
                 self.all_rules.append(rule)
 
-
     @classmethod
     def _build_rule(cls, rule_def, rule_index):
         """Build a rule.
