@@ -521,7 +521,7 @@ class FirewallRule(object):
         source_ranges = ips_in_list(self.source_ranges, other.source_ranges)
         destination_ranges = ips_in_list(self.destination_ranges,
                                          other.destination_ranges)
-        
+
         # Moving firewall_actions out from here will make tests fail.
         result = (direction and
                   network and
@@ -566,7 +566,6 @@ class FirewallRule(object):
                   destination_ranges)
         return result
 
-    # pylint: disable=protected-access
     def __eq__(self, other):
         """Test whether this policy is the same as the other policy.
 
@@ -593,9 +592,6 @@ class FirewallRule(object):
                   firewall_action)
         return result
 
-    # pylint: enable=protected-access
-
-    # pylint: disable=protected-access
     def is_equivalent(self, other):
         """Test whether this policy is equivalent to the other policy.
 
@@ -621,7 +617,6 @@ class FirewallRule(object):
                   destination_ranges and
                   firewall_action)
         return result
-    # pylint: enable=protected-access
 
 
 class FirewallAction(object):
