@@ -9,31 +9,53 @@ By default, Forseti is designed to be installed with complete
 organization access, and run with the organization as the root node in the
 resource hierarchy.
 
-But, you also have the option to run Forseti even if you only own a subset
-of resources, such as a specific folder, or projects that are directly under
-the organization. Inventory and Scanner will be supported for use on these
-subset of resources, but Explain will not be supported.
+But, you also have the option to run Forseti on a subset of resources:
+1. if you are Org Admin, and you want to run Forseti on a specific folder
+1. if you are Folder Admin, and you want to run Forseti on a specific folder
+1. if you are Project Admin, and you want to run Forseti on projects
+that are only owned by you
 
-## How to Install and Configure
+Inventory, Data Model, and Scanner will be supported for use on these subset
+of resources, but Explain will not be supported.
 
-Follow the process below:
+## How to Install
 
-   1. Run the Forseti [installer]({% link _docs/latest/setup/install.md %}).
-   The installer will try to assign org-level roles, but you can safely ignore
-   this.
-   1. If you want Forseti to run from a folder, edit `forseti_conf_server.yaml`
-   and point the `root_resource_id` to the target folder:
-   `folders/<foo_folder_id>`. Grant the Forseti server service account to have
-   the same roles on the target folder, as was [originally granted on the
-   organization]({% link _docs/latest/concepts/service-accounts.md %}).
-   1. If you want Forseti to run on projects that you own, leave the
-   `root_resource_id` pointed to the organization. Grant project
-   viewer role to the Forseti server service account, on these specific
-   projects.
-   1. Save the changes to `forseti_conf_server.yaml` file.
-   1. Save `forseti_conf_server.yaml` to GCS bucket.
-   1. Make the server to
-   [reload the updated configuration]({% link _docs/latest/use/cli/server.md %}).
+Run the Forseti [Installer]({% link _docs/latest/setup/install.md %}).
+
+By default, the installer will try to assign org-level roles. If you are not
+Org Admin, there will be errors, but you can safely disregard, as you will
+assign the correct roles later.
+
+## Configure Forseti to Run on a Folder
+
+1. Edit `forseti_conf_server.yaml` and point the `root_resource_id`
+to the target folder:
+`folders/<foo_folder_id>`.
+
+1. If Forseti was installed with Org Admin credentials, then the org-level
+roles will be inherited on the folder-level.
+
+1. If Foresti was not installed with Org Admin credentails, then you need
+to grant the Forseti server service account to have the same roles on the
+target folder, as was [originally granted on the
+organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
+
+## Configure Forseti to Run on Projects
+
+1. This assumes that Forseti is not installed with Org Admin credential, and
+you want Forseti to run on projects that you own. If Forseti is installed
+with Org Admin credential, then all the resources in the organization
+will be returned,
+1. Leave the `root_resource_id` pointed to the organization that the Installer
+inferred from the environment.
+1. Grant project viewer role to the Forseti server service account,
+on the projects that you own.
+
+## Saving Changes
+1. Save the changes to `forseti_conf_server.yaml` file.
+1. Save `forseti_conf_server.yaml` [to GCS bucket]({% link _docs/latest/configure/general/index.md %}#moving-configuration-to-cloud-storage).
+1. Make the server to
+[reload the updated configuration]({% link _docs/latest/use/cli/server.md %}).
 
 When you run Forseti again, all the resources from the target root
 will be collected in Inventory and audited.
