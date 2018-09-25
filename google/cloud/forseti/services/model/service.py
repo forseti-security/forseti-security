@@ -103,8 +103,9 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
 
         model_name = request.handle
-        self.modeller.delete_model(model_name)
-        return model_pb2.DeleteModelReply()
+        result = self.modeller.delete_model(model_name)
+        reply = model_pb2.DeleteModelReply(result=result)
+        return reply
 
     def ListModel(self, request, _):
         """List all models.
