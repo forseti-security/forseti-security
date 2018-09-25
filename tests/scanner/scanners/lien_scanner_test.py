@@ -67,7 +67,6 @@ class LienScannerTest(ForsetiTestCase):
             {}, {}, mock.MagicMock(), '', '', '')
 
     def test_retrieve(self):
-        """Tests _retrieve gets all bq acls and parent resources."""
         mock_data_access = mock.MagicMock()
         mock_data_access.scanner_iter.side_effect = _mock_gcp_resource_iter
         mock_service_config = mock.MagicMock()
