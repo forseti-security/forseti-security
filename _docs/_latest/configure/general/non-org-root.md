@@ -20,9 +20,7 @@ Follow the process below:
 
    1. Run the Forseti [installer]({% link _docs/latest/setup/install.md %}).
    The installer will try to assign org-level roles, but you can safely ignore
-   this. The installer will create all the necessary Forseti resources:
-   VM instances, Cloud SQL database, Google Cloud Storage buckets, and service
-   accounts.
+   this.s
    1. If you want Forseti to run from a folder, edit `forseti_conf_server.yaml`
    and point the `root_resource_id` to the target folder:
    `folders/<foo_folder_id>`. Grant the Forseti server service account to have
