@@ -23,6 +23,7 @@ from google.cloud.forseti.scanner.audit import errors
 
 LOGGER = logger.get_logger(__name__)
 
+
 class LienRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for Liens."""
 
@@ -35,7 +36,7 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(LienRulesEngine,self).__init__(rules_file_path=rules_file_path)
+        super(LienRulesEngine, self).__init__(rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
@@ -200,6 +201,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                 violations.append(violation)
 
         return violations
+
 
 class Rule(object):
     """Rule properties from the rule definition file.

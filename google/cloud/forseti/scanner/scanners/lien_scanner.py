@@ -23,6 +23,7 @@ from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
+
 class LienScanner(base_scanner.BaseScanner):
     """Scanner for Liens."""
 
