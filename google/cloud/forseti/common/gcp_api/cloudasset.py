@@ -158,7 +158,7 @@ class CloudAssetClient(object):
     """Cloud Asset Client."""
 
     # Estimation of how long to wait for an async API to complete.
-    OPERATION_DELAY_IN_SEC = 30
+    OPERATION_DELAY_IN_SEC = 5
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.

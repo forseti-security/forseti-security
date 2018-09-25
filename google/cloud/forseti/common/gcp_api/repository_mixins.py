@@ -285,7 +285,7 @@ class ExportAssetsQueryMixin(object):
             dict: The response from the API.
         """
         body = {
-            'outputConfig': {'GcsDestination': {'uri': destination_object}}
+            'outputConfig': {'gcsDestination': {'uri': destination_object}}
         }
         if content_type:
             body['contentType'] = content_type
