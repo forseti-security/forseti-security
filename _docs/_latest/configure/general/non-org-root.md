@@ -5,13 +5,13 @@ order: 100
 
 # {{ page.title }}
 
-By default, Forseti is designed to be installed and run with complete
-organization access and with the organization as the root node in the GCP
+By default, Forseti is designed to be installed with complete
+organization access, and run with the organization as the root node in the
 resource hierarchy.
 
 But, you also have the option to run Forseti even if you only own a subset
 of resources, such as a specific folder, or projects that are directly under
-the org. You will be able to inventory audit these subset of resources,
+the organization. You will be able to inventory audit these subset of resources,
 but not be able to use Explain.
 
 ## How to Install and Configure
