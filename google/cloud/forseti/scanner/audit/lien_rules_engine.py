@@ -14,7 +14,6 @@
 
 """Rules engine for Liens."""
 import collections
-import itertools
 
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
@@ -52,8 +51,8 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
         """Determine whether Big Query datasets violate rules.
 
         Args:
-            parent_project (Project): parent project the acl belongs to.
-            bq_acl (BigqueryAccessControls): Object containing ACL data.
+            parent_resource (Resource): parent resource the lien belongs to.
+            liens (List[Lien]): liens to find violations for.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -66,14 +65,14 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
         violations = self.rule_book.find_violations(parent_resource, liens)
         return violations
 
-    def add_rules(self, rules):
+    def add_rules(self, rule_defs):
         """Add rules to the rule book.
 
         Args:
-            rules (dict): rule definitions dictionary
+            rule_defs (dict): rule definitions dictionary
         """
         if self.rule_book is not None:
-            self.rule_book.add_rules(rules)
+            self.rule_book.add_rules(rule_defs)
 
 
 class LienRuleBook(base_rules_engine.BaseRuleBook):
@@ -102,29 +101,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
             self.add_rule(rule, i)
-
-    @classmethod
-    def _build_rule(cls, resource, rule_def, rule_index):
-        """Build a rule.
-
-        Args:
-            rule_def (dict): A dictionary containing rule definition
-                properties.
-            rule_index (int): The index of the rule from the rule definitions.
-                Assigned automatically when the rule book is built.
-
-        Returns:
-            Rule: rule for the given definition.
-        """
-        for field in ['name', 'restrictions']:
-            if field not in rule_def:
-                raise errors.InvalidRulesSchemaError(
-                    'Missing field "{}" in rule {}'.format(field, rule_index))
-
-        return Rule(resource=resource,
-                    name=rule_def.get('name'),
-                    index=rule_index,
-                    restrictions=rule_def.get('restrictions'))
 
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
@@ -161,25 +137,47 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                         'Invalid resource in rule {} (id: {}, type: {})'.format(
                             rule_index, resource_id, resource_type))
 
-                rule = self._build_rule(resource, rule_def, rule_index)
+                rule = self._build_rule(rule_def, rule_index)
                 self.resource_to_rules[resource].append(rule)
                 self.all_rules.append(rule)
+
+
+    @classmethod
+    def _build_rule(cls, rule_def, rule_index):
+        """Build a rule.
+
+        Args:
+            rule_def (dict): A dictionary containing rule definition
+                properties.
+            rule_index (int): The index of the rule from the rule definitions.
+                Assigned automatically when the rule book is built.
+
+        Returns:
+            Rule: rule for the given definition.
+        """
+        for field in ['name', 'restrictions']:
+            if field not in rule_def:
+                raise errors.InvalidRulesSchemaError(
+                    'Missing field "{}" in rule {}'.format(field, rule_index))
+
+        return Rule(name=rule_def.get('name'),
+                    index=rule_index,
+                    restrictions=rule_def.get('restrictions'))
 
     def find_violations(self, parent_resource, liens):
         """Find acl violations in the rule book.
 
         Args:
-            resource (gcp_type): The GCP resource associated with the acl.
-                This is where we start looking for rule violations and
+            parent_resource (Resource): The GCP resource associated with the
+                liens. This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
-            bq_acl (BigqueryAccessControls): The acl to compare the rules
-                against.
+            liens (List[Lien]): The liens to look for violations.
 
         Returns:
             iterable: A generator of the rule violations.
         """
-        violations = itertools.chain()
+        violations = []
 
         resource_ancestors = relationship.find_ancestors(
             parent_resource, parent_resource.full_name)
@@ -191,8 +189,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
 
         for rule in applicable_rules:
             if liens:
-                violations = itertools.chain(
-                    violations, rule.find_violations(liens))
+                violations.extend(rule.find_violations(liens))
             else:
                 # TODO: fill resource_data with what the lien should be so that
                 # we can create it automatically in the enforcer.
@@ -205,7 +202,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     violation_type='LIEN_VIOLATION',
                     resource_data='')
 
-                violations = itertools.chain(violations, [violation])
+                violations.append(violation)
 
         return violations
 
@@ -214,25 +211,24 @@ class Rule(object):
        Also finds violations.
     """
 
-    def __init__(self, resource, name, index, restrictions):
+    def __init__(self, name, index, restrictions):
         """Initialize.
 
         Args:
-            rule_name (str): Name of the loaded rule.
-            rule_index (int): The index of the rule from the rule definitions.
-            rule_reference (RuleReference): The rules from the file and
-              corresponding values.
+            name (str): Name of the loaded rule.
+            index (int): The index of the rule from the rule definitions.
+            restrictions (List[string]): The restrictions this rule enforces
+              on liens.
         """
-        self.resource = resource
         self.name = name
         self.index = index
         self.restrictions = restrictions
 
     def find_violations(self, liens):
-        """Find BigQuery acl violations in the rule book.
+        """Find violations for this rule against all given liens.
 
         Args:
-            bigquery_acl (BigqueryAccessControls): BigQuery ACL resource.
+            liens (List[Lien]): liens to find violations for.
 
         Yields:
             namedtuple: Returns RuleViolation named tuple.

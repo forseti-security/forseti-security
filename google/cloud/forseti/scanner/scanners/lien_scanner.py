@@ -14,8 +14,6 @@
 
 """Scanner for the Lien rules engine."""
 
-import collections
-
 from google.cloud.forseti.common.gcp_type import lien
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
@@ -53,44 +51,18 @@ class LienScanner(base_scanner.BaseScanner):
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
-    @staticmethod
-    def _flatten_violations(violations):
-        """Flatten RuleViolations into a dict for each RuleViolation member.
-
-        Args:
-            violations (list): The RuleViolations to flatten.
-
-        Yields:
-            dict: Iterator of RuleViolations as a dict per member.
-        """
-        for violation in violations:
-            yield {
-                'resource_id': violation.resource_id,
-                'resource_type': violation.resource_type,
-                'full_name': violation.full_name,
-                'rule_index': violation.rule_index,
-                'rule_name': violation.rule_name,
-                'violation_type': violation.violation_type,
-                'violation_data': {'lien': violation.resource_data},
-                'resource_data': violation.resource_data
-            }
-
-    def _output_results(self, all_violations):
-        """Output results.
-
-        Args:
-            all_violations (list): A list of BigQuery violations.
-        """
-        all_violations = list(self._flatten_violations(all_violations))
-        LOGGER.info(all_violations)
-        self._output_results_to_db(all_violations)
-
+    def run(self):
+        """Runs the data collection."""
+        parent_resource_to_liens = self._retrieve()
+        all_violations = self._find_violations(parent_resource_to_liens)
+        self._output_results(all_violations)
 
     def _retrieve(self):
         """Retrieves the data for scanner.
 
         Returns:
-            Map(): Lien data.
+            Dict[Resource, List[lien]]: mapping of a resource to the liens it
+                contains.
 
         Raises:
             ValueError: if resources have an unexpected type.
@@ -133,13 +105,14 @@ class LienScanner(base_scanner.BaseScanner):
             return parent_resource_to_liens
 
     def _find_violations(self, parent_resource_to_liens):
-        """Find violations in log sinks.
+        """Find violations in liens.
 
         Args:
-            log_sink_data (list): log sink data to find violations in.
+            parent_resource_to_liens (Dict[Resource, List[lien]]): mapping of
+                a resource to the liens it contains.
 
         Returns:
-            list: A list of all violations
+            List[RuleViolation]: A list of all violations.
         """
         all_violations = []
         LOGGER.info('Finding lien violations...')
@@ -151,8 +124,33 @@ class LienScanner(base_scanner.BaseScanner):
             all_violations.extend(violations)
         return all_violations
 
-    def run(self):
-        """Runs the data collection."""
-        parent_resource_to_liens = self._retrieve()
-        all_violations = self._find_violations(parent_resource_to_liens)
-        self._output_results(all_violations)
+    def _output_results(self, all_violations):
+        """Output results.
+
+        Args:
+            all_violations (List[RuleViolation]): A list of lien violations.
+        """
+        all_violations = self._flatten_violations(all_violations)
+        self._output_results_to_db(all_violations)
+
+    @staticmethod
+    def _flatten_violations(violations):
+        """Flatten violations into a dict.
+
+        Args:
+            violations (List[RuleViolation]): The violations to flatten.
+
+        Yields:
+            Iterator[dict]: flattened violations for each violation.
+        """
+        for violation in violations:
+            yield {
+                'resource_id': violation.resource_id,
+                'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
+                'rule_index': violation.rule_index,
+                'rule_name': violation.rule_name,
+                'violation_type': violation.violation_type,
+                'violation_data': {'lien': violation.resource_data},
+                'resource_data': violation.resource_data
+            }

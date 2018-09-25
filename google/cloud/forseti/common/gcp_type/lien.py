@@ -26,7 +26,7 @@ class Lien(resource.Resource):
         """Initialize a Lien.
 
         Args:
-            parent (Resource): id of the project this lien belongs to.
+            parent (Resource): resource this lien belongs to.
             name (str): name of the lien.
             restrictions (List[str]): restrictions this lien protects against.
             raw_json (str): raw json of this lien.
@@ -43,6 +43,16 @@ class Lien(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, name, json_string):
+        """Create a lien from a json string.
+
+        Args:
+            parent (Resource): resource this lien belongs to.
+            name (str): id of the lien.
+            json_string (str): json string of a lien GCP API response.
+
+        Returns:
+            Lien: lien resource.
+        """
         lien_dict = json.loads(json_string)
         return cls(
             parent=parent,
