@@ -11,8 +11,8 @@ resource hierarchy.
 
 But, you also have the option to run Forseti even if you only own a subset
 of resources, such as a specific folder, or projects that are directly under
-the organization. You will be able to inventory audit these subset of resources,
-but not be able to use Explain.
+the organization. You will be able to inventory and audit these subset
+of resources, sbut not be able to use Explain.
 
 ## How to Install and Configure
 
