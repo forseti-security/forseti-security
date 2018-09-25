@@ -197,7 +197,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     rule_name=rule.name,
                     violation_type='LIEN_VIOLATION',
                     resource_data='')
-
                 violations.append(violation)
 
         return violations

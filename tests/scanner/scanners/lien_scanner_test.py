@@ -27,7 +27,6 @@ from google.cloud.forseti.scanner.scanners import lien_scanner
 def _mock_gcp_resource_iter(_, resource_type):
     """Creates a list of GCP resource mocks retrieved by the scanner."""
 
-
     Resource = collections.namedtuple(
         'Resource',
         # fields based on required fields from Resource in dao.py.
