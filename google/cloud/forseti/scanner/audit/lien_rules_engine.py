@@ -162,7 +162,7 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     restrictions=rule_def.get('restrictions'))
 
     def find_violations(self, parent_resource, liens):
-        """Find acl violations in the rule book.
+        """Find lien violations in the rule book.
 
         Args:
             parent_resource (Resource): The GCP resource associated with the
