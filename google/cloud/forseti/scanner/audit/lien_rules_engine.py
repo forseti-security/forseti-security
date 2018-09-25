@@ -122,8 +122,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                 raise errors.InvalidRulesSchemaError(
                     'Missing resource ids in rule {}'.format(rule_index))
 
-
-
             resource_type = raw_resource.get('type')
 
             for resource_id in resource_ids:
