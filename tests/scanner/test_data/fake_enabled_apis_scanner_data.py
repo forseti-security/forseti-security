@@ -112,6 +112,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-1',
+        'resource_name': 'proj-1',
         'full_name': 'organization/234/project/proj-1/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -125,6 +126,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-2',
+        'resource_name': 'proj-2',
         'full_name': 'organization/234/project/proj-2/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -138,6 +140,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-3',
+        'resource_name': 'proj-3',
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -151,6 +154,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-3',
+        'resource_name': 'proj-3',
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -164,6 +168,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-3',
+        'resource_name': 'proj-3',
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test blacklist',
         'rule_index': 1,
@@ -177,6 +182,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-2',
+        'resource_name': 'proj-2',
         'full_name': 'organization/234/project/proj-2/',
         'rule_name': 'Test required list',
         'rule_index': 2,
