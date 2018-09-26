@@ -72,9 +72,10 @@ class BucketsAclScanner(base_scanner.BaseScanner):
                               'full_name': violation.full_name,
                               'project_id': violation.project_id}
             yield {
-                'resource_id': violation.resource_id,
                 'full_name': violation.full_name,
+                'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'resource_name': violation.resource_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
