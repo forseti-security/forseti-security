@@ -188,7 +188,7 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
-Follow instructions [here]({% _latest/configure/general/index.html#configuring-settings %}) to 
+Follow instructions [here]({% link _docs/latest/configure/general/index.md %}#configuring-settings) to 
 update the configuration file.  
 
     **Inventory**
@@ -318,7 +318,7 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
-Follow instructions [here]({% _latest/configure/general/index.html#configuring-settings %}) to 
+Follow instructions [here]({% link _docs/latest/configure/general/index.md %}#configuring-settings) to 
 update the configuration file.   
 
     **Scanner**
@@ -361,7 +361,7 @@ update the configuration file.
 1. Rule files updates:  
     1. Add [Log Sink rule file](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.3.0/rules/log_sink_rules.yaml)
     to `rules/` under your Forseti server GCS bucket to use the LogSink scanner.
-    1. BigQuery rule syntax has been [updated (backward compatible)]({% _docs/latest/configure/scanner/rules.html#bigquery-rules %}).
+    1. BigQuery rule syntax has been [updated (backward compatible)]({% link _docs/latest/configure/scanner/rules.md %}#bigquery-rules).
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.2.0 to 2.3.0" content=upgrading_2_2_0_to_2_3_0 uid=4 %}
