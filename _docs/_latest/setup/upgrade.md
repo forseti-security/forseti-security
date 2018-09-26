@@ -179,7 +179,10 @@ copy the deployment name for Forseti server.
 1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-1-0.yaml`
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
-1. Repeat step `3-9` for Forseti client.
+1. Reset the Forseti server VM instance for changes in startup script to take effect.  
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-10` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
 Follow instructions [here]({% _latest/configure/general/index.html#configuring-settings %}) to 
 update the configuration file.  
@@ -265,7 +268,10 @@ copy the deployment name for Forseti server.
 1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-2-0.yaml`  
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
-1. Repeat step `3-10` for Forseti client.
+1. Reset the Forseti server VM instance for changes in startup script to take effect.  
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-11` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
 **No changes to the configuration file.**
 1. Rule files updates:  
@@ -295,7 +301,10 @@ copy the deployment name for Forseti server.
 1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-3-0.yaml`
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
-1. Repeat step `3-9` for Forseti client.
+1. Reset the Forseti server VM instance for changes in startup script to take effect.  
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-10` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
 Follow instructions [here]({% _latest/configure/general/index.html#configuring-settings %}) to 
 update the configuration file.   
@@ -366,7 +375,10 @@ copy the deployment name for Forseti server.
 1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-4-0.yaml`
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
-1. Repeat step `3-9` for Forseti client.
+1. Reset the Forseti server VM instance for changes in startup script to take effect.  
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-10` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
 Forseti is updated to be usable on a non organization resource.
 
