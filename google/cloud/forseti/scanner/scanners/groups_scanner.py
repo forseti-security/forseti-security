@@ -53,6 +53,7 @@ class GroupsScanner(base_scanner.BaseScanner):
             full_name = violation.parent.member_id + ':' + violation.member_id
             yield {
                 'resource_id': violation.member_email,
+                'resource_name': violation.member_email,
                 'resource_type': 'group_member',
                 'full_name': full_name,
                 'rule_index': None,
