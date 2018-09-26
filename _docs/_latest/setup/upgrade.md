@@ -170,7 +170,7 @@ Learn more about [Updating a Deployment](https://cloud.google.com/deployment-man
     1. Run command `git checkout tags/v2.1.0` to checkout version `v2.1.0` of Forseti Security.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket (located under `forseti-server-xxxxxx/deployment_templates`).
-1. Update the `forseti-version` inside the deployment template to `v2.1.0`.
+1. Update the `forseti-version` inside the deployment template to `tags/v2.1.0`.
 1. Create file `deploy-forseti-server-xxxxx-2-1-0.yaml` under `forseti-security/deployment-templates`.
 1. Copy and paste the content of the deployment template to file `deploy-forseti-server-xxxxx-2-1-0.yaml`.
 1. Upload file `deploy-forseti-server-xxxxx-2-1-0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
@@ -224,7 +224,7 @@ update the configuration file.
     1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
     clone the forseti-security directory to cloud shell.
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
-    1. Run command `git checkout tags/v2.2.0` to checkout version `v2.2.0` of Forseti Security.
+    1. Run command `git checkout tags/v2.2.0` to checkout version `tags/v2.2.0` of Forseti Security.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket (located under `forseti-server-xxxxxx/deployment_templates`).
 1. Add the following fields to the compute engine section inside your deployment template.  
@@ -256,7 +256,7 @@ bucket (located under `forseti-server-xxxxxx/deployment_templates`).
         run-frequency: ...
         
     ```
-1. Update the `forseti-version` inside the deployment template to `v2.2.0`.
+1. Update the `forseti-version` inside the deployment template to `tags/v2.2.0`.
 1. Create file `deploy-forseti-server-xxxxx-2-2-0.yaml` under `forseti-security/deployment-templates`.
 1. Copy and paste the content of the deployment template to file `deploy-forseti-server-xxxxx-2-2-0.yaml`.
 1. Upload file `deploy-forseti-server-xxxxx-2-2-0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
@@ -286,7 +286,7 @@ If you see errors while running the deployment manager update command, please re
     1. Run command `git checkout tags/v2.3.0` to checkout version `v2.3.0` of Forseti Security.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket (located under `forseti-server-xxxxxx/deployment_templates`).
-1. Update the `forseti-version` inside the deployment template to `v2.3.0`.
+1. Update the `forseti-version` inside the deployment template to `tags/v2.3.0`.
 1. Create file `deploy-forseti-server-xxxxx-2-3-0.yaml` under `forseti-security/deployment-templates`.
 1. Copy and paste the content of the deployment template to file `deploy-forseti-server-xxxxx-2-3-0.yaml`.
 1. Upload file `deploy-forseti-server-xxxxx-2-3-0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
@@ -357,7 +357,7 @@ update the configuration file.
     1. Run command `git checkout tags/v2.4.0` to checkout version `v2.4.0` of Forseti Security.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket (located under `forseti-server-xxxxxx/deployment_templates`).
-1. Update the `forseti-version` inside the deployment template to `v2.4.0`.
+1. Update the `forseti-version` inside the deployment template to `tags/v2.4.0`.
 1. Create file `deploy-forseti-server-xxxxx-2-4-0.yaml` under `forseti-security/deployment-templates`.
 1. Copy and paste the content of the deployment template to file `deploy-forseti-server-xxxxx-2-4-0.yaml`.
 1. Upload file `deploy-forseti-server-xxxxx-2-4-0.yaml` back to the GCS bucket (`forseti-server-xxxxxx/deployment_templates`)
