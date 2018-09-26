@@ -125,6 +125,11 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
 
             resource_type = raw_resource.get('type')
 
+            if resource_type not in ['project', 'folder', 'organization']:
+                raise errors.InvalidRulesSchemaError(
+                    'Invalid resource type "{}" in rule {}'.format(
+                        resource_type, rule_index))
+
             for resource_id in resource_ids:
                 resource = resource_util.create_resource(
                     resource_id=resource_id,
@@ -171,11 +176,9 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                 resource's "inherit_from_parents" property).
             liens (List[Lien]): The liens to look for violations.
 
-        Returns:
-            iterable: A generator of the rule violations.
+        Yields:
+            RuleViolation: lien rule violations.
         """
-        violations = []
-
         resource_ancestors = relationship.find_ancestors(
             parent_resource, parent_resource.full_name)
 
@@ -186,11 +189,12 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
 
         for rule in applicable_rules:
             if liens:
-                violations.extend(rule.find_violations(liens))
+                for violation in rule.find_violations(liens):
+                    yield violation
             else:
                 # TODO: fill resource_data with what the lien should be so that
                 # we can create it automatically in the enforcer.
-                violation = RuleViolation(
+                yield RuleViolation(
                     resource_id=parent_resource.id,
                     resource_type=parent_resource.type,
                     full_name=parent_resource.full_name,
@@ -198,9 +202,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
                     rule_name=rule.name,
                     violation_type='LIEN_VIOLATION',
                     resource_data='')
-                violations.append(violation)
-
-        return violations
 
 
 class Rule(object):
@@ -228,19 +229,20 @@ class Rule(object):
             liens (List[Lien]): liens to find violations for.
 
         Yields:
-            namedtuple: Returns RuleViolation named tuple.
+            RuleViolation: lien rule violation.
         """
         for lien in liens:
-            if sorted(self.restrictions) != sorted(lien.restrictions):
-                yield RuleViolation(
-                    resource_id=lien.id,
-                    resource_type=lien.type,
-                    full_name=lien.full_name,
-                    rule_index=self.index,
-                    rule_name=self.name,
-                    violation_type='LIEN_VIOLATION',
-                    resource_data=lien.raw_json,
-                )
+            for restriction in self.restrictions:
+                if restriction not in lien.restrictions:
+                    yield RuleViolation(
+                        resource_id=lien.id,
+                        resource_type=lien.type,
+                        full_name=lien.full_name,
+                        rule_index=self.index,
+                        rule_name=self.name,
+                        violation_type='LIEN_VIOLATION',
+                        resource_data=lien.raw_json,
+                    )
 
 
 RuleViolation = collections.namedtuple(
