@@ -23,8 +23,8 @@ of resources, but Explain will not be supported.
 Run the Forseti [Installer]({% link _docs/latest/setup/install.md %}).
 
 By default, the installer will try to assign org-level roles. If you are not
-Org Admin, there will be errors, but you can safely disregard, as you will
-assign the correct roles later.
+an Org Admin, there will be errors, but you can safely disregard, as you will
+manually assign the correct roles later.
 
 ## Configure Forseti to Run on a Folder
 
@@ -40,22 +40,26 @@ to grant the Forseti server service account to have the same roles on the
 target folder, as was [originally granted on the
 organization]({% link _docs/latest/concepts/service-accounts.md %}#the-server-service-account).
 
+1. Saving changes.
+   1. Save the changes to `forseti_conf_server.yaml` file.
+   1. Upload `forseti_conf_server.yaml` [to GCS bucket]({% link _docs/latest/configure/general/index.md %}#moving-configuration-to-cloud-storage).
+
+1. Use the updated configuration.
+   1. SSH to the Forseti server VM.
+   1. Use sudo gsutil to copy the `forseti_conf_server.yaml` file from GCS
+   bucket to `/home/ubuntu/forseti-security/configs/`.
+   1. Make the server [reload the updated configuration]({% link _docs/latest/use/cli/server.md %}).
+
 ## Configure Forseti to Run on Projects
 
 1. This assumes that Forseti is not installed with Org Admin credential, and
 you want Forseti to run on projects that you own. If Forseti is installed
 with Org Admin credential, then all the resources in the organization
-will be returned,
+will be returned.
 1. Leave the `root_resource_id` pointed to the organization that the Installer
 inferred from the environment.
 1. Grant project viewer role to the Forseti server service account,
 on the projects that you own.
-
-## Saving Changes
-1. Save the changes to `forseti_conf_server.yaml` file.
-1. Save `forseti_conf_server.yaml` [to GCS bucket]({% link _docs/latest/configure/general/index.md %}#moving-configuration-to-cloud-storage).
-1. Make the server to
-[reload the updated configuration]({% link _docs/latest/use/cli/server.md %}).
 
 When you run Forseti again, all the resources from the target root
 will be collected in Inventory and audited.
