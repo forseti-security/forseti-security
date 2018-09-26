@@ -45,7 +45,12 @@ message DeleteModelRequest {
 }
 
 message DeleteModelReply {
-  string result = 1;
+  enum Status {
+    SUCCESS = 1;
+    FAIL = 2;
+  }
+  Status status = 1;
+  string message = 2;
 }
 
 message ListModelRequest {
