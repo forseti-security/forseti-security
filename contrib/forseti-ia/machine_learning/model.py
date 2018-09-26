@@ -38,30 +38,39 @@ def autoencoder_model(input_shape):
 
   """
   input_layer = layers.Input(shape=input_shape)
-  encoder_1 = layers.Dense(500, act='relu')(input_layer)
-  encoder_2 = layers.Dense(500, act='relu')(encoder_1)
-  encoder_3 = layers.Dense(2000, act='relu')(encoder_2)
-  encoder_4 = layers.Dense(10, act='relu')(encoder_3)
+  encoder_1 = layers.Dense(500, act='relu', name="encoder_1")(input_layer)
+  encoder_2 = layers.Dense(500, act='relu', name="encoder_2")(encoder_1)
+  encoder_3 = layers.Dense(2000, act='relu', name="encoder_3")(encoder_2)
+  encoder_4 = layers.Dense(10, act='relu', name="encoder_4")(encoder_3)
 
-  hidden = layers.Dense(10, act='relu')(encoder_4)
+  hidden = layers.Dense(10, act='relu', name="hidden")(encoder_4)
 
-  decoder_1 = layers.Dense(10, act='relu')(hidden)
-  decoder_2 = layers.Dense(2000, act='relu')(decoder_1)
-  decoder_3 = layers.Dense(500, act='relu')(decoder_2)
-  decoder_4 = layers.Dense(500, act='relu')(decoder_3)
+  decoder_1 = layers.Dense(10, act='relu', name="decoder_1")(hidden)
+  decoder_2 = layers.Dense(2000, act='relu', name="decoder_2")(decoder_1)
+  decoder_3 = layers.Dense(500, act='relu', name="decoder_3")(decoder_2)
+  decoder_4 = layers.Dense(500, act='relu', name="decoder_4")(decoder_3)
 
-  output_layer = layers.Dense(input_shape)(decoder_4)
+  output_layer = layers.Dense(input_shape, name="output_layer")(decoder_4)
   model = Model(inputs=input_layer, outputs=output_layer)
 
   return model
 
 
-def embedding_model():
+def embedding_model(model):
   """
-  Returns the learnt embedding for each cluster input.
+  Returns the Trained model which gives the embeddings as the output.
+
+  """
+  intermediate_model = model(
+      inputs=[model.input],
+      outputs=[model.get_layer("hidden").output])
+
+  return intermediate_model
+
+def get_embeddings(model, input):
+  """
+   Given an input , this returns the learnt embedding for it.
 
   """
 
-
-
-  return
+  return model.predict(input)
