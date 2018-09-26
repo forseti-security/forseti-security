@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.cloudasset module
+======================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api.cloudasset
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.billing\_account module
+=============================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.billing_account
+    :members:
+    :undoc-members:
+    :show-inheritance:

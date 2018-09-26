@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.audit.buckets\_rules\_engine module
+================================================================
+
+.. automodule:: google.cloud.forseti.scanner.audit.buckets_rules_engine
+    :members:
+    :undoc-members:
+    :show-inheritance:

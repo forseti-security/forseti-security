@@ -122,3 +122,6 @@ steps below:
 * Enable
   [G Suite data collection]({% link _docs/latest/configure/inventory/gsuite.md %})
   for processing by Forseti.
+* Learn how to [configure Forseti to run from non-organization
+  root]({% link _docs/latest/configure/general/non-org-root.md %}).
+  
