@@ -516,8 +516,8 @@ class FirewallRule(object):
                      other.direction is None)
         network = (self.network == other.network or
                    other.network is None)
-        source_tags = set(self.source_tags).issubset(other.source_tags)
-        target_tags = set(self.target_tags).issubset(other.target_tags)
+        source_tags = set(self.source_tags).issubset(other.source_tags) or not other.source_tags
+        target_tags = set(self.target_tags).issubset(other.target_tags) or not other.target_tags
         source_ranges = ips_in_list(self.source_ranges, other.source_ranges)
         destination_ranges = ips_in_list(self.destination_ranges,
                                          other.destination_ranges)
@@ -551,8 +551,8 @@ class FirewallRule(object):
         network = (self.network is None or
                    other.network is None or
                    self.network == other.network)
-        source_tags = set(other.source_tags).issubset(self.source_tags)
-        target_tags = set(other.target_tags).issubset(self.target_tags)
+        source_tags = set(other.source_tags).issubset(self.source_tags) or not self.source_tags
+        target_tags = set(other.target_tags).issubset(self.target_tags) or not self.target_tags
         firewall_action = self.firewall_action > other.firewall_action
         source_ranges = ips_in_list(other.source_ranges, self.source_ranges)
         destination_ranges = ips_in_list(other.destination_ranges,
