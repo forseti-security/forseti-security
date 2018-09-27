@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 
 """
 Flatten the following attributes in firewall rules.
@@ -40,41 +41,96 @@ class FirewallRule(object):
     def __init__(self):
         self.creation_timestamp = ''
         # "creationTimestamp": "2018-02-28T21:49:07.739-08:00"
-
         self.description = ''
         # "description": ""
-
         self.name = ''
         # "name": "forseti-server-allow-grpc-20180228211432",
-
-        self.network = ''
-        # "network": "https://www.googleapis.com/compute/beta/projects/joe-project-p2/global/networks/default"
-
         self.priority = 0
-        # "priority": 0
-
-        self.source_ranges = 0
-        # "sourceRanges": ["10.128.0.0/9"]
-
-        self.destination_ranges = 0
-        # "destinationRanges": ["10.128.0.0/9"]
-
+        self.source_ranges = []
+        self.destination_ranges = []
         self.source_tags = []
-
         self.target_tags = []
-
         self.source_service_accounts = []
-
         self.target_service_accounts = []
         # targetServiceAccounts": ["forseti-gcp-server-1432@joe-project-p2.iam.gserviceaccount.com"]}"
-
-        self.allowed = []
-        # "allowed": [{"IPProtocol": "tcp", "ports": ["50051"]}]
-
-        self.denied = []
-
+        self.action = ''  # allowed/denied
+        self.ip_protocol = ''
+        self.ports = ''
         self.direction = ''
-        # "direction": "INGRESS"
-
         self.disabled = True
-        # "disabled": false
+
+    @classmethod
+    def from_json(cls, firewall_rule_data):
+        """Generate a list of flattened firewall rule objects based
+         on the given firewall resource data in string format.
+
+         Args:
+            firewall_rule_data (str): Firewall rule resource data,
+                in JSON string format.
+
+        Returns:
+             list: A list of flattened firewall rule objects.
+         """
+        # "allowed": [{"IPProtocol": "tcp,udp", "ports": ["1", "50051"]}]
+        json_dict = json.loads(firewall_rule_data)
+
+        action = 'allowed'
+
+        if action not in json_dict:
+            action = 'denied'
+
+        protocol_mappings = json_dict.get(action, [])
+
+        for protocol_mapping in protocol_mappings:
+            ip_protocols = protocol_mapping.get('IPProtocol', [])
+            corresponding_ports = protocol_mapping.get('ports', [])
+
+            flattened_ports = cls._flatten_ports(corresponding_ports)
+
+            return [FirewallRule]
+
+        return
+
+    @classmethod
+    def _flatten_ports(cls, ports):
+        """Flatten the list of ports.
+
+        Example:
+            Input: ["1-5", "50051"]
+            Output: ["1", "2", "3", "4", "5", "50051"]
+
+        Args:
+            corresponding_ports (list): List of corresponding ports.
+
+        Returns:
+            list: Flattened ports.
+        """
+
+        flattened_ports = []
+
+        # Type of representation that can be in the ports
+        # Range - e.g. "0-5"
+        # Single port - e.g. "50051"
+        # Empty - e.g. [] - this represents all ports.
+
+        for port in ports:
+            if '-' in port:
+                # This is port range, flatten the range.
+                port_range = port.split('-')
+                start = int(port_range[0])
+                end = int(port_range[1])
+                flattened = [i for i in range(start, end+1)]
+                flattened_ports += flattened_ports
+            else:
+                # Single port.
+                flattened_ports.append(int(port))
+
+        # Cast the list to set to remove duplicates,
+        # and cast it back to list.
+        flattened_ports = list(set(flattened_ports))
+
+        if not flattened_ports:
+            # Max port is 65535.
+            flattened_ports = [i for i in range(0, 65536)]
+
+        return flattened_ports
