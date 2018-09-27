@@ -213,6 +213,7 @@ def grant_server_svc_acct_roles(enable_write,
                                 target_id,
                                 project_id,
                                 gcp_service_account,
+                                cai_bucket_name,
                                 user_can_grant_roles):
     """Grant the following IAM roles to GCP service account.
 
@@ -225,16 +226,17 @@ def grant_server_svc_acct_roles(enable_write,
         Cloud SQL Client, Storage Object Viewer, Storage Object Creator
 
     Args:
-        enable_write (bool): Whether or not to enable write access
-        access_target (str): Access target, either org, folder or project
-        target_id (str): Id of the access_target
-        project_id (str): GCP Project Id
-        gcp_service_account (str): GCP service account email
+        enable_write (bool): Whether or not to enable write access.
+        access_target (str): Access target, either org, folder or project.
+        target_id (str): Id of the access_target.
+        project_id (str): GCP Project Id.
+        gcp_service_account (str): GCP service account email.
+        cai_bucket_name (str): The name of the CAI bucket.
         user_can_grant_roles (bool): Whether or not user has
-                                        access to grant roles
+            access to grant roles.
 
     Returns:
-        bool: Whether or not a role script has been generated
+        bool: Whether or not a role script has been generated.
     """
 
     utils.print_banner('Assigning Roles To The GCP Service Account',
@@ -249,9 +251,63 @@ def grant_server_svc_acct_roles(enable_write,
         'service_accounts': constants.SVC_ACCT_ROLES,
     }
 
-    return _grant_svc_acct_roles(
+    bucket_obj_role_granted = _grant_bucket_obj_roles(
+        gcp_service_account,
+        cai_bucket_name,
+        constants.FORSETI_CAI_BUCKET_ROLES,
+        user_can_grant_roles)
+
+    return bucket_obj_role_granted and _grant_svc_acct_roles(
         target_id, project_id, gcp_service_account,
         user_can_grant_roles, roles)
+
+
+def _grant_bucket_obj_roles(gcp_service_account,
+                            bucket_name,
+                            roles_to_grant,
+                            user_can_grant_roles):
+    """Grant GCS object roles to GCP service account.
+    Note: This is only supported through gsutil library and not in
+    gcloud, that's why we need this one off method to grant the role.
+
+    Command structure:
+    gsutil iam ch [MEMBER_TYPE]:[MEMBER_NAME]:[ROLE] gs://[BUCKET_NAME]
+
+    Args:
+        gcp_service_account (str): GCP service account email.
+        bucket_name (str): Name of the bucket to grant the role on.
+        user_can_grant_roles (bool): Whether or not user has
+            access to grant roles.
+        roles_to_grant (list): List of roles to grant.
+    Returns:
+        bool: Whether or not a role script has been generated.
+    """
+    failed_commands = []
+
+    for role in roles_to_grant:
+        member = 'serviceAccount:{}:{}'.format(gcp_service_account, role)
+        bucket = 'gs://{}'.format(bucket_name)
+        bucket_obj_role_cmd = ['gsutil', 'iam', 'ch', member, bucket]
+
+        if user_can_grant_roles:
+            print('Assigning {} on {}... '.format(member, bucket), end='')
+            sys.stdout.flush()
+            return_code, _, err = utils.run_command(bucket_obj_role_cmd)
+            if return_code:
+                # Role not assigned, save the commands and write the command to
+                # the role script later.
+                failed_commands.append('%s\n' % ' '.join(bucket_obj_role_cmd))
+                print(err)
+            else:
+                print('assigned')
+
+    if failed_commands:
+        with open('grant_forseti_roles.sh', 'a+') as roles_script:
+            for failed_command in failed_commands:
+                roles_script.write(failed_command)
+        print(constants.MESSAGE_CREATE_ROLE_SCRIPT)
+        return True
+    return False
 
 
 def _grant_svc_acct_roles(target_id,
@@ -279,8 +335,7 @@ def _grant_svc_acct_roles(target_id,
     if grant_roles_cmds:
         print(constants.MESSAGE_CREATE_ROLE_SCRIPT)
 
-        with open('grant_forseti_roles.sh', 'wt') as roles_script:
-            roles_script.write('#!/bin/bash\n\n')
+        with open('grant_forseti_roles.sh', 'a+') as roles_script:
             for cmd in grant_roles_cmds:
                 roles_script.write('%s\n' % ' '.join(cmd))
         return True

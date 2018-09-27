@@ -42,6 +42,10 @@ resources:
   type: bucket.py
   properties:
     location: {BUCKET_LOCATION}
+- name: {FORSETI_CAI_BUCKET}
+  type: bucket.py
+  properties:
+    location: {BUCKET_LOCATION}
 
 # Compute Engine
 - name: forseti-instance-server

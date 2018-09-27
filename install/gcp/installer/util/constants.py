@@ -86,14 +86,15 @@ RESOURCE_TYPE_ARGS_MAP = {
 
 # Roles
 GCP_READ_IAM_ROLES = [
-    'roles/browser',
-    'roles/compute.networkViewer',
-    'roles/iam.securityReviewer',
     'roles/appengine.appViewer',
     'roles/bigquery.dataViewer',
+    'roles/browser',
+    'roles/cloudasset.viewer'
+    'roles/cloudsql.viewer',
+    'roles/compute.networkViewer',
+    'roles/iam.securityReviewer',
     'roles/servicemanagement.quotaViewer',
     'roles/serviceusage.serviceUsageConsumer',
-    'roles/cloudsql.viewer'
 ]
 
 GCP_WRITE_IAM_ROLES = [
@@ -110,6 +111,10 @@ PROJECT_IAM_ROLES_SERVER = [
 PROJECT_IAM_ROLES_CLIENT = [
     'roles/storage.objectViewer',
     'roles/logging.logWriter'
+]
+
+FORSETI_CAI_BUCKET_ROLES = [
+    'roles/storage.objectAdmin'
 ]
 
 SVC_ACCT_ROLES = [
