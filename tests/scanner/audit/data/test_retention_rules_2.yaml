@@ -1,0 +1,10 @@
+rules:
+  - name: exact retention 365
+    applies_to: 
+      - bucket
+    resource:
+      - type: organization
+        resource_ids:
+          - "*"
+    minimum_retention: 365
+    maximum_retention: 365
