@@ -130,3 +130,28 @@ def type_from_name(resource_name):
             return resource_type
 
     return None
+
+def is_an_ancestor_of(full_name, given_type, given_name):
+    """Check a given resource is an ancestor in the full_name.
+
+    Args:
+        full_name (str): The full resource name from the model, includes all
+            parent resources in the hierarchy to the root organization.
+        given_type: The type of the given resource, e.g., bucket
+        given_name: The name of the given resource, e.g., some-bucket
+
+    Returns:
+        bool: true it is in ancestors; otherwise false
+    """
+    resource_ancestors = []
+
+    for (resource_type, resource_id) in utils.get_resources_from_full_name(
+            full_name):
+        resource_ancestors.append(create_resource(resource_id, resource_type))
+        if(given_name == "*"):
+            if(resource_type == given_type):
+                return True
+        elif(resource_type == given_type and resource_id == given_name):
+            return True
+
+    return False
