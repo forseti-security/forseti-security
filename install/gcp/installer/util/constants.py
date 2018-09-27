@@ -114,7 +114,7 @@ PROJECT_IAM_ROLES_CLIENT = [
 ]
 
 FORSETI_CAI_BUCKET_ROLES = [
-    'roles/storage.objectAdmin'
+    'objectAdmin'
 ]
 
 SVC_ACCT_ROLES = [
