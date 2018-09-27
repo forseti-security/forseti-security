@@ -48,11 +48,11 @@ _LIEN_JSON = """{
 LIEN = lien.Lien.from_json(PROJECT, 'l1', _LIEN_JSON)
 
 VIOLATIONS = [lien_rules_engine.RuleViolation(
-    resource_id='l1',
-    resource_type=resource.ResourceType.LIEN,
-    full_name='organization/234/project/p1/lien/l1/',
+    resource_id='p1',
+    resource_type=resource.ResourceType.PROJECT,
+    full_name='organization/234/project/p1/',
     rule_index=0,
     rule_name='Lien test rule',
     violation_type='LIEN_VIOLATION',
-    resource_data=_LIEN_JSON,
+    resource_data='',
 )]

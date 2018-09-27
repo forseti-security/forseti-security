@@ -37,24 +37,29 @@ class Rules(object):
 rules:
   - name: Lien test rule
     mode: required
-    restrictions: [resourcemanager.projects.delete]
+    restrictions: {restrictions}
 """
 
     organization_rule = base_rule + """
     resource:
       - type: organization
         resource_ids:
-        - {id}
+          - {id}
 """
 
     projects_rule = base_rule + """
     resource:
       - type: project
-        resource_ids: {ids}
+        resource_ids:
+          - {id}
 """
 
+def get_rules_engine_with_rule(rule_tmpl, rid, restrictions=None):
+    if not restrictions:
+        restrictions = ['resourcemanager.projects.delete']
 
-def get_rules_engine_with_rule(rule):
+    rule = rule_tmpl.format(id=rid, restrictions=restrictions)
+
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
         f.write(rule)
         f.flush()
@@ -71,52 +76,62 @@ class LienRulesEngineTest(ForsetiTestCase):
         lien_rules_engine.LOGGER = mock.MagicMock()
 
     def test_build_rule_book_from_local_yaml_file(self):
-        rule = Rules.organization_rule.format(id=data.ORGANIZATION.id)
-        rules_engine = get_rules_engine_with_rule(rule)
+        rules_engine = get_rules_engine_with_rule(
+            Rules.organization_rule, data.ORGANIZATION.id)
         self.assertEqual(1, len(rules_engine.rule_book.resource_to_rules))
 
     def test_build_rule_book_no_resource(self):
-        rule = Rules.base_rule
         with self.assertRaises(InvalidRulesSchemaError):
-            get_rules_engine_with_rule(rule)
+            get_rules_engine_with_rule(Rules.base_rule, '')
 
     def test_find_violations_project_rule_no_violations(self):
-        rule = Rules.projects_rule.format(ids=[data.PROJECT.id])
-        rules_engine = get_rules_engine_with_rule(rule)
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, data.PROJECT.id)
         got_violations = list(rules_engine.find_violations(
             data.PROJECT, [data.LIEN]))
         self.assertEqual(got_violations, [])
 
     def test_find_violations_project_rule_missing_restrictions(self):
-        rule = Rules.projects_rule.format(ids=[data.PROJECT.id])
-        rule = rule.replace('resourcemanager.projects.delete', 'foo')
-        rules_engine = get_rules_engine_with_rule(rule)
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, data.PROJECT.id, restrictions=['foo'])
         got_violations = list(rules_engine.find_violations(
             data.PROJECT, [data.LIEN]))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
     def test_find_violations_organization_rule(self):
-        rule = Rules.organization_rule.format(id=data.ORGANIZATION.id)
-        rule = rule.replace('resourcemanager.projects.delete', 'foo')
-        rules_engine = get_rules_engine_with_rule(rule)
+        rules_engine = get_rules_engine_with_rule(
+            Rules.organization_rule, data.ORGANIZATION.id, restrictions=['foo'])
         got_violations = list(rules_engine.find_violations(
             data.PROJECT, [data.LIEN]))
         self.assertEqual(got_violations, data.VIOLATIONS)
 
     def test_find_violations_project_missing_lien(self):
-        rule = Rules.projects_rule.format(ids=[data.PROJECT.id])
-        rules_engine = get_rules_engine_with_rule(rule)
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, data.PROJECT.id)
         got_violations = list(rules_engine.find_violations(data.PROJECT, []))
-        want_violations = [lien_rules_engine.RuleViolation(
-            resource_id=data.PROJECT.id,
-            resource_type=data.PROJECT.type,
-            full_name='organization/234/project/p1/',
-            rule_index=0,
-            rule_name='Lien test rule',
-            violation_type='LIEN_VIOLATION',
-            resource_data='',
-        )]
-        self.assertEqual(got_violations, want_violations)
+        self.assertEqual(got_violations, data.VIOLATIONS)
+
+    def test_find_violations_projects_multiple_liens(self):
+        id_to_restrictions = {'l1': ['a', 'b'], 'l2': ['c']}
+
+        liens = []
+
+        for lid, restrictions in id_to_restrictions.iteritems():
+            lien_dict = {
+                'name': 'liens/' + lid,
+                'parent': 'projects/p1',
+                'restrictions': restrictions,
+                'origin': 'testing-' + lid,
+                'createTime': '2018-09-05T14:45:46.534Z',
+            }
+
+            liens.append(lien.Lien.from_json(
+                data.PROJECT, 'l1', json.dumps(lien_dict)))
+
+        rules_engine = get_rules_engine_with_rule(
+            Rules.projects_rule, data.PROJECT.id, restrictions=['a', 'c'])
+        got_violations = list(rules_engine.find_violations(data.PROJECT, liens))
+        self.assertEqual(got_violations, [])
 
 
 if __name__ == '__main__':

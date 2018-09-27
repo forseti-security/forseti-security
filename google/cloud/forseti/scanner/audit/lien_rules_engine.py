@@ -24,6 +24,13 @@ from google.cloud.forseti.scanner.audit import errors
 LOGGER = logger.get_logger(__name__)
 
 
+RuleViolation = collections.namedtuple(
+    'RuleViolation',
+    ['resource_id', 'resource_type', 'full_name', 'rule_index',
+     'rule_name', 'violation_type', 'resource_data']
+)
+
+
 class LienRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for Liens."""
 
@@ -86,7 +93,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         """
         super(LienRuleBook, self).__init__()
         self.resource_to_rules = collections.defaultdict(list)
-        self.all_rules = []
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -142,7 +148,6 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
 
                 rule = self._build_rule(rule_def, rule_index)
                 self.resource_to_rules[resource].append(rule)
-                self.all_rules.append(rule)
 
     @classmethod
     def _build_rule(cls, rule_def, rule_index):
@@ -179,6 +184,12 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         Yields:
             RuleViolation: lien rule violations.
         """
+
+        all_restrictions = set()
+        for lien in liens:
+            for restriction in lien.restrictions:
+                all_restrictions.add(restriction)
+
         resource_ancestors = relationship.find_ancestors(
             parent_resource, parent_resource.full_name)
 
@@ -188,20 +199,9 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
             applicable_rules.extend(self.resource_to_rules.get(res, []))
 
         for rule in applicable_rules:
-            if liens:
-                for violation in rule.find_violations(liens):
-                    yield violation
-            else:
-                # TODO: fill resource_data with what the lien should be so that
-                # we can create it automatically in the enforcer.
-                yield RuleViolation(
-                    resource_id=parent_resource.id,
-                    resource_type=parent_resource.type,
-                    full_name=parent_resource.full_name,
-                    rule_index=rule.index,
-                    rule_name=rule.name,
-                    violation_type='LIEN_VIOLATION',
-                    resource_data='')
+            for violation in rule.find_violations(parent_resource,
+                                                  all_restrictions):
+                yield violation
 
 
 class Rule(object):
@@ -222,31 +222,26 @@ class Rule(object):
         self.index = index
         self.restrictions = restrictions
 
-    def find_violations(self, liens):
-        """Find violations for this rule against all given liens.
+    def find_violations(self, parent_resource, restrictions):
+        """Find violations for this rule against the given resource.
 
         Args:
-            liens (List[Lien]): liens to find violations for.
+            parent_resource (Resource): The GCP resource associated with the
+                liens.
+            restrictions (Iterable[str]): The restrictions to check.
 
         Yields:
             RuleViolation: lien rule violation.
         """
-        for lien in liens:
-            for restriction in self.restrictions:
-                if restriction not in lien.restrictions:
-                    yield RuleViolation(
-                        resource_id=lien.id,
-                        resource_type=lien.type,
-                        full_name=lien.full_name,
-                        rule_index=self.index,
-                        rule_name=self.name,
-                        violation_type='LIEN_VIOLATION',
-                        resource_data=lien.raw_json,
-                    )
-
-
-RuleViolation = collections.namedtuple(
-    'RuleViolation',
-    ['resource_id', 'resource_type', 'full_name', 'rule_index',
-     'rule_name', 'violation_type', 'resource_data']
-)
+        for restriction in self.restrictions:
+            if restriction not in restrictions:
+                yield RuleViolation(
+                    resource_id=parent_resource.id,
+                    resource_type=parent_resource.type,
+                    full_name=parent_resource.full_name,
+                    rule_index=self.index,
+                    rule_name=self.name,
+                    violation_type='LIEN_VIOLATION',
+                    resource_data='',
+                )
+                return
