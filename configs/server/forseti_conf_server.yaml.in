@@ -62,7 +62,7 @@ inventory:
           period: 1.1
 
     cai:
-        enabled: False
+        enabled: True
         gcs_path: gs://{FORSETI_CAI_BUCKET}
 
     # Number of days to retain inventory data:
