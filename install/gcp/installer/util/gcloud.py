@@ -16,6 +16,7 @@
 
 from __future__ import print_function
 import json
+import os.path
 import re
 import sys
 
@@ -251,7 +252,7 @@ def grant_server_svc_acct_roles(enable_write,
         'service_accounts': constants.SVC_ACCT_ROLES,
     }
 
-    has_role_script_bucket = _grant_bucket_obj_roles(
+    has_role_script_bucket = _grant_bucket_roles(
         gcp_service_account,
         cai_bucket_name,
         constants.FORSETI_CAI_BUCKET_ROLES,
@@ -264,11 +265,12 @@ def grant_server_svc_acct_roles(enable_write,
     return has_role_script_bucket or has_role_script_rest
 
 
-def _grant_bucket_obj_roles(gcp_service_account,
+def _grant_bucket_roles(gcp_service_account,
                             bucket_name,
                             roles_to_grant,
                             user_can_grant_roles):
-    """Grant GCS object roles to GCP service account.
+    """Grant GCS bucket level roles to GCP service account.
+
     Note: This is only supported through gsutil library and not in
     gcloud, that's why we need this one off method to grant the role.
 
@@ -289,27 +291,42 @@ def _grant_bucket_obj_roles(gcp_service_account,
     for role in roles_to_grant:
         member = 'serviceAccount:{}:{}'.format(gcp_service_account, role)
         bucket = 'gs://{}'.format(bucket_name)
-        bucket_obj_role_cmd = ['gsutil', 'iam', 'ch', member, bucket]
+        bucket_role_cmd = ['gsutil', 'iam', 'ch', member, bucket]
 
         if user_can_grant_roles:
             print('Assigning {} on {}... '.format(member, bucket), end='')
             sys.stdout.flush()
-            return_code, _, err = utils.run_command(bucket_obj_role_cmd)
+            return_code, _, err = utils.run_command(bucket_role_cmd)
             if return_code:
                 # Role not assigned, save the commands and write the command to
                 # the role script later.
-                failed_commands.append('%s\n' % ' '.join(bucket_obj_role_cmd))
+                failed_commands.append('%s\n' % ' '.join(bucket_role_cmd))
                 print(err)
             else:
                 print('assigned')
 
     if failed_commands:
-        with open('grant_forseti_roles.sh', 'a+') as roles_script:
-            for failed_command in failed_commands:
-                roles_script.write(failed_command)
+        file_name = 'grant_forseti_roles.sh'
+        _generate_script_file(file_name, failed_commands, 'a+')
         print(constants.MESSAGE_CREATE_ROLE_SCRIPT)
         return True
     return False
+
+
+def _generate_script_file(file_name, role_commands, file_mode='wt'):
+    """Generate a shell script file that contains all the role commands.
+
+    Args:
+        file_name (str): File name of the shell script.
+        role_commands (list): A list of role assignment commands.
+        file_mode (str): File mode.
+    """
+    need_shebang = not os.path.isfile(file_name)
+    with open(file_name, file_mode) as roles_script:
+        if need_shebang:
+            roles_script.write('#!/bin/bash\n\n')
+        for role_command in role_commands:
+            roles_script.write(role_command)
 
 
 def _grant_svc_acct_roles(target_id,
@@ -336,10 +353,9 @@ def _grant_svc_acct_roles(target_id,
 
     if grant_roles_cmds:
         print(constants.MESSAGE_CREATE_ROLE_SCRIPT)
-
-        with open('grant_forseti_roles.sh', 'a+') as roles_script:
-            for cmd in grant_roles_cmds:
-                roles_script.write('%s\n' % ' '.join(cmd))
+        failed_commands = ['%s\n' % ' '.join(cmd) for cmd in grant_roles_cmds]
+        file_name = 'grant_forseti_roles.sh'
+        _generate_script_file(file_name, failed_commands, 'a+')
         return True
     return False
 
