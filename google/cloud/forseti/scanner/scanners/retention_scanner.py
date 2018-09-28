@@ -64,23 +64,25 @@ class RetentionScanner(base_scanner.BaseScanner):
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
         """
+
+        """
+            rttRuleViolation = namedtuple(
+        'RuleViolation',
+        ['resource_name', 'resource_type', 'full_name', 'rule_name', 'rule_index',
+         'violation_type', 'violation_describe'])
+        """
         for violation in violations:
-            violation_data = {'role': violation.role,
-                              'entity': violation.entity,
-                              'email': violation.email,
-                              'domain': violation.domain,
-                              'bucket': violation.bucket,
-                              'full_name': violation.full_name,
-                              'project_id': violation.project_id}
+            print type(violation)
+            violation_data = {'describe': violation.violation_describe}
+
             yield {
-                'resource_id': violation.resource_id,
-                'full_name': violation.full_name,
+                'resource_name': violation.resource_name,
                 'resource_type': violation.resource_type,
+                'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
-                'resource_data': violation.resource_data
             }
 
     def _output_results(self, all_violations):
