@@ -181,7 +181,7 @@ class FirewallRule(object):
                 start = int(port_range[0])
                 end = int(port_range[1])
                 flattened = [i for i in range(start, end+1)]
-                flattened_ports += flattened_ports
+                flattened_ports += flattened
             else:
                 # Single port.
                 flattened_ports.append(int(port))
@@ -190,8 +190,8 @@ class FirewallRule(object):
         # and cast it back to list.
         flattened_ports = list(set(flattened_ports))
 
-        if not flattened_ports:
-            # Max port is 65535.
-            flattened_ports = [i for i in range(0, 65536)]
+        # Max port is 65535.
+        # if not flattened_ports:
+        #    flattened_ports = [i for i in range(0, 65536)]
 
         return flattened_ports
