@@ -406,7 +406,17 @@ feature is supported only if the level is `organization`.
 
 1. Users upgrading to v2.5 from v2.4 can enable CAI by creating a new bucket 
 which will be used for CAI exports and by providing it's path in
-`forseti_conf_server.yaml.in` file as shown below. 
+`forseti_conf_server.yaml.in` file.
+Instructions to create a bucket:
+
+
+Run the below command to assign `roles/storage.admin` role to the bucket and 
+grant full control of buckets and objects:
+
+
+
+Update the `forseti_conf_server.yaml.in` file with the path to the newly created
+bucket.
 ```
 cai:
     enabled: True    
