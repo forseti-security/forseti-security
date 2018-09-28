@@ -9,6 +9,7 @@
  * `roles/iam.securityReviewer` (server)
  * `roles/servicemanagement.quotaViewer` (server)
  * `roles/serviceusage.serviceUsageConsumer` (server)
+ * `roles/cloudasset.viewer` (server)
 
 **Granted at the project level**
 

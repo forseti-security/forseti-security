@@ -398,6 +398,36 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Configuration file `forseti_conf_server.yaml` updates:  
 Forseti is updated to be usable on a non organization resource.
 
+{% capture upgrading_2_4_0_to_2_5_0 %}
+
+Starting v2.5,Forseti Inventory Crawler will be integrated with the Cloud 
+Asset Inventory (CAI) service by default if the user is deploying Forseti. CAI
+feature is supported only if the level is `organization`.
+
+1. Users upgrading to v2.5 from v2.4 can enable CAI by creating a new bucket 
+which will be used for CAI exports and by providing it's path in
+`forseti_conf_server.yaml.in` file as shown below. 
+```
+cai:
+    enabled: True    
+    gcs_path: MY_FORSETI_CAI_GCS_BUCKET
+```
+1. Users need to update the quota by modifying the `forseti_conf_server.yaml.in`
+file as shown below.
+```
+cloudasset:
+    max_calls: 1
+    period: 1.0
+```
+1. Since CAI is only supported at organization level,users will have to manually 
+disable the feature by modifying the `forseti_conf_server.yaml.sample` file if 
+you are deploying Forseti at any other level.
+```
+ cai:
+    enabled: False
+    gcs_path: ""
+```
+
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=upgrading_2_3_0_to_2_4_0 uid=5 %}
 
