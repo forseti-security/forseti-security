@@ -45,5 +45,4 @@ VIOLATION_RESOURCES = {
     'LOG_SINK_VIOLATION': 'log_sink_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
-    'RETENTION_VIOLATION': 'retention_violations',
 }
