@@ -83,6 +83,8 @@ class RetentionScanner(base_scanner.BaseScanner):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
+                'resource_data': "",
+                'resource_id': ""
             }
 
     def _output_results(self, all_violations):
@@ -92,6 +94,7 @@ class RetentionScanner(base_scanner.BaseScanner):
             all_violations (list): All violations
         """
         all_violations = self._flatten_violations(all_violations)
+        print "fdasfdasf4da564f6a"
         self._output_results_to_db(all_violations)
 
     def _find_bucket_violations(self, all_lifecycle_info):
@@ -141,5 +144,5 @@ class RetentionScanner(base_scanner.BaseScanner):
         LOGGER.info('run find_bucket_violations')
         all_violations = self._find_bucket_violations(all_lifecycle_info)
         LOGGER.info('outputing everything')
-        #self._output_results(all_violations)
+        self._output_results(all_violations)
         LOGGER.info('Finish 789')
