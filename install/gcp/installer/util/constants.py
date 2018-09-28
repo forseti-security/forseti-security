@@ -134,6 +134,8 @@ REQUIRED_APIS = [
      'service': 'appengine.googleapis.com'},
     {'name': 'BigQuery',
      'service': 'bigquery-json.googleapis.com'},
+    {'name': 'Cloud Asset API',
+     'service': 'cloudasset.googleapis.com'},
     {'name': 'Cloud Billing',
      'service': 'cloudbilling.googleapis.com'},
     {'name': 'Cloud Resource Manager',
