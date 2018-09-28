@@ -89,7 +89,7 @@ GCP_READ_IAM_ROLES = [
     'roles/appengine.appViewer',
     'roles/bigquery.dataViewer',
     'roles/browser',
-    'roles/cloudasset.viewer'
+    'roles/cloudasset.viewer',
     'roles/cloudsql.viewer',
     'roles/compute.networkViewer',
     'roles/iam.securityReviewer',
