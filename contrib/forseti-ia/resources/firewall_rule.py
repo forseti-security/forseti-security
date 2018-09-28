@@ -26,38 +26,65 @@ This will generate 4 Firewall rule objects
 - action: allowed, IPProtocol: udp, ports: 50051
 - action: allowed, IPProtocol: udp, ports: 50051
 
+Source or destination
+You specify either a source or a destination, but not both, depending 
+on the direction of the firewall you create:
+
+For ingress (inbound) rules, the target parameter specifies the destination 
+VMs for traffic; you cannot use the destination parameter. You specify 
+the source by using the source parameter.
+
+For egress (outbound) rules, the target parameter specifies the source VMs 
+for traffic; you cannot use the source parameter. You specify the destination 
+by using the destination parameter.
+
+You cannot mix and match service accounts and network tags in any firewall rule:
+
+You cannot use target service accounts and target tags together in any firewall 
+rule (ingress or egress).
+
+{
+"allowed": [{"IPProtocol": "tcp", "ports": ["50051"]}],
+"creationTimestamp": "2018-02-28T21:49:07.739-08:00",
+"description": "",
+"direction": "INGRESS", 
+"disabled": false, 
+"id": "1002375335368075964", 
+"kind": "compute#firewall", 
+"name": "forseti-server-allow-grpc-20180228211432", 
+"network": "https://www.googleapis.com/compute/beta/projects/joe-project-p2/global/networks/default", 
+"priority": 0, 
+"selfLink": "https://www.googleapis.com/compute/beta/projects/joe-project-p2/global/firewalls/forseti-server-allow-grpc-20180228211432", 
+"sourceRanges": ["10.128.0.0/9"], 
+"targetServiceAccounts": ["forseti-gcp-server-1432@joe-project-p2.iam.gserviceaccount.com"]
+}
 
 """
 
 
-DIRECTION_ENCODING = {
-    'INGRESS': [0, 1],
-    'EGRESS': [1, 0]
-}
-
-
 class FirewallRule(object):
     """Flattened firewall rule."""
-    def __init__(self):
-        self.creation_timestamp = ''
-        # "creationTimestamp": "2018-02-28T21:49:07.739-08:00"
-        self.description = ''
-        # "description": ""
-        self.name = ''
-        # "name": "forseti-server-allow-grpc-20180228211432",
-        self.priority = 0
-        self.source_ranges = []
-        self.destination_ranges = []
-        self.source_tags = []
-        self.target_tags = []
-        self.source_service_accounts = []
-        self.target_service_accounts = []
-        # targetServiceAccounts": ["forseti-gcp-server-1432@joe-project-p2.iam.gserviceaccount.com"]}"
-        self.action = ''  # allowed/denied
-        self.ip_protocol = ''
-        self.ports = ''
-        self.direction = ''
-        self.disabled = True
+    def __init__(self,
+                 creation_timestamp,
+                 priority,
+                 ip_addr,
+                 ip_bits,
+                 identifier,
+                 action,
+                 ip_protocol,
+                 ports,
+                 direction,
+                 disabled):
+        self.creation_timestamp = creation_timestamp
+        self.priority = priority
+        self.ip_addr = ip_addr
+        self.ip_bits = ip_bits
+        self.identifier = identifier
+        self.action = action
+        self.ip_protocol = ip_protocol
+        self.ports = ports
+        self.direction = direction
+        self.disabled = disabled
 
     @classmethod
     def from_json(cls, firewall_rule_data):
@@ -71,7 +98,6 @@ class FirewallRule(object):
         Returns:
              list: A list of flattened firewall rule objects.
          """
-        # "allowed": [{"IPProtocol": "tcp,udp", "ports": ["1", "50051"]}]
         json_dict = json.loads(firewall_rule_data)
 
         action = 'allowed'
@@ -79,17 +105,52 @@ class FirewallRule(object):
         if action not in json_dict:
             action = 'denied'
 
+        identifiers = []
+
+        if 'targetServiceAccounts' in json_dict:
+            identifiers = json_dict.get('targetServiceAccounts', [])
+        elif 'targetTags' in json_dict:
+            identifiers = json_dict.get('targetTags', [])
+
+        direction = json_dict.get('direction')  # INGREE OR EGRESS
+
+        if direction.upper() == 'INGRESS':
+            ip_addrs_cidr = json_dict.get('sourceRanges')
+        else:
+            ip_addrs_cidr = json_dict.get('destinationRanges')
+
+        ip_addr_bits_list = [ip_addr_cidr.split('/') for ip_addr_cidr in ip_addrs_cidr]
+
         protocol_mappings = json_dict.get(action, [])
 
-        for protocol_mapping in protocol_mappings:
-            ip_protocols = protocol_mapping.get('IPProtocol', [])
-            corresponding_ports = protocol_mapping.get('ports', [])
+        flattened_firewall_rules = []
 
-            flattened_ports = cls._flatten_ports(corresponding_ports)
+        creation_timestamp = json_dict.get('creationTimestamp')
+        priority = json_dict.get('priority')
+        disabled = False if json_dict.get('disabled') == 'false' else True
 
-            return [FirewallRule]
+        for identifier in identifiers:
+            for (ip_addr, ip_bits) in ip_addr_bits_list:
+                for protocol_mapping in protocol_mappings:
+                    ip_protocols = protocol_mapping.get('IPProtocol', [])
+                    corresponding_ports = protocol_mapping.get('ports', [])
 
-        return
+                    flattened_ports = cls._flatten_ports(corresponding_ports)
+                    for ip_protocol in ip_protocols:
+                        flattened_firewall_rules.append(
+                            FirewallRule(
+                                creation_timestamp,
+                                priority,
+                                ip_addr,
+                                ip_bits,
+                                identifier,
+                                action,
+                                ip_protocol,
+                                flattened_ports,
+                                direction,
+                                disabled
+                            ))
+        return flattened_firewall_rules
 
     @classmethod
     def _flatten_ports(cls, ports):
