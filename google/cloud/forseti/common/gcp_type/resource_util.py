@@ -131,17 +131,17 @@ def type_from_name(resource_name):
 
     return None
 
-def is_an_ancestor_of(full_name, given_type, given_name):
+def is_resource_in_full_name(full_name, given_type, given_name):
     """Check a given resource is an ancestor in the full_name.
 
     Args:
         full_name (str): The full resource name from the model, includes all
             parent resources in the hierarchy to the root organization.
         given_type: The type of the given resource, e.g., bucket
-        given_name: The name of the given resource, e.g., some-bucket
+        given_name: The name of the given resource, e.g., some-bucket-name
 
     Returns:
-        bool: true it is in ancestors; otherwise false
+        bool: True it is in the full_name; otherwise False
     """
     resource_ancestors = []
 

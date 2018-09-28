@@ -23,6 +23,7 @@ import threading
 
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.services import utils
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.regular_exp import escape_and_globify
@@ -32,7 +33,7 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-VIOLATION_TYPE = 'BUCKET_RETENTION_VIOLATION'
+VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
 
 class RetentionRulesEngine(bre.BaseRulesEngine):
@@ -268,22 +269,28 @@ class Rule(object):
         return self.rule.get("minimum_retention",None)
     def GetMaxRetention(self):
         return self.rule.get("maximum_retention",None)
+        
     def GetResource(self):
-        res = self.rule.get("resource",None)
-        if(res == None):
-            return None
+        """
+        Get the resources corresponding to the rule.
+
+        Returns:
+           list:  A list of dict (type and ids).
+        """
         result = []
+        res = self.rule.get("resource",[])
         for r in res:
             tmpdict = {}
             tmpdict["type"] = r.get("type", "")
             tmpdict["ids"] = r.get("resource_ids", [])
             result.append(tmpdict)
         return result
+
     def IsAppliedTo(self, buckets_lifecycle):
         is_rule_apply_to = False
         for r in self.GetResource():
             for rid in r["ids"]:
-                if resource_util.is_an_ancestor_of(buckets_lifecycle.full_name, r["type"], rid):
+                if resource_util.is_resource_in_full_name(buckets_lifecycle.full_name, r["type"], rid):
                     return True
         return False
 
