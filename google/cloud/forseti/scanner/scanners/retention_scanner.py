@@ -141,5 +141,5 @@ class RetentionScanner(base_scanner.BaseScanner):
         LOGGER.info('run find_bucket_violations')
         all_violations = self._find_bucket_violations(all_lifecycle_info)
         LOGGER.info('outputing everything')
-        self._output_results(all_violations)
+        #self._output_results(all_violations)
         LOGGER.info('Finish 789')
