@@ -410,9 +410,8 @@ which will be used for CAI exports and by providing it's path in
 Instructions to create a bucket:
 
 
-Run the below command to assign `roles/storage.admin` role to the bucket and 
-grant full control of buckets and objects:
-
+Run the below command to assign `roles/storage.objectAdmin` role to the bucket 
+and grant full control of objects:
 
 
 Update the `forseti_conf_server.yaml` file with the path to the newly created
