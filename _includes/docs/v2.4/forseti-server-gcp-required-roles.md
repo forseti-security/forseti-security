@@ -3,13 +3,13 @@
  * `roles/appengine.appViewer` (server)
  * `roles/bigquery.dataViewer` (server)
  * `roles/browser` (server)
+ * `roles/cloudasset.viewer` (server)
  * `roles/cloudsql.viewer` (server)
  * `roles/compute.networkViewer` (server)
  * `roles/compute.securityAdmin` (server)
  * `roles/iam.securityReviewer` (server)
  * `roles/servicemanagement.quotaViewer` (server)
  * `roles/serviceusage.serviceUsageConsumer` (server)
- * `roles/cloudasset.viewer` (server)
 
 **Granted at the project level**
 

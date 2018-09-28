@@ -12,4 +12,3 @@
 |Cloud SQL|`sql-component.googleapis.com`|
 |Compute Engine|`compute.googleapis.com`|
 |Deployment Manager|`deploymentmanager.googleapis.com`|
-|CloudResource Manager|`cloudresourcemanager.googleapis.com` |
