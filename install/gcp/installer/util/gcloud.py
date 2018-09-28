@@ -266,9 +266,9 @@ def grant_server_svc_acct_roles(enable_write,
 
 
 def _grant_bucket_roles(gcp_service_account,
-                            bucket_name,
-                            roles_to_grant,
-                            user_can_grant_roles):
+                        bucket_name,
+                        roles_to_grant,
+                        user_can_grant_roles):
     """Grant GCS bucket level roles to GCP service account.
 
     Note: This is only supported through gsutil library and not in
