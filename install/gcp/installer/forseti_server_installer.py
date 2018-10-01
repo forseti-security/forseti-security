@@ -196,6 +196,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         bucket_name = self.generate_bucket_name()
         return {
+            'CAI_ENABLED': 'organizations' in self.resource_root_id,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
