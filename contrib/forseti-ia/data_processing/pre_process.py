@@ -20,7 +20,7 @@ def pre_process_firewall_data(resource_data_json,
     """Pre process resource data.
 
     Args:
-        resource_data_json (list): An list of resource data in json format.
+        resource_data_json (list): A list of resource data in json format.
         selected_features (list): A list of selected features, if the
             list is empty, we will include all the features.
 
@@ -43,13 +43,9 @@ if __name__ == '__main__':
     import json
     from os import sys, path
     import sys
-
-
     sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-    print sys.path
 
     from resources.firewall_rule import FirewallRule
-
 
     with open('../sample_datasets/dataset_firewall.json') as firewall_dataset:
         firewall_rules = json.load(firewall_dataset)
