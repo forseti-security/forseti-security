@@ -111,10 +111,8 @@ class RetentionScanner(base_scanner.BaseScanner):
 
         for lifecycle_info in all_lifecycle_info:
            
-           # print type(lifecycle_info), lifecycle_info
             violations = self.rules_engine.find_buckets_violations(
                 lifecycle_info)
-            #LOGGER.debug(violations)
             all_violations.extend(violations)
 
         return all_violations
@@ -139,10 +137,6 @@ class RetentionScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Run, he entry point for this scanner."""
-        LOGGER.info('run retention_scanner.py')
         all_lifecycle_info = self._retrieve_bucket()
-        LOGGER.info('run find_bucket_violations')
         all_violations = self._find_bucket_violations(all_lifecycle_info)
-        LOGGER.info('outputing everything')
         self._output_results(all_violations)
-        LOGGER.info('Finish 789')

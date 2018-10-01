@@ -100,11 +100,9 @@ def run(model_name=None, progress_queue=None, service_config=None):
         inventory_index_id = (
             model_description.get('source_info').get('inventory_index_id'))
         scanner_index_id = init_scanner_index(session, inventory_index_id)
-        progress_queue.put("start scannerbuilder")
         runnable_scanners = scanner_builder.ScannerBuilder(
             global_configs, scanner_configs, service_config, model_name,
             None).build()
-        progress_queue.put("end scannerbuilder")
 
         succeeded = []
         failed = []

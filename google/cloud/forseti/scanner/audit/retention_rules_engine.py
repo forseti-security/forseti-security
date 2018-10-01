@@ -149,7 +149,6 @@ class RetentionRuleBook(bre.BaseRuleBook):
             
             applies_to_history = {}
             for appto in applies_to:
-                print "appto", appto
                 if applies_to_history.has_key(appto):
                     raise audit_errors.InvalidRulesSchemaError(
                         'Duplicate applies_to in rule {}'.format(rule_index))
@@ -170,7 +169,6 @@ class RetentionRuleBook(bre.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        print "add_rule", rule_def
         resource = rule_def.get("resource", None)
         if resource == None:
             raise audit_errors.InvalidRulesSchemaError(
@@ -307,7 +305,6 @@ class Rule(object):
         maxretention = self.max_retention
         exist_match = False
         for lci in buckets_lifecycle.lifecycleitems:
-            print lci
             age = lci.get("condition", {}).get("age", None)
             if age == None:
                 continue
