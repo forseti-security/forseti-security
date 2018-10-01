@@ -285,12 +285,36 @@ class Rule(object):
             tmpdict["ids"] = r.get("resource_ids", [])
             result.append(tmpdict)
         return result
+    
+
+    def is_resource_in_full_name(self, full_name, given_type, given_name):
+        """Check a given resource is an ancestor in the full_name.
+
+        Args:
+            full_name (str): The full resource name from the model, includes all
+                parent resources in the hierarchy to the root organization.
+            given_type: The type of the given resource, e.g., bucket
+            given_name: The name of the given resource, e.g., some-bucket-name
+
+        Returns:
+            bool: True it is in the full_name; otherwise False
+        """
+
+        for (resource_type, resource_id) in utils.get_resources_from_full_name(
+                full_name):
+            if(given_name == "*"):
+                if(resource_type == given_type):
+                    return True
+            elif(resource_type == given_type and resource_id == given_name):
+                return True
+
+        return False
 
     def IsAppliedTo(self, buckets_lifecycle):
         is_rule_apply_to = False
         for r in self.GetResource():
             for rid in r["ids"]:
-                if resource_util.is_resource_in_full_name(buckets_lifecycle.full_name, r["type"], rid):
+                if self.is_resource_in_full_name(buckets_lifecycle.full_name, r["type"], rid):
                     return True
         return False
 
