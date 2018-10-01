@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pandas as pd
 
-def pre_process_resource_data(resource_data_iterator,
-                              resource_type,
+
+def pre_process_firewall_data(resource_data_json,
                               selected_features):
     """Pre process resource data.
 
     Args:
-        resource_data_iterator (list): An iterator that will iterate through
-            all the resource data. Resource data is in JSON string format.
-        resource_type (ResourceType): The type of the resource data.
+        resource_data_json (list): An list of resource data in json format.
         selected_features (list): A list of selected features, if the
             list is empty, we will include all the features.
 
@@ -29,4 +28,45 @@ def pre_process_resource_data(resource_data_iterator,
         DataFrame: DataFrame table with all the resource_data.
     """
 
-    return None
+    df = pd.DataFrame(resource_data_json)
+
+    existing_columns = df.columns
+
+    new_columns = list(set(existing_columns).intersection(selected_features))
+
+    df = df[new_columns]
+
+    return df
+
+
+if __name__ == '__main__':
+    import json
+    from os import sys, path
+    import sys
+
+
+    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+    print sys.path
+
+    from resources.firewall_rule import FirewallRule
+
+
+    with open('../sample_datasets/dataset_firewall.json') as firewall_dataset:
+        firewall_rules = json.load(firewall_dataset)
+        firewall_rules_data = [i.get('data') for i in firewall_rules]
+
+        flattened_firewall_rules = FirewallRule.flatten_firewall_rules(firewall_rules_data)
+        flattened_firewall_rules_dict = [i.to_dict() for i in flattened_firewall_rules]
+
+        df_filtered = pre_process_firewall_data(
+            flattened_firewall_rules_dict,
+            ['priority',
+             'ip_addr',
+             'ip_bits',
+             'identifier',
+             'action',
+             'ip_protocol',
+             'ports',
+             'direction',
+             'disabled'])
+        print df_filtered

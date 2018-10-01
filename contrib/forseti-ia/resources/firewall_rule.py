@@ -86,19 +86,38 @@ class FirewallRule(object):
         self.direction = direction
         self.disabled = disabled
 
+    def to_dict(self):
+        """Convert to dictionary object.
+
+        Returns:
+            dict: Dictionary representation of the object.
+        """
+        return {
+            'creation_timestamp': self.creation_timestamp,
+            'priority': self.priority,
+            'ip_addr': self.ip_addr,
+            'ip_bits': self.ip_bits,
+            'identifier': self.identifier,
+            'action': self.action,
+            'ip_protocol': self.ip_protocol,
+            'ports': self.ports,
+            'direction': self.direction,
+            'disabled': self.disabled,
+        }
+
     @classmethod
-    def from_json(cls, firewall_rule_data):
+    def from_json(cls, gcp_firewall_rule):
         """Generate a list of flattened firewall rule objects based
          on the given firewall resource data in string format.
 
          Args:
-            firewall_rule_data (str): Firewall rule resource data,
+            gcp_firewall_rule (str): Firewall rule resource data,
                 in JSON string format.
 
         Returns:
              list: A list of flattened firewall rule objects.
          """
-        json_dict = json.loads(firewall_rule_data)
+        json_dict = json.loads(gcp_firewall_rule)
 
         action = 'allowed'
 
@@ -151,6 +170,25 @@ class FirewallRule(object):
                                 disabled
                             ))
         return flattened_firewall_rules
+
+    @classmethod
+    def flatten_firewall_rules(cls, gcp_firewall_rules):
+        """Flatten all the gcp firewall rule data.
+
+        Args:
+            gcp_firewall_rules (list): A list of firewall rules.
+
+        Returns:
+            list: A list of flattened firewall rules.
+        """
+        results = []
+        for gcp_firewall_rule in gcp_firewall_rules:
+            try:
+                results.extend(cls.from_json(gcp_firewall_rule))
+            except Exception as e:
+                print e
+                print gcp_firewall_rule
+        return results
 
     @classmethod
     def _flatten_ports(cls, ports):
