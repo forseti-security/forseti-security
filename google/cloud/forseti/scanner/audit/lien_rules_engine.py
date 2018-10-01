@@ -26,7 +26,7 @@ LOGGER = logger.get_logger(__name__)
 
 RuleViolation = collections.namedtuple(
     'RuleViolation',
-    ['resource_id', 'resource_type', 'full_name', 'rule_index',
+    ['resource_id', 'resource_name', 'resource_type', 'full_name', 'rule_index',
      'rule_name', 'violation_type', 'resource_data']
 )
 
@@ -237,6 +237,7 @@ class Rule(object):
             if restriction not in restrictions:
                 yield RuleViolation(
                     resource_id=parent_resource.id,
+                    resource_name=parent_resource.display_name,
                     resource_type=parent_resource.type,
                     full_name=parent_resource.full_name,
                     rule_index=self.index,

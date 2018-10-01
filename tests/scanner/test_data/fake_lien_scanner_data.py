@@ -49,6 +49,7 @@ LIEN = lien.Lien.from_json(PROJECT, 'l1', _LIEN_JSON)
 
 VIOLATIONS = [lien_rules_engine.RuleViolation(
     resource_id='p1',
+    resource_name='Project with lien',
     resource_type=resource.ResourceType.PROJECT,
     full_name='organization/234/project/p1/',
     rule_index=0,
