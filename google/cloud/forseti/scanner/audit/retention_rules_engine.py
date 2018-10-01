@@ -34,6 +34,9 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 LOGGER = logger.get_logger(__name__)
 
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
+# Applyto.
+_APPLY_TO_BUCKETS = 'bucket'
+_APPLY_TO_RESOURCES = frozenset([_APPLY_TO_BUCKETS])
 
 
 class RetentionRulesEngine(bre.BaseRulesEngine):
@@ -60,13 +63,11 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = RetentionRuleBook(self._load_rule_definitions())
 
-
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_buckets_violations(self, buckets_lifecycle, force_rebuild=False):
         """Determine whether bucket lifecycle violates rules.
 
         Args:
-            buckets_lifecycle : Object containing lifecycle
+            buckets_lifecycle (retention_bucket.RetentionBucket): Object containing lifecycle
                 data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -74,12 +75,11 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         Returns:
              generator: A generator of rule violations.
         """
-
-        violations = itertools.chain()
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
-        resource_rules = self.rule_book.get_resource_rules("bucket")
+        resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
 
+        violations = itertools.chain()
         for rule in resource_rules:
             violations = itertools.chain(
                 violations,
@@ -87,29 +87,9 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             break
         return set(violations)
 
-    def add_rules(self, rules):
-        """Add rules to the rule book.
-
-        Args:
-            rules (dict): rule definitions dictionary
-        """
-        if self.rule_book is not None:
-            self.rule_book.add_rules(rules)
-
 
 class RetentionRuleBook(bre.BaseRuleBook):
     """The RuleBook for Retention resources."""
-
-    bucket_supported_resource_types = frozenset([
-        'project',
-        'folder',
-        'bucket',
-        'organization',
-    ])
-
-    supported_rule_applies_to = frozenset([
-        'bucket',
-    ])
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -122,7 +102,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
 
         self.resource_rules_map = {
             applies_to: []
-            for applies_to in self.supported_rule_applies_to}
+            for applies_to in _APPLY_TO_RESOURCES}
         if not rule_defs:
             self.rule_defs = {}
         else:
