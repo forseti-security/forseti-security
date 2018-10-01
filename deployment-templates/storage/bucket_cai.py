@@ -31,7 +31,8 @@ def GenerateConfig(context):
                         "action": {{"type": "Delete" }},
                         "condition": {{"age": {RETENTION_DAYS} }}
                     }}]
-                }}'''.format(RETENTION_DAYS=context.env['retention_days']),
+                }}'''.format(
+                    RETENTION_DAYS=context.properties['retention_days']),
             'location': context.properties['location'],
         }
     })
