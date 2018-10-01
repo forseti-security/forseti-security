@@ -46,11 +46,11 @@ inventory:
           max_calls: 4
           period: 1.2
         iam:
-          max_calls: 18
+          max_calls: 90
           period: 1.0
         logging:
-          max_calls: 1
-          period: 1.1
+          max_calls: 9
+          period: 1.0
         securitycenter:
           max_calls: 1
           period: 1.1,
@@ -62,8 +62,8 @@ inventory:
           period: 1.1
 
     cai:
-        enabled: False
-        gcs_path: ""
+        enabled: {CAI_ENABLED}
+        gcs_path: gs://{FORSETI_CAI_BUCKET}
 
     # Number of days to retain inventory data:
     #  -1 : (default) keep all previous data forever
