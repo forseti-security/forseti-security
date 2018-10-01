@@ -111,12 +111,4 @@ class Modeller(object):
 
         LOGGER.info('Deleting model: %s', model_name)
         model_manager = self.config.model_manager
-        try:
-            model_manager.delete(model_name)
-            result = 'SUCCESS'
-        except Exception as e:
-            result = 'FAILED'
-            LOGGER.exception(e)
-            raise
-        finally:
-            return result
+        model_manager.delete(model_name)
