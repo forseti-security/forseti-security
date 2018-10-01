@@ -104,8 +104,19 @@ class Modeller(object):
         Args:
             model_name (str): name of the model to be deleted
 
+        Returns:
+            result (str): Success or failure message based on whether model is
+            deleted or not
         """
 
         LOGGER.info('Deleting model: %s', model_name)
         model_manager = self.config.model_manager
-        model_manager.delete(model_name)
+        try:
+            model_manager.delete(model_name)
+            result = 'SUCCESS'
+        except Exception as e:
+            result = 'FAILED'
+            LOGGER.exception(e)
+            raise
+        finally:
+            return result

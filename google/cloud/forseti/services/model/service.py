@@ -103,40 +103,8 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
 
         model_name = request.handle
-        status5 = model_pb2.DeleteModelReply.Value('SUCCESS')
-        print('status5:',status5)
-        status1 = model_pb2._DeleteModelReply.Status.SUCCESS;
-        status2 = model_pb2.DeleteModelReply.SUCCESS
-        print('status1:',status1)
-        print('status2:',status2)
-
-
-        try:
-            self.modeller.delete_model(model_name)
-            reply = model_pb2.DeleteModelReply(
-                status=model_pb2.DeleteModelReply.Name(model_pb2.SUCCESS))
-
-            #status=model_pb2.DeleteModelReply.Value('SUCCESS'))
-
-            # status=model_pb2._DeleteModelReply.values_by_number[1].name,
-               # message=model_pb2.DeleteModelReply('Successfully deleted %s',
-                                                 #  model_name))
-            # reply = model_pb2.DeleteModelReply(status=model_pb2.DeleteModelReply.SUCCESS,
-            #                                    message=model_pb2.DeleteModelReply('Successfully deleted %s',model_name))
-           #     status=model_pb2.DeleteModelReply.Status.SUCCESS,
-            #    message=model_pb2.DeleteModelReply.message('Successfully deleted %s',model_name))
-        except Exception:
-            LOGGER.exception('Unable to delete %s', model_name)
-            reply = model_pb2.DeleteModelReply(
-                status=model_pb2.DeleteModelReply.Name(model_pb2.FAIL))
-            # status = model_pb2.DeleteModelReply.Value('FAIL'))
-            # status = model_pb2._DeleteModelReply.values_by_number[2].name,
-           # message = model_pb2.DeleteModelReply('Unable to delete %s',
-            #                                         model_name))
-            #reply = model_pb2.DeleteModelReply(status=model_pb2.DeleteModelReply.FAIL,
-            #                                   message=model_pb2.DeleteModelReply('Unable to delete %s',model_name))
-               # status=model_pb2.DeleteModelReply.Status.FAIL,
-                #message=model_pb2.DeleteModelReply.message('Successfully deleted %s',model_name))
+        result = self.modeller.delete_model(model_name)
+        reply = model_pb2.DeleteModelReply(result=result)
         return reply
 
     def ListModel(self, request, _):
