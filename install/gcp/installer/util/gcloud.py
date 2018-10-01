@@ -304,6 +304,8 @@ def _grant_bucket_roles(gcp_service_account,
                 print(err)
             else:
                 print('assigned')
+        else:
+            failed_commands.append('%s\n' % ' '.join(bucket_role_cmd))
 
     if failed_commands:
         file_name = 'grant_forseti_roles.sh'
