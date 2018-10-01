@@ -24,15 +24,14 @@ def GenerateConfig(context):
         'properties': {
             'project': context.env['project'],
             'lifecycle':
-                '''
-                {{
-                "rule":
-                    [{{
-                        "action": {{"type": "Delete" }},
-                        "condition": {{"age": {RETENTION_DAYS} }}
-                    }}]
-                }}'''.format(
-                    RETENTION_DAYS=context.properties['retention_days']),
+                {
+                    "rule":
+                        [{
+                            "action": {"type": "Delete" },
+                            "condition": {
+                                "age": context.properties['retention_days']}
+                        }]
+                },
             'location': context.properties['location'],
         }
     })
