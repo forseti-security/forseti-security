@@ -104,9 +104,6 @@ class Modeller(object):
         Args:
             model_name (str): name of the model to be deleted
 
-        Returns:
-            result (str): Success or failure message based on whether model is
-            deleted or not
         """
 
         LOGGER.info('Deleting model: %s', model_name)
