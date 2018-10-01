@@ -113,11 +113,8 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         try:
             self.modeller.delete_model(model_name)
-           # reply = model_pb2.DeleteModelReply(
-           # status =
-            self.assertEqual('SUCCESS',
-                             model_pb2.DeleteModelReply.Name(model_pb2.SUCCESS))
-           # print('status for success:', status)
+            reply = model_pb2.DeleteModelReply(
+                status=model_pb2.DeleteModelReply.Name(model_pb2.SUCCESS))
 
             #status=model_pb2.DeleteModelReply.Value('SUCCESS'))
 
@@ -130,12 +127,8 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             #    message=model_pb2.DeleteModelReply.message('Successfully deleted %s',model_name))
         except Exception:
             LOGGER.exception('Unable to delete %s', model_name)
-        #    reply = model_pb2.DeleteModelReply(
-          #  status=
-            self.assertEqual('FAIL',
-                             model_pb2.DeleteModelReply.Name(model_pb2.FAIL))
-            #print('status for fail:', status)
-
+            reply = model_pb2.DeleteModelReply(
+                status=model_pb2.DeleteModelReply.Name(model_pb2.FAIL))
             # status = model_pb2.DeleteModelReply.Value('FAIL'))
             # status = model_pb2._DeleteModelReply.values_by_number[2].name,
            # message = model_pb2.DeleteModelReply('Unable to delete %s',
