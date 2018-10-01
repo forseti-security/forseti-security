@@ -86,14 +86,15 @@ RESOURCE_TYPE_ARGS_MAP = {
 
 # Roles
 GCP_READ_IAM_ROLES = [
-    'roles/browser',
-    'roles/compute.networkViewer',
-    'roles/iam.securityReviewer',
     'roles/appengine.appViewer',
     'roles/bigquery.dataViewer',
+    'roles/browser',
+    'roles/cloudasset.viewer',
+    'roles/cloudsql.viewer',
+    'roles/compute.networkViewer',
+    'roles/iam.securityReviewer',
     'roles/servicemanagement.quotaViewer',
     'roles/serviceusage.serviceUsageConsumer',
-    'roles/cloudsql.viewer'
 ]
 
 GCP_WRITE_IAM_ROLES = [
@@ -110,6 +111,10 @@ PROJECT_IAM_ROLES_SERVER = [
 PROJECT_IAM_ROLES_CLIENT = [
     'roles/storage.objectViewer',
     'roles/logging.logWriter'
+]
+
+FORSETI_CAI_BUCKET_ROLES = [
+    'objectAdmin'
 ]
 
 SVC_ACCT_ROLES = [
@@ -129,6 +134,8 @@ REQUIRED_APIS = [
      'service': 'appengine.googleapis.com'},
     {'name': 'BigQuery',
      'service': 'bigquery-json.googleapis.com'},
+    {'name': 'Cloud Asset API',
+     'service': 'cloudasset.googleapis.com'},
     {'name': 'Cloud Billing',
      'service': 'cloudbilling.googleapis.com'},
     {'name': 'Cloud Resource Manager',
@@ -239,7 +246,7 @@ MESSAGE_NO_CLOUD_SHELL = (
     '3) Install gcloud and authenticate your account using '
     '"gcloud auth login".\n'
     '4) Set your project using '
-    '"gcloud config project set <PROJECT_ID>".\n'
+    '"gcloud config set project <PROJECT_ID>".\n'
     '5) Run this setup again, with the --no-cloudshell flag, '
     'i.e.\n\n\tpython install/gcp_installer.py --no-cloudshell\n')
 
