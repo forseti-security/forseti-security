@@ -116,9 +116,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
             rule_defs (dict): rule definitions dictionary
         """
         for (i, rule) in enumerate(rule_defs.get('rules', [])):
-            #print rule
             self.add_rule(rule, i)
-        print "finish add rule\n"
 
     def add_rule(self, rule_def, rule_index):
         """Add a rule to the rule book.
@@ -134,7 +132,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
             applies_to = rule_def.get("applies_to", None)
             if applies_to == None:
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Lack of applies_to in rule {}'.format(i))
+                    'Lack of applies_to in rule {}'.format(rule_index))
             if type(applies_to).__name__ != "list":
                 raise audit_errors.InvalidRulesSchemaError(
                     'Miss dash (-) near applies_to in rule {}'.format(rule_index))
@@ -143,25 +141,27 @@ class RetentionRuleBook(bre.BaseRuleBook):
             maximum_retention = rule_def.get("maximum_retention", None)
             if minimum_retention == None and maximum_retention == None:
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Lack of minimum and maximum retention in rule {}'.format(i))
+                    'Lack of minimum_retention and maximum_retention in rule {}'.format(rule_index))
             elif minimum_retention != None and maximum_retention != None:
                 if minimum_retention > maximum_retention:
                     raise audit_errors.InvalidRulesSchemaError(
-                        'minimum_retention larger than maximum_retention in rule {}'.format(i))
+                        'minimum_retention larger than maximum_retention in rule {}'.format(rule_index))
             
             applies_to_history = {}
             for appto in applies_to:
+                print "appto", appto
                 if applies_to_history.has_key(appto):
                     raise audit_errors.InvalidRulesSchemaError(
-                        'Duplicate applies_to in rule {}'.format(i))
+                        'Duplicate applies_to in rule {}'.format(rule_index))
                 applies_to_history[appto] = True
                 
                 if appto == "bucket":
-                    self.add_bucket_rule(appto, rule_def, rule_index)
+                    self.add_bucket_rule(rule_def, rule_index, minimum_retention, maximum_retention)
+                # other appto add here
         finally:
             self._rules_sema.release()
 
-    def add_bucket_rule(self, applies_to, rule_def, rule_index):
+    def add_bucket_rule(self, rule_def, rule_index, min_retention, max_retention):
         """Add a rule to the rule book.
 
         Args:
@@ -193,13 +193,16 @@ class RetentionRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Miss dash (-) near resource_ids in rule {}'.format(rule_index))
         
-        rule = Rule(rule_name=rule_def.get('name'),
+        rule = Rule(rule_name=rule_def.get('name','no name'),
                             rule_index=rule_index,
-                            rule=rule_def)
+                            applyto=_APPLY_TO_BUCKETS,
+                            min_retention=min_retention,
+                            max_retention=max_retention,
+                            resource_type=resource_type,
+                            resource_ids=resource_ids
+                            )
 
-        #print type(self.resource_rules_map), type(self.resource_rules_map[applies_to]), self.resource_rules_map[applies_to]
-        self.resource_rules_map[applies_to].append(rule)
-        #print type(self.resource_rules_map), type(self.resource_rules_map[applies_to]), self.resource_rules_map[applies_to]
+        self.resource_rules_map[_APPLY_TO_BUCKETS].append(rule)
 
         
 
@@ -222,7 +225,7 @@ class Rule(object):
         ['resource_name', 'resource_type', 'full_name', 'rule_name', 'rule_index',
          'violation_type', 'violation_describe'])
 
-    def __init__(self, rule_name, rule_index, rule):
+    def __init__(self, rule_name, rule_index, applyto, min_retention, max_retention, resource_type, resource_ids):
         """Initialize.
 
         Args:
@@ -231,7 +234,11 @@ class Rule(object):
         """
         self.rule_name = rule_name
         self.rule_index = rule_index
-        self.rule = rule
+        self.min_retention = min_retention
+        self.max_retention = max_retention
+        self.applyto = applyto
+        self.resource_type = resource_type
+        self.resource_ids = resource_ids
 
     def GenerateRuleViolation(self, buckets_lifecycle, describe):
         return self.rttRuleViolation(
@@ -243,12 +250,6 @@ class Rule(object):
             violation_type=VIOLATION_TYPE,
             violation_describe=describe
         )
-
-
-    def GetMinRetention(self):
-        return self.rule.get("minimum_retention",None)
-    def GetMaxRetention(self):
-        return self.rule.get("maximum_retention",None)
         
     def GetResource(self):
         """
@@ -258,11 +259,10 @@ class Rule(object):
            list:  A list of dict (type and ids).
         """
         result = []
-        res = self.rule.get("resource",[])
-        for r in res:
+        for id in self.resource_ids:
             tmpdict = {}
-            tmpdict["type"] = r.get("type", "")
-            tmpdict["ids"] = r.get("resource_ids", [])
+            tmpdict["type"] = self.resource_type
+            tmpdict["ids"] = id
             result.append(tmpdict)
         return result
     
@@ -303,8 +303,8 @@ class Rule(object):
         if(self.IsAppliedTo(buckets_lifecycle) == False):
             return
         
-        minretention = self.GetMinRetention()
-        maxretention = self.GetMaxRetention()
+        minretention = self.min_retention
+        maxretention = self.max_retention
         exist_match = False
         for lci in buckets_lifecycle.lifecycleitems:
             print lci
@@ -312,10 +312,10 @@ class Rule(object):
             if age == None:
                 continue
             if(minretention != None and age < minretention):
-                yield self.GenerateRuleViolation(buckets_lifecycle, "age too small")
+                yield self.GenerateRuleViolation(buckets_lifecycle, "age %d is smaller than the minimum retention %d"%(age,minretention))
                 continue
             if(maxretention != None and age > maxretention):
-                yield self.GenerateRuleViolation(buckets_lifecycle, "age too big")
+                yield self.GenerateRuleViolation(buckets_lifecycle, "age %d is larger than the maximum retention %d"%(age,maxretention))
                 continue
             if(lci.get("condition", {}).has_key("createdBefore") == True):
                 continue
@@ -327,16 +327,4 @@ class Rule(object):
                 continue
             exist_match = True
         if(exist_match == False):
-            yield self.GenerateRuleViolation(buckets_lifecycle, "No match condition")
-            
-            
-
-
-        
-
-        
-
-        
-
-        
-
+            yield self.GenerateRuleViolation(buckets_lifecycle, "No condition satisfies the rule (min %s, max %s)"%(str(minretention), str(maxretention)))
