@@ -103,7 +103,6 @@ class Modeller(object):
 
         Args:
             model_name (str): name of the model to be deleted
-
         """
 
         LOGGER.info('Deleting model: %s', model_name)
