@@ -25,6 +25,8 @@ imports:
   name: forseti-instance-server.py
 - path: storage/bucket.py
   name: bucket.py
+- path: storage/bucket_cai.py
+  name: bucket_cai.py
 
 resources:
 
