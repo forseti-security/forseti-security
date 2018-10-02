@@ -408,11 +408,9 @@ Asset Inventory (CAI) service if the user is deploying Forseti. CAI
 feature is supported only if the level is `organization`.
 
 Users upgrading to v2.5 from v2.4 can enable CAI by following the steps below:
-1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running the
-below command in cloud shell.
-    ```
-       gcloud beta services enable cloudasset.googleapis.com
-    ```
+1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running 
+this command in cloud shell - 
+`gcloud beta services enable cloudasset.googleapis.com`
 1. Update the `deploy-forseti-server.yaml` file under `deployment-templates`
 with the name and location of the newly created bucket. Make sure the location 
 is same as the location of other forseti-bucket in `deployment-templates`.
