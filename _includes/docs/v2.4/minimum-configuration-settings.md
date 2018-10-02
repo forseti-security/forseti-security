@@ -38,10 +38,10 @@ You will also need to edit, at a minimum, the following variables in the config 
   * `enabled`
     * **Description**: Specifies whether CAI is enabled or not.
     * **Valid values**: Boolean.
-    * **Example values**: `True`, `False`.
+    * **Example values**: `true`, `false`.
   * `gcs_path`
     * **Description**: GCS Path of the newly created bucket to be used for 
     CAI exports.
     * **Valid values**: Location of the bucket.
-    * **Example values**: gs://{FORSETI_CAI_BUCKET}
+    * **Example values**: gs://my_cai_export_bucket
 
