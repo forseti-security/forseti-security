@@ -151,7 +151,9 @@ class BlacklistRuleBook(bre.BaseRuleBook):
             lists: first one is IP addresses,
             second one is network blocks
         """
-        data = urllib2.urlopen(url).read()
+        req = urllib2.build_opener()
+        req.addheaders = [('User-Agent', 'Forseti blacklist rules engine agent')]
+        data = req.open(url).read()
         ip_addresses = re.findall(r'^[0-9]+(?:\.[0-9]+){3}$', data, re.M)
         netblocks = re.findall(r'^[0-9]+(?:\.[0-9]+){0,3}/[0-9]{1,2}$',
                                data, re.M)
