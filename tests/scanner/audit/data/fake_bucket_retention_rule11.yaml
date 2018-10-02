@@ -1,0 +1,6 @@
+rules:
+  - name: No resource
+    applies_to:
+      - bucket
+    minimum_retention: 365
+    maximum_retention: 365

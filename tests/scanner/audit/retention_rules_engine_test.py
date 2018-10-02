@@ -31,8 +31,7 @@ from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
 from tests.unittest_utils import get_datafile_path
-from tests.scanner.audit.data import bigquery_test_rules
-from tests.scanner.test_data import fake_bigquery_scanner_data
+from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 
 import collections
@@ -59,7 +58,6 @@ def CreateFakeBucket(projectname, bucketname):
     name = projectname+bucketname
     full_name = 'organization/433655558669/project/'+projectname+'/bucket/'+name+'/'
     tp = 'bucket'
-    print "name", name
     parent_type_name = 'project/'+projectname
     data = '{"defaultObjectAcl": [{"entity": "project-owners-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"}, {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity": "project-viewers-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=", "id": "'+name+'", "kind": "storage#bucket", "lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore": "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition": {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging": {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix": "'+name+'"}, "metageneration": "4", "name": "'+name+'", "owner": {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187", "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'", "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z", "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}'
     return (full_name, tp, parent_type_name, name, data)
@@ -84,7 +82,6 @@ def _mock_gcp_resource_iter(_, resource_type):
     name = projectname+'-test-bucket-1'
     full_name = 'organization/433655558669/project/'+projectname+'/bucket/'+name+'/'
     tp = 'bucket'
-    print "name", name
     parent_type_name = 'project/'+projectname
     data = '{"defaultObjectAcl": [{"entity": "project-owners-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"}, {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity": "project-viewers-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=", "id": "'+name+'", "kind": "storage#bucket", "lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore": "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition": {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging": {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix": "'+name+'"}, "metageneration": "4", "name": "'+name+'", "owner": {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187", "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'", "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z", "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}'
 
@@ -187,18 +184,155 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
 
+    def test_retention_retrieve_1(self):
+        """No applies_to"""
+
         rules_local_path = get_datafile_path(
             __file__,
-            'test_retention_rules_2.yaml')
+            'bucket_retention_test_rules_1.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            self.assertEquals("Lack of applies_to in rule 0", str(e))
+
+    def test_retention_retrieve_2(self):
+        """applies_to is wrong"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_2.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Miss dash (-) near applies_to in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_3(self):
+        """Lack of min and max retention"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_3.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Lack of minimum_retention and maximum_retention in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_4(self):
+        """min larger than max"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_4.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "minimum_retention larger than maximum_retention in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_5(self):
+        """Duplicate applies_to"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_5.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Duplicate applies_to in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_11(self):
+        """No resource"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_11.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Lack of resource in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_12(self):
+        """No resource type"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_12.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Lack of type in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_13(self):
+        """No resource ids"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_13.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Lack of resource_ids in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_14(self):
+        """resource_ids leaves empty"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_14.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = "Miss dash (-) near resource_ids in rule 0"
+            self.assertEquals(expectErrStr, str(e))
+
+    def test_retention_retrieve_21(self):
+        """a more complex test case, should be all right"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_21.yaml')
+
+        try:
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', rules_local_path)
+        except audit_errors.InvalidRulesSchemaError as e:
+            expectErrStr = ""
+            self.assertEquals(expectErrStr, str(e))
+        
+
+    def test_find_bucket_retention_violations(self):
+        """test_find_bucket_retention_violations"""
+
+        rules_local_path = get_datafile_path(
+            __file__,
+            'bucket_retention_test_rules_0.yaml')
         self.scanner = retention_scanner.RetentionScanner(
             {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
-    def test_find_violations_whitelist_no_violations(self):
-        print "test_find_violations_whitelist_no_violations"
-
-
-
-        """Tests _retrieve gets all bq acls and parent resources."""
         mock_data_access = mock.MagicMock()
         mock_data_access.scanner_iter.side_effect = _mock_gcp_resource_iter
         mock_service_config = mock.MagicMock()
@@ -209,10 +343,6 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
 
         all_lifecycle_info = self.scanner._retrieve_bucket()
         all_violations = self.scanner._find_bucket_violations(all_lifecycle_info)
-        for i in all_violations:
-            print i
-        
-        print type(all_violations)
 
         expected_violations = set([
         rre.Rule.rttRuleViolation(
@@ -291,14 +421,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
 
         self.assertEqual(expected_violations, set(all_violations))
         return
-        rules_engine = bqe.BigqueryRulesEngine(rules_local_path)
-        rules_engine.build_rule_book()
-        fake_bq_acls_data = create_list_of_bq_objects_from_data()
-        actual_violations_list = []
-        for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
-            actual_violations_list.extend(violation)
-        self.assertEqual([], actual_violations_list)
+
 
 
 if __name__ == '__main__':

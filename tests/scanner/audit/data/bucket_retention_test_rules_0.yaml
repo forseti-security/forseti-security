@@ -5,6 +5,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - "*"
+          - "433655558668"
+          - "433655558669"
     minimum_retention: 365
     maximum_retention: 365

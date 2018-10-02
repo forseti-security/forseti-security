@@ -1,0 +1,8 @@
+rules:
+  - name: No applies_to
+    resource:
+      - type: bucket
+        resource_ids:
+          - some-resource-id
+    minimum_retention: 365
+    maximum_retention: 365

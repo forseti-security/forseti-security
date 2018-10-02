@@ -1,0 +1,8 @@
+rules:
+  - name: Lack of min and max retention
+    applies_to:
+      - bucket
+    resource:
+      - type: bucket
+        resource_ids:
+          - some-resource-id
