@@ -398,47 +398,67 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Configuration file `forseti_conf_server.yaml` updates:  
 Forseti is updated to be usable on a non organization resource.
 
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=upgrading_2_3_0_to_2_4_0 uid=5 %}
+
 {% capture upgrading_2_4_0_to_2_5_0 %}
 
 Starting v2.5, Forseti Inventory will be integrated with the Cloud 
 Asset Inventory (CAI) service if the user is deploying Forseti. CAI
 feature is supported only if the level is `organization`.
 
-1. Users upgrading to v2.5 from v2.4 can enable CAI by creating a new bucket 
-which will be used for CAI exports and by providing it's path in
-`forseti_conf_server.yaml` file.
-Instructions to create a bucket:
-
-
-Run the below command to assign `roles/storage.objectAdmin` role to the bucket 
-and grant full control of objects:
-
-
-Update the `forseti_conf_server.yaml` file with the path to the newly created
+Users upgrading to v2.5 from v2.4 can enable CAI by following the steps below:
+1. Enable `Cloud Asset API` under APIs & Services.
+1. Update the `deploy-forseti-server.yaml` file under `deployment-templates`
+with the name and location of the newly created bucket. Make sure the location 
+is same as the location of other forseti-bucket in `deployment-templates`.
+    ```
+    imports:
+    - path: storage/bucket_cai.py
+      name: bucket_cai.py
+  
+    resources:
+    
+    # Cloud Storage
+    - name: {FORSETI_BUCKET}
+      type: bucket.py
+      properties:	
+        location: {BUCKET_LOCATION}
+    - name: {FORSETI_CAI_BUCKET}
+      type: bucket_cai.py
+      properties:
+        location: {BUCKET_LOCATION}
+        retention_days: 14
+    ```
+1. Users can enable CAI if the level is `organization` by updating the 
+`forseti_conf_server.yaml` file with the location of the newly created
 bucket.
-```
-cai:
-    enabled: True    
-    gcs_path: MY_FORSETI_CAI_GCS_BUCKET
-```
+   ```
+    cai:
+        enabled: True    
+        gcs_path: gs://{FORSETI_CAI_BUCKET}
+   ```
 1. Users need to update the quota by modifying the `forseti_conf_server.yaml`
 file as shown below.
-```
-cloudasset:
-    max_calls: 1
-    period: 1.0
-```
-1. Since CAI is only supported at organization level,users will have to manually 
-disable the feature by modifying the `forseti_conf_server.yaml` file if 
-you are deploying Forseti at any other level.
-```
- cai:
-    enabled: False
-    gcs_path: ""
-```
+    ```
+    cloudasset:
+        max_calls: 1
+        period: 1.0
+    ```
+1. Run the below command on cloud shell. It assigns `roles/storage.objectAdmin` 
+role to the service account on the bucket.
+    ```
+    gsutil iam ch serviceAccount:SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.
+    gserviceaccount.com:objectAdmin BUCKET_LOCATION
+    ```
+    Example
+    ```
+    gsutil iam ch serviceAccount:forseti-server-gcp-637723d@joeupdate210.iam.
+    gserviceaccount.com:objectAdmin gs://forseti-server-637723d
+    ```
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.3.0 to 2.4.0" content=upgrading_2_3_0_to_2_4_0 uid=5 %}
+{% include site/zippy/item.html title="Upgrading 2.4.0 to 2.5.0" content=upgrading_2_4_0_to_2_5_0 uid=5 %}
 
 {% capture deployment_manager_error %}
 
