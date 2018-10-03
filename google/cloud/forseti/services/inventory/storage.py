@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Inventory storage implementation."""
+# pylint: disable=too-many-lines
 
 import json
 import enum
@@ -25,11 +26,19 @@ from sqlalchemy import exists
 from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
+from sqlalchemy import LargeBinary
 from sqlalchemy import or_
+from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
+from sqlalchemy import Table
 from sqlalchemy import Text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import aliased
+from sqlalchemy.orm import mapper
+
+from google.cloud.asset_v1beta1.proto import assets_pb2
+from google.protobuf import json_format
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
@@ -55,7 +64,14 @@ class Categories(enum.Enum):
     kubernetes_service_config = 7
 
 
+class ContentTypes(enum.Enum):
+    """Cloud Asset Inventory Content Types."""
+    resource = 1
+    iam_policy = 2
+
+
 SUPPORTED_CATEGORIES = frozenset(item.name for item in list(Categories))
+SUPPORTED_CONTENT_TYPES = frozenset(item.name for item in list(ContentTypes))
 
 
 class InventoryIndex(BASE):
@@ -369,19 +385,172 @@ class Inventory(BASE):
         return self.inventory_errors
 
 
+class CaiTemporaryStore(object):
+    """CAI temporary inventory table."""
+
+    # Class members created in initialize() by mapper()
+    name = None
+    parent_name = None
+    content_type = None
+    asset_type = None
+    asset_data = None
+
+    def __init__(self, name, parent_name, content_type, asset_type, asset_data):
+        """Initialize database column.
+
+        Manually defined so that the collation value can be overriden at run
+        time for this database table.
+
+        Args:
+            name (str): The asset name.
+            parent_name (str): The asset name of the parent resource.
+            content_type (ContentTypes): The asset data content type.
+            asset_type (str): The asset data type.
+            asset_data (str): The asset data as a serialized binary blob.
+        """
+        self.name = name
+        self.parent_name = parent_name
+        self.content_type = content_type
+        self.asset_type = asset_type
+        self.asset_data = asset_data
+
+    @classmethod
+    def initialize(cls, metadata, collation='utf8_bin'):
+        """Create the table schema based on run time arguments.
+
+        Used to fix the column collation value for non-MySQL database engines.
+
+        Args:
+            metadata (object): The sqlalchemy MetaData to associate the table
+                with.
+            collation (str): The collation value to use.
+        """
+        if 'cai_temporary_store' not in metadata.tables:
+            my_table = Table('cai_temporary_store', metadata,
+                             Column('name', String(255, collation=collation),
+                                    nullable=False),
+                             Column('parent_name', String(255), nullable=True),
+                             Column('content_type', Enum(ContentTypes),
+                                    nullable=False),
+                             Column('asset_type', String(255), nullable=False),
+                             Column('asset_data', LargeBinary(),
+                                    nullable=False),
+                             Index('idx_parent_name', 'parent_name'),
+                             PrimaryKeyConstraint('content_type',
+                                                  'asset_type',
+                                                  'name',
+                                                  name='cai_temp_store_pk'))
+
+            mapper(cls, my_table)
+
+    def extract_asset_data(self, content_type):
+        """Extracts the data from the asset protobuf based on the content type.
+
+        Args:
+            content_type (ContentTypes): The content type data to extract.
+
+        Returns:
+            dict: The dict representation of the asset data.
+        """
+        # The no-member is a false positive for the dynamic protobuf class.
+        # pylint: disable=no-member
+        asset_pb = assets_pb2.Asset.FromString(self.asset_data)
+        # pylint: enable=no-member
+        if content_type == ContentTypes.resource:
+            return json_format.MessageToDict(asset_pb.resource.data)
+        elif content_type == ContentTypes.iam_policy:
+            return json_format.MessageToDict(asset_pb.iam_policy)
+
+        return json_format.MessageToDict(asset_pb)
+
+    @classmethod
+    def from_json(cls, asset_json):
+        """Creates a database row object from the json data in a dump file.
+
+        Args:
+            asset_json (str): The json representation of an Asset.
+
+        Returns:
+            object: database row object or None if there is no data.
+        """
+        asset_pb = json_format.Parse(asset_json, assets_pb2.Asset())
+        if asset_pb.HasField('resource'):
+            content_type = ContentTypes.resource
+            parent_name = cls._get_parent_name(asset_pb)
+        elif asset_pb.HasField('iam_policy'):
+            content_type = ContentTypes.iam_policy
+            parent_name = asset_pb.name
+        else:
+            return None
+
+        return cls(
+            name=asset_pb.name,
+            parent_name=parent_name,
+            content_type=content_type,
+            asset_type=asset_pb.asset_type,
+            asset_data=asset_pb.SerializeToString()
+        )
+
+    @classmethod
+    def delete_all(cls, session):
+        """Deletes all rows from this table.
+
+        Args:
+            session (object): db session
+
+        Returns:
+            int: The number of rows deleted.
+
+        Raises:
+            Exception: Reraises any exception.
+        """
+        try:
+            num_rows = session.query(cls).delete()
+            session.commit()
+            return num_rows
+        except Exception as e:
+            LOGGER.exception(e)
+            session.rollback()
+            raise
+
+    @staticmethod
+    def _get_parent_name(asset_pb):
+        """Determines the parent name from the resource data.
+
+        Args:
+            asset_pb (assets_pb2.Asset): An Asset protobuf object.
+
+        Returns:
+            str: The parent name for the resource.
+        """
+        if asset_pb.resource.parent:
+            return asset_pb.resource.parent
+
+        if (asset_pb.asset_type.startswith('google.appengine') or
+                asset_pb.asset_type.startswith('google.bigquery')):
+            # Strip off the last two segments of the name to get the parent
+            return '/'.join(asset_pb.name.split('/')[:-2])
+
+        LOGGER.warn('Could not determine parent name for %s', asset_pb)
+        return ''
+
+
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1024):
+    def __init__(self, session, max_size=1024, commit_on_flush=False):
         """Initialize
 
         Args:
             session (object): db session
             max_size (int): max size of buffer
+            commit_on_flush (bool): If true, the session is committed to the
+                database when the data is flushed.
         """
         self.session = session
         self.buffer = []
         self.max_size = max_size
+        self.commit_on_flush = commit_on_flush
 
     def add(self, obj):
         """Add an object to the buffer to write to db.
@@ -399,7 +568,124 @@ class BufferedDbWriter(object):
 
         self.session.add_all(self.buffer)
         self.session.flush()
+        if self.commit_on_flush:
+            self.session.commit()
         self.buffer = []
+
+
+class CaiDataAccess(object):
+    """Access to the CAI temporary store table."""
+
+    @staticmethod
+    def clear_cai_data(session):
+        """Deletes all temporary CAI data from the cai temporary table.
+
+        Args:
+            session (object): Database session.
+
+        Returns:
+            int: The number of rows deleted.
+        """
+        num_rows = 0
+        try:
+            num_rows = CaiTemporaryStore.delete_all(session)
+        except SQLAlchemyError as e:
+            LOGGER.exception('Attempt to delete data from CAI temporary store '
+                             'failed, disabling the use of CAI: %s', e)
+
+        return num_rows
+
+    @staticmethod
+    def populate_cai_data(data, session):
+        """Add assets from cai data dump into cai temporary table.
+
+        Args:
+            data (file): A file like object, line delimeted text dump of json
+                data representing assets from Cloud Asset Inventory exportAssets
+                API.
+            session (object): Database session.
+
+        Returns:
+            int: The number of rows inserted
+        """
+        commit_buffer = BufferedDbWriter(session, commit_on_flush=True)
+        num_rows = 0
+        try:
+            for line in data:
+                if not line:
+                    continue
+
+                try:
+                    row = CaiTemporaryStore.from_json(line.strip())
+                except json_format.ParseError as e:
+                    LOGGER.error('Line %s had a parse error %s, skipping.',
+                                 line.strip(), e)
+                    continue
+                commit_buffer.add(row)
+                num_rows += 1
+            commit_buffer.flush()
+        except SQLAlchemyError as e:
+            LOGGER.exception('Error populating CAI data: %s', e)
+            session.rollback()
+        return num_rows
+
+    @staticmethod
+    def iter_cai_assets(content_type, asset_type, parent_name, session):
+        """Iterate the objects in the cai temporary table.
+
+        Args:
+            content_type (ContentTypes): The content type to return.
+            asset_type (str): The asset type to return.
+            parent_name (str): The parent resource to iter children under.
+            session (object): Database session.
+
+        Yields:
+            object: The content_type data for each resource.
+        """
+        filters = [
+            CaiTemporaryStore.content_type == content_type,
+            CaiTemporaryStore.asset_type == asset_type,
+            CaiTemporaryStore.parent_name == parent_name,
+        ]
+        base_query = session.query(CaiTemporaryStore)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        base_query = base_query.order_by(CaiTemporaryStore.name.asc())
+
+        for row in base_query.yield_per(PER_YIELD):
+            yield row.extract_asset_data(content_type)
+
+    @staticmethod
+    def fetch_cai_asset(content_type, asset_type, name, session):
+        """Returns a single resource from the cai temporary store.
+
+        Args:
+            content_type (ContentTypes): The content type to return.
+            asset_type (str): The asset type to return.
+            name (str): The resource to return.
+            session (object): Database session.
+
+        Returns:
+            dict: The content data for the specified resource.
+        """
+        filters = [
+            CaiTemporaryStore.content_type == content_type,
+            CaiTemporaryStore.asset_type == asset_type,
+            CaiTemporaryStore.name == name,
+        ]
+        base_query = session.query(CaiTemporaryStore)
+
+        for qry_filter in filters:
+            base_query = base_query.filter(qry_filter)
+
+        row = base_query.one_or_none()
+
+        if row:
+            return row.extract_asset_data(content_type)
+
+        return {}
 
 
 class DataAccess(object):
@@ -516,7 +802,13 @@ def initialize(engine):
     Args:
         engine (object): Database engine to operate on.
     """
+    dialect = engine.dialect.name
+    if dialect == 'sqlite':
+        collation = 'binary'
+    else:
+        collation = 'utf8_bin'
 
+    CaiTemporaryStore.initialize(BASE.metadata, collation)
     BASE.metadata.create_all(engine)
 
 
@@ -527,10 +819,10 @@ class Storage(BaseStorage):
         """Initialize
 
         Args:
-            session (object): db session
+            session (object): db session.
             existing_id (int64): The inventory id if wants to open an existing
                 inventory.
-            readonly (bool): whether to keep the inventory read-only
+            readonly (bool): whether to keep the inventory read-only.
         """
         self.session = session
         self.opened = False

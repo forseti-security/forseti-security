@@ -460,7 +460,7 @@ class Organization(Resource):
             Organization: created Organization
         """
         try:
-            data = client.fetch_organization(resource_key)
+            data = client.fetch_crm_organization(resource_key)
             return FACTORIES['organization'].create_new(data, root=True)
         except api_errors.ApiExecutionError as e:
             LOGGER.warn('Unable to fetch Organization %s: %s', resource_key, e)
@@ -480,10 +480,19 @@ class Organization(Resource):
             dict: organization IAM Policy
         """
         try:
-            return client.get_organization_iam_policy(self['name'])
+            return client.fetch_crm_organization_iam_policy(self['name'])
         except api_errors.ApiExecutionError as e:
             self.add_warning(e)
             return None
+
+    def has_directory_resource_id(self):
+        """Whether this organization has a directoryCustomerId.
+
+        Returns:
+            bool: True if the data exists, else False.
+        """
+        return ('owner' in self._data and
+                'directoryCustomerId' in self['owner'])
 
     def key(self):
         """Get key of this resource
@@ -518,7 +527,7 @@ class Folder(Resource):
         Returns:
             Folder: created Folder
         """
-        data = client.fetch_folder(resource_key)
+        data = client.fetch_crm_folder(resource_key)
         folder = FACTORIES['folder'].create_new(data, root=True)
         return folder
 
@@ -530,6 +539,14 @@ class Folder(Resource):
         """
         return self['name'].split('/', 1)[-1]
 
+    def should_dispatch(self):
+        """Folder resources should run in parallel threads.
+
+        Returns:
+            bool: whether folder resources should run in parallel threads.
+        """
+        return True
+
     @cached('iam_policy')
     def get_iam_policy(self, client=None):
         """Get iam policy for this folder
@@ -540,7 +557,7 @@ class Folder(Resource):
         Returns:
             dict: Folder IAM Policy
         """
-        return client.get_folder_iam_policy(self['name'])
+        return client.fetch_crm_folder_iam_policy(self['name'])
 
     @staticmethod
     def type():
@@ -567,8 +584,8 @@ class Project(Resource):
         Returns:
             Project: created project
         """
-        project_id = resource_key.split('/', 1)[-1]
-        data = client.fetch_project(project_id)
+        project_number = resource_key.split('/', 1)[-1]
+        data = client.fetch_crm_project(project_number)
         return FACTORIES['project'].create_new(data, root=True)
 
     @cached('iam_policy')
@@ -582,7 +599,8 @@ class Project(Resource):
             dict: Project IAM Policy
         """
         if self.enumerable():
-            return client.get_project_iam_policy(self['projectId'])
+            return client.fetch_crm_project_iam_policy(
+                project_number=self['projectNumber'])
         return {}
 
     @cached('billing_info')
@@ -596,7 +614,8 @@ class Project(Resource):
             dict: Project Billing Info resource.
         """
         if self.enumerable():
-            return client.get_project_billing_info(self['projectId'])
+            return client.fetch_billing_project_info(
+                project_number=self['projectNumber'])
         return {}
 
     @cached('enabled_apis')
@@ -611,7 +630,8 @@ class Project(Resource):
         """
         enabled_apis = []
         if self.enumerable():
-            enabled_apis = client.get_enabled_apis(self['projectId'])
+            enabled_apis = client.fetch_services_enabled_apis(
+                project_number=self['projectNumber'])
 
         self._enabled_service_names = frozenset(
             (api.get('serviceName') for api in enabled_apis))
@@ -740,7 +760,7 @@ class BillingAccount(Resource):
         Returns:
             dict: Billing Account IAM Policy
         """
-        return client.get_billing_account_iam_policy(self['name'])
+        return client.fetch_billing_account_iam_policy(self['name'])
 
     @staticmethod
     def type():
@@ -766,7 +786,7 @@ class GcsBucket(Resource):
         Returns:
             dict: bucket IAM policy
         """
-        return client.get_bucket_iam_policy(self.key())
+        return client.fetch_storage_bucket_iam_policy(self.key())
 
     def get_gcs_policy(self, client=None):
         """Full projection returns GCS policy with the resource.
@@ -815,8 +835,8 @@ class GcsObject(Resource):
         Returns:
             dict: Object IAM policy
         """
-        return client.get_object_iam_policy(self.parent()['name'],
-                                            self['name'])
+        return client.fetch_storage_object_iam_policy(self.parent()['name'],
+                                                      self['name'])
 
     def get_gcs_policy(self, client=None):
         """Full projection returns GCS policy with the resource.
@@ -932,7 +952,7 @@ class DataSet(Resource):
         Returns:
             dict: Dataset Policy
         """
-        return client.get_dataset_dataset_policy(
+        return client.fetch_bigquery_dataset_policy(
             self.parent().key(),
             self['datasetReference']['datasetId'])
 
@@ -1420,7 +1440,7 @@ class ServiceAccount(Resource):
         Returns:
             dict: Service Account IAM policy.
         """
-        return client.get_serviceaccount_iam_policy(self['name'])
+        return client.fetch_iam_serviceaccount_iam_policy(self['name'])
 
     def key(self):
         """Get key of this resource
@@ -1518,6 +1538,14 @@ class GsuiteGroup(Resource):
         """
         return self['id']
 
+    def should_dispatch(self):
+        """GSuite Group resources should run in parallel threads.
+
+        Returns:
+            bool: whether gsuite group resources should run in parallel threads.
+        """
+        return True
+
     @staticmethod
     def type():
         """Get type of this resource
@@ -1598,7 +1626,7 @@ class FolderIterator(ResourceIterator):
             Resource: Folder created
         """
         gcp = self.client
-        for data in gcp.iter_folders(parent_id=self.resource['name']):
+        for data in gcp.iter_crm_folders(parent_id=self.resource['name']):
             yield FACTORIES['folder'].create_new(data)
 
 
@@ -1610,7 +1638,7 @@ class FolderFolderIterator(ResourceIterator):
             Resource: Folder created
         """
         gcp = self.client
-        for data in gcp.iter_folders(parent_id=self.resource['name']):
+        for data in gcp.iter_crm_folders(parent_id=self.resource['name']):
             yield FACTORIES['folder'].create_new(data)
 
 
@@ -1622,9 +1650,9 @@ class ProjectIterator(ResourceIterator):
             Resource: Project created
         """
         gcp = self.client
-        orgid = self.resource['name'].split('/', 1)[-1]
-        for data in gcp.iter_projects(parent_type='organization',
-                                      parent_id=orgid):
+        org_id = self.resource['name'].split('/', 1)[-1]
+        for data in gcp.iter_crm_projects(parent_type='organization',
+                                          parent_id=org_id):
             yield FACTORIES['project'].create_new(data)
 
 
@@ -1636,9 +1664,9 @@ class FolderProjectIterator(ResourceIterator):
             Resource: Project created
         """
         gcp = self.client
-        folderid = self.resource['name'].split('/', 1)[-1]
-        for data in gcp.iter_projects(parent_type='folder',
-                                      parent_id=folderid):
+        folder_id = self.resource['name'].split('/', 1)[-1]
+        for data in gcp.iter_crm_projects(parent_type='folder',
+                                          parent_id=folder_id):
             yield FACTORIES['project'].create_new(data)
 
 
@@ -1663,8 +1691,8 @@ class BucketIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.storage_api_enabled():
-            for data in gcp.iter_buckets(
-                    projectid=self.resource['projectNumber']):
+            for data in gcp.iter_storage_buckets(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['bucket'].create_new(data)
 
 
@@ -1676,7 +1704,7 @@ class ObjectIterator(ResourceIterator):
             Resource: GcsObject created
         """
         gcp = self.client
-        for data in gcp.iter_objects(bucket_id=self.resource['id']):
+        for data in gcp.iter_storage_objects(bucket_id=self.resource['id']):
             yield FACTORIES['object'].create_new(data)
 
 
@@ -1689,8 +1717,8 @@ class DataSetIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.bigquery_api_enabled():
-            for data in gcp.iter_datasets(
-                    projectid=self.resource['projectNumber']):
+            for data in gcp.iter_bigquery_datasets(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['dataset'].create_new(data)
 
 
@@ -1703,7 +1731,7 @@ class AppEngineAppIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.enumerable():
-            data = gcp.fetch_gae_app(projectid=self.resource['projectId'])
+            data = gcp.fetch_gae_app(project_id=self.resource['projectId'])
             if data:
                 yield FACTORIES['appengine_app'].create_new(data)
 
@@ -1716,7 +1744,7 @@ class AppEngineServiceIterator(ResourceIterator):
             Resource: AppEngineService created
         """
         gcp = self.client
-        for data in gcp.iter_gae_services(projectid=self.resource['id']):
+        for data in gcp.iter_gae_services(project_id=self.resource['id']):
             yield FACTORIES['appengine_service'].create_new(data)
 
 
@@ -1729,8 +1757,8 @@ class AppEngineVersionIterator(ResourceIterator):
         """
         gcp = self.client
         for data in gcp.iter_gae_versions(
-                projectid=self.resource.parent()['id'],
-                serviceid=self.resource['id']):
+                project_id=self.resource.parent()['id'],
+                service_id=self.resource['id']):
             yield FACTORIES['appengine_version'].create_new(data)
 
 
@@ -1743,9 +1771,9 @@ class AppEngineInstanceIterator(ResourceIterator):
         """
         gcp = self.client
         for data in gcp.iter_gae_instances(
-                projectid=self.resource.parent().parent()['id'],
-                serviceid=self.resource.parent()['id'],
-                versionid=self.resource['id']):
+                project_id=self.resource.parent().parent()['id'],
+                service_id=self.resource.parent()['id'],
+                version_id=self.resource['id']):
             yield FACTORIES['appengine_instance'].create_new(data)
 
 
@@ -1759,7 +1787,7 @@ class KubernetesClusterIterator(ResourceIterator):
         gcp = self.client
         if self.resource.container_api_enabled():
             for data in gcp.iter_container_clusters(
-                    projectid=self.resource['projectId']):
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['kubernetes_cluster'].create_new(data)
 
 
@@ -1773,7 +1801,7 @@ class ComputeIterator(ResourceIterator):
         gcp = self.client
         if self.resource.compute_api_enabled():
             data = gcp.fetch_compute_project(
-                projectid=self.resource['projectId'])
+                project_number=self.resource['projectNumber'])
             yield FACTORIES['compute'].create_new(data)
 
 
@@ -1786,8 +1814,8 @@ class DiskIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_computedisks(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_disks(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['disk'].create_new(data)
 
 
@@ -1800,8 +1828,8 @@ class InstanceIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_computeinstances(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_instances(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['instance'].create_new(data)
 
 
@@ -1814,8 +1842,8 @@ class FirewallIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_computefirewalls(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_firewalls(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['firewall'].create_new(data)
 
 
@@ -1828,8 +1856,8 @@ class ImageIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_images(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_images(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['image'].create_new(data)
 
 
@@ -1842,8 +1870,8 @@ class InstanceGroupIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_computeinstancegroups(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_instancegroups(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['instancegroup'].create_new(data)
 
 
@@ -1856,8 +1884,8 @@ class InstanceGroupManagerIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_ig_managers(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_ig_managers(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['instancegroupmanager'].create_new(data)
 
 
@@ -1870,8 +1898,8 @@ class InstanceTemplateIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_instancetemplates(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_instancetemplates(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['instancetemplate'].create_new(data)
 
 
@@ -1884,8 +1912,8 @@ class NetworkIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_networks(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_networks(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['network'].create_new(data)
 
 
@@ -1898,8 +1926,8 @@ class SnapshotIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_snapshots(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_snapshots(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['snapshot'].create_new(data)
 
 
@@ -1912,8 +1940,8 @@ class SubnetworkIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_subnetworks(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_subnetworks(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['subnetwork'].create_new(data)
 
 
@@ -1926,8 +1954,8 @@ class BackendServiceIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_backendservices(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_backendservices(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['backendservice'].create_new(data)
 
 
@@ -1940,8 +1968,8 @@ class ForwardingRuleIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.compute_api_enabled():
-            for data in gcp.iter_forwardingrules(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_compute_forwardingrules(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['forwardingrule'].create_new(data)
 
 
@@ -1954,8 +1982,8 @@ class CloudSqlIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.cloudsql_api_enabled():
-            for data in gcp.iter_cloudsqlinstances(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_cloudsql_instances(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['cloudsqlinstance'].create_new(data)
 
 
@@ -1968,8 +1996,8 @@ class ServiceAccountIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_serviceaccounts(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_iam_serviceaccounts(
+                    project_id=self.resource['projectId']):
                 yield FACTORIES['serviceaccount'].create_new(data)
 
 
@@ -1981,7 +2009,7 @@ class ServiceAccountKeyIterator(ResourceIterator):
             Resource: ServiceAccountKey created
         """
         gcp = self.client
-        for data in gcp.iter_serviceaccount_exported_keys(
+        for data in gcp.iter_iam_serviceaccount_exported_keys(
                 name=self.resource['name']):
             yield FACTORIES['serviceaccount_key'].create_new(data)
 
@@ -1995,8 +2023,8 @@ class ProjectRoleIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_project_roles(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_iam_project_roles(
+                    project_id=self.resource['projectId']):
                 yield FACTORIES['role'].create_new(data)
 
 
@@ -2008,8 +2036,8 @@ class OrganizationRoleIterator(ResourceIterator):
             Resource: Role created
         """
         gcp = self.client
-        for data in gcp.iter_organization_roles(
-                orgid=self.resource['name']):
+        for data in gcp.iter_iam_organization_roles(
+                org_id=self.resource['name']):
             yield FACTORIES['role'].create_new(data)
 
 
@@ -2021,7 +2049,7 @@ class OrganizationCuratedRoleIterator(ResourceIterator):
             Resource: CuratedRole created
         """
         gcp = self.client
-        for data in gcp.iter_curated_roles():
+        for data in gcp.iter_iam_curated_roles():
             yield FACTORIES['curated_role'].create_new(data)
 
 
@@ -2033,9 +2061,10 @@ class GsuiteGroupIterator(ResourceIterator):
             Resource: GsuiteGroup created
         """
         gsuite = self.client
-        for data in gsuite.iter_groups(
-                self.resource['owner']['directoryCustomerId']):
-            yield FACTORIES['gsuite_group'].create_new(data)
+        if self.resource.has_directory_resource_id():
+            for data in gsuite.iter_gsuite_groups(
+                    self.resource['owner']['directoryCustomerId']):
+                yield FACTORIES['gsuite_group'].create_new(data)
 
 
 class GsuiteUserIterator(ResourceIterator):
@@ -2046,9 +2075,10 @@ class GsuiteUserIterator(ResourceIterator):
             Resource: GsuiteUser created
         """
         gsuite = self.client
-        for data in gsuite.iter_users(
-                self.resource['owner']['directoryCustomerId']):
-            yield FACTORIES['gsuite_user'].create_new(data)
+        if self.resource.has_directory_resource_id():
+            for data in gsuite.iter_gsuite_users(
+                    self.resource['owner']['directoryCustomerId']):
+                yield FACTORIES['gsuite_user'].create_new(data)
 
 
 class GsuiteMemberIterator(ResourceIterator):
@@ -2059,7 +2089,7 @@ class GsuiteMemberIterator(ResourceIterator):
             Resource: GsuiteUserMember or GsuiteGroupMember created
         """
         gsuite = self.client
-        for data in gsuite.iter_group_members(self.resource['id']):
+        for data in gsuite.iter_gsuite_group_members(self.resource['id']):
             if data['type'] == 'USER':
                 yield FACTORIES['gsuite_user_member'].create_new(data)
             elif data['type'] == 'GROUP':
@@ -2074,8 +2104,8 @@ class ProjectLienIterator(ResourceIterator):
             Resource: Lien created
         """
         if self.resource.enumerable():
-            for data in self.client.iter_project_liens(
-                    project_id=self.resource['projectId']):
+            for data in self.client.iter_crm_project_liens(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['lien'].create_new(data)
 
 
@@ -2088,8 +2118,8 @@ class ProjectSinkIterator(ResourceIterator):
         """
         gcp = self.client
         if self.resource.enumerable():
-            for data in gcp.iter_project_sinks(
-                    projectid=self.resource['projectId']):
+            for data in gcp.iter_stackdriver_project_sinks(
+                    project_number=self.resource['projectNumber']):
                 yield FACTORIES['sink'].create_new(data)
 
 
@@ -2101,7 +2131,8 @@ class FolderSinkIterator(ResourceIterator):
             Resource: Sink created
         """
         gcp = self.client
-        for data in gcp.iter_folder_sinks(folderid=self.resource['name']):
+        for data in gcp.iter_stackdriver_folder_sinks(
+                folder_id=self.resource['name']):
             yield FACTORIES['sink'].create_new(data)
 
 
@@ -2113,7 +2144,8 @@ class OrganizationSinkIterator(ResourceIterator):
             Resource: Sink created
         """
         gcp = self.client
-        for data in gcp.iter_organization_sinks(orgid=self.resource['name']):
+        for data in gcp.iter_stackdriver_organization_sinks(
+                org_id=self.resource['name']):
             yield FACTORIES['sink'].create_new(data)
 
 
@@ -2125,8 +2157,8 @@ class BillingAccountSinkIterator(ResourceIterator):
             Resource: Sink created
         """
         gcp = self.client
-        for data in gcp.iter_billing_account_sinks(
-                acctid=self.resource['name']):
+        for data in gcp.iter_stackdriver_billing_account_sinks(
+                acct_id=self.resource['name']):
             yield FACTORIES['sink'].create_new(data)
 
 
