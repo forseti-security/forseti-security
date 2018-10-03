@@ -84,7 +84,6 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             violations = itertools.chain(
                 violations,
                 rule.find_buckets_violations(buckets_lifecycle))
-            break
         return set(violations)
 
 
@@ -190,6 +189,10 @@ class RetentionRuleBook(bre.BaseRuleBook):
             if type(resource_ids).__name__ != "list":
                 raise audit_errors.InvalidRulesSchemaError(
                     'Miss dash (-) near resource_ids in rule {}'.format(rule_index))
+            for rid in resource_ids:
+                if rid == "*":
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'The symbol * is not allowed in rule {}'.format(rule_index))
         
         rule = Rule(rule_name=rule_def.get('name','no name'),
                             rule_index=rule_index,
@@ -277,13 +280,8 @@ class Rule(object):
         Returns:
             bool: True it is in the full_name; otherwise False
         """
-
-        for (resource_type, resource_id) in utils.get_resources_from_full_name(
-                full_name):
-            if(given_name == "*"):
-                if(resource_type == given_type):
-                    return True
-            elif(resource_type == given_type and resource_id == given_name):
+        for (resource_type, resource_id) in utils.get_resources_from_full_name(full_name):
+            if(resource_type == given_type and resource_id == given_name):
                 return True
 
         return False
@@ -291,9 +289,8 @@ class Rule(object):
     def IsAppliedTo(self, buckets_lifecycle):
         is_rule_apply_to = False
         for r in self.GetResource():
-            for rid in r["ids"]:
-                if self.is_resource_in_full_name(buckets_lifecycle.full_name, r["type"], rid):
-                    return True
+            if self.is_resource_in_full_name(buckets_lifecycle.full_name, r["type"], r["ids"]):
+                return True
         return False
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.

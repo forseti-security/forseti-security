@@ -72,7 +72,6 @@ class RetentionScanner(base_scanner.BaseScanner):
          'violation_type', 'violation_describe'])
         """
         for violation in violations:
-            print type(violation)
             violation_data = {'describe': violation.violation_describe}
 
             yield {
@@ -94,7 +93,6 @@ class RetentionScanner(base_scanner.BaseScanner):
             all_violations (list): All violations
         """
         all_violations = self._flatten_violations(all_violations)
-        print "fdasfdasf4da564f6a"
         self._output_results_to_db(all_violations)
 
     def _find_bucket_violations(self, all_lifecycle_info):
@@ -110,7 +108,6 @@ class RetentionScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding retention violations...')
 
         for lifecycle_info in all_lifecycle_info:
-           
             violations = self.rules_engine.find_buckets_violations(
                 lifecycle_info)
             all_violations.extend(violations)
