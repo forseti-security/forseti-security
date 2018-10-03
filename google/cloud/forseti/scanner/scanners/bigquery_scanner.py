@@ -128,12 +128,14 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
-        
+
+        # Use separate sessions to avoid multiple concurrent queries within
+        # a single session.
         with scoped_session as session:
             dataset_policies = []
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
                 dataset_policies.append(policy)
-        
+
         bq_acl_data = []
         for policy in dataset_policies:
             # dataset_policy are always in a dataset, which is always in a
