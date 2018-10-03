@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.services import utils
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.common.util.regular_exp import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
@@ -77,13 +78,24 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         """
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
-        resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
 
         violations = itertools.chain()
-        for rule in resource_rules:
-            violations = itertools.chain(
-                violations,
-                rule.find_buckets_violations(buckets_lifecycle))
+
+        resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
+
+        #print buckets_lifecycle.__dict__.keys()
+        recent_bucket = resource_util.create_resource(
+            resource_id=buckets_lifecycle.name,
+            resource_type=_APPLY_TO_BUCKETS)
+
+        resource_ancestors = (relationship.find_ancestors(recent_bucket, buckets_lifecycle.full_name))
+        for related_resources in resource_ancestors:
+            rules = resource_rules[related_resources]
+            for rule in rules:
+                violations = itertools.chain(
+                    violations,
+                    rule.find_buckets_violations(buckets_lifecycle))
+
         return set(violations)
 
 
@@ -100,7 +112,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
         self._rules_sema = threading.BoundedSemaphore(value=1)
 
         self.resource_rules_map = {
-            applies_to: []
+            applies_to: collections.defaultdict(set)
             for applies_to in _APPLY_TO_RESOURCES}
         if not rule_defs:
             self.rule_defs = {}
@@ -193,17 +205,17 @@ class RetentionRuleBook(bre.BaseRuleBook):
                 if rid == "*":
                     raise audit_errors.InvalidRulesSchemaError(
                         'The symbol * is not allowed in rule {}'.format(rule_index))
-        
-        rule = Rule(rule_name=rule_def.get('name','no name'),
-                            rule_index=rule_index,
-                            applyto=_APPLY_TO_BUCKETS,
-                            min_retention=min_retention,
-                            max_retention=max_retention,
-                            resource_type=resource_type,
-                            resource_ids=resource_ids
-                            )
 
-        self.resource_rules_map[_APPLY_TO_BUCKETS].append(rule)
+                rule = Rule(rule_name=rule_def.get('name','no name'),
+                    rule_index=rule_index,
+                    min_retention=min_retention,
+                    max_retention=max_retention,
+                    )
+                gcp_resource = resource_util.create_resource(
+                    resource_id=rid,
+                    resource_type=resource_type)
+        
+                self.resource_rules_map[_APPLY_TO_BUCKETS][gcp_resource].add(rule)
 
         
 
@@ -226,7 +238,7 @@ class Rule(object):
         ['resource_name', 'resource_type', 'full_name', 'rule_name', 'rule_index',
          'violation_type', 'violation_describe'])
 
-    def __init__(self, rule_name, rule_index, applyto, min_retention, max_retention, resource_type, resource_ids):
+    def __init__(self, rule_name, rule_index, min_retention, max_retention):
         """Initialize.
 
         Args:
@@ -237,9 +249,6 @@ class Rule(object):
         self.rule_index = rule_index
         self.min_retention = min_retention
         self.max_retention = max_retention
-        self.applyto = applyto
-        self.resource_type = resource_type
-        self.resource_ids = resource_ids
 
     def GenerateRuleViolation(self, buckets_lifecycle, describe):
         return self.rttRuleViolation(
@@ -251,21 +260,6 @@ class Rule(object):
             violation_type=VIOLATION_TYPE,
             violation_describe=describe
         )
-        
-    def GetResource(self):
-        """
-        Get the resources corresponding to the rule.
-
-        Returns:
-           list:  A list of dict (type and ids).
-        """
-        result = []
-        for id in self.resource_ids:
-            tmpdict = {}
-            tmpdict["type"] = self.resource_type
-            tmpdict["ids"] = id
-            result.append(tmpdict)
-        return result
     
 
     def is_resource_in_full_name(self, full_name, given_type, given_name):
@@ -295,8 +289,6 @@ class Rule(object):
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_buckets_violations(self, buckets_lifecycle):
-        if(self.IsAppliedTo(buckets_lifecycle) == False):
-            return
         
         minretention = self.min_retention
         maxretention = self.max_retention
