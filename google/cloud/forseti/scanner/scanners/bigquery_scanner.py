@@ -128,13 +128,22 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
+        
         with scoped_session as session:
-            bq_acl_data = []
-
+            dataset_policies = []
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
-                # dataset_policy are always in a dataset, which is always in a
-                # project.
-                dataset = policy.parent
+                dataset_policies.append(policy)
+        
+        bq_acl_data = []
+        for policy in dataset_policies:
+            # dataset_policy are always in a dataset, which is always in a
+            # project.
+            with scoped_session as session:
+                project_type_name = policy.parent.parent_type_name
+                dataset = list(data_access.scanner_iter(
+                    session, 'dataset',
+                    parent_type_name=project_type_name))[0]
+
                 if dataset.type != 'dataset':
                     raise ValueError(
                         'Unexpected type of dataset_policy parent: '
@@ -146,7 +155,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                         'Unexpected type of dataset_policy grandparent: '
                         'got %s, want project' % dataset.parent.type
                     )
-
+    
                 proj = project.Project(
                     project_id=dataset.parent.name,
                     full_name=dataset.parent.full_name,
@@ -164,7 +173,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                     dataset_id=dataset.name,
                     full_name=policy.full_name,
                     acls=policy.data))
-
+    
                 for bq_acl in bq_acls:
                     data = BigqueryAccessControlsData(
                         parent_project=proj,
@@ -172,7 +181,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                     )
                     bq_acl_data.append(data)
 
-            return bq_acl_data
+        return bq_acl_data
 
     def run(self):
         """Runs the data collection."""
