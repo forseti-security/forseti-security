@@ -16,6 +16,8 @@
 See: https://cloud.google.com/storage/docs/json_api/v1/
 """
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -37,6 +39,7 @@ class Bucket(resource.Resource):
             name=None,
             display_name=None,
             parent=None,
+            locations=None,
             lifecycle_state=BucketLifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -57,6 +60,22 @@ class Bucket(resource.Resource):
             name=name,
             display_name=display_name,
             parent=parent,
+            locations=locations,
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        bucket_dict = json.loads(json_string)
+
+        bucket_id = bucket_dict['id']
+        return cls(
+            parent=parent,
+            bucket_id=bucket_id,
+            name='buckets/' + bucket_id,
+            full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
+            display_name=bucket_id,
+            locations=[bucket_dict['location']],
+            data=json_string,
+        )

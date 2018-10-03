@@ -116,6 +116,7 @@ class Resource(object):
             name=None,
             display_name=None,
             parent=None,
+            locations=None,
             lifecycle_state=LifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -140,6 +141,7 @@ class Resource(object):
         # organization has no parent, whereas projects and folders can
         # have either another folder or organization as a parent.
         self._parent = parent
+        self._locations = locations
         self._lifecycle_state = lifecycle_state
 
     def __eq__(self, other):
@@ -228,6 +230,10 @@ class Resource(object):
             Resource: The parent.
         """
         return self._parent
+
+    @property
+    def locations(self):
+        return self._locations
 
     @property
     def lifecycle_state(self):
