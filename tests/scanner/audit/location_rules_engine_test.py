@@ -37,9 +37,9 @@ rules:
   - name: Location test rule
     mode: {mode}
     resource:
-      - type: {type}
-        resource_ids:
-          - {id}
+      - type: 'organization'
+        resource_ids: ['234']
+    applies_to: ['{type}']
     locations: {locations}
 """
 

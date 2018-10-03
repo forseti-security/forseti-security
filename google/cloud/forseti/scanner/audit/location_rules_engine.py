@@ -145,10 +145,11 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
             resource_type = raw_resource.get('type')
 
-            if resource_type not in ['bucket', '*']:
+            if resource_type not in {'project', 'folder', 'organization'}:
                 raise errors.InvalidRulesSchemaError(
                     'Invalid resource type "{}" in rule {}'.format(
                         resource_type, rule_index))
+
 
             for resource_id in resource_ids:
                 resource = resource_util.create_resource(
@@ -176,15 +177,23 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
         Returns:
             Rule: rule for the given definition.
         """
-        for field in ['name', 'mode', 'locations']:
+        for field in ['name', 'mode', 'applies_to', 'locations']:
             if field not in rule_def:
                 raise errors.InvalidRulesSchemaError(
                     'Missing field "{}" in rule {}'.format(field, rule_index))
+
+        applies_to = rule_def.get('applies_to')
+        for resource_type in applies_to:
+            if resource_type not in {'bucket'}:
+                raise errors.InvalidRulesSchemaError(
+                    'Unsupported applies to type "{}" in rule {}'.format(
+                        resource_type, rule_index))
 
 
         return Rule(name=rule_def.get('name'),
                     index=rule_index,
                     mode=Mode(rule_def.get('mode')),
+                    applies_to=applies_to,
                     location_patterns=rule_def.get('locations'))
 
     def find_violations(self, resource):
@@ -228,7 +237,7 @@ class Rule(object):
        Also finds violations.
     """
 
-    def __init__(self, name, index, mode, location_patterns):
+    def __init__(self, name, index, mode, applies_to, location_patterns):
         """Initialize.
 
         Args:
@@ -240,7 +249,7 @@ class Rule(object):
         self.name = name
         self.index = index
         self.mode = mode
-
+        self.applies_to = applies_to
         self.location_re = re.compile('|'.join([
             regular_exp.escape_and_globify(loc_wildcard)
             for loc_wildcard in location_patterns
@@ -258,6 +267,9 @@ class Rule(object):
         Yields:
             RuleViolation: lien rule violation.
         """
+        if resource.type not in self.applies_to:
+            return
+
         matches = [
             self.location_re.match(loc.lower()) for loc in resource.locations
         ]
