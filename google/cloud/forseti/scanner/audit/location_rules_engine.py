@@ -35,7 +35,7 @@ LocationData = collections.namedtuple(
 RuleViolation = collections.namedtuple(
     'RuleViolation',
     ['resource_id', 'resource_name', 'resource_type', 'full_name', 'rule_index',
-     'rule_name', 'violation_type', 'resource_data']
+     'rule_name', 'violation_type', 'violation_data', 'resource_data']
 )
 
 class Mode(enum.Enum):
@@ -184,7 +184,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
         return Rule(name=rule_def.get('name'),
                     index=rule_index,
-                    mode=rule_def.get('mode'),
+                    mode=Mode(rule_def.get('mode')),
                     location_patterns=rule_def.get('locations'))
 
     def find_violations(self, resource):
@@ -262,7 +262,6 @@ class Rule(object):
             self.location_re.match(loc.lower()) for loc in resource.locations
         ]
 
-
         has_violation = (
             self.mode == Mode.BLACKLIST and any(matches) or
             self.mode == Mode.WHITELIST and not any(matches)
@@ -277,6 +276,7 @@ class Rule(object):
                 rule_index=self.index,
                 rule_name=self.name,
                 violation_type='LOCATION_VIOLATION',
-                resource_data='',
+                violation_data=str(resource.locations),
+                resource_data=resource.data,
             )
             return

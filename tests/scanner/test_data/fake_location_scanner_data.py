@@ -52,7 +52,8 @@ def build_violations(res):
         resource_type=res.type,
         full_name=res.full_name,
         rule_index=0,
-        rule_name='Lien test rule',
+        rule_name='Location test rule',
         violation_type='LOCATION_VIOLATION',
+        violation_data=str(res.locations),
         resource_data=res.data,
     )]

@@ -18,10 +18,10 @@ import json
 import unittest
 import mock
 
-from tests.scanner.test_data import fake_lien_scanner_data as data
+from tests.scanner.test_data import fake_location_scanner_data as data
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.scanner.scanners import lien_scanner
+from google.cloud.forseti.scanner.scanners import location_scanner
 
 
 def _mock_gcp_resource_iter(_, resource_type):
@@ -36,34 +36,33 @@ def _mock_gcp_resource_iter(_, resource_type):
 
     project_resource = Resource(
         full_name=data.PROJECT.full_name,
-        type='project',
-        name=data.PROJECT.id,
+        type=data.PROJECT.type,
+        name=data.PROJECT.name,
         parent_type_name='',
         parent=None,
         data='',
     )
 
-    if resource_type == 'project':
-        return [project_resource]
-    elif resource_type == 'lien':
-        lien_resource = Resource(
-            full_name=data.LIEN.full_name,
-            type='lien',
-            parent_type_name='project',
-            name=data.LIEN.full_name.split('/')[-2],
+    if resource_type == 'bucket':
+        resource = Resource(
+            full_name=data.BUCKET.full_name,
+            type=data.BUCKET.type,
+            parent_type_name='project/' + data.BUCKET.parent.id,
+            name=data.BUCKET.id,
             parent=project_resource,
-            data=data.LIEN.raw_json,
+            data=data.BUCKET.data,
         )
-        return [lien_resource]
     else:
         raise ValueError('Unexpected resource type: ' + resource_type)
 
+    return [resource]
 
-class LienScannerTest(ForsetiTestCase):
 
-    @mock.patch.object(lien_scanner, 'lien_rules_engine', autospec=True)
+class LocationScannerTest(ForsetiTestCase):
+
+    @mock.patch.object(location_scanner, 'location_rules_engine', autospec=True)
     def setUp(self, _):
-        self.scanner = lien_scanner.LienScanner(
+        self.scanner = location_scanner.LocationScanner(
             {}, {}, mock.MagicMock(), '', '', '')
 
     def test_retrieve(self):
@@ -76,7 +75,7 @@ class LienScannerTest(ForsetiTestCase):
         self.scanner.service_config = mock_service_config
 
         got = self.scanner._retrieve()
-        want = {data.PROJECT: [data.LIEN]}
+        want = [data.BUCKET]
         self.assertEqual(got, want)
 
 

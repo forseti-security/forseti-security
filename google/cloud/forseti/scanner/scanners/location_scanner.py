@@ -14,10 +14,10 @@
 
 """Scanner for the Lien rules engine."""
 
-from google.cloud.forseti.common.gcp_type import lien
+from google.cloud.forseti.common.gcp_type import bucket
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import lien_rules_engine
+from google.cloud.forseti.scanner.audit import location_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
@@ -46,15 +46,15 @@ class LocationScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = lien_rules_engine.LienRulesEngine(
+        self.rules_engine = location_rules_engine.LocationRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
 
     def run(self):
         """Runs the data collection."""
-        parent_resource_to_liens = self._retrieve()
-        all_violations = self._find_violations(parent_resource_to_liens)
+        resources = self._retrieve()
+        all_violations = self._find_violations(resources)
         self._output_results(all_violations)
 
     def _retrieve(self):
@@ -65,47 +65,32 @@ class LocationScanner(base_scanner.BaseScanner):
         Raises:
             ValueError: if resources have an unexpected type.
         """
+        resources = []
+
+        resource_type_to_fn = {'bucket': bucket.Bucket.from_json}
+
         scoped_session, data_access = self.service_config.model_manager.get(
             self.model_name)
         with scoped_session as session:
-            parent_resource_to_liens = {}
+            for resource_type, resource_fn in resource_type_to_fn.items():
+                for resource in data_access.scanner_iter(
+                        session, resource_type):
 
-            resource_types = ['dataset']
+                    if resource.parent.type != 'project':
+                        raise ValueError(
+                            'Unexpected type of parent resource type: '
+                            'got %s, want project' % resource.parent.type
+                        )
 
-
-            # liens can only be defined on a project currently
-            for project_resource in data_access.scanner_iter(
-                    session, 'project'):
-
-                proj = project.Project(
-                    project_id=project_resource.name,
-                    full_name=project_resource.full_name,
-                )
-
-                parent_resource_to_liens[proj] = []
-
-            for lien_resource in data_access.scanner_iter(session, 'lien'):
-                parent_resource = lien_resource.parent
-
-                if lien_resource.parent.type != 'project':
-                    raise ValueError(
-                        'Unexpected type of lien resource parent: '
-                        'got %s, want project' % parent_resource.parent.type
+                    proj = project.Project(
+                        project_id=resource.parent.name,
+                        full_name=resource.parent.full_name,
                     )
+                    resources.append(resource_fn(proj, resource.data))
 
-                proj = project.Project(
-                    project_id=parent_resource.name,
-                    full_name=parent_resource.full_name,
-                )
+        return resources
 
-                parent_resource_to_liens[proj].append(lien.Lien.from_json(
-                    parent=proj,
-                    name=lien_resource.name,
-                    json_string=lien_resource.data))
-
-            return parent_resource_to_liens
-
-    def _find_violations(self, parent_resource_to_liens):
+    def _find_violations(self, resources):
         """Find violations in liens.
         Args:
             parent_resource_to_liens (Dict[Resource, List[lien]]): mapping of
@@ -116,9 +101,8 @@ class LocationScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding lien violations...')
 
-        for parent_resource, liens in parent_resource_to_liens.iteritems():
-            violations = self.rules_engine.find_violations(
-                parent_resource, liens)
+        for resource in resources:
+            violations = self.rules_engine.find_violations(resource)
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
@@ -147,6 +131,6 @@ class LocationScanner(base_scanner.BaseScanner):
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
-                'violation_data': {'lien': violation.resource_data},
+                'violation_data': violation.violation_data,
                 'resource_data': violation.resource_data
             }
