@@ -130,8 +130,11 @@ class BigqueryScanner(base_scanner.BaseScanner):
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
             bq_acl_data = []
-
+            policies = []
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
+                policies.append(policy)
+
+            for policy in policies:
                 # dataset_policy are always in a dataset, which is always in a
                 # project.
                 dataset = policy.parent
