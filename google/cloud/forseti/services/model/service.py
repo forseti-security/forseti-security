@@ -91,6 +91,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             description=model.description))
         return reply
 
+    # pylint: disable=no-member
     def DeleteModel(self, request, _):
         """Deletes a model and all associated data.
 
@@ -101,15 +102,12 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         Returns:
             object: pb2 object of DeleteModelReply
         """
-
         model_name = request.handle
         try:
             self.modeller.delete_model(model_name)
-            # pylint: disable=no-member
             status = model_pb2.DeleteModelReply.Status.Value('SUCCESS')
         except Exception:
             LOGGER.exception('Unable to delete model: %s', model_name)
-            # pylint: disable=no-member
             status = model_pb2.DeleteModelReply.Status.Value('FAIL')
         return model_pb2.DeleteModelReply(status=status)
 
