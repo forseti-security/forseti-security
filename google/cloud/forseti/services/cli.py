@@ -602,7 +602,7 @@ class JsonOutput(Output):
             Args:
                 obj (object): Object to write as json
         """
-        print MessageToJson(obj)
+        print MessageToJson(obj, including_default_value_fields=True)
 
 
 def run_config(_, config, output, config_env):
