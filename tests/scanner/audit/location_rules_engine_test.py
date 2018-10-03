@@ -65,7 +65,6 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='whitelist',
             type='bucket',
-            id='"*"',
             locations=['eu*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
@@ -75,7 +74,6 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='whitelist',
             type='bucket',
-            id='"*"',
             locations=['eu*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
@@ -86,7 +84,6 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='whitelist',
             type='bucket',
-            id='"*"',
             locations=['us*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
@@ -97,7 +94,6 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='blacklist',
             type='bucket',
-            id='"*"',
             locations=['us*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
@@ -108,7 +104,6 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='blacklist',
             type='bucket',
-            id='"*"',
             locations=['eu*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
