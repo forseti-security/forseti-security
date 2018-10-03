@@ -115,7 +115,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id='p1',
-                resource_name='policy1',
+                resource_name='n1',
                 full_name='fake_full_name111',
                 rule_id='rule1',
                 violation_type='violation1',
@@ -126,7 +126,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             firewall_rules_scanner.firewall_rules_engine.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id='p2',
-                resource_name='deleteme',
+                resource_name='n2',
                 full_name='fake_full_name222',
                 rule_id='rule2',
                 violation_type='violation2',
@@ -139,6 +139,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
             {
                 'resource_id': v.resource_id,
                 'resource_type': v.resource_type,
+                'resource_name': ','.join(v.policy_names),
                 'full_name': v.full_name,
                 'rule_name': v.rule_id,
                 'rule_index': i+1,
