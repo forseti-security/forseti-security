@@ -157,7 +157,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                         'Unexpected type of dataset_policy grandparent: '
                         'got %s, want project' % dataset.parent.type
                     )
-    
+
                 proj = project.Project(
                     project_id=dataset.parent.name,
                     full_name=dataset.parent.full_name,
@@ -175,7 +175,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                     dataset_id=dataset.name,
                     full_name=policy.full_name,
                     acls=policy.data))
-    
+
                 for bq_acl in bq_acls:
                     data = BigqueryAccessControlsData(
                         parent_project=proj,
