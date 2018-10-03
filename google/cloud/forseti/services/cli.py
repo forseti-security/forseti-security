@@ -1181,8 +1181,7 @@ def get_config_path():
         str: Configuration path.
     """
 
-    default_path = os.path.join(os.getenv('HOME'), '.forseti')
-    config_path = read_env('FORSETI_SERVER_CONFIG', default_path)
+    config_path = os.path.join(os.getenv('HOME'), '.forseti')
     return config_path
 
 
