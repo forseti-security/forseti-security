@@ -128,13 +128,24 @@ class BigqueryScanner(base_scanner.BaseScanner):
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
-        with scoped_session as session:
-            bq_acl_data = []
 
+        # Use separate sessions to avoid nested concurrent queries within
+        # a single session.
+        dataset_policies = []
+        with scoped_session as session:
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
-                # dataset_policy are always in a dataset, which is always in a
-                # project.
-                dataset = policy.parent
+                dataset_policies.append(policy)
+
+        bq_acl_data = []
+        for policy in dataset_policies:
+            # dataset_policy are always in a dataset, which is always in a
+            # project.
+            with scoped_session as session:
+                project_type_name = policy.parent.parent_type_name
+                dataset = list(data_access.scanner_iter(
+                    session, 'dataset',
+                    parent_type_name=project_type_name))[0]
+
                 if dataset.type != 'dataset':
                     raise ValueError(
                         'Unexpected type of dataset_policy parent: '
@@ -172,7 +183,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
                     )
                     bq_acl_data.append(data)
 
-            return bq_acl_data
+        return bq_acl_data
 
     def run(self):
         """Runs the data collection."""
