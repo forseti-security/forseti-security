@@ -79,7 +79,8 @@ def trace_integrations(integrations=None):
         integrations (list): A list of integrations to trace.
 
     Returns:
-        list: The integrated libraries names.
+        list: The integrated libraries names. The return value is used only for
+            testing.
     """
     if integrations is None:
         integrations = DEFAULT_INTEGRATIONS
