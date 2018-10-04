@@ -22,7 +22,6 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.gcp_type import bigquery_access_controls as bq_acls
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import file_loader
@@ -39,7 +38,8 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.scanner.scanners import retention_scanner
 
 
-def GetLefecycleDict(action, age, created_before, matches_storage_class, num_newer_versions, is_live):
+def GetLefecycleDict(action, age, created_before, matches_storage_class, 
+                     num_newer_versions, is_live):
     result = {'action':{}, 'condition':{}}
     result['action']['type'] = action
     if age != None:
@@ -56,10 +56,31 @@ def GetLefecycleDict(action, age, created_before, matches_storage_class, num_new
     
 def CreateFakeBucket(projectname, bucketname):
     name = projectname+bucketname
-    full_name = 'organization/433655558669/project/'+projectname+'/bucket/'+name+'/'
+    full_name = 'organization/433655558669/project/'
+    full_name += projectname+'/bucket/'+name+'/'
     tp = 'bucket'
     parent_type_name = 'project/'+projectname
-    data = '{"defaultObjectAcl": [{"entity": "project-owners-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"}, {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity": "project-viewers-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=", "id": "'+name+'", "kind": "storage#bucket", "lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore": "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition": {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging": {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix": "'+name+'"}, "metageneration": "4", "name": "'+name+'", "owner": {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187", "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'", "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z", "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}'
+    data = """{"defaultObjectAcl": [{"entity": "project-owners-722028419187", 
+    "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": 
+    {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"}, 
+    {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind": 
+    "storage#objectAccessControl", "projectTeam": {"projectNumber": 
+    "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity": 
+    "project-viewers-722028419187", "etag": "CAQ=", "kind": 
+    "storage#objectAccessControl", "projectTeam": {"projectNumber": 
+    "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=", 
+    "id": "'+name+'", "kind": "storage#bucket", "lifecycle": {"rule": 
+    [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore": 
+    "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL", 
+    "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], 
+    "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition": 
+    {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging": 
+    {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix": 
+    "'+name+'"}, "metageneration": "4", "name": "'+name+'", "owner": 
+    {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187", 
+    "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'", 
+    "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z", 
+    "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}"""
     return (full_name, tp, parent_type_name, name, data)
 
 def _mock_gcp_resource_iter(_, resource_type):

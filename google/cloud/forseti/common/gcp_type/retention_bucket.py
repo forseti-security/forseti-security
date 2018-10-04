@@ -16,7 +16,6 @@
 import json
 
 
-# pylint: disable=too-many-instance-attributes
 class RetentionBucket(object):
     """Bucket Retention Resource.
     """
@@ -25,7 +24,8 @@ class RetentionBucket(object):
         Args:
           name (str):            The name of the bucket.
           full_name (str):       The full name of the bucket
-          lifecycleitems (list): A list of dicts that contains actions ("delete") and conditions ("age")
+          lifecycleitems (list): A list of dicts that contains actions
+              ("delete") and conditions ("age")
           raw_json (str):        The data of the bucket
         """
 
@@ -48,13 +48,14 @@ class RetentionBucket(object):
             RetentionBucket: A new RetentionBucket object.
         """
         lifecycleitems = []
-        if(bucketdata.has_key('lifecycle') and bucketdata.get('lifecycle').has_key('rule')):
+        if 'lifecycle' in bucketdata and\
+           'rule' in bucketdata.get('lifecycle'):
             lifecycleitems = bucketdata['lifecycle']['rule']
         return cls(
-            name = name,
-            full_name = full_name,
-            lifecycleitems = lifecycleitems,
-            raw_json = json.dumps(bucketdata)
+            name=name,
+            full_name=full_name,
+            lifecycleitems=lifecycleitems,
+            raw_json=json.dumps(bucketdata)
         )
 
     @staticmethod
@@ -68,7 +69,10 @@ class RetentionBucket(object):
             RetentionBucket: A new RetentionBucket object
         """
         bucketdatadict = json.loads(bucketdata.data)
-        return RetentionBucket.from_dict(bucketdatadict, bucketdata.name, bucketdata.full_name)
+        return RetentionBucket.from_dict(
+            bucketdatadict,
+            bucketdata.name,
+            bucketdata.full_name)
 
     def __hash__(self):
         """Return hash of properties.
@@ -77,4 +81,3 @@ class RetentionBucket(object):
             hash: The hash of the class properties.
         """
         return hash(self.json)
-        

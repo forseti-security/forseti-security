@@ -14,10 +14,6 @@
 
 """Scanner for the Bucket retention rules engine."""
 
-import json
-
-from google.cloud.forseti.common.gcp_type.bucket_access_controls import (
-    BucketAccessControls)
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import retention_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -64,13 +60,6 @@ class RetentionScanner(base_scanner.BaseScanner):
         Yields:
             dict: Iterator of RuleViolations as a dict per member.
         """
-
-        """
-            rttRuleViolation = namedtuple(
-        'RuleViolation',
-        ['resource_name', 'resource_type', 'full_name', 'rule_name', 'rule_index',
-         'violation_type', 'violation_describe'])
-        """
         for violation in violations:
             violation_data = {'describe': violation.violation_describe}
 
@@ -82,7 +71,7 @@ class RetentionScanner(base_scanner.BaseScanner):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
-                'resource_data': "",
+                'resource_data': '',
                 'resource_id': violation.resource_name
             }
 
@@ -99,7 +88,8 @@ class RetentionScanner(base_scanner.BaseScanner):
         """Find violations in the policies.
 
         Args:
-            bucket_lifecycle_info (list (RetentionBucket)): Bucket lifecycle to search for violations in.
+            bucket_lifecycle_info (list): Bucket lifecycle to
+                search for violations in.
 
         Returns:
             list: All violations.
@@ -125,9 +115,9 @@ class RetentionScanner(base_scanner.BaseScanner):
         scoped_session, data_access = model_manager.get(self.model_name)
         all_lifecycle_info = []
         with scoped_session as session:
-            i = 0
             for bucketinfo in data_access.scanner_iter(session, 'bucket'):
-                lifecycle_info = retention_bucket.RetentionBucket.from_json(bucketinfo)
+                lifecycle_info = retention_bucket.RetentionBucket.from_json(
+                    bucketinfo)
                 all_lifecycle_info.append(lifecycle_info)
 
         return all_lifecycle_info
