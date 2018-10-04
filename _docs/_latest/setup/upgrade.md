@@ -404,8 +404,8 @@ Forseti is updated to be usable on a non organization resource.
 {% capture upgrading_2_4_0_to_2_5_0 %}
 
 Starting v2.5, Forseti Inventory will be integrated with the Cloud 
-Asset Inventory (CAI) service if the user is deploying Forseti. CAI
-feature is supported only if the level is `organization`.
+Asset Inventory (CAI) service when Forseti is first deployed. CAI
+integration is supported only if the root resource is `organization`.
 
 Users upgrading to v2.5 from v2.4 can enable CAI by following the steps below:
 1. Update the `deploy-forseti-server.yaml` file under `deployment-templates`
@@ -429,21 +429,37 @@ is same as the location of other forseti-bucket in `deployment-templates`.
         location: {BUCKET_LOCATION}
         retention_days: 14
     ```
-1. Users can enable CAI if the level is `organization` by updating the 
+1. Users can enable CAI if the root resource is `organization` by updating the 
 `forseti_conf_server.yaml` file with the location of the newly created
-bucket.
+bucket. 
    ```
-    cai:
-        enabled: true    
-        gcs_path: gs://{FORSETI_CAI_BUCKET}
+   inventory:
+        api_quota:
+           ...
+        cai:
+            enabled: true    
+            gcs_path: gs://{FORSETI_CAI_BUCKET}
    ```
 1. Users need to update the quota by modifying the `forseti_conf_server.yaml`
 file as shown below.
     ```
-    cloudasset:
-        max_calls: 1
-        period: 1.0
+    inventory:
+        api_quota:
+            cloudasset:
+                max_calls: 1
+                period: 1.0
     ```
+1. Update the `api_quota` in`forseti_conf_server.yaml` file as shown below.
+    ```
+    inventory:
+        api_quota:
+            iam:
+                max_calls: 90
+            logging:
+                max_calls: 9
+                period: 1.0
+    ```
+
 1. Run the below command on cloud shell. It assigns `roles/storage.objectAdmin` 
 role to the service account on the bucket.
     ```
@@ -459,8 +475,10 @@ role to the service account on the bucket.
 1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running 
 this command in cloud shell - 
 `gcloud beta services enable cloudasset.googleapis.com`
+1. Add `roles/cloudasset.viewer` role to the service account.
   
 Below are the steps to upgrade from v2.4.0 to v2.5.0
+
 
 1. Open cloud shell when you are in the Forseti project on GCP.
 1. Checkout forseti with tag v2.5.0 by running the following commands:
