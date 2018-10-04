@@ -154,6 +154,8 @@ def run(inventory_index_id, progress_queue, service_config=None):
             violation_configs = notifier_configs.get('violation')
             if violation_configs:
                 if violation_configs.get('cscc').get('enabled'):
+                    is_beta = violation_configs.get('cscc').get('source_id')
+                    # alpha mode
                     gcs_path = violation_configs.get('cscc').get('gcs_path')
                     mode = violation_configs.get('cscc').get('mode')
                     organization_id = (
