@@ -7,7 +7,7 @@ grpcio
 grpcio-tools
 pyYAML
 googleapis-common-protos[grpc]
-google-cloud-cloudasset
+google-cloud-asset
 
 # Needed for CI/CD and Development.
 codecov

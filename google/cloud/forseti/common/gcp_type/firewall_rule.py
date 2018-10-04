@@ -520,16 +520,16 @@ class FirewallRule(object):
                        other.source_tags)
         target_tags = (set(self.target_tags).issubset(other.target_tags) or not
                        other.target_tags)
+        firewall_action = self.firewall_action < other.firewall_action
         source_ranges = ips_in_list(self.source_ranges, other.source_ranges)
         destination_ranges = ips_in_list(self.destination_ranges,
                                          other.destination_ranges)
 
-        # Moving firewall_actions out from here will make tests fail.
         result = (direction and
                   network and
                   source_tags and
                   target_tags and
-                  self.firewall_action < other.firewall_action and
+                  firewall_action and
                   source_ranges and
                   destination_ranges)
         return result
