@@ -83,7 +83,7 @@ class RetentionScanner(base_scanner.BaseScanner):
                 'violation_type': violation.violation_type,
                 'violation_data': violation_data,
                 'resource_data': "",
-                'resource_id': ""
+                'resource_id': violation.resource_name
             }
 
     def _output_results(self, all_violations):
