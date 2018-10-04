@@ -404,61 +404,8 @@ Forseti is updated to be usable on a non organization resource.
 {% capture upgrading_2_4_0_to_2_5_0 %}
 
 Starting v2.5, Forseti Inventory will be integrated with the Cloud 
-Asset Inventory (CAI) service if the user is deploying Forseti. CAI
-feature is supported only if the level is `organization`.
-
-Users upgrading to v2.5 from v2.4 can enable CAI by following the steps below:
-1. Update the `deploy-forseti-server.yaml` file under `deployment-templates`
-with the name and location of the newly created bucket. Make sure the location 
-is same as the location of other forseti-bucket in `deployment-templates`.
-    ```
-    imports:
-    - path: storage/bucket_cai.py
-      name: bucket_cai.py
-  
-    resources:
-    
-    # Cloud Storage
-    - name: {FORSETI_BUCKET}
-      type: bucket.py
-      properties:	
-        location: {BUCKET_LOCATION}
-    - name: {FORSETI_CAI_BUCKET}
-      type: bucket_cai.py
-      properties:
-        location: {BUCKET_LOCATION}
-        retention_days: 14
-    ```
-1. Users can enable CAI if the level is `organization` by updating the 
-`forseti_conf_server.yaml` file with the location of the newly created
-bucket.
-   ```
-    cai:
-        enabled: true    
-        gcs_path: gs://{FORSETI_CAI_BUCKET}
-   ```
-1. Users need to update the quota by modifying the `forseti_conf_server.yaml`
-file as shown below.
-    ```
-    cloudasset:
-        max_calls: 1
-        period: 1.0
-    ```
-1. Run the below command on cloud shell. It assigns `roles/storage.objectAdmin` 
-role to the service account on the bucket.
-    ```
-    gsutil iam ch serviceAccount:SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.
-    gserviceaccount.com:objectAdmin BUCKET_LOCATION
-    ```
-    Example
-    ```
-    gsutil iam ch serviceAccount:forseti-server-gcp-637723d@joeupdate210.iam.
-    gserviceaccount.com:objectAdmin gs://forseti-server-637723d
-    
-    ```
-1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running 
-this command in cloud shell - 
-`gcloud beta services enable cloudasset.googleapis.com`
+Asset Inventory (CAI) service when Forseti is first deployed. CAI
+integration is supported only if the root resource is `organization`.
   
 Below are the steps to upgrade from v2.4.0 to v2.5.0
 
@@ -474,15 +421,36 @@ Below are the steps to upgrade from v2.4.0 to v2.5.0
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
 deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
-1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-4-0.yaml` for edit.
+1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.5.0`.
+    1. Add the following lines under sections `imports` and `resources` to allow deployment template to 
+    create a new GCS bucket to store the CAI data dump. Please update `{BUCKET_LOCATION}` to point to the 
+    location of your bucket, e.g. `us-central1`.
+    ```
+    imports:
+    ...
+    - path: storage/bucket_cai.py
+      name: bucket_cai.py
+    ...
+    
+    resources:
+    ...
+    # Cloud Storage
+    ...
+    - name: forseti-cai-export
+      type: bucket_cai.py
+      properties:
+        location: {BUCKET_LOCATION}
+        retention_days: 14
+    ...
+    ```
 1. Upload file `deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
 deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
-1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-4-0.yaml`
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-5-0.yaml`
 If you see errors while running the deployment manager update command, please refer to below section 
 `Error while running deployment manager` for details on how to workaround the error.
 1. Reset the Forseti server VM instance for changes in startup script to take effect.  
@@ -490,7 +458,65 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
-Forseti is updated to be usable on a non organization resource.
+    1. Add `cai` section under `inventory`. 
+       ```
+       inventory:
+       ...
+            api_quota:
+            ...
+           
+            cai:
+                enabled: true    
+                gcs_path: gs://forseti-cai-export
+       ...
+       ```
+    1. Update the cloudasset api quota.
+        ```
+        inventory:
+        ...
+            api_quota:
+            ...
+                cloudasset:
+                    max_calls: 1
+                    period: 1.0
+            ...
+        ```
+    1. Update the IAM and logging api quota.
+        ```
+        inventory:
+        ...
+            api_quota:
+            ...
+                iam:
+                    max_calls: 90
+                logging:
+                    max_calls: 9
+                    period: 1.0
+            ...
+        ```
+1. Forseti server service account roles updates:
+   1. Assign role `roles/storage.objectAdmin` to the service account on the CAI bucket.
+    ```
+    gsutil iam ch serviceAccount:SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.
+    gserviceaccount.com:objectAdmin BUCKET_LOCATION
+    ```
+    Example:
+    ```
+    gsutil iam ch serviceAccount:forseti-server-gcp-637723d@joeupdate210.iam.
+    gserviceaccount.com:objectAdmin gs://forseti-server-637723d
+    
+    ```
+    1. Assign role `roles/cloudasset.viewer` to the service account on the organization level. 
+    ```
+    gcloud organizations add-iam-policy-binding {ORGANIZATION_ID} --member=serviceAccount:{SERVICE_ACCOUNT_NAME}@{PROJECT_ID}.iam.gserviceaccount.com --role=roles/cloudasset.viewer
+    ```
+    Example:
+    ```
+    gcloud organizations add-iam-policy-binding 1234567890 --member=serviceAccount:forseti-server-gcp-ea370bd@my_gcp_project.iam.gserviceaccount.com --role=roles/cloudasset.viewer
+    ```
+1. Forseti project API updates:
+   1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running the following command on cloud shell:  
+    `gcloud beta services enable cloudasset.googleapis.com`
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.4.0 to 2.5.0" content=upgrading_2_4_0_to_2_5_0 uid=5 %}
