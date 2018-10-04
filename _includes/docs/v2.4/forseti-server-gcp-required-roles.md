@@ -21,7 +21,6 @@
 **Granted at the service account level**
 
  * `roles/iam.serviceAccountTokenCreator` (server)
- * `roles/cloudasset.viewer` (server)
  
 **Granted at the bucket level for CAI**
 
