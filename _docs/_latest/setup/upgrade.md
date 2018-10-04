@@ -334,7 +334,7 @@ update the configuration file.
     ```
     
     **Notifier**
-    - Update the `resources` section to include `mode` and `organization_id`.
+    - Update the `resources` section to include `log_sink_violations`.
     ```
     notifier:
         ...
@@ -458,7 +458,8 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
-    1. Add `cai` section under `inventory`. 
+    **Inventory**
+    - Add `cai` section. 
        ```
        inventory:
        ...
@@ -470,7 +471,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                 gcs_path: gs://forseti-cai-export
        ...
        ```
-    1. Add the cloudasset api quota.
+    - Add the cloudasset api quota.
         ```
         inventory:
         ...
@@ -481,7 +482,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                     period: 1.0
             ...
         ```
-    1. Update the IAM and logging api quota.
+    - Update the IAM and logging api quota.
         ```
         inventory:
         ...
@@ -495,6 +496,43 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                     period: 1.0
             ...
         ```
+    **Scanner**
+    - Update the `scanners` section to include `lien`.
+    ```
+    scanner:
+    ...
+        scanners:
+            ...
+            - name: lien
+              enabled: true
+            ...
+    ```
+    
+    **Notifier**
+    - Update the `resources` section to include `lien_violations`.
+    ```
+    notifier:
+        ...
+        resources:
+            ...
+            - resource: lien_violations
+              should_notify: true
+              notifiers:
+                # Email violations
+                - name: email_violations
+                  configuration:
+                    sendgrid_api_key: {SENDGRID_API_KEY}
+                    sender: {EMAIL_SENDER}
+                    recipient: {EMAIL_RECIPIENT}
+                # Upload violations to GCS.
+                - name: gcs_violations
+                  configuration:
+                    data_format: csv
+                    # gcs_path should begin with "gs://"
+                    gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+            ...
+        ...
+    ```
 1. Forseti server service account roles updates:
    1. Assign role `roles/storage.objectAdmin` to the service account on the CAI bucket.
     ```
@@ -516,6 +554,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Forseti project API updates:
    1. Enable `Cloud Asset API` under APIs & Services from the GUI or by running the following command on cloud shell:  
     `gcloud beta services enable cloudasset.googleapis.com`
+1. Create a copy and upload [lien_rules.yaml](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/lien_rules.yaml) to `rules` directory under your Forseti server GCS bucket.
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.4.0 to 2.5.0" content=upgrading_2_4_0_to_2_5_0 uid=6 %}
