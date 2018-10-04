@@ -171,12 +171,12 @@ Learn more about [Updating a Deployment](https://cloud.google.com/deployment-man
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
-deployment_templates/deploy-forseti-server-xxxxx-2-1-0.yaml`.
-1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-1-0.yaml` for edit.
+deployment-templates/deploy-forseti-server-xxxxx-2-1-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-1-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.1.0`.
-1. Upload file `deployment_templates/deploy-forseti-server-xxxxx-2-1-0.yaml` back to the GCS bucket 
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-1-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
-`gsutil cp deployment_templates/deploy-forseti-server-xxxxx-2-1-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-1-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
 deployment_templates/deploy-forseti-server-xxxxx-2-1-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
@@ -235,8 +235,8 @@ update the configuration file.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
-deployment_templates/deploy-forseti-server-xxxxx-2-2-0.yaml`.
-1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-2-0.yaml` for edit.
+deployment-templates/deploy-forseti-server-xxxxx-2-2-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-2-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.2.0`.
     1. Add the following fields to the compute engine section inside your deployment template.  
     `region` - The region of your VM, e.g. us-central1,  
@@ -267,10 +267,10 @@ deployment_templates/deploy-forseti-server-xxxxx-2-2-0.yaml`.
         run-frequency: ...
         
         ```
-1. Upload file `deployment_templates/deploy-forseti-server-xxxxx-2-2-0.yaml` back to the GCS bucket 
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-2-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
-`gsutil cp deployment_templates/deploy-forseti-server-xxxxx-2-1-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
-deployment_templates/deploy-forseti-server-xxxxx-2-2-0.yaml`.
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-1-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+deployment-templates/deploy-forseti-server-xxxxx-2-2-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
 1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-2-0.yaml`  
@@ -299,14 +299,14 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
     1. Run command `cd forseti-security` to navigate to the forseti-security directory.
     1. Run command `git checkout tags/v2.3.0` to checkout version `v2.3.0` of Forseti Security.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
-bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
+bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment-templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
-deployment_templates/deploy-forseti-server-xxxxx-2-3-0.yaml`.
+deployment-templates/deploy-forseti-server-xxxxx-2-3-0.yaml`.
 1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-3-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.3.0`.
-1. Upload file `deployment_templates/deploy-forseti-server-xxxxx-2-3-0.yaml` back to the GCS bucket 
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-3-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
-`gsutil cp deployment_templates/deploy-forseti-server-xxxxx-2-3-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-3-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
 deployment_templates/deploy-forseti-server-xxxxx-2-3-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
@@ -379,12 +379,12 @@ update the configuration file.
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
-deployment_templates/deploy-forseti-server-xxxxx-2-4-0.yaml`.
-1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-4-0.yaml` for edit.
+deployment-templates/deploy-forseti-server-xxxxx-2-4-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-4-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.4.0`.
-1. Upload file `deployment_templates/deploy-forseti-server-xxxxx-2-4-0.yaml` back to the GCS bucket 
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-4-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
-`gsutil cp deployment_templates/deploy-forseti-server-xxxxx-2-4-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-4-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
 deployment_templates/deploy-forseti-server-xxxxx-2-4-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
@@ -420,12 +420,12 @@ Below are the steps to upgrade from v2.4.0 to v2.5.0
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
-deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
-1. Open up the deployment template `deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml` for edit.
+deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.5.0`.
-    1. Add the following lines under sections `imports` and `resources` to allow deployment template to 
-    create a new GCS bucket to store the CAI data dump. Please update `{BUCKET_LOCATION}` to point to the 
-    location of your bucket, e.g. `us-central1`.
+    1. (Server only changes) Add the following lines under sections `imports` and `resources` to allow 
+    deployment template to create a new GCS bucket to store the CAI data dump. Please update `{BUCKET_LOCATION}` 
+    to point to the location of your bucket, e.g. `us-central1`.   
     ```
     imports:
     ...
@@ -444,9 +444,9 @@ deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
         retention_days: 14
     ...
     ```
-1. Upload file `deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml` back to the GCS bucket 
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
-`gsutil cp deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
 deployment_templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
@@ -470,7 +470,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
                 gcs_path: gs://forseti-cai-export
        ...
        ```
-    1. Update the cloudasset api quota.
+    1. Add the cloudasset api quota.
         ```
         inventory:
         ...
@@ -489,6 +489,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
             ...
                 iam:
                     max_calls: 90
+                    period: 1.0
                 logging:
                     max_calls: 9
                     period: 1.0
@@ -497,20 +498,18 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Forseti server service account roles updates:
    1. Assign role `roles/storage.objectAdmin` to the service account on the CAI bucket.
     ```
-    gsutil iam ch serviceAccount:SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.
-    gserviceaccount.com:objectAdmin BUCKET_LOCATION
+    gsutil iam ch serviceAccount:SERVICE_ACCOUNT_NAME@PROJECT_ID.iam.gserviceaccount.com:objectAdmin YOUR_CAI_BUCKET
     ```
-    Example:
+    Example:  
     ```
-    gsutil iam ch serviceAccount:forseti-server-gcp-637723d@joeupdate210.iam.
-    gserviceaccount.com:objectAdmin gs://forseti-server-637723d
-    
+    gsutil iam ch serviceAccount:forseti-server-gcp-637723d@joeupdate210.iam.gserviceaccount.com:objectAdmin gs://forseti-cai-export
     ```
-    1. Assign role `roles/cloudasset.viewer` to the service account on the organization level. 
+
+    1. Assign role `roles/cloudasset.viewer` to the service account on the organization level.   
     ```
     gcloud organizations add-iam-policy-binding {ORGANIZATION_ID} --member=serviceAccount:{SERVICE_ACCOUNT_NAME}@{PROJECT_ID}.iam.gserviceaccount.com --role=roles/cloudasset.viewer
     ```
-    Example:
+    Example:  
     ```
     gcloud organizations add-iam-policy-binding 1234567890 --member=serviceAccount:forseti-server-gcp-ea370bd@my_gcp_project.iam.gserviceaccount.com --role=roles/cloudasset.viewer
     ```
@@ -519,7 +518,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
     `gcloud beta services enable cloudasset.googleapis.com`
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.4.0 to 2.5.0" content=upgrading_2_4_0_to_2_5_0 uid=5 %}
+{% include site/zippy/item.html title="Upgrading 2.4.0 to 2.5.0" content=upgrading_2_4_0_to_2_5_0 uid=6 %}
 
 {% capture deployment_manager_error %}
 
