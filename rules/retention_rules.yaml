@@ -13,48 +13,32 @@
 # limitations under the License.
 
 # rules:
-#   - name: retention of all buckets must be 365 days
+#   - name: rule on orgnization
 #     applies_to: 
 #       - bucket
 #     resource:
-#       - type: bucket
+#       - type: organization
 #         resource_ids:
-#           - bucket1
-#     minimum_retention: 365
-#     maximum_retention: 365
-
-#   - name: retention of buckets in all projects must be 365 days
+#           - "123456789012"
+#     minimum_retention: 180
+#     maximum_retention: 730
+#   - name: rule on projects
 #     applies_to: 
 #       - bucket
 #     resource:
 #       - type: project
 #         resource_ids:
-#           - project2
-#     minimum_retention: 365
+#           - some-project-name-1
+#           - some-project-name-2
+#     minimum_retention: 100
 #     maximum_retention: 365
-
-#   - name: a more complex example
-#     applies_to: 
-#       - bucket
-#     resource:
-#       # some-bucket-1 and some-bucket-2 have 365-day retention
-#       - type: bucket
-#         resource_ids:
-#           - some-bucket-1
-#           - some-bucket-2
-#       # All buckets in the these 2 projects must have 365-day retention
-#       - type: project
-#         resource_ids: [some-project-1,some-project-2]
-#     minimum_retention: 365
-#     maximum_retention: 365
-
-#   - name: retention could be either 365 or 366 days
+#   - name: rule on buckets
 #     applies_to: 
 #       - bucket
 #     resource:
 #       - type: bucket
 #         resource_ids:
-#           - some-bucket-1
-#           - some-bucket-2
-#     minimum_retention: 365
-#     maximum_retention: 366
+#           - some-bucket-name-1
+#           - some-bucket-name-2
+#     minimum_retention: 10
+#     maximum_retention: 200

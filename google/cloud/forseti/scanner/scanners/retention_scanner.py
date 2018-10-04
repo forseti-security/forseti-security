@@ -95,11 +95,11 @@ class RetentionScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
-    def _find_bucket_violations(self, all_lifecycle_info):
+    def _find_bucket_violations(self, bucket_lifecycle_info):
         """Find violations in the policies.
 
         Args:
-            bucket_acls (list): Bucket ACLs to search for violations in.
+            bucket_lifecycle_info (list (RetentionBucket)): Bucket lifecycle to search for violations in.
 
         Returns:
             list: All violations.
@@ -107,9 +107,9 @@ class RetentionScanner(base_scanner.BaseScanner):
         all_violations = []
         LOGGER.info('Finding retention violations...')
 
-        for lifecycle_info in all_lifecycle_info:
+        for single_info in bucket_lifecycle_info:
             violations = self.rules_engine.find_buckets_violations(
-                lifecycle_info)
+                single_info)
             all_violations.extend(violations)
 
         return all_violations

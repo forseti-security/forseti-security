@@ -16,69 +16,59 @@
 import json
 
 
-class BucketLifeCycleItem(object):
-    def __init__(self, actiontype, age):
-        self.actiontype = actiontype
-        self.age = age
-
-    def __str__(self):
-        return "act:"+str(self.actiontype)+";age:"+str(self.age)
-
 # pylint: disable=too-many-instance-attributes
 class RetentionBucket(object):
-    """Bucket ACL Resource.
+    """Bucket Retention Resource.
     """
-    def __init__(self, name, tp, full_name, lifecycleitems, raw_json):
-        """Initialize
-
+    def __init__(self, name, full_name, lifecycleitems, raw_json):
+        """Bucket Retention resource.
         Args:
-            raw_json (str): The raw json string for the acl.
+          name (str):            The name of the bucket.
+          full_name (str):       The full name of the bucket
+          lifecycleitems (list): A list of dicts that contains actions ("delete") and conditions ("age")
+          raw_json (str):        The data of the bucket
         """
+
         self.name = name
-        self.type = tp
+        self.type = 'bucket'
         self.full_name = full_name
         self.lifecycleitems = lifecycleitems
         self.json = raw_json
 
     @classmethod
-    def from_dict(cls, bucketdata, name, tp, full_name_):
+    def from_dict(cls, bucketdata, name, full_name):
         """Returns a new BucketAccessControls object from dict.
 
         Args:
-            project_id (str): The project id.
-            full_name (str): The full resource name and ancestory.
-            acl (dict): The Bucket ACL.
+            bucketdata (dict): The bucket data.
+            name (str): The bucket name.
+            full_name (str): The full bucket name and ancestory.
 
         Returns:
-            BucketAccessControls: A new BucketAccessControls object.
+            RetentionBucket: A new RetentionBucket object.
         """
         lifecycleitems = []
         if(bucketdata.has_key('lifecycle') and bucketdata.get('lifecycle').has_key('rule')):
             lifecycleitems = bucketdata['lifecycle']['rule']
         return cls(
             name = name,
-            tp = tp,
-            full_name = full_name_,
+            full_name = full_name,
             lifecycleitems = lifecycleitems,
             raw_json = json.dumps(bucketdata)
         )
 
     @staticmethod
     def from_json(bucketdata):
-        """Yields a new BucketAccessControls object from for each acl.
+        """Return a new RetentionBucket object from for bucket data.
 
         Args:
-            project_id (str): the project id.
-            full_name (str): The full resource name and ancestory.
-            acls (str): The json bucket acl list.
+            bucketdata (Resource): The bucket resource.
 
-        Yields:
-            BucketAccessControls: A new BucketAccessControls object for
-                each acl in acls.
+        Returns:
+            RetentionBucket: A new RetentionBucket object
         """
         bucketdatadict = json.loads(bucketdata.data)
-        #bucketdata = json.loads(bucketdata)
-        return RetentionBucket.from_dict(bucketdatadict, bucketdata.name, bucketdata.type, bucketdata.full_name)
+        return RetentionBucket.from_dict(bucketdatadict, bucketdata.name, bucketdata.full_name)
 
     def __hash__(self):
         """Return hash of properties.
@@ -87,9 +77,4 @@ class RetentionBucket(object):
             hash: The hash of the class properties.
         """
         return hash(self.json)
-
-    def __str__(self):
-        strret = str(self.name)
-        for lifecycleitem in self.lifecycleitems:
-            strret = strret + " --" + str(lifecycleitem)
-        return strret
+        
