@@ -126,6 +126,7 @@ class Resource(object):
             name (str): The resource unique name,
                 e.g. "{resource type}/{id}".
             display_name (str): The resource display name.
+            locations (List[str]): Locations the resource resides in.
             parent (Resource): The parent Resource object.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 Resource.
@@ -233,6 +234,11 @@ class Resource(object):
 
     @property
     def locations(self):
+        """Locations the resource resides in.
+
+        Returns:
+            List[str]: Locations the resource resides in.
+        """
         return self._locations
 
     @property

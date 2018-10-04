@@ -59,9 +59,9 @@ class LocationScanner(base_scanner.BaseScanner):
 
     def _retrieve(self):
         """Retrieves the data for scanner.
+
         Returns:
-            Dict[Resource, List[lien]]: mapping of a resource to the liens it
-                contains.
+            List[Resource]: resources to check for violations.
         Raises:
             ValueError: if resources have an unexpected type.
         """
@@ -91,10 +91,11 @@ class LocationScanner(base_scanner.BaseScanner):
         return resources
 
     def _find_violations(self, resources):
-        """Find violations in liens.
+        """Find location violations in the given resources.
+
         Args:
-            parent_resource_to_liens (Dict[Resource, List[lien]]): mapping of
-                a resource to the liens it contains.
+            resources (List[resource]): resources to check for violations in.
+
         Returns:
             List[RuleViolation]: A list of all violations.
         """
@@ -109,6 +110,7 @@ class LocationScanner(base_scanner.BaseScanner):
 
     def _output_results(self, all_violations):
         """Output results.
+
         Args:
             all_violations (List[RuleViolation]): A list of lien violations.
         """
@@ -118,8 +120,10 @@ class LocationScanner(base_scanner.BaseScanner):
     @staticmethod
     def _flatten_violations(violations):
         """Flatten violations into a dict.
+
         Args:
             violations (List[RuleViolation]): The violations to flatten.
+
         Yields:
             Iterator[dict]: flattened violations for each violation.
         """

@@ -72,8 +72,7 @@ class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
         """Determine whether Big Query datasets violate rules.
 
         Args:
-            parent_resource (Resource): parent resource the lien belongs to.
-            liens (List[Lien]): liens to find violations for.
+            resource (Resource): resource to check locations for.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -200,11 +199,10 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
         """Find lien violations in the rule book.
 
         Args:
-            parent_resource (Resource): The GCP resource associated with the
-                liens. This is where we start looking for rule violations and
+            resource (Resource): The GCP resource to check locations for.
+                This is where we start looking for rule violations and
                 we move up the resource hierarchy (if permitted by the
                 resource's "inherit_from_parents" property).
-            liens (List[Lien]): The liens to look for violations.
 
         Yields:
             RuleViolation: lien rule violations.
@@ -212,7 +210,6 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
         resource_ancestors = relationship.find_ancestors(
             resource, resource.full_name)
-
 
         rules = []
         for res in resource_ancestors:
@@ -243,29 +240,31 @@ class Rule(object):
         Args:
             name (str): Name of the loaded rule.
             index (int): The index of the rule from the rule definitions.
-            restrictions (List[string]): The restrictions this rule enforces
-              on liens.
+            mode (Mode): The mode of this rule.
+            applies_to (List[str]): list of resource types that the rule applies
+                to.
+            location_patterns (List[str]): Forseti-style patterns for locations.
         """
         self.name = name
         self.index = index
         self.mode = mode
         self.applies_to = applies_to
-        self.location_re = re.compile('|'.join([
+
+        loc_re_str = '|'.join([
             regular_exp.escape_and_globify(loc_wildcard)
             for loc_wildcard in location_patterns
-        ]))
+        ])
+        self.location_re = re.compile(loc_re_str)
 
 
     def find_violations(self, resource):
         """Find violations for this rule against the given resource.
 
         Args:
-            parent_resource (Resource): The GCP resource associated with the
-                liens.
-            restrictions (Iterable[str]): The restrictions to check.
+            resource (Resource): The resource to check for violations.
 
         Yields:
-            RuleViolation: lien rule violation.
+            RuleViolation: location rule violation.
         """
         if resource.type not in self.applies_to:
             return

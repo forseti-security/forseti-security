@@ -50,6 +50,7 @@ class Bucket(resource.Resource):
             name (str): The bucket's unique GCP name, with the
                 format "buckets/{id}".
             display_name (str): The bucket's display name.
+            locations (List[str]): Locations this bucket resides in.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
@@ -67,6 +68,15 @@ class Bucket(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, json_string):
+        """Create a bucket from a JSON string.
+
+        Args:
+            parent (Resource): resource this bucket belongs to.
+            json_string(str): JSON string of a bucket GCP API response.
+
+        Returns:
+            Bucket: bucket resource.
+        """
         bucket_dict = json.loads(json_string)
 
         bucket_id = bucket_dict['id']
