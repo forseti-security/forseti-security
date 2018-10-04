@@ -15,7 +15,6 @@
 """Forseti Server utilities."""
 
 from itertools import izip
-import imp
 import logging
 
 
@@ -259,20 +258,3 @@ def get_resource_id_from_type_name(type_name):
     if '/' in type_name:
         return type_name.split('/')[-1]
     return type_name
-
-
-def is_opencensus_enabled():
-    """Check if `opencensus` instrumentation library can be imported.
-
-    Returns:
-        bool: True if check pass, False otherwise.
-    """
-    # Check if OpenCensus exist on system
-    try:
-        imp.find_module('opencensus')
-        return True
-    except ImportError:
-        logging.warning(
-            'Cannot enable tracing because the `opencensus` library was not '
-            'found. Run `pip install .[tracing]` to install tracing libraries.')
-        return False

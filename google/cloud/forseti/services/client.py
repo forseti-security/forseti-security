@@ -18,6 +18,8 @@ import binascii
 import os
 import grpc
 
+from google.cloud.forseti.common.opencensus import tracing
+
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory_pb2
@@ -30,8 +32,8 @@ from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 from google.cloud.forseti.services.server_config import server_pb2
 from google.cloud.forseti.services.server_config import server_pb2_grpc
-from google.cloud.forseti.services.utils import is_opencensus_enabled
 from google.cloud.forseti.services.utils import oneof
+
 
 # pylint: disable=too-many-instance-attributes
 
@@ -80,10 +82,9 @@ def create_interceptors(endpoint):
         tuple: A tuple of interceptors.
     """
     interceptors = []
-    if is_opencensus_enabled():
+    if tracing.OPENCENSUS_ENABLED:
         # It's okay for this to be enabled on the client, even if the tracing
         # flag is disabled on the server.
-        from google.cloud.forseti.common.opencensus import tracing
         interceptors.append(tracing.create_client_interceptor(endpoint))
     return tuple(interceptors)
 

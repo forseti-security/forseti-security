@@ -14,20 +14,27 @@
 
 """Forseti OpenCensus gRPC tracing setup."""
 
-from opencensus.trace import config_integration
-from opencensus.trace import execution_context
-from opencensus.trace.exporters import file_exporter
-from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.exporters.transports import background_thread
-from opencensus.trace.ext.grpc import client_interceptor
-from opencensus.trace.ext.grpc import server_interceptor
-from opencensus.trace.samplers import always_on
-from opencensus.trace.tracer import Tracer
-
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
+
+try:
+    from opencensus.trace import config_integration
+    from opencensus.trace import execution_context
+    from opencensus.trace.exporters import file_exporter
+    from opencensus.trace.exporters import stackdriver_exporter
+    from opencensus.trace.exporters.transports import background_thread
+    from opencensus.trace.ext.grpc import client_interceptor
+    from opencensus.trace.ext.grpc import server_interceptor
+    from opencensus.trace.samplers import always_on
+    from opencensus.trace.tracer import Tracer
+    OPENCENSUS_ENABLED = True
+except ImportError:
+    LOGGER.warning(
+        'Cannot enable tracing because the `opencensus` library was not '
+        'found. Run `pip install .[tracing]` to install tracing libraries.')
+    OPENCENSUS_ENABLED = False
 
 
 def create_client_interceptor(endpoint):
@@ -84,7 +91,7 @@ def trace_integrations(integrations=None):
     return integrated_libraries
 
 
-def create_exporter(transport=background_thread.BackgroundThreadTransport):
+def create_exporter(transport=None):
     """Create an exporter for traces.
 
     The default exporter is the StackdriverExporter. If it fails to initialize,
@@ -98,6 +105,9 @@ def create_exporter(transport=background_thread.BackgroundThreadTransport):
         StackdriverExporter: A Stackdriver exporter.
         FileExporter: A file exporter. Default path: 'opencensus-traces.json'.
     """
+    if transport is None:
+        transport = background_thread.BackgroundThreadTransport
+
     try:
         exporter = stackdriver_exporter.StackdriverExporter(transport=transport)
         LOGGER.info(

@@ -23,8 +23,8 @@ import time
 from concurrent import futures
 import grpc
 
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.services.utils import is_opencensus_enabled
 
 from google.cloud.forseti.services.base.config import ServiceConfig
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
@@ -33,6 +33,7 @@ from google.cloud.forseti.services.model.service import GrpcModellerFactory
 from google.cloud.forseti.services.notifier.service import GrpcNotifierFactory
 from google.cloud.forseti.services.scanner.service import GrpcScannerFactory
 from google.cloud.forseti.services.server_config.service import GrpcServerConfigFactory
+
 
 LOGGER = logger.get_logger(__name__)
 
@@ -124,8 +125,7 @@ def create_interceptors(enable_tracing):
         tuple: A tuple of gRPC interceptors.
     """
     interceptors = []
-    if enable_tracing and is_opencensus_enabled():
-        from google.cloud.forseti.common.opencensus import tracing
+    if enable_tracing and tracing.OPENCENSUS_ENABLED:
         interceptors.append(tracing.create_server_interceptor())
         LOGGER.info('Tracing interceptor set up.')
     return tuple(interceptors)
