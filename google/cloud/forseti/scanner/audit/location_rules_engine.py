@@ -38,6 +38,7 @@ RuleViolation = collections.namedtuple(
      'rule_name', 'violation_type', 'violation_data', 'resource_data']
 )
 
+
 class Mode(enum.Enum):
     """Rule modes."""
     WHITELIST = 'whitelist'
@@ -149,7 +150,6 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
                     'Invalid resource type "{}" in rule {}'.format(
                         resource_type, rule_index))
 
-
             for resource_id in resource_ids:
                 resource = resource_util.create_resource(
                     resource_id=resource_id,
@@ -187,7 +187,6 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))
-
 
         return Rule(name=rule_def.get('name'),
                     index=rule_index,
@@ -255,7 +254,6 @@ class Rule(object):
             for loc_wildcard in location_patterns
         ])
         self.location_re = re.compile(loc_re_str)
-
 
     def find_violations(self, resource):
         """Find violations for this rule against the given resource.
