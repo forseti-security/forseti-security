@@ -52,170 +52,170 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
-    def iter_compute_backendservices(self, project_number):
-        """Iterate Backend services from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of backend service.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.BackendService',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for backendservice in resources:
-            yield backendservice
-
-    def iter_compute_disks(self, project_number):
-        """Iterate Compute Engine disks from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Disk.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Disk',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for disk in resources:
-            yield disk
-
-    def iter_compute_firewalls(self, project_number):
-        """Iterate Compute Engine Firewalls from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Engine Firewall.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Firewall',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for rule in resources:
-            yield rule
-
-    def iter_compute_images(self, project_number):
-        """Iterate Images from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of image resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Image',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for image in resources:
-            yield image
-
-    # Use live API because CAI does not yet have all instance groups.
-    # def iter_compute_instancegroups(self, project_number):
-
-    def iter_compute_instances(self, project_number):
-        """Iterate compute engine instance from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Engine Instance resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Instance',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for instance in resources:
-            yield instance
-
-    def iter_compute_instancetemplates(self, project_number):
-        """Iterate Instance Templates from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of instance template resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.InstanceTemplate',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for instancetemplate in resources:
-            yield instancetemplate
-
-    def iter_compute_networks(self, project_number):
-        """Iterate Networks from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of network resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Network',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for network in resources:
-            yield network
-
-    def iter_compute_snapshots(self, project_number):
-        """Iterate Compute Engine snapshots from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of Compute Snapshots.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Snapshot',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for snapshot in resources:
-            yield snapshot
-
-    def iter_compute_subnetworks(self, project_number):
-        """Iterate Subnetworks from Cloud Asset data.
-
-        Args:
-            project_number (str): id of the project to query.
-
-        Yields:
-            dict: Generator of subnetwork resources.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.compute.Subnetwork',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for subnetwork in resources:
-            yield subnetwork
+    # def iter_compute_backendservices(self, project_number):
+    #     """Iterate Backend services from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of backend service.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.BackendService',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for backendservice in resources:
+    #         yield backendservice
+    #
+    # def iter_compute_disks(self, project_number):
+    #     """Iterate Compute Engine disks from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Compute Disk.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Disk',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for disk in resources:
+    #         yield disk
+    #
+    # def iter_compute_firewalls(self, project_number):
+    #     """Iterate Compute Engine Firewalls from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Compute Engine Firewall.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Firewall',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for rule in resources:
+    #         yield rule
+    #
+    # def iter_compute_images(self, project_number):
+    #     """Iterate Images from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of image resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Image',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for image in resources:
+    #         yield image
+    #
+    # # Use live API because CAI does not yet have all instance groups.
+    # # def iter_compute_instancegroups(self, project_number):
+    #
+    # def iter_compute_instances(self, project_number):
+    #     """Iterate compute engine instance from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Compute Engine Instance resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Instance',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for instance in resources:
+    #         yield instance
+    #
+    # def iter_compute_instancetemplates(self, project_number):
+    #     """Iterate Instance Templates from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of instance template resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.InstanceTemplate',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for instancetemplate in resources:
+    #         yield instancetemplate
+    #
+    # def iter_compute_networks(self, project_number):
+    #     """Iterate Networks from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of network resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Network',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for network in resources:
+    #         yield network
+    #
+    # def iter_compute_snapshots(self, project_number):
+    #     """Iterate Compute Engine snapshots from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of Compute Snapshots.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Snapshot',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for snapshot in resources:
+    #         yield snapshot
+    #
+    # def iter_compute_subnetworks(self, project_number):
+    #     """Iterate Subnetworks from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): id of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of subnetwork resources.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.compute.Subnetwork',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for subnetwork in resources:
+    #         yield subnetwork
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.
