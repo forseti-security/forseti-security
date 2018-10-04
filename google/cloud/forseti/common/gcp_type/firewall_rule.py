@@ -612,7 +612,7 @@ class FirewallRule(object):
         source_ranges = self.source_ranges == other.source_ranges
         destination_ranges = self.destination_ranges == other.destination_ranges
         firewall_action = (
-            self.firewall_action. is_equivalent(other.firewall_action))
+            self.firewall_action.is_equivalent(other.firewall_action))
         result = (direction and
                   network and
                   source_tags and
