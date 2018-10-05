@@ -243,7 +243,7 @@ deployment-templates/deploy-forseti-server-xxxxx-2-2-0.yaml`.
     `vpc-host-project-id` - VPC host project ID, by default if you are not using VPC, 
     you can default it to your Forseti project ID,  
     `vpc-host-network` - VPC host network, by default if you are not using VPC, you can default it to `default`,  
-    `vpc-host-subnetwork`- VPC host subnetwork, by default if you are not using VPC, you can default it to `default`  
+    `vpc-host-subnetwork`- VPC host subnetwork, by default if you are not using VPC, you can default it to `default` . 
         ```
         
         # Compute Engine
@@ -425,13 +425,13 @@ deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
     - Update the `forseti-version` inside the deployment template to `tags/v2.5.0`.
     - (Server only changes) Add the following lines under sections `imports` and `resources` to allow 
     deployment template to create a new GCS bucket to store the CAI data dump. Please update `{BUCKET_LOCATION}` 
-    to point to the location of your bucket, e.g. `us-central1`.  
+    to point to the location of your bucket, e.g. `us-central1`.   
         ```
+        
         imports:
         ...
         - path: storage/bucket_cai.py
           name: bucket_cai.py
-        ...
         
         resources:
         ...
@@ -442,7 +442,7 @@ deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
           properties:
             location: {BUCKET_LOCATION}
             retention_days: 14
-        ...
+            
         ```
 1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
