@@ -1,0 +1,25 @@
+google.cloud.forseti.services.model package
+===========================================
+
+.. automodule:: google.cloud.forseti.services.model
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    google.cloud.forseti.services.model.importer
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.services.model.model_pb2
+   google.cloud.forseti.services.model.model_pb2_grpc
+   google.cloud.forseti.services.model.modeller
+   google.cloud.forseti.services.model.service
+

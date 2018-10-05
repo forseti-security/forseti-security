@@ -1,0 +1,102 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.parser module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.util.parser">
+<span id="google-cloud-forseti-common-util-parser-module"></span><h1>google.cloud.forseti.common.util.parser module<a class="headerlink" href="#module-google.cloud.forseti.common.util.parser" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions for parsing various data.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.parser.format_timestamp">
+<code class="descname">format_timestamp</code><span class="sig-paren">(</span><em>timestamp_str</em>, <em>datetime_formatter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/parser.html#format_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.parser.format_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse and stringify a timestamp to a specified format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>timestamp_str</strong> (<em>str</em>) – A timestamp.</li>
+<li><strong>datetime_formatter</strong> (<em>str</em>) – A format string.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The formatted, stringified timestamp.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.parser.json_stringify">
+<code class="descname">json_stringify</code><span class="sig-paren">(</span><em>obj_to_jsonify</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/parser.html#json_stringify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.parser.json_stringify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a python object to json string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>obj_to_jsonify</strong> (<em>dict</em>) – The object to json stringify.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The json-stringified dict.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.parser.json_unstringify">
+<code class="descname">json_unstringify</code><span class="sig-paren">(</span><em>json_to_objify</em>, <em>default=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/parser.html#json_unstringify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.parser.json_unstringify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a json string to a python object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>json_to_objify</strong> (<em>str</em>) – The json string.</li>
+<li><strong>default</strong> (<em>object</em>) – The default value if no json string is passed in.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The un-stringified object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.parser.parse_member_info">
+<code class="descname">parse_member_info</code><span class="sig-paren">(</span><em>member</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/parser.html#parse_member_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.parser.parse_member_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse out the components of an IAM policy binding member.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>member</strong> (<em>str</em>) – An IAM policy member, of the format
+“{membertype}:{email address}”.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The member type.
+str: The name portion of the member.
+str: The domain of the member.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
