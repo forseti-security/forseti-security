@@ -22,6 +22,3 @@
 
  * `roles/iam.serviceAccountTokenCreator` (server)
  
-**Granted at the bucket level for CAI**
-
- * `roles/storage.objectAdmin` (server)

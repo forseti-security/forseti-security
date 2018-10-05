@@ -31,7 +31,7 @@ You will also need to edit, at a minimum, the following variables in the config 
   forever.
   * **Valid values**: Integer.
   * **Example values**: `-1`, `5`, `10`.
-  
+
 * `cai`
   * **Description**: Cloud Asset Inventory (CAI) can be enabled if the level
    is `organization` by providing values for the attributes below.
@@ -44,4 +44,3 @@ You will also need to edit, at a minimum, the following variables in the config 
     CAI exports.
     * **Valid values**: Location of the bucket.
     * **Example values**: gs://my_cai_export_bucket
-

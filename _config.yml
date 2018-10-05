@@ -293,7 +293,8 @@ defaults:
   - scope:
       path: _docs/v2.4/faq
     values:
-      category: FAQ (v2.4)  - scope:
+      category: FAQ (v2.4)
+  - scope:
       path: _docs/v2.5
     values:
       category: Overview (v2.5)
