@@ -32,6 +32,10 @@ from google.cloud.forseti.common.gcp_api import stackdriver_logging
 from google.cloud.forseti.common.gcp_api import storage
 
 
+class ResourceNotSupported(Exception):
+    """Exception raised for resources not supported by the API client."""
+
+
 class ApiClient(object):
     """The gcp api client interface"""
     __metaclass__ = abc.ABCMeta
@@ -98,6 +102,22 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_autoscalers(self, project_number):
+        """Iterate Autoscalers from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_backendbuckets(self, project_number):
+        """Iterate Backend buckets from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_backendservices(self, project_number):
         """Iterate Backend services from GCP API.
 
@@ -124,6 +144,30 @@ class ApiClient(object):
     @abc.abstractmethod
     def iter_compute_forwardingrules(self, project_number):
         """Iterate Forwarding Rules from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_healthchecks(self, project_number):
+        """Iterate Health checks from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_httphealthchecks(self, project_number):
+        """Iterate HTTP Health checks from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_httpshealthchecks(self, project_number):
+        """Iterate HTTPS Health checks from GCP API.
 
         Args:
             project_number (str): id of the project to query.
@@ -170,6 +214,14 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_licenses(self, project_number):
+        """Iterate Licenses from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_networks(self, project_number):
         """Iterate Networks from GCP API.
 
@@ -186,8 +238,72 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_sslcertificates(self, project_number):
+        """Iterate SSL Certificates from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_subnetworks(self, project_number):
         """Iterate Subnetworks from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_targethttpproxies(self, project_number):
+        """Iterate Target HTTP proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_targethttpsproxies(self, project_number):
+        """Iterate Target HTTPS proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_targetinstances(self, project_number):
+        """Iterate Target Instances from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_targetpools(self, project_number):
+        """Iterate Target Pools from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_targetsslproxies(self, project_number):
+        """Iterate Target SSL proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_targettcpproxies(self, project_number):
+        """Iterate Target TCP proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_urlmaps(self, project_number):
+        """Iterate URL maps from GCP API.
 
         Args:
             project_number (str): id of the project to query.
@@ -283,6 +399,23 @@ class ApiClient(object):
         Args:
             parent_type (str): type of the parent, "folder" or "organization".
             parent_id (str): id of the parent of the folder.
+        """
+
+    @abc.abstractmethod
+    def iter_dns_managedzones(self, project_number):
+        """Iterate CloudDNS Managed Zones from GCP API.
+
+        Args:
+            project_number (str): id of the parent project of the managed zone.
+        """
+
+
+    @abc.abstractmethod
+    def iter_dns_policies(self, project_number):
+        """Iterate CloudDNS Policies from GCP API.
+
+        Args:
+            project_number (str): id of the parent project of the policy.
         """
 
     @abc.abstractmethod
@@ -396,6 +529,22 @@ class ApiClient(object):
 
         Args:
             project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_spanner_instances(self, project_number):
+        """Iterate Spanner Instances from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_spanner_databases(self, parent):
+        """Iterate Spanner Databases from GCP API.
+
+        Args:
+            parent (str): parent spanner instance to query.
         """
 
     @abc.abstractmethod
@@ -719,6 +868,30 @@ class ApiClientImpl(ApiClient):
         """
         return self.compute.get_project(project_number)
 
+    def iter_compute_autoscalers(self, project_number):
+        """Iterate Autoscalers from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Autoscalers are not supported by '
+                                   'this API client')
+
+    def iter_compute_backendbuckets(self, project_number):
+        """Iterate Backend buckets from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute BackendBuckets are not supported '
+                                   'by this API client')
+
     @create_lazy('compute', _create_compute)
     def iter_compute_backendservices(self, project_number):
         """Iterate Backend services from GCP API.
@@ -770,6 +943,42 @@ class ApiClientImpl(ApiClient):
         """
         for forwardingrule in self.compute.get_forwarding_rules(project_number):
             yield forwardingrule
+
+    def iter_compute_healthchecks(self, project_number):
+        """Iterate Health checks from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute HealthChecks are not supported by '
+                                   'this API client')
+
+    def iter_compute_httphealthchecks(self, project_number):
+        """Iterate HTTP Health checks from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute HttpHealthChecks are not supported '
+                                   'by this API client')
+
+    def iter_compute_httpshealthchecks(self, project_number):
+        """Iterate HTTPS Health checks from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute HttpsHealthChecks are not '
+                                   'supported by this API client')
 
     @create_lazy('compute', _create_compute)
     def iter_compute_ig_managers(self, project_number):
@@ -838,6 +1047,18 @@ class ApiClientImpl(ApiClient):
                 project_number):
             yield instancetemplate
 
+    def iter_compute_licenses(self, project_number):
+        """Iterate Licenses from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Licenses are not supported by '
+                                   'this API client')
+
     @create_lazy('compute', _create_compute)
     def iter_compute_networks(self, project_number):
         """Iterate Networks from GCP API.
@@ -864,6 +1085,18 @@ class ApiClientImpl(ApiClient):
         for snapshot in self.compute.get_snapshots(project_number):
             yield snapshot
 
+    def iter_compute_sslcertificates(self, project_number):
+        """Iterate SSL Certificates from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute SslCertificates are not supported '
+                                   'by this API client')
+
     @create_lazy('compute', _create_compute)
     def iter_compute_subnetworks(self, project_number):
         """Iterate Subnetworks from GCP API.
@@ -876,6 +1109,90 @@ class ApiClientImpl(ApiClient):
         """
         for subnetwork in self.compute.get_subnetworks(project_number):
             yield subnetwork
+
+    def iter_compute_targethttpproxies(self, project_number):
+        """Iterate Target HTTP proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetHttpProxies are not '
+                                   'supported by this API client')
+
+    def iter_compute_targethttpsproxies(self, project_number):
+        """Iterate Target HTTPS proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetHttpsProxies are not '
+                                   'supported by this API client')
+
+    def iter_compute_targetinstances(self, project_number):
+        """Iterate Target Instances from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetInstances are not '
+                                   'supported by this API client')
+
+    def iter_compute_targetpools(self, project_number):
+        """Iterate Target Pools from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetPools are not '
+                                   'supported by this API client')
+
+    def iter_compute_targetsslproxies(self, project_number):
+        """Iterate Target SSL proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetSslProxies are not '
+                                   'supported by this API client')
+
+    def iter_compute_targettcpproxies(self, project_number):
+        """Iterate Target TCP proxies from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute TargetTcpProxies are not '
+                                   'supported by this API client')
+
+    def iter_compute_urlmaps(self, project_number):
+        """Iterate URL maps from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute UrlMaps are not supported by this '
+                                   'API client')
 
     @create_lazy('container', _create_container)
     def fetch_container_serviceconfig(self, project_id, zone=None,
@@ -1026,6 +1343,31 @@ class ApiClientImpl(ApiClient):
                                           parent_type=parent_type):
             for project in page.get('projects', []):
                 yield project
+
+
+    def iter_dns_managedzones(self, project_number):
+        """Iterate CloudDNS Managed Zones from GCP API.
+
+        Args:
+            project_number (str): id of the parent project of the managed zone.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Cloud DNS Managed Zones are not supported '
+                                   'by this API client')
+
+    def iter_dns_policies(self, project_number):
+        """Iterate CloudDNS Policies from GCP API.
+
+        Args:
+            project_number (str): id of the parent project of the policy.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Cloud DNS Policies are not supported by '
+                                   'this API client')
 
     @create_lazy('appengine', _create_appengine)
     def fetch_gae_app(self, project_id):
@@ -1209,6 +1551,30 @@ class ApiClientImpl(ApiClient):
             list: A list of ManagedService resource dicts.
         """
         return self.servicemanagement.get_enabled_apis(project_number)
+
+    def iter_spanner_instances(self, project_number):
+        """Iterate Spanner Instances from GCP API.
+
+        Args:
+            project_number (str): id of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Spanner Instances are not supported by '
+                                   'this API client')
+
+    def iter_spanner_databases(self, parent):
+        """Iterate Spanner Databases from GCP API.
+
+        Args:
+            parent (str): parent spanner instance to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Spanner Databases are not supported by '
+                                   'this API client')
 
     @create_lazy('stackdriver_logging', _create_stackdriver_logging)
     def iter_stackdriver_billing_account_sinks(self, acct_id):
