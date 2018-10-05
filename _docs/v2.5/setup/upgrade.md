@@ -425,25 +425,26 @@ deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml`.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.5.0`.
     1. (Server only changes) Add the following lines under sections `imports` and `resources` to allow 
     deployment template to create a new GCS bucket to store the CAI data dump. Please update `{BUCKET_LOCATION}` 
-    to point to the location of your bucket, e.g. `us-central1`.   
-    ```
-    imports:
-    ...
-    - path: storage/bucket_cai.py
-      name: bucket_cai.py
-    ...
-    
-    resources:
-    ...
-    # Cloud Storage
-    ...
-    - name: forseti-cai-export
-      type: bucket_cai.py
-      properties:
-        location: {BUCKET_LOCATION}
-        retention_days: 14
-    ...
-    ```
+    to point to the location of your bucket, e.g. `us-central1`.  
+
+        ```yaml
+        imports:
+        ...
+        - path: storage/bucket_cai.py
+          name: bucket_cai.py
+        ...
+        
+        resources:
+        ...
+        # Cloud Storage
+        ...
+        - name: forseti-cai-export
+          type: bucket_cai.py
+          properties:
+            location: {BUCKET_LOCATION}
+            retention_days: 14
+        ...
+        ```
 1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-5-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
