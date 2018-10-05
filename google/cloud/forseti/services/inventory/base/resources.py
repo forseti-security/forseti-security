@@ -1111,7 +1111,6 @@ class SpannerInstance(resource_class_factory('spanner_instance', 'name',
     """The Resource implementation for Spanner Instance."""
 
 
-
 # Cloud storage resource classes
 class StorageBucket(resource_class_factory('bucket', 'id')):
     """The Resource implementation for Storage Bucket."""
@@ -1220,6 +1219,10 @@ def resource_iter_class_factory(api_method_name,
         class: A new class object.
     """
 
+    def always_true():
+        """Helper function that always returns True."""
+        return True
+
     class ResourceIteratorSubclass(ResourceIterator):
         """Subclass of ResourceIterator."""
 
@@ -1235,7 +1238,7 @@ def resource_iter_class_factory(api_method_name,
                     self.resource, resource_validation_method_name)
             else:
                 # Always return True if no check is configured.
-                resource_validation_check = lambda: True
+                resource_validation_check = always_true
 
             if resource_validation_check():
                 try:

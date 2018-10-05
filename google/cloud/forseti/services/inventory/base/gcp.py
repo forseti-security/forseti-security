@@ -409,7 +409,6 @@ class ApiClient(object):
             project_number (str): id of the parent project of the managed zone.
         """
 
-
     @abc.abstractmethod
     def iter_dns_policies(self, project_number):
         """Iterate CloudDNS Policies from GCP API.
@@ -1343,7 +1342,6 @@ class ApiClientImpl(ApiClient):
                                           parent_type=parent_type):
             for project in page.get('projects', []):
                 yield project
-
 
     def iter_dns_managedzones(self, project_number):
         """Iterate CloudDNS Managed Zones from GCP API.
