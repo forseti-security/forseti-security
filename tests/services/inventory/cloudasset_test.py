@@ -18,6 +18,8 @@ import unittest
 from googleapiclient import errors
 import httplib2
 import mock
+import google.auth
+from google.oauth2 import credentials
 from sqlalchemy.orm import sessionmaker
 
 from tests.services.util.db import create_test_engine_with_file
@@ -94,6 +96,11 @@ class InventoryCloudAssetTest(ForsetiTestCase):
             file_loader,
             'copy_file_from_gcs',
             autospec=True).start()
+        self.mock_auth = mock.patch.object(
+            google.auth,
+            'default',
+            return_value=(mock.Mock(
+                spec_set=credentials.Credentials), 'test-project')).start()
 
     def tearDown(self):
         """tearDown."""
@@ -235,5 +242,3 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
