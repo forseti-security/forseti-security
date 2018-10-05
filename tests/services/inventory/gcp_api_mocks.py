@@ -42,6 +42,7 @@ def mock_gcp(has_org_access=True):
     ad_patcher = _mock_admin_directory()
     appengine_patcher = _mock_appengine()
     bq_patcher = _mock_bigquery()
+    cloudasset_patcher = _mock_cloudasset()
     cloudbilling_patcher = _mock_cloudbilling()
     cloudsql_patcher = _mock_cloudsql()
     container_patcher = _mock_container()
@@ -57,6 +58,7 @@ def mock_gcp(has_org_access=True):
         ad_patcher.stop()
         appengine_patcher.stop()
         bq_patcher.stop()
+        cloudasset_patcher.stop()
         cloudbilling_patcher.stop()
         cloudsql_patcher.stop()
         container_patcher.stop()
@@ -141,10 +143,25 @@ def _mock_bigquery():
     bq_patcher = mock.patch(
         MODULE_PATH + 'bigquery.BigQueryClient', spec=True)
     mock_bq = bq_patcher.start().return_value
-    mock_bq.get_datasets_for_projectid = _mock_bq_get_datasets_for_projectid
-    mock_bq.get_dataset_access = _mock_bq_get_dataset_access
+    mock_bq.get_datasets_for_projectid.side_effect = (
+        _mock_bq_get_datasets_for_projectid)
+    mock_bq.get_dataset_access.side_effect = _mock_bq_get_dataset_access
 
     return bq_patcher
+
+
+def _mock_cloudasset():
+    """Mock cloudasset client."""
+
+    def _mock_ca_export_assets(*unused_args, **unused_kwargs):
+        return {'done': True}
+
+    ca_patcher = mock.patch(
+        MODULE_PATH + 'cloudasset.CloudAssetClient', spec=True)
+    mock_ca = ca_patcher.start().return_value
+    mock_ca.export_assets.side_effect = _mock_ca_export_assets
+
+    return ca_patcher
 
 
 def _mock_cloudbilling():
@@ -237,7 +254,7 @@ def _mock_crm(has_org_access):
         return results.CRM_GET_IAM_POLICIES[folderid]
 
     def _mock_crm_get_project_liens(projectid):
-        return results.CRM_GET_PROJECT_LIENS[projectid]
+        return results.CRM_GET_PROJECT_LIENS.get(projectid, [])
 
     def _mock_permission_denied(parentid):
         response = httplib2.Response(

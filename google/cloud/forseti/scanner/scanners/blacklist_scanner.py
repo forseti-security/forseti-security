@@ -66,6 +66,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': 'instance_network_interface',
                 'full_name': violation.full_name,
+                'resource_name': violation.resource_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,

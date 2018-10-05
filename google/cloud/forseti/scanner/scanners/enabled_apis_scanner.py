@@ -72,6 +72,7 @@ class EnabledApisScanner(base_scanner.BaseScanner):
                 yield {
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
+                    'resource_name': violation.resource_name,
                     'full_name': violation.full_name,
                     'rule_index': violation.rule_index,
                     'rule_name': violation.rule_name,

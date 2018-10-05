@@ -75,6 +75,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             violation_dict = {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'resource_name': violation.resource_name,
                 'full_name': violation.full_name,
                 'rule_name': violation.rule_id,
                 'rule_index': rule_indices.get(violation.rule_id, 0),

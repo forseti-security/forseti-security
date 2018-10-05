@@ -33,7 +33,7 @@ class TestServiceConfig(object):
         self.engine = create_test_engine()
         self.model_manager = ModelManager(self.engine)
         self.inventory_config = (
-            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, ''))
+            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, '', {}))
 
     def run_in_background(self, function):
         """Stub."""

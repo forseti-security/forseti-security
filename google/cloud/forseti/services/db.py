@@ -141,3 +141,17 @@ def create_scoped_readonly_session(engine):
     session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
 
     return ScopedSession(session, auto_commit=False, readonly=True)
+
+
+def create_readonly_session(engine):
+    """Creates a readonly session.
+
+    Args:
+        engine (object): Engine to bind session to.
+
+    Returns:
+        object: Scoped session maker.
+    """
+    session = sessionmaker(bind=engine, autocommit=False, autoflush=False)()
+    stub_out_flush_operation(session)
+    return session

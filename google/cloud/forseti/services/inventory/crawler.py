@@ -14,12 +14,14 @@
 
 """Crawler implementation."""
 
-
+from Queue import Empty
+from Queue import Queue
 import threading
 import time
-from Queue import Empty, Queue
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.base import cai_gcp_client
+from google.cloud.forseti.services.inventory.base import cloudasset
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
@@ -302,9 +304,19 @@ def run_crawler(storage,
 
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
+    asset_count = 0
+    if config.get_cai_enabled():
+        asset_count = cloudasset.load_cloudasset_data(storage.session, config)
+        LOGGER.info('%s total assets loaded from Cloud Asset data.',
+                    asset_count)
+
+    if config.get_cai_enabled() and asset_count:
+        client = cai_gcp_client.CaiApiClientImpl(client_config,
+                                                 storage.session.get_bind())
+    else:
+        client = gcp.ApiClientImpl(client_config)
 
     root_id = config.get_root_resource_id()
-    client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
         crawler_config = ParallelCrawlerConfig(storage, progresser, client)

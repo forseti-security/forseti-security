@@ -81,6 +81,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
             yield {
                 'resource_id': violation.resource_id,
                 'resource_type': violation.resource_type,
+                'resource_name': violation.resource_name,
                 'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
                 'rule_name': violation.rule_name,
@@ -130,8 +131,11 @@ class BigqueryScanner(base_scanner.BaseScanner):
         scoped_session, data_access = model_manager.get(self.model_name)
         with scoped_session as session:
             bq_acl_data = []
-
+            policies = []
             for policy in data_access.scanner_iter(session, 'dataset_policy'):
+                policies.append(policy)
+
+            for policy in policies:
                 # dataset_policy are always in a dataset, which is always in a
                 # project.
                 dataset = policy.parent
