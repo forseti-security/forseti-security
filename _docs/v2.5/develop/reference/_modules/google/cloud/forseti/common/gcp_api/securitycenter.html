@@ -1,0 +1,138 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.securitycenter"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_api.securitycenter</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#      http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Wrapper for Cloud Security Command Center API client.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="k">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">httplib2</span> <span class="k">import</span> <span class="n">HttpLib2Error</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">_base_repository</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">repository_mixins</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SecurityCenterRepositoryClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.securitycenter.html#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterRepositoryClient">[docs]</a><span class="k">class</span> <span class="nc">SecurityCenterRepositoryClient</span><span class="p">(</span><span class="n">_base_repository</span><span class="o">.</span><span class="n">BaseRepositoryClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SecurityCenter API Respository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">quota_max_calls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">quota_period</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                 <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            quota_max_calls (int): Allowed requests per &lt;quota_period&gt; for the</span>
+<span class="sd">                API.</span>
+<span class="sd">            quota_period (float): The time period to track requests over.</span>
+<span class="sd">            use_rate_limiter (bool): Set to false to disable the use of a rate</span>
+<span class="sd">                limiter for this service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Initializing SecurityCenterRepositoryClient&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quota_max_calls</span><span class="p">:</span>
+            <span class="n">use_rate_limiter</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_findings</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">SecurityCenterRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s1">&#39;securitycenter&#39;</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1alpha3&#39;</span><span class="p">],</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">use_rate_limiter</span><span class="p">)</span>
+
+    <span class="c1"># Turn off docstrings for properties.</span>
+    <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">findings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns _SecurityCenterOrganizationsFindingsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_findings</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_findings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_SecurityCenterOrganizationsFindingsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_findings</span></div>
+    <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
+
+
+<div class="viewcode-block" id="_SecurityCenterOrganizationsFindingsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.securitycenter.html#google.cloud.forseti.common.gcp_api.securitycenter._SecurityCenterOrganizationsFindingsRepository">[docs]</a><span class="k">class</span> <span class="nc">_SecurityCenterOrganizationsFindingsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">CreateQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of CSCC Organizations Findings repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s1">&#39;Creating _SecurityCenterOrganizationsFindingsRepositoryClient&#39;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_SecurityCenterOrganizationsFindingsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;organizations.findings&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SecurityCenterClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.securitycenter.html#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient">[docs]</a><span class="k">class</span> <span class="nc">SecurityCenterClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cloud Security Command Center Client.</span>
+
+<span class="sd">    https://cloud.google.com/security-command-center/docs/reference/rest</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        TODO: Add api quota configs here.</span>
+<span class="sd">        max_calls, quota_period = api_helpers.get_ratelimiter_config(</span>
+<span class="sd">            inventory_configs.api_quota_configs, &#39;securitycenter&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Initializing SecurityCenterClient&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">SecurityCenterRepositoryClient</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SecurityCenterClient.create_finding"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.securitycenter.html#google.cloud.forseti.common.gcp_api.securitycenter.SecurityCenterClient.create_finding">[docs]</a>    <span class="k">def</span> <span class="nf">create_finding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">organization_id</span><span class="p">,</span> <span class="n">finding</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a finding in CSCC.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            organization_id (str): The id prefixed with &#39;organizations/&#39;.</span>
+<span class="sd">            finding (dict): Forseti violation in CSCC format.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: An API response containing one page of results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Creating finding.&#39;</span><span class="p">)</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">findings</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+                <span class="n">arguments</span><span class="o">=</span><span class="p">{</span>
+                    <span class="s1">&#39;body&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;sourceFinding&#39;</span><span class="p">:</span> <span class="n">finding</span><span class="p">},</span>
+                    <span class="s1">&#39;orgName&#39;</span><span class="p">:</span> <span class="n">organization_id</span>
+                <span class="p">}</span>
+            <span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Created finding response in CSCC: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+                <span class="s1">&#39;Unable to create CSCC finding: Resource: </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">finding</span><span class="p">)</span>
+            <span class="n">full_name</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">finding</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;properties&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;violation_data&#39;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;full_name&#39;</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">full_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div></div>
+</pre></div>
