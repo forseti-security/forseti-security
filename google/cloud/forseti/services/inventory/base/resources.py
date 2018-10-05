@@ -1220,7 +1220,11 @@ def resource_iter_class_factory(api_method_name,
     """
 
     def always_true():
-        """Helper function that always returns True."""
+        """Helper function that always returns True.
+
+        Returns:
+            bool: True
+        """
         return True
 
     class ResourceIteratorSubclass(ResourceIterator):
