@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for Bucket acls."""
+"""Rules engine for Bucket retention."""
 import collections
 from collections import namedtuple
 import itertools
@@ -137,42 +137,37 @@ class RetentionRuleBook(bre.BaseRuleBook):
             if applies_to is None:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of applies_to in rule {}'.format(rule_index))
-            if type(applies_to).__name__ != 'list':
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Miss dash (-) near applies_to in rule {}'.format(
-                        rule_index))
+            # assert(isinstance(applies_to, list))
 
             minimum_retention = rule_def.get('minimum_retention', None)
             maximum_retention = rule_def.get('maximum_retention', None)
             if minimum_retention is None and maximum_retention is None:
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Lack of minimum_retention and \
-maximum_retention in rule {}'.format(rule_index))
+                    'Lack of minimum_retention and '
+                    'maximum_retention in rule {}'.format(rule_index))
             elif minimum_retention != None and maximum_retention != None:
                 if minimum_retention > maximum_retention:
                     raise audit_errors.InvalidRulesSchemaError(
-                        'minimum_retention larger than \
-maximum_retention in rule {}'.format(rule_index))
+                        'minimum_retention larger than '
+                        'maximum_retention in rule {}'.format(rule_index))
 
-            applies_to_history = {}
+            if any(x not in _APPLY_TO_RESOURCES for x in applies_to):
+                raise audit_errors.InvalidRulesSchemaError(
+                    'Duplicate applies_to in rule {}'.format(rule_index))
+
             for appto in applies_to:
-                if appto in applies_to_history:
-                    raise audit_errors.InvalidRulesSchemaError(
-                        'Duplicate applies_to in rule {}'.format(rule_index))
-                applies_to_history[appto] = True
-
-                if appto == _APPLY_TO_BUCKETS:
-                    self.add_bucket_rule(
-                        rule_def,
-                        rule_index,
-                        minimum_retention,
-                        maximum_retention)
+                self.create_and_add_rule(
+                    rule_def,
+                    rule_index,
+                    appto,
+                    minimum_retention,
+                    maximum_retention)
                 # other appto add here
         finally:
             self._rules_sema.release()
 
-    def add_bucket_rule(self, rule_def, rule_index,
-                        min_retention, max_retention):
+    def create_and_add_rule(self, rule_def, rule_index, apply_to,
+                            min_retention, max_retention):
         """Add a rule to the rule book.
 
         Args:
@@ -180,6 +175,7 @@ maximum_retention in rule {}'.format(rule_index))
                 properties.
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
+            apply_to (str): The resource type that the rule is applied to
             min_retention(int): minimum value of the age in lifecycle
             max_retention(int): maximum value of the age in lifecycle
         """
@@ -187,9 +183,7 @@ maximum_retention in rule {}'.format(rule_index))
         if resource is None:
             raise audit_errors.InvalidRulesSchemaError(
                 'Lack of resource in rule {}'.format(rule_index))
-        if type(resource).__name__ != 'list':
-            raise audit_errors.InvalidRulesSchemaError(
-                'Miss dash (-) near resource in rule {}'.format(rule_index))
+        # assert(isinstance(resource, list))
 
         for res in resource:
             resource_type = res.get('type', None)
@@ -201,25 +195,23 @@ maximum_retention in rule {}'.format(rule_index))
             if resource_ids is None:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource_ids in rule {}'.format(rule_index))
-            if type(resource_ids).__name__ != 'list':
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Miss dash (-) near resource_ids in rule {}'.format(
-                        rule_index))
+            # assert(isinstance(resource_ids, list))
+            rule = Rule(rule_name=rule_def.get('name'),
+                        rule_index=rule_index,
+                        min_retention=min_retention,
+                        max_retention=max_retention)
+
             for rid in resource_ids:
                 if rid == '*':
                     raise audit_errors.InvalidRulesSchemaError(
                         'The symbol * is not allowed in rule {}'.format(
                             rule_index))
 
-                rule = Rule(rule_name=rule_def.get('name', 'no name'),
-                            rule_index=rule_index,
-                            min_retention=min_retention,
-                            max_retention=max_retention)
                 gcp_resource = resource_util.create_resource(
                     resource_id=rid,
                     resource_type=resource_type)
 
-                self.resource_rules_map[_APPLY_TO_BUCKETS][gcp_resource].add(
+                self.resource_rules_map[apply_to][gcp_resource].add(
                     rule)
 
     def get_resource_rules(self, applies_to):
@@ -238,7 +230,7 @@ class Rule(object):
     Also finds violations.
     """
 
-    rttRuleViolation = namedtuple(
+    RuleViolation = namedtuple(
         'RuleViolation',
         ['resource_name', 'resource_type', 'full_name', 'rule_name',
          'rule_index', 'violation_type', 'violation_describe'])
@@ -264,10 +256,10 @@ class Rule(object):
             buckets_lifecycle (RetentionBucket): The info of the bucket
             describe (str): The description of the violation
         Returns:
-            rttRuleViolation: The violation
+            RuleViolation: The violation
         """
 
-        return self.rttRuleViolation(
+        return self.RuleViolation(
             resource_name=buckets_lifecycle.name,
             resource_type=buckets_lifecycle.type,
             full_name=buckets_lifecycle.full_name,
@@ -284,7 +276,7 @@ class Rule(object):
         Args:
             buckets_lifecycle (RetentionBucket): The info of the bucket
         Yields:
-            rttRuleViolation: All violations of the bucket breaking the rule.
+            RuleViolation: All violations of the bucket breaking the rule.
         """
         minretention = self.min_retention
         maxretention = self.max_retention
@@ -295,13 +287,15 @@ class Rule(object):
                 continue
             if(minretention != None and age < minretention):
                 yield self.generate_rule_violation(
-                    buckets_lifecycle, 'age %d is smaller than \
-the minimum retention %d' % (age, minretention))
+                    buckets_lifecycle,
+                    'age %d is smaller than '
+                    'the minimum retention %d' % (age, minretention))
                 continue
             if(maxretention != None and age > maxretention):
                 yield self.generate_rule_violation(
-                    buckets_lifecycle, 'age %d is larger than \
-the maximum retention %d' % (age, maxretention))
+                    buckets_lifecycle,
+                    'age %d is larger than '
+                    'the maximum retention %d' % (age, maxretention))
                 continue
             if 'createdBefore' in lci.get('condition', {}):
                 continue
@@ -314,5 +308,7 @@ the maximum retention %d' % (age, maxretention))
             exist_match = True
         if exist_match is not True:
             yield self.generate_rule_violation(
-                buckets_lifecycle, 'No condition satisfies \
-the rule (min %s, max %s)' % (str(minretention), str(maxretention)))
+                buckets_lifecycle,
+                'No condition satisfies '
+                'the rule (min %s, max %s)' % (str(minretention),
+                                               str(maxretention)))

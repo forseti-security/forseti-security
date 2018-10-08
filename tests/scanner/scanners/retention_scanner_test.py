@@ -136,7 +136,7 @@ class RetentionScannerTest(ForsetiTestCase):
 
         # f = open("testresult.txt",'w')
         # for i in all_violations:
-        #     tmpstr = "       rre.Rule.rttRuleViolation(\n"
+        #     tmpstr = "       rre.Rule.RuleViolation(\n"
         #     tmpstr += "           resource_name=\'"+i.resource_name+"\',\n"
         #     tmpstr += "           resource_type=\'"+i.resource_type+"\',\n"
         #     tmpstr += "           full_name=\'"+i.full_name+"\',\n"
@@ -149,7 +149,7 @@ class RetentionScannerTest(ForsetiTestCase):
         #     print tmpstr
 
         expected_violations = set([       
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt11',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt11/',
@@ -157,7 +157,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=3,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 499 is smaller than the minimum retention 500'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt11',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt11/',
@@ -165,7 +165,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=3,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 500, max None)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt12',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt12/',
@@ -173,7 +173,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 101, max 499)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt12',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt12/',
@@ -181,7 +181,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min None, max 499)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt12',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt12/',
@@ -189,7 +189,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 500 is larger than the maximum retention 499'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt12',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt12/',
@@ -197,7 +197,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 500 is larger than the maximum retention 499'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt13',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt13/',
@@ -205,7 +205,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 501 is larger than the maximum retention 499'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt13',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt13/',
@@ -213,7 +213,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 501 is larger than the maximum retention 499'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt13',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt13/',
@@ -221,7 +221,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 101, max 499)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt13',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt13/',
@@ -229,7 +229,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min None, max 499)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt21',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt21/',
@@ -237,7 +237,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 101, max 499)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt21',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt21/',
@@ -245,7 +245,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 99 is smaller than the minimum retention 101'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt22',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt22/',
@@ -253,7 +253,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 100 is smaller than the minimum retention 101'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt22',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt22/',
@@ -261,7 +261,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=2,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 101, max 499)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt23',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt23/',
@@ -269,7 +269,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=4,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min None, max 100)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p1bkt23',
            resource_type='bucket',
            full_name='organization/31415926/project/p1/bucket/p1bkt23/',
@@ -277,7 +277,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=4,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 101 is larger than the maximum retention 100'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt31',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt31/',
@@ -285,7 +285,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=1,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 150, max None)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt31',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt31/',
@@ -293,7 +293,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=1,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 149 is smaller than the minimum retention 150'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt31',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt31/',
@@ -301,7 +301,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=5,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 149 is smaller than the minimum retention 150'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt31',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt31/',
@@ -309,7 +309,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=5,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 150, max 450)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt35',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt35/',
@@ -317,7 +317,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=5,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 451 is larger than the maximum retention 450'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt35',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt35/',
@@ -325,7 +325,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=5,
            violation_type='RETENTION_VIOLATION',
            violation_describe='No condition satisfies the rule (min 150, max 450)'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt4',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt4/',
@@ -333,7 +333,7 @@ class RetentionScannerTest(ForsetiTestCase):
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
            violation_describe='age 600 is larger than the maximum retention 499'),
-       rre.Rule.rttRuleViolation(
+       rre.Rule.RuleViolation(
            resource_name='p2bkt4',
            resource_type='bucket',
            full_name='organization/31415926/folder/5358979323/project/p2/bucket/p2bkt4/',
