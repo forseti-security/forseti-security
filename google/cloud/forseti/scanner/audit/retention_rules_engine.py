@@ -88,6 +88,30 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
 
         return set(violations)
 
+def get_bucket_retention_range(rule_def, rule_index):
+    """Add a rule to the rule book.
+
+    Args:
+        rule_def (dict): A dictionary containing rule definition
+            properties.
+        rule_index (int): The index of the rule from the rule definitions.
+            Assigned automatically when the rule book is built.
+
+    Returns:
+        pair: the minimum and maximum value of the Age.
+    """
+    minimum_retention = rule_def.get('minimum_retention', None)
+    maximum_retention = rule_def.get('maximum_retention', None)
+    if minimum_retention is None and maximum_retention is None:
+        raise audit_errors.InvalidRulesSchemaError(
+            'Lack of minimum_retention and '
+            'maximum_retention in rule {}'.format(rule_index))
+    elif minimum_retention != None and maximum_retention != None:
+        if minimum_retention > maximum_retention:
+            raise audit_errors.InvalidRulesSchemaError(
+                'minimum_retention larger than '
+                'maximum_retention in rule {}'.format(rule_index))
+    return (minimum_retention, maximum_retention)
 
 class RetentionRuleBook(bre.BaseRuleBook):
     """The RuleBook for Retention resources."""
@@ -136,17 +160,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
                     'Lack of applies_to in rule {}'.format(rule_index))
             # assert(isinstance(applies_to, list))
 
-            minimum_retention = rule_def.get('minimum_retention', None)
-            maximum_retention = rule_def.get('maximum_retention', None)
-            if minimum_retention is None and maximum_retention is None:
-                raise audit_errors.InvalidRulesSchemaError(
-                    'Lack of minimum_retention and '
-                    'maximum_retention in rule {}'.format(rule_index))
-            elif minimum_retention != None and maximum_retention != None:
-                if minimum_retention > maximum_retention:
-                    raise audit_errors.InvalidRulesSchemaError(
-                        'minimum_retention larger than '
-                        'maximum_retention in rule {}'.format(rule_index))
+            retention_range = get_bucket_retention_range(rule_def, rule_index)
 
             if any(x not in _APPLY_TO_RESOURCES for x in applies_to):
                 raise audit_errors.InvalidRulesSchemaError(
@@ -157,8 +171,8 @@ class RetentionRuleBook(bre.BaseRuleBook):
                     rule_def,
                     rule_index,
                     appto,
-                    minimum_retention,
-                    maximum_retention)
+                    retention_range[0],
+                    retention_range[1])
                 # other appto add here
         finally:
             self._rules_sema.release()
