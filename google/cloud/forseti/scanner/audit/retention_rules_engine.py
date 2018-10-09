@@ -76,12 +76,9 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         violations = itertools.chain()
 
         resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
-        recent_bucket = resource_util.create_resource(
-            resource_id=buckets_lifecycle.id,
-            resource_type=resources.GcsBucket.type())
 
         resource_ancestors = (relationship.find_ancestors(
-            recent_bucket, buckets_lifecycle.full_name))
+            buckets_lifecycle, buckets_lifecycle.full_name))
         for related_resources in resource_ancestors:
             rules = resource_rules[related_resources]
             for rule in rules:
