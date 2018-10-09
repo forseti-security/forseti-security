@@ -42,17 +42,17 @@ class TracingTest(ForsetiTestCase):
 
     @mock.patch('opencensus.trace.ext.grpc.server_interceptor.OpenCensusServerInterceptor')
     @mock.patch('google.cloud.forseti.common.opencensus.tracing.trace_integrations')
-    def test_trace_create_server_interceptor_without_extras(self, mock_libs, mock_server):
+    def test_trace_create_server_interceptor_without_extras(self, mock_libs, mock_server_interceptor):
         tracing.create_server_interceptor(extras=False)
         self.assertFalse(mock_libs.called)
-        self.assertTrue(mock_server.called)
+        self.assertTrue(mock_server_interceptor.called)
 
     @mock.patch('opencensus.trace.ext.grpc.server_interceptor.OpenCensusServerInterceptor')
     @mock.patch('google.cloud.forseti.common.opencensus.tracing.trace_integrations')
-    def test_trace_create_server_interceptor_with_extras(self, mock_libs, mock_server):
+    def test_trace_create_server_interceptor_with_extras(self, mock_libs, mock_server_interceptor):
         tracing.create_server_interceptor(extras=True)
         self.assertTrue(mock_libs.called)
-        self.assertTrue(mock_server.called)
+        self.assertTrue(mock_server_interceptor.called)
 
     @mock.patch(
         'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
