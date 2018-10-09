@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for tracing."""
+
 import json
 import unittest
 import mock
