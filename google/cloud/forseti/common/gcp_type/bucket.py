@@ -50,7 +50,8 @@ class Bucket(resource.Resource):
             name (str): The bucket's unique GCP name, with the
                 format "buckets/{id}".
             display_name (str): The bucket's display name.
-            locations (List[str]): Locations this bucket resides in.
+            locations (List[str]): Locations this bucket resides in. If set,
+                there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.

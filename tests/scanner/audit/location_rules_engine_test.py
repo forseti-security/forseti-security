@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests the LienRulesEngine."""
+"""Tests the LocationRulesEngine."""
 
 import copy
 import itertools
@@ -23,7 +23,6 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.gcp_type import lien
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import location_rules_engine
@@ -105,6 +104,26 @@ class LocationRulesEngineTest(ForsetiTestCase):
             mode='blacklist',
             type='bucket',
             locations=['eu*'],
+        )
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(data.BUCKET))
+        self.assertEqual(got_violations, data.build_violations(data.BUCKET))
+
+    def test_find_violations_exact(self):
+        rule = rule_tmpl.format(
+            mode='blacklist',
+            type='bucket',
+            locations=['europe-west1'],
+        )
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(data.BUCKET))
+        self.assertEqual(got_violations, data.build_violations(data.BUCKET))
+
+    def test_find_violations_multiple_locations(self):
+        rule = rule_tmpl.format(
+            mode='blacklist',
+            type='bucket',
+            locations=['us*', 'eu*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
         got_violations = list(rules_engine.find_violations(data.BUCKET))

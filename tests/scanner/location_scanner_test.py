@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for LienScanner."""
+"""Tests for LocationScanner."""
 
 import collections
 import json
@@ -60,7 +60,7 @@ def _mock_gcp_resource_iter(_, resource_type):
 
 class LocationScannerTest(ForsetiTestCase):
 
-    @mock.patch.object(location_scanner, 'location_rules_engine', autospec=True)
+    @mock.patch.object(location_scanner, 'lre', autospec=True)
     def setUp(self, _):
         self.scanner = location_scanner.LocationScanner(
             {}, {}, mock.MagicMock(), '', '', '')

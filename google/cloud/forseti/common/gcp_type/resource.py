@@ -126,7 +126,10 @@ class Resource(object):
             name (str): The resource unique name,
                 e.g. "{resource type}/{id}".
             display_name (str): The resource display name.
-            locations (List[str]): Locations the resource resides in.
+            locations (List[str]): Locations the resource resides in. Some
+                resources have multiple locations (e.g. GKE), some support
+                have a single location (e.g. GCS), while some have none
+                (e.g. Project).
             parent (Resource): The parent Resource object.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 Resource.

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Rules engine for Liens."""
+"""Rules engine for resource locations."""
 
 import collections
 import enum
 import re
 
+from google.cloud.forseti.common.gcp_type import bucket
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import regular_exp
@@ -27,10 +28,17 @@ from google.cloud.forseti.scanner.audit import errors
 
 LOGGER = logger.get_logger(__name__)
 
+RULE_RESOURCE_TYPES = {'project', 'folder', 'organization'}
+
+# The initializer value should be a function that accepts a parent resource type
+# and json string as arguments.
+LOCATION_RESOURCE_TYPE_TO_INITIALIZER = {
+    'bucket': bucket.Bucket.from_json
+}
+
 LocationData = collections.namedtuple(
     'LocationData', ['resource', 'locations']
 )
-
 
 RuleViolation = collections.namedtuple(
     'RuleViolation',
@@ -46,7 +54,7 @@ class Mode(enum.Enum):
 
 
 class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
-    """Rules engine for Liens."""
+    """Rules engine for resource locations."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -62,7 +70,7 @@ class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
-        """Build LienRuleBook from the rules definition file.
+        """Build LocationRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
@@ -97,7 +105,7 @@ class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
 
 
 class LocationRuleBook(base_rules_engine.BaseRuleBook):
-    """The RuleBook for Lien resources."""
+    """The RuleBook for resource locations."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -145,7 +153,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
             resource_type = raw_resource.get('type')
 
-            if resource_type not in {'project', 'folder', 'organization'}:
+            if resource_type not in RULE_RESOURCE_TYPES:
                 raise errors.InvalidRulesSchemaError(
                     'Invalid resource type "{}" in rule {}'.format(
                         resource_type, rule_index))
@@ -183,7 +191,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
         applies_to = rule_def.get('applies_to')
         for resource_type in applies_to:
-            if resource_type not in {'bucket'}:
+            if resource_type not in LOCATION_RESOURCE_TYPE_TO_INITIALIZER:
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))
@@ -195,16 +203,15 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
                     location_patterns=rule_def.get('locations'))
 
     def find_violations(self, resource):
-        """Find lien violations in the rule book.
+        """Find resource locations violations in the rule book.
 
         Args:
             resource (Resource): The GCP resource to check locations for.
                 This is where we start looking for rule violations and
-                we move up the resource hierarchy (if permitted by the
-                resource's "inherit_from_parents" property).
+                we move up the resource hierarchy.
 
         Yields:
-            RuleViolation: lien rule violations.
+            RuleViolation: resource locations rule violations.
         """
 
         resource_ancestors = relationship.find_ancestors(
@@ -250,7 +257,7 @@ class Rule(object):
         self.applies_to = applies_to
 
         loc_re_str = '|'.join([
-            regular_exp.escape_and_globify(loc_wildcard)
+            regular_exp.escape_and_globify(loc_wildcard.lower())
             for loc_wildcard in location_patterns
         ])
         self.location_re = re.compile(loc_re_str)

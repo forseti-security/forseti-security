@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the Lien rules engine."""
+"""Scanner for the resource location rules engine."""
 
-from google.cloud.forseti.common.gcp_type import bucket
+
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import location_rules_engine
+from google.cloud.forseti.scanner.audit import location_rules_engine as lre
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 
@@ -25,7 +25,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class LocationScanner(base_scanner.BaseScanner):
-    """Scanner for Liens."""
+    """Scanner for resource locations."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp,
@@ -46,7 +46,7 @@ class LocationScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = location_rules_engine.LocationRulesEngine(
+        self.rules_engine = lre.LocationRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
@@ -67,12 +67,11 @@ class LocationScanner(base_scanner.BaseScanner):
         """
         resources = []
 
-        resource_type_to_fn = {'bucket': bucket.Bucket.from_json}
-
         scoped_session, data_access = self.service_config.model_manager.get(
             self.model_name)
         with scoped_session as session:
-            for resource_type, resource_fn in resource_type_to_fn.items():
+            for resource_type, resource_fn in (
+                    lre.LOCATION_RESOURCE_TYPE_TO_INITIALIZER.iteritems()):
                 for resource in data_access.scanner_iter(
                         session, resource_type):
 
@@ -100,7 +99,7 @@ class LocationScanner(base_scanner.BaseScanner):
             List[RuleViolation]: A list of all violations.
         """
         all_violations = []
-        LOGGER.info('Finding lien violations...')
+        LOGGER.info('Finding resource locations violations...')
 
         for resource in resources:
             violations = self.rules_engine.find_violations(resource)
@@ -112,7 +111,8 @@ class LocationScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            all_violations (List[RuleViolation]): A list of lien violations.
+            all_violations (List[RuleViolation]): A list of resource location
+                violations.
         """
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
