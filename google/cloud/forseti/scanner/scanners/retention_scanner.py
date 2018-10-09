@@ -14,10 +14,13 @@
 
 """Scanner for the Bucket retention rules engine."""
 
+import json
+
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import retention_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
-from google.cloud.forseti.common.gcp_type import retention_bucket
+from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.services.inventory.base import resources
 
 
 LOGGER = logger.get_logger(__name__)
@@ -116,9 +119,18 @@ class RetentionScanner(base_scanner.BaseScanner):
         all_lifecycle_info = []
         with scoped_session as session:
             for bucketinfo in data_access.scanner_iter(session, 'bucket'):
-                lifecycle_info = retention_bucket.RetentionBucket.from_json(
-                    bucketinfo)
-                all_lifecycle_info.append(lifecycle_info)
+                bucketdatadict = json.loads(bucketinfo.data)
+                lifecycleitems = []
+                if ('lifecycle' in bucketdatadict and
+                        'rule' in bucketdatadict.get('lifecycle')):
+                    lifecycleitems = bucketdatadict['lifecycle']['rule']
+
+                new_bucket_res = resource_util.create_resource(
+                    bucketinfo.name,
+                    resources.GcsBucket.type())
+                new_bucket_res.full_name = bucketinfo.full_name
+                new_bucket_res.lifecycle = lifecycleitems
+                all_lifecycle_info.append(new_bucket_res)
 
         return all_lifecycle_info
 

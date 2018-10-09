@@ -23,13 +23,14 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
+from google.cloud.forseti.services.inventory.base import resources
 
 
 LOGGER = logger.get_logger(__name__)
 
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 # Applyto.
-_APPLY_TO_BUCKETS = 'bucket'
+_APPLY_TO_BUCKETS = resources.GcsBucket.type()
 _APPLY_TO_RESOURCES = frozenset([_APPLY_TO_BUCKETS])
 
 
@@ -75,10 +76,9 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         violations = itertools.chain()
 
         resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
-
         recent_bucket = resource_util.create_resource(
-            resource_id=buckets_lifecycle.name,
-            resource_type=_APPLY_TO_BUCKETS)
+            resource_id=buckets_lifecycle.id,
+            resource_type=resources.GcsBucket.type())
 
         resource_ancestors = (relationship.find_ancestors(
             recent_bucket, buckets_lifecycle.full_name))
@@ -260,7 +260,7 @@ class Rule(object):
         """
 
         return self.RuleViolation(
-            resource_name=buckets_lifecycle.name,
+            resource_name=buckets_lifecycle.id,
             resource_type=buckets_lifecycle.type,
             full_name=buckets_lifecycle.full_name,
             rule_name=self.rule_name,
@@ -281,7 +281,7 @@ class Rule(object):
         minretention = self.min_retention
         maxretention = self.max_retention
         exist_match = False
-        for lci in buckets_lifecycle.lifecycleitems:
+        for lci in buckets_lifecycle.lifecycle:
             age = lci.get('condition', {}).get('age', None)
             if age is None:
                 continue
