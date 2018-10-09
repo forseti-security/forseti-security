@@ -30,7 +30,8 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=1.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 version=None):
         """Constructor.
         Args:
             quota_max_calls (int): Allowed requests per <quota_period> for the
@@ -46,7 +47,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
         self._findings = None
 
         super(SecurityCenterRepositoryClient, self).__init__(
-            'securitycenter', versions=['v1alpha3'],
+            'securitycenter', versions=[version],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -78,7 +79,7 @@ class _SecurityCenterOrganizationsFindingsRepository(
         LOGGER.debug(
             'Creating _SecurityCenterOrganizationsFindingsRepositoryClient')
         super(_SecurityCenterOrganizationsFindingsRepository, self).__init__(
-            component='organizations.findings', **kwargs)
+            component='organizations.sources.findings', **kwargs)
 
 
 class SecurityCenterClient(object):
@@ -87,7 +88,7 @@ class SecurityCenterClient(object):
     https://cloud.google.com/security-command-center/docs/reference/rest
     """
 
-    def __init__(self):
+    def __init__(self, version=None):
         """Initialize.
 
         TODO: Add api quota configs here.
@@ -95,9 +96,9 @@ class SecurityCenterClient(object):
             inventory_configs.api_quota_configs, 'securitycenter')
         """
         LOGGER.debug('Initializing SecurityCenterClient')
-        self.repository = SecurityCenterRepositoryClient()
+        self.repository = SecurityCenterRepositoryClient(version=None)
 
-    def create_finding(self, organization_id, finding):
+    def create_finding_alpha(self, organization_id, finding):
         """Creates a finding in CSCC.
 
         Args:
@@ -124,3 +125,35 @@ class SecurityCenterClient(object):
                 finding.get('properties').get('violation_data')
                 .get('full_name'))
             raise api_errors.ApiExecutionError(full_name, e)
+
+    def create_finding(self, source_id, finding_id, finding):
+        """Creates a finding in CSCC.
+
+        This is for the beta.
+
+        Args:
+            organization_id (str): The id prefixed with 'organizations/'.
+            finding (dict): Forseti violation in CSCC format.
+
+        Returns:
+            dict: An API response containing one page of results.
+        """
+        try:
+            LOGGER.debug('Creating finding.')
+            response = self.repository.findings.create(
+                arguments={
+                    'body': finding,
+                    'parent': source_id,
+                    'findingId': finding_id
+                }
+            )
+            LOGGER.debug('Created finding response in CSCC: %s', response)
+            return response
+        # handle 409, finding exists
+        except (errors.HttpError, HttpLib2Error) as e:
+            LOGGER.exception(
+                'Unable to create CSCC finding: Resource: %s', finding)
+            violation_data = (
+                finding.get('source_properties').get('violation_data'))
+            raise api_errors.ApiExecutionError(violation_data, e)
+

@@ -149,7 +149,7 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         notifier = cscc_notifier.CsccNotifier(None)
 
         notifier._send_findings_to_gcs = mock.MagicMock()
-        notifier._send_findings_to_cscc = mock.MagicMock()
+        notifier._send_findings_to_cscc_alpha = mock.MagicMock()
         notifier.LOGGER = mock.MagicMock()
 
         self.assertEquals(0, notifier._send_findings_to_gcs.call_count)
@@ -159,9 +159,9 @@ class CsccNotifierTest(scanner_base_db.ScannerBaseDbTestCase):
         notifier.run(None, None, 'bucket', None)
         self.assertEquals(2, notifier._send_findings_to_gcs.call_count)
 
-        self.assertEquals(0, notifier._send_findings_to_cscc.call_count)
+        self.assertEquals(0, notifier._send_findings_to_cscc_alpha.call_count)
         notifier.run(None, None, 'api', None)
-        self.assertEquals(1, notifier._send_findings_to_cscc.call_count)
+        self.assertEquals(1, notifier._send_findings_to_cscc_alpha.call_count)
 
         self.assertEquals(3, mock_logger.info.call_count)
         notifier.run(None, None, 'foo', None)
