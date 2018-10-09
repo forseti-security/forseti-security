@@ -88,6 +88,7 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
 
         return set(violations)
 
+
 def get_bucket_retention_range(rule_def, rule_index):
     """Add a rule to the rule book.
 
@@ -112,6 +113,7 @@ def get_bucket_retention_range(rule_def, rule_index):
                 'minimum_retention larger than '
                 'maximum_retention in rule {}'.format(rule_index))
     return (minimum_retention, maximum_retention)
+
 
 class RetentionRuleBook(bre.BaseRuleBook):
     """The RuleBook for Retention resources."""
