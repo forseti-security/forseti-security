@@ -37,7 +37,8 @@ class Bucket(resource.Resource):
             name=None,
             display_name=None,
             parent=None,
-            lifecycle_state=BucketLifecycleState.UNSPECIFIED):
+            lifecycle_state=BucketLifecycleState.UNSPECIFIED,
+            lifecycle=None):
         """Initialize.
 
         Args:
@@ -50,6 +51,8 @@ class Bucket(resource.Resource):
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
+            lifecycle (list): A list of dicts that contains actions
+                ("delete") and conditions ("age")
         """
         super(Bucket, self).__init__(
             resource_id=bucket_id,
@@ -60,3 +63,4 @@ class Bucket(resource.Resource):
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
+        self.lifecycle = lifecycle
