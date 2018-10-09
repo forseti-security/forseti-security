@@ -33,7 +33,7 @@ RULE_RESOURCE_TYPES = {'project', 'folder', 'organization'}
 # The initializer value should be a function that accepts a parent resource type
 # and json string as arguments.
 LOCATION_RESOURCE_TYPE_TO_INITIALIZER = {
-    'bucket': bucket.Bucket.from_json
+    'bucket': bucket.Bucket.from_json,
 }
 
 LocationData = collections.namedtuple(
@@ -78,7 +78,7 @@ class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
         self.rule_book = LocationRuleBook(self._load_rule_definitions())
 
     def find_violations(self, resource, force_rebuild=False):
-        """Determine whether Big Query datasets violate rules.
+        """Determine whether resources violate rules.
 
         Args:
             resource (Resource): resource to check locations for.
