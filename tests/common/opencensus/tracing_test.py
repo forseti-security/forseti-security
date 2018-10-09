@@ -15,10 +15,10 @@
 """Tests for tracing."""
 
 import json
-import unittest
+import logging
 import mock
 import parameterized
-import logging
+import unittest
 
 from google.cloud.forseti.common.opencensus import tracing
 
