@@ -23,14 +23,13 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
-from google.cloud.forseti.services.inventory.base import resources
 
 
 LOGGER = logger.get_logger(__name__)
 
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 # Applyto.
-_APPLY_TO_BUCKETS = resources.GcsBucket.type()
+_APPLY_TO_BUCKETS = 'bucket'
 _APPLY_TO_RESOURCES = frozenset([_APPLY_TO_BUCKETS])
 
 
