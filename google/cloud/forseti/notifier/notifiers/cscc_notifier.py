@@ -206,10 +206,11 @@ class CsccNotifier(object):
             try:
                 client.create_finding_alpha(organization_id, finding)
                 LOGGER.debug('Successfully created finding in CSCC:\n%s',
-                             finding)
+                             finding)  
             except api_errors.ApiExecutionError:
                 LOGGER.exception('Encountered CSCC API error.')
                 continue
+            
         return
 
     def _send_findings_to_cscc(self, violations, source_id):
@@ -223,6 +224,7 @@ class CsccNotifier(object):
 
         client = securitycenter.SecurityCenterClient(version='v1beta1')
 
+        '''
         for i in findings:
             finding_id = i[0][0]
             finding = i[1]
@@ -234,6 +236,13 @@ class CsccNotifier(object):
             except api_errors.ApiExecutionError:
                 LOGGER.exception('Encountered CSCC API error.')
                 continue
+        '''
+
+        for i in client.list(source_id):
+            print i
+
+        
+        
         return
 
     def run(self, violations, gcs_path=None, mode=None, organization_id=None,

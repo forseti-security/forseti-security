@@ -66,6 +66,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
 
 class _SecurityCenterOrganizationsFindingsRepository(
         repository_mixins.CreateQueryMixin,
+        repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of CSCC Organizations Findings repository."""
 
@@ -157,3 +158,9 @@ class SecurityCenterClient(object):
                 finding.get('source_properties').get('violation_data'))
             raise api_errors.ApiExecutionError(violation_data, e)
 
+    def list(self, source_id):
+        
+        
+        response = self.repository.findings.list(parent=source_id)
+
+        return response

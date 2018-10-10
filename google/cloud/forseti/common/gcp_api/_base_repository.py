@@ -267,7 +267,7 @@ class BaseRepositoryClient(object):
                                     credentials=self._credentials,
                                     rate_limiter=self._rate_limiter,
                                     use_cached_http=self._use_cached_http,
-                                    read_only=self._read_only)
+                                    read_only=self._read_only, max_results_field='pageSize')
 
 
 # pylint: enable=too-many-instance-attributes
