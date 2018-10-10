@@ -20,7 +20,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import retention_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.common.gcp_type import resource_util
-from google.cloud.forseti.services.inventory.base import resources
 
 
 LOGGER = logger.get_logger(__name__)
@@ -127,7 +126,7 @@ class RetentionScanner(base_scanner.BaseScanner):
 
                 new_bucket_res = resource_util.create_resource(
                     bucketinfo.name,
-                    resources.GcsBucket.type())
+                    'bucket')
                 new_bucket_res.full_name = bucketinfo.full_name
                 new_bucket_res.lifecycle = lifecycleitems
                 all_lifecycle_info.append(new_bucket_res)

@@ -195,7 +195,6 @@ class RetentionRuleBook(bre.BaseRuleBook):
             raise audit_errors.InvalidRulesSchemaError(
                 'Lack of resource in rule {}'.format(rule_index))
 
-
         for res in resource:
             resource_type = res.get('type', None)
             if resource_type is None:
