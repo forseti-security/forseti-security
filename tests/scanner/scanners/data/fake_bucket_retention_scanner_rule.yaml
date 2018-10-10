@@ -1,6 +1,6 @@
 rules:
   - name: rules on organizations
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: organization
@@ -8,7 +8,7 @@ rules:
           - "31415926"
     maximum_retention: 499
   - name: rules on folders
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: folder
@@ -16,7 +16,7 @@ rules:
           - "5358979323"
     minimum_retention: 150
   - name: rules on projects
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: project
@@ -25,7 +25,7 @@ rules:
     minimum_retention: 101
     maximum_retention: 499
   - name: rules on buckets with only min
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: bucket
@@ -35,7 +35,7 @@ rules:
           - "p1bkt13"
     minimum_retention: 500
   - name: rules on buckets with only max
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: bucket
@@ -45,7 +45,7 @@ rules:
           - "p1bkt23"
     maximum_retention: 100
   - name: rules on buckets with only both
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: bucket
@@ -59,16 +59,10 @@ rules:
     maximum_retention: 450
     #bkt4 has no rule
   - name: rules on buckets with single id
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: bucket
         resource_ids:
           - "p2bkt5"
     minimum_retention: 100
-
-
-
-# o - f - p2 - [bkt3,bkt4,bkt5]
-#  |- - - p1 - [bkt1,bkt2]
-

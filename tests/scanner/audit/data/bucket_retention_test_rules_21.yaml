@@ -9,7 +9,7 @@ rules:
     minimum_retention: 365
     maximum_retention: 365
   - name: retention of buckets in all projects must be 365 days
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: project
@@ -18,7 +18,7 @@ rules:
     minimum_retention: 0
     maximum_retention: 2147483647
   - name: a more complex example with a single max limite
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: bucket
@@ -29,7 +29,7 @@ rules:
         resource_ids: [some-project-1,some-project-2]
     maximum_retention: 366
   - name: retention could be either 365 or 366 days
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: bucket

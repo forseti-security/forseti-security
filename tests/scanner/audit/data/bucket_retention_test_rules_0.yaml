@@ -1,6 +1,6 @@
 rules:
   - name: exact retention 365
-    applies_to: 
+    applies_to:
       - bucket
     resource:
       - type: organization

@@ -156,11 +156,10 @@ class RetentionRuleBook(bre.BaseRuleBook):
         """
         self._rules_sema.acquire()
         try:
-            applies_to = rule_def.get('applies_to', None)
+            applies_to = rule_def.get('applies_to')
             if applies_to is None:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of applies_to in rule {}'.format(rule_index))
-            # assert(isinstance(applies_to, list))
 
             retention_range = get_bucket_retention_range(rule_def, rule_index)
 
@@ -196,7 +195,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
         if resource is None:
             raise audit_errors.InvalidRulesSchemaError(
                 'Lack of resource in rule {}'.format(rule_index))
-        # assert(isinstance(resource, list))
+
 
         for res in resource:
             resource_type = res.get('type', None)
@@ -208,7 +207,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
             if resource_ids is None:
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of resource_ids in rule {}'.format(rule_index))
-            # assert(isinstance(resource_ids, list))
+
             rule = Rule(rule_name=rule_def.get('name'),
                         rule_index=rule_index,
                         min_retention=min_retention,
