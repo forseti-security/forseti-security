@@ -16,6 +16,7 @@
 
 
 from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import location_rules_engine as lre
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -70,8 +71,7 @@ class LocationScanner(base_scanner.BaseScanner):
         scoped_session, data_access = self.service_config.model_manager.get(
             self.model_name)
         with scoped_session as session:
-            for resource_type, resource_fn in (
-                    lre.LOCATION_RESOURCE_TYPE_TO_INITIALIZER.iteritems()):
+            for resource_type in lre.SUPPORTED_LOCATION_RESOURCE_TYPES:
                 for resource in data_access.scanner_iter(
                         session, resource_type):
 
@@ -85,7 +85,8 @@ class LocationScanner(base_scanner.BaseScanner):
                         project_id=resource.parent.name,
                         full_name=resource.parent.full_name,
                     )
-                    resources.append(resource_fn(proj, resource.data))
+                    resources.append(resource_util.create_resource_from_json(
+                        resource_type, proj, resource.data))
 
         return resources
 

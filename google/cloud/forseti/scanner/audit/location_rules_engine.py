@@ -18,7 +18,6 @@ import collections
 import enum
 import re
 
-from google.cloud.forseti.common.gcp_type import bucket
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import regular_exp
@@ -28,13 +27,9 @@ from google.cloud.forseti.scanner.audit import errors
 
 LOGGER = logger.get_logger(__name__)
 
-RULE_RESOURCE_TYPES = {'project', 'folder', 'organization'}
+SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
 
-# The initializer value should be a function that accepts a parent resource type
-# and json string as arguments.
-LOCATION_RESOURCE_TYPE_TO_INITIALIZER = {
-    'bucket': bucket.Bucket.from_json,
-}
+SUPPORTED_LOCATION_RESOURCE_TYPES = frozenset(['bucket'])
 
 LocationData = collections.namedtuple(
     'LocationData', ['resource', 'locations']
@@ -153,7 +148,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
             resource_type = raw_resource.get('type')
 
-            if resource_type not in RULE_RESOURCE_TYPES:
+            if resource_type not in SUPPORTED_RULE_RESOURCE_TYPES:
                 raise errors.InvalidRulesSchemaError(
                     'Invalid resource type "{}" in rule {}'.format(
                         resource_type, rule_index))
@@ -191,7 +186,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
         applies_to = rule_def.get('applies_to')
         for resource_type in applies_to:
-            if resource_type not in LOCATION_RESOURCE_TYPE_TO_INITIALIZER:
+            if resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES:
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))
