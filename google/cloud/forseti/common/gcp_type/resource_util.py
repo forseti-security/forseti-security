@@ -79,6 +79,24 @@ def create_resource(resource_id, resource_type, **kwargs):
         resource_id, **kwargs)
 
 
+def create_resource_from_json(resource_type, parent, json_string):
+    """Factory to create a certain kind of Resource from JSON data.
+     Args:
+        resource_type (str): The resource type.
+        parent (Resource): parent resource of this type.
+        json_string (str): resource's JSON data.
+     Returns:
+        Resource: The new Resource based on the type, if supported,
+        otherwise None.
+    """
+    if resource_type not in _RESOURCE_TYPE_MAP:
+        return None
+    resource_type = _RESOURCE_TYPE_MAP[resource_type]
+    if not resource_type.get('can_create_resource'):
+        return None
+    return resource_type.get('class').from_json(parent, json_string)
+
+
 def get_ancestors_from_full_name(full_name):
     """Creates a Resource for each resource in the full ancestory path.
 

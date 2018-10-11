@@ -49,7 +49,7 @@ def GetLefecycleDict(action, age, created_before, matches_storage_class, num_new
     return result
 
 
-def ModifyBucketLifeCycle(bucketdata, action, age, created_before, matches_storage_class, num_newer_versions, is_live):
+def ModifyBucketLifeCycle(proj_res, bucketdata, action, age, created_before, matches_storage_class, num_newer_versions, is_live):
 
     Resource = collections.namedtuple(
         'Resource',
@@ -60,7 +60,7 @@ def ModifyBucketLifeCycle(bucketdata, action, age, created_before, matches_stora
     datajson = json.loads(bucketdata[4])
     datajson["lifecycle"]["rule"] = []
     datajson["lifecycle"]["rule"].append(GetLefecycleDict(action, age, created_before, matches_storage_class, num_newer_versions, is_live))
-    return Resource(full_name=bucketdata[0],type=bucketdata[1],parent_type_name=bucketdata[2],name=bucketdata[3],parent=None,data=json.dumps(datajson))
+    return Resource(full_name=bucketdata[0],type=bucketdata[1],parent_type_name=bucketdata[2],name=bucketdata[3],parent=proj_res,data=json.dumps(datajson))
 
 
 def _mock_gcp_resource_iter(_, resource_type):
@@ -79,32 +79,50 @@ def _mock_gcp_resource_iter(_, resource_type):
          'data'],
     )
 
+    p1_res = Resource(
+        full_name='organization/31415926/project/p1/',
+        type='project',
+        name="p1",
+        parent_type_name='project/p1/',
+        parent=None,
+        data='',
+    )
+    p2_res = Resource(
+        full_name='organization/31415926/folder/5358979323/project/p2/',
+        type='project',
+        name="p2",
+        parent_type_name='project/p2/',
+        parent=None,
+        data='',
+    )
+
     tmpfakebucket = CreateFakeBucket("31415926", None, "p1", "bkt11")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 499, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p1_res, tmpfakebucket, "Delete", 499, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", None, "p1", "bkt12")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 500, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p1_res, tmpfakebucket, "Delete", 500, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", None, "p1", "bkt13")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 501, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p1_res, tmpfakebucket, "Delete", 501, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", None, "p1", "bkt21")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 99, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p1_res, tmpfakebucket, "Delete", 99, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", None, "p1", "bkt22")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 100, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p1_res, tmpfakebucket, "Delete", 100, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", None, "p1", "bkt23")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 101, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p1_res, tmpfakebucket, "Delete", 101, None, None, None, None))
+
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt31")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 149, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 149, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt32")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 150, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 150, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt33")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 300, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 300, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt34")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 450, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 450, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt35")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 451, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 451, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt4")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 600, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 600, None, None, None, None))
     tmpfakebucket = CreateFakeBucket("31415926", "5358979323", "p2", "bkt5")
-    resources.append(ModifyBucketLifeCycle(tmpfakebucket, "Delete", 200, None, None, None, None))
+    resources.append(ModifyBucketLifeCycle(p2_res, tmpfakebucket, "Delete", 200, None, None, None, None))
 
     return resources
 
@@ -120,7 +138,7 @@ class RetentionScannerTest(ForsetiTestCase):
         rules_local_path = get_datafile_path(
             __file__,
             'fake_bucket_retention_scanner_rule.yaml')
-        
+
         self.scanner = retention_scanner.RetentionScanner(
             {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
@@ -131,8 +149,8 @@ class RetentionScannerTest(ForsetiTestCase):
         mock_service_config.model_manager.get.return_value = (
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
-        all_lifecycle_info = self.scanner._retrieve_bucket()
-        all_violations = self.scanner._find_bucket_violations(all_lifecycle_info)
+        all_lifecycle_info = self.scanner._retrieve()
+        all_violations = self.scanner._find_violations(all_lifecycle_info)
 
         # f = open("testresult.txt",'w')
         # for i in all_violations:
@@ -148,7 +166,7 @@ class RetentionScannerTest(ForsetiTestCase):
         #     f.write(tmpstr)
         #     print tmpstr
 
-        expected_violations = set([       
+        expected_violations = set([
        rre.Rule.RuleViolation(
            resource_name='p1bkt11',
            resource_type='bucket',
@@ -346,6 +364,3 @@ class RetentionScannerTest(ForsetiTestCase):
 
         self.assertEqual(expected_violations, set(all_violations))
         return
-        
-
-

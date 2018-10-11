@@ -27,6 +27,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
+SUPPORTED_RETENTION_RESOURCE_TYPES = frozenset(['bucket'])
+
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 # Applyto.
 _APPLY_TO_BUCKETS = 'bucket'
@@ -57,7 +59,7 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = RetentionRuleBook(self._load_rule_definitions())
 
-    def find_buckets_violations(self, buckets_lifecycle, force_rebuild=False):
+    def find_violations(self, buckets_lifecycle, force_rebuild=False):
         """Determine whether bucket lifecycle violates rules.
 
         Args:
@@ -83,12 +85,12 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             for rule in rules:
                 violations = itertools.chain(
                     violations,
-                    rule.find_buckets_violations(buckets_lifecycle))
+                    rule.find_violations(buckets_lifecycle))
 
         return set(violations)
 
 
-def get_bucket_retention_range(rule_def, rule_index):
+def get_retention_range(rule_def, rule_index):
     """Add a rule to the rule book.
 
     Args:
@@ -160,7 +162,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of applies_to in rule {}'.format(rule_index))
 
-            retention_range = get_bucket_retention_range(rule_def, rule_index)
+            retention_range = get_retention_range(rule_def, rule_index)
 
             if any(x not in _APPLY_TO_RESOURCES for x in applies_to):
                 raise audit_errors.InvalidRulesSchemaError(
@@ -268,7 +270,6 @@ class Rule(object):
         Returns:
             RuleViolation: The violation
         """
-
         return self.RuleViolation(
             resource_name=buckets_lifecycle.id,
             resource_type=buckets_lifecycle.type,
@@ -279,46 +280,42 @@ class Rule(object):
             violation_describe=describe
         )
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_buckets_violations(self, buckets_lifecycle):
+    def find_violations(self, res):
         """Get a generator for violations
-
         Args:
-            buckets_lifecycle (RetentionBucket): The info of the bucket
+            res (Resource): A class derived from Resource
         Yields:
             RuleViolation: All violations of the bucket breaking the rule.
         """
+
         minretention = self.min_retention
         maxretention = self.max_retention
         exist_match = False
-        for lci in buckets_lifecycle.lifecycle:
-            age = lci.get('condition', {}).get('age', None)
+        for retention_item in res.retentions:
+            if not retention_item.exist_valid_action:
+                continue
+
+            age = retention_item.retention
             if age is None:
                 continue
             if(minretention != None and age < minretention):
                 yield self.generate_rule_violation(
-                    buckets_lifecycle,
+                    res,
                     'age %d is smaller than '
                     'the minimum retention %d' % (age, minretention))
                 continue
             if(maxretention != None and age > maxretention):
                 yield self.generate_rule_violation(
-                    buckets_lifecycle,
+                    res,
                     'age %d is larger than '
                     'the maximum retention %d' % (age, maxretention))
                 continue
-            if 'createdBefore' in lci.get('condition', {}):
-                continue
-            if 'matchesStorageClass' in lci.get('condition', {}):
-                continue
-            if 'numNewerVersions' in lci.get('condition', {}):
-                continue
-            if 'isLive' in lci.get('condition', {}):
+            if retention_item.exist_other_conditions:
                 continue
             exist_match = True
         if exist_match is not True:
             yield self.generate_rule_violation(
-                buckets_lifecycle,
+                res,
                 'No condition satisfies '
                 'the rule (min %s, max %s)' % (str(minretention),
                                                str(maxretention)))

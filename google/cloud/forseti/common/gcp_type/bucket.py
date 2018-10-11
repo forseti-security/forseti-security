@@ -16,6 +16,8 @@
 See: https://cloud.google.com/storage/docs/json_api/v1/
 """
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -38,7 +40,7 @@ class Bucket(resource.Resource):
             display_name=None,
             parent=None,
             lifecycle_state=BucketLifecycleState.UNSPECIFIED,
-            lifecycle=None):
+            retentions=None):
         """Initialize.
 
         Args:
@@ -51,8 +53,7 @@ class Bucket(resource.Resource):
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
-            lifecycle (list): A list of dicts that contains actions
-                ("delete") and conditions ("age")
+            retentions (list): A list of RetentionInfo
         """
         super(Bucket, self).__init__(
             resource_id=bucket_id,
@@ -60,7 +61,64 @@ class Bucket(resource.Resource):
             name=name,
             display_name=display_name,
             parent=parent,
-            lifecycle_state=lifecycle_state)
+            lifecycle_state=lifecycle_state,
+            retentions=retentions)
         self.full_name = full_name
         self.data = data
-        self.lifecycle = lifecycle
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        """Create a bucket from a JSON string.
+        Args:
+            parent (Resource): resource this bucket belongs to.
+            json_string(str): JSON string of a bucket GCP API response.
+        Returns:
+            Bucket: bucket resource.
+        """
+        bucket_dict = json.loads(json_string)
+        bucket_id = bucket_dict['id']
+        return cls(
+            parent=parent,
+            bucket_id=bucket_id,
+            name='buckets/' + bucket_id,
+            full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
+            display_name=bucket_id,
+            # locations=[bucket_dict['location']],
+            retentions=Bucket.get_retentions_list_from_json(bucket_dict),
+            data=json_string,
+        )
+
+    @classmethod
+    def get_retentions_list_from_json(cls, bucket_dict):
+        """Get the retention of the bucket from a dict.
+        Args:
+            bucket_dict(dict): The dict contains what is decoded from JSON
+
+        Returns:
+            list: A list of RetentionInfo
+        """
+        retentions = []
+        if 'lifecycle' in bucket_dict and 'rule' in bucket_dict['lifecycle']:
+            for lc_item in bucket_dict['lifecycle']['rule']:
+                conditions = lc_item['condition']
+                action = lc_item['action']
+                retention_value = None
+                exist_other_conditions = False
+                exist_valid_action = False
+                if conditions is not None:
+                    retention_value = conditions['age']
+                    if retention_value is None:
+                        if conditions:
+                            exist_other_conditions = True
+                    elif len(conditions) > 1:
+                        exist_other_conditions = True
+
+                if action is not None and 'type' in action:
+                    exist_valid_action = (action['type'] == 'Delete')
+
+                new_retention = resource.RetentionInfo(
+                    retention=retention_value,
+                    exist_valid_action=exist_valid_action,
+                    exist_other_conditions=exist_other_conditions)
+                retentions.append(new_retention)
+        return retentions

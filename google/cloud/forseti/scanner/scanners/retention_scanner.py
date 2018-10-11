@@ -14,12 +14,11 @@
 
 """Scanner for the Bucket retention rules engine."""
 
-import json
-
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import retention_rules_engine
+from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.common.gcp_type import project
 
 
 LOGGER = logger.get_logger(__name__)
@@ -47,7 +46,7 @@ class RetentionScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-        self.rules_engine = retention_rules_engine.RetentionRulesEngine(
+        self.rules_engine = rre.RetentionRulesEngine(
             rules_file_path=self.rules,
             snapshot_timestamp=self.snapshot_timestamp)
         self.rules_engine.build_rule_book(self.global_configs)
@@ -86,55 +85,49 @@ class RetentionScanner(base_scanner.BaseScanner):
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
-    def _find_bucket_violations(self, bucket_lifecycle_info):
+    def _find_violations(self, retention_info):
         """Find violations in the policies.
 
         Args:
-            bucket_lifecycle_info (list): Bucket lifecycle to
-                search for violations in.
+            retention_info (list): Contains all supported resource in retention
 
         Returns:
             list: All violations.
         """
         all_violations = []
-        LOGGER.info('Finding retention violations...')
 
-        for single_info in bucket_lifecycle_info:
-            violations = self.rules_engine.find_buckets_violations(
+        for single_info in retention_info:
+            violations = self.rules_engine.find_violations(
                 single_info)
             all_violations.extend(violations)
 
         return all_violations
 
-    def _retrieve_bucket(self):
-        """Retrieves the bucket data for scanner.
+    def _retrieve(self):
+        """Retrieves the data for scanner.
 
         Returns:
             list: the data column of bucket rows
         """
-
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
-        all_lifecycle_info = []
+        retention_info = []
         with scoped_session as session:
-            for bucketinfo in data_access.scanner_iter(session, 'bucket'):
-                bucketdatadict = json.loads(bucketinfo.data)
-                lifecycleitems = []
-                if ('lifecycle' in bucketdatadict and
-                        'rule' in bucketdatadict.get('lifecycle')):
-                    lifecycleitems = bucketdatadict['lifecycle']['rule']
+            for resource_type in rre.SUPPORTED_RETENTION_RESOURCE_TYPES:
+                for resource in data_access.scanner_iter(
+                        session, resource_type):
+                    proj = project.Project(
+                        project_id=resource.parent.name,
+                        full_name=resource.parent.full_name)
 
-                new_bucket_res = resource_util.create_resource(
-                    bucketinfo.name,
-                    'bucket')
-                new_bucket_res.full_name = bucketinfo.full_name
-                new_bucket_res.lifecycle = lifecycleitems
-                all_lifecycle_info.append(new_bucket_res)
+                    new_res = resource_util.create_resource_from_json(
+                        resource_type, proj, resource.data)
+                    retention_info.append(new_res)
 
-        return all_lifecycle_info
+        return retention_info
 
     def run(self):
         """Run, he entry point for this scanner."""
-        all_lifecycle_info = self._retrieve_bucket()
-        all_violations = self._find_bucket_violations(all_lifecycle_info)
+        retention_info = self._retrieve()
+        all_violations = self._find_violations(retention_info)
         self._output_results(all_violations)
