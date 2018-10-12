@@ -30,7 +30,6 @@ LOGGER = logger.get_logger(__name__)
 SUPPORTED_RETENTION_RESOURCE_TYPES = frozenset(['bucket'])
 
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
-# Applyto.
 _APPLY_TO_BUCKETS = 'bucket'
 _APPLY_TO_RESOURCES = frozenset([_APPLY_TO_BUCKETS])
 
@@ -91,7 +90,7 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
 
 
 def get_retention_range(rule_def, rule_index):
-    """Add a rule to the rule book.
+    """Get the min and max value of the retention.
 
     Args:
         rule_def (dict): A dictionary containing rule definition
@@ -113,7 +112,7 @@ def get_retention_range(rule_def, rule_index):
             raise audit_errors.InvalidRulesSchemaError(
                 'minimum_retention larger than '
                 'maximum_retention in rule {}'.format(rule_index))
-    return (minimum_retention, maximum_retention)
+    return minimum_retention, maximum_retention
 
 
 class RetentionRuleBook(bre.BaseRuleBook):
@@ -166,7 +165,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
 
             if any(x not in _APPLY_TO_RESOURCES for x in applies_to):
                 raise audit_errors.InvalidRulesSchemaError(
-                    'Duplicate applies_to in rule {}'.format(rule_index))
+                    'Invalid applies_to resource in rule {}'.format(rule_index))
 
             for appto in applies_to:
                 self.create_and_add_rule(
