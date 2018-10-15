@@ -244,7 +244,7 @@ class Rule(object):
     RuleViolation = namedtuple(
         'RuleViolation',
         ['resource_name', 'resource_type', 'full_name', 'rule_name',
-         'rule_index', 'violation_type', 'violation_describe'])
+         'rule_index', 'violation_type', 'violation_data'])
 
     def __init__(self, rule_name, rule_index, min_retention, max_retention):
         """Initialize.
@@ -260,12 +260,11 @@ class Rule(object):
         self.min_retention = min_retention
         self.max_retention = max_retention
 
-    def generate_rule_violation(self, buckets_lifecycle, describe):
+    def generate_rule_violation(self, buckets_lifecycle):
         """generate a violation.
 
         Args:
             buckets_lifecycle (RetentionBucket): The info of the bucket
-            describe (str): The description of the violation
         Returns:
             RuleViolation: The violation
         """
@@ -276,7 +275,7 @@ class Rule(object):
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type=VIOLATION_TYPE,
-            violation_describe=describe
+            violation_data=buckets_lifecycle.data
         )
 
     def find_violations(self, res):
@@ -298,23 +297,13 @@ class Rule(object):
             if age is None:
                 continue
             if(minretention != None and age < minretention):
-                yield self.generate_rule_violation(
-                    res,
-                    'age %d is smaller than '
-                    'the minimum retention %d' % (age, minretention))
+                yield self.generate_rule_violation(res)
                 continue
             if(maxretention != None and age > maxretention):
-                yield self.generate_rule_violation(
-                    res,
-                    'age %d is larger than '
-                    'the maximum retention %d' % (age, maxretention))
+                yield self.generate_rule_violation(res)
                 continue
             if retention_item.exist_other_conditions:
                 continue
             exist_match = True
         if exist_match is not True:
-            yield self.generate_rule_violation(
-                res,
-                'No condition satisfies '
-                'the rule (min %s, max %s)' % (str(minretention),
-                                               str(maxretention)))
+            yield self.generate_rule_violation(res)

@@ -62,7 +62,7 @@ class RetentionScanner(base_scanner.BaseScanner):
             dict: Iterator of RuleViolations as a dict per member.
         """
         for violation in violations:
-            violation_data = {'describe': violation.violation_describe}
+            violation_data = {'describe': violation.violation_data}
 
             yield {
                 'resource_name': violation.resource_name,

@@ -345,6 +345,11 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
 
+        res_data_map = {}
+        res = _mock_gcp_resource_iter(None, 'bucket')
+        for i in res:
+            res_data_map[i.name] = i.data
+
         all_lifecycle_info = self.scanner._retrieve()
         all_violations = self.scanner._find_violations(all_lifecycle_info)
 
@@ -356,15 +361,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
            rule_name="exact retention 365",
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
-           violation_describe='age 364 is smaller than the minimum retention 365'),
-       rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-1",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-1/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_describe='No condition satisfies the rule (min 365, max 365)'),
+           violation_data=res_data_map['demo-project-test-bucket-1']),
        rre.Rule.RuleViolation(
            resource_name="demo-project-test-bucket-2",
            resource_type="bucket",
@@ -372,15 +369,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
            rule_name="exact retention 365",
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
-           violation_describe='age 366 is larger than the maximum retention 365'),
-       rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-2",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-2/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_describe='No condition satisfies the rule (min 365, max 365)'),
+           violation_data=res_data_map['demo-project-test-bucket-2']),
        rre.Rule.RuleViolation(
            resource_name="demo-project-test-bucket-3",
            resource_type="bucket",
@@ -388,7 +377,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
            rule_name="exact retention 365",
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
-           violation_describe='No condition satisfies the rule (min 365, max 365)'),
+           violation_data=res_data_map['demo-project-test-bucket-3']),
        rre.Rule.RuleViolation(
            resource_name="demo-project-test-bucket-4",
            resource_type="bucket",
@@ -396,15 +385,15 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
            rule_name="exact retention 365",
            rule_index=0,
            violation_type='RETENTION_VIOLATION',
-           violation_describe='No condition satisfies the rule (min 365, max 365)'),
+           violation_data=res_data_map['demo-project-test-bucket-4']),
        rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-5",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-5/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_describe='No condition satisfies the rule (min 365, max 365)'),
+            resource_name="demo-project-test-bucket-5",
+            resource_type="bucket",
+            full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-5/",
+            rule_name="exact retention 365",
+            rule_index=0,
+            violation_type='RETENTION_VIOLATION',
+            violation_data=res_data_map['demo-project-test-bucket-5']),
         rre.Rule.RuleViolation(
             resource_name="demo-project-test-bucket-6",
             resource_type="bucket",
@@ -412,7 +401,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             rule_name="exact retention 365",
             rule_index=0,
             violation_type='RETENTION_VIOLATION',
-            violation_describe='No condition satisfies the rule (min 365, max 365)'),
+            violation_data=res_data_map['demo-project-test-bucket-6']),
         rre.Rule.RuleViolation(
             resource_name="demo-project-test-bucket-7",
             resource_type="bucket",
@@ -420,7 +409,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
             rule_name="exact retention 365",
             rule_index=0,
             violation_type='RETENTION_VIOLATION',
-            violation_describe='age 201 is smaller than the minimum retention 365')
+            violation_data=res_data_map['demo-project-test-bucket-7']),
         ])
 
         self.assertEqual(expected_violations, set(all_violations))
