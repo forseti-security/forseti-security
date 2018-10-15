@@ -527,11 +527,12 @@ class CaiTemporaryStore(object):
             return asset_pb.resource.parent
 
         if (asset_pb.asset_type.startswith('google.appengine') or
-                asset_pb.asset_type.startswith('google.bigquery')):
+                asset_pb.asset_type.startswith('google.bigquery') or
+                asset_pb.asset_type.startswith('google.spanner')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 
-        LOGGER.warn('Could not determine parent name for %s', asset_pb)
+        LOGGER.debug('Could not determine parent name for %s', asset_pb)
         return ''
 
 

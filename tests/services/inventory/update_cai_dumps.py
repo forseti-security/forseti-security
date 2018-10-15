@@ -24,11 +24,13 @@ import json
 import os
 
 from tests.services.inventory import gcp_api_mocks
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
+LOGGER = logger.get_logger(__name__)
 MODULE_DIR = os.path.dirname(os.path.abspath(__file__))
 RESOURCE_DUMP_FILE = os.path.join(MODULE_DIR,
                                   'test_data',
@@ -36,6 +38,9 @@ RESOURCE_DUMP_FILE = os.path.join(MODULE_DIR,
 IAM_POLICY_DUMP_FILE = os.path.join(MODULE_DIR,
                                     'test_data',
                                     'mock_cai_iam_policies.dump')
+ADDITIONAL_RESOURCES_FILE = os.path.join(MODULE_DIR,
+                                         'test_data',
+                                         'additional_cai_resources.dump')
 
 class NullProgresser(Progresser):
     """No-op progresser to suppress output."""
@@ -123,6 +128,14 @@ def appengine_version(item):
     return _create_asset(name, asset_type, None, item.data(), None)
 
 
+def billing_account(item):
+    name = '//cloudbilling.googleapis.com/{}'.format(item['name'])
+    asset_type = 'google.cloud.billing.BillingAccount'
+    parent_name = ''
+    return _create_asset(name, asset_type, parent_name, item.data(),
+                         item.get_iam_policy())
+
+
 def bucket(item):
     parent = item.parent()
     name = '//storage.googleapis.com/{}'.format(item['name'])
@@ -190,6 +203,7 @@ CAI_TYPE_MAP = {
     'appengine_app': appengine_app,
     'appengine_service': appengine_service,
     'appengine_version': appengine_version,
+    'billing_account': billing_account,
     'bucket': bucket,
     'backendservice': backendservice,
     'disk': disk,
@@ -219,6 +233,7 @@ def convert_item_to_assets(item):
 
 def main():
     """Create CAI dump files from fake data."""
+    logger.enable_console_log()
     config = InventoryConfig(
         gcp_api_mocks.ORGANIZATION_ID, '', {}, '', {'enabled': False})
 
@@ -237,6 +252,13 @@ def main():
                     resources.append(resource)
                 if iam_policy:
                     iam_policies.append(iam_policy)
+
+    with open(ADDITIONAL_RESOURCES_FILE, 'r') as f:
+        for line in f:
+            if line.startswith('#'):
+                continue
+            resources.append(line.strip())
+
     write_data(resources, RESOURCE_DUMP_FILE)
     write_data(iam_policies, IAM_POLICY_DUMP_FILE)
 
