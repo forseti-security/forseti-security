@@ -369,7 +369,9 @@ class Rule(object):
             violation_reason=violation_reason,
             project_id=ke_cluster.project_id,
             cluster_name=ke_cluster.name,
-            resource_data=str(ke_cluster))
+            resource_data=str(ke_cluster),
+            resource_name=ke_cluster.name,
+        )
 
     def __eq__(self, other):
         """Test whether Rule equals other Rule.
@@ -439,4 +441,5 @@ RuleViolation = namedtuple('RuleViolation', [
     'project_id',
     'cluster_name',
     'resource_data',
+    'resource_name',
 ])
