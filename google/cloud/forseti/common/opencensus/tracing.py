@@ -36,6 +36,9 @@ except ImportError:
         'found. Run `pip install .[tracing]` to install tracing libraries.')
     OPENCENSUS_ENABLED = False
 
+exporter = stackdriver_exporter.StackdriverExporter()
+TRACER = Tracer(exporter=exporter)
+
 
 def create_client_interceptor(endpoint):
     """Create gRPC client interceptor.
@@ -46,10 +49,8 @@ def create_client_interceptor(endpoint):
     Returns:
         OpenCensusClientInterceptor: a gRPC client-side interceptor.
     """
-    exporter = create_exporter()
-    tracer = Tracer(exporter=exporter)
     return client_interceptor.OpenCensusClientInterceptor(
-        tracer,
+        TRACER,
         host_port=endpoint)
 
 
@@ -84,10 +85,10 @@ def trace_integrations(integrations=None):
     """
     if integrations is None:
         integrations = DEFAULT_INTEGRATIONS
-    tracer = execution_context.get_opencensus_tracer()
+    execution_context.set_opencensus_tracer(tracing.TRACER)
     integrated_libraries = config_integration.trace_integrations(
         integrations,
-        tracer)
+        TRACER)
     LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
     return integrated_libraries
 

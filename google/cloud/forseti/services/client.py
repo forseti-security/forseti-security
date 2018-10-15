@@ -18,6 +18,14 @@ import binascii
 import os
 import grpc
 
+
+from opencensus.trace import attributes_helper
+from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
+
+from opencensus.trace.tracer import Tracer
+from opencensus.trace.exporters import stackdriver_exporter
+from opencensus.trace.ext.grpc import client_interceptor
 from google.cloud.forseti.common.opencensus import tracing
 
 from google.cloud.forseti.services.explain import explain_pb2
@@ -71,7 +79,6 @@ def require_model(f):
         raise ModelNotSetError('API requires model to be set.')
     return wrapper
 
-
 def create_interceptors(endpoint):
     """Create gRPC client interceptors.
 
@@ -86,6 +93,9 @@ def create_interceptors(endpoint):
         # It's okay for this to be enabled on the client, even if the tracing
         # flag is disabled on the server.
         interceptors.append(tracing.create_client_interceptor(endpoint))
+        execution_context.set_opencensus_tracer(tracing.TRACER)
+        _tracer = execution_context.get_opencensus_tracer()
+        print _tracer.__dict__
     return tuple(interceptors)
 
 
@@ -394,7 +404,8 @@ class InventoryClient(ForsetiClient):
         Returns:
             proto: the returned proto message of create inventory
         """
-
+        _tracer = execution_context.get_opencensus_tracer()
+        print _tracer.__dict__
         request = inventory_pb2.CreateRequest(
             background=background,
             model_name=import_as,

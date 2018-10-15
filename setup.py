@@ -67,7 +67,7 @@ REQUIRED_PACKAGES = [
 
 OPTIONAL_PACKAGES = {
     'tracing': [
-        'opencensus==0.1.6',
+        'opencensus==0.1.8',
         'google-cloud-trace==0.19.0',
     ]
 }
