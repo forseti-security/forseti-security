@@ -52,7 +52,7 @@ def create_column(table, column):
     column.create(table, populate_default=True)
 
 
-def alter_column(table, column):
+def alter_column(table, old_column, new_column):
     """Alter Column.
 
     Args:
@@ -62,8 +62,14 @@ def alter_column(table, column):
         new_column (sqlalchemy.schema.Column): The sql alchemy column object,
             this is the column to update to.
     """
-    LOGGER.info('Attempting to alter column: %s', column.name)
-    column.alter(table, table.metadata.bind)
+    LOGGER.info('Attempting to alter column: %s', old_column.name)
+
+    # bind the columns with the corresponding table
+    old_column.table = table
+
+    old_column.alter(name=new_column.name,
+                     type=new_column.type,
+                     nullable=new_column.nullable)
 
 
 def drop_column(table, column):
@@ -82,12 +88,12 @@ COLUMN_ACTION_MAPPING = {ColumnAction.DROP: drop_column,
                          ColumnAction.ALTER: alter_column}
 
 
-def migrate_schema(base, base_subclasses):
+def migrate_schema(base, dao_classes):
     """Create all tables in the database if not existing.
 
     Args:
         base (Base): Declarative base.
-        base_subclasses (list): A list of subclasses.
+        dao_classes (list): A list of dao classes.
     """
 
     # Find all the Table objects for each of the classes.
@@ -96,19 +102,19 @@ def migrate_schema(base, base_subclasses):
 
     schema_update_actions_method = 'get_schema_update_actions'
 
-    for subclass in base_subclasses:
-        get_schema_update_actions = getattr(subclass,
+    for dao_class in dao_classes:
+        get_schema_update_actions = getattr(dao_class,
                                             schema_update_actions_method,
                                             None)
         if (not callable(get_schema_update_actions) or
-                subclass.__tablename__ not in tables):
+                dao_class.__tablename__ not in tables):
             LOGGER.warn('Method: %s is not callable or Table: %s doesn\t '
                         'exist', schema_update_actions_method,
-                        subclass.__tablename__)
+                        dao_class.__tablename__)
             continue
-        LOGGER.info('Updating table %s', subclass.__tablename__)
+        LOGGER.info('Updating table %s', dao_class.__tablename__)
         # schema_update will require the Table object.
-        table = tables.get(subclass.__tablename__)
+        table = tables.get(dao_class.__tablename__)
         schema_update_actions = get_schema_update_actions()
         for column_action, columns in schema_update_actions.iteritems():
             if column_action in [ColumnAction.CREATE, ColumnAction.DROP]:
@@ -136,8 +142,7 @@ def _alter_columns(column_action, columns, table):
         except OperationalError:
             LOGGER.info('Failed to update db schema, table=%s',
                         table.name)
-        except Exception as e:  # pylint: disable=broad-except
-            print (e)
+        except Exception:  # pylint: disable=broad-except
             LOGGER.exception(
                 'Unexpected error happened when attempting '
                 'to update database schema, table: %s',
@@ -196,16 +201,15 @@ if __name__ == '__main__':
     scanner_dao.initialize(SQL_ENGINE)
 
     # Find all the child classes inherited from declarative base class.
-    scanner_base_subclasses = _find_subclasses(scanner_dao.BASE)
+    SCANNER_DAO_CLASSES = _find_subclasses(scanner_dao.BASE)
 
-    inventory_base_subclasses = _find_subclasses(inventory_dao.BASE)
-    inventory_base_subclasses.extend([inventory_dao.CaiTemporaryStore])
+    INVENTORY_DAO_CLASSES = _find_subclasses(inventory_dao.BASE)
+    INVENTORY_DAO_CLASSES.extend([inventory_dao.CaiTemporaryStore])
 
     DECLARITIVE_BASE_MAPPING = {
-        scanner_dao.BASE: scanner_base_subclasses,
-        inventory_dao.BASE: inventory_base_subclasses}
+        scanner_dao.BASE: SCANNER_DAO_CLASSES,
+        inventory_dao.BASE: INVENTORY_DAO_CLASSES}
 
-    for (declaritive_base,
-         base_subclasses) in DECLARITIVE_BASE_MAPPING.iteritems():
+    for declaritive_base, classes in DECLARITIVE_BASE_MAPPING.iteritems():
         declaritive_base.metadata.bind = SQL_ENGINE
-        migrate_schema(declaritive_base, base_subclasses)
+        migrate_schema(declaritive_base, classes)
