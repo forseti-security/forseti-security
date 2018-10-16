@@ -451,9 +451,10 @@ class CaiTemporaryStore(object):
         """Maintain all the schema changes for this table.
 
         Returns:
-            dict: A mapping of Action: {old_column: new_column}.
+            list: A list of Action.
         """
 
+        #  Format of the columns_to_alter list: {old_column: new_column}
         columns_to_alter = {
             Column('asset_data',
                    LargeBinary(),
