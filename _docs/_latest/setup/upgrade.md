@@ -460,8 +460,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Configuration file `forseti_conf_server.yaml` updates:  
     **Inventory**
     
-    Special Note: Make sure the bucket created for CAI export is in Forseti 
-    project.
+    Special Note: The FORSETI_CAI_BUCKET needs to be in Forseti project.
     - Add `cai` section. 
        ```
        inventory:
