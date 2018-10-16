@@ -119,8 +119,8 @@ class LienScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding lien violations...')
 
         for parent_resource, liens in parent_resource_to_liens.iteritems():
-            violations = self.rules_engine.find_violations(
-                parent_resource, liens)
+            violations = list(self.rules_engine.find_violations(
+                parent_resource, liens))
             LOGGER.debug(violations)
             all_violations.extend(violations)
         return all_violations
