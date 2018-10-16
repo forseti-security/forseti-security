@@ -388,6 +388,8 @@ class Inventory(BASE):
 class CaiTemporaryStore(object):
     """CAI temporary inventory table."""
 
+    __tablename__ = 'cai_temporary_store'
+
     # Class members created in initialize() by mapper()
     name = None
     parent_name = None
@@ -433,7 +435,7 @@ class CaiTemporaryStore(object):
                              Column('content_type', Enum(ContentTypes),
                                     nullable=False),
                              Column('asset_type', String(255), nullable=False),
-                             Column('asset_data', LargeBinary(),
+                             Column('asset_data', LargeBinary(length=(2**32)-1),
                                     nullable=False),
                              Index('idx_parent_name', 'parent_name'),
                              PrimaryKeyConstraint('content_type',
@@ -442,6 +444,24 @@ class CaiTemporaryStore(object):
                                                   name='cai_temp_store_pk'))
 
             mapper(cls, my_table)
+
+    @staticmethod
+    def get_schema_update_actions():
+        """Maintain all the schema changes for this table.
+
+        Returns:
+            dict: A mapping of Action: {old_column: new_column}.
+        """
+
+        columns_to_alter = {
+            Column('asset_data',
+                   LargeBinary(),
+                   nullable=False): Column('asset_data',
+                                           LargeBinary(length=(2**32)-1),
+                                           nullable=False)}
+
+        schema_update_actions = {'ALTER': columns_to_alter}
+        return schema_update_actions
 
     def extract_asset_data(self, content_type):
         """Extracts the data from the asset protobuf based on the content type.
