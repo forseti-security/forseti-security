@@ -28,31 +28,31 @@ class ResourceType(object):
     """Resource types."""
 
     # Org resources
-    ORGANIZATION = resources.Organization.type()
+    ORGANIZATION = resources.ResourceManagerOrganization.type()
     BILLING_ACCOUNT = resources.BillingAccount.type()
-    FOLDER = resources.Folder.type()
-    PROJECT = resources.Project.type()
-    LIEN = resources.Lien.type()
+    FOLDER = resources.ResourceManagerFolder.type()
+    PROJECT = resources.ResourceManagerProject.type()
+    LIEN = resources.ResourceManagerLien.type()
 
     # Groups
     GROUP = resources.GsuiteGroup.type()
 
     # IAM
-    SERVICE_ACCOUNT = resources.ServiceAccount.type()
-    SERVICE_ACCOUNT_KEY = resources.ServiceAccountKey.type()
+    SERVICE_ACCOUNT = resources.IamServiceAccount.type()
+    SERVICE_ACCOUNT_KEY = resources.IamServiceAccountKey.type()
 
     # Compute engine
-    BACKEND_SERVICE = resources.BackendService.type()
-    FIREWALL_RULE = resources.Firewall.type()
-    FORWARDING_RULE = resources.ForwardingRule.type()
-    INSTANCE = resources.Instance.type()
-    INSTANCE_GROUP = resources.InstanceGroup.type()
-    INSTANCE_GROUP_MANAGER = resources.InstanceGroupManager.type()
-    INSTANCE_TEMPLATE = resources.InstanceTemplate.type()
+    BACKEND_SERVICE = resources.ComputeBackendService.type()
+    FIREWALL_RULE = resources.ComputeFirewall.type()
+    FORWARDING_RULE = resources.ComputeForwardingRule.type()
+    INSTANCE = resources.ComputeInstance.type()
+    INSTANCE_GROUP = resources.ComputeInstanceGroup.type()
+    INSTANCE_GROUP_MANAGER = resources.ComputeInstanceGroupManager.type()
+    INSTANCE_TEMPLATE = resources.ComputeInstanceTemplate.type()
 
     # Data storage
-    BIGQUERY = resources.DataSet.type()
-    BUCKET = resources.GcsBucket.type()
+    BIGQUERY = resources.BigqueryDataSet.type()
+    BUCKET = resources.StorageBucket.type()
     CLOUDSQL = resources.CloudSqlInstance.type()
 
     # AppEngine
@@ -64,7 +64,7 @@ class ResourceType(object):
     KE_CLUSTER = resources.KubernetesCluster.type()
 
     # Logging
-    LOG_SINK = resources.Sink.type()
+    LOG_SINK = resources.LoggingSink.type()
 
     resource_types = frozenset([
         ORGANIZATION,

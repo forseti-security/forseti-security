@@ -22,8 +22,6 @@ from urlparse import urljoin
 import google_auth_httplib2
 import googleapiclient
 from googleapiclient import discovery
-from googleapiclient.http import set_user_agent
-import httplib2
 from ratelimiter import RateLimiter
 from retrying import retry
 import uritemplate
@@ -31,18 +29,15 @@ import uritemplate
 import google.auth
 from google.auth.credentials import with_scopes_if_required
 
-from google.cloud import forseti as forseti_security
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
 import google.oauth2.credentials
 
 CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
-
-# Per request max wait timeout.
-HTTP_REQUEST_TIMEOUT = 30.0
 
 # Per thread storage.
 LOCAL_THREAD = threading.local()
@@ -128,26 +123,6 @@ def _build_service_from_document(credentials, document_path):
         service=discovery_data,
         credentials=credentials
     )
-
-
-def _build_http(http=None):
-    """Set custom Forseti user agent and timeouts on a new http object.
-
-    Args:
-        http (object): An instance of httplib2.Http, or compatible, used for
-            testing.
-
-    Returns:
-        httplib2.Http: An http object with the forseti user agent set.
-    """
-    if not http:
-        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
-    user_agent = 'Python-httplib2/{} (gzip), {}/{}'.format(
-        httplib2.__version__,
-        forseti_security.__package_name__,
-        forseti_security.__version__)
-
-    return set_user_agent(http, user_agent)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -357,7 +332,7 @@ class GCPRepository(object):
             return self._local.http
 
         authorized_http = google_auth_httplib2.AuthorizedHttp(
-            self._credentials, http=_build_http())
+            self._credentials, http=http_helpers.build_http())
 
         if self._use_cached_http:
             self._local.http = authorized_http

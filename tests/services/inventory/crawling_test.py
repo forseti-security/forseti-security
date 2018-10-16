@@ -29,6 +29,7 @@ from google.cloud.forseti.services.inventory.base.storage import Memory as Memor
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
 LOGGER = logger.get_logger(__name__)
+
 TEST_RESOURCE_DIR_PATH = os.path.join(
     os.path.dirname(__file__), 'test_data')
 
@@ -387,9 +388,25 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'billing_account': {'resource': 2, 'iam_policy': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
+            'compute_autoscaler': {'resource': 1},
+            'compute_backendbucket': {'resource': 1},
+            'compute_healthcheck': {'resource': 1},
+            'compute_httphealthcheck': {'resource': 1},
+            'compute_httpshealthcheck': {'resource': 1},
+            'compute_license': {'resource': 1},
             'compute_project': {'resource': 2},
+            'compute_sslcertificate': {'resource': 1},
+            'compute_targethttpproxy': {'resource': 1},
+            'compute_targethttpsproxy': {'resource': 1},
+            'compute_targetinstance': {'resource': 1},
+            'compute_targetpool': {'resource': 1},
+            'compute_targetsslproxy': {'resource': 1},
+            'compute_targettcpproxy': {'resource': 1},
+            'compute_urlmap': {'resource': 1},
             'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
+            'dns_managedzone': {'resource': 1},
+            'dns_policy': {'resource': 1},
             'firewall': {'resource': 7},
             'folder': {'iam_policy': 3, 'resource': 3},
             'forwardingrule': {'resource': 1},
@@ -413,6 +430,8 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'serviceaccount_key': {'resource': 1},
             'sink': {'resource': 7},
             'snapshot': {'resource': 3},
+            'spanner_database': {'resource': 1},
+            'spanner_instance': {'resource': 1},
             'subnetwork': {'resource': 24},
         }
 

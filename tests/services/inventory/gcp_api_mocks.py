@@ -135,7 +135,9 @@ def _mock_bigquery():
     """Mock bigquery client."""
 
     def _mock_bq_get_datasets_for_projectid(projectid):
-        return results.BQ_GET_DATASETS_FOR_PROJECTID[projectid]
+        if projectid in results.BQ_GET_DATASETS_FOR_PROJECTID:
+            return results.BQ_GET_DATASETS_FOR_PROJECTID[projectid]
+        return {}
 
     def _mock_bq_get_dataset_access(projectid, datasetid):
         return results.BQ_GET_DATASET_ACCESS[projectid][datasetid]
