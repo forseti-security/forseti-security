@@ -435,7 +435,7 @@ class CaiTemporaryStore(object):
                              Column('content_type', Enum(ContentTypes),
                                     nullable=False),
                              Column('asset_type', String(255), nullable=False),
-                             Column('asset_data', LargeBinary(length=(2**32)-1),
+                             Column('asset_data', LargeBinary(length=(2**32) - 1),
                                     nullable=False),
                              Index('idx_parent_name', 'parent_name'),
                              PrimaryKeyConstraint('content_type',
@@ -457,7 +457,7 @@ class CaiTemporaryStore(object):
             Column('asset_data',
                    LargeBinary(),
                    nullable=False): Column('asset_data',
-                                           LargeBinary(length=(2**32)-1),
+                                           LargeBinary(length=(2**32) - 1),
                                            nullable=False)}
 
         schema_update_actions = {'ALTER': columns_to_alter}
