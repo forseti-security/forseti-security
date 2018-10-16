@@ -64,7 +64,7 @@ def alter_column(table, old_column, new_column):
     """
     LOGGER.info('Attempting to alter column: %s', old_column.name)
 
-    # bind the columns with the corresponding table
+    # bind the old column with the corresponding table.
     old_column.table = table
 
     old_column.alter(name=new_column.name,
@@ -89,7 +89,7 @@ COLUMN_ACTION_MAPPING = {ColumnAction.DROP: drop_column,
 
 
 def migrate_schema(base, dao_classes):
-    """Create all tables in the database if not existing.
+    """Migrate database schema.
 
     Args:
         base (Base): Declarative base.

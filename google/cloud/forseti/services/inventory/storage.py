@@ -454,7 +454,7 @@ class CaiTemporaryStore(object):
             list: A list of Action.
         """
 
-        #  Format of the columns_to_alter list: {old_column: new_column}
+        #  Format of the columns_to_alter dict: {old_column: new_column}
         columns_to_alter = {
             Column('asset_data',
                    LargeBinary(),
