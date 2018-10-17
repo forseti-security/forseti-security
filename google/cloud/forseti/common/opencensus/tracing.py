@@ -29,6 +29,8 @@ try:
     from opencensus.trace.ext.grpc import server_interceptor
     from opencensus.trace.samplers import always_on
     from opencensus.trace.tracer import Tracer
+    from opencensus.trace.exporters import stackdriver_exporter
+
     OPENCENSUS_ENABLED = True
 except ImportError:
     LOGGER.warning(
