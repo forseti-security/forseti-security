@@ -377,6 +377,14 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_crm_folder_org_policies(self, folder_id):
+        """Folder organization policies from gcp API call.
+
+        Args:
+            folder_id (str): id of the folder to get policy.
+        """
+
+    @abc.abstractmethod
     def iter_crm_folders(self, parent_id):
         """Iterate Folders from GCP API.
 
@@ -385,11 +393,27 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_crm_organization_org_policies(self, org_id):
+        """Organization organization policies from gcp API call.
+
+        Args:
+            org_id (str): id of the organization to get policy.
+        """
+
+    @abc.abstractmethod
     def iter_crm_project_liens(self, project_number):
         """Iterate Liens from GCP API.
 
         Args:
             project_number (str): id of the parent project of the lien.
+        """
+
+    @abc.abstractmethod
+    def iter_crm_project_org_policies(self, project_number):
+        """Project organization policies from gcp API call.
+
+        Args:
+            project_number (str): id of the parent project of the policy.
         """
 
     @abc.abstractmethod
@@ -1302,6 +1326,19 @@ class ApiClientImpl(ApiClient):
         return self.crm.get_project_iam_policies(project_number)
 
     @create_lazy('crm', _create_crm)
+    def iter_crm_folder_org_policies(self, folder_id):
+        """Folder organization policies from gcp API call.
+
+        Args:
+            folder_id (str): id of the folder to get policy.
+
+        Yields:
+            dict: Generator of org policies.
+        """
+        for org_policy in self.crm.get_folder_org_policies(folder_id):
+            yield org_policy
+
+    @create_lazy('crm', _create_crm)
     def iter_crm_folders(self, parent_id):
         """Iterate Folders from GCP API.
 
@@ -1315,6 +1352,19 @@ class ApiClientImpl(ApiClient):
             yield folder
 
     @create_lazy('crm', _create_crm)
+    def iter_crm_organization_org_policies(self, org_id):
+        """Organization organization policies from gcp API call.
+
+        Args:
+            org_id (str): id of the organization to get policy.
+
+        Yields:
+            dict: Generator of org policies.
+        """
+        for org_policy in self.crm.get_org_org_policies(org_id):
+            yield org_policy
+
+    @create_lazy('crm', _create_crm)
     def iter_crm_project_liens(self, project_number):
         """Iterate Liens from GCP API.
 
@@ -1326,6 +1376,19 @@ class ApiClientImpl(ApiClient):
         """
         for lien in self.crm.get_project_liens(project_number):
             yield lien
+
+    @create_lazy('crm', _create_crm)
+    def iter_crm_project_org_policies(self, project_number):
+        """Project organization policies from gcp API call.
+
+        Args:
+            project_number (str): id of the parent project of the policy.
+
+        Yields:
+            dict: Generator of org policies.
+        """
+        for org_policy in self.crm.get_project_org_policies(project_number):
+            yield org_policy
 
     @create_lazy('crm', _create_crm)
     def iter_crm_projects(self, parent_type, parent_id):

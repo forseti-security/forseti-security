@@ -152,6 +152,7 @@ class InventoryImporter(object):
             'bucket',
             'dataset',
             'compute_project',
+            'crm_org_policy',
             'disk',
             'image',
             'instancegroup',
@@ -584,6 +585,9 @@ class InventoryImporter(object):
             'compute_project': (None,
                                 self._convert_computeproject,
                                 None),
+            'crm_org_policy': (None,
+                                self._convert_crm_org_policy,
+                                None),
             'disk': (None,
                      self._convert_disk,
                      None),
@@ -851,6 +855,27 @@ class InventoryImporter(object):
 
         self.session.add(resource)
         self._add_to_cache(resource, computeproject.id)
+
+    def _convert_crm_org_policy(self, org_policy):
+        """Convert an org policy to a database object.
+
+        Args:
+            org_policy (object): org policy to store.
+        """
+        data = org_policy.get_resource_data()
+        parent, full_res_name, type_name = self._full_resource_name(
+            org_policy)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=full_res_name,
+            type_name=type_name,
+            name=org_policy.get_resource_id(),
+            type=org_policy.get_resource_type(),
+            display_name=data.get('constraint', ''),
+            email='',
+            data=org_policy.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
 
     def _convert_iam_policy(self, iam_policy):
         """Convert an IAM policy to a database object.

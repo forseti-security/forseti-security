@@ -543,6 +543,21 @@ class ResourceManagerOrganization(resource_class_factory('organization', None)):
         return self['name'].split('/', 1)[-1]
 
 
+class ResourceManagerOrgPolicy(resource_class_factory('crm_org_policy', None)):
+    """The Resource implementation for Resource Manager Organization Policy."""
+
+    def key(self):
+        """Get key of this resource.
+
+        Returns:
+            str: key of this resource
+        """
+        unique_key = '/'.join([self.parent().type(),
+                               self.parent().key(),
+                               self['constraint']])
+        return '%u' % ctypes.c_size_t(hash(unique_key)).value
+
+
 class ResourceManagerFolder(resource_class_factory('folder', None)):
     """The Resource implementation for Folder."""
 
@@ -1265,6 +1280,20 @@ class ResourceManagerFolderIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Resource Manager Folder."""
 
 
+class ResourceManagerFolderOrgPolicyIterator(resource_iter_class_factory(
+        api_method_name='iter_crm_folder_org_policies',
+        resource_name='crm_org_policy',
+        api_method_arg_key='name')):
+    """The Resource iterator implementation for CRM Folder Org Policies."""
+
+
+class ResourceManagerOrganizationOrgPolicyIterator(resource_iter_class_factory(
+        api_method_name='iter_crm_organization_org_policies',
+        resource_name='crm_org_policy',
+        api_method_arg_key='name')):
+    """The Resource iterator for CRM Organization Org Policies."""
+
+
 # Project iterator requires looking up parent type, so cannot use class factory.
 class ResourceManagerProjectIterator(ResourceIterator):
     """The Resource iterator implementation for Resource Manager Project."""
@@ -1281,6 +1310,13 @@ class ResourceManagerProjectIterator(ResourceIterator):
         for data in gcp.iter_crm_projects(
                 parent_type=parent_type, parent_id=parent_id):
             yield FACTORIES['project'].create_new(data)
+
+
+class ResourceManagerProjectOrgPolicyIterator(resource_iter_class_factory(
+        api_method_name='iter_crm_project_org_policies',
+        resource_name='crm_org_policy',
+        api_method_arg_key='projectNumber')):
+    """The Resource iterator implementation for CRM Project Org Policies."""
 
 
 # AppEngine iterators do not support using the class factory.
@@ -1747,6 +1783,7 @@ FACTORIES = {
             IamOrganizationCuratedRoleIterator,
             IamOrganizationRoleIterator,
             LoggingOrganizationSinkIterator,
+            ResourceManagerOrganizationOrgPolicyIterator,
             ResourceManagerFolderIterator,
             ResourceManagerProjectIterator,
         ]}),
@@ -1756,6 +1793,7 @@ FACTORIES = {
         'cls': ResourceManagerFolder,
         'contains': [
             LoggingFolderSinkIterator,
+            ResourceManagerFolderOrgPolicyIterator,
             ResourceManagerFolderIterator,
             ResourceManagerProjectIterator,
         ]}),
@@ -1801,6 +1839,7 @@ FACTORIES = {
             KubernetesClusterIterator,
             LoggingProjectSinkIterator,
             ResourceManagerProjectLienIterator,
+            ResourceManagerProjectOrgPolicyIterator,
             SpannerInstanceIterator,
             StorageBucketIterator,
         ]}),
@@ -1986,6 +2025,11 @@ FACTORIES = {
     'crm_lien': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ResourceManagerLien,
+        'contains': []}),
+
+    'crm_org_policy': ResourceFactory({
+        'dependsOn': ['folder', 'organization', 'project'],
+        'cls': ResourceManagerOrgPolicy,
         'contains': []}),
 
     'dns_managedzone': ResourceFactory({
