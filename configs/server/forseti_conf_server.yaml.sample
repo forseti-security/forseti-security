@@ -59,6 +59,7 @@ inventory:
           period: 1.1
 
     cai:
+        # The FORSETI_CAI_BUCKET needs to be in Forseti project.
         enabled: True
         gcs_path: MY_FORSETI_CAI_GCS_BUCKET
 
