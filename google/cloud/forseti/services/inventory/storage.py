@@ -627,9 +627,9 @@ class CaiDataAccess(object):
                     resource = json.loads(line)
                     if 'iam_policy' in resource:
                         content_type = 'iam_policy'
-                    elif 'resource' in resource
+                    elif 'resource' in resource:
                         content_type = 'resource'
-                    else
+                    else:
                         content_type = 'none'
                     LOGGER.info('Protobuf parsing error %s, falling back to '
                                 'live API for resource %s, asset type %s, '
