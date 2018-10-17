@@ -49,20 +49,23 @@ if __name__ == '__main__':
 
     with open('../sample_datasets/dataset_firewall.json') as firewall_dataset:
         firewall_rules = json.load(firewall_dataset)
-        firewall_rules_data = [i.get('data') for i in firewall_rules]
 
-        flattened_firewall_rules = FirewallRule.flatten_firewall_rules(firewall_rules_data)
+        flattened_firewall_rules = FirewallRule.flatten_firewall_rules(firewall_rules)
         flattened_firewall_rules_dict = [i.to_dict() for i in flattened_firewall_rules]
 
         df_filtered = pre_process_firewall_data(
             flattened_firewall_rules_dict,
-            ['priority',
-             'ip_addr',
-             'ip_bits',
-             'identifier',
+            ['creation_timestamp',
+             'source_ip_addr',
+             'dest_ip_addr',
+             'service_account',
+             'tag',
+             'org_id',
+             'full_name',
              'action',
              'ip_protocol',
              'ports',
              'direction',
-             'disabled'])
-        print df_filtered
+             'disabled',
+             'network'])
+        print df_filtered.iloc[0]
