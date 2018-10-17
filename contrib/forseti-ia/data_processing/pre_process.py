@@ -51,6 +51,7 @@ if __name__ == '__main__':
         firewall_rules = json.load(firewall_dataset)
 
         flattened_firewall_rules = FirewallRule.flatten_firewall_rules(firewall_rules)
+
         flattened_firewall_rules_dict = [i.to_dict() for i in flattened_firewall_rules]
 
         df_filtered = pre_process_firewall_data(
