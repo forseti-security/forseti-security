@@ -31,6 +31,8 @@ from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.common.util.regular_exp import escape_and_globify
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
+from google.cloud.forseti.services.utils import to_full_resource_name
+
 
 LOGGER = logger.get_logger(__name__)
 
@@ -459,7 +461,7 @@ class Rule(object):
                     resource_name=resource.id,
                     resource_type=resource.type,
                     resource_id=resource.id,
-                    full_name=resource.name,
+                    full_name=resource.full_name,
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,
                     violation_type=VIOLATION_TYPE,
@@ -482,7 +484,8 @@ class Rule(object):
                     resource_name=sink.name,
                     resource_type=sink.type,
                     resource_id=sink.id,
-                    full_name=sink.name,
+                    full_name=to_full_resource_name(resource.full_name,
+                                                    sink.id),
                     rule_name=self.rule_name,
                     rule_index=self.rule_index,
                     violation_type=VIOLATION_TYPE,

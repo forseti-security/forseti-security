@@ -736,7 +736,7 @@ GCE_GET_PROJECT = {
     PROJECT_ID_PREFIX + "2":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
-                num=2, id="project2", projnum=PROJECT_ID_PREFIX + "1")),
+                num=2, id="project2", projnum=PROJECT_ID_PREFIX + "2")),
     PROJECT_ID_PREFIX + "3":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
