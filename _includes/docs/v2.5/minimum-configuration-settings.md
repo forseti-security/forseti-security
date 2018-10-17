@@ -42,5 +42,6 @@ You will also need to edit, at a minimum, the following variables in the config 
   * `gcs_path`
     * **Description**: GCS Path of the newly created bucket to be used for 
     CAI exports.
-    * **Valid values**: Location of the bucket.
+    * **Valid values**: Location of the bucket. Bucket needs to be in the 
+    Forseti project. 
     * **Example values**: gs://my_cai_export_bucket
