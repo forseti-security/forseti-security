@@ -31,3 +31,17 @@ You will also need to edit, at a minimum, the following variables in the config 
   forever.
   * **Valid values**: Integer.
   * **Example values**: `-1`, `5`, `10`.
+  
+* `cai`
+  * **Description**: Cloud Asset Inventory (CAI) can be enabled if the level
+   is `organization` by providing values for the attributes below.
+  * `enabled`
+    * **Description**: Specifies whether CAI is enabled or not.
+    * **Valid values**: Boolean.
+    * **Example values**: `true`, `false`.
+  * `gcs_path`
+    * **Description**: GCS Path of the newly created bucket to be used for 
+    CAI exports.
+    * **Valid values**: Location of the bucket. Bucket needs to be in the 
+    Forseti project. 
+    * **Example values**: gs://my_cai_export_bucket
