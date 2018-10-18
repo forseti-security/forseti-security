@@ -27,6 +27,7 @@ from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
 from sqlalchemy import LargeBinary
+from sqlalchemy import literal
 from sqlalchemy import or_
 from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
@@ -154,8 +155,60 @@ class InventoryIndex(BASE):
         session.add(self)
         session.flush()
 
+    def get_lifecycle_state_summary(self, session, resource_type_input):
+        """Generate/return the count of lifecycle states (ACTIVE, DELETE_PENDING) of the specific
+           resource type input (project, dataset) for this inventory index.
+
+        Args:
+            session (object) : session object to work on.
+            resource_type_input (str) : resource type to get lifecycle states for.
+
+        Returns:
+            dict: a (lifecycle state -> count) dictionary
+        """
+        resource_data = Inventory.resource_data
+
+        summary = dict(
+            session.query(func.json_extract(resource_data, '$.lifecycleState'), func.count())
+            .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
+            .filter(Inventory.resource_type == resource_type_input)
+            .filter(func.json_extract(resource_data, '$.lifecycleState') != None)
+            .group_by(func.json_extract(resource_data, '$.lifecycleState')).all())
+
+        for key in summary.keys():
+            new_key = key.replace('\"', '').replace('_', ' ')
+            new_key = ' - '.join([resource_type_input, new_key])
+            summary[new_key] = summary.pop(key)
+
+        return summary
+
+    def get_hidden_dataset_summary(self, session):
+        """Generate/return the count of hidden datasets for this inventory index.
+
+        Args:
+            session (object) : session object to work on.
+
+        Returns:
+            dict: a (hidden_dataset -> count) dictionary
+        """
+
+        resource_id = Inventory.resource_id
+        field_label = 'dataset - HIDDEN'
+
+        summary = dict(
+            session.query(literal(field_label), func.count())
+            .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
+            .filter(Inventory.resource_type == 'dataset')
+            .filter(resource_id.contains('%:~_%', escape='~')).all()
+        )
+
+        return summary
+
     def get_summary(self, session):
         """Generate/return an inventory summary for this inventory index.
+           Includes delete pending resource types and hidden datasets.
 
         Args:
             session (object): session object to work on.
@@ -163,13 +216,24 @@ class InventoryIndex(BASE):
         Returns:
             dict: a (resource type -> count) dictionary
         """
+        resource_types_with_lifecycle = ['folder', 'organization', 'project']
+
         resource_type = Inventory.resource_type
-        return dict(
+
+        summary = dict(
             session.query(resource_type, func.count(resource_type))
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
             .group_by(resource_type).all())
 
+        for resource in resource_types_with_lifecycle:
+            lifecycle_state_summary = self.get_lifecycle_state_summary(session, resource)
+            summary.update(lifecycle_state_summary)
+
+        hidden_datasets = self.get_hidden_dataset_summary(session)
+        summary.update(hidden_datasets)
+
+        return summary
 
 class Inventory(BASE):
     """Resource inventory table."""
