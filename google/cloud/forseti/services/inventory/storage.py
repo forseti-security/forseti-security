@@ -641,8 +641,22 @@ class CaiDataAccess(object):
                 try:
                     row = CaiTemporaryStore.from_json(line.strip())
                 except json_format.ParseError as e:
-                    LOGGER.error('Line %s had a parse error %s, skipping.',
-                                 line.strip(), e)
+                    # If the public protobuf definition differs from the
+                    # internal representation of the resource content in CAI
+                    # then the json_format module will throw a ParseError. The
+                    # crawler automatically falls back to using the live API
+                    # when this happens, so no content is lost.
+                    resource = json.loads(line)
+                    if 'iam_policy' in resource:
+                        content_type = 'iam_policy'
+                    elif 'resource' in resource:
+                        content_type = 'resource'
+                    else:
+                        content_type = 'none'
+                    LOGGER.info('Protobuf parsing error %s, falling back to '
+                                'live API for resource %s, asset type %s, '
+                                'content type %s', e, resource.get('name', ''),
+                                resource.get('asset_type', ''), content_type)
                     continue
                 commit_buffer.add(row)
                 num_rows += 1
