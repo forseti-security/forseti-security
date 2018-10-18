@@ -574,12 +574,12 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
 bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
 `gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
-deployment-templates/deploy-forseti-server-xxxxx-2-4-0.yaml`.
+deployment-templates/deploy-forseti-server-xxxxx-2-6-0.yaml`.
 1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-6-0.yaml` for edit.
     1. Update the `forseti-version` inside the deployment template to `tags/v2.6.0`.
 1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-6-0.yaml` back to the GCS bucket 
 (`forseti-server-xxxxxx/deployment_templates`) by running command  
-`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-4-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-6-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
 deployment_templates/deploy-forseti-server-xxxxx-2-6-0.yaml`.
 1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
 copy the deployment name for Forseti server.
