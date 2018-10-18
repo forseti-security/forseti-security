@@ -591,7 +591,43 @@ You can reset the VM by running command `gcloud compute instances reset MY_FORSE
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
-Forseti is updated to be usable on a non organization resource.
+    **Scanner**
+    - Update the `scanners` section to include `lien`.
+    ```
+    scanner:
+    ...
+        scanners:
+            ...
+            - name: location
+              enabled: true
+            ...
+    ```
+    
+    **Notifier**
+    - Update the `resources` section to include `location_violations`.
+    ```
+    notifier:
+        ...
+        resources:
+            ...
+            - resource: location_violations
+              should_notify: true
+              notifiers:
+                # Email violations
+                - name: email_violations
+                  configuration:
+                    sendgrid_api_key: {SENDGRID_API_KEY}
+                    sender: {EMAIL_SENDER}
+                    recipient: {EMAIL_RECIPIENT}
+                # Upload violations to GCS.
+                - name: gcs_violations
+                  configuration:
+                    data_format: csv
+                    # gcs_path should begin with "gs://"
+                    gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+            ...
+        ...
+    ```
 1. Forseti server service account roles updates:
 
     1. Assign role `roles/orgpolicy.policyViewer` to the service account on the organization level.   
