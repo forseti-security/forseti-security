@@ -23,7 +23,6 @@ from datetime import datetime
 
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.dao import create_engine
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.model.importer import importer
@@ -31,7 +30,7 @@ from google.cloud.forseti.services.model.importer.importer import InventoryImpor
 
 FAKE_DATETIME = datetime(2018, 1, 28, 10, 20, 30, 0)
 FAKE_DATETIME_TIMESTAMP = date_time.get_utc_now_microtimestamp(FAKE_DATETIME)
-logger.enable_console_log()
+
 
 class ServiceConfig(object):
     """Helper class to implement dependency injection to Forseti Server services.

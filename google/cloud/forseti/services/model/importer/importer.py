@@ -827,27 +827,6 @@ class InventoryImporter(object):
 
         self.session.add(resource)
 
-    def _convert_crm_org_policy(self, org_policy):
-        """Convert an org policy to a database object.
-
-        Args:
-            org_policy (object): org policy to store.
-        """
-        data = org_policy.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            org_policy)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=org_policy.get_resource_id(),
-            type=org_policy.get_resource_type(),
-            display_name=data.get('constraint', ''),
-            email='',
-            data=org_policy.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-
     def _convert_iam_policy(self, iam_policy):
         """Convert an IAM policy to a database object.
 
@@ -1035,6 +1014,7 @@ class InventoryImporter(object):
         return to_type_name(
             resource.get_resource_type(),
             resource.get_resource_id())
+
 
 def by_source(source):
     """Helper to resolve client provided import sources.

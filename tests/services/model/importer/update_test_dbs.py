@@ -123,7 +123,7 @@ def main():
 
     mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
-    engine, tmpfile = create_test_engine_with_file(False)
+    engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)
 
     with gcp_api_mocks.mock_gcp():
