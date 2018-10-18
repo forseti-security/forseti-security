@@ -66,25 +66,31 @@ class FirewallRule(object):
     """Flattened firewall rule."""
     def __init__(self,
                  creation_timestamp,
-                 priority,
-                 ip_addr,
-                 ip_bits,
-                 identifier,
+                 source_ip_addr,
+                 dest_ip_addr,
+                 service_account,
+                 tag,
                  action,
                  ip_protocol,
                  ports,
                  direction,
-                 disabled):
+                 disabled,
+                 network,
+                 full_name,
+                 org_id):
         self.creation_timestamp = creation_timestamp
-        self.priority = priority
-        self.ip_addr = ip_addr
-        self.ip_bits = ip_bits
-        self.identifier = identifier
+        self.source_ip_addr = source_ip_addr
+        self.dest_ip_addr = dest_ip_addr
+        self.service_account = service_account
+        self.tag = tag
         self.action = action
         self.ip_protocol = ip_protocol
         self.ports = ports
         self.direction = direction
         self.disabled = disabled
+        self.network = network
+        self.full_name = full_name
+        self.org_id = org_id
 
     def to_dict(self):
         """Convert to dictionary object.
@@ -94,19 +100,22 @@ class FirewallRule(object):
         """
         return {
             'creation_timestamp': self.creation_timestamp,
-            'priority': self.priority,
-            'ip_addr': self.ip_addr,
-            'ip_bits': self.ip_bits,
-            'identifier': self.identifier,
+            'source_ip_addr': self.source_ip_addr,
+            'dest_ip_addr': self.dest_ip_addr,
+            'service_account': self.service_account,
+            'tag': self.tag,
+            'org_id': self.org_id,
+            'full_name': self.full_name,
             'action': self.action,
             'ip_protocol': self.ip_protocol,
             'ports': self.ports,
+            'network': self.network,
             'direction': self.direction,
             'disabled': self.disabled,
         }
 
     @classmethod
-    def from_json(cls, gcp_firewall_rule):
+    def from_json(cls, gcp_firewall_rule, resource_full_name, org_id):
         """Generate a list of flattened firewall rule objects based
          on the given firewall resource data in string format.
 
@@ -124,55 +133,59 @@ class FirewallRule(object):
         if action not in json_dict:
             action = 'denied'
 
-        identifiers = []
+        # You can only use tag OR service account in a firewall rule.
+        is_tag = 'targetTags' in json_dict
 
-        if 'targetServiceAccounts' in json_dict:
-            identifiers = json_dict.get('targetServiceAccounts', [])
-        elif 'targetTags' in json_dict:
+        if is_tag:
             identifiers = json_dict.get('targetTags', [])
+        else:
+            identifiers = json_dict.get('targetServiceAccounts', [])
 
         direction = json_dict.get('direction')  # INGREE OR EGRESS
 
-        if direction.upper() == 'INGRESS':
-            ip_addrs_cidr = json_dict.get('sourceRanges')
-        else:
-            ip_addrs_cidr = json_dict.get('destinationRanges')
+        is_ingress = direction.upper() == 'INGRESS'
 
-        ip_addr_bits_list = [ip_addr_cidr.split('/') for ip_addr_cidr in ip_addrs_cidr]
+        if is_ingress:
+            ip_addrs = json_dict.get('sourceRanges')
+        else:
+            ip_addrs = json_dict.get('destinationRanges')
 
         protocol_mappings = json_dict.get(action, [])
+
+        network = json_dict.get('network')
 
         flattened_firewall_rules = []
 
         creation_timestamp = json_dict.get('creationTimestamp')
-        priority = json_dict.get('priority')
         disabled = False if json_dict.get('disabled') == 'false' else True
 
         for identifier in identifiers:
-            for (ip_addr, ip_bits) in ip_addr_bits_list:
+            for ip_addr in ip_addrs:
                 for protocol_mapping in protocol_mappings:
-                    ip_protocols = protocol_mapping.get('IPProtocol', [])
+                    ip_protocol = protocol_mapping.get('IPProtocol', '')
                     corresponding_ports = protocol_mapping.get('ports', [])
 
                     flattened_ports = cls._flatten_ports(corresponding_ports)
-                    for ip_protocol in ip_protocols:
-                        flattened_firewall_rules.append(
-                            FirewallRule(
-                                creation_timestamp,
-                                priority,
-                                ip_addr,
-                                ip_bits,
-                                identifier,
-                                action,
-                                ip_protocol,
-                                flattened_ports,
-                                direction,
-                                disabled
-                            ))
+                    flattened_firewall_rules.append(
+                        FirewallRule(
+                            creation_timestamp=creation_timestamp,
+                            source_ip_addr=ip_addr if is_ingress else None,
+                            dest_ip_addr=ip_addr if not is_ingress else None,
+                            service_account=identifier if not is_tag else None,
+                            tag=identifier if is_tag else None,
+                            action=action,
+                            ip_protocol=ip_protocol,
+                            ports=flattened_ports,
+                            direction=direction,
+                            disabled=disabled,
+                            network=network,
+                            full_name=resource_full_name,
+                            org_id=org_id
+                        ))
         return flattened_firewall_rules
 
     @classmethod
-    def flatten_firewall_rules(cls, gcp_firewall_rules):
+    def flatten_firewall_rules(cls, firewall_resource_data):
         """Flatten all the gcp firewall rule data.
 
         Args:
@@ -182,9 +195,11 @@ class FirewallRule(object):
             list: A list of flattened firewall rules.
         """
         results = []
-        for gcp_firewall_rule in gcp_firewall_rules:
+        for gcp_firewall_rule in firewall_resource_data:
             try:
-                results.extend(cls.from_json(gcp_firewall_rule))
+                org_id = 'SAMPLE_ORG'
+                full_name = gcp_firewall_rule.get('full_name', '')
+                results.extend(cls.from_json(gcp_firewall_rule.get('data', None), full_name, org_id))
             except Exception as e:
                 print e
                 print gcp_firewall_rule
