@@ -592,6 +592,17 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-8` for Forseti client.
 1. Configuration file `forseti_conf_server.yaml` updates:  
 Forseti is updated to be usable on a non organization resource.
+1. Forseti server service account roles updates:
+
+    ```
+    1. Assign role `roles/orgpolicy.policyViewer` to the service account on the organization level.   
+    ```
+    gcloud organizations add-iam-policy-binding {ORGANIZATION_ID} --member=serviceAccount:{SERVICE_ACCOUNT_NAME}@{PROJECT_ID}.iam.gserviceaccount.com --role=roles/orgpolicy.policyViewer
+    ```
+    Example:  
+    ```
+    gcloud organizations add-iam-policy-binding 1234567890 --member=serviceAccount:forseti-server-gcp-ea370bd@my_gcp_project.iam.gserviceaccount.com --role=roles/orgpolicy.policyViewer
+    ```
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.5.0 to 2.6.0" content=upgrading_2_5_0_to_2_6_0 uid=7 %}
