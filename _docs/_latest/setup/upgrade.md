@@ -594,7 +594,6 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 Forseti is updated to be usable on a non organization resource.
 1. Forseti server service account roles updates:
 
-    ```
     1. Assign role `roles/orgpolicy.policyViewer` to the service account on the organization level.   
     ```
     gcloud organizations add-iam-policy-binding {ORGANIZATION_ID} --member=serviceAccount:{SERVICE_ACCOUNT_NAME}@{PROJECT_ID}.iam.gserviceaccount.com --role=roles/orgpolicy.policyViewer
