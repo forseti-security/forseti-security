@@ -93,6 +93,7 @@ GCP_READ_IAM_ROLES = [
     'roles/cloudsql.viewer',
     'roles/compute.networkViewer',
     'roles/iam.securityReviewer',
+    'roles/orgpolicy.policyViewer',
     'roles/servicemanagement.quotaViewer',
     'roles/serviceusage.serviceUsageConsumer',
 ]
