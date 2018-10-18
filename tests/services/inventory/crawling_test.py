@@ -133,6 +133,7 @@ class CrawlerTest(ForsetiTestCase):
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
+            'crm_org_policy': {'resource': 5},
             'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
             'firewall': {'resource': 7},
@@ -230,6 +231,7 @@ class CrawlerTest(ForsetiTestCase):
         expected_counts = {
             'backendservice': {'resource': 1},
             'compute_project': {'resource': 1},
+            'crm_org_policy': {'resource': 1},
             'disk': {'resource': 3},
             'firewall': {'resource': 3},
             'forwardingrule': {'resource': 1},
@@ -276,8 +278,8 @@ class CrawlerTest(ForsetiTestCase):
             result_counts = self._get_resource_counts_from_storage(storage)
 
         # The crawl should be the same as test_crawling_to_memory_storage, but
-        # without organization iam_policy (needs Org access) or gsuite_*
-        # resources (needs directoryCustomerId from Organization).
+        # without organization iam_policy, org_policy (needs Org access) or
+        # gsuite_* resources (needs directoryCustomerId from Organization).
         expected_counts = {
             'appengine_app': {'resource': 2},
             'appengine_instance': {'resource': 3},
@@ -288,6 +290,7 @@ class CrawlerTest(ForsetiTestCase):
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
+            'crm_org_policy': {'resource': 3},
             'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
             'firewall': {'resource': 7},
@@ -403,6 +406,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'compute_targetsslproxy': {'resource': 1},
             'compute_targettcpproxy': {'resource': 1},
             'compute_urlmap': {'resource': 1},
+            'crm_org_policy': {'resource': 5},
             'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
             'dns_managedzone': {'resource': 1},
