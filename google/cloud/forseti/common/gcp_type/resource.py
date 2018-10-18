@@ -105,27 +105,6 @@ class LifecycleState(object):
     UNSPECIFIED = 'LIFECYCLE_STATE_UNSPECIFIED'
 
 
-class RetentionInfo(object):
-    """Resource Retention Information."""
-
-    def __init__(
-            self,
-            retention,
-            exist_valid_action,
-            exist_other_conditions):
-        """Initialize.
-
-        Args:
-            retention (int): The retention of the resource (days)
-            exist_valid_action (bool): There is a proper action at that time
-            exist_other_conditions (bool): There are other conditions which
-                may make the retention longer than the first parameter.
-        """
-        self.retention = retention
-        self.exist_valid_action = exist_valid_action
-        self.exist_other_conditions = exist_other_conditions
-
-
 class Resource(object):
     """Represents a GCP resource."""
     __metaclass__ = abc.ABCMeta
@@ -137,8 +116,7 @@ class Resource(object):
             name=None,
             display_name=None,
             parent=None,
-            lifecycle_state=LifecycleState.UNSPECIFIED,
-            retentions=None):
+            lifecycle_state=LifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:
@@ -150,7 +128,6 @@ class Resource(object):
             parent (Resource): The parent Resource object.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 Resource.
-            retentions (list): A list of RetentionInfo
         """
         self._resource_id = str(resource_id)
         self._resource_type = resource_type
@@ -164,7 +141,6 @@ class Resource(object):
         # have either another folder or organization as a parent.
         self._parent = parent
         self._lifecycle_state = lifecycle_state
-        self._retentions = retentions
 
     def __eq__(self, other):
         """Test equality of Resource.
@@ -261,12 +237,3 @@ class Resource(object):
             LifecycleState: The LifecycleState.
         """
         return self._lifecycle_state
-
-    @property
-    def retentions(self):
-        """Retention.
-
-        Returns:
-            RetentionInfo: The retention information.
-        """
-        return self._retentions

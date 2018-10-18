@@ -39,8 +39,7 @@ class Bucket(resource.Resource):
             name=None,
             display_name=None,
             parent=None,
-            lifecycle_state=BucketLifecycleState.UNSPECIFIED,
-            retentions=None):
+            lifecycle_state=BucketLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:
@@ -53,7 +52,6 @@ class Bucket(resource.Resource):
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
-            retentions (list): A list of RetentionInfo
         """
         super(Bucket, self).__init__(
             resource_id=bucket_id,
@@ -61,8 +59,7 @@ class Bucket(resource.Resource):
             name=name,
             display_name=display_name,
             parent=parent,
-            lifecycle_state=lifecycle_state,
-            retentions=retentions)
+            lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
 
@@ -84,41 +81,15 @@ class Bucket(resource.Resource):
             full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
             display_name=bucket_id,
             # locations=[bucket_dict['location']],
-            retentions=Bucket.get_retentions_list_from_json(bucket_dict),
             data=json_string,
         )
 
-    @classmethod
-    def get_retentions_list_from_json(cls, bucket_dict):
-        """Get the retention of the bucket from a dict.
-        Args:
-            bucket_dict(dict): The dict contains what is decoded from JSON
-
+    def get_lifecycle_rule(self):
+        """Create a bucket lifecycle's rules dict from its JSON string.
         Returns:
-            list: A list of RetentionInfo
+            dict: bucket lifecycle's rules.
         """
-        retentions = []
+        bucket_dict = json.loads(self.data)
         if 'lifecycle' in bucket_dict and 'rule' in bucket_dict['lifecycle']:
-            for lc_item in bucket_dict['lifecycle']['rule']:
-                conditions = lc_item['condition']
-                action = lc_item['action']
-                retention_value = None
-                exist_other_conditions = False
-                exist_valid_action = False
-                if conditions is not None:
-                    retention_value = conditions['age']
-                    if retention_value is None:
-                        if conditions:
-                            exist_other_conditions = True
-                    elif len(conditions) > 1:
-                        exist_other_conditions = True
-
-                if action is not None and 'type' in action:
-                    exist_valid_action = (action['type'] == 'Delete')
-
-                new_retention = resource.RetentionInfo(
-                    retention=retention_value,
-                    exist_valid_action=exist_valid_action,
-                    exist_other_conditions=exist_other_conditions)
-                retentions.append(new_retention)
-        return retentions
+            return bucket_dict['lifecycle']['rule']
+        return None

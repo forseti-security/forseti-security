@@ -23,6 +23,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
+from google.cloud.forseti.common.util import date_time as dt
 
 
 LOGGER = logger.get_logger(__name__)
@@ -282,28 +283,117 @@ class Rule(object):
         """Get a generator for violations
         Args:
             res (Resource): A class derived from Resource
-        Yields:
-            RuleViolation: All violations of the bucket breaking the rule.
+        Returns:
+            Generator: All violations of the resource breaking the rule.
         """
 
-        minretention = self.min_retention
-        maxretention = self.max_retention
-        exist_match = False
-        for retention_item in res.retentions:
-            if not retention_item.exist_valid_action:
-                continue
+        if res.type == 'bucket':
+            return self.find_violations_in_bucket(res)
+        return iter(())
 
-            age = retention_item.retention
-            if age is None:
-                continue
-            if(minretention != None and age < minretention):
-                yield self.generate_rule_violation(res)
-                continue
-            if(maxretention != None and age > maxretention):
-                yield self.generate_rule_violation(res)
-                continue
-            if retention_item.exist_other_conditions:
-                continue
-            exist_match = True
-        if exist_match is not True:
-            yield self.generate_rule_violation(res)
+    def bucket_max_retention_violation(self, bucket):
+        """Get a generator for violations especially for maximum retention
+        Args:
+            bucket (bucket): Find violation from the bucket
+        Yields:
+            RuleViolation: All max violations of the bucket breaking the rule.
+        """
+        maxretention = self.max_retention
+        if maxretention is None:
+            return
+
+        # There should be a condition which guarantees to delete data
+        exist_max_limit = False
+        lifecycle_rule = bucket.get_lifecycle_rule()
+        if lifecycle_rule is None:
+            yield self.generate_rule_violation(bucket)
+        else:
+            for lc_item in lifecycle_rule:
+                action = lc_item['action']
+                if action is not None and 'type' in action:
+                    if action['type'] != 'Delete':
+                        continue
+                else:
+                    continue
+
+                conditions = lc_item['condition']
+                if conditions is not None:
+                    age = conditions['age']
+                    if age is not None and len(conditions) == 1:
+                        if age <= maxretention:
+                            exist_max_limit = True
+                            break
+            if not exist_max_limit:
+                yield self.generate_rule_violation(bucket)
+
+    def bucket_min_retention_violation(self, bucket):
+        """Get a generator for violations especially for minimum retention
+        Args:
+            bucket (bucket): Find violation from the bucket
+        Yields:
+            RuleViolation: All min violations of the bucket breaking the rule.
+        """
+        minretention = self.min_retention
+        if minretention is None:
+            return
+
+        lifecycle_rule = bucket.get_lifecycle_rule()
+        if lifecycle_rule is not None:
+            for lc_item in lifecycle_rule:
+                action = lc_item['action']
+                if action is not None and 'type' in action:
+                    if action['type'] != 'Delete':
+                        continue
+                else:
+                    continue
+
+                conditions = lc_item['condition']
+                if conditions is None:
+                    self.generate_rule_violation(bucket)
+
+                if 'age' in conditions:
+                    if conditions['age'] >= minretention:
+                        continue
+                elif bucket_conditions_guarantee_min(conditions,
+                                                     minretention):
+                    continue
+
+                yield self.generate_rule_violation(bucket)
+
+    def find_violations_in_bucket(self, bucket):
+        """Get a generator for violations
+        Args:
+            bucket (bucket): Find violation from the bucket
+        Returns:
+            Generator: All violations of the bucket breaking the rule.
+        """
+
+        violation_max = self.bucket_max_retention_violation(bucket)
+        violation_min = self.bucket_min_retention_violation(bucket)
+        return itertools.chain(violation_max, violation_min)
+
+def bucket_conditions_guarantee_min(conditions, min_retention):
+    """check if other conditions can guarantee minimum retention
+    Args:
+        conditions (dict): the condition dict of the bucket
+        min_retention (int): the value of minimum retention
+    Returns:
+        bool: True: min is guaranteed even if age is too small
+    """
+    # if createdBefore is old enough, it's OK.
+    if 'createdBefore' in conditions:
+        created_before = conditions['createdBefore']
+        dt_cfg = dt.get_datetime_from_string(created_before,
+                                             '%Y-%m-%d')
+        dt_now = dt.get_utc_now_datetime()
+        day_diff = (dt_now - dt_cfg).days
+        if day_diff >= min_retention:
+            return True
+
+    # if number of new version is larger than 0, OK.
+    if 'numNewerVersions' in conditions:
+        num_new_ver = conditions['numNewerVersions']
+        if num_new_ver >= 1:
+            return True
+
+    return False
