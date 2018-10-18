@@ -125,7 +125,7 @@ class CsccNotifier(object):
         for violation in violations:
             finding = {
                 # CSCC can't accept the full hash, so this must be shortened.
-                'id': violation.get('violation_hash')[:32],
+                'id': violation.get('violation_hash')[:20],
                 'assetIds': [
                     violation.get('full_name')
                 ],
@@ -175,7 +175,6 @@ class CsccNotifier(object):
                 'event_time': violation.get('created_at_datetime'),
                 'source_properties': {
                     'source': 'FORSETI',
-                    'category': violation.get('rule_name'),
                     'db_source': 'table:{}/id:{}'.format(
                         'violations', violation.get('id')),
                     'inventory_index_id': self.inv_index_id,
@@ -183,6 +182,7 @@ class CsccNotifier(object):
                     'resource_id': violation.get('resource_id'),
                     'resource_type': violation.get('resource_type'),
                     'rule_index': violation.get('rule_index'),
+                    'rule_name': violation.get('rule_name'),
                     'scanner_index_id': violation.get('scanner_index_id'),
                     'violation_data': json.dumps(violation.get('violation_data'))
                 },
@@ -224,7 +224,6 @@ class CsccNotifier(object):
 
         client = securitycenter.SecurityCenterClient(version='v1beta1')
 
-        '''
         for i in findings:
             finding_id = i[0][0]
             finding = i[1]
@@ -236,10 +235,9 @@ class CsccNotifier(object):
             except api_errors.ApiExecutionError:
                 LOGGER.exception('Encountered CSCC API error.')
                 continue
-        '''
 
-        for i in client.list(source_id):
-            print i
+#        for i in client.list(source_id):
+#            print i
 
         
         
@@ -261,10 +259,10 @@ class CsccNotifier(object):
         # At this point, cscc notifier is already determined to be enabled.
 
         # beta
-        if source_id:
-            LOGGER.info('CSCC mode: beta')
-            self._send_findings_to_cscc(violations, source_id)
-            return
+        #if source_id:
+        #    LOGGER.info('CSCC mode: beta')
+        #    self._send_findings_to_cscc(violations, source_id)
+        #    return
             
         # alpha
         LOGGER.info('CSCC mode: alpha')
