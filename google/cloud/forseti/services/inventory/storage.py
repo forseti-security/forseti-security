@@ -201,8 +201,7 @@ class InventoryIndex(BASE):
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
             .filter(Inventory.resource_type == 'dataset')
-            .filter(resource_id.contains('%:~_%', escape='~')).all()
-        )
+            .filter(resource_id.contains('%:~_%', escape='~')).all())
 
         return summary
 

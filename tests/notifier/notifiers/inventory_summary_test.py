@@ -302,8 +302,7 @@ class InventorySummaryTest(ForsetiTestCase):
             'organization': 1,
             'project': 2,
             'project ACTIVE': 1,
-            'project DELETE PENDING': 1
-        }
+            'project DELETE PENDING': 1}
 
         mock_session = mock.MagicMock()
         mock_session.query.return_value.get.return_value = mock_inventory_index
