@@ -135,7 +135,9 @@ def _mock_bigquery():
     """Mock bigquery client."""
 
     def _mock_bq_get_datasets_for_projectid(projectid):
-        return results.BQ_GET_DATASETS_FOR_PROJECTID[projectid]
+        if projectid in results.BQ_GET_DATASETS_FOR_PROJECTID:
+            return results.BQ_GET_DATASETS_FOR_PROJECTID[projectid]
+        return {}
 
     def _mock_bq_get_dataset_access(projectid, datasetid):
         return results.BQ_GET_DATASET_ACCESS[projectid][datasetid]
@@ -256,6 +258,9 @@ def _mock_crm(has_org_access):
     def _mock_crm_get_project_liens(projectid):
         return results.CRM_GET_PROJECT_LIENS.get(projectid, [])
 
+    def _mock_crm_get_org_policies(resourceid):
+        return results.CRM_GET_ORG_POLICIES.get(resourceid, [])
+
     def _mock_permission_denied(parentid):
         response = httplib2.Response(
             {'status': '403', 'content-type': 'application/json'})
@@ -270,16 +275,20 @@ def _mock_crm(has_org_access):
     if has_org_access:
         mock_crm.get_organization.side_effect = _mock_crm_get_organization
         mock_crm.get_org_iam_policies.side_effect = _mock_crm_get_iam_policies
+        mock_crm.get_org_org_policies.side_effect = _mock_crm_get_org_policies
     else:
         mock_crm.get_organization.side_effect = _mock_permission_denied
         mock_crm.get_org_iam_policies.side_effect = _mock_permission_denied
+        mock_crm.get_org_org_policies.side_effect = _mock_permission_denied
     mock_crm.get_folder.side_effect = _mock_crm_get_folder
     mock_crm.get_folders.side_effect = _mock_crm_get_folders
     mock_crm.get_project.side_effect = _mock_crm_get_project
     mock_crm.get_projects.side_effect = _mock_crm_get_projects
     mock_crm.get_folder_iam_policies.side_effect = _mock_crm_get_iam_policies
+    mock_crm.get_folder_org_policies.side_effect = _mock_crm_get_org_policies
     mock_crm.get_project_iam_policies.side_effect = _mock_crm_get_iam_policies
     mock_crm.get_project_liens.side_effect = _mock_crm_get_project_liens
+    mock_crm.get_project_org_policies.side_effect = _mock_crm_get_org_policies
 
     return crm_patcher
 
