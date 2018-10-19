@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_type.ke\_cluster module
+========================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_type.ke_cluster
+    :members:
+    :undoc-members:
+    :show-inheritance:

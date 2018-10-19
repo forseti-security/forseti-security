@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.\_supported\_apis module
+=============================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api._supported_apis
+    :members:
+    :undoc-members:
+    :show-inheritance:
