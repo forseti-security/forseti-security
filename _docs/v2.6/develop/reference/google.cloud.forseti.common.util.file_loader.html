@@ -1,0 +1,188 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.file_loader module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.util.file_loader">
+<span id="google-cloud-forseti-common-util-file-loader-module"></span><h1>google.cloud.forseti.common.util.file_loader module<a class="headerlink" href="#module-google.cloud.forseti.common.util.file_loader" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions for reading and parsing files in a variety of formats.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader._get_filetype_parser">
+<code class="descname">_get_filetype_parser</code><span class="sig-paren">(</span><em>file_path</em>, <em>parser_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#_get_filetype_parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader._get_filetype_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a parser function for parsing the file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_path</strong> (<em>str</em>) – The file path.</li>
+<li><strong>parser_type</strong> (<em>str</em>) – The file parser type.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The parser function.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">function</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader._parse_json_file">
+<code class="descname">_parse_json_file</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#_parse_json_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader._parse_json_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the data from a json file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>filepointer</em>) – File-like object containing a Json document,
+to be parsed into json.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The file successfully parsed into a dict.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If there was an error parsing the file.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader._parse_json_string">
+<code class="descname">_parse_json_string</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#_parse_json_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader._parse_json_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the data from a string of json.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>str</em>) – String data to parse into json.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The json string successfully parsed into a dict.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If there was an error parsing the data.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader._parse_yaml">
+<code class="descname">_parse_yaml</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#_parse_yaml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader._parse_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse yaml data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>stream</em>) – A yaml data stream to parse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The stream successfully parsed into a dict.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">YAMLError</span></code> – If there was an error parsing the stream.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader._read_file_from_gcs">
+<code class="descname">_read_file_from_gcs</code><span class="sig-paren">(</span><em>file_path</em>, <em>storage_client=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#_read_file_from_gcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader._read_file_from_gcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load file from GCS.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_path</strong> (<em>str</em>) – The GCS path to the file.</li>
+<li><strong>storage_client</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient" title="google.cloud.forseti.common.gcp_api.storage.StorageClient"><em>storage.StorageClient</em></a>) – The Storage API Client to use
+for downloading the file using the API.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The parsed dict from the loaded file.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader._read_file_from_local">
+<code class="descname">_read_file_from_local</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#_read_file_from_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader._read_file_from_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load rules file from local path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>str</em>) – The path to the file.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The parsed dict from the loaded file.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader.copy_file_from_gcs">
+<code class="descname">copy_file_from_gcs</code><span class="sig-paren">(</span><em>file_path</em>, <em>output_path=None</em>, <em>storage_client=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#copy_file_from_gcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader.copy_file_from_gcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy file from GCS to local file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>file_path</strong> (<em>str</em>) – The full GCS path to the file.</li>
+<li><strong>output_path</strong> (<em>str</em>) – The local file to copy to, if not set creates a
+temporary file.</li>
+<li><strong>storage_client</strong> (<a class="reference internal" href="google.cloud.forseti.common.gcp_api.storage.html#google.cloud.forseti.common.gcp_api.storage.StorageClient" title="google.cloud.forseti.common.gcp_api.storage.StorageClient"><em>storage.StorageClient</em></a>) – The Storage API Client to use
+for downloading the file using the API.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The output_path the file was copied to.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.file_loader.read_and_parse_file">
+<code class="descname">read_and_parse_file</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/file_loader.html#read_and_parse_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.file_loader.read_and_parse_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a json or yaml formatted file from a local path or GCS.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>str</em>) – The full path to the file to read and parse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The results of parsing the file.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

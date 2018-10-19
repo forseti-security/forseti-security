@@ -1,0 +1,665 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.cloud_resource_manager"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_api.cloud_resource_manager</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Wrapper for Resource Manager API client.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">googleapiclient</span> <span class="k">import</span> <span class="n">errors</span>
+<span class="kn">from</span> <span class="nn">httplib2</span> <span class="k">import</span> <span class="n">HttpLib2Error</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">_base_repository</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">api_helpers</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">api_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_api</span> <span class="k">import</span> <span class="n">repository_mixins</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CloudResourceManagerRepositoryClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerRepositoryClient">[docs]</a><span class="k">class</span> <span class="nc">CloudResourceManagerRepositoryClient</span><span class="p">(</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">BaseRepositoryClient</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cloud Resource Manager Respository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">quota_max_calls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">quota_period</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
+                 <span class="n">use_rate_limiter</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            quota_max_calls (int): Allowed requests per &lt;quota_period&gt; for the</span>
+<span class="sd">                API.</span>
+<span class="sd">            quota_period (float): The time period to track requests over.</span>
+<span class="sd">            use_rate_limiter (bool): Set to false to disable the use of a rate</span>
+<span class="sd">                limiter for this service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">quota_max_calls</span><span class="p">:</span>
+            <span class="n">use_rate_limiter</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_organizations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_folders_v1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_liens</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">CloudResourceManagerRepositoryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="s1">&#39;cloudresourcemanager&#39;</span><span class="p">,</span> <span class="n">versions</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="s1">&#39;v2&#39;</span><span class="p">],</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">quota_max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">use_rate_limiter</span><span class="p">)</span>
+
+    <span class="c1"># Turn off docstrings for properties.</span>
+    <span class="c1"># pylint: disable=missing-return-doc, missing-return-type-doc</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">projects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _ResourceManagerProjectsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_ResourceManagerProjectsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_projects</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">organizations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _ResourceManagerOrganizationsRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_organizations</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_organizations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_ResourceManagerOrganizationsRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_organizations</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">folders</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _ResourceManagerFoldersRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_ResourceManagerFoldersRepository</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;v2&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">folders_v1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _ResourceManagerFolderV1Repository instance.&quot;&quot;&quot;</span>
+        <span class="c1"># Org Policy methods are only available on crm v1 currently.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders_v1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_folders_v1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_ResourceManagerFolderV1Repository</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s1">&#39;v1&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_folders_v1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">liens</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a _ResourceManagerLiensRepository instance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_liens</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_liens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_repository</span><span class="p">(</span>
+                <span class="n">_ResourceManagerLiensRepository</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_liens</span></div>
+
+    <span class="c1"># pylint: enable=missing-return-doc, missing-return-type-doc</span>
+
+
+<div class="viewcode-block" id="_ResourceManagerProjectsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerProjectsRepository">[docs]</a><span class="k">class</span> <span class="nc">_ResourceManagerProjectsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">OrgPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Resource Manager Projects repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_ResourceManagerProjectsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">get_key_field</span><span class="o">=</span><span class="s1">&#39;projectId&#39;</span><span class="p">,</span> <span class="n">list_key_field</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">max_results_field</span><span class="o">=</span><span class="s1">&#39;pageSize&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;projects&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_ResourceManagerProjectsRepository.get_ancestry"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerProjectsRepository.get_ancestry">[docs]</a>    <span class="k">def</span> <span class="nf">get_ancestry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the project ancestory data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource (str): The project id or number to query.</span>
+<span class="sd">            **kwargs (dict): Additional parameters to pass through to</span>
+<span class="sd">                GetQueryMixin.get().</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Response from the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="s1">&#39;getAncestry&#39;</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="nb">dict</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="_ResourceManagerProjectsRepository.get_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerProjectsRepository.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format&#39;s an organization_id to pass in to .get().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project id to query, either just the</span>
+<span class="sd">                id or the id prefixed with &#39;projects/&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The formatted resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">project_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
+            <span class="n">project_id</span> <span class="o">=</span> <span class="s1">&#39;projects/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">project_id</span></div></div>
+
+
+<div class="viewcode-block" id="_ResourceManagerOrganizationsRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerOrganizationsRepository">[docs]</a><span class="k">class</span> <span class="nc">_ResourceManagerOrganizationsRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">OrgPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">SearchQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Resource Manager Organizations repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_ResourceManagerOrganizationsRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">max_results_field</span><span class="o">=</span><span class="s1">&#39;pageSize&#39;</span><span class="p">,</span>
+            <span class="n">search_query_field</span><span class="o">=</span><span class="s1">&#39;filter&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;organizations&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_ResourceManagerOrganizationsRepository.get_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerOrganizationsRepository.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">organization_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format&#39;s an organization_id to pass in to .get().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            organization_id (str): The organization id to query, either just the</span>
+<span class="sd">                id or the id prefixed with &#39;organizations/&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The formatted resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">organization_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">):</span>
+            <span class="n">organization_id</span> <span class="o">=</span> <span class="s1">&#39;organizations/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">organization_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">organization_id</span></div></div>
+
+
+<div class="viewcode-block" id="_ResourceManagerFoldersRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerFoldersRepository">[docs]</a><span class="k">class</span> <span class="nc">_ResourceManagerFoldersRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">GetIamPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">SearchQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Resource Manager Folders repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_ResourceManagerFoldersRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">list_key_field</span><span class="o">=</span><span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="n">get_key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+            <span class="n">max_results_field</span><span class="o">=</span><span class="s1">&#39;pageSize&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;folders&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="_ResourceManagerFoldersRepository.get_name"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerFoldersRepository.get_name">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">folder_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Format&#39;s an folder_id to pass in to .get().</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder_id (str): The folder id to query, either just the</span>
+<span class="sd">                id or the id prefixed with &#39;folders/&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The formatted resource name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">folder_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;folders/&#39;</span><span class="p">):</span>
+            <span class="n">folder_id</span> <span class="o">=</span> <span class="s1">&#39;folders/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">folder_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">folder_id</span></div></div>
+
+
+<div class="viewcode-block" id="_ResourceManagerFolderV1Repository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerFolderV1Repository">[docs]</a><span class="k">class</span> <span class="nc">_ResourceManagerFolderV1Repository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">OrgPolicyQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Resource Manager Folders v1 repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_ResourceManagerFolderV1Repository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">list_key_field</span><span class="o">=</span><span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="n">get_key_field</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span>
+            <span class="n">max_results_field</span><span class="o">=</span><span class="s1">&#39;pageSize&#39;</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="s1">&#39;folders&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="_ResourceManagerLiensRepository"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager._ResourceManagerLiensRepository">[docs]</a><span class="k">class</span> <span class="nc">_ResourceManagerLiensRepository</span><span class="p">(</span>
+        <span class="n">repository_mixins</span><span class="o">.</span><span class="n">ListQueryMixin</span><span class="p">,</span>
+        <span class="n">_base_repository</span><span class="o">.</span><span class="n">GCPRepository</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Implementation of Cloud Resource Manager Liens repository.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The args to pass into GCPRepository.__init__()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_ResourceManagerLiensRepository</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">list_key_field</span><span class="o">=</span><span class="s1">&#39;parent&#39;</span><span class="p">,</span> <span class="n">max_results_field</span><span class="o">=</span><span class="s1">&#39;pageSize&#39;</span><span class="p">,</span>
+            <span class="n">component</span><span class="o">=</span><span class="s1">&#39;liens&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CloudResourceManagerClient"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient">[docs]</a><span class="k">class</span> <span class="nc">CloudResourceManagerClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Resource Manager Client.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_configs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            global_configs (dict): Forseti config.</span>
+<span class="sd">            **kwargs (dict): The kwargs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_calls</span><span class="p">,</span> <span class="n">quota_period</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">get_ratelimiter_config</span><span class="p">(</span>
+            <span class="n">global_configs</span><span class="p">,</span> <span class="s1">&#39;crm&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">repository</span> <span class="o">=</span> <span class="n">CloudResourceManagerRepositoryClient</span><span class="p">(</span>
+            <span class="n">quota_max_calls</span><span class="o">=</span><span class="n">max_calls</span><span class="p">,</span>
+            <span class="n">quota_period</span><span class="o">=</span><span class="n">quota_period</span><span class="p">,</span>
+            <span class="n">use_rate_limiter</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;use_rate_limiter&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">))</span>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_project"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_project">[docs]</a>    <span class="k">def</span> <span class="nf">get_project</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the projects from organization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): The project id (not project number).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The project response object.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the projects from organization,&#39;</span>
+                         <span class="s1">&#39; project_id = </span><span class="si">%s</span><span class="s1">, result = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_projects"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_projects">[docs]</a>    <span class="k">def</span> <span class="nf">get_projects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parent_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">filterargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the projects the authenticated account has access to.</span>
+
+<span class="sd">        If no parent is passed in, then all projects the caller has visibility</span>
+<span class="sd">        to are returned. This is significantly less efficient then listing by</span>
+<span class="sd">        parent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent_id (str): The id of the organization or folder parent object.</span>
+<span class="sd">            parent_type (str): Either folder or organization.</span>
+<span class="sd">            **filterargs (dict): Extra project filter args.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            dict: The projects.list() response.</span>
+<span class="sd">            https://cloud.google.com/resource-manager/reference/rest/v1/projects/list#response-body</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">filterargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">parent_id</span><span class="p">:</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;parent.id:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">parent_type</span><span class="p">:</span>
+            <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;parent.type:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent_type</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+                    <span class="nb">filter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filters</span><span class="p">)):</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Geting all the projects the authenticated&#39;</span>
+                             <span class="s1">&#39; account has access to, parent_id = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                             <span class="s1">&#39; parent_type = </span><span class="si">%s</span><span class="s1">, **filterargs = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                             <span class="s1">&#39; response = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                             <span class="n">parent_id</span><span class="p">,</span> <span class="n">parent_type</span><span class="p">,</span> <span class="n">filterargs</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+                <span class="k">yield</span> <span class="n">response</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parent_id</span> <span class="ow">and</span> <span class="n">parent_type</span><span class="p">:</span>
+                <span class="n">resource_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parent_type</span><span class="p">,</span> <span class="n">parent_id</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">resource_name</span> <span class="o">=</span> <span class="s1">&#39;All Projects&#39;</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_project_ancestry"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_project_ancestry">[docs]</a>    <span class="k">def</span> <span class="nf">get_project_ancestry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the full folder ancestry for a project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): Either the project number or the project id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: The ancesters of the project, in order from direct parent to</span>
+<span class="sd">                root organization id.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get_ancestry</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+            <span class="n">ancestor</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ancestor&#39;</span><span class="p">,</span> <span class="p">[])</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting the full folder ancestry for a project,&#39;</span>
+                         <span class="s1">&#39; project_id = </span><span class="si">%s</span><span class="s1">, ancestor = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">project_id</span><span class="p">,</span> <span class="n">ancestor</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ancestor</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_project_iam_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_project_iam_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_project_iam_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the iam policies for a given project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): Either the project number or the project id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: IAM policies of the project.</span>
+<span class="sd">            https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the iam policies for a given project,&#39;</span>
+                         <span class="s1">&#39; project_id = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">project_id</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_project_org_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_project_org_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_project_org_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the org policies for a given project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): Either the project number or the project id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Org policies applied to the project.</span>
+<span class="sd">            https://cloud.google.com/resource-manager/reference/rest/v1/Policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">list_org_policies</span><span class="p">(</span>
+                <span class="n">resource_id</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;policies&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the org policies for a given project,&#39;</span>
+                         <span class="s1">&#39; project_id = </span><span class="si">%s</span><span class="s1">, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">project_id</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_organization"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_organization">[docs]</a>    <span class="k">def</span> <span class="nf">get_organization</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">org_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get organization by org_name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            org_name (str): The org name with format &quot;organizations/$ORG_ID&quot;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The org response object if found, otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">org_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting organization by org_name, org_name = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">org_name</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">org_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_organizations"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_organizations">[docs]</a>    <span class="k">def</span> <span class="nf">get_organizations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get organizations that the authenticated account has access to.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of Organization dicts as returned by the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">search</span><span class="p">()</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;organizations&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting organzations that the auth</span><span class="se">\&#39;</span><span class="s1">d account&#39;</span>
+                         <span class="s1">&#39; has access to, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="s1">&#39;All Organizations&#39;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_org_iam_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_org_iam_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_org_iam_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">org_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the iam policies of an org.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            org_id (int): The org id number.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Organization IAM policy for given org_id.</span>
+<span class="sd">            https://cloud.google.com/resource-manager/reference/rest/Shared.Types/Policy</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">org_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span><span class="n">resource_id</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the iam policies of an org, org_id = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; resource_id = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">org_id</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_org_org_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_org_org_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_org_org_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">org_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the org policies for a given org.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            org_id (int): The org id number.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Org policies applied to the organization.</span>
+<span class="sd">            https://cloud.google.com/resource-manager/reference/rest/v1/Policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">org_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span><span class="o">.</span><span class="n">list_org_policies</span><span class="p">(</span>
+                <span class="n">resource_id</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;policies&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the org policies for a given org,&#39;</span>
+                         <span class="s1">&#39; org_id = </span><span class="si">%s</span><span class="s1">, resource_id = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">org_id</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_folder"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_folder">[docs]</a>    <span class="k">def</span> <span class="nf">get_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a folder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder_name (str): The unique folder name, with the format</span>
+<span class="sd">                &quot;folders/{folderId}&quot;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The folder API response.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">folder_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting folder by folder name, folder_name = </span><span class="si">%s</span><span class="s1">&#39;</span>
+                         <span class="s1">&#39; results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">folder_name</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">folder_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_folders"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_folders">[docs]</a>    <span class="k">def</span> <span class="nf">get_folders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">show_deleted</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Find all folders that the authenticated account has access to.</span>
+
+<span class="sd">        If no parent is passed in, then all folders the caller has visibility</span>
+<span class="sd">        to are returned. This is significantly less efficient then listing by</span>
+<span class="sd">        parent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            parent (str): Optional parent resource, either</span>
+<span class="sd">                &#39;organizations/{org_id}&#39; or &#39;folders/{folder_id}&#39;.</span>
+<span class="sd">            show_deleted (bool): Determines if deleted folders should be</span>
+<span class="sd">                returned in the results.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of Folder dicts as returned by the API.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+                <span class="n">parent</span><span class="p">,</span> <span class="n">showDeleted</span><span class="o">=</span><span class="n">show_deleted</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">show_deleted</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;lifecycleState=ACTIVE&#39;</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;folders&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the folders that the auth</span><span class="se">\&#39;</span><span class="s1">d account&#39;</span>
+                         <span class="s1">&#39; has access to, parent = </span><span class="si">%s</span><span class="s1">, show_deleted = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">parent</span><span class="p">,</span> <span class="n">show_deleted</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parent</span><span class="p">:</span>
+                <span class="n">resource_name</span> <span class="o">=</span> <span class="n">parent</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">resource_name</span> <span class="o">=</span> <span class="s1">&#39;All Folders&#39;</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_name</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_project_liens"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_project_liens">[docs]</a>    <span class="k">def</span> <span class="nf">get_project_liens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">project_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all liens for this project.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): the id of the project.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: A list of Lien dicts as returned by the API.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">project_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">project_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">liens</span><span class="o">.</span><span class="n">list</span><span class="p">(</span>
+                <span class="n">project_id</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;liens&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_folder_iam_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_folder_iam_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_folder_iam_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the iam policies of a folder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder_id (int): The folder id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Folder IAM policy for given folder_id.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ApiExecutionError: An error has occurred when executing the API.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">folder_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">get_iam_policy</span><span class="p">(</span><span class="n">resource_id</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the iam policies of a folder,&#39;</span>
+                         <span class="s1">&#39; folder_id = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_folder_org_policies"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_folder_org_policies">[docs]</a>    <span class="k">def</span> <span class="nf">get_folder_org_policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">folder_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get all the org policies for a given folder.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            folder_id (int): The folder id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: Org policies applied to the folder.</span>
+<span class="sd">            https://cloud.google.com/resource-manager/reference/rest/v1/Policy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span><span class="n">folder_id</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">paged_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders_v1</span><span class="o">.</span><span class="n">list_org_policies</span><span class="p">(</span>
+                <span class="n">resource_id</span><span class="p">)</span>
+            <span class="n">flattened_results</span> <span class="o">=</span> <span class="n">api_helpers</span><span class="o">.</span><span class="n">flatten_list_results</span><span class="p">(</span>
+                <span class="n">paged_results</span><span class="p">,</span> <span class="s1">&#39;policies&#39;</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting all the org policies of a given folder,&#39;</span>
+                         <span class="s1">&#39; folder_id = </span><span class="si">%s</span><span class="s1">, flattened_results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">folder_id</span><span class="p">,</span> <span class="n">flattened_results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">flattened_results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CloudResourceManagerClient.get_org_policy"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_api.cloud_resource_manager.html#google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient.get_org_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_org_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span> <span class="n">effective_policy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a specific org policy constraint for a given resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            resource_id (str): The organization, folder or project resource to</span>
+<span class="sd">                query</span>
+<span class="sd">            constraint (str): The org policy constraint to query.</span>
+<span class="sd">            effective_policy (bool): If set to true, query the effective policy</span>
+<span class="sd">                instead of the currently set policy. This takes the resource</span>
+<span class="sd">                hierarchy into account.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: An org policy resource.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Raised if the resource_id is not value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">org_policy_method</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">repository</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">resource_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;folders/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">folders_v1</span>
+        <span class="k">elif</span> <span class="n">resource_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;organizations/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">organizations</span>
+        <span class="k">elif</span> <span class="n">resource_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;projects/&#39;</span><span class="p">):</span>
+            <span class="n">repository</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">repository</span><span class="o">.</span><span class="n">projects</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;resource_id is not a valid resource: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">resource_id</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">effective_policy</span><span class="p">:</span>
+            <span class="n">org_policy_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">repository</span><span class="p">,</span> <span class="s1">&#39;get_effective_org_policy&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">org_policy_method</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">repository</span><span class="p">,</span> <span class="s1">&#39;get_org_policy&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">org_policy_method</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">constraint</span><span class="p">)</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting a specific org policy constraint for a given&#39;</span>
+                         <span class="s1">&#39; resource, resouce_id = </span><span class="si">%s</span><span class="s1">, constraint = </span><span class="si">%s</span><span class="s1">,&#39;</span>
+                         <span class="s1">&#39; effective_policy = </span><span class="si">%s</span><span class="s1">, results = </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">resource_id</span><span class="p">,</span> <span class="n">constraint</span><span class="p">,</span> <span class="n">effective_policy</span><span class="p">,</span> <span class="n">results</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">results</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">errors</span><span class="o">.</span><span class="n">HttpError</span><span class="p">,</span> <span class="n">HttpLib2Error</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">api_errors</span><span class="o">.</span><span class="n">ApiExecutionError</span><span class="p">(</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span></div></div>
+</pre></div>
