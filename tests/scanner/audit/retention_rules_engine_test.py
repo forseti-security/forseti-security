@@ -191,6 +191,10 @@ def generate_res_for_22():
     data_creater = frsd.FakeBucketDataCreater('bkt_max_9_2', proj_max)
     res.append(data_creater.get_resource())
 
+    data_creater = frsd.FakeBucketDataCreater('bkt_max_10', proj_max)
+    data_creater.AddLefecycleDict("Delete", normal, None, None, 0, None)
+    res.append(data_creater.get_resource())
+
     # MIN
     normal = 90
     less = 89
@@ -237,13 +241,13 @@ def generate_res_for_22():
     d = datetime.today() - timedelta(days=90)
     dstr = d.strftime('%Y-%m-%d')
     data_creater = frsd.FakeBucketDataCreater('bkt_min_10', proj_min)
-    data_creater.AddLefecycleDict("Delete", None, dstr, None, None, None)
+    data_creater.AddLefecycleDict("Delete", less, dstr, None, None, None)
     res.append(data_creater.get_resource())
 
     d = datetime.today() - timedelta(days=89)
     dstr = d.strftime('%Y-%m-%d')
     data_creater = frsd.FakeBucketDataCreater('bkt_min_11', proj_min)
-    data_creater.AddLefecycleDict("Delete", None, dstr, None, None, None)
+    data_creater.AddLefecycleDict("Delete", less, dstr, None, None, None)
     res.append(data_creater.get_resource())
 
     d = datetime.today() - timedelta(days=89)
@@ -260,6 +264,22 @@ def generate_res_for_22():
     data_creater = frsd.FakeBucketDataCreater('bkt_min_14', proj_min)
     data_creater.AddLefecycleDict("Else", less, None, None, None, None)
     data_creater.AddLefecycleDict("Delete", normal, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('bkt_min_15', proj_min)
+    data_creater.AddLefecycleDict("Delete", less, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    d = datetime.today() - timedelta(days=90)
+    dstr = d.strftime('%Y-%m-%d')
+    data_creater = frsd.FakeBucketDataCreater('bkt_min_16', proj_min)
+    data_creater.AddLefecycleDict("Delete", None, dstr, None, None, None)
+    res.append(data_creater.get_resource())
+
+    d = datetime.today() - timedelta(days=89)
+    dstr = d.strftime('%Y-%m-%d')
+    data_creater = frsd.FakeBucketDataCreater('bkt_min_17', proj_min)
+    data_creater.AddLefecycleDict("Delete", None, dstr, None, None, None)
     res.append(data_creater.get_resource())
 
     # Both
@@ -671,6 +691,8 @@ class RetentionRulesEngineTest(ForsetiTestCase):
                                       'only max retention', 0),
             get_expect_violation_item(res_map, 'bkt_max_9_2',
                                       'only max retention', 0),
+            get_expect_violation_item(res_map, 'bkt_max_10',
+                                      'only max retention', 0),
 
             get_expect_violation_item(res_map, 'bkt_min_6',
                                       'only min retention', 1),
@@ -679,6 +701,10 @@ class RetentionRulesEngineTest(ForsetiTestCase):
             get_expect_violation_item(res_map, 'bkt_min_11',
                                       'only min retention', 1),
             get_expect_violation_item(res_map, 'bkt_min_13',
+                                      'only min retention', 1),
+            get_expect_violation_item(res_map, 'bkt_min_15',
+                                      'only min retention', 1),
+            get_expect_violation_item(res_map, 'bkt_min_17',
                                       'only min retention', 1),
 
             get_expect_violation_item(res_map, 'bkt_both_1',
