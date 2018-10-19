@@ -75,13 +75,14 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             self.build_rule_book()
 
         violations = itertools.chain()
-
         resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
-
         resource_ancestors = (relationship.find_ancestors(
             buckets_lifecycle, buckets_lifecycle.full_name))
+
         for related_resources in resource_ancestors:
-            rules = resource_rules[related_resources]
+            rules = resource_rules.get(related_resources)
+            if not rules:
+                continue
             for rule in rules:
                 violations = itertools.chain(
                     violations,
@@ -269,6 +270,7 @@ class Rule(object):
         Returns:
             RuleViolation: The violation
         """
+
         return self.RuleViolation(
             resource_name=buckets_lifecycle.id,
             resource_type=buckets_lifecycle.type,
@@ -305,6 +307,8 @@ class Rule(object):
         # There should be a condition which guarantees to delete data
         exist_max_limit = False
         lifecycle_rule = bucket.get_lifecycle_rule()
+        if bucket.id == 'bkt_max_4--':
+            print '!!!!', lifecycle_rule
         if lifecycle_rule is None:
             yield self.generate_rule_violation(bucket)
         else:
@@ -354,8 +358,8 @@ class Rule(object):
                 if 'age' in conditions:
                     if conditions['age'] >= minretention:
                         continue
-                elif bucket_conditions_guarantee_min(conditions,
-                                                     minretention):
+
+                if bucket_conditions_guarantee_min(conditions, minretention):
                     continue
 
                 yield self.generate_rule_violation(bucket)
@@ -371,6 +375,7 @@ class Rule(object):
         violation_max = self.bucket_max_retention_violation(bucket)
         violation_min = self.bucket_min_retention_violation(bucket)
         return itertools.chain(violation_max, violation_min)
+
 
 def bucket_conditions_guarantee_min(conditions, min_retention):
     """check if other conditions can guarantee minimum retention

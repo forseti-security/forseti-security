@@ -21,6 +21,9 @@ from google.cloud.forseti.scanner.scanners import retention_scanner
 from tests.unittest_utils import get_datafile_path
 import json
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
+import unittest
+
+do_not_test_old_cases = False
 
 def CreateFakeBucket(organizationid, folderid, projectname, bucketname):
     name = projectname+bucketname
@@ -133,6 +136,7 @@ class RetentionScannerTest(ForsetiTestCase):
 
 
     #"lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 20, "numNewerVersions": 5}}, {"action": {"type": "Delete"}, "condition": {"age": 10, "numNewerVersions": 99}}]},
+    @unittest.skipIf(do_not_test_old_cases, 'debug new test cases')
     def test_all(self):
         """Tests _retrieve gets all bq acls and parent resources."""
         rules_local_path = get_datafile_path(

@@ -1,0 +1,26 @@
+rules:
+  - name: only max retention
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - project-max
+    maximum_retention: 365
+  - name: only min retention
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - project-min
+    minimum_retention: 90
+  - name: both max and min
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - project-both
+    minimum_retention: 90
+    maximum_retention: 365

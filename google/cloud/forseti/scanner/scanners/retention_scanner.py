@@ -119,7 +119,6 @@ class RetentionScanner(base_scanner.BaseScanner):
                     proj = project.Project(
                         project_id=resource.parent.name,
                         full_name=resource.parent.full_name)
-
                     new_res = resource_util.create_resource_from_json(
                         resource_type, proj, resource.data)
                     retention_info.append(new_res)
