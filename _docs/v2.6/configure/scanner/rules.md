@@ -621,15 +621,108 @@ rules:
   * **Valid values**: project/networks pairs.
   * **Example values**: The following values would specify that VM instances in
   project_01’s network_01 can have external IP addresses:
-
     ```
     project_01:
     - network_01
     ```
 
- ## Service Account Key rules
+## Lien rules
 
- ### Rule definitions
+### Rule definition
+
+```yaml
+rules:
+- name: Require project deletion liens for all projects in the organization.
+  mode: required
+  resource:
+  - resource_ids:
+    - org-1
+    type: organization
+  restrictions:
+  - resourcemanager.projects.delete
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: Currently only supports `required`.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String.
+
+* `restrictions`
+  * **Description**: A list of restrictions to check for.
+  * **Valid values**: Currently only supports `resourcemanager.projects.delete`.
+
+## Location rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: All buckets in organization must be in the US.
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - org-1
+    applies_to:
+      - 'bucket'
+    locations:
+      - 'us*'
+ - name: All buckets in organization must not be in EU.
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - org-1
+    applies_to:
+      - 'bucket'
+    locations:
+      - 'eu*'
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: One of `blacklist` or `whitelist`.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String.
+
+* `applies_to`
+  * **Description**: A list of resource types to apply this rule to.
+  * **Valid values**: Currently only supports `bucket`.
+
+* `locations`:
+  * **Description**: A list of resource locations.
+  * **Value values**: String. Supports wildcards. 
+  * **Note**:
+    * Due to differences in capitalization among resource locations, all resources locations will be lower cased before being matched.
+    * Due to differences in region (europe-west1) vs multi regional (EU) naming, we recommend writing rules that can cover both (e.g. eu* instead of europe*).
+
+
+## Service Account Key rules
+
+### Rule definitions
 
  ```yaml
  rules:
