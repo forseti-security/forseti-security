@@ -29,6 +29,7 @@ import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
 import tensorflow.keras.Model as Model
 import sklearn
+from sklearn import decomposition
 from sklearn.cluster import KMeans
 
 
@@ -76,36 +77,65 @@ def embedding_model(model):
   return intermediate_model
 
 def get_embeddings(model, input):
-    """Given an input , this returns the learnt embedding for it.
+  """Given an input , this returns the learnt embedding for it.
 
-    Args:
-      model: Input model which predicts the embedding for a given policy
-      input: Flattened IAM policy
+  Args:
+    model: Input model which predicts the embedding for a given policy
+    input: Flattened IAM policy
 
-    Returns:
+  Returns:
 
-     embedding: The embedding vector corresponding to the given input
+   embedding: The embedding vector corresponding to the given input
 
-    """
-    embedding = model.predict(input)
+  """
+  embedding = model.predict(input)
 
-    return embedding
+  return embedding
 
 def k_means(data, num_clusters, max_iter, seed=0):
-    """Creates and fits the k-means model with dataset.
+  """Creates and fits the k-means model with dataset.
 
-    Args:
-       seed: Seed with which cluster centroids are
-           initialized to track experiments
-       data: Array/sparse-matrix each column representing a
-           feature and row an instance
-       num_clusters: Number of cluster and centroids to create
-       max_iter: The maximum number of iterations for a single run
+  Args:
+     seed: Seed with which cluster centroids are
+         initialized to track experiments
+     data: Array/sparse-matrix each column representing a
+         feature and row an instance
+     num_clusters: Number of cluster and centroids to create
+     max_iter: The maximum number of iterations for a single run
 
-    Returns:
-      kmeans: Model which has clustered the dataset
-   """
-    kmeans = KMeans(n_clusters=num_clusters, random_state=seed,
-                    max_iter=max_iter).fit(data)
+  Returns:
+    kmeans: Model which has clustered the dataset
+ """
+  kmeans = KMeans(n_clusters=num_clusters, random_state=seed,
+                  max_iter=max_iter).fit(data)
 
-    return kmeans
+  return kmeans
+
+def dimensionality_reduce(dataset, n_components):
+  """Reduce the input feature set to lower dimension space
+  Args:
+    dataset(Array): Input numpy array 
+    n_components(int): Number of dimensions to decompose 
+
+  Returns:
+    decomposed_data: Dataset in reduced dimension space
+  """
+  decomposed_data = decomposition.PCA(n_components=n_components)
+  return decomposed_data
+
+def visualize_2d(dataset, predicted_labels, marker_size=30, cmap=None):
+  """
+  Visualize the low dimesional space image
+  Args:
+    dataset(array): 2 dimensional input dataset
+    predicted_labels(array): Output labels for k-means clustering 
+    marker_size(float): Size of the marker representing each instance
+    cmap(str): Colormap for visualization
+  """
+  assert (dataset.shape[1] == 2), "Dataset must have only 2 feature columns"
+
+  plt.scatter(dataset[:, 0], dataset[:, 1],
+    c=predicted_labels, s=50, cmap=cmap)
+
+
+    
