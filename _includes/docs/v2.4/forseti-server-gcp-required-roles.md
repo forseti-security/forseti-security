@@ -8,6 +8,7 @@
  * `roles/compute.networkViewer` (server)
  * `roles/compute.securityAdmin` (server)
  * `roles/iam.securityReviewer` (server)
+ * `roles/orgpolicy.policyViewer` (server)
  * `roles/servicemanagement.quotaViewer` (server)
  * `roles/serviceusage.serviceUsageConsumer` (server)
 
