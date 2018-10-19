@@ -233,11 +233,17 @@ class InventoryImporter(object):
                                      item_counter)
                         self.session.flush()
 
-                self._store_resource(None)
                 if item_counter % 1000:
                     # Additional rows added since last flush.
                     self.session.flush()
                 LOGGER.debug('Finished storing resources into models.')
+
+                item_counter += self.model_action_wrapper(
+                    self.session,
+                    inventory.iter(['role']),
+                    self._convert_role,
+                    post_action=self._convert_role_post
+                )
 
                 item_counter += self.model_action_wrapper(
                     self.session,
@@ -263,13 +269,6 @@ class InventoryImporter(object):
                     self.session,
                     inventory.iter(gcp_type_list, fetch_enabled_apis=True),
                     self._convert_enabled_apis
-                )
-
-                item_counter += self.model_action_wrapper(
-                    self.session,
-                    inventory.iter(['role']),
-                    self._convert_role,
-                    post_action=self._convert_role_post
                 )
 
                 self.model_action_wrapper(
