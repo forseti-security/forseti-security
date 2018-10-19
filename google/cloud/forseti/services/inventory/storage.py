@@ -388,6 +388,8 @@ class Inventory(BASE):
 class CaiTemporaryStore(object):
     """CAI temporary inventory table."""
 
+    __tablename__ = 'cai_temporary_store'
+
     # Class members created in initialize() by mapper()
     name = None
     parent_name = None
@@ -433,7 +435,8 @@ class CaiTemporaryStore(object):
                              Column('content_type', Enum(ContentTypes),
                                     nullable=False),
                              Column('asset_type', String(255), nullable=False),
-                             Column('asset_data', LargeBinary(),
+                             Column('asset_data',
+                                    LargeBinary(length=(2**32) - 1),
                                     nullable=False),
                              Index('idx_parent_name', 'parent_name'),
                              PrimaryKeyConstraint('content_type',
@@ -442,6 +445,25 @@ class CaiTemporaryStore(object):
                                                   name='cai_temp_store_pk'))
 
             mapper(cls, my_table)
+
+    @staticmethod
+    def get_schema_update_actions():
+        """Maintain all the schema changes for this table.
+
+        Returns:
+            list: A list of Action.
+        """
+
+        #  Format of the columns_to_alter dict: {old_column: new_column}
+        columns_to_alter = {
+            Column('asset_data',
+                   LargeBinary(),
+                   nullable=False): Column('asset_data',
+                                           LargeBinary(length=(2**32) - 1),
+                                           nullable=False)}
+
+        schema_update_actions = {'ALTER': columns_to_alter}
+        return schema_update_actions
 
     def extract_asset_data(self, content_type):
         """Extracts the data from the asset protobuf based on the content type.
@@ -527,11 +549,12 @@ class CaiTemporaryStore(object):
             return asset_pb.resource.parent
 
         if (asset_pb.asset_type.startswith('google.appengine') or
-                asset_pb.asset_type.startswith('google.bigquery')):
+                asset_pb.asset_type.startswith('google.bigquery') or
+                asset_pb.asset_type.startswith('google.spanner')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 
-        LOGGER.warn('Could not determine parent name for %s', asset_pb)
+        LOGGER.debug('Could not determine parent name for %s', asset_pb)
         return ''
 
 
@@ -618,8 +641,22 @@ class CaiDataAccess(object):
                 try:
                     row = CaiTemporaryStore.from_json(line.strip())
                 except json_format.ParseError as e:
-                    LOGGER.error('Line %s had a parse error %s, skipping.',
-                                 line.strip(), e)
+                    # If the public protobuf definition differs from the
+                    # internal representation of the resource content in CAI
+                    # then the json_format module will throw a ParseError. The
+                    # crawler automatically falls back to using the live API
+                    # when this happens, so no content is lost.
+                    resource = json.loads(line)
+                    if 'iam_policy' in resource:
+                        content_type = 'iam_policy'
+                    elif 'resource' in resource:
+                        content_type = 'resource'
+                    else:
+                        content_type = 'none'
+                    LOGGER.info('Protobuf parsing error %s, falling back to '
+                                'live API for resource %s, asset type %s, '
+                                'content type %s', e, resource.get('name', ''),
+                                resource.get('asset_type', ''), content_type)
                     continue
                 commit_buffer.add(row)
                 num_rows += 1

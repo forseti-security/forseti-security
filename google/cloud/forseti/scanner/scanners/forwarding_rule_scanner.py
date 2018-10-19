@@ -73,6 +73,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                               'ip_address': violation.ip_address}
             yield {
                 'resource_id': violation.resource_id,
+                'resource_name': violation.resource_name,
                 'full_name': violation.full_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,

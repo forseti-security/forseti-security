@@ -81,11 +81,12 @@ def create_resource(resource_id, resource_type, **kwargs):
 
 def create_resource_from_json(resource_type, parent, json_string):
     """Factory to create a certain kind of Resource from JSON data.
-     Args:
+    Args:
         resource_type (str): The resource type.
         parent (Resource): parent resource of this type.
         json_string (str): resource's JSON data.
-     Returns:
+
+    Returns:
         Resource: The new Resource based on the type, if supported,
         otherwise None.
     """
@@ -94,6 +95,7 @@ def create_resource_from_json(resource_type, parent, json_string):
     resource_type = _RESOURCE_TYPE_MAP[resource_type]
     if not resource_type.get('can_create_resource'):
         return None
+
     return resource_type.get('class').from_json(parent, json_string)
 
 

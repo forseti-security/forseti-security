@@ -574,6 +574,61 @@ CRM_GET_IAM_POLICIES = {
     PROJECT_ID_PREFIX + "4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
 }
 
+CRM_ORG_ORG_POLICIES = """
+[
+  {
+    "constraint": "constraints/compute.disableSerialPortAccess",
+    "booleanPolicy": {
+     "enforced": true
+    }
+  },
+  {
+    "constraint": "constraints/compute.storageResourceUseRestrictions",
+    "list_policy": {
+      "all_values": "ALLOW"
+    }
+  }
+]
+"""
+
+CRM_FOLDER_ORG_POLICIES = """
+[
+  {
+    "constraint": "constraints/storage.requireIamAclsOnly",
+    "boolean_policy": {
+      "enforced": true
+    }
+  }
+]
+"""
+
+
+CRM_PROJECT_ORG_POLICIES = """
+[
+  {
+    "constraint": "constraints/compute.trustedImageProjects",
+    "list_policy": {
+      "allowed_values": [
+        "is:projects/my-good-images",
+        "is:projects/my-other-images",
+        "is:projects/trusted-cloud-images"
+      ]
+    }
+  }
+]
+"""
+
+CRM_GET_ORG_POLICIES = {
+    ORGANIZATION_ID: json.loads(CRM_ORG_ORG_POLICIES),
+    "folders/" + FOLDER_ID_PREFIX + "1": json.loads(CRM_FOLDER_ORG_POLICIES),
+    "folders/" + FOLDER_ID_PREFIX + "2": {},
+    "folders/" + FOLDER_ID_PREFIX + "3": {},
+    PROJECT_ID_PREFIX + "1": json.loads(CRM_PROJECT_ORG_POLICIES),
+    PROJECT_ID_PREFIX + "2": json.loads(CRM_PROJECT_ORG_POLICIES),
+    PROJECT_ID_PREFIX + "3": {},
+    PROJECT_ID_PREFIX + "4": {},
+}
+
 CRM_GET_PROJECT_LIENS = {
     PROJECT_ID_PREFIX + "1": [{
         "name": "liens/" + LIEN_ID_PREFIX,
@@ -736,7 +791,7 @@ GCE_GET_PROJECT = {
     PROJECT_ID_PREFIX + "2":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
-                num=2, id="project2", projnum=PROJECT_ID_PREFIX + "1")),
+                num=2, id="project2", projnum=PROJECT_ID_PREFIX + "2")),
     PROJECT_ID_PREFIX + "3":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(

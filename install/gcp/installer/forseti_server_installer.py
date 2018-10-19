@@ -100,6 +100,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.target_id,
                 self.project_id,
                 self.gcp_service_acct_email,
+                self._get_cai_bucket_name(),
                 self.user_can_grant_roles)
 
             # Waiting for VM to be initialized.
@@ -174,6 +175,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'CLOUDSQL_REGION': self.config.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_CAI_BUCKET': self._get_cai_bucket_name(),
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'FORSETI_SERVER_REGION': self.config.cloudsql_region,
@@ -194,10 +196,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         bucket_name = self.generate_bucket_name()
         return {
+            'CAI_ENABLED': 'organizations' in self.resource_root_id,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_CAI_BUCKET': self._get_cai_bucket_name(),
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
         }
@@ -319,6 +323,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
         instructions.other_messages.append(constants.MESSAGE_RUN_FREQUENCY)
 
         return instructions
+
+    def _get_cai_bucket_name(self):
+        """Get CAI bucket name.
+
+        Returns:
+            str: CAI bucket name.
+        """
+        return 'forseti-cai-export-{}'.format(self.config.identifier)
 
     @staticmethod
     def _get_gcs_path(resources):

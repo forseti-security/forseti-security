@@ -39,6 +39,7 @@ class Bucket(resource.Resource):
             name=None,
             display_name=None,
             parent=None,
+            locations=None,
             lifecycle_state=BucketLifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -49,6 +50,8 @@ class Bucket(resource.Resource):
             name (str): The bucket's unique GCP name, with the
                 format "buckets/{id}".
             display_name (str): The bucket's display name.
+            locations (List[str]): Locations this bucket resides in. If set,
+                there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
@@ -59,6 +62,7 @@ class Bucket(resource.Resource):
             name=name,
             display_name=display_name,
             parent=parent,
+            locations=locations,
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
@@ -69,18 +73,20 @@ class Bucket(resource.Resource):
         Args:
             parent (Resource): resource this bucket belongs to.
             json_string(str): JSON string of a bucket GCP API response.
+
         Returns:
             Bucket: bucket resource.
         """
         bucket_dict = json.loads(json_string)
+
         bucket_id = bucket_dict['id']
         return cls(
             parent=parent,
             bucket_id=bucket_id,
-            name='buckets/' + bucket_id,
+            name=cls.RESOURCE_NAME_FMT % bucket_id,
             full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
             display_name=bucket_id,
-            # locations=[bucket_dict['location']],
+            locations=[bucket_dict['location']],
             data=json_string,
         )
 

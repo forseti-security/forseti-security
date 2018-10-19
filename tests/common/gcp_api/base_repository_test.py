@@ -65,12 +65,25 @@ class BaseRepositoryTest(unittest_utils.ForsetiTestCase):
     def test_build_http(self):
         """Verify set user agent sets the user agent correctly."""
         http_mock = http.HttpMock()
-        h = base._build_http(http=http_mock)
+        h = base.http_helpers.build_http(http=http_mock)
 
         _ = h.request('http://test.foo', 'GET')
         self.assertTrue(
             forseti_security.__package_name__ in
                 h.headers.get('user-agent'))
+
+    def test_build_http_multiple(self):
+        """Verify set user agent sets the user agent only once."""
+        http_mock = http.HttpMock()
+        h = base.http_helpers.build_http(http=http_mock)
+        for _ in xrange(5):
+            h = base.http_helpers.build_http(http=h)
+
+        _ = h.request('http://test.foo', 'GET')
+        user_agent = h.headers.get('user-agent')
+        forseti_agent_count = user_agent.count(
+            forseti_security.__package_name__)
+        self.assertEqual(1, forseti_agent_count)
 
     def test_set_scopes(self):
         creds = self.get_test_service_account()
