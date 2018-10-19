@@ -307,6 +307,8 @@ def run_crawler(storage,
     _span = _tracer.start_span()
     _span.name = '[requests]{}'.format('test_request_name')
     _span.span_kind = span_module.SpanKind.CLIENT
+    LOGGER.info("Trace id: %s" % _tracer.span_context.trace_id) 
+    LOGGER.info("Span id: %s" % _span.span_id)
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 

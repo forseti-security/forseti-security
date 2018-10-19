@@ -85,7 +85,7 @@ def trace_integrations(integrations=None):
     """
     if integrations is None:
         integrations = DEFAULT_INTEGRATIONS
-    execution_context.set_opencensus_tracer(tracing.TRACER)
+    execution_context.set_opencensus_tracer(TRACER)
     integrated_libraries = config_integration.trace_integrations(
         integrations,
         TRACER)
