@@ -611,6 +611,21 @@ rules:
   * **Description**: Project id.
   * **Valid values**: String, you can use `*` to match for all.
 
+* `network`
+  * **Description**: Network.
+  * **Valid values**: String, you can use `*` to match for all.
+
+* `whitelist`
+  * **Description**: The whitelist describes which projects and networks for which VM
+  instances can have external IPs.
+  * **Valid values**: project/networks pairs.
+  * **Example values**: The following values would specify that VM instances in
+  project_01’s network_01 can have external IP addresses:
+    ```
+    project_01:
+    - network_01
+    ```
+
 ## Lien rules
 
 ### Rule definition
