@@ -17,13 +17,14 @@ import collections
 from collections import namedtuple
 import itertools
 import threading
+import json
 
 from google.cloud.forseti.common.gcp_type import resource_util
+from google.cloud.forseti.common.util import date_time as dt
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.audit import errors as audit_errors
-from google.cloud.forseti.common.util import date_time as dt
 
 
 LOGGER = logger.get_logger(__name__)
@@ -59,11 +60,11 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = RetentionRuleBook(self._load_rule_definitions())
 
-    def find_violations(self, buckets_lifecycle, force_rebuild=False):
+    def find_violations(self, resource, force_rebuild=False):
         """Determine whether bucket lifecycle violates rules.
 
         Args:
-            buckets_lifecycle (retention_bucket.RetentionBucket): Object
+            resource (Resource): Object
                 containing lifecycle data
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
@@ -75,9 +76,9 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             self.build_rule_book()
 
         violations = itertools.chain()
-        resource_rules = self.rule_book.get_resource_rules(_APPLY_TO_BUCKETS)
+        resource_rules = self.rule_book.get_resource_rules(resource.type)
         resource_ancestors = (relationship.find_ancestors(
-            buckets_lifecycle, buckets_lifecycle.full_name))
+            resource, resource.full_name))
 
         for related_resources in resource_ancestors:
             rules = resource_rules.get(related_resources)
@@ -86,7 +87,7 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             for rule in rules:
                 violations = itertools.chain(
                     violations,
-                    rule.find_violations(buckets_lifecycle))
+                    rule.find_violations(resource))
 
         return set(violations)
 
@@ -246,7 +247,7 @@ class Rule(object):
     RuleViolation = namedtuple(
         'RuleViolation',
         ['resource_name', 'resource_type', 'full_name', 'rule_name',
-         'rule_index', 'violation_type', 'violation_data'])
+         'rule_index', 'violation_type', 'violation_data', 'resource_data'])
 
     def __init__(self, rule_name, rule_index, min_retention, max_retention):
         """Initialize.
@@ -262,23 +263,26 @@ class Rule(object):
         self.min_retention = min_retention
         self.max_retention = max_retention
 
-    def generate_rule_violation(self, buckets_lifecycle):
+    def generate_bucket_violation(self, bucket):
         """generate a violation.
 
         Args:
-            buckets_lifecycle (RetentionBucket): The info of the bucket
+            bucket (Bucket): The bucket that triggers the violation
         Returns:
             RuleViolation: The violation
         """
+        data_lifecycle = bucket.get_lifecycle_rule()
+        data_lifecycle_str = json.dumps(data_lifecycle)
 
         return self.RuleViolation(
-            resource_name=buckets_lifecycle.id,
-            resource_type=buckets_lifecycle.type,
-            full_name=buckets_lifecycle.full_name,
+            resource_name=bucket.id,
+            resource_type=bucket.type,
+            full_name=bucket.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type=VIOLATION_TYPE,
-            violation_data=buckets_lifecycle.data
+            violation_data=data_lifecycle_str,
+            resource_data=bucket.data,
         )
 
     def find_violations(self, res):
@@ -306,13 +310,11 @@ class Rule(object):
 
         # There should be a condition which guarantees to delete data
         exist_max_limit = False
-        lifecycle_rule = bucket.get_lifecycle_rule()
-        if bucket.id == 'bkt_max_4--':
-            print '!!!!', lifecycle_rule
-        if lifecycle_rule is None:
-            yield self.generate_rule_violation(bucket)
+        bucket_lifecycle = bucket.get_lifecycle_rule()
+        if bucket_lifecycle is None:
+            yield self.generate_bucket_violation(bucket)
         else:
-            for lc_item in lifecycle_rule:
+            for lc_item in bucket_lifecycle:
                 action = lc_item['action']
                 if action is not None and 'type' in action:
                     if action['type'] != 'Delete':
@@ -328,7 +330,7 @@ class Rule(object):
                             exist_max_limit = True
                             break
             if not exist_max_limit:
-                yield self.generate_rule_violation(bucket)
+                yield self.generate_bucket_violation(bucket)
 
     def bucket_min_retention_violation(self, bucket):
         """Get a generator for violations especially for minimum retention
@@ -341,9 +343,9 @@ class Rule(object):
         if minretention is None:
             return
 
-        lifecycle_rule = bucket.get_lifecycle_rule()
-        if lifecycle_rule is not None:
-            for lc_item in lifecycle_rule:
+        bucket_lifecycle = bucket.get_lifecycle_rule()
+        if bucket_lifecycle is not None:
+            for lc_item in bucket_lifecycle:
                 action = lc_item['action']
                 if action is not None and 'type' in action:
                     if action['type'] != 'Delete':
@@ -353,7 +355,7 @@ class Rule(object):
 
                 conditions = lc_item['condition']
                 if conditions is None:
-                    self.generate_rule_violation(bucket)
+                    self.generate_bucket_violation(bucket)
 
                 if 'age' in conditions:
                     if conditions['age'] >= minretention:
@@ -362,14 +364,14 @@ class Rule(object):
                 if bucket_conditions_guarantee_min(conditions, minretention):
                     continue
 
-                yield self.generate_rule_violation(bucket)
+                yield self.generate_bucket_violation(bucket)
 
     def find_violations_in_bucket(self, bucket):
         """Get a generator for violations
         Args:
-            bucket (bucket): Find violation from the bucket
+            bucket (bucket): Find violation from the buckets
         Returns:
-            Generator: All violations of the bucket breaking the rule.
+            Generator: All violations of the buckets breaking rules.
         """
 
         violation_max = self.bucket_max_retention_violation(bucket)

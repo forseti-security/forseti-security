@@ -42,13 +42,13 @@ from google.cloud.forseti.scanner.scanners import retention_scanner
 
 do_not_test_old_cases = False
 
-_fake_bucket_list = []
 
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
     RuleViolation = namedtuple(
     'RuleViolation',
     ['resource_name', 'resource_type', 'full_name', 'rule_name',
-     'rule_index', 'violation_type', 'violation_data'])
+     'rule_index', 'violation_type', 'violation_data', 'resource_data'])
+    lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule())
 
     return RuleViolation(
         resource_name=bucket_id,
@@ -57,7 +57,8 @@ def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
         rule_name=rule_name,
         rule_index=rule_index,
         violation_type=rre.VIOLATION_TYPE,
-        violation_data=res_map.get(bucket_id).data)
+        violation_data=lifecycle_str,
+        resource_data=res_map.get(bucket_id).data)
 
 def GetLefecycleDict(action, age, created_before, matches_storage_class,
                      num_newer_versions, is_live):
@@ -75,34 +76,7 @@ def GetLefecycleDict(action, age, created_before, matches_storage_class,
         result['condition']['isLive'] = is_live
     return result
 
-def CreateFakeBucket(projectname, bucketname):
-    name = projectname+bucketname
-    full_name = 'organization/433655558669/project/'
-    full_name += projectname+'/bucket/'+name+'/'
-    tp = 'bucket'
-    parent_type_name = 'project/'+projectname
-    data = """{"defaultObjectAcl": [{"entity": "project-owners-722028419187",
-    "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam":
-    {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"},
-    {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind":
-    "storage#objectAccessControl", "projectTeam": {"projectNumber":
-    "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity":
-    "project-viewers-722028419187", "etag": "CAQ=", "kind":
-    "storage#objectAccessControl", "projectTeam": {"projectNumber":
-    "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=",
-    "id": \""""+name+"""\", "kind": "storage#bucket", "lifecycle": {"rule":
-    [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore":
-    "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL",
-    "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"],
-    "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition":
-    {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging":
-    {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix":
-    \""""+name+"""\"}, "metageneration": "4", "name": \""""+name+"""\", "owner":
-    {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187",
-    "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'",
-    "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z",
-    "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}"""
-    return (full_name, tp, parent_type_name, name, data)
+_fake_bucket_list_22 = []
 
 def _mock_gcp_resource_iter_22(_, resource_type):
     """Creates a list of GCP resource mocks retrieved by the scanner."""
@@ -113,7 +87,7 @@ def _mock_gcp_resource_iter_22(_, resource_type):
             resource_type,
         )
 
-    return _fake_bucket_list
+    return _fake_bucket_list_22
 
 def generate_res_for_22():
     """Creates a list of GCP resource mocks retrieved by the scanner."""
@@ -305,137 +279,109 @@ def generate_res_for_22():
     data_creater.AddLefecycleDict("Delete", larger, None, None, None, None)
     res.append(data_creater.get_resource())
 
-    global _fake_bucket_list
-    _fake_bucket_list = res
+    global _fake_bucket_list_22
+    _fake_bucket_list_22 = res
 
     return res
 
+_fake_bucket_list_0 = []
 
-
-
-def _mock_gcp_resource_iter(_, resource_type):
+def _mock_gcp_resource_iter_0(_, resource_type):
     """Creates a list of GCP resource mocks retrieved by the scanner."""
-    resources = []
+    """Used in test case 22"""
     if resource_type != 'bucket':
         raise ValueError(
             'unexpected resource type: got %s, bucket',
             resource_type,
         )
 
-    Resource = collections.namedtuple(
-        'Resource',
-        # fields based on required fields from Resource in dao.py.
-        ['full_name', 'type', 'name', 'parent_type_name', 'parent',
-         'data'],
+    return _fake_bucket_list_0
+
+def generate_res_for_0():
+    """Creates a list of GCP resource mocks retrieved by the scanner."""
+    """Used in test case 22"""
+
+    org = organization.Organization(
+        organization_id='433655558668',
+        full_name='organization/433655558668/')
+    proj = project.Project(
+        project_id='project-demo',
+        project_number='711111111111',
+        full_name=org.full_name+'project/project-demo/',
+        parent=org
     )
 
-    projectname = 'demo-project'
-    name = projectname+'-test-bucket-1'
-    project_full_name = 'organization/433655558669/project/'+projectname+'/'
-    full_name = project_full_name+'bucket/'+name+'/'
-    tp = 'bucket'
-    parent_type_name = 'project/'+projectname
-    data = '{"defaultObjectAcl": [{"entity": "project-owners-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"}, {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity": "project-viewers-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=", "id": "'+name+'", "kind": "storage#bucket", "lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore": "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition": {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging": {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix": "'+name+'"}, "metageneration": "4", "name": "'+name+'", "owner": {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187", "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'", "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z", "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}'
-
-    project_resource = Resource(
-        full_name=project_full_name,
-        type='project',
-        name=projectname,
-        parent_type_name='',
-        parent=None,
-        data='',
-    )
+    res = []
 
     # bucket 1 with a smaller age
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-1')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 364, None, None, None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt1', proj)
+    data_creater.AddLefecycleDict("Delete", 364, None, None, None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 2 with a larger age
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-2')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 366, None, None, None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt2', proj)
+    data_creater.AddLefecycleDict("Delete", 366, None, None, None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 3 with created before
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-3')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, "2018-01-01", None, None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt3', proj)
+    data_creater.AddLefecycleDict("Delete", 365, "2018-01-01", None, None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 4 with matches Storage Class
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-4')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt4', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 5 with numNewerVersions
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-5')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, 17, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt5', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, 17, None)
+    res.append(data_creater.get_resource())
 
     # bucket 6 with isLive
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-6')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, True))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt6', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, True)
+    res.append(data_creater.get_resource())
 
     # bucket 7 with no "no match" violation
-    bucket1 = CreateFakeBucket('demo-project', '-test-bucket-7')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, None))
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 201, None, None, None, True))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt7', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+    data_creater.AddLefecycleDict("Delete", 201, None, None, None, True)
+    res.append(data_creater.get_resource())
 
     # bucket 11 with nothing
-    bucket1 = CreateFakeBucket('correct-project', '-test-bucket-11')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt11', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 12 with created before
-    bucket1 = CreateFakeBucket('correct-project', '-test-bucket-11')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, None))
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, "2018-01-01", None, None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt12', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+    data_creater.AddLefecycleDict("Delete", 365, "2018-01-01", None, None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 13 with matches Storage Class
-    bucket1 = CreateFakeBucket('correct-project', '-test-bucket-11')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, None))
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], None, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt13', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+    data_creater.AddLefecycleDict("Delete", 365, None, ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], None, None)
+    res.append(data_creater.get_resource())
 
     # bucket 14 with numNewerVersions
-    bucket1 = CreateFakeBucket('correct-project', '-test-bucket-11')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, None))
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, 17, None))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt14', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, 17, None)
+    res.append(data_creater.get_resource())
 
     # bucket 15 with is Live
-    bucket1 = CreateFakeBucket('correct-project', '-test-bucket-11')
-    datajson = json.loads(bucket1[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, None))
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict("Delete", 365, None, None, None, True))
-    resources.append(Resource(full_name=bucket1[0],type=bucket1[1],parent_type_name=bucket1[2],name=bucket1[3],parent=project_resource,data=json.dumps(datajson)))
+    data_creater = frsd.FakeBucketDataCreater('bkt15', proj)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+    data_creater.AddLefecycleDict("Delete", 365, None, None, None, True)
+    res.append(data_creater.get_resource())
 
-    return resources
+    global _fake_bucket_list_0
+    _fake_bucket_list_0 = res
+    return res
+
 
 # TODO: More tests need to be added that cover the rule attributes and how they
 #    are evaluated
@@ -565,9 +511,9 @@ class RetentionRulesEngineTest(ForsetiTestCase):
             self.assertEquals(expectErrStr, str(e))
 
 
-    @unittest.skipIf(do_not_test_old_cases, 'debug new test cases')
-    def test_find_bucket_retention_violations(self):
-        """test_find_bucket_retention_violations"""
+    # @unittest.skipIf(do_not_test_old_cases, 'debug new test cases')
+    def test_retention_retrieve_0(self):
+        """test_retention_retrieve_0"""
 
         rules_local_path = get_datafile_path(
             __file__,
@@ -576,83 +522,41 @@ class RetentionRulesEngineTest(ForsetiTestCase):
             {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
         mock_data_access = mock.MagicMock()
-        mock_data_access.scanner_iter.side_effect = _mock_gcp_resource_iter
+        mock_data_access.scanner_iter.side_effect = _mock_gcp_resource_iter_0
         mock_service_config = mock.MagicMock()
         mock_service_config.model_manager = mock.MagicMock()
         mock_service_config.model_manager.get.return_value = (
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
 
-        res_data_map = {}
-        res = _mock_gcp_resource_iter(None, 'bucket')
-        for i in res:
-            res_data_map[i.name] = i.data
-
+        generate_res_for_0()
         all_lifecycle_info = self.scanner._retrieve()
         all_violations = self.scanner._find_violations(all_lifecycle_info)
 
+        res_map = {}
+        for i in _fake_bucket_list_0:
+            res_map[i.id] = i
+
         expected_violations = set([
-        rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-1",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-1/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_data=res_data_map['demo-project-test-bucket-1']),
-       rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-2",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-2/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_data=res_data_map['demo-project-test-bucket-2']),
-       rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-3",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-3/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_data=res_data_map['demo-project-test-bucket-3']),
-       rre.Rule.RuleViolation(
-           resource_name="demo-project-test-bucket-4",
-           resource_type="bucket",
-           full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-4/",
-           rule_name="exact retention 365",
-           rule_index=0,
-           violation_type='RETENTION_VIOLATION',
-           violation_data=res_data_map['demo-project-test-bucket-4']),
-       rre.Rule.RuleViolation(
-            resource_name="demo-project-test-bucket-5",
-            resource_type="bucket",
-            full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-5/",
-            rule_name="exact retention 365",
-            rule_index=0,
-            violation_type='RETENTION_VIOLATION',
-            violation_data=res_data_map['demo-project-test-bucket-5']),
-        rre.Rule.RuleViolation(
-            resource_name="demo-project-test-bucket-6",
-            resource_type="bucket",
-            full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-6/",
-            rule_name="exact retention 365",
-            rule_index=0,
-            violation_type='RETENTION_VIOLATION',
-            violation_data=res_data_map['demo-project-test-bucket-6']),
-        rre.Rule.RuleViolation(
-            resource_name="demo-project-test-bucket-7",
-            resource_type="bucket",
-            full_name="organization/433655558669/project/demo-project/bucket/demo-project-test-bucket-7/",
-            rule_name="exact retention 365",
-            rule_index=0,
-            violation_type='RETENTION_VIOLATION',
-            violation_data=res_data_map['demo-project-test-bucket-7']),
+            get_expect_violation_item(res_map, 'bkt1',
+                                      'exact retention 365', 0),
+            get_expect_violation_item(res_map, 'bkt2',
+                                      'exact retention 365', 0),
+            get_expect_violation_item(res_map, 'bkt3',
+                                      'exact retention 365', 0),
+            get_expect_violation_item(res_map, 'bkt4',
+                                      'exact retention 365', 0),
+            get_expect_violation_item(res_map, 'bkt5',
+                                      'exact retention 365', 0),
+            get_expect_violation_item(res_map, 'bkt6',
+                                      'exact retention 365', 0),
+            get_expect_violation_item(res_map, 'bkt7',
+                                      'exact retention 365', 0),
         ])
 
         self.assertEqual(expected_violations, set(all_violations))
-        return
 
+    @unittest.skipIf(do_not_test_old_cases, 'debug new test cases')
     def test_retention_retrieve_22(self):
         """test_retention_retrieve_22"""
 
@@ -675,7 +579,7 @@ class RetentionRulesEngineTest(ForsetiTestCase):
         all_violations = self.scanner._find_violations(all_lifecycle_info)
 
         res_map = {}
-        for i in _fake_bucket_list:
+        for i in _fake_bucket_list_22:
             res_map[i.id] = i
 
         expected_violations = set([

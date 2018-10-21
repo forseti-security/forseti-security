@@ -5,7 +5,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - "31415926"
+          - "433655555569"
     maximum_retention: 499
   - name: rules on folders
     applies_to:
@@ -13,7 +13,7 @@ rules:
     resource:
       - type: folder
         resource_ids:
-          - "5358979323"
+          - "5358955555"
     minimum_retention: 150
   - name: rules on projects
     applies_to:
