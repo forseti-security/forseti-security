@@ -324,7 +324,7 @@ class Rule(object):
 
                 conditions = lc_item['condition']
                 if conditions is not None:
-                    age = conditions['age']
+                    age = conditions.get('age')
                     if age is not None and len(conditions) == 1:
                         if age <= maxretention:
                             exist_max_limit = True
