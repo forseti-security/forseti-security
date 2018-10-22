@@ -17,7 +17,7 @@
 # resource: A mapping of resources that this rule applies to.
 #  * type: The type of resource, can be organization, folder, or project.
 #  * resource_ids: A list of one or more numeric ids to match, or '*' for all.
-# mode: blacklist or whitelist, defaults to whitelist
+# mode: blacklist or whitelist, must be specified
 # key: jmespath to the values you'd like to check
 # values: a list of values to blacklist/whitelist according to mode
 
@@ -28,6 +28,7 @@ rules:
         resource_ids:
           - '*'
     key: loggingService
+    mode: whitelist
     values:
       - logging.googleapis.com
 
@@ -40,6 +41,7 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: monitoringService
+#     mode: whitelist
 #     values:
 #       - monitoring.googleapis.com
 
@@ -49,6 +51,7 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: legacyAbac.enabled
+#     mode: whitelist
 #     values:
 #       - null
 
@@ -58,6 +61,7 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: addonsConfig.kubernetesDashboard.disabled
+#     mode: whitelist
 #     values:
 #       - true
 
@@ -67,6 +71,7 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: masterAuth.password
+#     mode: whitelist
 #     values:
 #       - null
 
@@ -76,6 +81,7 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: networkPolicy.enabled
+#     mode: whitelist
 #     values:
 #       - true
 
@@ -85,6 +91,7 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: length(nodePools)
+#     mode: whitelist
 #     values:
 #       - 2
 
@@ -94,5 +101,6 @@ rules:
 #         resource_ids:
 #           - '*'
 #     key: nodePools[*].config.imageType
+#     mode: whitelist
 #     values:
 #       - ["COS", "COS"]

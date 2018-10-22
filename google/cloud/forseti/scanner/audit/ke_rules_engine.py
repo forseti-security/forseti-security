@@ -125,7 +125,7 @@ class KeRuleBook(bre.BaseRuleBook):
                     raise audit_errors.InvalidRulesSchemaError(
                         'Missing resource ids in rule {}'.format(rule_index))
 
-                rule_mode = rule_def.get('mode', 'whitelist')
+                rule_mode = rule_def.get('mode')
                 if rule_mode not in ('blacklist', 'whitelist'):
                     raise audit_errors.InvalidRulesSchemaError(
                         'Unknown mode in rule {}'.format(rule_index))
