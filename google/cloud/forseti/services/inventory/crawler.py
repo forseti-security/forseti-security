@@ -334,5 +334,5 @@ def run_crawler(storage,
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
-    end_span(tracer, span, **progress.__dict__)
+    end_span(tracer, span, **progresser.__dict__)
     return progresser
