@@ -179,7 +179,8 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config())
+                                 service_config.get_inventory_config(),
+                                 tracer)
         except Exception as e:
             LOGGER.exception(e)
             storage.rollback()
