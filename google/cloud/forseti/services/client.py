@@ -21,7 +21,6 @@ import grpc
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
 
 from opencensus.trace.tracer import Tracer
 from opencensus.trace.exporters import stackdriver_exporter

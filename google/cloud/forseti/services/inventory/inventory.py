@@ -165,6 +165,7 @@ def run_inventory(service_config,
         Exception: Reraises any exception.
     """
     from opencensus.trace import execution_context
+    from opencensus.trace import span as span_module
     tracer = execution_context.get_opencensus_tracer()
     span = tracer.start_span()
     span.name = '[Inventory]{}'.format('run_inventory')
