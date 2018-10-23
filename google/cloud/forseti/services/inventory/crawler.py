@@ -109,11 +109,12 @@ class Crawler(crawler.Crawler):
         """
         tracer = self.config.tracer
         span = tracing.start_span(tracer, 'crawler', 'visit')
-        attrs = resource.data.__dict__
-        attrs.update({
-            'resource': str(resource), 
+        attrs = {
+            'id': resource.data.name,
+            'parent': resource.data.parent,
+            'resource': str(resource),
             'success': True
-        })
+        }
         progresser = self.config.progresser
         try:
 
