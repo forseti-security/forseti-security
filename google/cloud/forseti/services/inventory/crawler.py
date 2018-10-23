@@ -286,6 +286,7 @@ class ParallelCrawler(Crawler):
 def run_crawler(storage,
                 progresser,
                 config,
+                tracer,
                 parallel=True):
     """Run the crawler with a determined configuration.
 
@@ -298,6 +299,10 @@ def run_crawler(storage,
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
+    span = tracer.start_span()
+    span.name = '[Inventory]{}'.format('run_inventory')
+    span.span_kind = span_module.SpanKind.SERVER
+    LOGGER.info(tracer.span_context)
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
@@ -313,4 +318,6 @@ def run_crawler(storage,
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
+    tracer.add_attribute_to_current_span('200', str('200'))
+    tracer.end_span()
     return progresser
