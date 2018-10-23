@@ -19,10 +19,6 @@ import threading
 import time
 from Queue import Empty, Queue
 
-from opencensus.trace import attributes_helper
-from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
-
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
@@ -302,13 +298,6 @@ def run_crawler(storage,
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    from google.cloud.forseti.common.opencensus import tracing
-    _tracer = tracing.TRACER
-    _span = _tracer.start_span()
-    _span.name = '[requests]{}'.format('test_request_name')
-    _span.span_kind = span_module.SpanKind.CLIENT
-    LOGGER.info("Trace id: %s" % _tracer.span_context.trace_id) 
-    LOGGER.info("Span id: %s" % _span.span_id)
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
@@ -324,6 +313,4 @@ def run_crawler(storage,
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
-    _tracer.add_attribute_to_current_span('200', str('200'))
-    _tracer.end_span()
     return progresser

@@ -164,7 +164,12 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-
+    from opencensus.trace import execution_context
+    tracer = execution_context.get_opencensus_tracer()
+    span = tracer.start_span()
+    span.name = '[Inventory]{}'.format('run_inventory')
+    span.span_kind = span_module.SpanKind.SERVER
+    LOGGER.debug("Span context (run_inventory): %s", tracer.span_context)
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -180,7 +185,9 @@ def run_inventory(service_config,
             raise
         else:
             storage.commit()
-        return result
+    tracer.add_attribute_to_current_span('200', str('200'))
+    tracer.end_span()
+    return result
 
 
 def run_import(client, model_name, inventory_index_id, background):
