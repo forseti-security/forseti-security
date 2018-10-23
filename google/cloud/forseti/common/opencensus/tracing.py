@@ -17,7 +17,7 @@
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
-DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
+DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
 
 try:
     from opencensus.trace import config_integration
