@@ -292,13 +292,13 @@ def start_span(tracer, module, function, kind=None):
     span = tracer.start_span()
     span.name = "[{}] {}".format(module, function)
     span.span_kind = kind
-    span.add_attribute_to_current_span('module', module)
-    span.add_attribute_to_current_span('function', function)
+    tracer.add_attribute_to_current_span('module', module)
+    tracer.add_attribute_to_current_span('function', function)
     return span
     
 def end_span(tracer, span, **kwargs):
     for k, v in kwargs.items():
-        span.add_attribute_to_current_span(k, v)
+        tracer.add_attribute_to_current_span(k, v)
     LOGGER.info(tracer.span_context)
     tracer.end_span()
                
