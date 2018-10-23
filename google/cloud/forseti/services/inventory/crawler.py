@@ -303,7 +303,7 @@ def run_crawler(storage,
         QueueProgresser: The progresser implemented in inventory
     """
     span = tracer.start_span()
-    span.name = '[Inventory]{}'.format('run_inventory')
+    span.name = '[Inventory]{}'.format('run_crawler')
     span.span_kind = span_module.SpanKind.SERVER
     LOGGER.info(tracer.span_context)
     client_config = config.get_api_quota_configs()
