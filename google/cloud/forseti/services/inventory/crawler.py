@@ -130,7 +130,7 @@ class Crawler(crawler.Crawler):
         else:
             progresser.on_new_object(resource)
         finally:
-            LOGGER.info(resource.__dict__)
+            LOGGER.info(resource.data)
             attrs = {
                 'id': resource.name,
                 'parent': resource.parent,
