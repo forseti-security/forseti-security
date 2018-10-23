@@ -25,8 +25,7 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
-from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
+from google.cloud.forseti.common.opencensus import tracing
 
 LOGGER = logger.get_logger(__name__)
 
@@ -167,10 +166,7 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-    span = tracer.start_span()
-    span.name = '[Inventory]{}'.format('run_inventory')
-    span.span_kind = span_module.SpanKind.SERVER
-    LOGGER.info(tracer.span_context)
+    span = tracing.start_span(tracer, 'inventory', 'run_inventory)
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -187,8 +183,7 @@ def run_inventory(service_config,
             raise
         else:
             storage.commit()
-    tracer.add_attribute_to_current_span('200', str('200'))
-    tracer.end_span()
+    tracing.end_span(span, tracer, result=result)
     return result
 
 
@@ -234,7 +229,6 @@ class Inventory(object):
             object: Yields status updates.
         """
         tracer = execution_context.get_opencensus_tracer()
-        LOGGER.info(tracer.span_context)
         queue = Queue()
         if background:
             progresser = FirstMessageQueueProgresser(queue)
