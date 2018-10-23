@@ -201,8 +201,9 @@ class InventoryIndex(BASE):
         field_label_hidden = resource_type + ' - HIDDEN'
         field_label_shown = resource_type + ' - SHOWN'
 
-        details_query = session.query(func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
-                                        func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))\
+        details_query = session.query(
+            func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
+            func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))\
             .filter(Inventory.inventory_index_id == self.id)\
             .filter(Inventory.category == 'resource')\
             .filter(Inventory.resource_type == resource_type).one()
