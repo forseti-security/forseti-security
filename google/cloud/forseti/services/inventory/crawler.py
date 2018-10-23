@@ -33,7 +33,7 @@ LOGGER = logger.get_logger(__name__)
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, variables=None):
+    def __init__(self, storage, progresser, api_client, tracer, variables=None):
         """Initialize
 
         Args:
@@ -46,6 +46,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
         super(CrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
+        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.client = api_client
 
@@ -53,7 +54,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, threads=10,
+    def __init__(self, storage, progresser, api_client, tracer, threads=10,
                  variables=None):
         """Initialize
 
@@ -68,6 +69,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         super(ParallelCrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
+        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.threads = threads
         self.client = api_client
@@ -94,9 +96,18 @@ class Crawler(crawler.Crawler):
         Returns:
             QueueProgresser: The filled progresser described in inventory
         """
-
+        span = start_span()
         resource.accept(self)
+        end_span()
         return self.config.progresser
+    
+    def start_span(self):
+        span = self.config.tracer.start_span()
+        span.S
+        return span
+    
+    def end_span(self):
+        return self.config.tracer.end_span()
 
     def visit(self, resource):
         """Handle a newly found resource.
@@ -285,7 +296,22 @@ class ParallelCrawler(Crawler):
             self.config.progresser.on_error(e)
             raise
 
-
+def start_span(tracer, module, function, kind=None):
+    if kind is None:
+        kind = span_module.SpanKind.SERVER
+    span = tracer.start_span()
+    span.name = "[{}] {}".format(module, function)
+    span.span_kind = kind
+    span.add_attribute_to_current_span('module', module)
+    span.add_attribute_to_current_span('function', function)
+    return span
+    
+def end_span(tracer, span, **kwargs):
+    for k, v in kwargs.items():
+        span.add_attribute_to_current_span(k, v)
+    LOGGER.info(tracer.span_context)
+    tracer.end_span()
+               
 def run_crawler(storage,
                 progresser,
                 config,
@@ -302,10 +328,7 @@ def run_crawler(storage,
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    span = tracer.start_span()
-    span.name = '[Inventory]{}'.format('run_crawler')
-    span.span_kind = span_module.SpanKind.SERVER
-    LOGGER.info(tracer.span_context)
+    span = start_span(tracer, "inventory", "run_crawler")
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
@@ -313,14 +336,13 @@ def run_crawler(storage,
     client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
-        crawler_config = ParallelCrawlerConfig(storage, progresser, client)
+        crawler_config = ParallelCrawlerConfig(storage, progresser, client, tracer)
         crawler_impl = ParallelCrawler(crawler_config)
     else:
-        crawler_config = CrawlerConfig(storage, progresser, client)
+        crawler_config = CrawlerConfig(storage, progresser, client, tracer)
         crawler_impl = Crawler(crawler_config)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
-    tracer.add_attribute_to_current_span('200', str('200'))
-    tracer.end_span()
+    end_span(tracer, span, **progress.__dict__)
     return progresser
