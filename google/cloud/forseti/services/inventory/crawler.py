@@ -96,18 +96,8 @@ class Crawler(crawler.Crawler):
         Returns:
             QueueProgresser: The filled progresser described in inventory
         """
-        span = start_span()
         resource.accept(self)
-        end_span()
         return self.config.progresser
-    
-    def start_span(self):
-        span = self.config.tracer.start_span()
-        span.S
-        return span
-    
-    def end_span(self):
-        return self.config.tracer.end_span()
 
     def visit(self, resource):
         """Handle a newly found resource.
