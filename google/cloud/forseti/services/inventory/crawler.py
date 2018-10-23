@@ -108,7 +108,9 @@ class Crawler(crawler.Crawler):
             Exception: Reraises any exception.
         """
         tracer = self.config.tracer
-        span = tracing.start_span(tracer, 'visit', resource._data["name"])
+        span = tracing.start_span(tracer, 'visit', "{} ({})".format(
+            resource.__class__.__name__, 
+            resource._data["name"]))
         attrs = {
             'id': resource._data["name"],
             'parent': resource._data.get("parent", None),
