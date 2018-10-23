@@ -111,7 +111,7 @@ class Crawler(crawler.Crawler):
         span = tracing.start_span(tracer, 'crawler', resource._data["name"])
         attrs = {
             'id': resource._data["name"],
-            'parent': resource._data["parent"],
+            'parent': resource._data.get("parent", None),
             'type': type(resource),
             'success': True
         }
