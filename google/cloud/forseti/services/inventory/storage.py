@@ -28,7 +28,6 @@ from sqlalchemy import func
 from sqlalchemy import Index
 from sqlalchemy import Integer
 from sqlalchemy import LargeBinary
-from sqlalchemy import literal
 from sqlalchemy import or_
 from sqlalchemy import PrimaryKeyConstraint
 from sqlalchemy import String
@@ -204,9 +203,9 @@ class InventoryIndex(BASE):
 
         summary_query = session.query(func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
                                         func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))\
-                        .filter(Inventory.inventory_index_id == self.id)\
-                        .filter(Inventory.category == 'resource')\
-                        .filter(Inventory.resource_type == resource_type).one()
+            .filter(Inventory.inventory_index_id == self.id)\
+            .filter(Inventory.category == 'resource')\
+            .filter(Inventory.resource_type == resource_type).one()
 
         summary[field_label_hidden] = summary_query[0]
         summary[field_label_shown] = summary_query[1]
