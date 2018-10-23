@@ -107,7 +107,12 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
-
+        tracer = self.config.tracer
+        span = tracing.start_span(tracer, 'crawler', 'visit')
+        attrs = {
+            'resource': str(resource), 
+            'success': True
+        }
         progresser = self.config.progresser
         try:
 
@@ -118,14 +123,18 @@ class Crawler(crawler.Crawler):
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())
             resource.get_kubernetes_service_config(self.get_client())
-
+            
             self.write(resource)
         except Exception as e:
             LOGGER.exception(e)
             progresser.on_error(e)
+            attrs["exception"] = e
+            attrs["success"] = False
             raise
         else:
             progresser.on_new_object(resource)
+        finally:
+            tracing.end_span(tracer, span, **attrs)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
