@@ -150,7 +150,8 @@ def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background):
+                  background,
+                  tracer):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -166,7 +167,6 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-    tracer = execution_context.get_opencensus_tracer()
     span = tracer.start_span()
     span.name = '[Inventory]{}'.format('run_inventory')
     span.span_kind = span_module.SpanKind.SERVER
@@ -255,7 +255,8 @@ class Inventory(object):
                         queue,
                         session,
                         progresser,
-                        background)
+                        background,
+                        tracer)
 
                     if model_name:
                         run_import(self.config.client(),
