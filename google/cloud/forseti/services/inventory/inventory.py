@@ -228,7 +228,7 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-        tracer = execution_context.get_opencensus_tracer()
+        tracer = tracing.execution_context.get_opencensus_tracer()
         queue = Queue()
         if background:
             progresser = FirstMessageQueueProgresser(queue)
