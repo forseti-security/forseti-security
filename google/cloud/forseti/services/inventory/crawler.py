@@ -108,13 +108,7 @@ class Crawler(crawler.Crawler):
             Exception: Reraises any exception.
         """
         tracer = self.config.tracer
-        span = tracing.start_span(tracer, 'crawler', 'visit_%s' % resource.name)
-        attrs = {
-            'id': resource.name,
-            'parent': resource.parent,
-            'resource': str(resource),
-            'success': True
-        }
+        span = tracing.start_span(tracer, 'crawler', 'visit')
         progresser = self.config.progresser
         try:
 
@@ -136,6 +130,13 @@ class Crawler(crawler.Crawler):
         else:
             progresser.on_new_object(resource)
         finally:
+            LOGGER.info(resource.__dict__)
+            attrs = {
+                'id': resource.name,
+                'parent': resource.parent,
+                'resource': str(resource),
+                'success': True
+            }
             tracing.end_span(tracer, span, **attrs)
 
     def dispatch(self, callback):
