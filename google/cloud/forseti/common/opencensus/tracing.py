@@ -36,8 +36,6 @@ except ImportError:
         'found. Run `pip install .[tracing]` to install tracing libraries.')
     OPENCENSUS_ENABLED = False
 
-exporter = stackdriver_exporter.StackdriverExporter()
-
 
 def create_client_interceptor(endpoint):
     """Create gRPC client interceptor.
