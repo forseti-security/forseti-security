@@ -24,6 +24,9 @@ from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
 
+from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
+
 LOGGER = logger.get_logger(__name__)
 
 
