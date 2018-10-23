@@ -340,13 +340,19 @@ class InventorySummaryTest(ForsetiTestCase):
             {'count': 1, 'resource_type': 'project - ACTIVE'},
             {'count': 1, 'resource_type': 'project - DELETE PENDING'}]
 
-        expected_summary_data_send_email = [
-            {'count': 2, 'resource_type': 'bucket'},
-            {'count': 4, 'resource_type': 'dataset'},
-            {'count': 1, 'resource_type': 'folder'},
-            {'count': 1, 'resource_type': 'object'},
-            {'count': 1, 'resource_type': 'organization'},
-            {'count': 2, 'resource_type': 'project'}]
+        expected_summary_data_send_email = (
+            [
+                {'count': 2, 'resource_type': 'bucket'},
+                {'count': 4, 'resource_type': 'dataset'},
+                {'count': 1, 'resource_type': 'folder'},
+                {'count': 1, 'resource_type': 'object'},
+                {'count': 1, 'resource_type': 'organization'},
+                {'count': 2, 'resource_type': 'project'}],
+            [
+                {'count': 2, 'resource_type': 'dataset - HIDDEN'},
+                {'count': 2, 'resource_type': 'dataset - SHOWN'},
+                {'count': 1, 'resource_type': 'project - ACTIVE'},
+                {'count': 1, 'resource_type': 'project - DELETE PENDING'}])
         
         self.assertEquals(1, notifier._upload_to_gcs.call_count)
         self.assertEquals(
@@ -356,7 +362,7 @@ class InventorySummaryTest(ForsetiTestCase):
         self.assertEquals(1, notifier._send_email.call_count)
         self.assertEquals(
             expected_summary_data_send_email,
-            notifier._send_email.call_args[0][0])
+            notifier._send_email.call_args[0])
 
 
 if __name__ == '__main__':

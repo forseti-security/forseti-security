@@ -175,7 +175,6 @@ class InventoryIndex(BASE):
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
             .filter(Inventory.resource_type == resource_type_input)
-            .filter(func.json_extract(resource_data, '$.lifecycleState') != None)
             .group_by(func.json_extract(resource_data, '$.lifecycleState')).all())
 
         for key in details.keys():
@@ -205,12 +204,17 @@ class InventoryIndex(BASE):
         field_label_hidden = resource_type + ' - HIDDEN'
         field_label_shown = resource_type + ' - SHOWN'
 
-        details_query = session.query(
-            func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
-            func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))\
-            .filter(Inventory.inventory_index_id == self.id)\
-            .filter(Inventory.category == 'resource')\
-            .filter(Inventory.resource_type == resource_type).one()
+        hidden_label = (
+            func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])))
+
+        shown_label = (
+            func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))
+
+        details_query = (
+            session.query(hidden_label, shown_label)
+            .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
+            .filter(Inventory.resource_type == resource_type).one())
 
         details[field_label_hidden] = details_query[0]
         details[field_label_shown] = details_query[1]
@@ -257,8 +261,9 @@ class InventoryIndex(BASE):
         details = {}
 
         for key, value in resource_types_with_details.items():
-            details_function = self.get_lifecycle_state_details
-            if key == 'hidden':
+            if key == 'lifecycle':
+                details_function = self.get_lifecycle_state_details
+            elif key == 'hidden':
                 details_function = self.get_hidden_resource_details
             for resource in value:
                 resource_details = details_function(session, resource)
