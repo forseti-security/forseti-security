@@ -156,8 +156,6 @@ notifier:
         organization_id: organizations/1234567890
         # gcs_path should begin with "gs://"
         gcs_path:
-        # gcs_path should begin with "gs://"
-        gcs_path:
         # Cloud SCC Beta API uses a new source_id.  It is unique per
         # organization and must be generated via a self-registration process.
         source_id: organizations/ORG_ID/sources/SOURCE_ID
