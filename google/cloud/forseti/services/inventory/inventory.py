@@ -183,7 +183,7 @@ def run_inventory(service_config,
             raise
         else:
             storage.commit()
-    tracing.end_span(span, tracer, result=result)
+    tracing.end_span(tracer, span result=result)
     return result
 
 
