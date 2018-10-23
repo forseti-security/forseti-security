@@ -74,7 +74,7 @@ def create_server_interceptor(extras=True):
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-    LOGGER.info("(within tracer): %s" % interceptor.tracer)
+    #LOGGER.info("(within tracer): %s" % interceptor.tracer)
     LOGGER.info("(after init): %s" % execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
