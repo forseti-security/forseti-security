@@ -109,6 +109,13 @@ class Crawler(crawler.Crawler):
         """
         tracer = self.config.tracer
         span = tracing.start_span(tracer, 'crawler', 'visit')
+        LOGGER.info(resource._data)
+        attrs = {
+            'id': resource._data["name"],
+            'parent': resource._data["parent"],
+            'type': resource._data["type"],
+            'success': True
+        }
         progresser = self.config.progresser
         try:
 
@@ -130,13 +137,6 @@ class Crawler(crawler.Crawler):
         else:
             progresser.on_new_object(resource)
         finally:
-            LOGGER.info(resource._data)
-            attrs = {
-                'id': resource.name,
-                'parent': resource.parent,
-                'resource': str(resource),
-                'success': True
-            }
             tracing.end_span(tracer, span, **attrs)
 
     def dispatch(self, callback):
