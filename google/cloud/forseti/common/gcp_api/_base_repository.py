@@ -63,7 +63,8 @@ DISCOVERY_DOCS_BASE_DIR = os.path.join(os.path.abspath(
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
 def _create_service_api(credentials, service_name, version, is_private_api,
-                        developer_key=None, cache_discovery=False):
+                        developer_key=None, cache_discovery=False,
+                        use_versioned_discovery_doc=False):
     """Builds and returns a cloud API service object.
 
     Args:
@@ -76,6 +77,8 @@ def _create_service_api(credentials, service_name, version, is_private_api,
             associated with the API call, most API services do not require
             this to be set.
         cache_discovery (bool): Whether or not to cache the discovery doc.
+        use_versioned_discovery_doc (bool): When set to true, will use the
+            discovery doc with the version suffix in the filename.
 
     Returns:
         object: A Resource object with methods for interacting with the service.
@@ -88,7 +91,12 @@ def _create_service_api(credentials, service_name, version, is_private_api,
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:
-        service_json = '{}.json'.format(service_name)
+
+        if use_versioned_discovery_doc:
+            service_json = '{}_{}.json'.format(service_name, version)
+        else:
+            service_json = '{}.json'.format(service_name)
+
         service_path = os.path.join(DISCOVERY_DOCS_BASE_DIR, service_json)
         return _build_service_from_document(
             credentials,
@@ -137,6 +145,7 @@ class BaseRepositoryClient(object):
                  quota_period=None,
                  use_rate_limiter=False,
                  read_only=False,
+                 use_versioned_discovery_doc=False,
                  **kwargs):
         """Constructor.
 
@@ -152,6 +161,8 @@ class BaseRepositoryClient(object):
                 limiter for this service.
             read_only (bool): When set to true, disables any API calls that
                 would modify a resource within the repository.
+            use_versioned_discovery_doc (bool): When set to true, will use the
+                discovery doc with the version suffix in the filename.
             **kwargs (dict): Additional args such as version.
         """
         self._use_cached_http = False
@@ -208,7 +219,8 @@ class BaseRepositoryClient(object):
                 version,
                 self.is_private_api,
                 kwargs.get('developer_key'),
-                kwargs.get('cache_discovery', False))
+                kwargs.get('cache_discovery', False),
+                use_versioned_discovery_doc)
 
     def __repr__(self):
         """The object representation.
