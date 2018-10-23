@@ -25,6 +25,8 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
+from opencensus.trace import execution_context
+from opencensus.trace import span as span_module
 
 LOGGER = logger.get_logger(__name__)
 
@@ -164,8 +166,6 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-    from opencensus.trace import execution_context
-    from opencensus.trace import span as span_module
     tracer = execution_context.get_opencensus_tracer()
     span = tracer.start_span()
     span.name = '[Inventory]{}'.format('run_inventory')
