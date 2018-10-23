@@ -112,7 +112,7 @@ class Crawler(crawler.Crawler):
         attrs = {
             'id': resource._data["name"],
             'parent': resource._data.get("parent", None),
-            'type': type(resource),
+            'type': resource.__class__.__name__,
             'success': True
         }
         progresser = self.config.progresser
