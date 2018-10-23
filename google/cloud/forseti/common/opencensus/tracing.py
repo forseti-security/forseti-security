@@ -48,10 +48,11 @@ def create_client_interceptor(endpoint):
     """
     exporter = create_exporter()
     tracer = Tracer(exporter=exporter)
+    LOGGER.info("before init: %s" % tracer.span_context)
     interceptor = client_interceptor.OpenCensusClientInterceptor(
         tracer,
         host_port=endpoint)
-    LOGGER.info(tracer.span_context)
+    LOGGER.info("after init: %s" % execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 def create_server_interceptor(extras=True):
@@ -68,11 +69,12 @@ def create_server_interceptor(extras=True):
     sampler = always_on.AlwaysOnSampler()
     if extras:
         trace_integrations()
+    LOGGER.info("(before init): %s" % execution_context.get_opencensus_tracer().span_context)
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-    LOGGER.info("Inside interceptor: %s" % interceptor.tracer.span_context)
-    LOGGER.info(execution_context.get_opencensus_tracer().span_context)
+    LOGGER.info("(within tracer): %s" % interceptor.tracer)
+    LOGGER.info("(after init): %s" % execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 def trace_integrations(integrations=None):
@@ -92,7 +94,7 @@ def trace_integrations(integrations=None):
         integrations,
         tracer)
     LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
-    LOGGER.info("Span context (integrations): %s", tracer.span_context)
+    LOGGER.info(tracer.span_context)
     return integrated_libraries
 
 
