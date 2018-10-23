@@ -24,7 +24,7 @@ from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
 
-from google.cloud.forseti.common import tracing
+from google.cloud.forseti.common.opencensus import tracing
 
 LOGGER = logger.get_logger(__name__)
 
