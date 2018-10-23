@@ -770,7 +770,7 @@ rules:
   
   * `include_children`
     * **Description**: Whether to include children. It is only relevant to sinks created for organizations or folders.
-    * **Valid values**: String. One of `true`, `false` or `*`. `*` means use the original sink's config.
+    * **Valid values**: String. One of `true`, `false` or `*`. `*` means the rule will match sinks with either true or false.
 
 ## Service Account Key rules
 
