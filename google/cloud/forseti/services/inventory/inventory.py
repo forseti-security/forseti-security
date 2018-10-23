@@ -247,7 +247,6 @@ class Inventory(object):
                 object: inventory crawler result if no model_name specified,
                     otherwise, model import result
             """
-            tracer = execution_context.get_opencensus_tracer()
             LOGGER.info(tracer.span_context)
             with self.config.scoped_session() as session:
                 try:
