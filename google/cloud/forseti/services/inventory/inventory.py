@@ -170,7 +170,7 @@ def run_inventory(service_config,
     span = tracer.start_span()
     span.name = '[Inventory]{}'.format('run_inventory')
     span.span_kind = span_module.SpanKind.SERVER
-    LOGGER.info("Span context (run_inventory): %s", tracer.span_context)
+    LOGGER.info("Span context: %s", tracer.span_context)
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
