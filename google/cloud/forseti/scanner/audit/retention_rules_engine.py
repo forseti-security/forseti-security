@@ -225,9 +225,9 @@ class RetentionRuleBook(bre.BaseRuleBook):
                     rule)
 
     def get_resource_rules(self, applies_to):
-        """Get all the resource rules for (resource, RuleAppliesTo.*).
+        """Get all the rules for the resource "applies_to".
         Args:
-            applies_to (str): The name of applies_to resource
+            applies_to (str): The name of the resource
 
         Returns:
            defaultdict:  A list of ResourceRules.
