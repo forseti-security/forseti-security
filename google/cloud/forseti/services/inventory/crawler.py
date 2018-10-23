@@ -285,22 +285,6 @@ class ParallelCrawler(Crawler):
             LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
-
-def start_span(tracer, module, function, kind=None):
-    if kind is None:
-        kind = span_module.SpanKind.SERVER
-    span = tracer.start_span()
-    span.name = "[{}] {}".format(module, function)
-    span.span_kind = kind
-    tracer.add_attribute_to_current_span('module', module)
-    tracer.add_attribute_to_current_span('function', function)
-    return span
-    
-def end_span(tracer, span, **kwargs):
-    for k, v in kwargs.items():
-        tracer.add_attribute_to_current_span(k, v)
-    LOGGER.info(tracer.span_context)
-    tracer.end_span()
                
 def run_crawler(storage,
                 progresser,
