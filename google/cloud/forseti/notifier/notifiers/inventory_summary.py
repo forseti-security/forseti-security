@@ -141,6 +141,12 @@ class InventorySummary(object):
         except util_errors.EmailSendError:
             LOGGER.exception('Unable to send inventory summary email')
 
+    def _transform_for_template(self, data):
+        template_data = []
+        for key, value in data.iteritems():
+            template_data.append(dict(resource_type=key, count=value))
+        return sorted(template_data, key=lambda k: k['resource_type'])
+
     def _get_summary_data(self):
         """Get the summarized inventory data.
 
@@ -162,11 +168,7 @@ class InventorySummary(object):
                              'index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
-            summary_data = []
-            for key, value in summary.iteritems():
-                summary_data.append(dict(resource_type=key, count=value))
-            summary_data = (
-                sorted(summary_data, key=lambda k: k['resource_type']))
+            summary_data = self._transform_for_template(summary)
             return summary_data
 
     def _get_details_data(self):
@@ -190,12 +192,7 @@ class InventorySummary(object):
                              'index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
-            details_data = []
-            for key, value in details.iteritems():
-                details_data.append(dict(resource_type=key, count=value))
-            details_data = (
-                sorted(details_data, key=lambda k: k['resource_type']))
-
+            details_data = self._transform_for_template(details)
             return details_data
 
     def run(self):
