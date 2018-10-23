@@ -155,9 +155,9 @@ class InventoryIndex(BASE):
         session.add(self)
         session.flush()
 
-    def get_lifecycle_state_summary(self, session, resource_type_input):
+    def get_lifecycle_state_details(self, session, resource_type_input):
         """Generate/return the count of lifecycle states (ACTIVE, DELETE_PENDING) of the specific
-           resource type input (project, dataset) for this inventory index.
+           resource type input (project, folder) for this inventory index.
 
         Args:
             session (object) : session object to work on.
@@ -168,7 +168,7 @@ class InventoryIndex(BASE):
         """
         resource_data = Inventory.resource_data
 
-        summary = dict(
+        details = dict(
             session.query(func.json_extract(resource_data, '$.lifecycleState'), func.count())
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
@@ -176,18 +176,18 @@ class InventoryIndex(BASE):
             .filter(func.json_extract(resource_data, '$.lifecycleState') != None)
             .group_by(func.json_extract(resource_data, '$.lifecycleState')).all())
 
-        for key in summary.keys():
+        for key in details.keys():
             new_key = key.replace('\"', '').replace('_', ' ')
             new_key = ' - '.join([resource_type_input, new_key])
-            summary[new_key] = summary.pop(key)
+            details[new_key] = details.pop(key)
 
-        if len(summary) == 1:
+        if len(details) == 1:
             delete_pending_key = ' - '. join([resource_type_input, 'DELETE PENDING'])
-            summary[delete_pending_key] = 0
+            details[delete_pending_key] = 0
 
-        return summary
+        return details
 
-    def get_hidden_resource_summary(self, session, resource_type):
+    def get_hidden_resource_details(self, session, resource_type):
         """Generate/return the count of hidden resources (e.g. dataset) for this inventory index.
 
         Args:
@@ -196,21 +196,21 @@ class InventoryIndex(BASE):
         Returns:
             dict: a (hidden_resource -> count) dictionary
         """
-        summary = {}
+        details = {}
         resource_id = Inventory.resource_id
         field_label_hidden = resource_type + ' - HIDDEN'
         field_label_shown = resource_type + ' - SHOWN'
 
-        summary_query = session.query(func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
+        details_query = session.query(func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
                                         func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))\
             .filter(Inventory.inventory_index_id == self.id)\
             .filter(Inventory.category == 'resource')\
             .filter(Inventory.resource_type == resource_type).one()
 
-        summary[field_label_hidden] = summary_query[0]
-        summary[field_label_shown] = summary_query[1]
+        details[field_label_hidden] = details_query[0]
+        details[field_label_shown] = details_query[1]
 
-        return summary
+        return details
 
     def get_summary(self, session):
         """Generate/return an inventory summary for this inventory index.
@@ -232,8 +232,8 @@ class InventoryIndex(BASE):
 
         return summary
 
-    def get_summary_details(self, session):
-        """Generate/return inventory summary details for this inventory index.
+    def get_details(self, session):
+        """Generate/return inventory details for this inventory index.
            Includes delete pending resource types and hidden datasets.
 
         Args:
@@ -248,17 +248,17 @@ class InventoryIndex(BASE):
         resource_types_with_details = {'lifecycle': resource_types_with_lifecycle,
                                        'hidden': resource_types_hidden}
 
-        summary_details = {}
+        details = {}
 
         for key, value in resource_types_with_details.items():
-            details_summary_function = self.get_lifecycle_state_summary
+            details_function = self.get_lifecycle_state_details
             if key == 'hidden':
-                details_summary_function = self.get_hidden_resource_summary
+                details_function = self.get_hidden_resource_details
             for resource in value:
-                details_summary = details_summary_function(session, resource)
-                summary_details.update(details_summary)
+                resource_details = details_function(session, resource)
+                details.update(resource_details)
 
-        return summary_details
+        return details
 
 
 class Inventory(BASE):

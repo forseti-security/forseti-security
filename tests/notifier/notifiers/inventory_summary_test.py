@@ -302,7 +302,7 @@ class InventorySummaryTest(ForsetiTestCase):
             'organization': 1,
             'project': 2}
 
-        mock_inventory_index.get_summary_details.return_value = {
+        mock_inventory_index.get_details.return_value = {
             'dataset - HIDDEN': 2,
             'dataset - SHOWN': 2,
             'project - ACTIVE': 1,

@@ -100,7 +100,7 @@ class InventorySummary(object):
             LOGGER.exception('Unable to upload inventory summary in bucket %s:',
                              gcs_upload_path)
 
-    def _send_email(self, summary_data, summary_details_data):
+    def _send_email(self, summary_data, details_data):
         """Send the email for inventory summary.
 
         Args:
@@ -128,7 +128,7 @@ class InventorySummary(object):
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
              'summary_data': summary_data,
-             'summary_details_data': summary_details_data})
+             'details_data': details_data})
 
         try:
             email_util.send(
@@ -169,7 +169,7 @@ class InventorySummary(object):
                 sorted(summary_data, key=lambda k: k['resource_type']))
             return summary_data
 
-    def _get_summary_details_data(self):
+    def _get_details_data(self):
         """Get the detailed summarized inventory data.
 
         Returns:
@@ -184,19 +184,19 @@ class InventorySummary(object):
             inventory_index = (
                 session.query(InventoryIndex).get(self.inventory_index_id))
 
-            summary_details = inventory_index.get_summary_details(session)
-            if not summary_details:
+            details = inventory_index.get_details(session)
+            if not details:
                 LOGGER.error('No inventory summary detail data found for inventory '
                              'index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
-            summary_details_data = []
-            for key, value in summary_details.iteritems():
-                summary_details_data.append(dict(resource_type=key, count=value))
-            summary_details_data = (
-                sorted(summary_details_data, key=lambda k: k['resource_type']))
+            details_data = []
+            for key, value in details.iteritems():
+                details_data.append(dict(resource_type=key, count=value))
+            details_data = (
+                sorted(details_data, key=lambda k: k['resource_type']))
 
-            return summary_details_data
+            return details_data
 
     def run(self):
         """Generate inventory summary."""
@@ -224,7 +224,7 @@ class InventorySummary(object):
 
         try:
             summary_data = self._get_summary_data()
-            summary_details_data = self._get_summary_details_data()
+            details_data = self._get_details_data()
         except util_errors.NoDataError:
             LOGGER.exception('Inventory summary can not be created because '
                              'no summary data is found for index id: %s.',
@@ -232,10 +232,10 @@ class InventorySummary(object):
             return
 
         if is_gcs_summary_enabled:
-            summary_data_and_details = sorted((summary_data + summary_details_data), key=lambda k: k['resource_type'])
-            self._upload_to_gcs(summary_data_and_details)
+            summary_and_details_data = sorted((summary_data + details_data), key=lambda k: k['resource_type'])
+            self._upload_to_gcs(summary_and_details_data)
 
         if is_email_summary_enabled:
-            self._send_email(summary_data, summary_details_data)
+            self._send_email(summary_data, details_data)
 
         LOGGER.info('Completed running inventory summary.')
