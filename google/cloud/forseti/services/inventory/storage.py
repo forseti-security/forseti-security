@@ -215,7 +215,6 @@ class InventoryIndex(BASE):
 
     def get_summary(self, session):
         """Generate/return an inventory summary for this inventory index.
-           Includes delete pending resource types and hidden datasets.
 
         Args:
             session (object): session object to work on.
