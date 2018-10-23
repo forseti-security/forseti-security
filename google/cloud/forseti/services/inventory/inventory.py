@@ -170,7 +170,7 @@ def run_inventory(service_config,
     span = tracer.start_span()
     span.name = '[Inventory]{}'.format('run_inventory')
     span.span_kind = span_module.SpanKind.SERVER
-    LOGGER.info("Span context: %s", tracer.span_context)
+    LOGGER.info(tracer.span_context)
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -232,7 +232,8 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-
+        tracer = execution_context.get_opencensus_tracer()
+        LOGGER.info(tracer.span_context)
         queue = Queue()
         if background:
             progresser = FirstMessageQueueProgresser(queue)
@@ -246,7 +247,8 @@ class Inventory(object):
                 object: inventory crawler result if no model_name specified,
                     otherwise, model import result
             """
-
+            tracer = execution_context.get_opencensus_tracer()
+            LOGGER.info(tracer.span_context)
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(

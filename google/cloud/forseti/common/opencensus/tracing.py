@@ -48,11 +48,10 @@ def create_client_interceptor(endpoint):
     """
     exporter = create_exporter()
     tracer = Tracer(exporter=exporter)
-    LOGGER.info("Span context: %s", tracer.span_context)
     interceptor = client_interceptor.OpenCensusClientInterceptor(
         tracer,
         host_port=endpoint)
-    LOGGER.info("Span context (after init): %s", tracer.span_context)
+    LOGGER.info(tracer.span_context)
     return interceptor
 
 def create_server_interceptor(extras=True):
@@ -72,7 +71,8 @@ def create_server_interceptor(extras=True):
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-    LOGGER.info("Span context: %s", execution_context.get_opencensus_tracer().span_context)
+    LOGGER.info("Inside interceptor: %s" % interceptor.tracer.span_context)
+    LOGGER.info(execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 def trace_integrations(integrations=None):
