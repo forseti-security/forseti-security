@@ -297,12 +297,16 @@ class InventorySummaryTest(ForsetiTestCase):
         mock_inventory_index.get_summary.return_value = {
             'bucket': 2,
             'dataset': 4,
-            'dataset HIDDEN': 2,
+            'folder': 1,
             'object': 1,
             'organization': 1,
-            'project': 2,
-            'project ACTIVE': 1,
-            'project DELETE PENDING': 1}
+            'project': 2}
+
+        mock_inventory_index.get_summary_details.return_value = {
+            'dataset - HIDDEN': 2,
+            'dataset - SHOWN': 2,
+            'project - ACTIVE': 1,
+            'project - DELETE PENDING': 1}
 
         mock_session = mock.MagicMock()
         mock_session.query.return_value.get.return_value = mock_inventory_index
@@ -324,25 +328,36 @@ class InventorySummaryTest(ForsetiTestCase):
         notifier._send_email = mock.MagicMock()
         notifier.run()
 
-        expected_summary_data = [
+        expected_summary_data_upload_to_gcs = [
             {'count': 2, 'resource_type': 'bucket'},
             {'count': 4, 'resource_type': 'dataset'},
-            {'count': 2, 'resource_type': 'dataset HIDDEN'},
+            {'count': 2, 'resource_type': 'dataset - HIDDEN'},
+            {'count': 2, 'resource_type': 'dataset - SHOWN'},
+            {'count': 1, 'resource_type': 'folder'},
             {'count': 1, 'resource_type': 'object'},
             {'count': 1, 'resource_type': 'organization'},
             {'count': 2, 'resource_type': 'project'},
-            {'count': 1, 'resource_type': 'project ACTIVE'},
-            {'count': 1, 'resource_type': 'project DELETE PENDING'}]
+            {'count': 1, 'resource_type': 'project - ACTIVE'},
+            {'count': 1, 'resource_type': 'project - DELETE PENDING'}]
+
+        expected_summary_data_send_email = [
+            {'count': 2, 'resource_type': 'bucket'},
+            {'count': 4, 'resource_type': 'dataset'},
+            {'count': 1, 'resource_type': 'folder'},
+            {'count': 1, 'resource_type': 'object'},
+            {'count': 1, 'resource_type': 'organization'},
+            {'count': 2, 'resource_type': 'project'}]
         
         self.assertEquals(1, notifier._upload_to_gcs.call_count)
         self.assertEquals(
-            expected_summary_data,
+            expected_summary_data_upload_to_gcs,
             notifier._upload_to_gcs.call_args[0][0])
 
         self.assertEquals(1, notifier._send_email.call_count)
         self.assertEquals(
-            expected_summary_data,
+            expected_summary_data_send_email,
             notifier._send_email.call_args[0][0])
+
 
 if __name__ == '__main__':
     unittest.main()

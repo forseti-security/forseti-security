@@ -19,6 +19,7 @@ import enum
 
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
+from sqlalchemy import case
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
@@ -181,27 +182,34 @@ class InventoryIndex(BASE):
             new_key = ' - '.join([resource_type_input, new_key])
             summary[new_key] = summary.pop(key)
 
+        if len(summary) == 1:
+            delete_pending_key = ' - '. join([resource_type_input, 'DELETE PENDING'])
+            summary[delete_pending_key] = 0
+
         return summary
 
-    def get_hidden_dataset_summary(self, session):
-        """Generate/return the count of hidden datasets for this inventory index.
+    def get_hidden_resource_summary(self, session, resource_type):
+        """Generate/return the count of hidden resources (e.g. dataset) for this inventory index.
 
         Args:
             session (object) : session object to work on.
 
         Returns:
-            dict: a (hidden_dataset -> count) dictionary
+            dict: a (hidden_resource -> count) dictionary
         """
-
+        summary = {}
         resource_id = Inventory.resource_id
-        field_label = 'dataset - HIDDEN'
+        field_label_hidden = resource_type + ' - HIDDEN'
+        field_label_shown = resource_type + ' - SHOWN'
 
-        summary = dict(
-            session.query(literal(field_label), func.count())
-            .filter(Inventory.inventory_index_id == self.id)
-            .filter(Inventory.category == 'resource')
-            .filter(Inventory.resource_type == 'dataset')
-            .filter(resource_id.contains('%:~_%', escape='~')).all())
+        summary_query = session.query(func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])),
+                                        func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))\
+                        .filter(Inventory.inventory_index_id == self.id)\
+                        .filter(Inventory.category == 'resource')\
+                        .filter(Inventory.resource_type == resource_type).one()
+
+        summary[field_label_hidden] = summary_query[0]
+        summary[field_label_shown] = summary_query[1]
 
         return summary
 
@@ -215,7 +223,6 @@ class InventoryIndex(BASE):
         Returns:
             dict: a (resource type -> count) dictionary
         """
-        resource_types_with_lifecycle = ['folder', 'organization', 'project']
 
         resource_type = Inventory.resource_type
 
@@ -225,14 +232,35 @@ class InventoryIndex(BASE):
             .filter(Inventory.category == 'resource')
             .group_by(resource_type).all())
 
-        for resource in resource_types_with_lifecycle:
-            lifecycle_state_summary = self.get_lifecycle_state_summary(session, resource)
-            summary.update(lifecycle_state_summary)
-
-        hidden_datasets = self.get_hidden_dataset_summary(session)
-        summary.update(hidden_datasets)
-
         return summary
+
+    def get_summary_details(self, session):
+        """Generate/return inventory summary details for this inventory index.
+           Includes delete pending resource types and hidden datasets.
+
+        Args:
+            session (object): session object to work on.
+
+        Returns:
+            dict: a (resource type -> count) dictionary
+        """
+        resource_types_with_lifecycle = ['folder', 'organization', 'project']
+        resource_types_hidden = ['dataset']
+
+        resource_types_with_details = {'lifecycle': resource_types_with_lifecycle,
+                                       'hidden': resource_types_hidden}
+
+        summary_details = {}
+
+        for key, value in resource_types_with_details.items():
+            details_summary_function = self.get_lifecycle_state_summary
+            if key == 'hidden':
+                details_summary_function = self.get_hidden_resource_summary
+            for resource in value:
+                details_summary = details_summary_function(session, resource)
+                summary_details.update(details_summary)
+
+        return summary_details
 
 class Inventory(BASE):
     """Resource inventory table."""
