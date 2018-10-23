@@ -29,6 +29,7 @@ try:
     from opencensus.trace.ext.grpc import server_interceptor
     from opencensus.trace.samplers import always_on
     from opencensus.trace.tracer import Tracer
+    from opencensus.trace.span import SpanKind
     OPENCENSUS_ENABLED = True
 except ImportError:
     LOGGER.warning(
@@ -125,3 +126,20 @@ def create_exporter(transport=None):
         LOGGER.exception(
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
+
+    
+def start_span(tracer, module, function, kind=None):
+    if kind is None:
+        kind = SpanKind.SERVER
+    span = tracer.start_span()
+    span.name = "[{}] {}".format(module, function)
+    span.span_kind = kind
+    tracer.add_attribute_to_current_span('module', module)
+    tracer.add_attribute_to_current_span('function', function)
+    return span
+    
+def end_span(tracer, span, **kwargs):
+    for k, v in kwargs.items():
+        tracer.add_attribute_to_current_span(k, v)
+    LOGGER.info(tracer.span_context)
+    tracer.end_span()
