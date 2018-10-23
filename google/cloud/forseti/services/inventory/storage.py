@@ -260,6 +260,7 @@ class InventoryIndex(BASE):
 
         return summary_details
 
+
 class Inventory(BASE):
     """Resource inventory table."""
 
