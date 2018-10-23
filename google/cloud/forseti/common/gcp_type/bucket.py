@@ -70,6 +70,7 @@ class Bucket(resource.Resource):
     @classmethod
     def from_json(cls, parent, json_string):
         """Create a bucket from a JSON string.
+
         Args:
             parent (Resource): resource this bucket belongs to.
             json_string(str): JSON string of a bucket GCP API response.
@@ -92,6 +93,7 @@ class Bucket(resource.Resource):
 
     def get_lifecycle_rule(self):
         """Create a bucket lifecycle's rules dict from its JSON string.
+
         Returns:
             dict: bucket lifecycle's rules.
         """

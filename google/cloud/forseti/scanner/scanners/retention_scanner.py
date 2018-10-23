@@ -94,9 +94,8 @@ class RetentionScanner(base_scanner.BaseScanner):
         """
         all_violations = []
 
-        for single_info in retention_info:
-            violations = self.rules_engine.find_violations(
-                single_info)
+        for resource in retention_info:
+            violations = self.rules_engine.find_violations(resource)
             all_violations.extend(violations)
 
         return all_violations
@@ -105,13 +104,14 @@ class RetentionScanner(base_scanner.BaseScanner):
         """Retrieves the data for scanner.
 
         Returns:
-            list: the data column of bucket rows
+            list: a list of Resources, with a type in
+                SUPPORTED_RETENTION_RES_TYPES
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
         retention_info = []
         with scoped_session as session:
-            for resource_type in rre.SUPPORTED_RETENTION_RESOURCE_TYPES:
+            for resource_type in rre.SUPPORTED_RETENTION_RES_TYPES:
                 for resource in data_access.scanner_iter(
                         session, resource_type):
                     proj = project.Project(

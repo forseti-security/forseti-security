@@ -29,11 +29,8 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RETENTION_RESOURCE_TYPES = frozenset(['bucket'])
-
+SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket'])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
-_APPLY_TO_BUCKETS = 'bucket'
-_APPLY_TO_RESOURCES = frozenset([_APPLY_TO_BUCKETS])
 
 
 class RetentionRulesEngine(bre.BaseRulesEngine):
@@ -81,9 +78,7 @@ class RetentionRulesEngine(bre.BaseRulesEngine):
             resource, resource.full_name))
 
         for related_resources in resource_ancestors:
-            rules = resource_rules.get(related_resources)
-            if not rules:
-                continue
+            rules = resource_rules.get(related_resources, [])
             for rule in rules:
                 violations = itertools.chain(
                     violations,
@@ -132,7 +127,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
 
         self.resource_rules_map = {
             applies_to: collections.defaultdict(set)
-            for applies_to in _APPLY_TO_RESOURCES}
+            for applies_to in SUPPORTED_RETENTION_RES_TYPES}
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -164,9 +159,10 @@ class RetentionRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Lack of applies_to in rule {}'.format(rule_index))
 
-            retention_range = get_retention_range(rule_def, rule_index)
+            minimum_retention, maximum_retention = get_retention_range(
+                rule_def, rule_index)
 
-            if any(x not in _APPLY_TO_RESOURCES for x in applies_to):
+            if any(x not in SUPPORTED_RETENTION_RES_TYPES for x in applies_to):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Invalid applies_to resource in rule {}'.format(rule_index))
 
@@ -175,8 +171,8 @@ class RetentionRuleBook(bre.BaseRuleBook):
                     rule_def,
                     rule_index,
                     appto,
-                    retention_range[0],
-                    retention_range[1])
+                    minimum_retention,
+                    maximum_retention)
                 # other appto add here
         finally:
             self._rules_sema.release()
@@ -304,8 +300,7 @@ class Rule(object):
         Yields:
             RuleViolation: All max violations of the bucket breaking the rule.
         """
-        maxretention = self.max_retention
-        if maxretention is None:
+        if self.max_retention is None:
             return
 
         # There should be a condition which guarantees to delete data
@@ -315,18 +310,12 @@ class Rule(object):
             yield self.generate_bucket_violation(bucket)
         else:
             for lc_item in bucket_lifecycle:
-                action = lc_item['action']
-                if action is not None and 'type' in action:
-                    if action['type'] != 'Delete':
-                        continue
-                else:
-                    continue
-
-                conditions = lc_item['condition']
-                if conditions is not None:
+                if lc_item.get('action', {}).get('type') == 'Delete':
+                    conditions = lc_item.get('condition', {})
                     age = conditions.get('age')
                     if age is not None and len(conditions) == 1:
-                        if age <= maxretention:
+                        # the config does not have conditions other than age
+                        if age <= self.max_retention:
                             exist_max_limit = True
                             break
             if not exist_max_limit:
@@ -339,29 +328,22 @@ class Rule(object):
         Yields:
             RuleViolation: All min violations of the bucket breaking the rule.
         """
-        minretention = self.min_retention
-        if minretention is None:
+        if self.min_retention is None:
             return
 
         bucket_lifecycle = bucket.get_lifecycle_rule()
         if bucket_lifecycle is not None:
             for lc_item in bucket_lifecycle:
-                action = lc_item['action']
-                if action is not None and 'type' in action:
-                    if action['type'] != 'Delete':
-                        continue
-                else:
+                if lc_item.get('action', {}).get('type') != 'Delete':
                     continue
 
-                conditions = lc_item['condition']
-                if conditions is None:
-                    self.generate_bucket_violation(bucket)
+                conditions = lc_item.get('condition', {})
+                age = conditions.get('age')
+                if age is not None and age >= self.min_retention:
+                    continue
 
-                if 'age' in conditions:
-                    if conditions['age'] >= minretention:
-                        continue
-
-                if bucket_conditions_guarantee_min(conditions, minretention):
+                if bucket_conditions_guarantee_min(conditions,
+                                                   self.min_retention):
                     continue
 
                 yield self.generate_bucket_violation(bucket)
