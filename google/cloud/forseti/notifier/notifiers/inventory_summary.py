@@ -106,6 +106,9 @@ class InventorySummary(object):
         Args:
             summary_data (list): Summary of inventory data as a list of dicts.
                 Example: [{resource_type, count}, {}, {}, ...]
+
+            details_data (list): Details of inventory data as a list of dicts.
+                Example: [[{resource_type, count}, {}, {}, ...]
         """
         LOGGER.debug('Sending inventory summary by email.')
 

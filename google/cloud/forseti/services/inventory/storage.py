@@ -158,8 +158,9 @@ class InventoryIndex(BASE):
     def get_lifecycle_state_details(self, session, resource_type_input):
         """Count of lifecycle states of the specified resources.
 
-        Generate/return the count of lifecycle states (ACTIVE, DELETE_PENDING) of the specific
-        resource type input (project, folder) for this inventory index.
+        Generate/return the count of lifecycle states (ACTIVE, DELETE_PENDING)
+        of the specific resource type input (project, folder) for this inventory
+        index.
 
         Args:
             session (object) : session object to work on.
@@ -191,10 +192,12 @@ class InventoryIndex(BASE):
     def get_hidden_resource_details(self, session, resource_type):
         """Count of the hidden and shown specified resources.
 
-        Generate/return the count of hidden resources (e.g. dataset) for this inventory index.
+        Generate/return the count of hidden resources (e.g. dataset) for this
+        inventory index.
 
         Args:
             session (object) : session object to work on.
+            resource_type (str) : resource type to find details for.
 
         Returns:
             dict: a (hidden_resource -> count) dictionary
