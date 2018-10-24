@@ -186,9 +186,12 @@ class InventoryIndex(BASE):
             details[new_key] = details.pop(key)
 
         if len(details) == 1:
-            delete_pending_key = ' - '. join([resource_type_input,
-                                              'DELETE PENDING'])
-            details[delete_pending_key] = 0
+            if 'ACTIVE' in details.keys()[0]:
+                added_key_str = 'DELETE PENDING'
+            elif 'DELETE PENDING' in details.keys()[0]:
+                added_key_str = 'ACTIVE'
+            added_key = ' - '.join([resource_type_input, added_key_str])
+            details[added_key] = 0
 
         return details
 

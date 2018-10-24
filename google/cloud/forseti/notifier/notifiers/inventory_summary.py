@@ -149,7 +149,7 @@ class InventorySummary(object):
         """Helper method to return sorted list of dicts.
 
         Args:
-            data (dict): List of dicts.
+            data (dict): dictionary of resource_type: count pairs.
 
         Returns:
             list: Sorted data as a list of dicts.
