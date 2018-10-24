@@ -32,7 +32,7 @@ def escape_and_globify(pattern_string):
         pattern_string (str): The pattern string of which to make a regex.
 
     Returns:
-        str: The pattern string, escaped except for the "*", which is
+        str: The pattern string, escaped except for the "\*", which is
             transformed into ".+" (match on one or more characters).
     """
     if pattern_string is None:
