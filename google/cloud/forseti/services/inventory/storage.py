@@ -164,7 +164,7 @@ class InventoryIndex(BASE):
 
         Args:
             session (object) : session object to work on.
-            resource_type_input (str) : resource type to get lifecycle states for.
+            resource_type_input (str) : resource type to get lifecycle states.
 
         Returns:
             dict: a (lifecycle state -> count) dictionary
@@ -172,7 +172,8 @@ class InventoryIndex(BASE):
         resource_data = Inventory.resource_data
 
         details = dict(
-            session.query(func.json_extract(resource_data, '$.lifecycleState'), func.count())
+            session.query(func.json_extract(resource_data, '$.lifecycleState'),
+                          func.count())
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
             .filter(Inventory.resource_type == resource_type_input)
@@ -184,7 +185,8 @@ class InventoryIndex(BASE):
             details[new_key] = details.pop(key)
 
         if len(details) == 1:
-            delete_pending_key = ' - '. join([resource_type_input, 'DELETE PENDING'])
+            delete_pending_key = ' - '. join([resource_type_input,
+                                              'DELETE PENDING'])
             details[delete_pending_key] = 0
 
         return details
@@ -258,8 +260,10 @@ class InventoryIndex(BASE):
         resource_types_with_lifecycle = ['folder', 'organization', 'project']
         resource_types_hidden = ['dataset']
 
-        resource_types_with_details = {'lifecycle': resource_types_with_lifecycle,
-                                       'hidden': resource_types_hidden}
+        resource_types_with_details = {'lifecycle':
+                                           resource_types_with_lifecycle,
+                                       'hidden':
+                                           resource_types_hidden}
 
         details = {}
 

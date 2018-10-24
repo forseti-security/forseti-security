@@ -201,8 +201,8 @@ class InventorySummary(object):
 
             details = inventory_index.get_details(session)
             if not details:
-                LOGGER.error('No inventory summary detail data found for inventory '
-                             'index id: %s.', self.inventory_index_id)
+                LOGGER.error('No inventory summary detail data found for '
+                             'inventory index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
             details_data = self._transform_to_template(details)
@@ -242,7 +242,8 @@ class InventorySummary(object):
             return
 
         if is_gcs_summary_enabled:
-            summary_and_details_data = sorted((summary_data + details_data), key=lambda k: k['resource_type'])
+            summary_and_details_data = sorted((summary_data + details_data),
+                                              key=lambda k: k['resource_type'])
             self._upload_to_gcs(summary_and_details_data)
 
         if is_email_summary_enabled:
