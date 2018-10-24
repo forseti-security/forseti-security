@@ -116,6 +116,7 @@ class Resource(object):
             name=None,
             display_name=None,
             parent=None,
+            locations=None,
             lifecycle_state=LifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -125,6 +126,10 @@ class Resource(object):
             name (str): The resource unique name,
                 e.g. "{resource type}/{id}".
             display_name (str): The resource display name.
+            locations (List[str]): Locations the resource resides in. Some
+                resources have multiple locations (e.g. GKE), some support
+                have a single location (e.g. GCS), while some have none
+                (e.g. Project).
             parent (Resource): The parent Resource object.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 Resource.
@@ -140,6 +145,7 @@ class Resource(object):
         # organization has no parent, whereas projects and folders can
         # have either another folder or organization as a parent.
         self._parent = parent
+        self._locations = locations
         self._lifecycle_state = lifecycle_state
 
     def __eq__(self, other):
@@ -228,6 +234,15 @@ class Resource(object):
             Resource: The parent.
         """
         return self._parent
+
+    @property
+    def locations(self):
+        """Locations the resource resides in.
+
+        Returns:
+            List[str]: Locations the resource resides in.
+        """
+        return self._locations
 
     @property
     def lifecycle_state(self):
