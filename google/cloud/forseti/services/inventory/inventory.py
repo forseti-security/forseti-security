@@ -25,6 +25,7 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
+from google.cloud.forseti.common.opencensus import tracing
 
 LOGGER = logger.get_logger(__name__)
 
@@ -148,7 +149,8 @@ def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background):
+                  background,
+                  tracer):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -164,7 +166,7 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-
+    span = tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -173,14 +175,16 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config())
+                                 service_config.get_inventory_config(),
+                                 tracer)
         except Exception as e:
             LOGGER.exception(e)
             storage.rollback()
             raise
         else:
             storage.commit()
-        return result
+    tracing.end_span(tracer, span, result=result)
+    return result
 
 
 def run_import(client, model_name, inventory_index_id, background):
@@ -224,7 +228,7 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-
+        tracer = tracing.execution_context.get_opencensus_tracer()
         queue = Queue()
         if background:
             progresser = FirstMessageQueueProgresser(queue)
@@ -238,7 +242,7 @@ class Inventory(object):
                 object: inventory crawler result if no model_name specified,
                     otherwise, model import result
             """
-
+            LOGGER.info(tracer.span_context)
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(
@@ -246,7 +250,8 @@ class Inventory(object):
                         queue,
                         session,
                         progresser,
-                        background)
+                        background,
+                        tracer)
 
                     if model_name:
                         run_import(self.config.client(),

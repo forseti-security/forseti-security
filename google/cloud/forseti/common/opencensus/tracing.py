@@ -17,7 +17,7 @@
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
-DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
+DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
 
 try:
     from opencensus.trace import config_integration
@@ -29,15 +29,13 @@ try:
     from opencensus.trace.ext.grpc import server_interceptor
     from opencensus.trace.samplers import always_on
     from opencensus.trace.tracer import Tracer
+    from opencensus.trace.span import SpanKind
     OPENCENSUS_ENABLED = True
 except ImportError:
     LOGGER.warning(
         'Cannot enable tracing because the `opencensus` library was not '
         'found. Run `pip install .[tracing]` to install tracing libraries.')
     OPENCENSUS_ENABLED = False
-
-exporter = stackdriver_exporter.StackdriverExporter()
-TRACER = Tracer(exporter=exporter)
 
 
 def create_client_interceptor(endpoint):
@@ -49,10 +47,14 @@ def create_client_interceptor(endpoint):
     Returns:
         OpenCensusClientInterceptor: a gRPC client-side interceptor.
     """
-    return client_interceptor.OpenCensusClientInterceptor(
-        TRACER,
+    exporter = create_exporter()
+    tracer = Tracer(exporter=exporter)
+    LOGGER.info("before init: %s" % tracer.span_context)
+    interceptor = client_interceptor.OpenCensusClientInterceptor(
+        tracer,
         host_port=endpoint)
-
+    LOGGER.info("after init: %s" % execution_context.get_opencensus_tracer().span_context)
+    return interceptor
 
 def create_server_interceptor(extras=True):
     """Create gRPC server interceptor.
@@ -68,10 +70,13 @@ def create_server_interceptor(extras=True):
     sampler = always_on.AlwaysOnSampler()
     if extras:
         trace_integrations()
-    return server_interceptor.OpenCensusServerInterceptor(
+    LOGGER.info("(before init): %s" % execution_context.get_opencensus_tracer().span_context)
+    interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-
+    #LOGGER.info("(within tracer): %s" % interceptor.tracer)
+    LOGGER.info("(after init): %s" % execution_context.get_opencensus_tracer().span_context)
+    return interceptor
 
 def trace_integrations(integrations=None):
     """Add tracing to supported OpenCensus integration libraries.
@@ -85,11 +90,12 @@ def trace_integrations(integrations=None):
     """
     if integrations is None:
         integrations = DEFAULT_INTEGRATIONS
-    execution_context.set_opencensus_tracer(TRACER)
+    tracer = execution_context.get_opencensus_tracer()
     integrated_libraries = config_integration.trace_integrations(
         integrations,
-        TRACER)
+        tracer)
     LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
+    LOGGER.info(tracer.span_context)
     return integrated_libraries
 
 
@@ -120,3 +126,20 @@ def create_exporter(transport=None):
         LOGGER.exception(
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
+
+    
+def start_span(tracer, module, function, kind=None):
+    if kind is None:
+        kind = SpanKind.SERVER
+    span = tracer.start_span()
+    span.name = "[{}] {}".format(module, function)
+    span.span_kind = kind
+    tracer.add_attribute_to_current_span('module', module)
+    tracer.add_attribute_to_current_span('function', function)
+    return span
+    
+def end_span(tracer, span, **kwargs):
+    for k, v in kwargs.items():
+        tracer.add_attribute_to_current_span(k, v)
+    LOGGER.info(tracer.span_context)
+    tracer.end_span()

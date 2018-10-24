@@ -21,7 +21,6 @@ import grpc
 
 from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
 
 from opencensus.trace.tracer import Tracer
 from opencensus.trace.exporters import stackdriver_exporter
@@ -93,9 +92,6 @@ def create_interceptors(endpoint):
         # It's okay for this to be enabled on the client, even if the tracing
         # flag is disabled on the server.
         interceptors.append(tracing.create_client_interceptor(endpoint))
-        execution_context.set_opencensus_tracer(tracing.TRACER)
-        _tracer = execution_context.get_opencensus_tracer()
-        print _tracer.__dict__
     return tuple(interceptors)
 
 

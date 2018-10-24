@@ -19,14 +19,12 @@ import threading
 import time
 from Queue import Empty, Queue
 
-from opencensus.trace import attributes_helper
-from opencensus.trace import execution_context
-from opencensus.trace import span as span_module
-
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.inventory.base import crawler
 from google.cloud.forseti.services.inventory.base import gcp
 from google.cloud.forseti.services.inventory.base import resources
+
+from google.cloud.forseti.common.opencensus import tracing
 
 LOGGER = logger.get_logger(__name__)
 
@@ -34,7 +32,7 @@ LOGGER = logger.get_logger(__name__)
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, variables=None):
+    def __init__(self, storage, progresser, api_client, tracer, variables=None):
         """Initialize
 
         Args:
@@ -47,6 +45,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
         super(CrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
+        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.client = api_client
 
@@ -54,7 +53,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, threads=10,
+    def __init__(self, storage, progresser, api_client, tracer, threads=10,
                  variables=None):
         """Initialize
 
@@ -69,6 +68,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         super(ParallelCrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
+        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.threads = threads
         self.client = api_client
@@ -95,7 +95,6 @@ class Crawler(crawler.Crawler):
         Returns:
             QueueProgresser: The filled progresser described in inventory
         """
-
         resource.accept(self)
         return self.config.progresser
 
@@ -108,7 +107,16 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
-
+        tracer = self.config.tracer
+        span = tracing.start_span(tracer, 'visit', "{} ({})".format(
+            resource.__class__.__name__, 
+            resource._data["name"]))
+        attrs = {
+            'id': resource._data["name"],
+            'parent': resource._data.get("parent", None),
+            'type': resource.__class__.__name__,
+            'success': True
+        }
         progresser = self.config.progresser
         try:
 
@@ -119,14 +127,18 @@ class Crawler(crawler.Crawler):
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())
             resource.get_kubernetes_service_config(self.get_client())
-
+            
             self.write(resource)
         except Exception as e:
             LOGGER.exception(e)
             progresser.on_error(e)
+            attrs["exception"] = e
+            attrs["success"] = False
             raise
         else:
             progresser.on_new_object(resource)
+        finally:
+            tracing.end_span(tracer, span, **attrs)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
@@ -285,11 +297,11 @@ class ParallelCrawler(Crawler):
             LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
-
-
+               
 def run_crawler(storage,
                 progresser,
                 config,
+                tracer,
                 parallel=True):
     """Run the crawler with a determined configuration.
 
@@ -302,13 +314,7 @@ def run_crawler(storage,
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    from google.cloud.forseti.common.opencensus import tracing
-    _tracer = tracing.TRACER
-    _span = _tracer.start_span()
-    _span.name = '[requests]{}'.format('test_request_name')
-    _span.span_kind = span_module.SpanKind.CLIENT
-    LOGGER.info("Trace id: %s" % _tracer.span_context.trace_id) 
-    LOGGER.info("Span id: %s" % _span.span_id)
+    span = tracing.start_span(tracer, "inventory", "run_crawler")
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
@@ -316,14 +322,13 @@ def run_crawler(storage,
     client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
-        crawler_config = ParallelCrawlerConfig(storage, progresser, client)
+        crawler_config = ParallelCrawlerConfig(storage, progresser, client, tracer)
         crawler_impl = ParallelCrawler(crawler_config)
     else:
-        crawler_config = CrawlerConfig(storage, progresser, client)
+        crawler_config = CrawlerConfig(storage, progresser, client, tracer)
         crawler_impl = Crawler(crawler_config)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
-    _tracer.add_attribute_to_current_span('200', str('200'))
-    _tracer.end_span()
+    tracing.end_span(tracer, span, **progresser.__dict__)
     return progresser
