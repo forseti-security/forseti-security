@@ -129,6 +129,7 @@ def create_exporter(transport=None):
 
     
 def start_span(tracer, module, function, kind=None):
+    """Start a span"""
     if kind is None:
         kind = SpanKind.SERVER
     span = tracer.start_span()
@@ -139,7 +140,24 @@ def start_span(tracer, module, function, kind=None):
     return span
     
 def end_span(tracer, span, **kwargs):
+    """End a span. Update the span_id in SpanContext to the current
+    span's parent id; update the current span; Send the span to exporter.
+    """
     for k, v in kwargs.items():
         tracer.add_attribute_to_current_span(k, v)
     LOGGER.info(tracer.span_context)
     tracer.end_span()
+    
+def trace_decorator(func):
+    """Decorator to trace a function"""
+
+    def wrapper(*args, **kwargs):
+        LOGGER.info('Before calling start_span from wrapper')
+        self.start_span(*args, **kwargs)
+        return_value = func(*args, **kwargs)
+        LOGGER.info('return_value %s:', return_value)
+        LOGGER.info('After calling start_span from wrapper')
+        LOGGER.info('Before calling end_span from wrapper')
+        self.end_span(*args, **kwargs)
+        LOGGER.info('After calling end_span from wrapper')
+        return wrapper
