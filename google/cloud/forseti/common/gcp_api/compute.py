@@ -43,8 +43,8 @@ def _api_not_enabled(error):
             or False, '' if there is a different exception.
     """
     if isinstance(error, errors.HttpError):
-        if (error.resp.status == 403 and
-                error.resp.get('content-type', '').startswith(
+        if (error.resp.status == 403
+                and error.resp.get('content-type', '').startswith(
                     'application/json')):
 
             # If a project doesn't have the necessary API enabled, Google
