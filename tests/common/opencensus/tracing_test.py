@@ -19,7 +19,6 @@ import mock
 import unittest
 
 from google.cloud.forseti.common.opencensus import tracing
-
 from tests.unittest_utils import ForsetiTestCase
 
 
