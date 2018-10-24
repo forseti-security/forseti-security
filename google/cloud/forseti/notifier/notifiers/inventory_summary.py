@@ -144,7 +144,8 @@ class InventorySummary(object):
         except util_errors.EmailSendError:
             LOGGER.exception('Unable to send inventory summary email')
 
-    def _transform_to_template(self, data):
+    @staticmethod
+    def transform_to_template(data):
         """Helper method to return sorted list of dicts.
 
         Args:
@@ -181,7 +182,7 @@ class InventorySummary(object):
                              'index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
-            summary_data = self._transform_to_template(summary)
+            summary_data = self.transform_to_template(summary)
             return summary_data
 
     def _get_details_data(self):
@@ -205,7 +206,7 @@ class InventorySummary(object):
                              'inventory index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
-            details_data = self._transform_to_template(details)
+            details_data = self.transform_to_template(details)
             return details_data
 
     def run(self):

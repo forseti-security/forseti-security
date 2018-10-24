@@ -177,7 +177,8 @@ class InventoryIndex(BASE):
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
             .filter(Inventory.resource_type == resource_type_input)
-            .group_by(func.json_extract(resource_data, '$.lifecycleState')).all())
+            .group_by(func.json_extract(resource_data, '$.lifecycleState'))
+            .all())
 
         for key in details.keys():
             new_key = key.replace('\"', '').replace('_', ' ')
