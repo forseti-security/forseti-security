@@ -145,8 +145,19 @@ For examples of how to define scanner rules for network interfaces, see the
 [`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/instance_network_interface_rules.yaml)
 rule file.
 
+## Kubernetes Engine version scanner
+
+Kubernetes Engine clusters running on older versions can be exposed to security
+vulnerabilities, or lack of support. The KE version scanner can ensure your
+Kubernetes Engine clusters are running safe and supported versions.
+
+For examples of how to define scanner rules for your Kubernetes Engine versions, see the
+[`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
+file.
+
 ## Lien scanner
-Allow customers to ensure Liens for their projects exist and are configured correctly.
+Allow customers to ensure projects do not get deleted, by ensuring Liens 
+for their projects exist and are configured correctly.
 
 For examples of how to define scanner rules for lien, see the
 [`lien_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/lien_rules.yaml)
@@ -154,8 +165,7 @@ rule file.
 
 ## Location scanner
 Allow customers to ensure their resources are located only in the intended 
-locations, or are not located in specific regions at all. Set guards around 
-locations as part of automated project deployment.
+locations. Set guards around locations as part of automated project deployment.
 
 For examples of how to define scanner rules for location, see the
 [`location_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/location_rules.yaml)
@@ -168,16 +178,6 @@ be able to check if the sink destination is correctly configured.
 For examples of how to define scanner rules for log sink, see the
 [`log_sink_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/log_sink_rules.yaml)
 rule file.
-
-## Kubernetes Engine version scanner
-
-Kubernetes Engine clusters running on older versions can be exposed to security
-vulnerabilities, or lack of support. The KE version scanner can ensure your
-Kubernetes Engine clusters are running safe and supported versions.
-
-For examples of how to define scanner rules for your Kubernetes Engine versions, see the
-[`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
-file.
 
 ## Service Account Key scanner
 
