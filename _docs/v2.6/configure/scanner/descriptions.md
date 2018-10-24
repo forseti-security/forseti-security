@@ -7,7 +7,7 @@ order: 301
 
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can
-[configure Scanner]({% link _docs/latest/configure/scanner/index.md %}) to execute
+[configure Scanner]({% link _docs/v2.6/configure/scanner/index.md %}) to execute
 multiple scanners in the same run.
 
 ---
