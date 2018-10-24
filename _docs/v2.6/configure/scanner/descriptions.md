@@ -7,7 +7,7 @@ order: 301
 
 This page describes the Forseti scanners that are available, how they work, and
 why they're important. You can
-[configure Scanner]({% link _docs/v2.6/configure/scanner/index.md %}) to execute
+[configure Scanner]({% link _docs/latest/configure/scanner/index.md %}) to execute
 multiple scanners in the same run.
 
 ---
@@ -143,6 +143,30 @@ external IP addresses are outside of the trusted networks.
 
 For examples of how to define scanner rules for network interfaces, see the
 [`instance_network_interface_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/instance_network_interface_rules.yaml)
+rule file.
+
+## Lien scanner
+Allow customers to ensure Liens for their projects exist and are configured correctly.
+
+For examples of how to define scanner rules for lien, see the
+[`lien_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/lien_rules.yaml)
+rule file.
+
+## Location scanner
+Allow customers to ensure their resources are located only in the intended 
+locations, or are not located in specific regions at all. Set guards around 
+locations as part of automated project deployment.
+
+For examples of how to define scanner rules for location, see the
+[`location_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/location_rules.yaml)
+rule file.
+
+## Log sink scanner
+Alert or notify if a project does not have required log sinks. This scanner will also 
+be able to check if the sink destination is correctly configured.
+
+For examples of how to define scanner rules for log sink, see the
+[`log_sink_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/log_sink_rules.yaml)
 rule file.
 
 ## Kubernetes Engine version scanner
