@@ -169,17 +169,23 @@ class FirewallRule(object):
             'firewall_rule_priority': firewall_dict.get('priority'),
             'firewall_rule_direction': firewall_dict.get('direction'),
             'firewall_rule_source_ranges': parser.json_stringify(
-                firewall_dict.get('sourceRanges')),
+                firewall_dict.get('sourceRanges') or
+                firewall_dict.get('sourceRange')),
             'firewall_rule_destination_ranges': parser.json_stringify(
-                firewall_dict.get('destinationRanges')),
+                firewall_dict.get('destinationRanges') or
+                firewall_dict.get('destinationRange')),
             'firewall_rule_source_tags': parser.json_stringify(
-                firewall_dict.get('sourceTags')),
+                firewall_dict.get('sourceTags') or
+                firewall_dict.get('sourceTag')),
             'firewall_rule_target_tags': parser.json_stringify(
-                firewall_dict.get('targetTags')),
+                firewall_dict.get('targetTags') or
+                firewall_dict.get('targetTag')),
             'firewall_rule_source_service_accounts': parser.json_stringify(
-                firewall_dict.get('sourceServiceAccounts')),
+                firewall_dict.get('sourceServiceAccounts') or
+                firewall_dict.get('sourceServiceAccount')),
             'firewall_rule_target_service_accounts': parser.json_stringify(
-                firewall_dict.get('targetServiceAccounts')),
+                firewall_dict.get('targetServiceAccounts') or
+                firewall_dict.get('targetServiceAccount')),
             'firewall_rule_allowed': parser.json_stringify(
                 firewall_dict.get('allowed')),
             'firewall_rule_denied': parser.json_stringify(

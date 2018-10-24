@@ -62,6 +62,7 @@ inventory:
           period: 1.1
 
     cai:
+        # The FORSETI_CAI_BUCKET needs to be in Forseti project.
         enabled: {CAI_ENABLED}
         gcs_path: gs://{FORSETI_CAI_BUCKET}
 
@@ -116,6 +117,8 @@ scanner:
         - name: ke_version_scanner
           enabled: true
         - name: lien
+          enabled: true
+        - name: location
           enabled: true
         - name: log_sink
           enabled: true
@@ -347,6 +350,22 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: lien_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: location_violations
           should_notify: true
           notifiers:
             # Email violations
