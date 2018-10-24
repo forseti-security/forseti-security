@@ -165,7 +165,7 @@ class FirewallRule(object):
                     ip_protocol = protocol_mapping.get('IPProtocol', '')
                     corresponding_ports = protocol_mapping.get('ports', [])
 
-                    flattened_ports = cls._flatten_ports(corresponding_ports)
+                    # flattened_ports = cls._flatten_ports(corresponding_ports)
                     flattened_firewall_rules.append(
                         FirewallRule(
                             creation_timestamp=creation_timestamp,
@@ -175,7 +175,7 @@ class FirewallRule(object):
                             tag=identifier if is_tag else None,
                             action=action,
                             ip_protocol=ip_protocol,
-                            ports=flattened_ports,
+                            ports=corresponding_ports,
                             direction=direction,
                             disabled=disabled,
                             network=network,
