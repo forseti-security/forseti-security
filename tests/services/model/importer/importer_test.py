@@ -126,21 +126,18 @@ class ImporterTest(ForsetiTestCase):
              },
             model_description)
 
-    def test_model_action_wrapper_pre_and_post_action_called(self):
+    def test_model_action_wrapper_post_action_called(self):
         session = mock.Mock()
         session.flush = mock.Mock()
         inventory_iter = []
-        pre = mock.Mock()
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
         InventoryImporter.model_action_wrapper(session,
                                                inventory_iter,
-                                               pre,
                                                action,
                                                post,
                                                flush_count)
-        pre.assert_called_once()
         post.assert_called_once()
 
     def test_model_action_wrapper_inventory_iter_tuple(self):
@@ -149,13 +146,11 @@ class ImporterTest(ForsetiTestCase):
         session = mock.Mock()
         session.flush = mock.Mock()
         inventory_iter = [(1, 2)]
-        pre = mock.Mock()
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
         count = InventoryImporter.model_action_wrapper(session,
                                                        inventory_iter,
-                                                       pre,
                                                        action,
                                                        post,
                                                        flush_count)
@@ -163,8 +158,7 @@ class ImporterTest(ForsetiTestCase):
         action.assert_called_once_with(1, 2)
         self.assertEquals(1, count)
 
-        # pre and post are always called if exists
-        self.assertTrue(pre.called)
+        # post is always called if exists
         self.assertTrue(post.called)
 
         # flush count is 1, flush should be called once since there is 1 item
@@ -175,13 +169,11 @@ class ImporterTest(ForsetiTestCase):
         session = mock.Mock()
         session.flush = mock.Mock()
         inventory_iter = [(1, 2), (4, 5)]
-        pre = mock.Mock()
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
         count = InventoryImporter.model_action_wrapper(session,
                                                        inventory_iter,
-                                                       pre,
                                                        action,
                                                        post,
                                                        flush_count)
@@ -190,8 +182,7 @@ class ImporterTest(ForsetiTestCase):
         action.assert_has_calls(calls)
         self.assertEquals(2, count)
 
-        # pre and post are always called if exists
-        self.assertTrue(pre.called)
+        # post is always called if exists
         self.assertTrue(post.called)
 
         # flush count is 1, flush should be called twice since there are 2 items
@@ -204,13 +195,11 @@ class ImporterTest(ForsetiTestCase):
         session = mock.Mock()
         session.flush = mock.Mock()
         inventory_iter = ['not_tuple']
-        pre = mock.Mock()
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
         count = InventoryImporter.model_action_wrapper(session,
                                                        inventory_iter,
-                                                       pre,
                                                        action,
                                                        post,
                                                        flush_count)
@@ -218,8 +207,7 @@ class ImporterTest(ForsetiTestCase):
         action.assert_called_once_with('not_tuple')
         self.assertEquals(1, count)
 
-        # pre and post are always called if exists
-        self.assertTrue(pre.called)
+        # post is always called if exists
         self.assertTrue(post.called)
 
         # flush count is 1, flush should be called once since there is 1 item
@@ -230,13 +218,11 @@ class ImporterTest(ForsetiTestCase):
         session = mock.Mock()
         session.flush = mock.Mock()
         inventory_iter = ['data', 'data1']
-        pre = mock.Mock()
         action = mock.Mock()
         post = mock.Mock()
         flush_count = 1
         count = InventoryImporter.model_action_wrapper(session,
                                                        inventory_iter,
-                                                       pre,
                                                        action,
                                                        post,
                                                        flush_count)
@@ -245,8 +231,7 @@ class ImporterTest(ForsetiTestCase):
         action.assert_has_calls(calls)
         self.assertEquals(2, count)
 
-        # pre and post are always called if exists
-        self.assertTrue(pre.called)
+        # post is always called if exists
         self.assertTrue(post.called)
 
         # flush count is 1, flush should be called twice since there are 2 items
