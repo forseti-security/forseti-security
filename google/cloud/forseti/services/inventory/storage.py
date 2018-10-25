@@ -214,10 +214,10 @@ class InventoryIndex(BASE):
         field_label_shown = resource_type + ' - SHOWN'
 
         hidden_label = (
-            func.sum(case([(resource_id.contains('%:~_%', escape='~'), 1)])))
+            func.count(case([(resource_id.contains('%:~_%', escape='~'), 1)])))
 
         shown_label = (
-            func.sum(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))
+            func.count(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))
 
         details_query = (
             session.query(hidden_label, shown_label)
