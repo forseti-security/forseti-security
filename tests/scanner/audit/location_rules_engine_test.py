@@ -142,7 +142,7 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='blacklist',
             type='bucket',
-            ids=['p1-b1', 'dne'],
+            ids=['dne', 'p1-b1'],
             locations=['eu*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
