@@ -184,12 +184,18 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
                 raise errors.InvalidRulesSchemaError(
                     'Missing field "{}" in rule {}'.format(field, rule_index))
 
-        applies_to = rule_def.get('applies_to')
-        for resource_type in applies_to:
+        applies_to = {}
+
+        for applies_dict in rule_def.get('applies_to'):
+            resource_type = applies_dict['type']
+
             if resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES:
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))
+
+            applies_to[resource_type] = applies_dict['resource_ids']
+
 
         return Rule(name=rule_def.get('name'),
                     index=rule_index,
@@ -267,6 +273,11 @@ class Rule(object):
             RuleViolation: location rule violation.
         """
         if resource.type not in self.applies_to:
+            return
+
+
+        if self.applies_to[resource.type] != ['*'] and (
+                resource.id not in self.applies_to[resource.type]):
             return
 
         matches = [
