@@ -265,9 +265,9 @@ class InventoryIndex(BASE):
         resource_types_hidden = ['dataset']
 
         resource_types_with_details = {'lifecycle':
-                                           resource_types_with_lifecycle,
+                                       resource_types_with_lifecycle,
                                        'hidden':
-                                           resource_types_hidden}
+                                       resource_types_hidden}
 
         details = {}
 
