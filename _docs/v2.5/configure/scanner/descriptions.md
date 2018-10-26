@@ -155,6 +155,14 @@ For examples of how to define scanner rules for your Kubernetes Engine versions,
 [`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
 file.
 
+## Log sink scanner
+Alert or notify if a project does not have required log sinks. This scanner will also 
+be able to check if the sink destination is correctly configured.
+
+For examples of how to define scanner rules for log sink, see the
+[`log_sink_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/log_sink_rules.yaml)
+rule file.
+
 ## Service Account Key scanner
 
 It's best to periodically rotate your user-managed service account
