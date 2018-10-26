@@ -164,7 +164,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
 
 
 # pylint: disable=anomalous-backslash-in-string
-class IamRuleBook(bre.BaseRuleBook):  # noqa
+class IamRuleBook(bre.BaseRuleBook):
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
