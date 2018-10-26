@@ -23,7 +23,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - {ORGANIZATION_ID}
+          - 660570133860
     dataset_ids: ['*']
     bindings:
       - role: '*'
@@ -34,7 +34,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - {ORGANIZATION_ID}
+          - 660570133860
     dataset_ids: ['*']
     bindings:
       - role: '*'
@@ -45,7 +45,7 @@ rules:
     resource:
       - type: organization
         resource_ids:
-          - {ORGANIZATION_ID}
+          - 660570133860
     dataset_ids: ['*']
     bindings:
       - role: '*'
