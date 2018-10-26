@@ -20,8 +20,6 @@ only by Forseti Scanner, such as
 * [`notifier`]({% link _docs/latest/configure/notifier/index.md %}): configurations that are used
 only by Forseti Notifier, such as
   specifying which notifications to enable.
-* [`instrumentation`]({% link _docs/latest/configure/instrumentation/index.md %}): configurations 
-that are used only to configure instrumentation on Forseti, such as tracing.
 
 Configurations are centrally maintained in the
 `forseti-security/configs/server/forseti_server_conf.yaml` file that's organized into

@@ -19,3 +19,8 @@ Use the CLI to interface with Forseti and all of its modules.
 **[Get Help using Forseti]({% link _docs/latest/use/get-help.md %})**
 
 Find the best way to get help using Forseti.
+
+**[Using Instrumentation]
+({% link _docs/latest/use/using-instrumentation.md %})**
+
+Using instrumentation with Forseti and all of its modules.
