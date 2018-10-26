@@ -1,0 +1,250 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.utils module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.utils">
+<span id="google-cloud-forseti-services-utils-module"></span><h1>google.cloud.forseti.services.utils module<a class="headerlink" href="#module-google.cloud.forseti.services.utils" title="Permalink to this headline">¶</a></h1>
+<p>Forseti Server utilities.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.autoclose_stream">
+<code class="descname">autoclose_stream</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#autoclose_stream"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.autoclose_stream" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to close gRPC stream.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>f</strong> (<em>func</em>) – The function to decorate</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">wrapper of the decorator</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">wrapper</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.full_to_type_name">
+<code class="descname">full_to_type_name</code><span class="sig-paren">(</span><em>full_resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#full_to_type_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.full_to_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a type/name format from full resource name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>full_resource_name</strong> (<em>str</em>) – the full_resource_name of the resource</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">type_name of that resource</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.get_resource_id_from_type_name">
+<code class="descname">get_resource_id_from_type_name</code><span class="sig-paren">(</span><em>type_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#get_resource_id_from_type_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.get_resource_id_from_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the key from type_name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>type_name</strong> (<em>str</em>) – Type name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Resource id.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.get_resources_from_full_name">
+<code class="descname">get_resources_from_full_name</code><span class="sig-paren">(</span><em>full_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#get_resources_from_full_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.get_resources_from_full_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse resource info from full name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>full_name</strong> (<em>str</em>) – Full name of the resource in hierarchical format.
+Example of a full_name:
+organization/88888/project/myproject/firewall/99999/
+full_name has a trailing / that needs to be removed.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><em>iterator</em> – strings of resource_type and resource_id</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.get_sql_dialect">
+<code class="descname">get_sql_dialect</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#get_sql_dialect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.get_sql_dialect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the active SqlAlchemy dialect.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session</strong> (<em>object</em>) – the session to check for SqlAlchemy dialect</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">name of the SqlAlchemy dialect</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.logcall">
+<code class="descname">logcall</code><span class="sig-paren">(</span><em>f</em>, <em>level=50</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#logcall"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.logcall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call logging decorator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>f</strong> (<em>func</em>) – The function to decorate</li>
+<li><strong>level</strong> (<em>str</em>) – the level of logging</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">wrapper of the decorator</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">wrapper</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.mutual_exclusive">
+<code class="descname">mutual_exclusive</code><span class="sig-paren">(</span><em>lock</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#mutual_exclusive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.mutual_exclusive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mutex decorator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>lock</strong> (<em>object</em>) – The lock to lock out exclusive method</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">decorator generator</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.oneof">
+<code class="descname">oneof</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#oneof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.oneof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true iff one of the parameters is true.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>*args</strong> – arguments to check</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">true iff one of the parameters is true.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.resource_to_type_name">
+<code class="descname">resource_to_type_name</code><span class="sig-paren">(</span><em>resource</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#resource_to_type_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.resource_to_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a type/name format from a resource dbo.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource</strong> (<em>object</em>) – the resource to get the the type_name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">type_name of the resource</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.split_type_name">
+<code class="descname">split_type_name</code><span class="sig-paren">(</span><em>resource_type_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#split_type_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.split_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split the type name of the resource</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>resource_type_name</strong> (<em>str</em>) – the type_name of the resource</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">type and name of the resource</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuples</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.to_full_resource_name">
+<code class="descname">to_full_resource_name</code><span class="sig-paren">(</span><em>full_parent_name</em>, <em>resource_type_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#to_full_resource_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.to_full_resource_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a full resource name by parent full name and type name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>full_parent_name</strong> (<em>str</em>) – the full_resource_name of the parent</li>
+<li><strong>resource_type_name</strong> (<em>str</em>) – the full_resource_name of the child</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">full_resource_name of the child</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.utils.to_type_name">
+<code class="descname">to_type_name</code><span class="sig-paren">(</span><em>resource_type</em>, <em>resource_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/utils.html#to_type_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.utils.to_type_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a type/name from type and name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resource_type</strong> (<em>str</em>) – the resource type</li>
+<li><strong>resource_name</strong> (<em>str</em>) – the resource name</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">type_name of the resource</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

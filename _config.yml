@@ -57,7 +57,7 @@ pagination:
   enabled: true
   collection: news
   permalink: /page/:num/
-  per_page: 4
+  per_page: 6
 
 # Responsive image templates and resizing configuration
 responsive_image:
@@ -323,3 +323,32 @@ defaults:
       path: _docs/v2.5/faq
     values:
       category: FAQ (v2.5)
+  - scope:
+      path: _docs/v2.6
+    values:
+      category: Overview (v2.6)
+      layout: docs
+  - scope:
+      path: _docs/v2.6/concepts
+    values:
+      category: Concepts (v2.6)
+  - scope:
+      path: _docs/v2.6/setup
+    values:
+      category: Setup (v2.6)
+  - scope:
+      path: _docs/v2.6/use
+    values:
+      category: Use (v2.6)
+  - scope:
+      path: _docs/v2.6/configure
+    values:
+      category: Configure (v2.6)
+  - scope:
+      path: _docs/v2.6/develop
+    values:
+      category: Develop (v2.6)
+  - scope:
+      path: _docs/v2.6/faq
+    values:
+      category: FAQ (v2.6)

@@ -1,0 +1,211 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.cloudbilling module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.cloudbilling">
+<span id="google-cloud-forseti-common-gcp-api-cloudbilling-module"></span><h1>google.cloud.forseti.common.gcp_api.cloudbilling module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.cloudbilling" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for Cloud Billing API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient">
+<em class="property">class </em><code class="descname">CloudBillingClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#CloudBillingClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Cloud Billing Client.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_accounts">
+<code class="descname">get_billing_accounts</code><span class="sig-paren">(</span><em>master_account_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#CloudBillingClient.get_billing_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all billing accounts the authenticated user has access to.</p>
+<p>If no master account is specified, then all billing accounts the caller
+has visibility to are returned. Otherwise retuns all subaccounts of the
+specified master billing account.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>master_account_id</strong> (<em>str</em>) – If set, only return subaccounts under this
+master billing account.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of BillingAccount resources.
+<a class="reference external" href="https://cloud.google.com/billing/reference/rest/v1/billingAccounts">https://cloud.google.com/billing/reference/rest/v1/billingAccounts</a><dl class="docutils">
+<dt>{</dt>
+<dd>“name”: string,
+“open”: boolean,
+“displayName”: string,
+“masterBillingAccount”: string,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_acct_iam_policies">
+<code class="descname">get_billing_acct_iam_policies</code><span class="sig-paren">(</span><em>account_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#CloudBillingClient.get_billing_acct_iam_policies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_acct_iam_policies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the IAM policies for the given billing account.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>account_id</strong> (<em>str</em>) – The billing account id.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An IAM Policy resource.
+<a class="reference external" href="https://cloud.google.com/billing/reference/rest/v1/Policy">https://cloud.google.com/billing/reference/rest/v1/Policy</a><dl class="docutils">
+<dt>{</dt>
+<dd>“bindings”: list,
+“auditConfigs”: list,
+“etag”: string,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_info">
+<code class="descname">get_billing_info</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#CloudBillingClient.get_billing_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingClient.get_billing_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the billing information for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>int</em>) – The project id for a GCP project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A ProjectBillingInfo resource.
+<a class="reference external" href="https://cloud.google.com/billing/reference/rest/v1/ProjectBillingInfo">https://cloud.google.com/billing/reference/rest/v1/ProjectBillingInfo</a><dl class="docutils">
+<dt>{</dt>
+<dd>“name”: string,
+“projectId”: string,
+“billingAccountName”: string,
+“billingEnabled”: boolean,</dd>
+</dl>
+<p>}</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP API fails.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient">
+<em class="property">class </em><code class="descname">CloudBillingRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=60.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#CloudBillingRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Cloud Billing API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient.billing_accounts">
+<code class="descname">billing_accounts</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient.billing_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudBillingBillingAccountsRepository instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient.projects">
+<code class="descname">projects</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling.CloudBillingRepositoryClient.projects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudBillingProjectsRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingBillingAccountsRepository">
+<em class="property">class </em><code class="descname">_CloudBillingBillingAccountsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#_CloudBillingBillingAccountsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingBillingAccountsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.GetIamPolicyQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.GetIamPolicyQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.GetIamPolicyQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Cloud Billing BillingAccounts repository.</p>
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingBillingAccountsRepository.get_name">
+<em class="property">static </em><code class="descname">get_name</code><span class="sig-paren">(</span><em>account_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#_CloudBillingBillingAccountsRepository.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingBillingAccountsRepository.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format’s a billing account ID to pass to the API</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>account_id</strong> (<em>str</em>) – The billing account id to query, either just the
+id or the id prefixed with ‘billingAccounts/’.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The formatted resource name.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository">
+<em class="property">class </em><code class="descname">_CloudBillingProjectsRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#_CloudBillingProjectsRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of Cloud Billing Projects repository.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository.get_billing_info">
+<code class="descname">get_billing_info</code><span class="sig-paren">(</span><em>name</em>, <em>fields=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#_CloudBillingProjectsRepository.get_billing_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository.get_billing_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the billing information for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>str</em>) – The project name to query in the format
+projects/{project_id}.</li>
+<li><strong>fields</strong> (<em>str</em>) – Fields to include in the response - partial response.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The response from the API.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository.get_name">
+<em class="property">static </em><code class="descname">get_name</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudbilling.html#_CloudBillingProjectsRepository.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudbilling._CloudBillingProjectsRepository.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Format’s a project_id to pass in to .get().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>str</em>) – The project id to query, either just the
+id or the id prefixed with ‘projects/’.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The formatted resource name.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
