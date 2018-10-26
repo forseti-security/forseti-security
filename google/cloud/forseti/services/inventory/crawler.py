@@ -97,7 +97,8 @@ class Crawler(crawler.Crawler):
         """
         resource.accept(self)
         return self.config.progresser
-
+    
+    @tracing.trace(lambda x: x.config.tracer)
     def visit(self, resource):
         """Handle a newly found resource.
 
@@ -107,10 +108,7 @@ class Crawler(crawler.Crawler):
         Raises:
             Exception: Reraises any exception.
         """
-        tracer = self.config.tracer
-        span = tracing.start_span(tracer, 'visit', "{} ({})".format(
-            resource.__class__.__name__, 
-            resource._data["name"]))
+        
         attrs = {
             'id': resource._data["name"],
             'parent': resource._data.get("parent", None),
@@ -137,8 +135,8 @@ class Crawler(crawler.Crawler):
             raise
         else:
             progresser.on_new_object(resource)
-        finally:
-            tracing.end_span(tracer, span, **attrs)
+#         finally:
+#             tracing.end_span(tracer, span, **attrs)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
