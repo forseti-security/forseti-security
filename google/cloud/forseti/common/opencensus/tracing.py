@@ -148,16 +148,16 @@ def end_span(tracer, span, **kwargs):
     LOGGER.info(tracer.span_context)
     tracer.end_span()
     
-def trace_decorator(func):
+def trace_decorator(tracer):
     """Decorator to trace a function"""
+    def decorator(func):
 
-    def wrapper(*args, **kwargs):
-        LOGGER.info('Before calling start_span from wrapper')
-        self.start_span(*args, **kwargs)
-        return_value = func(*args, **kwargs)
-        LOGGER.info('return_value %s:', return_value)
-        LOGGER.info('After calling start_span from wrapper')
-        LOGGER.info('Before calling end_span from wrapper')
-        self.end_span(*args, **kwargs)
-        LOGGER.info('After calling end_span from wrapper')
+        def wrapper(*args, **kwargs):
+            LOGGER.info('Before calling start_span from wrapper')
+            span = start_span(tracer, func.__module__, func.__name__)
+            result = func(*args, **kwargs)
+            end_span(tracer, span, result=result)
+            LOGGER.info('After calling end_span from wrapper')
         return wrapper
+     return decorator
+     
