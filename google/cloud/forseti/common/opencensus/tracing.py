@@ -148,17 +148,17 @@ def end_span(tracer, span, **kwargs):
     LOGGER.info(tracer.span_context)
     tracer.end_span()
     
-def trace(tracer):
-    """Decorator to trace a function"""
+def trace():
+    """Decorator to trace class method. 
+    This decorator assumes the tracer is passed to the class as self.tracer"""
+    
     def decorator(func):
-        def wrapper(*args, **kwargs):
+        def wrapper(self, *args, **kwargs):
             if OPENCENSUS_ENABLED:
-                LOGGER.info('Before calling start_span from wrapper')
-                span = start_span(tracer, func.__module__, func.__name__)
-            result = func(*args, **kwargs)
+                span = start_span(self.tracer, func.__module__, func.__name__)
+            result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
-                end_span(tracer, span, result=result)
-                LOGGER.info('After calling end_span from wrapper')
+                end_span(self.tracer, span, result=result)
          return wrapper
      return decorator
 
