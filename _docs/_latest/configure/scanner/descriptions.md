@@ -155,6 +155,29 @@ For examples of how to define scanner rules for your Kubernetes Engine versions,
 [`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
 file.
 
+## Kubernetes Engine scanner
+
+Kubernetes Engine clusters have a wide-variety of options.  You might
+want to have standards so your clusters are deployed in a uniform
+fashion.  Some of the options can introduce unnecessary security
+risks.  The KE scanner allows you to write rules that check arbitrary
+cluster properties for violations.  It supports the following
+features:
+
+* Any cluster property can be checked in a rule by providing a
+  JMESPath expression that extracts the right fields.
+  + See http://jmespath.org/ for a tutorial and detailed specifications.
+* Rules can be whitelists or a blacklists.
+
+You can find example rules in the
+[`ke_scanner_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_scanner_rules.yaml)
+file.  The only rule enabled by default checks that logging is
+enabled.  Check out some of the commented-out rules for more
+advanced ideas.
+
+This scanner is disabled by default, you can enable it in the
+`scanner` section of your configuration file.
+
 ## Service Account Key scanner
 
 It's best to periodically rotate your user-managed service account
