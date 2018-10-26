@@ -116,7 +116,7 @@ if __name__ == '__main__':
              'direction',
              'disabled',
              'network'])
-        print df_filtered.iloc[0]
+        print(df_filtered.iloc[0])
 
         filename = "../sample_dataset.csv"
 
