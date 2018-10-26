@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import pandas as pd
-from google.cloud import bigquery
+#from google.cloud import bigquery
 import ipaddress
 
 def dataToBQ(dataset_id,table_id,filename):
@@ -134,4 +134,4 @@ if __name__ == '__main__':
         dataset_id = "forseti"
         table_id = "forseti_fw_rules"
 
-        dataToBQ(dataset_id,table_id,filename)
+        #dataToBQ(dataset_id,table_id,filename)
