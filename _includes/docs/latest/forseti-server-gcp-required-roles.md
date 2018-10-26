@@ -15,6 +15,7 @@
 **Granted at the project level**
 
  * `roles/cloudsql.client` (server)
+ * `roles/cloudtrace.agent` (server, client)
  * `roles/logging.logWriter` (server, client)
  * `roles/storage.objectViewer` (server, client)
  * `roles/storage.objectCreator` (server)
