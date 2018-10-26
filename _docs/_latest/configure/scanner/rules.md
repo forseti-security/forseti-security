@@ -92,7 +92,7 @@ rules:
         `user:*@company.com` (anyone with an identity at company.com).
 
 
-## Kubernetes Engine rules
+## Kubernetes Engine version rules
 
 ### Rule definition
 
@@ -803,3 +803,60 @@ rules:
 * `max_age`
   * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
   * **Valid values**: String, number of days.
+
+## Kubernetes Engine rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: logging should be enabled
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: loggingService
+    mode: whitelist
+    values:
+      - logging.googleapis.com
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `key`
+  * **Description**: A JMESPath expression that extracts values from
+    the JSON representation of a GKE cluster.
+
+    *Tip*: to find the JSON representation of your cluster use
+    `gcloud --format=json container clusters describe <name>`
+  * **Valid values**: String, must be a well-formed
+    [JMESPath](http://jmespath.org/) expression.
+
+* `mode`
+  * **Description**: Choose whether or not the list of values will be
+    interpreted as a whitelist or a blacklist.
+  * **Valid values**: String.  Must be `whitelist` or `blacklist`.
+
+` `values`
+  * **Description**: The list of values that the rule looks for.
+    * If `mode` is set to `whitelist`, the rule generates a violation
+      if the value extracted from a cluster is NOT on this list.
+	* If `mode` is set to `blacklist`, the rule generates a violation
+      if the value extracted from a cluster IS on the list.
+  * **Valid values**: A list of any valid YAML values.
+
+    *Tip*: Pay attention to the data types that you enter here.  If
+    the JMESPath expression in `key` extracts an integer, you probably
+    want integers in this list.  Similarly, if the expression extracts
+    a list of values, you need to provide lists.
