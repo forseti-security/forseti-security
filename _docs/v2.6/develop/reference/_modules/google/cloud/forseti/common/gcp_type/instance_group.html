@@ -1,0 +1,248 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.instance_group"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.gcp_type.instance_group</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;A Compute InstanceGroup.</span>
+
+<span class="sd">See:</span>
+<span class="sd"> https://cloud.google.com/compute/docs/reference/latest/instanceGroups</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.gcp_type</span> <span class="k">import</span> <span class="n">key</span>
+
+
+<span class="c1"># pylint: disable=too-many-instance-attributes</span>
+<div class="viewcode-block" id="InstanceGroup"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.InstanceGroup">[docs]</a><span class="k">class</span> <span class="nc">InstanceGroup</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Represents InstanceGroup resource.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;InstanceGroup resource.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            **kwargs (dict): The object&#39;s attributes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">creation_timestamp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;creation_timestamp&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_urls</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instance_urls&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">named_ports</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;named_ports&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subnetwork</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subnetwork&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zone</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;zone&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">project_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_json</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;raw_instance_group&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InstanceGroup.from_dict"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.InstanceGroup.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">instance_group</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an InstanceGroup from an instance group dict.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            instance_group (dict): An instance group resource dict.</span>
+<span class="sd">            project_id (str): A project id for the resource.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            InstanceGroup: A new InstanceGroup object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">,</span>
+                  <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;creation_timestamp&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;creationTimestamp&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;description&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;instance_urls&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;instance_urls&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+                  <span class="s1">&#39;named_ports&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;namedPorts&#39;</span><span class="p">,</span> <span class="p">[]),</span>
+                  <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;network&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;region&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;subnetwork&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;subnetwork&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;zone&#39;</span><span class="p">:</span> <span class="n">instance_group</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;zone&#39;</span><span class="p">),</span>
+                  <span class="s1">&#39;raw_instance_group&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">instance_group</span><span class="p">)}</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InstanceGroup.from_json"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.InstanceGroup.from_json">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_json</span><span class="p">(</span><span class="n">json_string</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an InstanceGroup from an instance group JSON string.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            json_string (str): A json string representing the instance group.</span>
+<span class="sd">            project_id (str): A project id for the resource.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            InstanceGroup: A new InstanceGroup object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">instance_group</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">InstanceGroup</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">instance_group</span><span class="p">,</span> <span class="n">project_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InstanceGroup._create_json_str"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.InstanceGroup._create_json_str">[docs]</a>    <span class="k">def</span> <span class="nf">_create_json_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a json string based on the object attributes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: json str.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">resource_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s1">&#39;creationTimestamp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">creation_timestamp</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
+            <span class="s1">&#39;instance_urls&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance_urls</span><span class="p">,</span>
+            <span class="s1">&#39;namedPorts&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_ports</span><span class="p">,</span>
+            <span class="s1">&#39;network&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+            <span class="s1">&#39;region&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+            <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span>
+            <span class="s1">&#39;subnetwork&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">subnetwork</span><span class="p">,</span>
+            <span class="s1">&#39;zone&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="p">}</span>
+
+        <span class="c1"># Strip out empty values</span>
+        <span class="n">resource_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">resource_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">resource_dict</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the json string representation of the resource.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: json str.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_json_str</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a Key identifying the object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Key: the key</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Key</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">project_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                             <span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
+                             <span class="n">zone</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="p">)</span></div>
+
+
+<span class="n">KEY_OBJECT_KIND</span> <span class="o">=</span> <span class="s1">&#39;InstanceGroup&#39;</span>
+
+
+<div class="viewcode-block" id="Key"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.Key">[docs]</a><span class="k">class</span> <span class="nc">Key</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">Key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An identifier for a specific instance group.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Key.from_args"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.Key.from_args">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">from_args</span><span class="p">(</span><span class="n">project_id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a Key from specific values.</span>
+
+<span class="sd">        One and only one of (region, zone) must be specified.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            project_id (str): project_id</span>
+<span class="sd">            name (str): name</span>
+<span class="sd">            region (str): region</span>
+<span class="sd">            zone (str): zone</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Key: the key</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: an invalid combination of arguments was provided.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">region</span><span class="p">)</span> <span class="o">^</span> <span class="nb">bool</span><span class="p">(</span><span class="n">zone</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Key must specify one of either region or zone&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">region</span><span class="p">:</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">zone</span><span class="p">:</span>
+            <span class="n">zone</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">zone</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Key</span><span class="p">(</span><span class="n">KEY_OBJECT_KIND</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;project_id&#39;</span><span class="p">:</span> <span class="n">project_id</span><span class="p">,</span>
+            <span class="s1">&#39;region&#39;</span><span class="p">:</span> <span class="n">region</span><span class="p">,</span>
+            <span class="s1">&#39;zone&#39;</span><span class="p">:</span> <span class="n">zone</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">})</span></div>
+
+<div class="viewcode-block" id="Key.from_url"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.gcp_type.instance_group.html#google.cloud.forseti.common.gcp_type.instance_group.Key.from_url">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_url</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct a Key from a URL.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            url (str): Object reference URL</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Key: the key</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: Required parameters are missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">Key</span><span class="o">.</span><span class="n">_from_url</span><span class="p">(</span><span class="n">KEY_OBJECT_KIND</span><span class="p">,</span>
+                            <span class="p">{</span><span class="s1">&#39;projects&#39;</span><span class="p">:</span> <span class="s1">&#39;project_id&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;regions&#39;</span><span class="p">:</span> <span class="s1">&#39;region&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;zones&#39;</span><span class="p">:</span> <span class="s1">&#39;zone&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;instanceGroups&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">},</span>
+                            <span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">project_id</span> <span class="ow">or</span>
+                <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span>
+                <span class="ow">not</span> <span class="nb">bool</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">zone</span><span class="p">)</span> <span class="o">^</span> <span class="nb">bool</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">region</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid fields in URL </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">project_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object property: project_id</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: project_id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_component</span><span class="p">(</span><span class="s1">&#39;project_id&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object property: region</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: region</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_component</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">zone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object property: zone</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: zone</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_component</span><span class="p">(</span><span class="s1">&#39;zone&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Object property: name</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_component</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span></div>
+</pre></div>

@@ -1,0 +1,32 @@
+google.cloud.forseti.scanner.audit package
+==========================================
+
+.. automodule:: google.cloud.forseti.scanner.audit
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.scanner.audit.audit_logging_rules_engine
+   google.cloud.forseti.scanner.audit.base_rules_engine
+   google.cloud.forseti.scanner.audit.bigquery_rules_engine
+   google.cloud.forseti.scanner.audit.blacklist_rules_engine
+   google.cloud.forseti.scanner.audit.buckets_rules_engine
+   google.cloud.forseti.scanner.audit.cloudsql_rules_engine
+   google.cloud.forseti.scanner.audit.enabled_apis_rules_engine
+   google.cloud.forseti.scanner.audit.errors
+   google.cloud.forseti.scanner.audit.firewall_rules_engine
+   google.cloud.forseti.scanner.audit.forwarding_rule_rules_engine
+   google.cloud.forseti.scanner.audit.iam_rules_engine
+   google.cloud.forseti.scanner.audit.iap_rules_engine
+   google.cloud.forseti.scanner.audit.instance_network_interface_rules_engine
+   google.cloud.forseti.scanner.audit.ke_version_rules_engine
+   google.cloud.forseti.scanner.audit.lien_rules_engine
+   google.cloud.forseti.scanner.audit.log_sink_rules_engine
+   google.cloud.forseti.scanner.audit.rules
+   google.cloud.forseti.scanner.audit.service_account_key_rules_engine
+

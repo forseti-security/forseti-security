@@ -21,4 +21,3 @@
 **Granted at the service account level**
 
  * `roles/iam.serviceAccountTokenCreator` (server)
- 

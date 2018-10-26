@@ -1,0 +1,56 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.errors"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.errors</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Util Errors module.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.errors.html#google.cloud.forseti.common.util.errors.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base error class for the module.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="EmailSendError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.errors.html#google.cloud.forseti.common.util.errors.EmailSendError">[docs]</a><span class="k">class</span> <span class="nc">EmailSendError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Unable to send email.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="InvalidFileExtensionError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.errors.html#google.cloud.forseti.common.util.errors.InvalidFileExtensionError">[docs]</a><span class="k">class</span> <span class="nc">InvalidFileExtensionError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;No parser exists for the given file extension.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="InvalidParserTypeError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.errors.html#google.cloud.forseti.common.util.errors.InvalidParserTypeError">[docs]</a><span class="k">class</span> <span class="nc">InvalidParserTypeError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;No parser exists for the given parser type.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MetadataServerHttpError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.errors.html#google.cloud.forseti.common.util.errors.MetadataServerHttpError">[docs]</a><span class="k">class</span> <span class="nc">MetadataServerHttpError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An error for handling HTTP errors with the metadata server.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="NoDataError"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.errors.html#google.cloud.forseti.common.util.errors.NoDataError">[docs]</a><span class="k">class</span> <span class="nc">NoDataError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An error for no data when data is expected.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+</pre></div>
