@@ -164,7 +164,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
 
 
 # pylint: disable=anomalous-backslash-in-string
-class IamRuleBook(bre.BaseRuleBook):
+class IamRuleBook(bre.BaseRuleBook): # noqa: W605
     """The RuleBook for organization resources.
 
     Rules from the rules definition file are parsed and placed into a
@@ -174,7 +174,7 @@ class IamRuleBook(bre.BaseRuleBook):
     Sample rules (simplified):
 
     mode: whitelist
-    Org 1234, bindings: roles/\*, members: user:\*@company.com # noqa: W605
+    Org 1234, bindings: roles/\*, members: user:\*@company.com
     Project p-a, bindings: roles/owner, members: user:pa-owner@company.com
     Project p-b, bindings: roles/owner, members: user:pb-owner@company.com
 
