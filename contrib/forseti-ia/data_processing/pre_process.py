@@ -13,8 +13,55 @@
 # limitations under the License.
 
 import pandas as pd
+from google.cloud import bigquery
+import ipaddress
 
+def dataToBQ(dataset_id,table_id,filename):
 
+    # filename = '/path/to/file.csv'
+    # dataset_id = 'my_dataset'
+    # table_id = 'my_table'
+
+    client = bigquery.Client()
+    dataset_ref = client.dataset(dataset_id)
+    table_ref = dataset_ref.table(table_id)
+    job_config = bigquery.LoadJobConfig()
+    job_config.source_format = bigquery.SourceFormat.CSV
+    job_config.skip_leading_rows = 1
+    job_config.autodetect = True
+    
+    with open(filename, 'rb') as source_file:
+        job = client.load_table_from_file(
+            source_file,
+            table_ref,
+            location='US',  # Must match the destination dataset location.
+            job_config=job_config)  # API request
+            
+    job.result()  # Waits for table load to complete.
+    
+    print('Loaded {} rows into {}:{}.'.format(
+        job.output_rows, dataset_id, table_id))
+
+def ip_extraction_list(x):
+    
+    """Pre process ip data.
+    
+    Args:
+        ip address (string): An ip address with subnet as a string.
+
+    Returns:
+        list: List of all the ip_addresses in that range.
+        integer: Length of the list (means count of ip_addresses in the range)
+    """
+    l = []
+    sub_net = ipaddress.ip_network(x)
+    for subnet in sub_net:
+        l.append(subnet)
+    print(len(l))
+    
+    return l, len(l)
+
+  
 def pre_process_firewall_data(resource_data_json,
                               selected_features):
     """Pre process resource data.
@@ -70,3 +117,21 @@ if __name__ == '__main__':
              'disabled',
              'network'])
         print df_filtered.iloc[0]
+
+        filename = "../sample_dataset.csv"
+
+        df_filtered['source_ip_addr_exp'] = ""
+        df_filtered['source_ips_count'] = ""
+        
+        df_filtered['dest_ip_addr_exp'] = ""
+        df_filtered['dest_ips_count'] = ""
+        
+        df_filtered[['source_ip_addr_exp','source_ips_count']] = df_filtered['source_ip_addr'].apply(lambda x: pd.Series([ip_extraction_list(x)[0],ip_extraction_list(x)[1]]))
+        df_filtered[['dest_ip_addr_exp','dest_ips_count']] = df_filtered['dest_ip_addr'].apply(lambda x: pd.Series([ip_extraction_list(x)[0],ip_extraction_list(x)[1]]))
+
+        df_filtered.to_csv(filename, sep='\t', encoding='utf-8')
+        
+        dataset_id = "forseti"
+        table_id = "forseti_fw_rules"
+
+        dataToBQ(dataset_id,table_id,filename)
