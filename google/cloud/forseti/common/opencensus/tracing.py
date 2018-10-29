@@ -152,18 +152,18 @@ def end_span(tracer, span, **kwargs):
 def trace(_lambda=None):
     """Decorator to trace class method. 
     This decorator assumes the tracer is passed to the class as self.tracer"""
-    
+
     def decorator(func):
-        #@wraps(func)
-        def wrapper(self, *args, **kwargs):                
+        #@wraps(func) to override the doc string
+        def wrapper(self, *args, **kwargs):
             if OPENCENSUS_ENABLED:
                 if _lambda is None:
                     tracer = execution_context.get_opencensus_tracer()
                 else:
-                    tracer = _lambda(self) 
+                    tracer = _lambda(self)
                 span = start_span(tracer, func.__module__, func.__name__)
             result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
                 end_span(tracer, span, result=result)
-         return wrapper
-     return decorator
+        return wrapper
+    return decorator
