@@ -196,7 +196,6 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
             applies_to[resource_type] = applies_dict['resource_ids']
 
-
         return Rule(name=rule_def.get('name'),
                     index=rule_index,
                     mode=Mode(rule_def.get('mode')),
@@ -274,7 +273,6 @@ class Rule(object):
         """
         if resource.type not in self.applies_to:
             return
-
 
         if self.applies_to[resource.type] != ['*'] and (
                 resource.id not in self.applies_to[resource.type]):
