@@ -44,6 +44,7 @@ VIOLATION_RESOURCES = {
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
         'instance_network_interface_violations'),
     'LIEN_VIOLATION': 'lien_violations',
+    'LOCATION_VIOLATION': 'location_violations',
     'LOG_SINK_VIOLATION': 'log_sink_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),

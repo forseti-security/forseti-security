@@ -78,6 +78,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'lien_scanner',
          'class_name': 'LienScanner',
          'rules_filename': 'lien_rules.yaml'},
+    'location':
+        {'module_name': 'location_scanner',
+         'class_name': 'LocationScanner',
+         'rules_filename': 'location_rules.yaml'},
     'log_sink':
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',

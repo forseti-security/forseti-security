@@ -72,16 +72,20 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
 
-    def __init__(self, config, engine):
+    def __init__(self, config, engine, parallel, session):
         """Initialize.
 
         Args:
             config (dict): GCP API client configuration.
             engine (object): Database engine to operate on.
+            parallel (bool): If true, use the parallel crawler implementation.
+            session (object): Database session.
         """
         super(CaiApiClientImpl, self).__init__(config)
         self.dao = CaiDataAccess()
         self.engine = engine
+        self.parallel = parallel
+        self.cai_session = session
         self._local = LOCAL_THREAD
 
     @property
@@ -91,6 +95,11 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             object: A thread local Session.
         """
+        if not self.parallel:
+            # SQLite doesn't support per thread sessions cleanly, so use global
+            # session.
+            return self.cai_session
+
         if hasattr(self._local, 'cai_session'):
             return self._local.cai_session
 
