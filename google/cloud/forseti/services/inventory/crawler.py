@@ -176,6 +176,7 @@ class Crawler(crawler.Crawler):
         self.config.storage.warning(warning_message)
         self.config.progresser.on_warning(error)
 
+    @tracing.trace(lambda x: x.config.tracer)    
     def update(self, resource):
         """Update the row of an existing resource
 
@@ -295,7 +296,8 @@ class ParallelCrawler(Crawler):
             LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
-               
+ 
+@tracing.trace(lambda x: x.config.tracer)
 def run_crawler(storage,
                 progresser,
                 config,
