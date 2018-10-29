@@ -271,11 +271,10 @@ class Rule(object):
         Yields:
             RuleViolation: location rule violation.
         """
-        if resource.type not in self.applies_to:
-            return
+        applicable_resources = self.applies_to.get(resource.type, [])
 
-        if self.applies_to[resource.type] != ['*'] and (
-                resource.id not in self.applies_to[resource.type]):
+        if applicable_resources != ['*'] and (
+                resource.id not in applicable_resources):
             return
 
         matches = [
