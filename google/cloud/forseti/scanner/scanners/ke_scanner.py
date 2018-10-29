@@ -27,8 +27,11 @@ from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
-
-KeScanner = ke_base_scanner.ke_scanner_factory(
+KeScannerBase = ke_base_scanner.ke_scanner_factory(
     'ke_scanner',
     ke_rules_engine.KeRulesEngine,
 )
+
+
+class KeScanner(KeScannerBase):
+    """Scanner class for KE rules."""

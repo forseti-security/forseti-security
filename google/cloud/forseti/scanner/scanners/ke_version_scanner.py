@@ -24,8 +24,11 @@ from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
-
-KeVersionScanner = ke_base_scanner.ke_scanner_factory(
+KeVersionScannerBase = ke_base_scanner.ke_scanner_factory(
     'version',
-    ke_version_rules_engine.KeVersionRulesEngine
+    ke_version_rules_engine.KeVersionRulesEngine,
 )
+
+
+class KeVersionScanner(KeVersionScannerBase):
+    """Scanner class for KE version rules."""
