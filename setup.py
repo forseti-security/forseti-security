@@ -58,7 +58,7 @@ REQUIRED_PACKAGES = [
     # Testing related.
     'mock>=2.0.0',
     'parameterized>=0.6.1',
-    'ruamel.yaml>=0.15.35',
+    'ruamel.yaml==0.15.37',
     'pylint',
     'pylint-quotes',
     'SQLAlchemy>=1.1.9',
