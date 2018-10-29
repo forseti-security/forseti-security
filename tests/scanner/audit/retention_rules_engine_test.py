@@ -60,22 +60,6 @@ def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
         violation_data=lifecycle_str,
         resource_data=res_map.get(bucket_id).data)
 
-def GetLefecycleDict(action, age, created_before, matches_storage_class,
-                     num_newer_versions, is_live):
-    result = {'action':{}, 'condition':{}}
-    result['action']['type'] = action
-    if age != None:
-        result['condition']['age'] = age
-    if created_before != None:
-        result['condition']['createdBefore'] = created_before
-    if matches_storage_class != None:
-        result['condition']['matchesStorageClass'] = matches_storage_class
-    if num_newer_versions != None:
-        result['condition']['numNewerVersions'] = num_newer_versions
-    if is_live != None:
-        result['condition']['isLive'] = is_live
-    return result
-
 _fake_bucket_list_22 = []
 
 def _mock_gcp_resource_iter_22(_, resource_type):

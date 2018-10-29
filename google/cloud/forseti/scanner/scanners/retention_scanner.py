@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the Bucket retention rules engine."""
+"""Scanner for the retention rules engine."""
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
@@ -84,7 +84,7 @@ class RetentionScanner(base_scanner.BaseScanner):
         self._output_results_to_db(all_violations)
 
     def _find_violations(self, retention_info):
-        """Find violations in the policies.
+        """Find violations in the resources with retention policies.
 
         Args:
             retention_info (list): Contains all supported resource in retention
@@ -92,10 +92,12 @@ class RetentionScanner(base_scanner.BaseScanner):
         Returns:
             list: All violations.
         """
+        LOGGER.info('Finding retention violations...')
         all_violations = []
 
         for resource in retention_info:
             violations = self.rules_engine.find_violations(resource)
+            LOGGER.debug(violations)
             all_violations.extend(violations)
 
         return all_violations

@@ -171,20 +171,6 @@ def generate_res_for_01():
     return res
 
 
-def ModifyBucketLifeCycle(proj_res, bucketdata, action, age, created_before, matches_storage_class, num_newer_versions, is_live):
-
-    Resource = collections.namedtuple(
-        'Resource',
-        # fields based on required fields from Resource in dao.py.
-        ['full_name', 'type', 'name', 'parent_type_name', 'parent',
-            'data'],
-    )
-    datajson = json.loads(bucketdata[4])
-    datajson["lifecycle"]["rule"] = []
-    datajson["lifecycle"]["rule"].append(GetLefecycleDict(action, age, created_before, matches_storage_class, num_newer_versions, is_live))
-    return Resource(full_name=bucketdata[0],type=bucketdata[1],parent_type_name=bucketdata[2],name=bucketdata[3],parent=proj_res,data=json.dumps(datajson))
-
-
 class RetentionScannerTest(ForsetiTestCase):
 
     def setUp(self):

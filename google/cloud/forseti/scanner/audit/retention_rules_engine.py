@@ -173,7 +173,6 @@ class RetentionRuleBook(bre.BaseRuleBook):
                     appto,
                     minimum_retention,
                     maximum_retention)
-                # other appto add here
         finally:
             self._rules_sema.release()
 
@@ -304,7 +303,6 @@ class Rule(object):
             return
 
         # There should be a condition which guarantees to delete data
-        exist_max_limit = False
         bucket_lifecycle = bucket.get_lifecycle_rule()
         if bucket_lifecycle is None:
             yield self.generate_bucket_violation(bucket)
@@ -316,10 +314,8 @@ class Rule(object):
                     if age is not None and len(conditions) == 1:
                         # the config does not have conditions other than age
                         if age <= self.max_retention:
-                            exist_max_limit = True
-                            break
-            if not exist_max_limit:
-                yield self.generate_bucket_violation(bucket)
+                            return
+            yield self.generate_bucket_violation(bucket)
 
     def bucket_min_retention_violation(self, bucket):
         """Get a generator for violations especially for minimum retention
@@ -334,19 +330,10 @@ class Rule(object):
         bucket_lifecycle = bucket.get_lifecycle_rule()
         if bucket_lifecycle is not None:
             for lc_item in bucket_lifecycle:
-                if lc_item.get('action', {}).get('type') != 'Delete':
-                    continue
-
-                conditions = lc_item.get('condition', {})
-                age = conditions.get('age')
-                if age is not None and age >= self.min_retention:
-                    continue
-
-                if bucket_conditions_guarantee_min(conditions,
-                                                   self.min_retention):
-                    continue
-
-                yield self.generate_bucket_violation(bucket)
+                if (lc_item.get('action', {}).get('type') == 'Delete' and
+                        not bucket_conditions_guarantee_min(
+                            lc_item.get('condition', {}), self.min_retention)):
+                    yield self.generate_bucket_violation(bucket)
 
     def find_violations_in_bucket(self, bucket):
         """Get a generator for violations
@@ -369,6 +356,9 @@ def bucket_conditions_guarantee_min(conditions, min_retention):
     Returns:
         bool: True: min is guaranteed even if age is too small
     """
+    age = conditions.get('age')
+    if age is not None and age >= min_retention:
+        return True
     # if createdBefore is old enough, it's OK.
     if 'createdBefore' in conditions:
         created_before = conditions['createdBefore']
