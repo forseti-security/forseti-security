@@ -15,6 +15,7 @@
 """Forseti OpenCensus gRPC tracing setup."""
 
 from google.cloud.forseti.common.util import logger
+#from functools import wraps
 
 LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
@@ -153,6 +154,7 @@ def trace(_lambda=None):
     This decorator assumes the tracer is passed to the class as self.tracer"""
     
     def decorator(func):
+        #@wraps(func)
         def wrapper(self, *args, **kwargs):                
             if OPENCENSUS_ENABLED:
                 if _lambda is None:
