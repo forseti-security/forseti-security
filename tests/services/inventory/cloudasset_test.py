@@ -184,8 +184,8 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
         results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
-        # 93 resources total in mock dump files, will change over time
-        expected_results = 93
+        # 97 resources total in mock dump files, will change over time
+        expected_results = 97
         self.assertEqual(expected_results, results)
         self.validate_data_in_table()
 

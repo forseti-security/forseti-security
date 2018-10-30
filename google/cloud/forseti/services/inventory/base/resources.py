@@ -1005,7 +1005,8 @@ class IamServiceAccount(resource_class_factory('serviceaccount', 'uniqueId')):
         Returns:
             dict: Service Account IAM policy.
         """
-        return client.fetch_iam_serviceaccount_iam_policy(self['name'])
+        return client.fetch_iam_serviceaccount_iam_policy(
+            self['name'], self['uniqueId'])
 
 
 class IamServiceAccountKey(resource_class_factory('serviceaccount_key', None)):
@@ -1682,13 +1683,27 @@ class IamProjectRoleIterator(resource_iter_class_factory(
     """The Resource iterator implementation for IAM Project Role."""
 
 
-class IamServiceAccountIterator(resource_iter_class_factory(
-        api_method_name='iter_iam_serviceaccounts',
-        resource_name='iam_serviceaccount',
-        api_method_arg_key='projectId',
-        resource_validation_method_name='enumerable')):
+# API requires the projectId, but CAI requires the projectNumber, so pass both
+# to the client.
+class IamServiceAccountIterator(ResourceIterator):
     """The Resource iterator implementation for IAM ServiceAccount."""
 
+    def iter(self):
+        """IAM ServiceAccount iterator.
+
+        Yields:
+            Resource: IAM ServiceAccount resource.
+        """
+        gcp = self.client
+        if self.resource.enumerable():
+            try:
+                for data in gcp.iter_iam_serviceaccounts(
+                        self.resource['projectId'],
+                        self.resource['projectNumber']):
+                    yield FACTORIES['iam_serviceaccount'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
 
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
         api_method_name='iter_iam_serviceaccount_exported_keys',
