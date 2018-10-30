@@ -16,7 +16,6 @@
 from google.cloud.forseti.common.gcp_type import bucket
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
-from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.scanner.audit import location_rules_engine
 
 
