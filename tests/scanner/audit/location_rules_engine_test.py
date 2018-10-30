@@ -149,6 +149,20 @@ class LocationRulesEngineTest(ForsetiTestCase):
         got_violations = list(rules_engine.find_violations(data.BUCKET))
         self.assertEqual(got_violations, data.build_violations(data.BUCKET))
 
+    def test_find_violations_backwards_compatibility(self):
+        rule = """
+rules:
+  - name: Location test rule
+    mode: blacklist
+    resource:
+      - type: 'organization'
+        resource_ids: ['234']
+    applies_to: ['bucket']
+    locations: ['eu*']
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(data.BUCKET))
+        self.assertEqual(got_violations, data.build_violations(data.BUCKET))
 
 if __name__ == '__main__':
     unittest.main()

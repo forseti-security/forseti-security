@@ -187,6 +187,10 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
         applies_to = {}
 
         for applies_dict in rule_def.get('applies_to'):
+            # For backwards compatibility for when applies_to was a string.
+            if isinstance(applies_dict, str):
+                applies_dict = {'type': applies_dict, 'resource_ids': ['*']}
+
             resource_type = applies_dict['type']
 
             if resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES:
