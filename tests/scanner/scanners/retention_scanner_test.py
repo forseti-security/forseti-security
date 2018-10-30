@@ -19,6 +19,7 @@ import json
 import unittest
 import mock
 from collections import namedtuple
+import tempfile
 
 from tests.scanner.test_data import fake_retention_scanner_data as frsd
 from tests.unittest_utils import ForsetiTestCase
@@ -29,18 +30,7 @@ from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import retention_scanner
 
-do_not_test_old_cases = False
-
-def CreateFakeBucket(organizationid, folderid, projectname, bucketname):
-    name = projectname+bucketname
-    full_name = 'organization/' + organizationid + '/'
-    if folderid != None:
-        full_name += 'folder/'+folderid+'/'
-    full_name += 'project/'+projectname+'/bucket/'+name+'/'
-    tp = 'bucket'
-    parent_type_name = 'project/'+projectname
-    data = '{"defaultObjectAcl": [{"entity": "project-owners-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "owners"}, "role": "OWNER"}, {"entity": "project-editors-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "editors"}, "role": "OWNER"}, {"entity": "project-viewers-722028419187", "etag": "CAQ=", "kind": "storage#objectAccessControl", "projectTeam": {"projectNumber": "722028419187", "team": "viewers"}, "role": "READER"}], "etag": "CAQ=", "id": "'+name+'", "kind": "storage#bucket", "lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 29, "createdBefore": "2018-08-15", "isLive": false, "matchesStorageClass": ["REGIONAL", "STANDARD", "DURABLE_REDUCED_AVAILABILITY", "NEARLINE", "COLDLINE"], "numNewerVersions": 17}}, {"action": {"type": "Delete"}, "condition": {"age": 37, "isLive": true}}]}, "location": "US-EAST1", "logging": {"logBucket": "audit-logs-'+projectname+'", "logObjectPrefix": "'+name+'"}, "metageneration": "4", "name": "'+name+'", "owner": {"entity": "project-owners-722028419187"}, "projectNumber": "722028419187", "selfLink": "https://www.googleapis.com/storage/v1/b/'+name+'", "storageClass": "REGIONAL", "timeCreated": "2018-09-13T18:45:14.101Z", "updated": "2018-09-26T13:38:28.286Z", "versioning": {"enabled": true}}'
-    return (full_name, tp, parent_type_name, name, data)
+do_not_test_old_cases = True
 
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
     RuleViolation = namedtuple(
@@ -59,116 +49,217 @@ def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
         violation_data=lifecycle_str,
         resource_data=res_map.get(bucket_id).data)
 
-def GetLefecycleDict(action, age, created_before, matches_storage_class,
-                     num_newer_versions, is_live):
-    result = {'action':{}, 'condition':{}}
-    result['action']['type'] = action
-    if age != None:
-        result['condition']['age'] = age
-    if created_before != None:
-        result['condition']['createdBefore'] = created_before
-    if matches_storage_class != None:
-        result['condition']['matchesStorageClass'] = matches_storage_class
-    if num_newer_versions != None:
-        result['condition']['numNewerVersions'] = num_newer_versions
-    if is_live != None:
-        result['condition']['isLive'] = is_live
-    return result
+yaml_str_multi_buckets_in_a_rule = """
+rules:
+  - name: multiple buckets in a single rule
+    applies_to:
+      - bucket
+    resource:
+      - type: bucket
+        resource_ids:
+          - fake-bucket-1
+          - fake-bucket-2
+          - fake-bucket-3
+    minimum_retention: 90
 
-_fake_bucket_list_01 = []
+"""
 
-def _mock_gcp_resource_iter_01(_, resource_type):
-    """Creates a list of GCP resource mocks retrieved by the scanner."""
-    """Used in test case 22"""
+_fake_bucket_list_for_multi_buckets_in_a_rule = []
+
+def generate_res_bucket_retention_multi_buckets_in_a_rule():
+    res = []
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-1', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    return res
+
+def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
     if resource_type != 'bucket':
         raise ValueError(
             'unexpected resource type: got %s, bucket',
             resource_type,
         )
 
-    return _fake_bucket_list_01
+    return _fake_bucket_list_for_multi_buckets_in_a_rule
 
-def generate_res_for_01():
-    """Creates a list of GCP resource mocks retrieved by the scanner."""
-    """Used in test case 22"""
 
-    org = organization.Organization(
-        organization_id='433655555569',
-        full_name='organization/433655555569/')
-    p1 = project.Project(
-        project_id='p1',
-        project_number='711111111111',
-        full_name=org.full_name+'project/p1/',
-        parent=org
-    )
-    fd = folder.Folder(
-        folder_id='5358955555',
-        full_name=org.full_name+'folder/5358955555/')
-    p2 = project.Project(
-        project_id='p2',
-        project_number='722222222222',
-        full_name=fd.full_name+'project/p2/',
-        parent=org
-    )
+yaml_str_multi_projects_in_a_rule = """
+rules:
+  - name: multiple projects in a single rule
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-1
+          - def-project-2
+          - def-project-3
+    minimum_retention: 90
 
+"""
+
+_fake_bucket_list_for_multi_projects_in_a_rule = []
+
+def generate_res_bucket_retention_multi_projects_in_a_rule():
     res = []
 
-    data_creater = frsd.FakeBucketDataCreater('p1bkt11', p1)
-    data_creater.AddLefecycleDict("Delete", 499, None, None, None, None)
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
     res.append(data_creater.get_resource())
 
-    data_creater = frsd.FakeBucketDataCreater('p1bkt12', p1)
-    data_creater.AddLefecycleDict("Delete", 500, None, None, None, None)
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
     res.append(data_creater.get_resource())
 
-    data_creater = frsd.FakeBucketDataCreater('p1bkt13', p1)
-    data_creater.AddLefecycleDict("Delete", 501, None, None, None, None)
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
     res.append(data_creater.get_resource())
 
-    data_creater = frsd.FakeBucketDataCreater('p1bkt21', p1)
-    data_creater.AddLefecycleDict("Delete", 99, None, None, None, None)
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT2)
+    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
     res.append(data_creater.get_resource())
 
-    data_creater = frsd.FakeBucketDataCreater('p1bkt22', p1)
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT3)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT4)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    return res
+
+def _mock_bucket_retention_multi_projects_in_a_rule(_, resource_type):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
+
+    return _fake_bucket_list_for_multi_projects_in_a_rule
+
+
+yaml_str_mix_projects_and_buckets_in_a_rule = """
+rules:
+  - name: project 1 min 90
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-1
+    minimum_retention: 90
+  - name: buckets max 100
+    applies_to:
+      - bucket
+    resource:
+      - type: bucket
+        resource_ids:
+          - fake-bucket-11
+          - fake-bucket-12
+          - fake-bucket-13
+    maximum_retention: 100
+
+"""
+
+_fake_bucket_list_for_mix_project_and_bucket = []
+
+def generate_res_bucket_retention_mix_project_and_bucket():
+    res = []
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
+    res.append(data_creater.get_resource())
+
+    return res
+
+def _mock_bucket_retention_mix_project_and_bucket(_, resource_type):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
+
+    return _fake_bucket_list_for_mix_project_and_bucket
+
+
+yaml_str_multi_rules_on_a_project = """
+rules:
+  - name: project 1 min 90
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-1
+    minimum_retention: 90
+  - name: project 1 min 100
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-1
+    minimum_retention: 100
+  - name: project 1 min 110
+    applies_to:
+      - bucket
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-1
+    minimum_retention: 110
+
+"""
+
+_fake_bucket_list_for_multi_rules_on_a_project = []
+
+def generate_res_bucket_retention_multi_rules_on_a_project():
+    res = []
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    res.append(data_creater.get_resource())
+
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
     data_creater.AddLefecycleDict("Delete", 100, None, None, None, None)
     res.append(data_creater.get_resource())
 
-    data_creater = frsd.FakeBucketDataCreater('p1bkt23', p1)
-    data_creater.AddLefecycleDict("Delete", 101, None, None, None, None)
+    data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
+    data_creater.AddLefecycleDict("Delete", 110, None, None, None, None)
     res.append(data_creater.get_resource())
 
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt31', p2)
-    data_creater.AddLefecycleDict("Delete", 149, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt32', p2)
-    data_creater.AddLefecycleDict("Delete", 150, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt33', p2)
-    data_creater.AddLefecycleDict("Delete", 300, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt34', p2)
-    data_creater.AddLefecycleDict("Delete", 450, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt35', p2)
-    data_creater.AddLefecycleDict("Delete", 451, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt4', p2)
-    data_creater.AddLefecycleDict("Delete", 600, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('p2bkt5', p2)
-    data_creater.AddLefecycleDict("Delete", 200, None, None, None, None)
-    res.append(data_creater.get_resource())
-
-    global _fake_bucket_list_01
-    _fake_bucket_list_01 = res
     return res
+
+def _mock_bucket_retention_multi_rules_on_a_project(_, resource_type):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
+
+    return _fake_bucket_list_for_multi_rules_on_a_project
 
 
 class RetentionScannerTest(ForsetiTestCase):
@@ -176,62 +267,146 @@ class RetentionScannerTest(ForsetiTestCase):
     def setUp(self):
         """Set up."""
 
+    def test_bucket_retention_on_multi_buckets(self):
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(yaml_str_multi_buckets_in_a_rule)
+            f.flush()
+            global _fake_bucket_list_for_multi_buckets_in_a_rule
+            _fake_bucket_list_for_multi_buckets_in_a_rule = generate_res_bucket_retention_multi_buckets_in_a_rule()
 
-    #"lifecycle": {"rule": [{"action": {"type": "Delete"}, "condition": {"age": 20, "numNewerVersions": 5}}, {"action": {"type": "Delete"}, "condition": {"age": 10, "numNewerVersions": 99}}]},
-    @unittest.skipIf(do_not_test_old_cases, 'debug new test cases')
-    def test_scanner_01(self):
-        """Tests the whole process of retention scanner"""
-        rules_local_path = get_datafile_path(
-            __file__,
-            'fake_bucket_retention_scanner_rule.yaml')
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
 
-        self.scanner = retention_scanner.RetentionScanner(
-            {}, {}, mock.MagicMock(), '', '', rules_local_path)
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_multi_buckets_in_a_rule
 
-        mock_data_access = mock.MagicMock()
-        mock_data_access.scanner_iter.side_effect = _mock_gcp_resource_iter_01
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
 
-        mock_service_config = mock.MagicMock()
-        mock_service_config.model_manager = mock.MagicMock()
-        mock_service_config.model_manager.get.return_value = (
-            mock.MagicMock(), mock_data_access)
-        self.scanner.service_config = mock_service_config
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
 
-        generate_res_for_01()
-        all_lifecycle_info = self.scanner._retrieve()
-        all_violations = self.scanner._find_violations(all_lifecycle_info)
+            res_map = {}
+            for i in _fake_bucket_list_for_multi_buckets_in_a_rule:
+                res_map[i.id] = i
 
-        res_map = {}
-        for i in _fake_bucket_list_01:
-            res_map[i.id] = i
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-1',
+                                        'multiple buckets in a single rule', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-3',
+                                        'multiple buckets in a single rule', 0)
+            ])
 
-        expected_violations = set([
-            get_expect_violation_item(res_map, 'p1bkt11',
-                                      'rules on buckets with only min', 3),
-            get_expect_violation_item(res_map, 'p1bkt12',
-                                      'rules on projects', 2),
-            get_expect_violation_item(res_map, 'p1bkt12',
-                                      'rules on organizations', 0),
-            get_expect_violation_item(res_map, 'p1bkt13',
-                                      'rules on projects', 2),
-            get_expect_violation_item(res_map, 'p1bkt13',
-                                      'rules on organizations', 0),
-            get_expect_violation_item(res_map, 'p1bkt21',
-                                      'rules on projects', 2),
-            get_expect_violation_item(res_map, 'p1bkt22',
-                                      'rules on projects', 2),
-            get_expect_violation_item(res_map, 'p1bkt23',
-                                      'rules on buckets with only max', 4),
-            get_expect_violation_item(res_map, 'p2bkt31',
-                                      'rules on folders', 1),
-            get_expect_violation_item(res_map, 'p2bkt31',
-                                      'rules on buckets with only both', 5),
-            get_expect_violation_item(res_map, 'p2bkt35',
-                                      'rules on buckets with only both', 5),
-            get_expect_violation_item(res_map, 'p2bkt4',
-                                      'rules on organizations', 0),
-        ])
+            self.assertEqual(expected_violations, set(all_violations))
 
+    def test_bucket_retention_on_multi_projects(self):
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(yaml_str_multi_projects_in_a_rule)
+            f.flush()
+            global _fake_bucket_list_for_multi_projects_in_a_rule
+            _fake_bucket_list_for_multi_projects_in_a_rule = generate_res_bucket_retention_multi_projects_in_a_rule()
 
-        self.assertEqual(expected_violations, set(all_violations))
-        return
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
+
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_multi_projects_in_a_rule
+
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
+
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
+
+            res_map = {}
+            for i in _fake_bucket_list_for_multi_projects_in_a_rule:
+                res_map[i.id] = i
+
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-11',
+                                        'multiple projects in a single rule', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-13',
+                                        'multiple projects in a single rule', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-3',
+                                        'multiple projects in a single rule', 0)
+            ])
+
+            self.assertEqual(expected_violations, set(all_violations))
+
+    def test_bucket_retention_on_mix_project_and_bucket(self):
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(yaml_str_mix_projects_and_buckets_in_a_rule)
+            f.flush()
+            global _fake_bucket_list_for_mix_project_and_bucket
+            _fake_bucket_list_for_mix_project_and_bucket = generate_res_bucket_retention_mix_project_and_bucket()
+
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
+
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_mix_project_and_bucket
+
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
+
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
+
+            res_map = {}
+            for i in _fake_bucket_list_for_mix_project_and_bucket:
+                res_map[i.id] = i
+
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-12',
+                                        'project 1 min 90', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-13',
+                                        'buckets max 100', 1)
+            ])
+
+            self.assertEqual(expected_violations, set(all_violations))
+
+    def test_bucket_retention_on_multi_rules_on_a_project(self):
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(yaml_str_multi_rules_on_a_project)
+            f.flush()
+            global _fake_bucket_list_for_multi_rules_on_a_project
+            _fake_bucket_list_for_multi_rules_on_a_project = generate_res_bucket_retention_multi_rules_on_a_project()
+
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
+
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_multi_rules_on_a_project
+
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
+
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
+
+            res_map = {}
+            for i in _fake_bucket_list_for_multi_rules_on_a_project:
+                res_map[i.id] = i
+
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-11',
+                                        'project 1 min 100', 1),
+                get_expect_violation_item(res_map, 'fake-bucket-11',
+                                        'project 1 min 110', 2),
+                get_expect_violation_item(res_map, 'fake-bucket-12',
+                                        'project 1 min 110', 2)
+            ])
+
+            self.assertEqual(expected_violations, set(all_violations))

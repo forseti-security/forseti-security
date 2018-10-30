@@ -32,6 +32,11 @@ LOGGER = logger.get_logger(__name__)
 SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket'])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
+RuleViolation = namedtuple(
+    'RuleViolation',
+    ['resource_name', 'resource_type', 'full_name', 'rule_name',
+     'rule_index', 'violation_type', 'violation_data', 'resource_data'])
+
 
 class RetentionRulesEngine(bre.BaseRulesEngine):
     """Rules engine for retention."""
@@ -166,7 +171,14 @@ class RetentionRuleBook(bre.BaseRuleBook):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Invalid applies_to resource in rule {}'.format(rule_index))
 
+            added_applies_to = set()
+
             for appto in applies_to:
+                if appto in added_applies_to:
+                    raise audit_errors.InvalidRulesSchemaError(
+                        'redundant applies_to in rule {}'.format(rule_index))
+                added_applies_to.add(appto)
+
                 self.create_and_add_rule(
                     rule_def,
                     rule_index,
@@ -239,11 +251,6 @@ class Rule(object):
     Also finds violations.
     """
 
-    RuleViolation = namedtuple(
-        'RuleViolation',
-        ['resource_name', 'resource_type', 'full_name', 'rule_name',
-         'rule_index', 'violation_type', 'violation_data', 'resource_data'])
-
     def __init__(self, rule_name, rule_index, min_retention, max_retention):
         """Initialize.
 
@@ -269,7 +276,7 @@ class Rule(object):
         data_lifecycle = bucket.get_lifecycle_rule()
         data_lifecycle_str = json.dumps(data_lifecycle)
 
-        return self.RuleViolation(
+        return RuleViolation(
             resource_name=bucket.id,
             resource_type=bucket.type,
             full_name=bucket.full_name,
