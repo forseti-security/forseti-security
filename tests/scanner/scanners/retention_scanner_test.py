@@ -61,9 +61,13 @@ rules:
 
 """
 
-_fake_bucket_list_for_multi_buckets_in_a_rule = []
 
-def generate_res_bucket_retention_multi_buckets_in_a_rule():
+def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-1', frsd.PROJECT1)
@@ -84,15 +88,6 @@ def generate_res_bucket_retention_multi_buckets_in_a_rule():
 
     return res
 
-def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
-
-    return _fake_bucket_list_for_multi_buckets_in_a_rule
-
 
 yaml_str_multi_projects_in_a_rule = """
 rules:
@@ -109,9 +104,13 @@ rules:
 
 """
 
-_fake_bucket_list_for_multi_projects_in_a_rule = []
+def _mock_bucket_retention_multi_projects_in_a_rule(_=None, resource_type='bucket'):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
 
-def generate_res_bucket_retention_multi_projects_in_a_rule():
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
@@ -140,15 +139,6 @@ def generate_res_bucket_retention_multi_projects_in_a_rule():
 
     return res
 
-def _mock_bucket_retention_multi_projects_in_a_rule(_, resource_type):
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
-
-    return _fake_bucket_list_for_multi_projects_in_a_rule
-
 
 yaml_str_mix_projects_and_buckets_in_a_rule = """
 rules:
@@ -173,9 +163,13 @@ rules:
 
 """
 
-_fake_bucket_list_for_mix_project_and_bucket = []
+def _mock_bucket_retention_mix_project_and_bucket(_=None, resource_type='bucket'):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
 
-def generate_res_bucket_retention_mix_project_and_bucket():
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
@@ -190,15 +184,6 @@ def generate_res_bucket_retention_mix_project_and_bucket():
     res.append(data_creater.get_resource())
 
     return res
-
-def _mock_bucket_retention_mix_project_and_bucket(_, resource_type):
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
-
-    return _fake_bucket_list_for_mix_project_and_bucket
 
 
 yaml_str_multi_rules_on_a_project = """
@@ -230,9 +215,13 @@ rules:
 
 """
 
-_fake_bucket_list_for_multi_rules_on_a_project = []
+def _mock_bucket_retention_multi_rules_on_a_project(_=None, resource_type='bucket'):
+    if resource_type != 'bucket':
+        raise ValueError(
+            'unexpected resource type: got %s, bucket',
+            resource_type,
+        )
 
-def generate_res_bucket_retention_multi_rules_on_a_project():
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
@@ -249,15 +238,6 @@ def generate_res_bucket_retention_multi_rules_on_a_project():
 
     return res
 
-def _mock_bucket_retention_multi_rules_on_a_project(_, resource_type):
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
-
-    return _fake_bucket_list_for_multi_rules_on_a_project
-
 
 class RetentionScannerTest(ForsetiTestCase):
 
@@ -268,8 +248,7 @@ class RetentionScannerTest(ForsetiTestCase):
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_multi_buckets_in_a_rule)
             f.flush()
-            global _fake_bucket_list_for_multi_buckets_in_a_rule
-            _fake_bucket_list_for_multi_buckets_in_a_rule = generate_res_bucket_retention_multi_buckets_in_a_rule()
+            _fake_bucket_list = _mock_bucket_retention_multi_buckets_in_a_rule(None, 'bucket')
 
             self.scanner = retention_scanner.RetentionScanner(
                 {}, {}, mock.MagicMock(), '', '', f.name)
@@ -287,7 +266,7 @@ class RetentionScannerTest(ForsetiTestCase):
             all_violations = self.scanner._find_violations(all_lifecycle_info)
 
             res_map = {}
-            for i in _fake_bucket_list_for_multi_buckets_in_a_rule:
+            for i in _fake_bucket_list:
                 res_map[i.id] = i
 
             expected_violations = set([
@@ -303,8 +282,7 @@ class RetentionScannerTest(ForsetiTestCase):
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_multi_projects_in_a_rule)
             f.flush()
-            global _fake_bucket_list_for_multi_projects_in_a_rule
-            _fake_bucket_list_for_multi_projects_in_a_rule = generate_res_bucket_retention_multi_projects_in_a_rule()
+            _fake_bucket_list = _mock_bucket_retention_multi_projects_in_a_rule(resource_type='bucket')
 
             self.scanner = retention_scanner.RetentionScanner(
                 {}, {}, mock.MagicMock(), '', '', f.name)
@@ -322,7 +300,7 @@ class RetentionScannerTest(ForsetiTestCase):
             all_violations = self.scanner._find_violations(all_lifecycle_info)
 
             res_map = {}
-            for i in _fake_bucket_list_for_multi_projects_in_a_rule:
+            for i in _fake_bucket_list:
                 res_map[i.id] = i
 
             expected_violations = set([
@@ -340,8 +318,7 @@ class RetentionScannerTest(ForsetiTestCase):
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_mix_projects_and_buckets_in_a_rule)
             f.flush()
-            global _fake_bucket_list_for_mix_project_and_bucket
-            _fake_bucket_list_for_mix_project_and_bucket = generate_res_bucket_retention_mix_project_and_bucket()
+            _fake_bucket_list = _mock_bucket_retention_mix_project_and_bucket(resource_type='bucket')
 
             self.scanner = retention_scanner.RetentionScanner(
                 {}, {}, mock.MagicMock(), '', '', f.name)
@@ -359,7 +336,7 @@ class RetentionScannerTest(ForsetiTestCase):
             all_violations = self.scanner._find_violations(all_lifecycle_info)
 
             res_map = {}
-            for i in _fake_bucket_list_for_mix_project_and_bucket:
+            for i in _fake_bucket_list:
                 res_map[i.id] = i
 
             expected_violations = set([
@@ -375,8 +352,7 @@ class RetentionScannerTest(ForsetiTestCase):
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_multi_rules_on_a_project)
             f.flush()
-            global _fake_bucket_list_for_multi_rules_on_a_project
-            _fake_bucket_list_for_multi_rules_on_a_project = generate_res_bucket_retention_multi_rules_on_a_project()
+            _fake_bucket_list = _mock_bucket_retention_multi_rules_on_a_project(resource_type='bucket')
 
             self.scanner = retention_scanner.RetentionScanner(
                 {}, {}, mock.MagicMock(), '', '', f.name)
@@ -394,7 +370,7 @@ class RetentionScannerTest(ForsetiTestCase):
             all_violations = self.scanner._find_violations(all_lifecycle_info)
 
             res_map = {}
-            for i in _fake_bucket_list_for_multi_rules_on_a_project:
+            for i in _fake_bucket_list:
                 res_map[i.id] = i
 
             expected_violations = set([
