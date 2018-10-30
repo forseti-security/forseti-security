@@ -677,7 +677,8 @@ rules:
         resource_ids:
           - org-1
     applies_to:
-      - 'bucket'
+      - type: 'bucket'
+        resource_ids: '*'
     locations:
       - 'us*'
  - name: All buckets in organization must not be in EU.
@@ -687,7 +688,8 @@ rules:
         resource_ids:
           - org-1
     applies_to:
-      - 'bucket'
+      - type: 'bucket'
+        resource_ids: '*'
     locations:
       - 'eu*'
 ```
@@ -702,16 +704,21 @@ rules:
 
 * `resource`
   * `type`
-    * **Description**: The type of the resource.
+    * **Description**: The type of the resource the applies_to resources belong to.
     * **Valid values**: One of `organization`, `folder` or `project`.
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String.
+    * **Valid values**: List of strings.
 
 * `applies_to`
-  * **Description**: A list of resource types to apply this rule to.
-  * **Valid values**: Currently only supports `bucket`.
+  * `type`
+    * **Description**: The type of resource to apply the rule to.
+    * **Valid values**: Currently only supports `bucket`.
+    
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: List of strings. A single wildcard string is also accepted.
 
 * `locations`:
   * **Description**: A list of resource locations.
