@@ -430,7 +430,7 @@ class ApiClient(object):
         """Iterate CloudDNS Managed Zones from GCP API.
 
         Args:
-            project_number (str): number of the parent project of the managed zone.
+            project_number (str): number of the parent project.
         """
 
     @abc.abstractmethod
@@ -1410,7 +1410,7 @@ class ApiClientImpl(ApiClient):
         """Iterate CloudDNS Managed Zones from GCP API.
 
         Args:
-            project_number (str): number of the parent project of the managed zone.
+            project_number (str): number of the parent project.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.

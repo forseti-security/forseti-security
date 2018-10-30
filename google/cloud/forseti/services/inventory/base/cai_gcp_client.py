@@ -820,7 +820,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate CloudDNS Managed Zones from Cloud Asset data.
 
         Args:
-            project_number (str): number of the parent project of the managed zone.
+            project_number (str): number of the parent project.
 
         Yields:
             dict: Generator of ManagedZone resources
