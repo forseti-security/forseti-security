@@ -92,12 +92,12 @@ class FakeBucketDataCreater():
 
     def AddLefecycleDict(
             self,
-            action,
-            age,
-            created_before,
-            matches_storage_class,
-            num_newer_versions,
-            is_live):
+            action=None,
+            age=None,
+            created_before=None,
+            matches_storage_class=None,
+            num_newer_versions=None,
+            is_live=None):
         if not self._data_lifecycle:
             self.SetLefecycleDict()
 

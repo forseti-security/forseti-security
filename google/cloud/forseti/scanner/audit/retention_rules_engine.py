@@ -35,7 +35,8 @@ VIOLATION_TYPE = 'RETENTION_VIOLATION'
 RuleViolation = namedtuple(
     'RuleViolation',
     ['resource_name', 'resource_type', 'full_name', 'rule_name',
-     'rule_index', 'violation_type', 'violation_data', 'resource_data', 'resource_id'])
+     'rule_index', 'violation_type', 'violation_data', 'resource_data',
+     'resource_id'])
 
 
 class RetentionRulesEngine(bre.BaseRulesEngine):

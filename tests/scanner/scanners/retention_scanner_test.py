@@ -71,19 +71,19 @@ def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-1', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     return res
@@ -114,27 +114,27 @@ def _mock_bucket_retention_multi_projects_in_a_rule(_=None, resource_type='bucke
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT2)
-    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT3)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT4)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     return res
@@ -173,11 +173,11 @@ def _mock_bucket_retention_mix_project_and_bucket(_=None, resource_type='bucket'
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
@@ -225,15 +225,15 @@ def _mock_bucket_retention_multi_rules_on_a_project(_=None, resource_type='bucke
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 100, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=100)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    data_creater.AddLefecycleDict("Delete", 110, None, None, None, None)
+    data_creater.AddLefecycleDict(action="Delete", age=110)
     res.append(data_creater.get_resource())
 
     return res

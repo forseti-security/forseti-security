@@ -240,7 +240,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("SetStorageClass", 365, None, None, None, None)
+        data_creater.AddLefecycleDict(action="SetStorageClass", age=365)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -253,7 +253,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 366, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=366)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -266,10 +266,10 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=365)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", 365, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=365, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -280,10 +280,10 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 366, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=366)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", 365, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=365, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -296,8 +296,8 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 366, None, None, None, None)
-        data_creater.AddLefecycleDict("SetStorageClass", 365, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=366)
+        data_creater.AddLefecycleDict(action="SetStorageClass", age=365)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -310,8 +310,8 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
-        data_creater.AddLefecycleDict("Delete", None, None, None, None, False)
+        data_creater.AddLefecycleDict(action="Delete", age=365)
+        data_creater.AddLefecycleDict(action="Delete", is_live=False)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -322,8 +322,8 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 365, None, None, None, None)
-        data_creater.AddLefecycleDict("Delete", 366, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=365)
+        data_creater.AddLefecycleDict(action="Delete", age=366)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -346,7 +346,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 365, None, None, 5, None)
+        data_creater.AddLefecycleDict(action="Delete", age=365, num_newer_versions=5)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -372,7 +372,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -383,7 +383,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("SetStorageClass", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="SetStorageClass", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -394,7 +394,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("SetStorageClass", 89, None, None, None, None)
+        data_creater.AddLefecycleDict(action="SetStorageClass", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -415,7 +415,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, 1, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89, num_newer_versions=1)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -426,7 +426,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, 0, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89, num_newer_versions=0)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -439,7 +439,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", None, None, None, 1, None)
+        data_creater.AddLefecycleDict(action="Delete", num_newer_versions=1)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -450,7 +450,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", None, None, None, 0, None)
+        data_creater.AddLefecycleDict(action="Delete", num_newer_versions=0)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -463,7 +463,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("SetStorageClass", None, None, None, 0, None)
+        data_creater.AddLefecycleDict(action="SetStorageClass", num_newer_versions=0)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -476,7 +476,7 @@ rules:
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", 89, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -489,7 +489,7 @@ rules:
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=89)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", 89, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -504,7 +504,7 @@ rules:
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=89)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", 90, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=90, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -515,8 +515,8 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -529,8 +529,8 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("SetStorageClass", 89, None, None, None, None)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="SetStorageClass", age=89)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -541,7 +541,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -556,7 +556,7 @@ rules:
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", None, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -569,7 +569,7 @@ rules:
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=89)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict("Delete", None, dstr, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -608,8 +608,8 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 100, None, None, None, None)
-        data_creater.AddLefecycleDict("Delete", None, None, None, None, True)
+        data_creater.AddLefecycleDict(action="Delete", age=100)
+        data_creater.AddLefecycleDict(action="Delete", is_live=True)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -622,7 +622,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 100, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=100)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -633,9 +633,9 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 100, None, None, None, None)
-        data_creater.AddLefecycleDict("SetStorageClass", 89, None, None, None, None)
-        data_creater.AddLefecycleDict("Delete", 500, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=100)
+        data_creater.AddLefecycleDict(action="SetStorageClass", age=89)
+        data_creater.AddLefecycleDict(action="Delete", age=500)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -659,7 +659,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -670,7 +670,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -696,7 +696,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -707,7 +707,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -732,13 +732,13 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_1', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_2', frsd.PROJECT2)
-        data_creater.AddLefecycleDict("Delete", 90, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=90)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
@@ -749,7 +749,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_1', frsd.PROJECT1)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         expect_violations = frsd.build_bucket_violations(
@@ -757,7 +757,7 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_2', frsd.PROJECT2)
-        data_creater.AddLefecycleDict("Delete", 89, None, None, None, None)
+        data_creater.AddLefecycleDict(action="Delete", age=89)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         expect_violations = frsd.build_bucket_violations(
