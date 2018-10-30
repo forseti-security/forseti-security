@@ -12,140 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the KE version rules engine."""
+"""Scanner for the KE version rules engine.
 
-import json
+Check if the version of running KE clusters and nodes are allowed.
 
-from google.cloud.forseti.common.gcp_type.ke_cluster import KeCluster
+"""
+
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import ke_version_rules_engine
-from google.cloud.forseti.scanner.scanners import base_scanner
+from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
+KeVersionScannerBase = ke_base_scanner.ke_scanner_factory(
+    'version',
+    ke_version_rules_engine.KeVersionRulesEngine,
+)
 
-class KeVersionScanner(base_scanner.BaseScanner):
-    """Check if the version of running KE clusters and nodes are allowed."""
 
-    def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp, rules):
-        """Initialization.
-
-        Args:
-            global_configs (dict): Global configurations.
-            scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
-            model_name (str): name of the data model
-            snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
-            rules (str): Fully-qualified path and filename of the rules file.
-        """
-        super(KeVersionScanner, self).__init__(
-            global_configs,
-            scanner_configs,
-            service_config,
-            model_name,
-            snapshot_timestamp,
-            rules)
-
-        self.rules_engine = ke_version_rules_engine.KeVersionRulesEngine(
-            rules_file_path=self.rules,
-            snapshot_timestamp=self.snapshot_timestamp)
-        self.rules_engine.build_rule_book(self.global_configs)
-
-    @staticmethod
-    def _flatten_violations(violations):
-        """Flatten RuleViolations into a dict for each RuleViolation member.
-
-        Args:
-            violations (list): The RuleViolations to flatten.
-
-        Yields:
-            dict: Iterator of RuleViolations as a dict per member.
-        """
-        for violation in violations:
-            violation_data = {
-                'violation_reason': violation.violation_reason,
-                'project_id': violation.project_id,
-                'cluster_name': violation.cluster_name,
-                'full_name': violation.full_name,
-                'node_pool_name': violation.node_pool_name
-            }
-            yield {
-                'resource_id': violation.resource_id,
-                'resource_type': violation.resource_type,
-                'full_name': violation.full_name,
-                'rule_index': violation.rule_index,
-                'rule_name': violation.rule_name,
-                'violation_type': violation.violation_type,
-                'violation_data': violation_data,
-                'resource_data': violation.resource_data
-            }
-
-    def _output_results(self, all_violations):
-        """Output results.
-
-        Args:
-            all_violations (list): All violations
-        """
-        all_violations = list(self._flatten_violations(all_violations))
-        self._output_results_to_db(all_violations)
-
-    def _find_violations(self, ke_clusters):
-        """Find violations in the policies.
-
-        Args:
-            ke_clusters (list): Clusters to find violations in.
-
-        Returns:
-            list: All violations.
-        """
-        all_violations = []
-        LOGGER.info('Finding ke cluster version violations...')
-
-        for ke_cluster in ke_clusters:
-            violations = self.rules_engine.find_policy_violations(
-                ke_cluster)
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
-
-    def _retrieve(self):
-        """Runs the data collection.
-
-        Returns:
-            list: KE Cluster data.
-        """
-        model_manager = self.service_config.model_manager
-        scoped_session, data_access = model_manager.get(self.model_name)
-        with scoped_session as session:
-            ke_clusters = []
-            for ke_cluster in data_access.scanner_iter(
-                    session, 'kubernetes_cluster'):
-                project_id = ke_cluster.parent.name
-                ke_clusters.append(
-                    KeCluster.from_json(project_id,
-                                        None,
-                                        ke_cluster.data,
-                                        ke_cluster.full_name))
-
-        # Retrieve the service config via a separate query because session
-        # in the middle of yield_per() can not support simultaneous queries.
-        with scoped_session as session:
-            for ke_cluster in ke_clusters:
-                position = (
-                    ke_cluster.resource_full_name.find('kubernetes_cluster'))
-                ke_cluster_type_name = (
-                    ke_cluster.resource_full_name[position:][:-1])
-
-                service_config = list(data_access.scanner_iter(
-                    session, 'kubernetes_service_config',
-                    parent_type_name=ke_cluster_type_name))[0]
-                ke_cluster.server_config = json.loads(service_config.data)
-
-        return ke_clusters
-
-    def run(self):
-        """Run, the entry point for this scanner."""
-        ke_clusters = self._retrieve()
-        all_violations = self._find_violations(ke_clusters)
-        self._output_results(all_violations)
+class KeVersionScanner(KeVersionScannerBase):
+    """Scanner class for KE version rules."""

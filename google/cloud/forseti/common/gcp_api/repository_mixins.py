@@ -258,6 +258,56 @@ class OrgPolicyQueryMixin(object):
             yield resp
 
 
+class ExportAssetsQueryMixin(object):
+    """Mixin that implements the exportAssets query."""
+
+    def export_assets(self, parent, destination_object,
+                      content_type=None, asset_types=None,
+                      fields=None, verb='exportAssets', **kwargs):
+        """Export assets under a parent resource to a file on GCS.
+
+        Args:
+            parent (str): The name of the parent resource to export assests
+                under.
+            destination_object (str): The GCS path and file name to store the
+                results in. The bucket must be in the same project that has the
+                Cloud Asset API enabled.
+            content_type (str): The specific content type to export, currently
+                supports "RESOURCE" and "IAM_POLICY". If not specified only the
+                CAI metadata for assets are included.
+            asset_types (list): The list of asset types to filter the results
+                to, if not specified, exports all assets known to CAI.
+            fields (str): Fields to include in the response - partial response.
+            verb (str): The method to call on the API.
+            **kwargs (dict): Additional parameters to pass to the API method.
+
+        Returns:
+            dict: The response from the API.
+        """
+        body = {
+            'outputConfig': {'gcsDestination': {'uri': destination_object}}
+        }
+        if content_type:
+            body['contentType'] = content_type
+
+        if asset_types:
+            body['assetTypes'] = asset_types
+
+        arguments = {
+            'parent': parent,
+            'body': body,
+            'fields': fields,
+        }
+
+        if kwargs:
+            arguments.update(kwargs)
+
+        return self.execute_query(
+            verb=verb,
+            verb_arguments=arguments,
+        )
+
+
 class SearchQueryMixin(object):
     """Mixin that implements a paged Search query."""
 

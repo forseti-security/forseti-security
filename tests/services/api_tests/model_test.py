@@ -14,10 +14,12 @@
 """Tests the Forseti Server model service."""
 
 import unittest
-import json
+
 from tests.services.api_tests.api_tester import ModelTestRunner
+from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.services.base.config import InventoryConfig
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.explain.service import GrpcExplainerFactory
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
@@ -30,6 +32,8 @@ class TestServiceConfig(object):
     def __init__(self):
         self.engine = create_test_engine()
         self.model_manager = ModelManager(self.engine)
+        self.inventory_config = (
+            InventoryConfig(gcp_api_mocks.ORGANIZATION_ID, '', {}, '', {}))
 
     def run_in_background(self, function):
         """Stub."""

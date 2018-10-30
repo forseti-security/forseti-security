@@ -24,8 +24,8 @@ from google.cloud.forseti.common.gcp_api import _base_repository
 from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
-from google.cloud.forseti.common.util import metadata_server
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util import metadata_server
 
 LOGGER = logger.get_logger(__name__)
 
@@ -312,6 +312,31 @@ class _StorageObjectsRepository(
             out_stream.close()
         return file_content
 
+    def download_to_file(self, bucket, object_name, output_file):
+        """Download an object from a bucket.
+
+         Args:
+            bucket (str): The name of the bucket to read from.
+            object_name (str): The name of the object to read.
+            output_file (file): The file object to write the data to.
+
+         Returns:
+            int: Total size in bytes of file.
+        """
+        verb_arguments = {
+            'bucket': bucket,
+            'object': object_name}
+
+        media_request = self._build_request('get_media', verb_arguments)
+        media_request.http = self.http
+
+        downloader = http.MediaIoBaseDownload(output_file, media_request)
+        done = False
+        while not done:
+            progress, done = downloader.next_chunk(
+                num_retries=self._num_retries)
+        return progress.total_size
+
     def upload(self, bucket, object_name, file_content):
         """Upload an object to a bucket.
 
@@ -415,6 +440,31 @@ class StorageClient(object):
                          ' full_bucket_path = %s, results = %s',
                          full_bucket_path, results)
             return results
+        except errors.HttpError:
+            LOGGER.exception('Unable to download file.')
+            raise
+
+    def download(self, full_bucket_path, output_file):
+        """Downloads a copy of a file from GCS.
+
+         Args:
+            full_bucket_path (str): The full path of the bucket object.
+            output_file (file): The file object to write the data to.
+
+         Returns:
+            int: Total size in bytes of file.
+
+         Raises:
+            HttpError: HttpError is raised if the call to the GCP storage API
+                fails
+        """
+        bucket, object_name = get_bucket_and_path_from(full_bucket_path)
+        try:
+            file_size = self.repository.objects.download_to_file(
+                bucket, object_name, output_file)
+            LOGGER.debug('Downloading file object, full_bucket_path = %s, '
+                         'total size = %i', full_bucket_path, file_size)
+            return file_size
         except errors.HttpError:
             LOGGER.exception('Unable to download file.')
             raise

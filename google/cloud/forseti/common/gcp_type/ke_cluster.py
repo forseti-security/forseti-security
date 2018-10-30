@@ -77,6 +77,7 @@ class KeCluster(object):
         self.server_config = server_config
         self.resource_full_name = resource_full_name
         self._json = raw_json
+        self._dict = None
 
     @classmethod
     def from_dict(cls, project_id, server_config, cluster,
@@ -128,7 +129,7 @@ class KeCluster(object):
             expire_time=cluster.get('expireTime'),
             server_config=server_config,
             resource_full_name=resource_full_name,
-            raw_json=json.dumps(cluster)
+            raw_json=json.dumps(cluster),
         )
 
     @staticmethod
@@ -151,6 +152,19 @@ class KeCluster(object):
 
         return KeCluster.from_dict(project_id, server_config, cluster,
                                    resource_full_name)
+
+    @property
+    def as_dict(self):
+        """Return the dictionary representation of the cluster.
+
+        Returns:
+            dict: deserialized json object
+
+        """
+        if self._dict is None:
+            self._dict = json.loads(self._json)
+
+        return self._dict
 
     def __repr__(self):
         """String representation.

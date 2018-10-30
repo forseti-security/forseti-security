@@ -39,6 +39,7 @@ BIGQUERY_DATA = [{
 BIGQUERY_EXPECTED_VIOLATION_LIST = [
     Rule.RuleViolation(
         domain='',
+        resource_name='d1',
         resource_id='d1',
         full_name='organization/234/project/p1/dataset/d1/dataset_policy/d1/',
         special_group='',
@@ -54,6 +55,7 @@ BIGQUERY_EXPECTED_VIOLATION_LIST = [
         resource_data='inventory_dataset222'),
     Rule.RuleViolation(
         domain='',
+        resource_name='d2',
         resource_id='d2',
         full_name=('organization/234/folder/56/project/p2/dataset/d2/'
                    'dataset_policy/d2/'),

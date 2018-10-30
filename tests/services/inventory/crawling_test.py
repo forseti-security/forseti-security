@@ -13,16 +13,38 @@
 # limitations under the License.
 """Unit Tests: Inventory crawler for Forseti Server."""
 
+import os
 import unittest
+import mock
+from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
+from tests.services.util.db import create_test_engine_with_file
+from tests.services.util.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
+from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.base.progress import Progresser
 from google.cloud.forseti.services.inventory.base.storage import Memory as MemoryStorage
 from google.cloud.forseti.services.inventory.crawler import run_crawler
 
 LOGGER = logger.get_logger(__name__)
+
+TEST_RESOURCE_DIR_PATH = os.path.join(
+    os.path.dirname(__file__), 'test_data')
+
+
+class FakeServerConfig(MockServerConfig):
+    """Fake server config."""
+
+    def __init__(self, engine):
+        """Initialize."""
+        self.engine = engine
+
+    def get_engine(self):
+        """Get engine."""
+        return self.engine
 
 
 class NullProgresser(Progresser):
@@ -97,7 +119,9 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             {},
-            '')
+            '',
+            {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -123,6 +147,7 @@ class CrawlerTest(ForsetiTestCase):
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
+            'crm_org_policy': {'resource': 5},
             'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
             'firewall': {'resource': 7},
@@ -138,6 +163,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 2},
             'instancetemplate': {'resource': 2},
             'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
@@ -159,7 +185,9 @@ class CrawlerTest(ForsetiTestCase):
             'folders/1032',
             '',
             {},
-            '')
+            '',
+            {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -197,7 +225,9 @@ class CrawlerTest(ForsetiTestCase):
             'projects/1041',
             '',
             {},
-            '')
+            '',
+            {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -217,6 +247,7 @@ class CrawlerTest(ForsetiTestCase):
         expected_counts = {
             'backendservice': {'resource': 1},
             'compute_project': {'resource': 1},
+            'crm_org_policy': {'resource': 1},
             'disk': {'resource': 3},
             'firewall': {'resource': 3},
             'forwardingrule': {'resource': 1},
@@ -225,6 +256,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 2},
             'instancetemplate': {'resource': 2},
             'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
             'network': {'resource': 1},
             'project': {'billing_info': 1, 'enabled_apis': 1, 'iam_policy': 1,
                         'resource': 1},
@@ -244,7 +276,9 @@ class CrawlerTest(ForsetiTestCase):
             gcp_api_mocks.ORGANIZATION_ID,
             '',
             {},
-            '')
+            '',
+            {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -261,8 +295,8 @@ class CrawlerTest(ForsetiTestCase):
             result_counts = self._get_resource_counts_from_storage(storage)
 
         # The crawl should be the same as test_crawling_to_memory_storage, but
-        # without organization iam_policy (needs Org access) or gsuite_*
-        # resources (needs directoryCustomerId from Organization).
+        # without organization iam_policy, org_policy (needs Org access) or
+        # gsuite_* resources (needs directoryCustomerId from Organization).
         expected_counts = {
             'appengine_app': {'resource': 2},
             'appengine_instance': {'resource': 3},
@@ -273,6 +307,7 @@ class CrawlerTest(ForsetiTestCase):
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
+            'crm_org_policy': {'resource': 3},
             'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
             'firewall': {'resource': 7},
@@ -284,6 +319,7 @@ class CrawlerTest(ForsetiTestCase):
             'instancegroupmanager': {'resource': 2},
             'instancetemplate': {'resource': 2},
             'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
             'network': {'resource': 2},
             'organization': {'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
@@ -298,6 +334,130 @@ class CrawlerTest(ForsetiTestCase):
 
         self.assertEqual(expected_counts, result_counts)
 
+
+# pylint: disable=bad-indentation
+class CloudAssetCrawlerTest(CrawlerTest):
+    """Test CloudAsset integration with crawler."""
+
+    def setUp(self):
+        """Setup method."""
+        ForsetiTestCase.setUp(self)
+        self.engine, self.dbfile = create_test_engine_with_file()
+        _session_maker = sessionmaker()
+        self.session = _session_maker(bind=self.engine)
+        initialize(self.engine)
+        self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
+                                                '',
+                                                {},
+                                                0,
+                                                {'enabled': True,
+                                                 'gcs_path': 'gs://test-bucket'}
+                                               )
+        self.inventory_config.set_service_config(FakeServerConfig(self.engine))
+
+        # Ensure test data doesn't get deleted
+        self.mock_unlink = mock.patch.object(
+            os, 'unlink', autospec=True).start()
+        self.mock_copy_file_from_gcs = mock.patch.object(
+            file_loader,
+            'copy_file_from_gcs',
+            autospec=True).start()
+        self.maxDiff = None
+
+        # Mock copy_file_from_gcs to return correct test data file
+        def _copy_file_from_gcs(file_path, *args, **kwargs):
+            """Fake copy_file_from_gcs."""
+            if 'resource' in file_path:
+                return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                    'mock_cai_resources.dump')
+            elif 'iam_policy' in file_path:
+                return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                    'mock_cai_iam_policies.dump')
+
+        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+
+    def tearDown(self):
+        """tearDown."""
+        ForsetiTestCase.tearDown(self)
+        mock.patch.stopall()
+
+        # Stop mocks before unlinking the database file.
+        os.unlink(self.dbfile)
+
+    def test_cai_crawl_to_memory(self):
+        """Crawl mock environment, test that there are items in storage."""
+        with MemoryStorage(session=self.session) as storage:
+            progresser = NullProgresser()
+            with gcp_api_mocks.mock_gcp():
+                run_crawler(storage,
+                            progresser,
+                            self.inventory_config,
+                            parallel=True)
+
+            self.assertEqual(0,
+                             progresser.errors,
+                             'No errors should have occurred')
+
+            result_counts = self._get_resource_counts_from_storage(storage)
+
+        expected_counts = {
+            'appengine_app': {'resource': 2},
+            'appengine_instance': {'resource': 3},
+            'appengine_service': {'resource': 1},
+            'appengine_version': {'resource': 1},
+            'backendservice': {'resource': 1},
+            'billing_account': {'resource': 2, 'iam_policy': 2},
+            'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
+            'cloudsqlinstance': {'resource': 1},
+            'compute_autoscaler': {'resource': 1},
+            'compute_backendbucket': {'resource': 1},
+            'compute_healthcheck': {'resource': 1},
+            'compute_httphealthcheck': {'resource': 1},
+            'compute_httpshealthcheck': {'resource': 1},
+            'compute_license': {'resource': 1},
+            'compute_project': {'resource': 2},
+            'compute_sslcertificate': {'resource': 1},
+            'compute_targethttpproxy': {'resource': 1},
+            'compute_targethttpsproxy': {'resource': 1},
+            'compute_targetinstance': {'resource': 1},
+            'compute_targetpool': {'resource': 1},
+            'compute_targetsslproxy': {'resource': 1},
+            'compute_targettcpproxy': {'resource': 1},
+            'compute_urlmap': {'resource': 1},
+            'crm_org_policy': {'resource': 5},
+            'dataset': {'dataset_policy': 2, 'resource': 2},
+            'disk': {'resource': 4},
+            'dns_managedzone': {'resource': 1},
+            'dns_policy': {'resource': 1},
+            'firewall': {'resource': 7},
+            'folder': {'iam_policy': 3, 'resource': 3},
+            'forwardingrule': {'resource': 1},
+            'gsuite_group': {'resource': 4},
+            'gsuite_group_member': {'resource': 1},
+            'gsuite_user': {'resource': 4},
+            'gsuite_user_member': {'resource': 3},
+            'image': {'resource': 2},
+            'instance': {'resource': 4},
+            'instancegroup': {'resource': 2},
+            'instancegroupmanager': {'resource': 2},
+            'instancetemplate': {'resource': 2},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
+            'network': {'resource': 2},
+            'organization': {'iam_policy': 1, 'resource': 1},
+            'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
+                        'resource': 4},
+            'role': {'resource': 5},
+            'serviceaccount': {'iam_policy': 2, 'resource': 2},
+            'serviceaccount_key': {'resource': 1},
+            'sink': {'resource': 7},
+            'snapshot': {'resource': 3},
+            'spanner_database': {'resource': 1},
+            'spanner_instance': {'resource': 1},
+            'subnetwork': {'resource': 24},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
 
 if __name__ == '__main__':
     unittest.main()

@@ -30,6 +30,9 @@ inventory:
         bigquery:
           max_calls: 160
           period: 1.0
+        cloudasset:
+          max_calls: 1
+          period: 1.0
         cloudbilling:
           max_calls: 5
           period: 1.2
@@ -43,11 +46,11 @@ inventory:
           max_calls: 4
           period: 1.2
         iam:
-          max_calls: 18
+          max_calls: 90
           period: 1.0
         logging:
-          max_calls: 1
-          period: 1.1
+          max_calls: 9
+          period: 1.0
         securitycenter:
           max_calls: 1
           period: 1.1,
@@ -57,6 +60,11 @@ inventory:
         sqladmin:
           max_calls: 1
           period: 1.1
+
+    cai:
+        # The FORSETI_CAI_BUCKET needs to be in Forseti project.
+        enabled: {CAI_ENABLED}
+        gcs_path: gs://{FORSETI_CAI_BUCKET}
 
     # Number of days to retain inventory data:
     #  -1 : (default) keep all previous data forever
@@ -106,7 +114,13 @@ scanner:
           enabled: true
         - name: instance_network_interface
           enabled: false
+        - name: ke_scanner
+          enabled: false
         - name: ke_version_scanner
+          enabled: true
+        - name: lien
+          enabled: true
+        - name: location
           enabled: true
         - name: log_sink
           enabled: true
@@ -289,6 +303,22 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
+        - resource: ke_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
         - resource: groups_violations
           should_notify: true
           notifiers:
@@ -322,6 +352,38 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: iap_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: lien_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: location_violations
           should_notify: true
           notifiers:
             # Email violations

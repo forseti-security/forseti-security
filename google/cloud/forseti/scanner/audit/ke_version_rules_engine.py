@@ -416,6 +416,7 @@ class Rule(object):
         """
         node_pool_name = nodepool.get('name') if nodepool else ''
         return RuleViolation(
+            resource_name=ke_cluster.name,
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
             resource_id=ke_cluster.name,
             full_name=ke_cluster.resource_full_name,
@@ -562,4 +563,4 @@ RuleViolation = namedtuple('RuleViolation',
                             'rule_name', 'rule_index', 'violation_type',
                             'violation_reason', 'project_id',
                             'cluster_name', 'node_pool_name',
-                            'resource_data'])
+                            'resource_data', 'resource_name'])

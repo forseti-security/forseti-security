@@ -66,7 +66,8 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_index=0,
                   violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_STORAGE['serviceName']],
-                  resource_data='project-1-data'),
+                  resource_data='project-1-data',
+                  resource_name='proj-1'),
     RuleViolation(resource_type='project',
                   resource_id='proj-2',
                   full_name='organization/234/project/proj-2/',
@@ -74,7 +75,8 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_index=0,
                   violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_STORAGE['serviceName']],
-                  resource_data='project-2-data'),
+                  resource_data='project-2-data',
+                  resource_name='proj-2'),
     RuleViolation(resource_type='project',
                   resource_id='proj-3',
                   full_name='organization/234/folder/333/project/proj-3/',
@@ -82,7 +84,8 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_index=0,
                   violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_PUBSUB['serviceName'], API_STORAGE['serviceName']],
-                  resource_data='project-3-data'),
+                  resource_data='project-3-data',
+                  resource_name='proj-3'),
     # Rule 1 blacklists PUBSUB.
     RuleViolation(resource_type='project',
                   resource_id='proj-3',
@@ -91,7 +94,8 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_index=1,
                   violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_PUBSUB['serviceName']],
-                  resource_data='project-3-data'),
+                  resource_data='project-3-data',
+                  resource_name='proj-3'),
     # Rule 2 requires LOGGING and MONITORING.
     RuleViolation(resource_type='project',
                   resource_id='proj-2',
@@ -100,13 +104,15 @@ ENABLED_APIS_VIOLATIONS = [
                   rule_index=2,
                   violation_type='ENABLED_APIS_VIOLATION',
                   apis=[API_MONITORING['serviceName']],
-                  resource_data='project-2-data'),
+                  resource_data='project-2-data',
+                  resource_name='proj-2'),
 ]
 
 FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-1',
+        'resource_name': 'proj-1',
         'full_name': 'organization/234/project/proj-1/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -120,6 +126,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-2',
+        'resource_name': 'proj-2',
         'full_name': 'organization/234/project/proj-2/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -133,6 +140,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-3',
+        'resource_name': 'proj-3',
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -146,6 +154,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-3',
+        'resource_name': 'proj-3',
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test whitelist',
         'rule_index': 0,
@@ -159,6 +168,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-3',
+        'resource_name': 'proj-3',
         'full_name': 'organization/234/folder/333/project/proj-3/',
         'rule_name': 'Test blacklist',
         'rule_index': 1,
@@ -172,6 +182,7 @@ FLATTENED_ENABLED_APIS_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-2',
+        'resource_name': 'proj-2',
         'full_name': 'organization/234/project/proj-2/',
         'rule_name': 'Test required list',
         'rule_index': 2,

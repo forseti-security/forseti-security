@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+trap 'return_code=$?' ERR
+
 echo "Running unittests... "
 
 # Check to see if we're on Travis.
 if [ ${TRAVIS+x} ]; then
     # We are on Travis.
     # Run our tests with codecov
-    docker -l error exec -it build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover --verbose -s . -p '*_test.py'"
+    docker exec -it build /bin/bash -c "coverage run --source='google.cloud.forseti' --omit='__init__.py' -m unittest discover --verbose -s . -p '*_test.py'"
 else
     # We are NOT on Travis.
-    docker -l error exec -it build /bin/bash -c "python -m unittest discover --verbose -s . -p '*_test.py'"
+    docker exec -it build /bin/bash -c "python -m unittest discover --verbose -s . -p '*_test.py'"
 fi
+
+exit ${return_code}

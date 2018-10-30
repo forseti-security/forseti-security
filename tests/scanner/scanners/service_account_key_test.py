@@ -91,6 +91,7 @@ RESOURCE_DATA = "{'key_id': u'999999999999999999999', " \
 EXPECTED_VIOLATION = {'rule_name': 'Service account keys not rotated (older than 100 days)',
                       'resource_data': RESOURCE_DATA,
                       'full_name': u'organization/12345/project/foo/serviceaccount/123456789012345678901/serviceaccount_key/999999999999999999999/',
+                      'resource_name': u'test-service-account@developer.gserviceaccount.com',
                       'resource_id': u'test-service-account@developer.gserviceaccount.com',
                       'rule_index': 0,
                       'violation_type': 'SERVICE_ACCOUNT_KEY_VIOLATION',

@@ -334,6 +334,7 @@ class Rule(object):
                 violations.append(RuleViolation(
                     resource_type=resource_mod.ResourceType.SERVICE_ACCOUNT_KEY,
                     resource_id=service_account.email,
+                    resource_name=service_account.email,
                     service_account_name=service_account.display_name,
                     full_name=full_name,
                     rule_name='%s (older than %s days)' % (self.rule_name,
@@ -389,7 +390,7 @@ class Rule(object):
 
 
 RuleViolation = namedtuple('RuleViolation',
-                           ['resource_type', 'resource_id',
+                           ['resource_type', 'resource_id', 'resource_name',
                             'service_account_name', 'full_name', 'rule_name',
                             'rule_index', 'violation_type', 'violation_reason',
                             'project_id', 'key_id', 'key_created_time',

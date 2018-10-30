@@ -202,14 +202,12 @@ class BigqueryRuleBook(bre.BaseRuleBook):
             raise audit_errors.InvalidRulesSchemaError(
                 'Missing bindings in rule {}'.format(rule_index))
 
-        rule = Rule(rule_name=rule_def.get('name'),
+        return Rule(rule_name=rule_def.get('name'),
                     rule_index=rule_index,
                     rule_reference=RuleReference(
                         dataset_ids=dataset_ids,
                         bindings=bindings,
                         mode=mode))
-
-        return rule
 
     @classmethod
     def _get_binding_from_old_syntax(cls, rule_def):
@@ -305,7 +303,7 @@ class Rule(object):
     """
 
     rule_violation_attributes = ['resource_type', 'resource_id',
-                                 'full_name', 'rule_name',
+                                 'resource_name', 'full_name', 'rule_name',
                                  'rule_index', 'violation_type', 'dataset_id',
                                  'role', 'special_group', 'user_email',
                                  'domain', 'group_email', 'view',
@@ -379,6 +377,7 @@ class Rule(object):
 
         if has_applicable_rules and has_violation:
             yield self.RuleViolation(
+                resource_name=bigquery_acl.dataset_id,
                 resource_type=resource_mod.ResourceType.BIGQUERY,
                 resource_id=bigquery_acl.dataset_id,
                 full_name=bigquery_acl.full_name,

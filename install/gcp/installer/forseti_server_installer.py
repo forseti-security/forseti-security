@@ -37,6 +37,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
     target_id = None
     user_can_grant_roles = True
 
+    firewall_rules_to_be_deleted = ['default-allow-icmp',
+                                    'default-allow-internal',
+                                    'default-allow-rdp',
+                                    'default-allow-ssh']
+
     def __init__(self, config, previous_installer=None):
         """Init.
 
@@ -95,29 +100,35 @@ class ForsetiServerInstaller(ForsetiInstaller):
                 self.target_id,
                 self.project_id,
                 self.gcp_service_acct_email,
+                self._get_cai_bucket_name(),
                 self.user_can_grant_roles)
 
             # Waiting for VM to be initialized.
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
                 self.config.identifier)
-            self.wait_until_vm_initialized(instance_name)
 
             # Create firewall rules.
             self.create_firewall_rules()
+            self.wait_until_vm_initialized(instance_name)
+
+            # Delete firewall rules.
+            self.delete_firewall_rules()
 
         return success, deployment_name
 
     def create_firewall_rules(self):
         """Create firewall rules for Forseti server instance."""
-        # Rule to block out all the ingress traffic.
+        # This rule overrides the implied deny for ingress
+        # because it is specific to service account with a higher priority
+        # that would be harder to be overriden.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name('forseti-server-deny-all'),
             [self.gcp_service_acct_email],
             constants.FirewallRuleAction.DENY,
-            ['icmp', 'udp', 'tcp'],
+            ['all'],
             constants.FirewallRuleDirection.INGRESS,
-            1,
+            200,
             self.config.vpc_host_network)
 
         # Rule to open only port tcp:50051 within the
@@ -128,12 +139,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleAction.ALLOW,
             ['tcp:50051'],
             constants.FirewallRuleDirection.INGRESS,
-            0,
+            100,
             self.config.vpc_host_network,
             '10.128.0.0/9')
 
         # Create firewall rule to open only port tcp:22 (ssh)
-        # to all the external traffics from the internet.
+        # to all the external traffic from the internet to ssh into server VM.
         gcloud.create_firewall_rule(
             self.format_firewall_rule_name(
                 'forseti-server-allow-ssh-external'),
@@ -141,21 +152,16 @@ class ForsetiServerInstaller(ForsetiInstaller):
             constants.FirewallRuleAction.ALLOW,
             ['tcp:22'],
             constants.FirewallRuleDirection.INGRESS,
-            0,
+            100,
             self.config.vpc_host_network,
             '0.0.0.0/0')
 
-
-    def format_firewall_rule_name(self, rule_name):
-        """Format firewall rule name.
-
-        Args:
-            rule_name (str): Name of the firewall rule.
-
-        Returns:
-            str: Firewall rule name.
-        """
-        return '{}-{}'.format(rule_name, self.config.identifier)
+    def delete_firewall_rules(self):
+        """Deletes default firewall rules as the forseti service account rules
+        serves the purpose"""
+        for rule in self.firewall_rules_to_be_deleted:
+            gcloud.delete_firewall_rule(rule)
+            print('Deleted:', rule)
 
     def get_deployment_values(self):
         """Get deployment values.
@@ -169,6 +175,7 @@ class ForsetiServerInstaller(ForsetiInstaller):
             'CLOUDSQL_REGION': self.config.cloudsql_region,
             'CLOUDSQL_INSTANCE_NAME': self.config.cloudsql_instance,
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_CAI_BUCKET': self._get_cai_bucket_name(),
             'BUCKET_LOCATION': self.config.bucket_location,
             'GCP_SERVER_SERVICE_ACCOUNT': self.gcp_service_acct_email,
             'FORSETI_SERVER_REGION': self.config.cloudsql_region,
@@ -189,10 +196,12 @@ class ForsetiServerInstaller(ForsetiInstaller):
         """
         bucket_name = self.generate_bucket_name()
         return {
+            'CAI_ENABLED': 'organizations' in self.resource_root_id,
             'EMAIL_RECIPIENT': self.config.notification_recipient_email,
             'EMAIL_SENDER': self.config.notification_sender_email,
             'SENDGRID_API_KEY': self.config.sendgrid_api_key,
             'FORSETI_BUCKET': bucket_name[len('gs://'):],
+            'FORSETI_CAI_BUCKET': self._get_cai_bucket_name(),
             'DOMAIN_SUPER_ADMIN_EMAIL': self.config.gsuite_superadmin_email,
             'ROOT_RESOURCE_ID': self.resource_root_id,
         }
@@ -255,9 +264,11 @@ class ForsetiServerInstaller(ForsetiInstaller):
     def get_email_settings(self):
         """Ask user for specific install values."""
         utils.print_banner('Configuring GSuite Admin Information')
-        print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
-        self.config.gsuite_superadmin_email = raw_input(
-            constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
+        if not self.config.gsuite_superadmin_email:
+            # Ask for GSuite Superadmin email.
+            print(constants.MESSAGE_ASK_GSUITE_SUPERADMIN_EMAIL)
+            self.config.gsuite_superadmin_email = raw_input(
+                constants.QUESTION_GSUITE_SUPERADMIN_EMAIL).strip()
 
         if self.config.skip_sendgrid_config:
             print(constants.MESSAGE_SKIP_SENDGRID_API_KEY)
@@ -312,6 +323,14 @@ class ForsetiServerInstaller(ForsetiInstaller):
         instructions.other_messages.append(constants.MESSAGE_RUN_FREQUENCY)
 
         return instructions
+
+    def _get_cai_bucket_name(self):
+        """Get CAI bucket name.
+
+        Returns:
+            str: CAI bucket name.
+        """
+        return 'forseti-cai-export-{}'.format(self.config.identifier)
 
     @staticmethod
     def _get_gcs_path(resources):

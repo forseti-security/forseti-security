@@ -44,8 +44,8 @@ def _api_not_enabled(error):
     """
     if isinstance(error, errors.HttpError):
         if (error.resp.status == 403 and
-                error.resp.get('content-type', '').startswith(
-                    'application/json')):
+                error.resp.get('content-type', '')
+                .startswith('application/json')):
 
             # If a project doesn't have the necessary API enabled, Google
             # will return an error domain=usageLimits and

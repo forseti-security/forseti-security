@@ -169,17 +169,23 @@ class FirewallRule(object):
             'firewall_rule_priority': firewall_dict.get('priority'),
             'firewall_rule_direction': firewall_dict.get('direction'),
             'firewall_rule_source_ranges': parser.json_stringify(
-                firewall_dict.get('sourceRanges')),
+                firewall_dict.get('sourceRanges') or
+                firewall_dict.get('sourceRange')),
             'firewall_rule_destination_ranges': parser.json_stringify(
-                firewall_dict.get('destinationRanges')),
+                firewall_dict.get('destinationRanges') or
+                firewall_dict.get('destinationRange')),
             'firewall_rule_source_tags': parser.json_stringify(
-                firewall_dict.get('sourceTags')),
+                firewall_dict.get('sourceTags') or
+                firewall_dict.get('sourceTag')),
             'firewall_rule_target_tags': parser.json_stringify(
-                firewall_dict.get('targetTags')),
+                firewall_dict.get('targetTags') or
+                firewall_dict.get('targetTag')),
             'firewall_rule_source_service_accounts': parser.json_stringify(
-                firewall_dict.get('sourceServiceAccounts')),
+                firewall_dict.get('sourceServiceAccounts') or
+                firewall_dict.get('sourceServiceAccount')),
             'firewall_rule_target_service_accounts': parser.json_stringify(
-                firewall_dict.get('targetServiceAccounts')),
+                firewall_dict.get('targetServiceAccounts') or
+                firewall_dict.get('targetServiceAccount')),
             'firewall_rule_allowed': parser.json_stringify(
                 firewall_dict.get('allowed')),
             'firewall_rule_denied': parser.json_stringify(
@@ -511,15 +517,28 @@ class FirewallRule(object):
           bool: comparison result
         """
         LOGGER.debug('Checking %s < %s', self, other)
-        return ((self.direction == other.direction or
-                 self.direction is None or
-                 other.direction is None) and
-                (self.network == other.network or other.network is None) and
-                set(self.source_tags).issubset(other.source_tags) and
-                set(self.target_tags).issubset(other.target_tags) and
-                self.firewall_action < other.firewall_action and
-                ips_in_list(self.source_ranges, other.source_ranges) and
-                ips_in_list(self.destination_ranges, other.destination_ranges))
+        direction = (self.direction == other.direction or
+                     self.direction is None or
+                     other.direction is None)
+        network = (self.network == other.network or
+                   other.network is None)
+        source_tags = (set(self.source_tags).issubset(other.source_tags) or not
+                       other.source_tags)
+        target_tags = (set(self.target_tags).issubset(other.target_tags) or not
+                       other.target_tags)
+        firewall_action = self.firewall_action < other.firewall_action
+        source_ranges = ips_in_list(self.source_ranges, other.source_ranges)
+        destination_ranges = ips_in_list(self.destination_ranges,
+                                         other.destination_ranges)
+
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  firewall_action and
+                  source_ranges and
+                  destination_ranges)
+        return result
 
     def __gt__(self, other):
         """Test whether this policy contains the other policy.
@@ -534,18 +553,29 @@ class FirewallRule(object):
           bool: comparison result
         """
         LOGGER.debug('Checking %s > %s', self, other)
-        return ((self.direction is None or
-                 other.direction is None or
-                 self.direction == other.direction) and
-                (self.network is None or other.network is None or
-                 self.network == other.network) and
-                set(other.source_tags).issubset(self.source_tags) and
-                set(other.target_tags).issubset(self.target_tags) and
-                self.firewall_action > other.firewall_action and
-                ips_in_list(other.source_ranges, self.source_ranges) and
-                ips_in_list(other.destination_ranges, self.destination_ranges))
+        direction = (self.direction is None or
+                     other.direction is None or
+                     self.direction == other.direction)
+        network = (self.network is None or
+                   other.network is None or
+                   self.network == other.network)
+        source_tags = (set(other.source_tags).issubset(self.source_tags) or not
+                       self.source_tags)
+        target_tags = (set(other.target_tags).issubset(self.target_tags) or not
+                       self.target_tags)
+        firewall_action = self.firewall_action > other.firewall_action
+        source_ranges = ips_in_list(other.source_ranges, self.source_ranges)
+        destination_ranges = ips_in_list(other.destination_ranges,
+                                         self.destination_ranges)
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  firewall_action and
+                  source_ranges and
+                  destination_ranges)
+        return result
 
-    # pylint: disable=protected-access
     def __eq__(self, other):
         """Test whether this policy is the same as the other policy.
 
@@ -556,17 +586,22 @@ class FirewallRule(object):
           bool: comparison result
         """
         LOGGER.debug('Checking %s == %s', self, other)
-        return (self.direction == other.direction and
-                self.network == other.network and
-                self._source_tags == other._source_tags and
-                self._target_tags == other._target_tags and
-                self.source_ranges == other.source_ranges and
-                self.destination_ranges == other.destination_ranges and
-                self.firewall_action == other.firewall_action)
+        direction = self.direction == other.direction
+        network = self.network == other.network
+        source_tags = self._source_tags == other._source_tags
+        target_tags = self._target_tags == other._target_tags
+        source_ranges = self.source_ranges == other.source_ranges
+        destination_ranges = self.destination_ranges == other.destination_ranges
+        firewall_action = self.firewall_action == other.firewall_action
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  source_ranges and
+                  destination_ranges and
+                  firewall_action)
+        return result
 
-    # pylint: enable=protected-access
-
-    # pylint: disable=protected-access
     def is_equivalent(self, other):
         """Test whether this policy is equivalent to the other policy.
 
@@ -576,14 +611,22 @@ class FirewallRule(object):
         Returns:
           bool: comparison result
         """
-        return (self.direction == other.direction and
-                self.network == other.network and
-                self._source_tags == other._source_tags and
-                self._target_tags == other._target_tags and
-                self.source_ranges == other.source_ranges and
-                self.destination_ranges == other.destination_ranges and
-                self.firewall_action.is_equivalent(other.firewall_action))
-    # pylint: enable=protected-access
+        direction = self.direction == other.direction
+        network = self.network == other.network
+        source_tags = self._source_tags == other._source_tags
+        target_tags = self._target_tags == other._target_tags
+        source_ranges = self.source_ranges == other.source_ranges
+        destination_ranges = self.destination_ranges == other.destination_ranges
+        firewall_action = (
+            self.firewall_action.is_equivalent(other.firewall_action))
+        result = (direction and
+                  network and
+                  source_tags and
+                  target_tags and
+                  source_ranges and
+                  destination_ranges and
+                  firewall_action)
+        return result
 
 
 class FirewallAction(object):
