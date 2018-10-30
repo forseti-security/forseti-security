@@ -70,7 +70,8 @@ def build_bucket_violations(bucket, rule_name):
     data_lifecycle_str = json.dumps(data_lifecycle)
 
     return [rre.RuleViolation(
-        resource_name=bucket.id,
+        resource_name='buckets/'+bucket.id,
+        resource_id=bucket.id,
         resource_type=bucket.type,
         full_name=bucket.full_name,
         rule_index=0,

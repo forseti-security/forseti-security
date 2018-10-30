@@ -35,7 +35,7 @@ VIOLATION_TYPE = 'RETENTION_VIOLATION'
 RuleViolation = namedtuple(
     'RuleViolation',
     ['resource_name', 'resource_type', 'full_name', 'rule_name',
-     'rule_index', 'violation_type', 'violation_data', 'resource_data'])
+     'rule_index', 'violation_type', 'violation_data', 'resource_data', 'resource_id'])
 
 
 class RetentionRulesEngine(bre.BaseRulesEngine):
@@ -277,7 +277,8 @@ class Rule(object):
         data_lifecycle_str = json.dumps(data_lifecycle)
 
         return RuleViolation(
-            resource_name=bucket.id,
+            resource_name=bucket.name,
+            resource_id=bucket.id,
             resource_type=bucket.type,
             full_name=bucket.full_name,
             rule_name=self.rule_name,

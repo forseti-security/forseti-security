@@ -33,14 +33,11 @@ from google.cloud.forseti.scanner.scanners import retention_scanner
 do_not_test_old_cases = True
 
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
-    RuleViolation = namedtuple(
-    'RuleViolation',
-    ['resource_name', 'resource_type', 'full_name', 'rule_name',
-     'rule_index', 'violation_type', 'violation_data', 'resource_data'])
     lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule())
 
-    return RuleViolation(
-        resource_name=bucket_id,
+    return rre.RuleViolation(
+        resource_id=bucket_id,
+        resource_name=u'buckets/'+bucket_id,
         resource_type=res_map.get(bucket_id).type,
         full_name=res_map.get(bucket_id).full_name,
         rule_name=rule_name,
