@@ -41,11 +41,11 @@ class ApiClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def fetch_bigquery_dataset_policy(self, project_id, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
-            project_id (str): id of the project to query.
+            project_number (str): id of the project to query.
             dataset_id (str): id of the dataset to query.
         """
 
@@ -795,17 +795,17 @@ class ApiClientImpl(ApiClient):
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
-    def fetch_bigquery_dataset_policy(self, project_id, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
-            project_id (str): id of the project to query.
+            project_number (str): id of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
-        return self.bigquery.get_dataset_access(project_id, dataset_id)
+        return self.bigquery.get_dataset_access(project_number, dataset_id)
 
     @create_lazy('bigquery', _create_bq)
     def iter_bigquery_datasets(self, project_number):

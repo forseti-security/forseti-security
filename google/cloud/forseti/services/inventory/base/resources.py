@@ -817,7 +817,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             dict: Dataset Policy.
         """
         return client.fetch_bigquery_dataset_policy(
-            self.parent().key(),
+            self.parent()['projectNumber'],
             self['datasetReference']['datasetId'])
 
 
