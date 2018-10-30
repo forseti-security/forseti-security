@@ -25,6 +25,7 @@ from tests.unittest_utils import ForsetiTestCase
 class StackdriverExporter(object):
     def __init__(self, transport):
         self.transport = transport
+        self.project_id = "12345678"
 
 
 class TracingTest(ForsetiTestCase):
