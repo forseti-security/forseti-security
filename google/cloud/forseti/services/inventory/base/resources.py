@@ -1705,6 +1705,7 @@ class IamServiceAccountIterator(ResourceIterator):
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
 
+
 class IamServiceAccountKeyIterator(resource_iter_class_factory(
         api_method_name='iter_iam_serviceaccount_exported_keys',
         resource_name='iam_serviceaccount_key',
