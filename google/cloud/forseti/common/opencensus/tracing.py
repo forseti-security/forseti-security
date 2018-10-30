@@ -112,8 +112,7 @@ def create_exporter(transport=None):
     try:
         exporter = stackdriver_exporter.StackdriverExporter(transport=transport)
         LOGGER.info(
-            'StackdriverExporter set up successfully for project %s.',
-            exporter.project_id)
+            'StackdriverExporter set up successfully.')
         return exporter
     except Exception:  # pylint: disable=broad-except
         LOGGER.exception(
