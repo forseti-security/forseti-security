@@ -12,23 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Scanner for the KE version rules engine.
+"""Scanner for the KE rules engine.
 
-Check if the version of running KE clusters and nodes are allowed.
+This scanner allows the user to write rules that extract arbitrary
+values from a KE cluster's JSON representation, and match them against
+a given list of values.  The values can be treated as a whitelist or a
+blacklist.
 
 """
 
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.scanner.audit import ke_version_rules_engine
+from google.cloud.forseti.scanner.audit import ke_rules_engine
 from google.cloud.forseti.scanner.scanners import ke_base_scanner
 
 LOGGER = logger.get_logger(__name__)
 
-KeVersionScannerBase = ke_base_scanner.ke_scanner_factory(
-    'version',
-    ke_version_rules_engine.KeVersionRulesEngine,
+KeScannerBase = ke_base_scanner.ke_scanner_factory(
+    'ke_scanner',
+    ke_rules_engine.KeRulesEngine,
 )
 
 
-class KeVersionScanner(KeVersionScannerBase):
-    """Scanner class for KE version rules."""
+class KeScanner(KeScannerBase):
+    """Scanner class for KE rules."""
