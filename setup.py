@@ -15,7 +15,7 @@
 
 """Setup script for Forseti Security tools."""
 
-import os
+import os #import fn
 import sys
 
 from install.util import build_protos
