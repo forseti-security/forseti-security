@@ -709,12 +709,16 @@ rules:
 
   * `resource_ids`
     * **Description**: A list of one or more resource ids to match.
-    * **Valid values**: String.
+    * **Valid values**: List of strings.
 
 * `applies_to`
   * `type`
     * **Description**: The type of resource to apply the rule to.
     * **Valid values**: Currently only supports `bucket`.
+    
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: List of strings. A single wildcard string is also accepted.
 
 * `locations`:
   * **Description**: A list of resource locations.
