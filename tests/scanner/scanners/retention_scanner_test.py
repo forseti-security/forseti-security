@@ -30,8 +30,6 @@ from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import retention_scanner
 
-do_not_test_old_cases = True
-
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
     lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule())
 

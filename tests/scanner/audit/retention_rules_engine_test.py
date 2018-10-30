@@ -41,8 +41,6 @@ import collections
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.scanner.scanners import retention_scanner
 
-do_not_test_old_cases = True
-
 def get_rules_engine_with_rule(rule):
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
         f.write(rule)
