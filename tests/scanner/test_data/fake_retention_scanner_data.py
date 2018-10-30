@@ -87,41 +87,6 @@ class FakeBucketDataCreater():
         self._parent = project
         self._data_lifecycle = None
 
-    def id(self):
-        return self._id
-
-    def get_data(self):
-        data = {}
-        # 'storage#bucket'
-        data['kind'] = ''
-        data['name'] = self.id()
-        # '2018-09-10T18:36:59.094Z'
-        data['timeCreated'] = ''
-        # 'STANDARD'
-        data['storageClass'] = ''
-        data['labels'] = {}
-        # '2018-09-10T18:36:59.832Z'
-        data['updated'] = ''
-        # '711111111111'
-        data['projectNumber'] = ''
-        data['acl'] = []
-        data['defaultObjectAcl'] = []
-        # '2'
-        data['metageneration'] = ''
-        # 'CAI='
-        data['etag'] = ''
-        # {'entity': 'project-owners-711111111111'}
-        data['owner'] = {}
-        data['id'] = self.id()
-        # 'https://www.googleapis.com/storage/v1/b/'+self.id()
-        data['selfLink'] = ''
-        # 'US-CENTRAL1'
-        data['location'] = ''
-
-        if self._data_lifecycle is not None:
-            data['lifecycle'] = self._data_lifecycle
-        return data
-
     def SetLefecycleDict(self):
         self._data_lifecycle = {"rule": []}
 
@@ -152,9 +117,13 @@ class FakeBucketDataCreater():
         return result
 
     def get_resource(self):
-        data_dict = self.get_data()
+        data_dict = {'id':self._id, 'location':'earth'}
+
+        if self._data_lifecycle is not None:
+            data_dict['lifecycle'] = self._data_lifecycle
+
         data = json.dumps(data_dict)
-        return bucket.Bucket(bucket_id=self.id(),
+        return bucket.Bucket(bucket_id=self._id,
                              parent=self._parent,
-                             full_name=self._parent.full_name+'bucket/'+self.id()+'/',
+                             full_name=self._parent.full_name+'bucket/'+self._id+'/',
                              data=data)
