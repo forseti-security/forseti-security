@@ -3,4 +3,4 @@
 # update_cai_dumps.py script. Any lines that start with a '#' are ignored.
 #
 # Bigquery Dataset
-{"name":"//bigquery.googleapis.com/projects/1042/datasets/bq_test_ds","asset_type":"google.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:eip-cloud-team@google.com","projectEditor:ahoying-dev-test"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:ahoying-dev-test","user:ahoying@google.com"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:google.com","projectViewer:ahoying-dev-test"]}]}}
+{"name":"//bigquery.googleapis.com/projects/1042/datasets/bq_test_ds","asset_type":"google.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:test-group@forseti.testing","projectEditor:project2"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:project2","user:user@forseti.testing"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:forseti.testing","projectViewer:project2"]}]}}
