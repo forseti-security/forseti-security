@@ -73,7 +73,7 @@ if sys.version_info.major > 2:
     sys.exit('Sorry, Python 3 is not supported.')
 
 
-def build_forseti_protos(clean_only=False):
+def build_forseti_protos(clean_only=False): // forset
     """Clean and optionally Build protos.
 
       Args:
@@ -82,7 +82,7 @@ def build_forseti_protos(clean_only=False):
     abs_path = os.path.abspath(__file__)
     build_protos.clean(abs_path)
     if not clean_only:
-        build_protos.make_proto(abs_path)
+        build_protos.make_proto(abs_path) 
 
 
 class BuildProtosCommand(install):
