@@ -176,6 +176,17 @@ def bucket(item):
                          item.get_iam_policy())
 
 
+def serviceaccount(item):
+    parent = item.parent()
+    name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
+        item['projectId'], item['uniqueId'])
+    asset_type = 'google.iam.ServiceAccount'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(),
+                         item.get_iam_policy())
+
+
 def _create_compute_asset(item, asset_type):
     parent = item.parent()
     self_link = '/'.join(item['selfLink'].split('/')[5:])
@@ -239,6 +250,7 @@ CAI_TYPE_MAP = {
     'instance': instance,
     'instancetemplate': instancetemplate,
     'network': network,
+    'serviceaccount': serviceaccount,
     'snapshot': snapshot,
     'subnetwork': subnetwork,
 }
