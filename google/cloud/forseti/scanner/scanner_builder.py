@@ -56,17 +56,14 @@ class ScannerBuilder(object):
                 module_path = 'google.cloud.forseti.scanner.scanners.{}'
 
                 scanner_name = scanner.get('name')
-                scanner_def = \
-                    scanner_requirements_map.\
+                scanner_def = scanner_requirements_map.\
                     REQUIREMENTS_MAP.get(scanner_name)
+                # check if the scanner exists
                 if not scanner_def:
-                    # raise an exception when the scanner
-                    # is not found in requirements_map
                     LOGGER.exception(
-                        'Scanner %s is not defined',
-                        scanner_name)
-
+                        'Undefined scanner: %s', scanner_name)
                 module_name = module_path.format(scanner_def.get('module_name'))
+
                 try:
                     module = importlib.import_module(module_name)
                 except (ImportError, TypeError, ValueError):
