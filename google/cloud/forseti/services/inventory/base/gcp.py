@@ -501,12 +501,13 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def fetch_iam_serviceaccount_iam_policy(self, name):
+    def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
         """Service Account IAM policy from gcp API call.
 
         Args:
             name (str): The service account name to query, must be in the format
                 projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            unique_id (str): The unique id of the service account.
         """
 
     @abc.abstractmethod
@@ -539,11 +540,12 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_iam_serviceaccounts(self, project_id):
+    def iter_iam_serviceaccounts(self, project_id, project_number):
         """Iterate Service Accounts in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -1526,16 +1528,18 @@ class ApiClientImpl(ApiClient):
             yield user
 
     @create_lazy('iam', _create_iam)
-    def fetch_iam_serviceaccount_iam_policy(self, name):
+    def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
         """Service Account IAM policy from gcp API call.
 
         Args:
             name (str): The service account name to query, must be in the format
                 projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            unique_id (str): The unique id of the service account.
 
         Returns:
             dict: Service Account IAM policy.
         """
+        del unique_id  # Used by CAI, not the API.
         return self.iam.get_service_account_iam_policy(name)
 
     @create_lazy('iam', _create_iam)
@@ -1589,15 +1593,17 @@ class ApiClientImpl(ApiClient):
             yield key
 
     @create_lazy('iam', _create_iam)
-    def iter_iam_serviceaccounts(self, project_id):
+    def iter_iam_serviceaccounts(self, project_id, project_number):
         """Iterate Service Accounts in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of service account.
         """
+        del project_number  # Used by CAI, not the API.
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount
 

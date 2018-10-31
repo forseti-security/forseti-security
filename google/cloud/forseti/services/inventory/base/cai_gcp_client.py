@@ -904,6 +904,54 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for version in resources:
             yield version
 
+    def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
+        """Service Account IAM policy from Cloud Asset data.
+
+        Args:
+            name (str): The service account name to query, must be in the format
+                projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            unique_id (str): The unique id of the service account.
+
+        Returns:
+            dict: Service Account IAM policy.
+        """
+        # CAI indexes iam policy by service account unique id, not email.
+        # This transforms the name to the format expected by CAI.
+        name_parts = name.split('/')
+        name_parts[-1] = unique_id
+        name = '/'.join(name_parts)
+
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.iam.ServiceAccount',
+            '//iam.googleapis.com/{}'.format(name),
+            self.session)
+        if resource:
+            return resource
+
+        # Service accounts with no IAM policy return an empty dict.
+        return {}
+
+    def iter_iam_serviceaccounts(self, project_id, project_number):
+        """Iterate Service Accounts in a project from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of service account.
+        """
+        del project_id  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.iam.ServiceAccount',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for serviceaccount in resources:
+            yield serviceaccount
+
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from Cloud Asset data.
 
