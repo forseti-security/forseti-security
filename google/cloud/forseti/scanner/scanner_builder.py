@@ -68,8 +68,8 @@ class ScannerBuilder(object):
 
                 class_name = (
                     scanner_requirements_map.REQUIREMENTS_MAP
-                        .get(scanner.get('name'))
-                        .get('class_name'))
+                    .get(scanner.get('name'))
+                    .get('class_name'))
                 try:
                     scanner_class = getattr(module, class_name)
                 except AttributeError:
