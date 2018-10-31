@@ -55,14 +55,16 @@ class ScannerBuilder(object):
             if scanner.get('enabled'):
                 module_path = 'google.cloud.forseti.scanner.scanners.{}'
 
+                scanner_name = scanner.get('name')
                 scanner_def = \
                     scanner_requirements_map.\
-                    REQUIREMENTS_MAP.\
-                    get(scanner.get('name'))
+                    REQUIREMENTS_MAP.get(scanner_name)
                 if not scanner_def:
-                    # raise an exception when the scanner is not found in requirements_map
-                    raise Exception(
-                        'Scanner is not defined in scanner_requirements_map.py')
+                    # raise an exception when the scanner
+                    # is not found in requirements_map
+                    LOGGER.exception(
+                        'Scanner %s is not defined',
+                        scanner_name)
 
                 module_name = module_path.format(scanner_def.get('module_name'))
                 try:
