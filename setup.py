@@ -27,7 +27,7 @@ import google.cloud.forseti
 
 FORSETI_VERSION = google.cloud.forseti.__version__
 
-NAMESPACE_PACKAGES = [
+NAMESPACE_PACKAGES = [//functions
     'google',
     'google.cloud'
 ]
