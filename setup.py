@@ -14,7 +14,7 @@
 # limitations under the License.
 
 """Setup script for Forseti Security tools."""
-
+//functions
 import os
 import sys
 
