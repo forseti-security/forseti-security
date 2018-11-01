@@ -29,21 +29,21 @@ def dataToBQ(dataset_id,table_id,filename):
     job_config.source_format = bigquery.SourceFormat.CSV
     job_config.skip_leading_rows = 1
     job_config.autodetect = True
-    
+
     with open(filename, 'rb') as source_file:
         job = client.load_table_from_file(
             source_file,
             table_ref,
             location='US',  # Must match the destination dataset location.
             job_config=job_config)  # API request
-            
+
     job.result()  # Waits for table load to complete.
-    
+
     print('Loaded {} rows into {}:{}.'.format(
         job.output_rows, dataset_id, table_id))
 
 def ip_extraction_list(x):
-    
+
     """Pre process ip data.
     
     Args:
@@ -58,10 +58,10 @@ def ip_extraction_list(x):
     for subnet in sub_net:
         l.append(subnet)
     print(len(l))
-    
+
     return l, len(l)
 
-  
+
 def pre_process_firewall_data(resource_data_json,
                               selected_features):
     """Pre process resource data.
@@ -80,6 +80,19 @@ def pre_process_firewall_data(resource_data_json,
     existing_columns = df.columns
 
     new_columns = list(set(existing_columns).intersection(selected_features))
+    df['creation_timestamp'] = df['creation_timestamp'].astype('category').cat.codes
+    df['direction'] = df['direction'].astype('category').cat.codes
+    df['action'] = df['action'].astype('category').cat.codes
+    df['disabled'] = df['disabled'].astype('category').cat.codes
+    df['ip_protocol'] = df['ip_protocol'].astype('category').cat.codes
+    df['ports'] = df['ports'].astype('category').cat.codes
+    df['source_ip_addr'] = df['source_ip_addr'].astype('category').cat.codes
+    df['dest_ip_addr'] = df['dest_ip_addr'].astype('category').cat.codes
+    df['service_account'] = df['service_account'].astype('category').cat.codes
+    df['tag'] = df['tag'].astype('category').cat.codes
+    df['full_name'] = df['full_name'].astype('category').cat.codes
+    df['ip_protocol'] = df['ip_protocol'].astype('category').cat.codes
+    df['network'] = df['network'].astype('category').cat.codes
 
     df = df[new_columns]
 
@@ -101,6 +114,12 @@ if __name__ == '__main__':
 
         flattened_firewall_rules_dict = [i.to_dict() for i in flattened_firewall_rules]
 
+        dataset_id = "forseti"
+        table_id = "forseti_fw_rules"
+
+
+        import machine_learning.model as model
+
         df_filtered = pre_process_firewall_data(
             flattened_firewall_rules_dict,
             ['creation_timestamp',
@@ -108,7 +127,6 @@ if __name__ == '__main__':
              'dest_ip_addr',
              'service_account',
              'tag',
-             'org_id',
              'full_name',
              'action',
              'ip_protocol',
@@ -118,20 +136,10 @@ if __name__ == '__main__':
              'network'])
         print(df_filtered.iloc[0])
 
-        filename = "../sample_dataset.csv"
+        reduced_data = model.dimensionality_reduce(df_filtered, 2)
 
-        df_filtered['source_ip_addr_exp'] = ""
-        df_filtered['source_ips_count'] = ""
-        
-        df_filtered['dest_ip_addr_exp'] = ""
-        df_filtered['dest_ips_count'] = ""
-        
-        df_filtered[['source_ip_addr_exp','source_ips_count']] = df_filtered['source_ip_addr'].apply(lambda x: pd.Series([ip_extraction_list(x)[0],ip_extraction_list(x)[1]]))
-        df_filtered[['dest_ip_addr_exp','dest_ips_count']] = df_filtered['dest_ip_addr'].apply(lambda x: pd.Series([ip_extraction_list(x)[0],ip_extraction_list(x)[1]]))
+        model.visualize_2d(reduced_data, ['pca1', 'pca2'])
 
-        df_filtered.to_csv(filename, sep='\t', encoding='utf-8')
-        
-        dataset_id = "forseti"
-        table_id = "forseti_fw_rules"
+        m = model.k_means(reduced_data, 3, max_iter=100, seed=0)
 
-        #dataToBQ(dataset_id,table_id,filename)
+        print (m)

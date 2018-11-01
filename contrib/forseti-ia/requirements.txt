@@ -1,6 +1,7 @@
 # Run command `pip install -r requirements.txt` to install all the dependencies.
 
 jupyter
+matplotlib
 numpy
 pandas
 scipy

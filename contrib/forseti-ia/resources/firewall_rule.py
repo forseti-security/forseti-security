@@ -164,24 +164,24 @@ class FirewallRule(object):
                 for protocol_mapping in protocol_mappings:
                     ip_protocol = protocol_mapping.get('IPProtocol', '')
                     corresponding_ports = protocol_mapping.get('ports', [])
-
-                    # flattened_ports = cls._flatten_ports(corresponding_ports)
-                    flattened_firewall_rules.append(
-                        FirewallRule(
-                            creation_timestamp=creation_timestamp,
-                            source_ip_addr=ip_addr if is_ingress else None,
-                            dest_ip_addr=ip_addr if not is_ingress else None,
-                            service_account=identifier if not is_tag else None,
-                            tag=identifier if is_tag else None,
-                            action=action,
-                            ip_protocol=ip_protocol,
-                            ports=corresponding_ports,
-                            direction=direction,
-                            disabled=disabled,
-                            network=network,
-                            full_name=resource_full_name,
-                            org_id=org_id
-                        ))
+                    for ports in corresponding_ports:
+                        # flattened_ports = cls._flatten_ports(corresponding_ports)
+                        flattened_firewall_rules.append(
+                            FirewallRule(
+                                creation_timestamp=creation_timestamp,
+                                source_ip_addr=ip_addr if is_ingress else None,
+                                dest_ip_addr=ip_addr if not is_ingress else None,
+                                service_account=identifier if not is_tag else None,
+                                tag=identifier if is_tag else None,
+                                action=action,
+                                ip_protocol=ip_protocol,
+                                ports=ports,
+                                direction=direction,
+                                disabled=disabled,
+                                network=network,
+                                full_name=resource_full_name,
+                                org_id=org_id
+                            ))
         return flattened_firewall_rules
 
     @classmethod
