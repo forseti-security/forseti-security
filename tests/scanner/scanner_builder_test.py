@@ -88,6 +88,7 @@ class ScannerBuilderTest(ForsetiTestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
+        
         self.assertEquals(2, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner', 'IamPolicyScanner']
         for pipeline in runnable_pipelines:
