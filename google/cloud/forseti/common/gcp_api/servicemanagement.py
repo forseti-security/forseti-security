@@ -141,7 +141,7 @@ class ServiceManagementClient(object):
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
     def get_all_apis(self):
-        """Gets all APIs that can be enabled (based on the caller's permissions).
+        """Gets all APIs that can be enabled (based on caller's permissions).
 
         Returns:
             list: A list of ManagedService resource dicts.
@@ -166,7 +166,7 @@ class ServiceManagementClient(object):
             raise api_exception
 
         LOGGER.debug('Getting all visible APIs, flattened_results = %s',
-                      flattened_results)
+                     flattened_results)
         return flattened_results
 
     def get_produced_apis(self, project_id):
@@ -249,14 +249,23 @@ class ServiceManagementClient(object):
         permissions that do not appear in a service's IAM Policy.)
 
         Args:
-            name (str): The service name to query
+            service_name (str): The service name to query.
 
         Returns:
-            dict: The IAM policy
-        """
-        # TODO(bobklein): call to get_name appears here elsewhere in forseti, but is it
-        # better placed within the repository class?
+            dict: A single Policy resource dict.
+            https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/Policy
 
+            {
+              "version": string,
+              "bindings": list(Binding),
+              "auditConfigs": list(AuditConfig),
+              "etag": string,
+            }
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
         # The service_name arg must be formatted as 'services/<service_name>'
         name = self.repository.services.get_formatted_service_name(service_name)
         try:
