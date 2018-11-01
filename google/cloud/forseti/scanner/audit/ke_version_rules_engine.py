@@ -57,7 +57,7 @@ class KeVersionRulesEngine(bre.BaseRulesEngine):
                 self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster, force_rebuild=False):
+    def find_violations(self, ke_cluster, force_rebuild=False):
         """Determine whether Kubernetes Engine cluster version violates rules.
 
         Args:
@@ -196,7 +196,7 @@ class KeVersionRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(ke_cluster))
+                    resource_rule.find_violations(ke_cluster))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -206,7 +206,7 @@ class KeVersionRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(wildcard_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(ke_cluster))
+                    resource_rule.find_violations(ke_cluster))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -229,7 +229,7 @@ class ResourceRules(object):
         self.resource = resource
         self.rules = rules
 
-    def find_policy_violations(self, ke_cluster):
+    def find_violations(self, ke_cluster):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
@@ -240,7 +240,7 @@ class ResourceRules(object):
         """
         violations = []
         for rule in self.rules:
-            rule_violations = rule.find_policy_violations(ke_cluster)
+            rule_violations = rule.find_violations(ke_cluster)
             if rule_violations:
                 violations.extend(rule_violations)
         return violations
@@ -377,7 +377,7 @@ class Rule(object):
         self.allowed_versions = frozenset(allowed_nodepool_versions)
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster):
+    def find_violations(self, ke_cluster):
         """Find KE Version violations in based on the rule.
 
         Args:

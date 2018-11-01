@@ -55,7 +55,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         self.rule_book = BucketsRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, buckets_acls,
+    def find_violations(self, buckets_acls,
                                force_rebuild=False):
         """Determine whether bucket acls violates rules.
 
@@ -76,7 +76,7 @@ class BucketsRulesEngine(bre.BaseRulesEngine):
         for rule in resource_rules:
             violations = itertools.chain(
                 violations,
-                rule.find_policy_violations(buckets_acls))
+                rule.find_violations(buckets_acls))
         return violations
 
     def add_rules(self, rules):
@@ -196,7 +196,7 @@ class Rule(object):
         self.rules = rules
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, bucket_acl):
+    def find_violations(self, bucket_acl):
         """Find bucket policy acl violations in the rule book.
 
         Args:

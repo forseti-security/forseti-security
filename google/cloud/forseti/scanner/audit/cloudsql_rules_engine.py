@@ -55,7 +55,7 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, cloudsql_acls,
+    def find_violations(self, cloudsql_acls,
                                force_rebuild=False):
         """Determine whether CloudSQL acls violates rules.
 
@@ -76,7 +76,7 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         for rule in resource_rules:
             violations = itertools.chain(
                 violations,
-                rule.find_policy_violations(cloudsql_acls))
+                rule.find_violations(cloudsql_acls))
         return violations
 
     def add_rules(self, rules):
@@ -193,7 +193,7 @@ class Rule(object):
         self.rules = rules
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, cloudsql_acl):
+    def find_violations(self, cloudsql_acl):
         """Find CloudSQL policy acl violations in the rule book.
 
         Args:

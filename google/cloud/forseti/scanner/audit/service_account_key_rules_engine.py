@@ -55,7 +55,7 @@ class ServiceAccountKeyRulesEngine(bre.BaseRulesEngine):
                 self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, service_account, force_rebuild=False):
+    def find_violations(self, service_account, force_rebuild=False):
         """Determine whether service account key age violates rules.
 
         Args:
@@ -187,7 +187,7 @@ class ServiceAccountKeyRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(service_account))
+                    resource_rule.find_violations(service_account))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -197,7 +197,7 @@ class ServiceAccountKeyRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(wildcard_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(service_account))
+                    resource_rule.find_violations(service_account))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -220,7 +220,7 @@ class ResourceRules(object):
         self.resource = resource
         self.rules = rules
 
-    def find_policy_violations(self, service_account):
+    def find_violations(self, service_account):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
@@ -231,7 +231,7 @@ class ResourceRules(object):
         """
         violations = []
         for rule in self.rules:
-            rule_violations = rule.find_policy_violations(service_account)
+            rule_violations = rule.find_violations(service_account)
             if rule_violations:
                 violations.extend(rule_violations)
         return violations
@@ -308,7 +308,7 @@ class Rule(object):
             return True
         return False
 
-    def find_policy_violations(self, service_account):
+    def find_violations(self, service_account):
         """Find service account key age violations based on the max_age.
 
         Args:

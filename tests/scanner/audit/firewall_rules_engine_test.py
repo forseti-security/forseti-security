@@ -567,7 +567,7 @@ class RuleTest(ForsetiTestCase):
         for policy_dict in policy_dicts:
             policy = FirewallRule(**policy_dict)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     @parameterized.parameterized.expand([
@@ -717,7 +717,7 @@ class RuleTest(ForsetiTestCase):
             project = policy_dict.get('project_id')
             policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     @parameterized.parameterized.expand([
@@ -812,7 +812,7 @@ class RuleTest(ForsetiTestCase):
             project = policy_dict.get('project_id')
             policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     @parameterized.parameterized.expand([
@@ -1024,7 +1024,7 @@ class RuleTest(ForsetiTestCase):
             project = policy_dict.get('project_id')
             policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     def assert_rule_violation_lists_equal(self, expected, violations):
@@ -1665,7 +1665,7 @@ class RuleEngineTest(ForsetiTestCase):
         rules_engine.rule_book.org_res_rel_dao = mock.Mock()
         rules_engine.rule_book.org_res_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
-        violations = rules_engine.find_policy_violations(resource, [policy])
+        violations = rules_engine.find_violations(resource, [policy])
         expected_violations = [
             fre.RuleViolation(**v) for v in expected_violations_dicts]
         self.assert_rule_violation_lists_equal(expected_violations, violations)
