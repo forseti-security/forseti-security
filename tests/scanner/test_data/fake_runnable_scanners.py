@@ -37,7 +37,7 @@ TWO_ENABLED = {'scanners': [
     {'name': 'iam_policy', 'enabled': True}
 ]}
 
-NONEXIST_ENABLED = {'scanners': [
+NONEXISTENT_ENABLED = {'scanners': [
     {'name': 'bigquery', 'enabled': False},
     {'name': 'bucket_acl', 'enabled': True},
     {'name': 'cloudsql_acl', 'enabled': False},
