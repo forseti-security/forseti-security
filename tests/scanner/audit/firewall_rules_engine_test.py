@@ -560,7 +560,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_blacklist(
+    def test_find_violations_blacklist(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
@@ -709,7 +709,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_whitelist(
+    def test_find_violations_whitelist(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
@@ -804,7 +804,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_exists(
+    def test_find_violations_exists(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
@@ -1016,7 +1016,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_matches(
+    def test_find_violations_matches(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
