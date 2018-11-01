@@ -70,8 +70,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_violations(self, parent_project, bq_acl,
-                               force_rebuild=False):
+    def find_violations(self, parent_project, bq_acl, force_rebuild=False):
         """Determine whether Big Query datasets violate rules.
 
         Args:

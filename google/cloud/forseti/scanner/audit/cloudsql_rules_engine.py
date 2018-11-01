@@ -55,8 +55,7 @@ class CloudSqlRulesEngine(bre.BaseRulesEngine):
         self.rule_book = CloudSqlRuleBook(self._load_rule_definitions())
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_violations(self, cloudsql_acls,
-                               force_rebuild=False):
+    def find_violations(self, cloudsql_acls, force_rebuild=False):
         """Determine whether CloudSQL acls violates rules.
 
         Args:
