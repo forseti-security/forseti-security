@@ -111,7 +111,7 @@ class RetentionScanner(base_scanner.BaseScanner):
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
-        retention_info = []
+        retention_res = []
         with scoped_session as session:
             for resource_type in rre.SUPPORTED_RETENTION_RES_TYPES:
                 for resource in data_access.scanner_iter(
@@ -121,9 +121,9 @@ class RetentionScanner(base_scanner.BaseScanner):
                         full_name=resource.parent.full_name)
                     new_res = resource_util.create_resource_from_json(
                         resource_type, proj, resource.data)
-                    retention_info.append(new_res)
+                    retention_res.append(new_res)
 
-        return retention_info
+        return retention_res
 
     def run(self):
         """Run, he entry point for this scanner."""

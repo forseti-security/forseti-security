@@ -81,6 +81,7 @@ def create_resource(resource_id, resource_type, **kwargs):
 
 def create_resource_from_json(resource_type, parent, json_string):
     """Factory to create a certain kind of Resource from JSON data.
+
     Args:
         resource_type (str): The resource type.
         parent (Resource): parent resource of this type.

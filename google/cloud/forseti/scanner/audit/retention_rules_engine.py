@@ -105,8 +105,8 @@ def get_retention_range(rule_def, rule_index):
     Returns:
         pair: the minimum and maximum value of the Age.
     """
-    minimum_retention = rule_def.get('minimum_retention', None)
-    maximum_retention = rule_def.get('maximum_retention', None)
+    minimum_retention = rule_def.get('minimum_retention')
+    maximum_retention = rule_def.get('maximum_retention')
     if minimum_retention is None and maximum_retention is None:
         raise audit_errors.InvalidRulesSchemaError(
             'Lack of minimum_retention and '
@@ -168,7 +168,8 @@ class RetentionRuleBook(bre.BaseRuleBook):
             minimum_retention, maximum_retention = get_retention_range(
                 rule_def, rule_index)
 
-            if any(x not in SUPPORTED_RETENTION_RES_TYPES for x in applies_to):
+            if any(support_type not in SUPPORTED_RETENTION_RES_TYPES
+                   for support_type in applies_to):
                 raise audit_errors.InvalidRulesSchemaError(
                     'Invalid applies_to resource in rule {}'.format(rule_index))
 
@@ -291,6 +292,7 @@ class Rule(object):
 
     def find_violations(self, res):
         """Get a generator for violations
+
         Args:
             res (Resource): A class derived from Resource
         Returns:
@@ -303,6 +305,9 @@ class Rule(object):
 
     def bucket_max_retention_violation(self, bucket):
         """Get a generator for violations especially for maximum retention
+           It only supports bucket for now, and will work on generalizing
+           in future PRs.
+
         Args:
             bucket (bucket): Find violation from the bucket
         Yields:
@@ -313,7 +318,7 @@ class Rule(object):
 
         # There should be a condition which guarantees to delete data
         bucket_lifecycle = bucket.get_lifecycle_rule()
-        if bucket_lifecycle is None:
+        if not bucket_lifecycle:
             yield self.generate_bucket_violation(bucket)
         else:
             for lc_item in bucket_lifecycle:
@@ -328,6 +333,7 @@ class Rule(object):
 
     def bucket_min_retention_violation(self, bucket):
         """Get a generator for violations especially for minimum retention
+
         Args:
             bucket (bucket): Find violation from the bucket
         Yields:
@@ -337,12 +343,11 @@ class Rule(object):
             return
 
         bucket_lifecycle = bucket.get_lifecycle_rule()
-        if bucket_lifecycle is not None:
-            for lc_item in bucket_lifecycle:
-                if (lc_item.get('action', {}).get('type') == 'Delete' and
-                        not bucket_conditions_guarantee_min(
-                            lc_item.get('condition', {}), self.min_retention)):
-                    yield self.generate_bucket_violation(bucket)
+        for lc_item in bucket_lifecycle:
+            if (lc_item.get('action', {}).get('type') == 'Delete' and
+                    not bucket_conditions_guarantee_min(
+                        lc_item.get('condition', {}), self.min_retention)):
+                yield self.generate_bucket_violation(bucket)
 
     def find_violations_in_bucket(self, bucket):
         """Get a generator for violations

@@ -100,4 +100,4 @@ class Bucket(resource.Resource):
         bucket_dict = json.loads(self.data)
         if 'lifecycle' in bucket_dict and 'rule' in bucket_dict['lifecycle']:
             return bucket_dict['lifecycle']['rule']
-        return None
+        return {}
