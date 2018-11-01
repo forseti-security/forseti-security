@@ -60,8 +60,8 @@ class ScannerBuilder(object):
                     REQUIREMENTS_MAP.get(scanner_name)
                 # check if the scanner exists
                 if not scanner_def:
-                    LOGGER.exception(
-                        'Undefined scanner: %s', scanner_name)
+                    LOGGER.warn('Scanner is undefined')
+                    continue
                 module_name = module_path.format(scanner_def.get('module_name'))
 
                 try:

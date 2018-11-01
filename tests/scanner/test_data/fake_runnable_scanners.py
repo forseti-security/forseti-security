@@ -36,3 +36,17 @@ TWO_ENABLED = {'scanners': [
     {'name': 'cloudsql_acl', 'enabled': False},
     {'name': 'iam_policy', 'enabled': True}
 ]}
+
+NONEXIST_ENABLED = {'scanners': [
+    {'name': 'bigquery', 'enabled': False},
+    {'name': 'bucket_acl', 'enabled': True},
+    {'name': 'cloudsql_acl', 'enabled': False},
+    {'name': 'non_exist_scanner', 'enabled': True}
+]}
+
+ALL_EXIST = {'scanners': [
+    {'name': 'bigquery', 'enabled': True},
+    {'name': 'bucket_acl', 'enabled': True},
+    {'name': 'cloudsql_acl', 'enabled': True},
+    {'name': 'iam_policy', 'enabled': True}
+]}

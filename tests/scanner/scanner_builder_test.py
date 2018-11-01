@@ -88,8 +88,28 @@ class ScannerBuilderTest(ForsetiTestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-
         self.assertEquals(2, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner', 'IamPolicyScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
+
+    @mock.patch('google.cloud.forseti.scanner.scanner_builder.LOGGER',
+                autospec=True)
+    def testNonExistEnabled(self, mock_logging):
+
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.NONEXIST_ENABLED,
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
+        builder.build()
+        mock_logging.warn.assert_called_with('Scanner is undefined')
+
+    @mock.patch('google.cloud.forseti.scanner.scanner_builder.LOGGER',
+                autospec=True)
+    def testAllExistEnabled(self, mock_logging):
+
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_EXIST,
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
+        builder.build()
+        self.assertFalse(mock_logging.warn.called)
+
