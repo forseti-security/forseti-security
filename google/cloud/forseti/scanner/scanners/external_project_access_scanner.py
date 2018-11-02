@@ -251,7 +251,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
                 'resource_data': violation.resource_data
             }
 
-    def _get_crm_client_(self, user_email):
+    def _get_crm_client(self, user_email):
         """Get a user scoped CloudResourceManagerClient.
 
         Args:
@@ -294,7 +294,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         for user_email in user_emails:
             user_count += 1
             try:
-                user_crm_client = self._get_crm_client_(user_email)
+                user_crm_client = self._get_crm_client(user_email)
 
                 project_ids = extract_project_ids(user_crm_client)
                 ancestries = get_project_ancestries(user_crm_client,
