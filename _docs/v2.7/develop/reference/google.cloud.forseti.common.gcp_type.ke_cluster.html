@@ -1,0 +1,109 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_type.ke_cluster module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_type.ke_cluster">
+<span id="google-cloud-forseti-common-gcp-type-ke-cluster-module"></span><h1>google.cloud.forseti.common.gcp_type.ke_cluster module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_type.ke_cluster" title="Permalink to this headline">¶</a></h1>
+<p>A Kubernetes Engine Cluster object.</p>
+<p>See: <a class="reference external" href="https://cloud.google.com/kubernetes-engine/docs/">https://cloud.google.com/kubernetes-engine/docs/</a></p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster">
+<em class="property">class </em><code class="descname">KeCluster</code><span class="sig-paren">(</span><em>project_id</em>, <em>name</em>, <em>description</em>, <em>initial_node_count</em>, <em>node_config</em>, <em>logging_service</em>, <em>monitoring_service</em>, <em>network</em>, <em>cluster_ipv4_cidr</em>, <em>addons_config</em>, <em>subnetwork</em>, <em>node_pools</em>, <em>locations</em>, <em>enable_kubernetes_alpha</em>, <em>resource_labels</em>, <em>label_fingerprint</em>, <em>legacy_abac</em>, <em>network_policy</em>, <em>ip_allocation_policy</em>, <em>master_authorized_networks_config</em>, <em>maintenance_policy</em>, <em>zone</em>, <em>endpoint</em>, <em>initial_cluster_version</em>, <em>current_master_version</em>, <em>current_node_version</em>, <em>create_time</em>, <em>status</em>, <em>status_message</em>, <em>node_ipv4_cidr_size</em>, <em>instance_group_urls</em>, <em>current_node_count</em>, <em>expire_time</em>, <em>server_config=None</em>, <em>resource_full_name=None</em>, <em>raw_json=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/ke_cluster.html#KeCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents KE Cluster resource.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.__hash__">
+<code class="descname">__hash__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/ke_cluster.html#KeCluster.__hash__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.__hash__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return hash of properties.
+:returns: The hash of the class properties.
+:rtype: hash</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/ke_cluster.html#KeCluster.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation.
+:returns: Json string.
+:rtype: str</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.as_dict">
+<code class="descname">as_dict</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the dictionary representation of the cluster.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">deserialized json object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.from_dict">
+<em class="property">classmethod </em><code class="descname">from_dict</code><span class="sig-paren">(</span><em>project_id</em>, <em>server_config</em>, <em>cluster</em>, <em>resource_full_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/ke_cluster.html#KeCluster.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ForwardingRule object from dict.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – The project id.</li>
+<li><strong>server_config</strong> (<em>dict</em>) – The ServerConfig for the cluster’s zone.</li>
+<li><strong>cluster</strong> (<em>dict</em>) – The KE Cluster resource.</li>
+<li><strong>resource_full_name</strong> (<em>str</em>) – The full resource name and ancestory.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new KeCluster object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster" title="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster">KeCluster</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.from_json">
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>project_id</em>, <em>server_config</em>, <em>cluster</em>, <em>resource_full_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_type/ke_cluster.html#KeCluster.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster.from_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new ForwardingRule object from json data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>project_id</strong> (<em>str</em>) – the project id.</li>
+<li><strong>server_config</strong> (<em>str</em>) – The json string representations of the
+ServerConfig for the cluster’s zone.</li>
+<li><strong>cluster</strong> (<em>str</em>) – The json string representation of the KE Cluster
+resource.</li>
+<li><strong>resource_full_name</strong> (<em>str</em>) – The full resource name and ancestory.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A new KeCluster object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster" title="google.cloud.forseti.common.gcp_type.ke_cluster.KeCluster">KeCluster</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+

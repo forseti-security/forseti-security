@@ -1,0 +1,7 @@
+google.cloud.forseti.common.util.string\_formats module
+=======================================================
+
+.. automodule:: google.cloud.forseti.common.util.string_formats
+    :members:
+    :undoc-members:
+    :show-inheritance:

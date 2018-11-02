@@ -1,0 +1,103 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.logger module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.util.logger">
+<span id="google-cloud-forseti-common-util-logger-module"></span><h1>google.cloud.forseti.common.util.logger module<a class="headerlink" href="#module-google.cloud.forseti.common.util.logger" title="Permalink to this headline">¶</a></h1>
+<p>A basic util that wraps logging.</p>
+<p>Setup logging for Forseti Security. Logs to console and syslog.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.logger._create_syslog_handler">
+<code class="descname">_create_syslog_handler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/logger.html#_create_syslog_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.logger._create_syslog_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the syslog handler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A configured syslog handler.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">handler</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.logger._map_logger">
+<code class="descname">_map_logger</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/logger.html#_map_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.logger._map_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map function to current loggers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>func</strong> (<em>function</em>) – Function to call on every logger.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.logger.enable_console_log">
+<code class="descname">enable_console_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/logger.html#enable_console_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.logger.enable_console_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable console logging for all the new loggers and add console
+handlers to all the existing loggers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.logger.get_logger">
+<code class="descname">get_logger</code><span class="sig-paren">(</span><em>module_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/logger.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.logger.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup the logger.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>module_name</strong> (<em>str</em>) – The name of the mdule to describe the log entry.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">An instance of the configured logger.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">logger</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.logger.set_logger_level">
+<code class="descname">set_logger_level</code><span class="sig-paren">(</span><em>level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/logger.html#set_logger_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.logger.set_logger_level" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Modify log level of existing loggers as well as the default</dt>
+<dd>for new loggers.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level</strong> (<em>int</em>) – The log level to set the loggers to.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.util.logger.set_logger_level_from_config">
+<code class="descname">set_logger_level_from_config</code><span class="sig-paren">(</span><em>level_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/util/logger.html#set_logger_level_from_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.util.logger.set_logger_level_from_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the logger level from a config value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>level_name</strong> (<em>str</em>) – The log level name. The accepted values are
+in the LOGLEVELS variable.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
