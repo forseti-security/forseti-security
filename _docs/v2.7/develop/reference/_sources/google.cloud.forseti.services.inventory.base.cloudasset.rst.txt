@@ -1,0 +1,7 @@
+google.cloud.forseti.services.inventory.base.cloudasset module
+==============================================================
+
+.. automodule:: google.cloud.forseti.services.inventory.base.cloudasset
+    :members:
+    :undoc-members:
+    :show-inheritance:

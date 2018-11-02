@@ -1,0 +1,167 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.api_helpers module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.api_helpers">
+<span id="google-cloud-forseti-common-gcp-api-api-helpers-module"></span><h1>google.cloud.forseti.common.gcp_api.api_helpers module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.api_helpers" title="Permalink to this headline">¶</a></h1>
+<p>Helper functions for API clients.</p>
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.api_helpers.flatten_aggregated_list_results">
+<code class="descname">flatten_aggregated_list_results</code><span class="sig-paren">(</span><em>paged_results</em>, <em>item_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/api_helpers.html#flatten_aggregated_list_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.api_helpers.flatten_aggregated_list_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten a split-up list as returned by GCE “aggregatedList” API.</p>
+<p>The compute API’s aggregatedList methods return a structure in
+the form:</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>{</dt>
+<dd><dl class="first docutils">
+<dt>items: {</dt>
+<dd><dl class="first docutils">
+<dt>$group_value_1: {</dt>
+<dd>$item_key: [$items]</dd>
+</dl>
+<p>},
+$group_value_2: {</p>
+<blockquote>
+<div>$item_key: [$items]</div></blockquote>
+<p>},
+$group_value_3: {</p>
+<blockquote>
+<div><dl class="docutils">
+<dt>“warning”: {</dt>
+<dd>message: “There are no results for …”</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>},
+…,
+$group_value_n, {</p>
+<blockquote>
+<div>$item_key: [$items]</div></blockquote>
+<p class="last">},</p>
+</dd>
+</dl>
+<p class="last">}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>where each “$group_value_n” is a particular element in the
+aggregation, e.g. a particular zone or group or whatever, and
+“$item_key” is some type-specific resource name, e.g.
+“backendServices” for an aggregated list of backend services.</p>
+<p>This method takes such a structure and yields a simple list of
+all $items across all of the groups.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>paged_results</strong> (<em>list</em>) – A list of paged API response objects.
+[{page 1 results}, {page 2 results}, {page 3 results}, …]</li>
+<li><strong>item_key</strong> (<em>str</em>) – The name of the key within the inner “items” lists
+containing the objects of interest.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of items.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.api_helpers.flatten_list_results">
+<code class="descname">flatten_list_results</code><span class="sig-paren">(</span><em>paged_results</em>, <em>item_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/api_helpers.html#flatten_list_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.api_helpers.flatten_list_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten a split-up list as returned by list_next() API.</p>
+<dl class="docutils">
+<dt>GCE ‘list’ APIs return results in the form:</dt>
+<dd>{item_key: […]}</dd>
+</dl>
+<p>with one dictionary for each “page” of results. This method flattens
+that to a simple list of items.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>paged_results</strong> (<em>list</em>) – A list of paged API response objects.
+[{page 1 results}, {page 2 results}, {page 3 results}, …]</li>
+<li><strong>item_key</strong> (<em>str</em>) – The name of the key within the inner “items” lists
+containing the objects of interest.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A list of items.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.api_helpers.get_delegated_credential">
+<code class="descname">get_delegated_credential</code><span class="sig-paren">(</span><em>delegated_account</em>, <em>scopes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/api_helpers.html#get_delegated_credential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.api_helpers.get_delegated_credential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build delegated credentials required for accessing the gsuite APIs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>delegated_account</strong> (<em>str</em>) – The account to delegate the service account to
+use.</li>
+<li><strong>scopes</strong> (<em>list</em>) – The list of required scopes for the service account.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Credentials as built by
+google.oauth2.service_account.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">service_account.Credentials</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.common.gcp_api.api_helpers.get_ratelimiter_config">
+<code class="descname">get_ratelimiter_config</code><span class="sig-paren">(</span><em>global_configs</em>, <em>api_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/api_helpers.html#get_ratelimiter_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.api_helpers.get_ratelimiter_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get rate limiter configuration.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>global_configs</strong> (<em>dict</em>) – Global configurations.</li>
+<li><strong>api_name</strong> (<em>String</em>) – The name of the api.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Max calls
+float: quota period)</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
