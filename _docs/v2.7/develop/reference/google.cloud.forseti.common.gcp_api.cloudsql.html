@@ -1,0 +1,69 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.gcp_api.cloudsql module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.common.gcp_api.cloudsql">
+<span id="google-cloud-forseti-common-gcp-api-cloudsql-module"></span><h1>google.cloud.forseti.common.gcp_api.cloudsql module<a class="headerlink" href="#module-google.cloud.forseti.common.gcp_api.cloudsql" title="Permalink to this headline">¶</a></h1>
+<p>Wrapper for SQL API client.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudsql.CloudSqlRepositoryClient">
+<em class="property">class </em><code class="descname">CloudSqlRepositoryClient</code><span class="sig-paren">(</span><em>quota_max_calls=None</em>, <em>quota_period=1.0</em>, <em>use_rate_limiter=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudsql.html#CloudSqlRepositoryClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudsql.CloudSqlRepositoryClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient" title="google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.BaseRepositoryClient</span></code></a></p>
+<p>Cloud SQL Admin API Respository.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.common.gcp_api.cloudsql.CloudSqlRepositoryClient.instances">
+<code class="descname">instances</code><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudsql.CloudSqlRepositoryClient.instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a _CloudSqlInstancesRepository instance.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudsql.CloudsqlClient">
+<em class="property">class </em><code class="descname">CloudsqlClient</code><span class="sig-paren">(</span><em>global_configs</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudsql.html#CloudsqlClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudsql.CloudsqlClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>CloudSQL Client.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.common.gcp_api.cloudsql.CloudsqlClient.get_instances">
+<code class="descname">get_instances</code><span class="sig-paren">(</span><em>project_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudsql.html#CloudsqlClient.get_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudsql.CloudsqlClient.get_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all CloudSQL instances for a project.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>project_id</strong> (<em>int</em>) – The project id for a GCP project.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A list of database Instance resource dicts for a project_id.
+<a class="reference external" href="https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances">https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances</a><dl class="docutils">
+<dt>[{“kind”: “sql#instance”, “name”: “sql_instance1”, …}</dt>
+<dd>{“kind”: “sql#instance”, “name”: “sql_instance2”, …},
+{…}]</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ApiExecutionError</span></code> – ApiExecutionError is raised if the call to the
+GCP ClodSQL API fails</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.common.gcp_api.cloudsql._CloudSqlInstancesRepository">
+<em class="property">class </em><code class="descname">_CloudSqlInstancesRepository</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/common/gcp_api/cloudsql.html#_CloudSqlInstancesRepository"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.common.gcp_api.cloudsql._CloudSqlInstancesRepository" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="google.cloud.forseti.common.gcp_api.repository_mixins.html#google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin" title="google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api.repository_mixins.ListQueryMixin</span></code></a>, <a class="reference internal" href="google.cloud.forseti.common.gcp_api._base_repository.html#google.cloud.forseti.common.gcp_api._base_repository.GCPRepository" title="google.cloud.forseti.common.gcp_api._base_repository.GCPRepository"><code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.common.gcp_api._base_repository.GCPRepository</span></code></a></p>
+<p>Implementation of CloudSql Instances repository.</p>
+</dd></dl>
+
+</div>
+
