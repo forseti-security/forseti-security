@@ -671,6 +671,44 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
+1. Configuration file `forseti_conf_server.yaml` updates:  
+    **Scanner**
+    - Update the `scanners` section to include `ke_scanner`.
+    ```
+    scanner:
+    ...
+        scanners:
+            ...
+            - name: ke_scanner
+              enabled: false
+            ...
+    ```
+    
+    **Notifier**
+    - Update the `resources` section to include `ke_violations`.
+    ```
+    notifier:
+        ...
+        resources:
+            ...
+            - resource: ke_violations
+              should_notify: true
+              notifiers:
+                # Email violations
+                - name: email_violations
+                  configuration:
+                    sendgrid_api_key: {SENDGRID_API_KEY}
+                    sender: {EMAIL_SENDER}
+                    recipient: {EMAIL_RECIPIENT}
+                # Upload violations to GCS.
+                - name: gcs_violations
+                  configuration:
+                    data_format: csv
+                    # gcs_path should begin with "gs://"
+                    gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+            ...
+        ...
+    ```
 
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.6.0 to 2.7.0" content=upgrading_2_6_0_to_2_7_0 uid=8 %}
