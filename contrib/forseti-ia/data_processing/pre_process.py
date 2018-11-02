@@ -22,8 +22,9 @@ def dataToBQ(dataset_id,table_id,filename):
     # dataset_id = 'my_dataset'
     # table_id = 'my_table'
 
-    client = bigquery.Client.from_service_account_json(
-        "forseti_pycharm.json")
+    #client = bigquery.Client.from_service_account_json(
+    #    "forseti_pycharm.json")
+    client = bigquery.Client()
     dataset_ref = client.dataset(dataset_id)
     table_ref = dataset_ref.table(table_id)
     job_config = bigquery.LoadJobConfig()
