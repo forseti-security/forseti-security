@@ -203,7 +203,6 @@ class ServiceManagementClient(object):
                      'flattened_results = %s', project_id, flattened_results)
         return flattened_results
 
-
     def get_enabled_apis(self, project_id):
         """Gets the enabled APIs for a project.
 
