@@ -18,8 +18,6 @@ import binascii
 import os
 import grpc
 
-from google.cloud.forseti.common.opencensus import tracing
-
 from google.cloud.forseti.services.explain import explain_pb2
 from google.cloud.forseti.services.explain import explain_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory_pb2
@@ -36,7 +34,6 @@ from google.cloud.forseti.services.utils import oneof
 
 
 # pylint: disable=too-many-instance-attributes
-
 
 class ModelNotSetError(Exception):
     """ModelNotSetError."""
@@ -70,23 +67,6 @@ def require_model(f):
             return f(*args, **kwargs)
         raise ModelNotSetError('API requires model to be set.')
     return wrapper
-
-
-def create_interceptors(endpoint):
-    """Create gRPC client interceptors.
-
-    Args:
-        endpoint (str): The gRPC server endpoint. E.g: 'localhost:443'
-
-    Returns:
-        tuple: A tuple of interceptors.
-    """
-    interceptors = []
-    if tracing.OPENCENSUS_ENABLED:
-        # It's okay for this to be enabled on the client, even if the tracing
-        # flag is disabled on the server.
-        interceptors.append(tracing.create_client_interceptor(endpoint))
-    return tuple(interceptors)
 
 
 class ClientConfig(dict):
@@ -738,10 +718,7 @@ class ClientComposition(object):
         Raises:
             Exception: gRPC connected but services not registered
         """
-        interceptors = create_interceptors(endpoint)
-        self.channel = grpc.intercept_channel(
-            grpc.insecure_channel(endpoint),
-            *interceptors)
+        self.channel = grpc.insecure_channel(endpoint)
         self.config = ClientConfig({'channel': self.channel, 'handle': ''})
 
         self.explain = ExplainClient(self.config)
