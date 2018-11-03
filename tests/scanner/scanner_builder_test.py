@@ -48,12 +48,12 @@ class ScannerBuilderTest(ForsetiTestCase):
                        mock_bucket_rules_engine,
                        mock_cloudsql_rules_engine,
                        mock_iam_rules_engine,
-                       mock_logging):
+                       mock_logger):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        self.assertFalse(mock_logging.called)
+        self.assertFalse(mock_logger.called)
         self.assertEquals(4, len(runnable_pipelines))
 
         expected_pipelines = ['BigqueryScanner', 'BucketsAclScanner',
@@ -91,7 +91,6 @@ class ScannerBuilderTest(ForsetiTestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        
         self.assertEquals(2, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner', 'IamPolicyScanner']
         for pipeline in runnable_pipelines:
@@ -99,15 +98,15 @@ class ScannerBuilderTest(ForsetiTestCase):
 
     @mock.patch('google.cloud.forseti.scanner.scanner_builder.LOGGER',
                 autospec=True)
-    def testNonExistentScannerIsHandled(self, mock_logging):
+    def testNonExistentScannerIsHandled(self, mock_logger):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.NONEXISTENT_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-        mock_logging.error.assert_called_with('Configured scanner is undefined: %s', 'non_exist_scanner')
+        mock_logger.error.assert_called_with(
+            'Configured scanner is undefined: %s', 'non_exist_scanner')
 
         self.assertEquals(1, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
-
