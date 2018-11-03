@@ -56,7 +56,6 @@ class KeVersionRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KeVersionRuleBook(
                 self._load_rule_definitions())
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violations(self, ke_cluster, force_rebuild=False):
         """Determine whether Kubernetes Engine cluster version violates rules.
 
@@ -376,7 +375,6 @@ class Rule(object):
             check_serverconfig_valid_master_versions)
         self.allowed_versions = frozenset(allowed_nodepool_versions)
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violations(self, ke_cluster):
         """Find KE Version violations in based on the rule.
 

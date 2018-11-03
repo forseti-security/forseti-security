@@ -57,7 +57,6 @@ class KeRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KeRuleBook(
                 self._load_rule_definitions())
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violations(self, ke_cluster, force_rebuild=False):
         """Check if KE cluster satisfies provided  rules.
 
@@ -304,7 +303,6 @@ class Rule(object):
         # compile right away to return exceptions asap
         self.rule_jmespath = jmespath.compile(self.rule_key)
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violations(self, ke_cluster):
         """Find KE violations in based on the rule.
 

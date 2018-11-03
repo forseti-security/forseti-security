@@ -54,7 +54,6 @@ class ServiceAccountKeyRulesEngine(bre.BaseRulesEngine):
             self.rule_book = ServiceAccountKeyRuleBook(
                 self._load_rule_definitions())
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violations(self, service_account, force_rebuild=False):
         """Determine whether service account key age violates rules.
 
