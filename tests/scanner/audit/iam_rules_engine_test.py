@@ -427,7 +427,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         ))
@@ -491,7 +491,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         ))
@@ -530,7 +530,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         ))
@@ -559,7 +559,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project1_policy_resource.data = json.dumps({})
 
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource, [])
         ))
 
@@ -606,10 +606,10 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings),
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project2, self.mock_project2_policy_resource,
                 rule_bindings)
         ))
@@ -705,7 +705,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.org789, self.mock_org_policy_resource, rule_bindings),
         ))
 
@@ -765,9 +765,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
 
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.org789, self.mock_org_policy_resource, org_bindings),
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 project_bindings)
         ))
@@ -874,9 +874,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
 
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.org789, self.mock_org_policy_resource, org_bindings),
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 project_bindings)
         ))
@@ -954,7 +954,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         )
@@ -999,7 +999,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         )
@@ -1064,7 +1064,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         )
@@ -1129,7 +1129,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         )
@@ -1190,9 +1190,9 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
 
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.org789, self.mock_org_policy_resource, org_bindings),
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 project_bindings)
         ))
@@ -1255,7 +1255,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         )
@@ -1316,7 +1316,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings))
 
@@ -1386,7 +1386,7 @@ class IamRulesEngineTest(ForsetiTestCase):
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
         actual_violations = set(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.project1, self.mock_project1_policy_resource,
                 rule_bindings)
         )
@@ -1471,10 +1471,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project1_policy_resource.data = json.dumps(project_policy)
 
         actual_violations = set(itertools.chain(
-                rules_engine.find_policy_violations(
+                rules_engine.find_violations(
                     self.folder1, self.mock_folder1_policy_resource,
                     folder_bindings),
-                rules_engine.find_policy_violations(
+                rules_engine.find_violations(
                     self.project3, self.mock_project1_policy_resource,
                     project_bindings)
             )
@@ -1546,10 +1546,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_project2_policy_resource.data = json.dumps(project2_policy)
 
         actual_violations = set(itertools.chain(
-                rules_engine.find_policy_violations(
+                rules_engine.find_violations(
                     self.project1, self.mock_project1_policy_resource,
                     project1_bindings),
-                rules_engine.find_policy_violations(
+                rules_engine.find_violations(
                     self.project2, self.mock_project2_policy_resource,
                     project2_bindings)
             )
@@ -1603,7 +1603,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rule_bindings = filter(None, [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
         expected_violations = set()
@@ -1640,7 +1640,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rule_bindings = filter(None, [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
         expected_violations = set()
@@ -1674,7 +1674,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rule_bindings = filter(None, [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
         expected_outstanding = {
@@ -1729,7 +1729,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rule_bindings = filter(None, [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.project1, self.mock_project1_policy_resource, rule_bindings))
 
         expected_outstanding = {
@@ -1787,7 +1787,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rule_bindings = filter(None, [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.bucket_2_1, self.bucket_2_1_policy_resource, rule_bindings))
 
         expected_violations = set()
@@ -1829,7 +1829,7 @@ class IamRulesEngineTest(ForsetiTestCase):
         rule_bindings = filter(None, [ # pylint: disable=bad-builtin
             iam_policy.IamPolicyBinding.create_from(b)
             for b in policy.get('bindings')])
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.bucket_2_1, self.bucket_2_1_policy_resource, rule_bindings))
 
         expected_outstanding = {
@@ -1905,10 +1905,10 @@ class IamRulesEngineTest(ForsetiTestCase):
         self.mock_billing_acct2_policy_resource.data = json.dumps(
             billing2_policy)
         actual_violations = set(itertools.chain(
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.billing_acct1, self.mock_billing_acct1_policy_resource,
                 billing1_bindings),
-            rules_engine.find_policy_violations(
+            rules_engine.find_violations(
                 self.billing_acct2, self.mock_billing_acct2_policy_resource,
                 billing2_bindings),
         ))
@@ -1945,7 +1945,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_billing_acct1_policy_resource.data = json.dumps(
             billing_policy)
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.billing_acct1, self.mock_billing_acct1_policy_resource,
             billing_bindings))
 
@@ -1998,7 +1998,7 @@ class IamRulesEngineTest(ForsetiTestCase):
 
         self.mock_billing_acct1_policy_resource.data = json.dumps(
             billing_policy)
-        actual_violations = set(rules_engine.find_policy_violations(
+        actual_violations = set(rules_engine.find_violations(
             self.billing_acct1, self.mock_billing_acct1_policy_resource,
             billing_bindings))
 
