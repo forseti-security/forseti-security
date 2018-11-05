@@ -15,7 +15,7 @@
 """Test data for Cloud Security Command Center GCP api responses."""
 
 ORGANIZATION_ID = 'organizations/88888'
-FAKE_FINDING = """
+FAKE_ALPHA_FINDING = """
 {
     "assetIds": ["full_name_111"],
     "category": "UNKNOWN_RISK",
