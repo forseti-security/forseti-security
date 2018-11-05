@@ -57,7 +57,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
             json.dumps(fake_cscc.EXPECTED_CREATE_FINDING_RESULT))
 
         result = self.securitycenter_api_client.create_finding(
-            fake_cscc.ORGANIZATION_ID, fake_cscc.FAKE_FINDING)
+            fake_cscc.FAKE_FINDING, fake_cscc.ORGANIZATION_ID)
 
         self.assertEquals(fake_cscc.EXPECTED_CREATE_FINDING_RESULT, result)
 
@@ -67,7 +67,7 @@ class SecurityCenterTest(unittest_utils.ForsetiTestCase):
 
         with self.assertRaises(api_errors.ApiExecutionError):
             self.securitycenter_api_client.create_finding(
-                fake_cscc.ORGANIZATION_ID, json.loads(fake_cscc.FAKE_FINDING))
+                json.loads(fake_cscc.FAKE_FINDING), fake_cscc.ORGANIZATION_ID)
 
 
 if __name__ == '__main__':

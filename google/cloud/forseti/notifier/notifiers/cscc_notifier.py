@@ -129,7 +129,7 @@ class CsccNotifier(object):
                          source_id)
             for violation in violations:
                 # CSCC can't accept the full hash, so this must be shortened.
-                finding_id = violation.get('violation_hash')[:32],
+                finding_id = violation.get('violation_hash')[:32]
                 finding = {
                     'name': '{0}/findings/{1}'.format(
                         source_id, violation.get('violation_hash')[:32]),
@@ -205,9 +205,9 @@ class CsccNotifier(object):
 
             client = securitycenter.SecurityCenterClient(version='v1beta1')
 
-            for i in findings:
-                finding_id = i[0][0]
-                finding = i[1]
+            for finding_tuple in findings:
+                finding_id = finding_tuple[0]
+                finding = finding_tuple[1]
                 LOGGER.debug('Creating finding CSCC:\n%s.', finding)
                 try:
                     client.create_finding(finding, source_id=source_id,
