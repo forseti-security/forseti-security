@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A Bucket Resource.
+"""A CloudSQL Instance Resource.
 
 See: https://cloud.google.com/storage/docs/json_api/v1/
 """
@@ -21,44 +21,44 @@ import json
 from google.cloud.forseti.common.gcp_type import resource
 
 
-class BucketLifecycleState(resource.LifecycleState):
-    """Represents the Bucket's LifecycleState."""
+class CloudSQLInstanceLifecycleState(resource.LifecycleState):
+    """Represents the cloud_sql_instance's LifecycleState."""
     pass
 
 
-class Bucket(resource.Resource):
-    """Bucket resource."""
+class CloudSQLInstance(resource.Resource):
+    """CloudSQL Instance resource."""
 
-    RESOURCE_NAME_FMT = 'buckets/%s'
+    RESOURCE_NAME_FMT = 'instances/%s'
 
     def __init__(
             self,
-            bucket_id,
+            instance_id,
             full_name=None,
             data=None,
             name=None,
             display_name=None,
             parent=None,
             locations=None,
-            lifecycle_state=BucketLifecycleState.UNSPECIFIED):
+            lifecycle_state=CloudSQLInstanceLifecycleState.UNSPECIFIED):
         """Initialize.
 
         Args:
-            bucket_id (int): The bucket id.
+            instance_id (str): The cloud sql instance id.
             full_name (str): The full resource name and ancestry.
-            data (str): Resource representation of the bucket.
-            name (str): The bucket's unique GCP name, with the
-                format "buckets/{id}".
-            display_name (str): The bucket's display name.
-            locations (List[str]): Locations this bucket resides in. If set,
+            data (str): Resource representation of the cloud_sql_instance.
+            name (str): The cloud_sql_instance's unique GCP name, with the
+                format "cloud_sql_instances/{id}".
+            display_name (str): The cloud_sql_instance's display name.
+            locations (List[str]): Locations this cloud_sql_instance resides in. If set,
                 there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
-                bucket.
+                cloud_sql_instance.
         """
-        super(Bucket, self).__init__(
-            resource_id=bucket_id,
-            resource_type=resource.ResourceType.BUCKET,
+        super(CloudSQLInstance, self).__init__(
+            resource_id=instance_id,
+            resource_type=resource.ResourceType.CLOUD_SQL_INSTANCE,
             name=name,
             display_name=display_name,
             parent=parent,
@@ -69,23 +69,24 @@ class Bucket(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, json_string):
-        """Create a bucket from a JSON string.
+        """Create a cloud_sql_instance from a JSON string.
 
         Args:
-            parent (Resource): resource this bucket belongs to.
-            json_string(str): JSON string of a bucket GCP API response.
+            parent (Resource): resource this cloud_sql_instance belongs to.
+            json_string(str): JSON string of a cloud_sql_instance GCP API response.
 
         Returns:
-            Bucket: bucket resource.
+            cloud_sql_instance: cloud sql instance resource.
         """
-        bucket_dict = json.loads(json_string)
+        instance_dict = json.loads(json_string)
 
-        bucket_id = bucket_dict['id']
+        instance_id = instance_dict['name']
         return cls(
             parent=parent,
-            bucket_id=bucket_id,
-            full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
-            display_name=bucket_id,
-            locations=[bucket_dict['location']],
+            instance_id=instance_id,
+            full_name='{}cloudsqlinstance/{}/'.format(parent.full_name,
+                                                        instance_id),
+            display_name=instance_id,
+            locations=[instance_dict['region']],
             data=json_string,
         )

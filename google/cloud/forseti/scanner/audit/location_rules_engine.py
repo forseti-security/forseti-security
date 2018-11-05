@@ -29,7 +29,9 @@ LOGGER = logger.get_logger(__name__)
 
 SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
 
-SUPPORTED_LOCATION_RESOURCE_TYPES = frozenset(['bucket'])
+SUPPORTED_LOCATION_RESOURCE_TYPES = frozenset([
+    'bucket', 'cloudsqlinstance', 'dataset',
+])
 
 LocationData = collections.namedtuple(
     'LocationData', ['resource', 'locations']
@@ -261,7 +263,8 @@ class Rule(object):
         self.applies_to = applies_to
 
         loc_re_str = '|'.join([
-            regular_exp.escape_and_globify(loc_wildcard.lower())
+            regular_exp.escape_and_globify(loc_wildcard.lower(),
+                                           wildcard_is_zero_or_more=True)
             for loc_wildcard in location_patterns
         ])
         self.location_re = re.compile(loc_re_str)

@@ -18,7 +18,7 @@ import re
 
 
 # pylint: disable=anomalous-backslash-in-string
-def escape_and_globify(pattern_string):
+def escape_and_globify(pattern_string, wildcard_is_zero_or_more=False):
     """Given a pattern string with a glob, create actual regex pattern.
 
     To require > 0 length glob, change the "*" to ".+". This is to handle
@@ -30,6 +30,8 @@ def escape_and_globify(pattern_string):
 
     Args:
         pattern_string (str): The pattern string of which to make a regex.
+        wildcard_is_zero_or_more (bool): Whether the wildcard designates
+            0 or more versus 1 or more for wildcards after the prefix.
 
     Returns:
         str: The pattern string, escaped except for the "*", which is
@@ -41,4 +43,8 @@ def escape_and_globify(pattern_string):
     # pylint: enable=anomalous-backslash-in-string
     if pattern_string == '*':
         return '^.*$'
-    return '^{}$'.format(re.escape(pattern_string).replace('\\*', '.+?'))
+
+    # TODO(2189): Make wildcards always 0 or more.
+    replace = '.*' if wildcard_is_zero_or_more else '.+'
+
+    return '^{}$'.format(re.escape(pattern_string).replace('\\*', replace))

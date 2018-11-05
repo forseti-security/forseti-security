@@ -116,6 +116,30 @@ class LocationRulesEngineTest(ForsetiTestCase):
         got_violations = list(rules_engine.find_violations(data.BUCKET))
         self.assertEqual(got_violations, data.build_violations(data.BUCKET))
 
+    def test_find_violations_dataset(self):
+        rule = rule_tmpl.format(
+            mode='blacklist',
+            type='dataset',
+            ids=['*'],
+            locations=['eu*'],
+        )
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(data.DATASET))
+        self.assertEqual(got_violations, data.build_violations(data.DATASET))
+
+    def test_find_violations_cloud_sql_instance(self):
+        rule = rule_tmpl.format(
+            mode='blacklist',
+            type='cloudsqlinstance',
+            ids=['*'],
+            locations=['eu*'],
+        )
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(
+            data.CLOUD_SQL_INSTANCE))
+        self.assertEqual(got_violations, data.build_violations(
+            data.CLOUD_SQL_INSTANCE))
+
     def test_find_violations_exact(self):
         rule = rule_tmpl.format(
             mode='blacklist',
