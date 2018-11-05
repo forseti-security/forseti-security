@@ -57,8 +57,10 @@ class ScannerBuilder(object):
 
                 requirements_map = scanner_requirements_map.REQUIREMENTS_MAP
                 if not scanner.get('name') in requirements_map:
-                    LOGGER.error('Configured scanner is undefined: %s',
-                                 scanner.get('name'))
+                    log_message = (
+                        'Configured scanner is undefined '
+                        'in scanner requirements map : %s')
+                    LOGGER.error(log_message, scanner.get('name'))
                     continue
 
                 module_name = module_path.format(

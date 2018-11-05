@@ -104,7 +104,8 @@ class ScannerBuilderTest(ForsetiTestCase):
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
         mock_logger.error.assert_called_with(
-            'Configured scanner is undefined: %s', 'non_exist_scanner')
+            'Configured scanner is undefined '
+            'in scanner requirements map : %s', 'non_exist_scanner')
 
         self.assertEquals(1, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner']
