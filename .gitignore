@@ -6,7 +6,7 @@
 .idea/*
 
 # Visual Studio Code metafiles
-.vscode/
+.vscode/*
 
 # Compiled python
 *.pyc
