@@ -18,6 +18,7 @@ from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import billing_account
 from google.cloud.forseti.common.gcp_type import bucket
 from google.cloud.forseti.common.gcp_type import cloudsql_instance
+from google.cloud.forseti.common.gcp_type import cluster
 from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type import organization as org
@@ -64,6 +65,11 @@ _RESOURCE_TYPE_MAP = {
     resource.ResourceType.DATASET: {
         'class': dataset.Dataset,
         'plural': 'Datasets',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.KE_CLUSTER: {
+        'class': cluster.Cluster,
+        'plural': 'GKE Clusters',
         'can_create_resource': True,
     },
 }

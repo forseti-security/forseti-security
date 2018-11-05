@@ -36,7 +36,7 @@ PROJECT = project.Project(
 )
 
 _BUCKET_JSON = """{
-    "id": "p1-b1",
+    "id": "p1-bucket1",
     "parent": "projects/p1",
     "location": "EUROPE-WEST1"
 }
@@ -49,7 +49,7 @@ _CLOUD_SQL_INSTANCE_JSON = """{
     "databaseVersion": "MYSQL_5_7",
     "instanceType": "CLOUD_SQL_INSTANCE",
     "kind": "sql#instance",
-    "name": "p1-c1",
+    "name": "p1-cloudsqlinstance1",
     "project": "p1",
     "region": "europe-west1",
     "gceZone": "europe-west1-a"
@@ -58,6 +58,15 @@ _CLOUD_SQL_INSTANCE_JSON = """{
 
 CLOUD_SQL_INSTANCE = resource_util.create_resource_from_json(
     'cloudsqlinstance', PROJECT, _CLOUD_SQL_INSTANCE_JSON)
+
+_CLUSTER_JSON = """{
+    "name": "p1-cluster1",
+    "locations": ["europe-west1-a"]
+}
+"""
+
+CLUSTER = resource_util.create_resource_from_json('kubernetes_cluster', PROJECT,
+                                                  _CLUSTER_JSON)
 
 _DATASET_JSON = """{
     "datasetReference": {

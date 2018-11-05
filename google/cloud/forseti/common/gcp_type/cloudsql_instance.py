@@ -46,12 +46,12 @@ class CloudSQLInstance(resource.Resource):
         Args:
             instance_id (str): The cloud sql instance id.
             full_name (str): The full resource name and ancestry.
-            data (str): Resource representation of the cloud_sql_instance.
+            data (str): Resource representation of the cloud sql instance.
             name (str): The cloud_sql_instance's unique GCP name, with the
                 format "cloud_sql_instances/{id}".
-            display_name (str): The cloud_sql_instance's display name.
-            locations (List[str]): Locations this cloud_sql_instance resides in. If set,
-                there should be exactly one element in the list.
+            display_name (str): The cloud sql instance's display name.
+            locations (List[str]): Locations this cloud sql instance resides in.
+                If set, there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 cloud_sql_instance.

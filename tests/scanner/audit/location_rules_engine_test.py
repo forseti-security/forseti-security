@@ -140,6 +140,17 @@ class LocationRulesEngineTest(ForsetiTestCase):
         self.assertEqual(got_violations, data.build_violations(
             data.CLOUD_SQL_INSTANCE))
 
+    def test_find_violations_cluster(self):
+        rule = rule_tmpl.format(
+            mode='blacklist',
+            type='kubernetes_cluster',
+            ids=['*'],
+            locations=['eu*'],
+        )
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(data.CLUSTER))
+        self.assertEqual(got_violations, data.build_violations(data.CLUSTER))
+
     def test_find_violations_exact(self):
         rule = rule_tmpl.format(
             mode='blacklist',
@@ -166,7 +177,7 @@ class LocationRulesEngineTest(ForsetiTestCase):
         rule = rule_tmpl.format(
             mode='blacklist',
             type='bucket',
-            ids=['dne', 'p1-b1'],
+            ids=['dne', 'p1-bucket1'],
             locations=['eu*'],
         )
         rules_engine = get_rules_engine_with_rule(rule)
