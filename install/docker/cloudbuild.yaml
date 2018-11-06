@@ -21,7 +21,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - 'build'
-  - '--file=scripts/docker/base'
+  - '--file=install/docker/base'
   - '--tag=gcr.io/$PROJECT_ID/forseti-base'
   - '.'
   waitFor: ['-']
@@ -30,7 +30,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - 'build'
-  - '--file=scripts/docker/forseti'
+  - '--file=install/docker/forseti'
   - '--build-arg=BASE_IMAGE=gcr.io/$PROJECT_ID/forseti-base'
   - '--tag=gcr.io/$PROJECT_ID/forseti'
   - '.'
