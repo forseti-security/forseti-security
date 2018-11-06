@@ -130,7 +130,14 @@ def create_exporter(transport=None):
 
     
 def start_span(tracer, module, function, kind=None):
-    """Start a span"""
+    """Start a span.
+    
+    Args:
+        tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
+        module (str): The module name.
+        function (str): The function name.
+        kind (~opencensus.trace.span.SpanKind, optional): The span kind.
+    """
     if kind is None:
         kind = SpanKind.SERVER
     span = tracer.start_span()
@@ -140,27 +147,44 @@ def start_span(tracer, module, function, kind=None):
     tracer.add_attribute_to_current_span('function', function)
     return span
     
-def end_span(tracer, span, **kwargs):
-    """End a span. Update the span_id in SpanContext to the current
-    span's parent id; update the current span; Send the span to exporter.
+def end_span(tracer, **kwargs):
+    """End a span.
+    
+    Args:
+        tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
+        kwargs (dict): A set of attributes to set to the current span.
     """
     for k, v in kwargs.items():
         tracer.add_attribute_to_current_span(k, v)
     LOGGER.info(tracer.span_context)
     tracer.end_span()
     
-def trace(_lambda=None):
-    """Decorator to trace class method. 
-    This decorator assumes the tracer is passed to the class as self.tracer"""
-
+def trace(_lambda=None, attr=None):
+    """Decorator to trace class methods. 
+    
+    This decorator expect the tracer is set in the class via an instance attribute, 
+    or is fetchable using a lambda function. 
+    
+    If nothing is passed to the decorator, it will use the execution context to get 
+    the tracer.
+    
+    Args:
+        _lambda (func, optional): A lambda definition defining how to get the tracer.
+        attr (str, optional): The attribute to fetch from the instance.
+        
+    Returns:
+        func: The decorated class method.
+    """
     def decorator(func):
-        #@wraps(func) to override the doc string
+        #TODO: Use @wraps(func) to override the doc string
         def wrapper(self, *args, **kwargs):
             if OPENCENSUS_ENABLED:
-                if _lambda is None:
-                    tracer = execution_context.get_opencensus_tracer()
-                else:
+                if _lambda is not None:
                     tracer = _lambda(self)
+                elif attr is not None:
+                    tracer = getattr(self, attr, default)
+                else: # no arg passed to decorator, getting tracer from context
+                    tracer = execution_context.get_opencensus_tracer()
                 span = start_span(tracer, func.__module__, func.__name__)
             result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
