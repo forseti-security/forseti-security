@@ -110,6 +110,8 @@ class InventorySummary(object):
             details_data (list): Details of inventory data as a list of dicts.
                 Example: [[{resource_type, count}, {}, {}, ...]
         """
+        gsuite_dwd_status_dict = {False: 'disabled',
+                                  True: 'enabled'}
         LOGGER.debug('Sending inventory summary by email.')
 
         email_summary_config = (
@@ -123,13 +125,17 @@ class InventorySummary(object):
 
         inventory_index_datetime = (
             date_time.get_date_from_microtimestamp(self.inventory_index_id))
+
         timestamp = inventory_index_datetime.strftime(
             string_formats.DEFAULT_FORSETI_TIMESTAMP)
+
+        gsuite_dwd_status = self._get_gsuite_dwd_status(summary_data)
 
         email_content = email_util.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
+             'gsuite_dwd_status': gsuite_dwd_status_dict[gsuite_dwd_status],
              'summary_data': summary_data,
              'details_data': details_data})
 
@@ -208,6 +214,25 @@ class InventorySummary(object):
 
             details_data = self.transform_to_template(details)
             return details_data
+
+    def _get_gsuite_dwd_status(self, summary_data):
+        """Get boolean value of whether list of fields are in summary data.
+
+        Args:
+            summary_data (list): Summary of inventory data as a list of dicts.
+                Example: [{resource_type, count}, {}, {}, ...]
+
+        Returns:
+            bool: Boolean value.
+
+        """
+        gsuite_domain = set(['gsuite_group', 'gsuite_user'])
+        summary_data_keys = set()
+        if summary_data is None:
+            return False
+        for resource in summary_data:
+            summary_data_keys.add(resource['resource_type'])
+        return gsuite_domain.issubset(summary_data_keys)
 
     def run(self):
         """Generate inventory summary."""
