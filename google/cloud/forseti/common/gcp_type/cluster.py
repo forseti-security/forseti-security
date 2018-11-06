@@ -13,7 +13,7 @@
 # limitations under the License.
 """A cluster Resource.
 
-See: https://cloud.google.com/storage/docs/json_api/v1/
+See: https://cloud.google.com/kubernetes-engine/docs/reference/rest/
 """
 
 import json

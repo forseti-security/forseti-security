@@ -13,7 +13,7 @@
 # limitations under the License.
 """A CloudSQL Instance Resource.
 
-See: https://cloud.google.com/storage/docs/json_api/v1/
+See: https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/
 """
 
 import json

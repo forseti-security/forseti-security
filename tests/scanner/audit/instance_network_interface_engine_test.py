@@ -30,7 +30,8 @@ def create_list_of_instence_network_interface_obj_from_data():
     fake_instance_scanner_list = []
     for data in fake_instance_scanner_data.INSTANCE_DATA:
         fake_instance_scanner_list.append(
-            instance.Instance(**data).create_network_interfaces())
+            instance.Instance(
+                'fake-instance', **data).create_network_interfaces())
     return fake_instance_scanner_list
 
 

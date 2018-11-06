@@ -19,10 +19,10 @@ See: https://cloud.google.com/compute/docs/reference/latest/instances
 
 import json
 import os
+import re
 
 from google.cloud.forseti.common.gcp_type import key
 from google.cloud.forseti.common.gcp_type import resource
-
 
 # pylint: disable=too-many-instance-attributes
 class Instance(resource.Resource):
@@ -30,18 +30,18 @@ class Instance(resource.Resource):
 
     RESOURCE_NAME_FMT = 'instances/%s'
 
-    def __init__(self, **kwargs):
+    def __init__(self, instance_id, parent=None, **kwargs):
         """Instance resource.
 
         Args:
             **kwargs (dict): The object's attributes.
         """
         super(Instance, self).__init__(
-            resource_id=kwargs.get('id'),
+            resource_id=instance_id,
             resource_type=resource.ResourceType.INSTANCE,
             name=kwargs.get('name'),
             display_name=kwargs.get('name'),
-            parent=kwargs.get('parent'),
+            parent=parent,
             locations=kwargs.get('locations'))
         self.full_name = kwargs.get('full_name')
         self.can_ip_forward = kwargs.get('can_ip_forward')
@@ -59,8 +59,7 @@ class Instance(resource.Resource):
         self.status = kwargs.get('status')
         self.status_message = kwargs.get('status_message')
         self.tags = kwargs.get('tags')
-        self.zone = kwargs.get('zone')
-        self._json = kwargs.get('raw_instance')
+        self.data = kwargs.get('raw_instance')
 
     @classmethod
     def from_json(cls, parent, json_string):
@@ -82,8 +81,10 @@ class Instance(resource.Resource):
             raise TypeError(
                 'Unexpected parent type: got {}, want project'.format(
                     parent.type))
+
+        instance_key = Key.from_url(self_link)
+
         kwargs = {'project_id': parent.id,
-                  'id': instance.get('id'),
                   'full_name': '{}instance/{}/'.format(parent.full_name,
                                                        instance.get('id')),
                   'creation_timestamp': instance.get('creationTimestamp'),
@@ -100,9 +101,9 @@ class Instance(resource.Resource):
                   'status': instance.get('status'),
                   'status_message': instance.get('statusMessage'),
                   'tags': instance.get('tags'),
-                  'zone': instance.get('zone'),
                   'raw_instance': json.dumps(instance)}
-        return cls(**kwargs)
+        return cls(instance.get('id'), parent=parent,
+                   locations=[instance_key.zone], **kwargs)
 
     def _create_json_str(self):
         """Creates a json string based on the object attributes.
@@ -127,8 +128,8 @@ class Instance(resource.Resource):
             'status': self.status,
             'statusMessage': self.status_message,
             'tags': self.tags,
-            'zone': self.zone,
-            'inventory_data': self._json}
+            'locations': self.locations,
+            'inventory_data': self.data}
 
         # Strip out empty values
         resource_dict = dict((k, v) for k, v in resource_dict.items() if v)
@@ -141,10 +142,10 @@ class Instance(resource.Resource):
         Returns:
             str: json str.
         """
-        if not self._json:
-            self._json = self._create_json_str()
+        if not self.data:
+            self.data = self._create_json_str()
 
-        return self._json
+        return self.data
 
     @property
     def key(self):
@@ -153,7 +154,8 @@ class Instance(resource.Resource):
         Returns:
             Key: the key
         """
-        return Key.from_args(self.project_id, self.zone, self.name)
+        zone = self.locations[0] if self.locations else ''
+        return Key.from_args(self.project_id, zone, self.name)
 
     def create_network_interfaces(self):
         """Return a list of network_interface objects.

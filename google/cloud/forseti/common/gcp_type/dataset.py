@@ -13,7 +13,7 @@
 # limitations under the License.
 """A Dataset Resource.
 
-See: https://cloud.google.com/storage/docs/json_api/v1/
+See: https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets
 """
 
 import json

@@ -30,7 +30,7 @@ LOGGER = logger.get_logger(__name__)
 SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
 
 SUPPORTED_LOCATION_RESOURCE_TYPES = frozenset([
-    'bucket', 'cloudsqlinstance', 'dataset', 'kubernetes_cluster',
+    'bucket', 'cloudsqlinstance', 'dataset', 'instance', 'kubernetes_cluster',
 ])
 
 LocationData = collections.namedtuple(

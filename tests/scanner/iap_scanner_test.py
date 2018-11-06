@@ -27,6 +27,7 @@ from google.cloud.forseti.common.gcp_type import instance as instance_type
 from google.cloud.forseti.common.gcp_type import instance_group as instance_group_type
 from google.cloud.forseti.common.gcp_type import instance_group_manager as instance_group_manager_type
 from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
+from google.cloud.forseti.common.gcp_type import project as project_type
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners import iap_scanner
@@ -243,20 +244,24 @@ FIREWALL_RULES = {
             }]),
         ),
 }
+PROJECTS = {
+    'p1': project_type.Project('p1'),
+}
 INSTANCES = {
     'i1':
         instance_type.Instance(
-            project_id='foo',
+            instance_id='i1',
+            parent=PROJECTS['p1'],
             name='i1',
             tags={'items': ['tag_i1']},
-            zone='wl-redqueen1-a',
+            locations=['wl-redqueen1-a'],
         ),
     'i2':
         instance_type.Instance(
-            project_id='foo',
-            name='i2',
+            instance_id='i2',
+            parent=PROJECTS['p1'],
             tags=[],
-            zone='wl-redqueen1-a',
+            locations=['wl-redqueen1-a'],
         ),
 }
 INSTANCE_GROUPS = {

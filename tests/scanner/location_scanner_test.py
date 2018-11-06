@@ -62,6 +62,8 @@ def _mock_gcp_resource_iter(_, resource_type):
         resource = _create_child_resource(data.DATASET)
     elif resource_type == 'kubernetes_cluster':
         resource = _create_child_resource(data.CLUSTER)
+    elif resource_type == 'instance':
+        resource = _create_child_resource(data.GCE_INSTANCE)
     else:
         raise ValueError('Unexpected resource type: ' + resource_type)
 
@@ -86,7 +88,7 @@ class LocationScannerTest(ForsetiTestCase):
 
         got = set(self.scanner._retrieve())
         want = {data.BUCKET, data.CLOUD_SQL_INSTANCE, data.CLUSTER,
-                data.DATASET}
+                data.DATASET, data.GCE_INSTANCE}
         self.assertEqual(got, want)
 
 

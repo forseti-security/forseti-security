@@ -42,8 +42,8 @@ _BUCKET_JSON = """{
 }
 """
 
-BUCKET = resource_util.create_resource_from_json('bucket', PROJECT,
-                                                 _BUCKET_JSON)
+BUCKET = resource_util.create_resource_from_json(
+    'bucket', PROJECT, _BUCKET_JSON)
 
 _CLOUD_SQL_INSTANCE_JSON = """{
     "databaseVersion": "MYSQL_5_7",
@@ -65,8 +65,8 @@ _CLUSTER_JSON = """{
 }
 """
 
-CLUSTER = resource_util.create_resource_from_json('kubernetes_cluster', PROJECT,
-                                                  _CLUSTER_JSON)
+CLUSTER = resource_util.create_resource_from_json(
+    'kubernetes_cluster', PROJECT, _CLUSTER_JSON)
 
 _DATASET_JSON = """{
     "datasetReference": {
@@ -79,8 +79,16 @@ _DATASET_JSON = """{
 }
 """
 
-DATASET = resource_util.create_resource_from_json('dataset', PROJECT,
-                                                  _DATASET_JSON)
+DATASET = resource_util.create_resource_from_json(
+    'dataset', PROJECT, _DATASET_JSON)
+
+_GCE_INSTANCE_JSON = """{
+    "id": "p1-instance1",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/p1/zones/europe-west1-a/instances/p1-instance1"
+}"""
+
+GCE_INSTANCE = resource_util.create_resource_from_json(
+    'instance', PROJECT, _GCE_INSTANCE_JSON)
 
 def build_violations(res):
     """Build an expected violation.

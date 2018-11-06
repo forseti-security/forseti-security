@@ -21,6 +21,7 @@ from google.cloud.forseti.common.gcp_type import cloudsql_instance
 from google.cloud.forseti.common.gcp_type import cluster
 from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
@@ -65,6 +66,11 @@ _RESOURCE_TYPE_MAP = {
     resource.ResourceType.DATASET: {
         'class': dataset.Dataset,
         'plural': 'Datasets',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.INSTANCE: {
+        'class': instance.Instance,
+        'plural': 'GCE Instances',
         'can_create_resource': True,
     },
     resource.ResourceType.KE_CLUSTER: {
