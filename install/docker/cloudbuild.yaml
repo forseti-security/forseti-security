@@ -41,7 +41,7 @@ steps:
   args:
   - 'run'
   - 'gcr.io/$PROJECT_ID/forseti'
-  - '-it build /bin/bash -c'
+  #- '-it build /bin/bash -c'
   - "python -m unittest discover --verbose -s . -p '*_test.py'"
   waitFor: ['forseti']
   id: unittest
