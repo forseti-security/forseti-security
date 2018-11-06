@@ -149,8 +149,7 @@ def run_inventory(service_config,
                   queue,
                   session,
                   progresser,
-                  background,
-                  tracer):
+                  background):
     """Runs the inventory given the environment configuration.
 
     Args:
@@ -166,7 +165,8 @@ def run_inventory(service_config,
     Raises:
         Exception: Reraises any exception.
     """
-    span = tracing.start_span(tracer, 'inventory', 'run_inventory')
+    tracer = service_config.tracer
+    tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -175,15 +175,14 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config(),
-                                 tracer)
+                                 service_config.get_inventory_config())
         except Exception as e:
             LOGGER.exception(e)
             storage.rollback()
             raise
         else:
             storage.commit()
-    tracing.end_span(tracer, span, result=result)
+    tracing.end_span(tracer, result=result)
     return result
 
 
@@ -228,7 +227,6 @@ class Inventory(object):
         Yields:
             object: Yields status updates.
         """
-        tracer = tracing.execution_context.get_opencensus_tracer()
         queue = Queue()
         if background:
             progresser = FirstMessageQueueProgresser(queue)
@@ -242,7 +240,7 @@ class Inventory(object):
                 object: inventory crawler result if no model_name specified,
                     otherwise, model import result
             """
-            LOGGER.info(tracer.span_context)
+            LOGGER.info(self.config.tracer.span_context)
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(
@@ -250,8 +248,7 @@ class Inventory(object):
                         queue,
                         session,
                         progresser,
-                        background,
-                        tracer)
+                        background)
 
                     if model_name:
                         run_import(self.config.client(),
