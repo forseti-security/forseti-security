@@ -21,6 +21,10 @@ from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory
 from google.cloud.forseti.services.utils import autoclose_stream
 
+from google.cloud.forseti.common.opencensus import tracing
+
+LOGGER = logger.get_logger(__name__)
+
 # pylint: disable=no-member
 
 
@@ -79,6 +83,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
 
         return inventory_pb2.PingReply(data=request.data)
 
+    @tracing.trace(lambda x: x.config.tracer)
     @autoclose_stream
     def Create(self, request, _):
         """Creates a new inventory.
@@ -110,6 +115,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_warning=last_warning,
                 last_error=last_error)
 
+    @tracing.trace(lambda x: x.config.tracer)        
     @autoclose_stream
     def List(self, request, _):
         """Lists existing inventory.
