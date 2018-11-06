@@ -239,7 +239,8 @@ class ServiceConfig(AbstractServiceConfig):
     def __init__(self,
                  forseti_config_file_path,
                  forseti_db_connect_string,
-                 endpoint):
+                 endpoint,
+                 tracer=None):
         """Initialize.
 
         Args:
@@ -255,6 +256,7 @@ class ServiceConfig(AbstractServiceConfig):
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
+        self.tracer = tracer
 
         self.forseti_config_file_path = forseti_config_file_path
 
