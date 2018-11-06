@@ -23,8 +23,6 @@ from google.cloud.forseti.services.utils import autoclose_stream
 
 from google.cloud.forseti.common.opencensus import tracing
 
-LOGGER = logger.get_logger(__name__)
-
 # pylint: disable=no-member
 
 
