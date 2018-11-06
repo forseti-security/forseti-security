@@ -20,6 +20,8 @@ from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.model import modeller
 from google.cloud.forseti.common.util import logger
 
+from google.cloud.forseti.common.opencensus import tracing
+
 LOGGER = logger.get_logger(__name__)
 
 
@@ -66,6 +68,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         return model_pb2.PingReply(data=request.data)
 
+    @tracing.trace(lambda x: x.config.tracer)
     def CreateModel(self, request, context):
         """Creates a new model from an import source.
 
@@ -106,6 +109,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
+    @tracing.trace(lamda x: x.config.tracer)
     def ListModel(self, request, _):
         """List all models.
 
