@@ -167,6 +167,26 @@ class InventorySummary(object):
             template_data.append(dict(resource_type=key, count=value))
         return sorted(template_data, key=lambda k: k['resource_type'])
 
+    @staticmethod
+    def _get_gsuite_dwd_status(summary_data):
+        """Get boolean value of whether list of fields are in summary data.
+
+        Args:
+            summary_data (list): Summary of inventory data as a list of dicts.
+                Example: [{resource_type, count}, {}, {}, ...]
+
+        Returns:
+            bool: Boolean value.
+
+        """
+        gsuite_domain = set(['gsuite_group', 'gsuite_user'])
+        summary_data_keys = set()
+        if summary_data is None:
+            return False
+        for resource in summary_data:
+            summary_data_keys.add(resource['resource_type'])
+        return gsuite_domain.issubset(summary_data_keys)
+
     def _get_summary_data(self):
         """Get the summarized inventory data.
 
@@ -214,25 +234,6 @@ class InventorySummary(object):
 
             details_data = self.transform_to_template(details)
             return details_data
-
-    def _get_gsuite_dwd_status(self, summary_data):
-        """Get boolean value of whether list of fields are in summary data.
-
-        Args:
-            summary_data (list): Summary of inventory data as a list of dicts.
-                Example: [{resource_type, count}, {}, {}, ...]
-
-        Returns:
-            bool: Boolean value.
-
-        """
-        gsuite_domain = set(['gsuite_group', 'gsuite_user'])
-        summary_data_keys = set()
-        if summary_data is None:
-            return False
-        for resource in summary_data:
-            summary_data_keys.add(resource['resource_type'])
-        return gsuite_domain.issubset(summary_data_keys)
 
     def run(self):
         """Generate inventory summary."""
