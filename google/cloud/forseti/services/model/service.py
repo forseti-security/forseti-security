@@ -46,7 +46,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
             metadata_dict[key] = value
         return metadata_dict[self.HANDLE_KEY]
 
-    def __init__(self, modeller_api):
+    def __init__(self, modeller_api, tracer=None):
         """Initialize
 
         Args:
@@ -54,6 +54,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         """
         super(GrpcModeller, self).__init__()
         self.modeller = modeller_api
+        self.tracer = tracer
 
     def Ping(self, request, _):
         """Provides the capability to check for service availability.
@@ -68,7 +69,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         return model_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda x: x.config.tracer)
+    @tracing.trace(lambda x: x.tracer)
     def CreateModel(self, request, context):
         """Creates a new model from an import source.
 
@@ -109,7 +110,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
-    @tracing.trace(lamda x: x.config.tracer)
+    @tracing.trace(lambda x: x.tracer)
     def ListModel(self, request, _):
         """List all models.
 
