@@ -99,9 +99,9 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
         # No authorized networks
         acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
             'test-project', 'fake_full_name', SQL_INSTANCE_JSON)
-        violation = all_internet_no_ssl.find_policy_violations(acl)
+        violation = all_internet_no_ssl.find_violations(acl)
         self.assertEquals(0, len(list(violation)))
-        violation = all_internet_ssl.find_policy_violations(acl)
+        violation = all_internet_ssl.find_violations(acl)
         self.assertEquals(0, len(list(violation)))
 
         # Exposed to everyone in the world, no ssl
@@ -113,18 +113,18 @@ class CloudSqlRulesEngineTest(ForsetiTestCase):
 
         acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
             'test-project', 'fake_full_name', json.dumps(instance_dict))
-        violation = all_internet_no_ssl.find_policy_violations(acl)
+        violation = all_internet_no_ssl.find_violations(acl)
         self.assertEquals(1, len(list(violation)))
-        violation = all_internet_ssl.find_policy_violations(acl)
+        violation = all_internet_ssl.find_violations(acl)
         self.assertEquals(0, len(list(violation)))
 
         # Exposed to everyone in the world, ssl required.
         ip_configuration['requireSsl'] = True
         acl = cloudsql_access_controls.CloudSqlAccessControl.from_json(
             'test-project', 'fake_full_name', json.dumps(instance_dict))
-        violation = all_internet_no_ssl.find_policy_violations(acl)
+        violation = all_internet_no_ssl.find_violations(acl)
         self.assertEquals(0, len(list(violation)))
-        violation = all_internet_ssl.find_policy_violations(acl)
+        violation = all_internet_ssl.find_violations(acl)
         self.assertEquals(1, len(list(violation)))
 
 

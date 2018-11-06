@@ -165,7 +165,7 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
             )
 
             for ke_cluster in ke_clusters:
-                violations = self.rules_engine.find_policy_violations(
+                violations = self.rules_engine.find_violations(
                     ke_cluster)
                 LOGGER.debug(violations)
                 all_violations.extend(violations)

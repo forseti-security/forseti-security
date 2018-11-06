@@ -105,7 +105,7 @@ class BucketsAclScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding bucket acl violations...')
 
         for bucket_acl in bucket_acls:
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 bucket_acl)
             LOGGER.debug(violations)
             all_violations.extend(violations)

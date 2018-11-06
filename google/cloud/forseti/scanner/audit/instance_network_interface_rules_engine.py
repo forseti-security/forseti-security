@@ -50,8 +50,7 @@ class InstanceNetworkInterfaceRulesEngine(bre.BaseRulesEngine):
         self.rule_book = InstanceNetworkInterfaceRuleBook(
             self._load_rule_definitions())
 
-    def find_policy_violations(self, instance_network_interface,
-                               force_rebuild=False):
+    def find_violations(self, instance_network_interface, force_rebuild=False):
         """Determine whether the networks violates rules.
 
         Args:
