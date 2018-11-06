@@ -98,7 +98,7 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
     
-    @tracing.trace(lambda x: x.config.tracer)
+    @tracing.trace(lambda x: x.tracer)
     def visit(self, resource):
         """Handle a newly found resource.
 
