@@ -22,6 +22,7 @@ import abc
 from multiprocessing.pool import ThreadPool
 import threading
 
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
@@ -239,8 +240,7 @@ class ServiceConfig(AbstractServiceConfig):
     def __init__(self,
                  forseti_config_file_path,
                  forseti_db_connect_string,
-                 endpoint,
-                 tracer=None):
+                 endpoint):
         """Initialize.
 
         Args:
@@ -256,7 +256,6 @@ class ServiceConfig(AbstractServiceConfig):
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
         self.endpoint = endpoint
-        self.tracer = tracer
 
         self.forseti_config_file_path = forseti_config_file_path
 
@@ -265,6 +264,10 @@ class ServiceConfig(AbstractServiceConfig):
         self.notifier_config = None
         self.global_config = None
         self.forseti_config = None
+        
+        self.tracer = None
+        if tracing.OPENCENSUS_ENABLED:
+            self.tracer = tracing.execution_context.get_opencensus_tracer()
 
         self.update_lock = threading.RLock()
 
