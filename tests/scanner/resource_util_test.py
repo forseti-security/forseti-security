@@ -4,14 +4,11 @@ import json
 import unittest
 import mock
 
-# pylint says sqlalchemy.orm goes before google.auth
-
-
 from google.cloud.forseti.common.gcp_type import resource_util
 from tests.unittest_utils import ForsetiTestCase
 
 class ResourceUtilTest(ForsetiTestCase):
-    """Test misc."""
+    """Test for the Resource Util."""
 
     def test_cast_to_gcp_resources(self):
         """Validate get_project_ancestry_resources() with test project."""
