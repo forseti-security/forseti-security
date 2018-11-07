@@ -95,22 +95,6 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
     def test_retrieve(self, mock_crm_client):
         """Test retrieving project ancestry data"""
         list_to_generator = lambda x: (n for n in x)
-        
-        """
-        epas.get_user_emails = mock.MagicMock(return_value=TEST_EMAILS)
-        epas.extract_project_ids = mock.MagicMock(
-            return_value=['project1', 'project2', 'project3'])
-
-        api_helpers.get_delegated_credential = mock.MagicMock()
-
-        crm.get_projects = mock.MagicMock(
-            return_value=list_to_generator(
-                [fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1]))
-
-        crm.CloudResourceManagerClient.get_project_ancestry = mock.MagicMock(
-            return_value=json.loads(
-                fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)['ancestor'])
-        """
 
         epas.get_user_emails = mock.MagicMock(return_value=TEST_EMAILS)
 
