@@ -90,41 +90,41 @@ def run(model_name=None, progress_queue=None, service_config=None):
     Returns:
         int: Status code.
     """
-    global_configs = service_config.get_global_config()
-    scanner_configs = service_config.get_scanner_config()
-
-    with service_config.scoped_session() as session:
-        service_config.violation_access = scanner_dao.ViolationAccess(session)
-        model_description = (
-            service_config.model_manager.get_description(model_name))
-        inventory_index_id = (
-            model_description.get('source_info').get('inventory_index_id'))
-        scanner_index_id = init_scanner_index(session, inventory_index_id)
-        runnable_scanners = scanner_builder.ScannerBuilder(
-            global_configs, scanner_configs, service_config, model_name,
-            None).build()
-
-        succeeded = []
-        failed = []
-        for scanner in runnable_scanners:
-            try:
-                scanner.run()
-                progress_queue.put('Running {}...'.format(
-                    scanner.__class__.__name__))
-            except Exception:  # pylint: disable=broad-except
-                log_message = 'Error running scanner: {}'.format(
-                    scanner.__class__.__name__)
-                progress_queue.put(log_message)
-                LOGGER.exception(log_message)
-                failed.append(scanner.__class__.__name__)
-            else:
-                succeeded.append(scanner.__class__.__name__)
-            session.flush()
-        # pylint: enable=bare-except
-        log_message = 'Scan completed!'
-        mark_scanner_index_complete(
-            session, scanner_index_id, succeeded, failed)
-        progress_queue.put(log_message)
-        progress_queue.put(None)
-        LOGGER.info(log_message)
-        return 0
+    # global_configs = service_config.get_global_config()
+    # scanner_configs = service_config.get_scanner_config()
+    #
+    # with service_config.scoped_session() as session:
+    #     service_config.violation_access = scanner_dao.ViolationAccess(session)
+    #     model_description = (
+    #         service_config.model_manager.get_description(model_name))
+    #     inventory_index_id = (
+    #         model_description.get('source_info').get('inventory_index_id'))
+    #     scanner_index_id = init_scanner_index(session, inventory_index_id)
+    #     runnable_scanners = scanner_builder.ScannerBuilder(
+    #         global_configs, scanner_configs, service_config, model_name,
+    #         None).build()
+    #
+    #     succeeded = []
+    #     failed = []
+    #     for scanner in runnable_scanners:
+    #         try:
+    #             scanner.run()
+    #             progress_queue.put('Running {}...'.format(
+    #                 scanner.__class__.__name__))
+    #         except Exception:  # pylint: disable=broad-except
+    #             log_message = 'Error running scanner: {}'.format(
+    #                 scanner.__class__.__name__)
+    #             progress_queue.put(log_message)
+    #             LOGGER.exception(log_message)
+    #             failed.append(scanner.__class__.__name__)
+    #         else:
+    #             succeeded.append(scanner.__class__.__name__)
+    #         session.flush()
+    #     # pylint: enable=bare-except
+    #     log_message = 'Scan completed!'
+    #     mark_scanner_index_complete(
+    #         session, scanner_index_id, succeeded, failed)
+    #     progress_queue.put(log_message)
+    #     progress_queue.put(None)
+    #     LOGGER.info(log_message)
+    #     return 0

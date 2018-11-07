@@ -304,9 +304,15 @@ def define_scanner_parser(parent):
         title='action',
         dest='action')
 
-    action_subparser.add_parser(
-        'run',
+    run_scanner_parser = action_subparser.add_parser(
+        'runtest',
         help='Run the scanner')
+
+    run_scanner_parser.add_argument(
+        'scanner',
+        default = '',
+        help='Name of the scanner to run'
+    )
 
 
 def define_notifier_parser(parent):
@@ -671,14 +677,19 @@ def run_scanner(client, config, output, _):
     """
 
     client = client.scanner
+    scanner_name = config.scanner
 
     def do_run():
         """Run a scanner."""
-        for progress in client.run():
+        for progress in client.run(scanner_name):
             output.write(progress)
 
+        # scanner = client.get_scanner(config.scanner)
+        # result = client.delete_model(scanner.handle)
+        # output.write(result)
+
     actions = {
-        'run': do_run}
+        'runtest': do_run}
 
     actions[config.action]()
 
