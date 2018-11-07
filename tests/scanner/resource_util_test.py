@@ -6,13 +6,8 @@ import mock
 
 # pylint says sqlalchemy.orm goes before google.auth
 
-import google.auth
-from google.oauth2 import credentials
 
-from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_type import resource_util
-from tests.common.gcp_api.test_data import fake_crm_responses
 from tests.unittest_utils import ForsetiTestCase
 
 class ResourceUtilTest(ForsetiTestCase):
