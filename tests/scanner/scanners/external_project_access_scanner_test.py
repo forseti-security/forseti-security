@@ -79,24 +79,12 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 
     def test_get_project_ids(self):
         """Test get_projects_ids() for all lifecycle_states."""
-        fake_global_configs = {
-            'crm': {'max_calls': 4, 'period': 1.2}}
 
-        mock.patch.object(google.auth, 'default', return_value=(
-            mock.Mock(spec_set=credentials.Credentials), 'test-project'))
+        mock_crm_api_client = mock.MagicMock()
+        mock_crm_api_client.get_projects.return_value = (
+            [fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1])
 
-        mock_creds = api_helpers.get_delegated_credential('user1@eaxmple.com')
-
-        self.crm_api_client = crm.CloudResourceManagerClient(
-            global_configs=fake_global_configs,
-            use_rate_limiter=False,
-            credentials=mock_creds)
-        self.project_id = fake_crm_responses.FAKE_PROJECT_ID
-
-        response = json.dumps(fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1)
-        http_mocks.mock_http_response(response)
-
-        project_ids = epas.extract_project_ids(self.crm_api_client)
+        project_ids = epas.extract_project_ids(mock_crm_api_client)
 
         self.assertListEqual(
             project_ids,
