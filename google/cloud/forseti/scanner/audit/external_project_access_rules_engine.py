@@ -53,9 +53,8 @@ class ExternalProjectAccessRulesEngine(bre.BaseRulesEngine):
                 self._load_rule_definitions()))
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, user_email,
-                               project_ancestry,
-                               force_rebuild=False):
+    def find_violations(self, user_email,
+                        project_ancestry, force_rebuild=False):
         """Determine whether project ancestry violates rules.
 
         Args:
@@ -72,7 +71,7 @@ class ExternalProjectAccessRulesEngine(bre.BaseRulesEngine):
             self.build_rule_book()
 
         violations = itertools.chain(
-            self.rule_book.find_policy_violations(
+            self.rule_book.find_violations(
                 user_email, project_ancestry))
 
         return violations
@@ -181,7 +180,7 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
             message.format(rule_index)
             raise audit_errors.InvalidRulesSchemaError(message)
 
-    def find_policy_violations(self, user_email, project_ancestry):
+    def find_violations(self, user_email, project_ancestry):
         """Determine whether project ancestry violates rules.
 
         Args:
