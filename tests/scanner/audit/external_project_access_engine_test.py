@@ -135,7 +135,7 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
     TEST_ANCESTORS = [Project('123'),
                       Folder('456'),
                       Organization('7890')]
-    TEST_BAD_ANC = [Project('123'),
+    TEST_BAD_ANCESTORS = [Project('123'),
                     Folder('456'),
                     Organization('ABC')]
 
@@ -198,7 +198,7 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
     def test_violations(self):
         """Test violations are found"""
         violations = self.rule_book.find_policy_violations(
-            'user@example.com', self.TEST_BAD_ANC)
+            'user@example.com', self.TEST_BAD_ANCESTORS)
 
         self.assertEqual(0, len(violations))
 
