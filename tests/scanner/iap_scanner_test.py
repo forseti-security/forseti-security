@@ -245,28 +245,34 @@ FIREWALL_RULES = {
         ),
 }
 PROJECTS = {
-    'foo': project_type.Project('foo'),
+    'foo': project_type.Project(project_id='foo'),
 }
 INSTANCES = {
     'i1':
         instance_type.Instance(
-            instance_id='i1',
+            'i1',
             parent=PROJECTS['foo'],
             name='i1',
             tags={'items': ['tag_i1']},
             locations=['wl-redqueen1-a'],
-            data = ('{"selfLink":  "https://www.googleapis.com/compute/v1'
-                    '/projects/foo/zones/wl-redqueen1-a/instances/i1"}')
+            data = ("""{
+    "name": "i2",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/foo/zones/wl-redqueen1-a/instances/i1",
+    "tags": {"items": ["tag_i1"]}
+}""")
         ),
     'i2':
         instance_type.Instance(
-            instance_id='i2',
+            'i2',
             parent=PROJECTS['foo'],
             name='i2',
-            tags={},
+            tags=[],
             locations=['wl-redqueen1-a'],
-            data = ('{"selfLink":  "https://www.googleapis.com/compute/v1'
-                    '/projects/foo/zones/wl-redqueen1-a/instances/i2"}')
+            data = ("""{
+    "name": "i2",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/foo/zones/wl-redqueen1-a/instances/i2",
+    "tags": {}
+}""")
         ),
 }
 INSTANCE_GROUPS = {
