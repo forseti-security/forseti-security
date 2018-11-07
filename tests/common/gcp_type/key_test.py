@@ -162,8 +162,8 @@ class KeyTest(ForsetiTestCase):
         url_1 = ('https://www.googleapis.com/compute/v1/'
                  'projects/foo/zones/us-central1-a/instances/bar')
         obj_1 = instance.Instance(
-            project_id='foo',
-            zone='us-central1-a',
+            id='foo',
+            locations=['us-central1-a'],
             name='bar')
         key_1 = key.Key(instance.KEY_OBJECT_KIND,
                         {'project_id': 'foo',

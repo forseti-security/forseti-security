@@ -245,23 +245,28 @@ FIREWALL_RULES = {
         ),
 }
 PROJECTS = {
-    'p1': project_type.Project('p1'),
+    'foo': project_type.Project('foo'),
 }
 INSTANCES = {
     'i1':
         instance_type.Instance(
             instance_id='i1',
-            parent=PROJECTS['p1'],
+            parent=PROJECTS['foo'],
             name='i1',
             tags={'items': ['tag_i1']},
             locations=['wl-redqueen1-a'],
+            data = ('{"selfLink":  "https://www.googleapis.com/compute/v1'
+                    '/projects/foo/zones/wl-redeueen-a/instances/i1"}')
         ),
     'i2':
         instance_type.Instance(
             instance_id='i2',
-            parent=PROJECTS['p1'],
+            parent=PROJECTS['foo'],
+            name='i2',
             tags=[],
             locations=['wl-redqueen1-a'],
+            data = ('{"selfLink":  "https://www.googleapis.com/compute/v1'
+                    '/projects/foo/zones/wl-redeueen-a/instances/i2"}')
         ),
 }
 INSTANCE_GROUPS = {

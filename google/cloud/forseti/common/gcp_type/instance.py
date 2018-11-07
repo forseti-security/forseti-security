@@ -19,7 +19,6 @@ See: https://cloud.google.com/compute/docs/reference/latest/instances
 
 import json
 import os
-import re
 
 from google.cloud.forseti.common.gcp_type import key
 from google.cloud.forseti.common.gcp_type import resource
@@ -34,6 +33,9 @@ class Instance(resource.Resource):
         """Instance resource.
 
         Args:
+            instance_id (str): id of the instance.
+            parent (Resource): Parent resource of this instance.
+                Should be a project.
             **kwargs (dict): The object's attributes.
         """
         super(Instance, self).__init__(
@@ -52,14 +54,13 @@ class Instance(resource.Resource):
         self.machine_type = kwargs.get('machine_type')
         self.metadata = kwargs.get('metadata')
         self.network_interfaces = kwargs.get('network_interfaces')
-        self.project_id = kwargs.get('project_id')
         self.resource_id = kwargs.get('id')
         self.scheduling = kwargs.get('scheduling')
         self.service_accounts = kwargs.get('service_accounts')
         self.status = kwargs.get('status')
         self.status_message = kwargs.get('status_message')
         self.tags = kwargs.get('tags')
-        self.data = kwargs.get('raw_instance')
+        self.data = kwargs.get('data')
 
     @classmethod
     def from_json(cls, parent, json_string):
@@ -82,27 +83,28 @@ class Instance(resource.Resource):
                 'Unexpected parent type: got {}, want project'.format(
                     parent.type))
 
-        instance_key = Key.from_url(self_link)
+        instance_key = Key.from_url(instance.get('selfLink'))
 
-        kwargs = {'project_id': parent.id,
-                  'full_name': '{}instance/{}/'.format(parent.full_name,
-                                                       instance.get('id')),
-                  'creation_timestamp': instance.get('creationTimestamp'),
-                  'name': instance.get('name'),
-                  'description': instance.get('description'),
-                  'can_ip_forward': instance.get('canIpForward'),
-                  'cpu_platform': instance.get('cpuPlatform'),
-                  'disks': instance.get('disks', []),
-                  'machine_type': instance.get('machineType'),
-                  'metadata': instance.get('metadata', {}),
-                  'network_interfaces': instance.get('networkInterfaces', []),
-                  'scheduling': instance.get('scheduling', {}),
-                  'service_accounts': instance.get('serviceAccounts', []),
-                  'status': instance.get('status'),
-                  'status_message': instance.get('statusMessage'),
-                  'tags': instance.get('tags'),
-                  'raw_instance': json.dumps(instance)}
-        return cls(instance.get('id'), parent=parent,
+        kwargs = {
+            'full_name': '{}instance/{}/'.format(parent.full_name,
+                                                 instance_key.name),
+            'creation_timestamp': instance.get('creationTimestamp'),
+            'name': instance.get('name'),
+            'description': instance.get('description'),
+            'can_ip_forward': instance.get('canIpForward'),
+            'cpu_platform': instance.get('cpuPlatform'),
+            'disks': instance.get('disks', []),
+            'machine_type': instance.get('machineType'),
+            'metadata': instance.get('metadata', {}),
+            'network_interfaces': instance.get('networkInterfaces', []),
+            'scheduling': instance.get('scheduling', {}),
+            'service_accounts': instance.get('serviceAccounts', []),
+            'status': instance.get('status'),
+            'status_message': instance.get('statusMessage'),
+            'tags': instance.get('tags'),
+            'data': json.dumps(instance),
+        }
+        return cls(instance_key.name, parent=parent,
                    locations=[instance_key.zone], **kwargs)
 
     def _create_json_str(self):
@@ -154,8 +156,9 @@ class Instance(resource.Resource):
         Returns:
             Key: the key
         """
+        project_id = self.parent.id or ''
         zone = self.locations[0] if self.locations else ''
-        return Key.from_args(self.project_id, zone, self.name)
+        return Key.from_args(project_id, zone, self.id)
 
     def create_network_interfaces(self):
         """Return a list of network_interface objects.

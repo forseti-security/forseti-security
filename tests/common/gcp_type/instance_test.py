@@ -25,7 +25,7 @@ class InstanceTest(ForsetiTestCase):
     def test_network_interface_creation(self):
         """Test that network_interface creation is correct."""
         network_interfaces = (instance.Instance(
-            **fake_instance.FAKE_INSTANCE_RESPONSE_1)
+           'name-0', **fake_instance.FAKE_INSTANCE_RESPONSE_1)
                               .create_network_interfaces())
 
         self.assertEqual(len(network_interfaces), 1)
@@ -48,14 +48,14 @@ class InstanceTest(ForsetiTestCase):
     def test_recognize_two_network_interfaces(self):
         """Test that it recognizes two network_interfaces."""
         network_interfaces = (instance.Instance(
-            **fake_instance.FAKE_INSTANCE_RESPONSE_2)
+           'name-1', **fake_instance.FAKE_INSTANCE_RESPONSE_2)
                               .create_network_interfaces())
         self.assertEqual(len(network_interfaces), 2)
 
     def test_legacy_networks(self):
         """ Test legacy networks without a subnet works."""
         network_interfaces = (instance.Instance(
-            **fake_instance.FAKE_INSTANCE_RESPONSE_LEGACY)
+            'name-0', **fake_instance.FAKE_INSTANCE_RESPONSE_LEGACY)
                               .create_network_interfaces())
         self.assertEqual(len(network_interfaces), 1)
         network_interface = network_interfaces[0]
