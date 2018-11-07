@@ -87,8 +87,8 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
         project_ids = epas.extract_project_ids(mock_crm_api_client)
 
         self.assertListEqual(
-            project_ids,
-            fake_crm_responses.EXPECTED_FAKE_PROJECTS_API_RESPONSE1_IDS)
+            fake_crm_responses.EXPECTED_FAKE_PROJECTS_API_RESPONSE1_IDS,
+            project_ids)
 
     #pylint: disable=W0212
     def test_retrieve(self):
