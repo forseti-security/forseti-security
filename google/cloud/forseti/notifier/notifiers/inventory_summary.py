@@ -167,7 +167,7 @@ class InventorySummary(object):
 
     @staticmethod
     def _get_gsuite_dwd_status(summary_data):
-        """Get str value of whether list of fields are in summary data.
+        """Get the status of whether G Suite DwD is enabled or not.
 
         Args:
             summary_data (list): Summary of inventory data as a list of dicts.
@@ -177,7 +177,7 @@ class InventorySummary(object):
             str: disabled or enabled.
 
         """
-        gsuite_domain = set(['gsuite_group', 'gsuite_user'])
+        gsuite_types = set(['gsuite_group', 'gsuite_user'])
         summary_data_keys = set()
         if summary_data is None:
             return 'disabled'
@@ -185,7 +185,7 @@ class InventorySummary(object):
         for resource in summary_data:
             summary_data_keys.add(resource['resource_type'])
 
-        if gsuite_domain.issubset(summary_data_keys):
+        if gsuite_types.issubset(summary_data_keys):
             return 'enabled'
         return 'disabled'
 
