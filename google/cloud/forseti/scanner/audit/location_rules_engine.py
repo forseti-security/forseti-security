@@ -196,7 +196,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
             resource_type = applies_dict['type']
 
             if resource_type != '*' and (
-                resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES):
+                    resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES):
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))

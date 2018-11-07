@@ -85,7 +85,7 @@ class CloudSQLInstance(resource.Resource):
             parent=parent,
             instance_id=instance_id,
             full_name='{}cloudsqlinstance/{}/'.format(parent.full_name,
-                                                        instance_id),
+                                                      instance_id),
             display_name=instance_id,
             locations=[instance_dict['region']],
             data=json_string,

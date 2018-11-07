@@ -23,6 +23,7 @@ import os
 from google.cloud.forseti.common.gcp_type import key
 from google.cloud.forseti.common.gcp_type import resource
 
+
 # pylint: disable=too-many-instance-attributes
 class Instance(resource.Resource):
     """Represents Instance resource."""
