@@ -232,10 +232,6 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
         rules.extend(self.resource_to_rules.get(type_resource_wildcard, []))
 
-        any_resource_wildcard = resource_util.create_resource(
-            resource_id='*', resource_type='*')
-        rules.extend(self.resource_to_rules.get(any_resource_wildcard, []))
-
         for rule in rules:
             for violation in rule.find_violations(resource):
                 yield violation
