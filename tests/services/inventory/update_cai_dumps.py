@@ -41,6 +41,22 @@ IAM_POLICY_DUMP_FILE = os.path.join(MODULE_DIR,
 ADDITIONAL_RESOURCES_FILE = os.path.join(MODULE_DIR,
                                          'test_data',
                                          'additional_cai_resources.dump')
+ADDITIONAL_IAM_POLCIIES_FILE = os.path.join(MODULE_DIR,
+                                            'test_data',
+                                            'additional_cai_iam_policies.dump')
+
+
+class TestServiceConfig(object):
+    """ServiceConfig stub."""
+
+    def __init__(self, engine, inventory_config):
+        self.engine = engine
+        self.inventory_config = inventory_config
+
+    def get_engine(self):
+        """Stub."""
+        return self.engine
+
 
 class NullProgresser(Progresser):
     """No-op progresser to suppress output."""
@@ -128,6 +144,16 @@ def appengine_version(item):
     return _create_asset(name, asset_type, None, item.data(), None)
 
 
+def bigquery_dataset(item):
+    parent = item.parent()
+    name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+        parent['projectNumber'], item['datasetReference']['datasetId'])
+    asset_type = 'google.bigquery.Dataset'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def billing_account(item):
     name = '//cloudbilling.googleapis.com/{}'.format(item['name'])
     asset_type = 'google.cloud.billing.BillingAccount'
@@ -147,6 +173,17 @@ def bucket(item):
     data['acl'] = []
     data['defaultObjectAcl'] = []
     return _create_asset(name, asset_type, parent_name, data,
+                         item.get_iam_policy())
+
+
+def serviceaccount(item):
+    parent = item.parent()
+    name = '//iam.googleapis.com/projects/{}/serviceAccounts/{}'.format(
+        item['projectId'], item['uniqueId'])
+    asset_type = 'google.iam.ServiceAccount'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
 
 
@@ -206,12 +243,14 @@ CAI_TYPE_MAP = {
     'billing_account': billing_account,
     'bucket': bucket,
     'backendservice': backendservice,
+    'dataset': bigquery_dataset,
     'disk': disk,
     'firewall': firewall,
     'image': image,
     'instance': instance,
     'instancetemplate': instancetemplate,
     'network': network,
+    'serviceaccount': serviceaccount,
     'snapshot': snapshot,
     'subnetwork': subnetwork,
 }
@@ -236,6 +275,8 @@ def main():
     logger.enable_console_log()
     config = InventoryConfig(
         gcp_api_mocks.ORGANIZATION_ID, '', {}, '', {'enabled': False})
+    service_config = TestServiceConfig('sqlite', config)
+    config.set_service_config(service_config)
 
     resources = []
     iam_policies = []
@@ -259,8 +300,15 @@ def main():
                 continue
             resources.append(line.strip())
 
+    with open(ADDITIONAL_IAM_POLCIIES_FILE, 'r') as f:
+        for line in f:
+            if line.startswith('#'):
+                continue
+            iam_policies.append(line.strip())
+
     write_data(resources, RESOURCE_DUMP_FILE)
     write_data(iam_policies, IAM_POLICY_DUMP_FILE)
+
 
 if __name__ == '__main__':
     main()

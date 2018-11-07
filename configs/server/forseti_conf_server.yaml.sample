@@ -111,6 +111,8 @@ scanner:
           enabled: true
         - name: instance_network_interface
           enabled: false
+        - name: ke_scanner
+          enabled: false
         - name: ke_version_scanner
           enabled: true
         - name: service_account_key

@@ -14,9 +14,14 @@
 
 """Test data for Service Management GCP api responses."""
 
-FAKE_PROJECT_ID = "project1"
+# NOTE: The ServiceManagement v1 list() API does not actually populate the
+# producerProjectId of the resulting ManagedService objects.
 
-LIST_CONSUMER_SERVICES_PAGE1 = """
+# list()-related test data
+
+FAKE_PROJECT_ID = 'project1'
+
+LIST_SERVICES_PAGE1 = """
 {
  "services": [
   {
@@ -48,7 +53,7 @@ LIST_CONSUMER_SERVICES_PAGE1 = """
 }
 """
 
-LIST_CONSUMER_SERVICES_PAGE2 = """
+LIST_SERVICES_PAGE2 = """
 {
  "services": [
   {
@@ -88,7 +93,7 @@ LIST_CONSUMER_SERVICES_PAGE2 = """
 }
 """
 
-LIST_CONSUMER_SERVICES_PAGE3 = """
+LIST_SERVICES_PAGE3 = """
 {
  "services": [
   {
@@ -136,7 +141,7 @@ LIST_CONSUMER_SERVICES_PAGE3 = """
 }
 """
 
-LIST_CONSUMER_SERVICES_PAGE4 = """
+LIST_SERVICES_PAGE4 = """
 {
  "services": [
   {
@@ -168,15 +173,57 @@ LIST_CONSUMER_SERVICES_PAGE4 = """
 """
 
 LIST_CONSUMER_SERVICES_RESPONSES = [
-    LIST_CONSUMER_SERVICES_PAGE1,
-    LIST_CONSUMER_SERVICES_PAGE2,
-    LIST_CONSUMER_SERVICES_PAGE3,
-    LIST_CONSUMER_SERVICES_PAGE4
+    LIST_SERVICES_PAGE1,
+    LIST_SERVICES_PAGE2,
+    LIST_SERVICES_PAGE3,
+    LIST_SERVICES_PAGE4
 ]
 
-EXPECTED_SERVICES_COUNT = 30
+LIST_PRODUCER_SERVICES_RESPONSES = [
+    LIST_SERVICES_PAGE3,
+    LIST_SERVICES_PAGE4
+]
 
-PERMISSION_DENIED = """
+LIST_ALL_SERVICES_RESPONSES = [
+    LIST_SERVICES_PAGE1,
+    LIST_SERVICES_PAGE2,
+    LIST_SERVICES_PAGE3,
+    LIST_SERVICES_PAGE4
+]
+
+EXPECTED_CONSUMER_SERVICES_COUNT = 30
+EXPECTED_PRODUCER_SERVICES_COUNT = 16
+EXPECTED_ALL_SERVICES_COUNT = 30
+
+
+# IAM Policy test data
+
+FAKE_SERVICE_NAME = 'foo.googleapis.com'
+
+GET_API_IAM_POLICY_RESPONSE = """
+{
+ "etag": "etag",
+ "bindings": [
+  {
+   "role": "roles/owner",
+   "members": [
+    "user:testuser@foo.testing"
+   ]
+  },
+  {
+   "role": "roles/editor",
+   "members": [
+    "user:testuser2@foo.testing",
+    "user:testuser3@foo.testing"
+   ]
+  }
+ ]
+}
+"""
+
+EXPECTED_IAM_POLICY_BINDINGS_COUNT = 2
+
+LIST_PERMISSION_DENIED = """
 {
  "error": {
   "code": 403,
@@ -186,3 +233,12 @@ PERMISSION_DENIED = """
 }
 """
 
+IAM_PERMISSION_DENIED = """
+{
+ "error": {
+  "code": 403,
+  "message": "No access to resource: services/foo.googleapis.com"
+  "status": "PERMISSION_DENIED"
+ }
+}
+"""
