@@ -204,7 +204,8 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
                     service_config = list(data_access.scanner_iter(
                         session, 'kubernetes_service_config',
                         parent_type_name=ke_cluster_type_name))[0]
-                    ke_cluster.server_config = json.loads(service_config.data)
+
+                    cluster.server_config = json.loads(service_config.data)
 
             return ke_clusters
 
