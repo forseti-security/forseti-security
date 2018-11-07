@@ -158,7 +158,6 @@ class InventorySummary(object):
         Returns:
             list: Sorted data as a list of dicts.
                 Example: [{resource_type, count}, {}, {}, ...]
-
         """
         template_data = []
         for key, value in data.iteritems():
@@ -175,7 +174,6 @@ class InventorySummary(object):
 
         Returns:
             str: disabled or enabled.
-
         """
         gsuite_types = set(['gsuite_group', 'gsuite_user'])
         summary_data_keys = set()
