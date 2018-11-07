@@ -113,10 +113,11 @@ def GenerateConfig(context):
 exec > /tmp/deployment.log
 exec 2>&1
 
-# Ubuntu update.
+# Ubuntu available packages refresh.
 sudo apt-get update -y
-sudo apt-get upgrade -y
-sudo apt-get update && sudo apt-get --assume-yes install google-cloud-sdk
+
+# Install Google Cloud SDK
+sudo apt-get --assume-yes install google-cloud-sdk
 
 USER_HOME=/home/ubuntu
 
