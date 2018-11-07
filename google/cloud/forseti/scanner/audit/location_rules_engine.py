@@ -230,8 +230,8 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
             res, res.full_name)
 
         rules = []
-        for res in resource_ancestors:
-            rules.extend(self.resource_to_rules.get(res, []))
+        for ancestor_res in resource_ancestors:
+            rules.extend(self.resource_to_rules.get(ancestor_res, []))
 
         type_resource_wildcard = resource_util.create_resource(
             resource_id='*', resource_type=res.type)
@@ -239,7 +239,7 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
         rules.extend(self.resource_to_rules.get(type_resource_wildcard, []))
 
         for rule in rules:
-            for violation in rule.find_violations(resource):
+            for violation in rule.find_violations(res):
                 yield violation
 
 
