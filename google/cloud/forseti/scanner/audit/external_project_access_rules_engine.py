@@ -54,8 +54,7 @@ class ExternalProjectAccessRulesEngine(bre.BaseRulesEngine):
 
     # TODO: The naming is confusing and needs to be fixed in all scanners.
     def find_violations(self, user_email,
-                               project_ancestry,
-                               force_rebuild=False):
+                        project_ancestry, force_rebuild=False):
         """Determine whether project ancestry violates rules.
 
         Args:
