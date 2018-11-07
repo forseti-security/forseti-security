@@ -21,11 +21,7 @@ import mock
 
 # pylint says sqlalchemy.orm goes before google.auth
 from sqlalchemy.orm import sessionmaker
-import google.auth
-from google.oauth2 import credentials
 
-from google.cloud.forseti.common.gcp_api import cloud_resource_manager as crm
-from google.cloud.forseti.common.gcp_api import api_helpers
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.gcp_type.folder import Folder
 from google.cloud.forseti.common.gcp_type.organization import Organization
@@ -37,7 +33,6 @@ from google.cloud.forseti.scanner.scanners import external_project_access_scanne
 from google.cloud.forseti.services.inventory.storage import initialize
 from google.cloud.forseti.services.inventory.storage import Storage
 from tests.common.gcp_api.test_data import fake_crm_responses
-from tests.common.gcp_api.test_data import http_mocks
 from tests.services.api_tests.inventory_test import TestServiceConfig
 from tests.services.inventory.storage_test import ResourceMock
 from tests.services.util.db import create_test_engine
@@ -77,29 +72,26 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 
         self.stash_email_method = epas.get_user_emails
 
-    def test_mock_emails(self):
-        """Test obtaining e-mails from mock"""
-        epas.get_user_emails = mock.MagicMock(return_value=TEST_EMAILS)
-        self.assertEqual(len(epas.get_user_emails(None)), 2)
+    @mock.patch('google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient')
+    def test_get_project_ids(self, mock_crm_client):
+        """Test get_projects_ids() for all lifecycle_states."""
+
+        mock_crm_client.get_projects.return_value = (
+            [fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1])
+
+        project_ids = epas.extract_project_ids(mock_crm_client)
+
+        self.assertListEqual(
+            fake_crm_responses.EXPECTED_FAKE_PROJECTS_API_RESPONSE1_IDS,
+            project_ids)
 
     #pylint: disable=W0212
-    def test_retrieve(self):
+    @mock.patch('google.cloud.forseti.common.gcp_api.cloud_resource_manager.CloudResourceManagerClient')
+    def test_retrieve(self, mock_crm_client):
         """Test retrieving project ancestry data"""
         list_to_generator = lambda x: (n for n in x)
 
         epas.get_user_emails = mock.MagicMock(return_value=TEST_EMAILS)
-        epas.extract_project_ids = mock.MagicMock(
-            return_value=['project1', 'project2', 'project3'])
-
-        api_helpers.get_delegated_credential = mock.MagicMock()
-
-        crm.get_projects = mock.MagicMock(
-            return_value=list_to_generator(
-                [fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1]))
-
-        crm.CloudResourceManagerClient.get_project_ancestry = mock.MagicMock(
-            return_value=json.loads(
-                fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)['ancestor'])
 
         scanner = epas.ExternalProjectAccessScanner(self.global_configs,
                                                     self.scanner_configs,
@@ -107,6 +99,15 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
                                                     self.model_name,
                                                     self.snapshot_timestamp,
                                                     self.rules)
+
+        mock_crm_client.get_projects.return_value = list_to_generator(
+            [fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1])
+        mock_crm_client.get_project_ancestry.return_value = json.loads(
+                fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)['ancestor']
+        
+        scanner._get_crm_client = mock.MagicMock()
+        scanner._get_crm_client.return_value = mock_crm_client
+
         scanner.rules_engine.build_rule_book(
             self.service_config.get_inventory_config())
 
@@ -120,7 +121,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
             isinstance(user_ancestries['user1@example.com'][0][0], Project))
 
     def test_find_violations_bad_folder(self):
-        """Test finding no violations with a folder as a parent"""
+        """Test finding no violations with a bad folder as a parent"""
         epas.get_user_emails = mock.MagicMock(return_value=TEST_EMAILS)
         scanner = epas.ExternalProjectAccessScanner(self.global_configs,
                                                     self.scanner_configs,
@@ -199,8 +200,9 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 
 
 class GetUserEmailsTest(ForsetiTestCase):
-    """Test the storage_helpers modue."""
+    """Test the storage_helpers module."""
     def setUp(self):
+        print("##AA#")
         self.engine = create_test_engine()
         _session_maker = sessionmaker()
         self.session = _session_maker(bind=self.engine)
@@ -237,65 +239,6 @@ class GetUserEmailsTest(ForsetiTestCase):
         mock_storage.return_value = self.storage
         emails = epas.get_user_emails(self.service_config)
         self.assertListEqual(emails, expected_emails)
-
-
-class OtherModuleTest(ForsetiTestCase):
-    """Test misc."""
-
-    def setUp(self):
-        """Set up."""
-        fake_global_configs = {
-            'crm': {'max_calls': 4, 'period': 1.2}}
-
-        mock.patch.object(google.auth, 'default', return_value=(
-            mock.Mock(spec_set=credentials.Credentials), 'test-project'))
-
-        mock_creds = api_helpers.get_delegated_credential('user1@eaxmple.com')
-
-        self.crm_api_client = crm.CloudResourceManagerClient(
-            global_configs=fake_global_configs,
-            use_rate_limiter=False,
-            credentials=mock_creds)
-        self.project_id = fake_crm_responses.FAKE_PROJECT_ID
-
-    def test_get_project_ids(self):
-        """Test get_projects_ids() for all lifecycle_states."""
-        response = json.dumps(fake_crm_responses.FAKE_PROJECTS_API_RESPONSE1)
-        http_mocks.mock_http_response(response)
-
-        proj_ids = epas.extract_project_ids(self.crm_api_client)
-
-        self.assertListEqual(
-            proj_ids,
-            fake_crm_responses.EXPECTED_FAKE_PROJECTS_API_RESPONSE1_IDS)
-
-    def test_cast_to_gcp_resources(self):
-        """Validate get_project_ancestry_resources() with test project."""
-        http_mocks.mock_http_response(
-            fake_crm_responses.GET_PROJECT_ANCESTRY_RESPONSE)
-        result = self.crm_api_client.get_project_ancestry(
-            fake_crm_responses.FAKE_PROJECT_ID)
-
-        cast_resources = resource_util.cast_to_gcp_resources(result)
-
-        self.assertTrue(isinstance(cast_resources, list))
-
-        self.assertTrue(isinstance(cast_resources[0], Project))
-        self.assertTrue(isinstance(cast_resources[-1], Organization))
-
-def reduced_inventory(storage, types):
-    """Create a list of inventory objects of specified types.
-
-    Args:
-        storage (Storage): The storage object
-        types (list): List of string types to pull from inventory.
-
-    Returns:
-        list: List of inventory objectes.
-    """
-    result = (
-        [x for x in storage.iter(types)])
-    return result
 
 if __name__ == '__main__':
     unittest.main()
