@@ -187,8 +187,7 @@ class InventorySummary(object):
 
         if gsuite_domain.issubset(summary_data_keys):
             return 'enabled'
-        else:
-            return 'disabled'
+        return 'disabled'
 
     def _get_summary_data(self):
         """Get the summarized inventory data.
