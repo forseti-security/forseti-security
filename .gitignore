@@ -1,9 +1,12 @@
-# Eclipse metafile.
+# Eclipse metafiles
 .project
 .pydevproject
 
 # Pycharm metafiles
 .idea/*
+
+# Visual Studio Code metafiles
+.vscode/*
 
 # Compiled python
 *.pyc
@@ -44,3 +47,6 @@ out/
 # Coverage
 .coverage
 htmlcov/
+
+# VSCode Metadata
+.vscode/

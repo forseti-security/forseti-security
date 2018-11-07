@@ -278,7 +278,7 @@ BQ_GET_DATASETS_FOR_PROJECTID = {
 }
 
 BQ_GET_DATASET_ACCESS = {
-    "project3": {
+    PROJECT_ID_PREFIX + "3": {
         "dataset1": [{
             "role": "WRITER",
             "specialGroup": "projectWriters"

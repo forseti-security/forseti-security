@@ -41,11 +41,11 @@ class ApiClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def fetch_bigquery_dataset_policy(self, project_id, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
-            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
 
@@ -54,7 +54,7 @@ class ApiClient(object):
         """Iterate Datasets from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -70,7 +70,7 @@ class ApiClient(object):
         """Project Billing Info from gcp API call.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -82,7 +82,7 @@ class ApiClient(object):
         """Iterate Cloud sql instances from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -90,7 +90,7 @@ class ApiClient(object):
         """Verifies the Compute API is enabled on a project.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -98,7 +98,7 @@ class ApiClient(object):
         """Fetch compute project data from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -106,7 +106,7 @@ class ApiClient(object):
         """Iterate Autoscalers from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -114,7 +114,7 @@ class ApiClient(object):
         """Iterate Backend buckets from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -122,7 +122,7 @@ class ApiClient(object):
         """Iterate Backend services from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -130,7 +130,7 @@ class ApiClient(object):
         """Iterate Compute Engine disks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -138,7 +138,7 @@ class ApiClient(object):
         """Iterate Compute Engine Firewalls from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -146,7 +146,7 @@ class ApiClient(object):
         """Iterate Forwarding Rules from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -154,7 +154,7 @@ class ApiClient(object):
         """Iterate Health checks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -162,7 +162,7 @@ class ApiClient(object):
         """Iterate HTTP Health checks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -170,7 +170,7 @@ class ApiClient(object):
         """Iterate HTTPS Health checks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -178,7 +178,7 @@ class ApiClient(object):
         """Iterate Instance Group Manager from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -186,7 +186,7 @@ class ApiClient(object):
         """Iterate Images from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -194,7 +194,7 @@ class ApiClient(object):
         """Iterate Compute Engine groups from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -202,7 +202,7 @@ class ApiClient(object):
         """Iterate compute engine instance from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -210,7 +210,7 @@ class ApiClient(object):
         """Iterate Instance Templates from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -218,7 +218,7 @@ class ApiClient(object):
         """Iterate Licenses from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -226,7 +226,7 @@ class ApiClient(object):
         """Iterate Networks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -234,7 +234,7 @@ class ApiClient(object):
         """Iterate Compute Engine snapshots from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -242,7 +242,7 @@ class ApiClient(object):
         """Iterate SSL Certificates from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -250,7 +250,7 @@ class ApiClient(object):
         """Iterate Subnetworks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -258,7 +258,7 @@ class ApiClient(object):
         """Iterate Target HTTP proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -266,7 +266,7 @@ class ApiClient(object):
         """Iterate Target HTTPS proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -274,7 +274,7 @@ class ApiClient(object):
         """Iterate Target Instances from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -282,7 +282,7 @@ class ApiClient(object):
         """Iterate Target Pools from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -290,7 +290,7 @@ class ApiClient(object):
         """Iterate Target SSL proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -298,7 +298,7 @@ class ApiClient(object):
         """Iterate Target TCP proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -306,7 +306,7 @@ class ApiClient(object):
         """Iterate URL maps from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -325,7 +325,7 @@ class ApiClient(object):
         """Iterate Kubernetes Engine Cluster from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -365,7 +365,7 @@ class ApiClient(object):
         """Fetch Project data from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -373,7 +373,7 @@ class ApiClient(object):
         """Project IAM policy from gcp API call.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -405,7 +405,7 @@ class ApiClient(object):
         """Iterate Liens from GCP API.
 
         Args:
-            project_number (str): id of the parent project of the lien.
+            project_number (str): number of the parent project of the lien.
         """
 
     @abc.abstractmethod
@@ -413,7 +413,7 @@ class ApiClient(object):
         """Project organization policies from gcp API call.
 
         Args:
-            project_number (str): id of the parent project of the policy.
+            project_number (str): number of the parent project of the policy.
         """
 
     @abc.abstractmethod
@@ -430,7 +430,7 @@ class ApiClient(object):
         """Iterate CloudDNS Managed Zones from GCP API.
 
         Args:
-            project_number (str): id of the parent project of the managed zone.
+            project_number (str): number of the parent project.
         """
 
     @abc.abstractmethod
@@ -438,7 +438,7 @@ class ApiClient(object):
         """Iterate CloudDNS Policies from GCP API.
 
         Args:
-            project_number (str): id of the parent project of the policy.
+            project_number (str): number of the parent project of the policy.
         """
 
     @abc.abstractmethod
@@ -501,12 +501,13 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def fetch_iam_serviceaccount_iam_policy(self, name):
+    def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
         """Service Account IAM policy from gcp API call.
 
         Args:
             name (str): The service account name to query, must be in the format
                 projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            unique_id (str): The unique id of the service account.
         """
 
     @abc.abstractmethod
@@ -539,11 +540,12 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_iam_serviceaccounts(self, project_id):
+    def iter_iam_serviceaccounts(self, project_id, project_number):
         """Iterate Service Accounts in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -551,7 +553,7 @@ class ApiClient(object):
         """Project enabled API services from gcp API call.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -559,7 +561,7 @@ class ApiClient(object):
         """Iterate Spanner Instances from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -599,7 +601,7 @@ class ApiClient(object):
         """Iterate Project logging sinks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -624,7 +626,7 @@ class ApiClient(object):
         """Iterate Buckets from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -795,24 +797,24 @@ class ApiClientImpl(ApiClient):
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
-    def fetch_bigquery_dataset_policy(self, project_id, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
-            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
-        return self.bigquery.get_dataset_access(project_id, dataset_id)
+        return self.bigquery.get_dataset_access(project_number, dataset_id)
 
     @create_lazy('bigquery', _create_bq)
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of datasets.
@@ -837,7 +839,7 @@ class ApiClientImpl(ApiClient):
         """Project Billing Info from gcp API call.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             dict: Project Billing Info resource.
@@ -859,7 +861,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Cloud sql instances from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of cloudsql instance.
@@ -872,7 +874,7 @@ class ApiClientImpl(ApiClient):
         """Verifies the Compute API is enabled on a project.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             bool: True if API is enabled, else False.
@@ -884,7 +886,7 @@ class ApiClientImpl(ApiClient):
         """Fetch compute project data from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             dict: Compute project metadata resource.
@@ -895,7 +897,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Autoscalers from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -907,7 +909,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Backend buckets from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -920,7 +922,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Backend services from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of backend service.
@@ -933,7 +935,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Compute Engine disks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Disk.
@@ -946,7 +948,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Compute Engine Firewalls from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Engine Firewall.
@@ -959,7 +961,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Forwarding Rules from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of forwarding rule resources.
@@ -971,7 +973,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Health checks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -983,7 +985,7 @@ class ApiClientImpl(ApiClient):
         """Iterate HTTP Health checks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -995,7 +997,7 @@ class ApiClientImpl(ApiClient):
         """Iterate HTTPS Health checks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1008,7 +1010,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Instance Group Manager from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of instance group manager resources.
@@ -1022,7 +1024,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Images from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of image resources.
@@ -1035,7 +1037,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Compute Engine groups from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Instance group.
@@ -1048,7 +1050,7 @@ class ApiClientImpl(ApiClient):
         """Iterate compute engine instance from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Engine Instance.
@@ -1061,7 +1063,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Instance Templates from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of instance template resources.
@@ -1074,7 +1076,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Licenses from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1087,7 +1089,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Networks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of network resources.
@@ -1100,7 +1102,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Compute Engine snapshots from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Snapshots.
@@ -1112,7 +1114,7 @@ class ApiClientImpl(ApiClient):
         """Iterate SSL Certificates from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1125,7 +1127,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Subnetworks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of subnetwork resources.
@@ -1137,7 +1139,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Target HTTP proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1149,7 +1151,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Target HTTPS proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1161,7 +1163,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Target Instances from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1173,7 +1175,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Target Pools from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1185,7 +1187,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Target SSL proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1197,7 +1199,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Target TCP proxies from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1209,7 +1211,7 @@ class ApiClientImpl(ApiClient):
         """Iterate URL maps from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1238,7 +1240,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Kubernetes Engine Cluster from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Kubernetes Engine Cluster resources.
@@ -1306,7 +1308,7 @@ class ApiClientImpl(ApiClient):
         """Fetch Project data from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             dict: Generator of project.
@@ -1318,7 +1320,7 @@ class ApiClientImpl(ApiClient):
         """Project IAM policy from gcp API call.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             dict: Project IAM Policy.
@@ -1369,7 +1371,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Liens from GCP API.
 
         Args:
-            project_number (str): id of the parent project of the lien.
+            project_number (str): number of the parent project of the lien.
 
         Yields:
             dict: Generator of liens.
@@ -1382,7 +1384,7 @@ class ApiClientImpl(ApiClient):
         """Project organization policies from gcp API call.
 
         Args:
-            project_number (str): id of the parent project of the policy.
+            project_number (str): number of the parent project of the policy.
 
         Yields:
             dict: Generator of org policies.
@@ -1410,7 +1412,7 @@ class ApiClientImpl(ApiClient):
         """Iterate CloudDNS Managed Zones from GCP API.
 
         Args:
-            project_number (str): id of the parent project of the managed zone.
+            project_number (str): number of the parent project.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1422,7 +1424,7 @@ class ApiClientImpl(ApiClient):
         """Iterate CloudDNS Policies from GCP API.
 
         Args:
-            project_number (str): id of the parent project of the policy.
+            project_number (str): number of the parent project of the policy.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1526,16 +1528,18 @@ class ApiClientImpl(ApiClient):
             yield user
 
     @create_lazy('iam', _create_iam)
-    def fetch_iam_serviceaccount_iam_policy(self, name):
+    def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
         """Service Account IAM policy from gcp API call.
 
         Args:
             name (str): The service account name to query, must be in the format
                 projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            unique_id (str): The unique id of the service account.
 
         Returns:
             dict: Service Account IAM policy.
         """
+        del unique_id  # Used by CAI, not the API.
         return self.iam.get_service_account_iam_policy(name)
 
     @create_lazy('iam', _create_iam)
@@ -1589,15 +1593,17 @@ class ApiClientImpl(ApiClient):
             yield key
 
     @create_lazy('iam', _create_iam)
-    def iter_iam_serviceaccounts(self, project_id):
+    def iter_iam_serviceaccounts(self, project_id, project_number):
         """Iterate Service Accounts in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of service account.
         """
+        del project_number  # Used by CAI, not the API.
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount
 
@@ -1606,7 +1612,7 @@ class ApiClientImpl(ApiClient):
         """Project enabled API services from gcp API call.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             list: A list of ManagedService resource dicts.
@@ -1617,7 +1623,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Spanner Instances from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Raises:
             ResourceNotSupported: Raised for all calls using this class.
@@ -1681,7 +1687,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Project logging sinks from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of project logging sinks.
@@ -1720,7 +1726,7 @@ class ApiClientImpl(ApiClient):
         """Iterate Buckets from GCP API.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of buckets.

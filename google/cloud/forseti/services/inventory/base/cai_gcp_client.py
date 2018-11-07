@@ -68,6 +68,69 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
     return fixed_resource
 
 
+def _convert_iam_to_bigquery_policy(iam_policy):
+    """Converts an IAM policy to a bigquery Access Policy.
+
+    The is used for backwards compatibility between data returned from live
+    API and the data stored in CAI. Once the live API returns IAM policies
+    instead, this can be deprecated.
+
+    Args:
+        iam_policy (dict): The BigQuery dataset IAM policy.
+
+    Returns:
+        list: A list of access policies.
+
+        An example return value:
+
+            [
+                {'role': 'WRITER', 'specialGroup': 'projectWriters'},
+                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
+                {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
+                {'role': 'READER', 'specialGroup': 'projectReaders'}
+            ]
+    """
+    # Map of iam policy roles to bigquery access policy roles.
+    iam_to_access_policy_role_map = {
+        'roles/bigquery.dataEditor': 'WRITER',
+        'roles/bigquery.dataOwner': 'OWNER',
+        'roles/bigquery.dataViewer': 'READER'
+    }
+    # Map iam policy member type to bigquery access policy member type.
+    # The value of the map is a tuple of access policy member type and access
+    # policy member value pairs. If the member value is None, then the value
+    # from the IAM policy binding is used.
+    iam_to_access_policy_member_map = {
+        'allAuthenticatedUsers': ('specialGroup', 'allAuthenticatedUsers'),
+        'projectEditor': ('specialGroup', 'projectWriters'),
+        'projectOwner': ('specialGroup', 'projectOwners'),
+        'projectViewer': ('specialGroup', 'projectReaders'),
+        'domain': ('domain', None),
+        'group': ('groupByEmail', None),
+        'user': ('userByEmail', None),
+    }
+
+    access_policies = []
+    for binding in iam_policy.get('bindings', []):
+        if binding.get('role', '') in iam_to_access_policy_role_map:
+            role = iam_to_access_policy_role_map[binding['role']]
+            for member in binding.get('members', []):
+                # The 'allAuthenticatedUsers' member does not contain ':' so it
+                # needs to be handled seperately.
+                if ':' in member:
+                    member_type, member_value = member.split(':', 1)
+                else:
+                    member_type = member
+                    member_value = None
+                if member_type in iam_to_access_policy_member_map:
+                    new_type, new_value = (
+                        iam_to_access_policy_member_map[member_type])
+                    if not new_value:
+                        new_value = member_value
+                    access_policies.append({'role': role, new_type: new_value})
+    return access_policies
+
+
 # pylint: disable=too-many-public-methods
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
@@ -105,6 +168,46 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
+
+    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+        """Dataset policy Iterator for a dataset from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+
+        Returns:
+            dict: Dataset Policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.bigquery.Dataset',
+            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+                project_number, dataset_id),
+            self.session)
+        if resource:
+            return _convert_iam_to_bigquery_policy(resource)
+        # Fall back to live API if the data isn't in the CAI cache.
+        return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
+            project_number, dataset_id)
+
+    def iter_bigquery_datasets(self, project_number):
+        """Iterate Datasets from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of datasets.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.bigquery.Dataset',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for dataset in resources:
+            yield dataset
 
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from Cloud Asset data.
@@ -145,7 +248,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
 
         Args:
             asset_type (str): The Compute asset type to iterate.
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             generator: A generator of resources from Cloud Asset data.
@@ -161,7 +264,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Autoscalers from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of autoscaler resources.
@@ -174,7 +277,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Backend buckets from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of backend bucket resources.
@@ -188,7 +291,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Backend services from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of backend service.
@@ -206,7 +309,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Compute Engine disks from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Disk.
@@ -226,7 +329,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Compute Engine Firewalls from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Engine Firewall.
@@ -249,7 +352,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Health checks from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of health check resources.
@@ -262,7 +365,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate HTTP Health checks from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of HTTP health check resources.
@@ -276,7 +379,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate HTTPS Health checks from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of HTTPS health check resources.
@@ -290,7 +393,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Images from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of image resources.
@@ -311,7 +414,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate compute engine instance from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Engine Instance resources.
@@ -340,7 +443,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Instance Templates from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of instance template resources.
@@ -370,7 +473,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Licenses from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of license resources.
@@ -383,7 +486,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Networks from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of network resources.
@@ -399,7 +502,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Compute Engine snapshots from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Compute Snapshots.
@@ -417,7 +520,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate SSL certificates from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of ssl certificate resources.
@@ -431,7 +534,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Subnetworks from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of subnetwork resources.
@@ -445,7 +548,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Target HTTP proxies from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of target http proxy resources.
@@ -459,7 +562,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Target HTTPS proxies from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of target https proxy resources.
@@ -476,7 +579,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Target Instances from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of target instance resources.
@@ -490,7 +593,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Target Pools from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of target pool resources.
@@ -507,7 +610,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Target SSL proxies from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of target ssl proxy resources.
@@ -524,7 +627,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate Target TCP proxies from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of target tcp proxy resources.
@@ -538,7 +641,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate URL maps from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of url map resources.
@@ -640,7 +743,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Fetch Project data from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             dict: Project resource.
@@ -660,7 +763,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Project IAM policy from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Returns:
             dict: Project IAM Policy.
@@ -717,7 +820,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate CloudDNS Managed Zones from Cloud Asset data.
 
         Args:
-            project_number (str): id of the parent project of the managed zone.
+            project_number (str): number of the parent project.
 
         Yields:
             dict: Generator of ManagedZone resources
@@ -735,7 +838,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """Iterate CloudDNS Policies from Cloud Asset data.
 
         Args:
-            project_number (str): id of the parent project of the policy.
+            project_number (str): number of the parent project of the policy.
 
         Yields:
             dict: Generator of ManagedZone resources
@@ -801,11 +904,59 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for version in resources:
             yield version
 
+    def fetch_iam_serviceaccount_iam_policy(self, name, unique_id):
+        """Service Account IAM policy from Cloud Asset data.
+
+        Args:
+            name (str): The service account name to query, must be in the format
+                projects/{PROJECT_ID}/serviceAccounts/{SERVICE_ACCOUNT_EMAIL}
+            unique_id (str): The unique id of the service account.
+
+        Returns:
+            dict: Service Account IAM policy.
+        """
+        # CAI indexes iam policy by service account unique id, not email.
+        # This transforms the name to the format expected by CAI.
+        name_parts = name.split('/')
+        name_parts[-1] = unique_id
+        name = '/'.join(name_parts)
+
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.iam.ServiceAccount',
+            '//iam.googleapis.com/{}'.format(name),
+            self.session)
+        if resource:
+            return resource
+
+        # Service accounts with no IAM policy return an empty dict.
+        return {}
+
+    def iter_iam_serviceaccounts(self, project_id, project_number):
+        """Iterate Service Accounts in a project from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of service account.
+        """
+        del project_id  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.iam.ServiceAccount',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for serviceaccount in resources:
+            yield serviceaccount
+
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from Cloud Asset data.
 
         Args:
-            project_number (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of Spanner Instance resources

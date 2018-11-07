@@ -35,7 +35,9 @@
 #         resource_ids:
 #           - {ORGANIZATION_ID}
 #     applies_to:
-#       - 'bucket'
+#       - type: 'bucket'
+#         resource_ids:
+#           - '*'
 #     locations:
 #       - 'us*'
 #  - name: All buckets in organization must not be in EU.
@@ -45,6 +47,8 @@
 #         resource_ids:
 #           - {ORGANIZATION_ID}
 #     applies_to:
-#       - 'bucket'
+#       - type: 'bucket'
+#         resource_ids:
+#           - '*'
 #     locations:
 #       - 'eu*'
