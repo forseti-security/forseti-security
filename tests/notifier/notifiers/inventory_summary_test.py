@@ -293,8 +293,7 @@ class InventorySummaryTest(ForsetiTestCase):
                         in mock_logger.exception.call_args[0][0])
 
     def test_get_gsuite_dwd_status_disabled(self):
-        mock_inventory_summary = mock.MagicMock()
-        mock_inventory_summary.return_value = [
+        mock_inventory_summary_data = [
             {'resource_type': 'bucket', 'count': 2},
             {'resource_type': 'dataset', 'count': 4},
             {'resource_type': 'folder', 'count': 1},
@@ -305,20 +304,21 @@ class InventorySummaryTest(ForsetiTestCase):
 
         mock_service_config = mock.MagicMock()
 
-        inventory_summary_object = inventory_summary\
-            .InventorySummary(mock_service_config, 'abcd')
+        inventory_summary_object = (
+            inventory_summary.InventorySummary(
+                mock_service_config, 'abcd'))
 
-        expected_get_gsuite_dwd_status_output = False
+        expected_get_gsuite_dwd_status_output = 'disabled'
 
-        test_get_gsuite_dwd_status_output = inventory_summary_object\
-            ._get_gsuite_dwd_status(mock_inventory_summary.return_value)
+        test_get_gsuite_dwd_status_output = (
+            inventory_summary_object._get_gsuite_dwd_status(
+                mock_inventory_summary_data))
 
         self.assertEquals(expected_get_gsuite_dwd_status_output,
                           test_get_gsuite_dwd_status_output)
 
     def test_get_gsuite_dwd_status_enabled(self):
-        mock_inventory_summary = mock.MagicMock()
-        mock_inventory_summary.return_value = [
+        mock_inventory_summary_data = [
             {'resource_type': 'bucket', 'count': 2},
             {'resource_type': 'dataset', 'count': 4},
             {'resource_type': 'folder', 'count': 1},
@@ -331,13 +331,15 @@ class InventorySummaryTest(ForsetiTestCase):
 
         mock_service_config = mock.MagicMock()
 
-        inventory_summary_object = inventory_summary\
-            .InventorySummary(mock_service_config, 'abcd')
+        inventory_summary_object = (
+            inventory_summary.InventorySummary(
+                mock_service_config, 'abcd'))
 
-        expected_get_gsuite_dwd_status_output = True
+        expected_get_gsuite_dwd_status_output = 'enabled'
 
-        test_get_gsuite_dwd_status_output = inventory_summary_object\
-            ._get_gsuite_dwd_status(mock_inventory_summary.return_value)
+        test_get_gsuite_dwd_status_output = (
+            inventory_summary_object._get_gsuite_dwd_status(
+                mock_inventory_summary_data))
 
         self.assertEquals(expected_get_gsuite_dwd_status_output,
                           test_get_gsuite_dwd_status_output)
