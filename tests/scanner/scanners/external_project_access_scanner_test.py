@@ -202,6 +202,7 @@ class ExternalProjectAccessScannerTest(ForsetiTestCase):
 class GetUserEmailsTest(ForsetiTestCase):
     """Test the storage_helpers module."""
     def setUp(self):
+        print("##AA#")
         self.engine = create_test_engine()
         _session_maker = sessionmaker()
         self.session = _session_maker(bind=self.engine)
@@ -238,23 +239,6 @@ class GetUserEmailsTest(ForsetiTestCase):
         mock_storage.return_value = self.storage
         emails = epas.get_user_emails(self.service_config)
         self.assertListEqual(emails, expected_emails)
-
-
-
-
-def get_inventory(storage, types):
-    """Create a list of inventory objects of specified types.
-
-    Args:
-        storage (Storage): The storage object
-        types (list): List of string types to pull from inventory.
-
-    Returns:
-        list: List of inventory objectes.
-    """
-    result = (
-        [x for x in storage.iter(types)])
-    return result
 
 if __name__ == '__main__':
     unittest.main()

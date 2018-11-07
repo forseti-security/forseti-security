@@ -136,8 +136,8 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
                       Folder('456'),
                       Organization('7890')]
     TEST_BAD_ANCESTORS = [Project('123'),
-                    Folder('456'),
-                    Organization('ABC')]
+                          Folder('456'),
+                          Organization('ABC')]
 
     def setUp(self):
         """Set up."""
