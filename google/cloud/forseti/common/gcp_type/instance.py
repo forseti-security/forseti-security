@@ -37,6 +37,9 @@ class Instance(resource.Resource):
             parent (Resource): Parent resource of this instance.
                 Should be a project.
             **kwargs (dict): The object's attributes.
+
+        Raises:
+            TypeError: If unexpected parent type.
         """
         super(Instance, self).__init__(
             resource_id=instance_id,
@@ -45,6 +48,11 @@ class Instance(resource.Resource):
             display_name=kwargs.get('name'),
             parent=parent,
             locations=kwargs.get('locations'))
+
+        if parent.type != 'project':
+            raise TypeError(
+                'Unexpected parent type: got {}, want project'.format(
+                    parent.type))
         self.full_name = kwargs.get('full_name')
         self.can_ip_forward = kwargs.get('can_ip_forward')
         self.cpu_platform = kwargs.get('cpu_platform')
@@ -73,15 +81,8 @@ class Instance(resource.Resource):
 
         Returns:
             Instance: A new Instance object.
-
-        Raises:
-            TypeError: If unexpected parent type.
         """
         instance = json.loads(json_string)
-        if parent.type != 'project':
-            raise TypeError(
-                'Unexpected parent type: got {}, want project'.format(
-                    parent.type))
 
         instance_key = Key.from_url(instance.get('selfLink'))
 
@@ -156,7 +157,7 @@ class Instance(resource.Resource):
         Returns:
             Key: the key
         """
-        project_id = self.parent.id or ''
+        project_id = self.parent.id if self.parent else ''
         zone = self.locations[0] if self.locations else ''
         return Key.from_args(project_id, zone, self.id)
 
