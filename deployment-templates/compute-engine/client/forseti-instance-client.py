@@ -97,6 +97,9 @@ def GenerateConfig(context):
 exec > /tmp/deployment.log
 exec 2>&1
 
+# Ubuntu available packages refresh.
+sudo apt-get update -y
+
 # Forseti setup.
 sudo apt-get install -y git unzip
 
