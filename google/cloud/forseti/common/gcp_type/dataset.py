@@ -76,7 +76,7 @@ class Dataset(resource.Resource):
             json_string(str): JSON string of a dataset GCP API response.
 
         Returns:
-            dataset: dataset resource.
+            Dataset: dataset resource.
         """
         dataset_dict = json.loads(json_string)
 

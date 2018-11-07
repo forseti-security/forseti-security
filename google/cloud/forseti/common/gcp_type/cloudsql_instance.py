@@ -76,7 +76,7 @@ class CloudSQLInstance(resource.Resource):
             json_string(str): JSON string of a cloud_sql_instance GCP API response.
 
         Returns:
-            cloud_sql_instance: cloud sql instance resource.
+            CloudSQLInstance: cloud sql instance resource.
         """
         instance_dict = json.loads(json_string)
 

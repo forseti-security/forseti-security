@@ -75,7 +75,7 @@ class Cluster(resource.Resource):
             json_string(str): JSON string of a cluster GCP API response.
 
         Returns:
-            cluster: cluster resource.
+            Cluster: cluster resource.
         """
         cluster_dict = json.loads(json_string)
 
