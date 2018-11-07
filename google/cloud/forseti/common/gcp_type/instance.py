@@ -49,7 +49,7 @@ class Instance(resource.Resource):
             parent=parent,
             locations=kwargs.get('locations'))
 
-        if parent.type != 'project':
+        if parent and parent.type != 'project':
             raise TypeError(
                 'Unexpected parent type: got {}, want project'.format(
                     parent.type))
