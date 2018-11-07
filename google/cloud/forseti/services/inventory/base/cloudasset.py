@@ -57,6 +57,7 @@ def load_cloudasset_data(session, config):
                                            content_type))
 
         for future in concurrent.futures.as_completed(futures):
+            temporary_file = ''
             try:
                 temporary_file = future.result()
                 if not temporary_file:
