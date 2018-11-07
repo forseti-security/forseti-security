@@ -195,7 +195,8 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
             resource_type = applies_dict['type']
 
-            if resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES:
+            if resource_type != '*' and (
+                resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES):
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))
@@ -275,8 +276,10 @@ class Rule(object):
             RuleViolation: location rule violation.
         """
         applicable_resources = self.applies_to.get(resource.type, [])
+        applicable_resources.extend(self.applies_to.get('*', []))
+        applicable_resources = set(applicable_resources)
 
-        if applicable_resources != ['*'] and (
+        if applicable_resources != {'*'} and (
                 resource.id not in applicable_resources):
             return
 
