@@ -19,29 +19,41 @@ See: https://cloud.google.com/kubernetes-engine/docs/
 
 import json
 
+from google.cloud.forseti.common.gcp_type import resource
+
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 # pylint: disable=too-many-locals,missing-param-doc,missing-type-doc
 # pylint: disable=invalid-name
-class KeCluster(object):
+class KeCluster(resource.Resource):
     """Represents KE Cluster resource."""
 
-    def __init__(self, project_id, name, description, initial_node_count,
-                 node_config, logging_service, monitoring_service,
-                 network, cluster_ipv4_cidr, addons_config, subnetwork,
-                 node_pools, locations, enable_kubernetes_alpha,
-                 resource_labels, label_fingerprint, legacy_abac,
-                 network_policy, ip_allocation_policy,
-                 master_authorized_networks_config, maintenance_policy, zone,
-                 endpoint, initial_cluster_version, current_master_version,
-                 current_node_version, create_time, status, status_message,
-                 node_ipv4_cidr_size, instance_group_urls, current_node_count,
-                 expire_time, server_config=None, resource_full_name=None,
-                 raw_json=None):
+    def __init__(self, cluster_id, parent=None, full_name=None, locations=None,
+                 description=None, initial_node_count=None, node_config=None,
+                 logging_service=None, monitoring_service=None, network=None,
+                 cluster_ipv4_cidr=None, addons_config=None,
+                 subnetwork=None, node_pools=None,
+                 enable_kubernetes_alpha=None, resource_labels=None,
+                 label_fingerprint=None, legacy_abac=None, network_policy=None,
+                 ip_allocation_policy=None,
+                 master_authorized_networks_config=None,
+                 maintenance_policy=None, endpoint=None,
+                 initial_cluster_version=None, current_master_version=None,
+                 current_node_version=None, create_time=None, status=None,
+                 status_message=None,
+                 node_ipv4_cidr_size=None, instance_group_urls=None,
+                 current_node_count=None,
+                 expire_time=None, server_config=None,
+                 data=None):
         """Initialize."""
-
-        self.project_id = project_id
-        self.name = name
+        super(KeCluster, self).__init__(
+            resource_id=cluster_id,
+            resource_type=resource.ResourceType.KE_CLUSTER,
+            name=cluster_id,
+            display_name=cluster_id,
+            parent=parent,
+            locations=locations)
+        self.full_name = full_name
         self.description = description
         self.initial_node_count = initial_node_count
         self.node_config = node_config
@@ -52,7 +64,6 @@ class KeCluster(object):
         self.addons_config = addons_config
         self.subnetwork = subnetwork
         self.node_pools = node_pools
-        self.locations = locations
         self.enable_kubernetes_alpha = enable_kubernetes_alpha
         self.resource_labels = resource_labels
         self.label_fingerprint = label_fingerprint
@@ -62,7 +73,6 @@ class KeCluster(object):
         self.master_authorized_networks_config = (
             master_authorized_networks_config)
         self.maintenance_policy = maintenance_policy
-        self.zone = zone
         self.endpoint = endpoint
         self.initial_cluster_version = initial_cluster_version
         self.current_master_version = current_master_version
@@ -75,83 +85,63 @@ class KeCluster(object):
         self.current_node_count = current_node_count
         self.expire_time = expire_time
         self.server_config = server_config
-        self.resource_full_name = resource_full_name
-        self._json = raw_json
+        self.data = data
         self._dict = None
 
     @classmethod
-    def from_dict(cls, project_id, server_config, cluster,
-                  resource_full_name=None):
-        """Returns a new ForwardingRule object from dict.
-
-        Args:
-            project_id (str): The project id.
-            server_config (dict): The ServerConfig for the cluster's zone.
-            cluster (dict): The KE Cluster resource.
-            resource_full_name (str): The full resource name and ancestory.
-        Returns:
-            KeCluster: A new KeCluster object.
-        """
-        return cls(
-            project_id=project_id,
-            name=cluster.get('name'),
-            description=cluster.get('description'),
-            initial_node_count=cluster.get('initialNodeCount'),
-            node_config=cluster.get('nodeConfig', {}),
-            logging_service=cluster.get('loggingService'),
-            monitoring_service=cluster.get('monitoringService'),
-            network=cluster.get('network'),
-            cluster_ipv4_cidr=cluster.get('clusterIpv4Cidr'),
-            addons_config=cluster.get('addonsConfig', {}),
-            subnetwork=cluster.get('subnetwork'),
-            node_pools=cluster.get('nodePools', []),
-            locations=cluster.get('locations'),
-            enable_kubernetes_alpha=cluster.get('enableKubernetesAlpha', False),
-            resource_labels=cluster.get('resourceLabels', {}),
-            label_fingerprint=cluster.get('labelFingerprint'),
-            legacy_abac=cluster.get('legacyAbac', {}),
-            network_policy=cluster.get('networkPolicy', {}),
-            ip_allocation_policy=cluster.get('ipAllocationPolicy', {}),
-            master_authorized_networks_config=cluster.get(
-                'masterAuthorizedNetworksConfig', {}),
-            maintenance_policy=cluster.get('maintenancePolicy', {}),
-            zone=cluster.get('zone'),
-            endpoint=cluster.get('endpoint'),
-            initial_cluster_version=cluster.get('initialClusterVersion'),
-            current_master_version=cluster.get('currentMasterVersion'),
-            current_node_version=cluster.get('currentNodeVersion'),
-            create_time=cluster.get('createTime'),
-            status=cluster.get('status'),
-            status_message=cluster.get('statusMessage'),
-            node_ipv4_cidr_size=cluster.get('nodeIpv4CidrSize'),
-            instance_group_urls=cluster.get('instanceGroupUrls', []),
-            current_node_count=cluster.get('currentNodeCount'),
-            expire_time=cluster.get('expireTime'),
-            server_config=server_config,
-            resource_full_name=resource_full_name,
-            raw_json=json.dumps(cluster),
-        )
-
-    @staticmethod
-    def from_json(project_id, server_config, cluster, resource_full_name=None):
+    def from_json(cls, parent, json_string):
         """Returns a new ForwardingRule object from json data.
 
         Args:
-            project_id (str): the project id.
-            server_config (str): The json string representations of the
-                ServerConfig for the cluster's zone.
-            cluster (str): The json string representation of the KE Cluster
-                resource.
-            resource_full_name (str): The full resource name and ancestory.
+            parent (Resource): resource this cluster belongs to.
+            json_string(str): JSON string of a cluster GCP API response.
+
         Returns:
            KeCluster: A new KeCluster object.
         """
-        cluster = json.loads(cluster)
-        if server_config:
-            server_config = json.loads(server_config)
 
-        return KeCluster.from_dict(project_id, server_config, cluster,
-                                   resource_full_name)
+        cluster_dict = json.loads(json_string)
+        cluster_id = cluster_dict['name']
+
+        return cls(
+            cluster_id=cluster_id,
+            parent=parent,
+            full_name='{}kubernetes_cluster/{}/'.format(parent.full_name,
+                                                        cluster_id),
+            locations=cluster_dict.get('locations'),
+            description=cluster_dict.get('description'),
+            initial_node_count=cluster_dict.get('initialNodeCount'),
+            node_config=cluster_dict.get('nodeConfig', {}),
+            logging_service=cluster_dict.get('loggingService'),
+            monitoring_service=cluster_dict.get('monitoringService'),
+            network=cluster_dict.get('network'),
+            cluster_ipv4_cidr=cluster_dict.get('clusterIpv4Cidr'),
+            addons_config=cluster_dict.get('addonsConfig', {}),
+            subnetwork=cluster_dict.get('subnetwork'),
+            node_pools=cluster_dict.get('nodePools', []),
+            enable_kubernetes_alpha=cluster_dict.get('enableKubernetesAlpha',
+                                                     False),
+            resource_labels=cluster_dict.get('resourceLabels', {}),
+            label_fingerprint=cluster_dict.get('labelFingerprint'),
+            legacy_abac=cluster_dict.get('legacyAbac', {}),
+            network_policy=cluster_dict.get('networkPolicy', {}),
+            ip_allocation_policy=cluster_dict.get('ipAllocationPolicy', {}),
+            master_authorized_networks_config=cluster_dict.get(
+                'masterAuthorizedNetworksConfig', {}),
+            maintenance_policy=cluster_dict.get('maintenancePolicy', {}),
+            endpoint=cluster_dict.get('endpoint'),
+            initial_cluster_version=cluster_dict.get('initialClusterVersion'),
+            current_master_version=cluster_dict.get('currentMasterVersion'),
+            current_node_version=cluster_dict.get('currentNodeVersion'),
+            create_time=cluster_dict.get('createTime'),
+            status=cluster_dict.get('status'),
+            status_message=cluster_dict.get('statusMessage'),
+            node_ipv4_cidr_size=cluster_dict.get('nodeIpv4CidrSize'),
+            instance_group_urls=cluster_dict.get('instanceGroupUrls', []),
+            current_node_count=cluster_dict.get('currentNodeCount'),
+            expire_time=cluster_dict.get('expireTime'),
+            data=json.dumps(cluster_dict),
+        )
 
     @property
     def as_dict(self):
@@ -162,20 +152,6 @@ class KeCluster(object):
 
         """
         if self._dict is None:
-            self._dict = json.loads(self._json)
+            self._dict = json.loads(self.data)
 
         return self._dict
-
-    def __repr__(self):
-        """String representation.
-        Returns:
-            str: Json string.
-        """
-        return self._json
-
-    def __hash__(self):
-        """Return hash of properties.
-        Returns:
-            hash: The hash of the class properties.
-        """
-        return hash(self._json)

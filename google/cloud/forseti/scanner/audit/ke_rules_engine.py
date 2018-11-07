@@ -181,7 +181,7 @@ class KeRuleBook(bre.BaseRuleBook):
         LOGGER.debug('Looking for KE violations: %r', ke_cluster)
         violations = []
         resource_ancestors = resource_util.get_ancestors_from_full_name(
-            ke_cluster.resource_full_name)
+            ke_cluster.full_name)
 
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
@@ -357,7 +357,7 @@ class Rule(object):
         return RuleViolation(
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
             resource_id=ke_cluster.name,
-            full_name=ke_cluster.resource_full_name,
+            full_name=ke_cluster.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             rule_mode=self.rule_mode,
@@ -365,9 +365,9 @@ class Rule(object):
             actual_value=actual,
             violation_type='KE_VIOLATION',
             violation_reason=violation_reason,
-            project_id=ke_cluster.project_id,
+            project_id=ke_cluster.parent.id,
             cluster_name=ke_cluster.name,
-            resource_data=str(ke_cluster),
+            resource_data=ke_cluster.data,
             resource_name=ke_cluster.name,
         )
 

@@ -73,7 +73,8 @@ class CloudSQLInstance(resource.Resource):
 
         Args:
             parent (Resource): resource this cloud_sql_instance belongs to.
-            json_string(str): JSON string of a cloud_sql_instance GCP API response.
+            json_string(str): JSON string of a cloud_sql_instance GCP API
+                response.
 
         Returns:
             CloudSQLInstance: cloud sql instance resource.
