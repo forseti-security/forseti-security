@@ -256,17 +256,17 @@ INSTANCES = {
             tags={'items': ['tag_i1']},
             locations=['wl-redqueen1-a'],
             data = ('{"selfLink":  "https://www.googleapis.com/compute/v1'
-                    '/projects/foo/zones/wl-redeueen-a/instances/i1"}')
+                    '/projects/foo/zones/wl-redqueen1-a/instances/i1"}')
         ),
     'i2':
         instance_type.Instance(
             instance_id='i2',
             parent=PROJECTS['foo'],
             name='i2',
-            tags=[],
+            tags={},
             locations=['wl-redqueen1-a'],
             data = ('{"selfLink":  "https://www.googleapis.com/compute/v1'
-                    '/projects/foo/zones/wl-redeueen-a/instances/i2"}')
+                    '/projects/foo/zones/wl-redqueen1-a/instances/i2"}')
         ),
 }
 INSTANCE_GROUPS = {
