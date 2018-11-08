@@ -166,7 +166,7 @@ def run_inventory(service_config,
         Exception: Reraises any exception.
     """
     tracer = service_config.tracer
-    tracing.start_span(tracer, 'inventory', 'run_inventory')
+    span = tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
         try:
@@ -182,7 +182,7 @@ def run_inventory(service_config,
             raise
         else:
             storage.commit()
-    tracing.end_span(tracer, result=result)
+    tracing.end_span(trace, span, result=result)
     return result
 
 
