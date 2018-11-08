@@ -110,11 +110,11 @@ def rules_path_finder(scanner_configs, scanner_class, rules_filename):
 
     Args:
         scanner_configs (dict): Scanner configurations.
-        scanner_class (scanner class) the scanner class
-        rules_filename (string): name of the yaml rule file in string
+        scanner_class (scanner): the scanner class.
+        rules_filename (string): name of the yaml rule file in string.
 
     Returns:
-        rules_path (string): the path to folder directory
+        string: the path to folder directory
     """
     rules_path = scanner_configs.get('rules_path')
     if rules_path is None:

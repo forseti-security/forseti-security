@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """External project access scanner."""
-# pylint: disable=line-too-long
 import time
 
 from google.auth.exceptions import RefreshError
@@ -28,8 +27,6 @@ from google.cloud.forseti.scanner.audit \
     import external_project_access_rules_engine \
     as epa_rules_engine # noqa=E501
 from google.cloud.forseti.scanner.scanners import base_scanner
-
-# pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
 
@@ -95,8 +92,7 @@ def extract_project_ids(crm_client):
 
 def memoize_ancestry(ancestry_function):
     # pylint: disable=C0301
-    """A decorator function to intelligently retrieve project ancestries,
-    only if necessary.
+    """A decorator function to intelligently retrieve project ancestries, only if necessary.
 
     Args:
         ancestry_function (function): The ancestry
@@ -272,7 +268,6 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         return client
 
     def _retrieve(self):
-        # pylint: disable=line-too-long
         """Retrieve the project ancestries for all users.
 
         Returns:
@@ -284,7 +279,6 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
                                   [Project("12345"), Folder("ABCDEFG"),
                                   Organization("1234567")]]}
         """
-        # pylint: enable=line-too-long
         # This dictionary is the result of the scan.  The key
         # is the user ID.  The value is a list of lists of ancestries.
         user_to_project_ancestries_map = {}
@@ -308,6 +302,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         #         LOGGER.debug('Unable to access project ancestry %s.',
         #                      user_email)
 
+        print user_emails
         user_email = user_emails[0]
         print user_email
         user_count += 1
