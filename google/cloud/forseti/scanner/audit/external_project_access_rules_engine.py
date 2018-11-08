@@ -177,7 +177,7 @@ class ExternalProjectAccessRuleBook(bre.BaseRuleBook):
 
         if not ancestor_result:
             message = ('Ancestor in rule {} must start with '
-                       '\"organizations/\" or \"folders/\"')
+                       '\"organizations/\" or \"folders/\", and end with an integer ID')
             message.format(rule_index)
             raise audit_errors.InvalidRulesSchemaError(message)
 

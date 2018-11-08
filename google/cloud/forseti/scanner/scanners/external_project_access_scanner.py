@@ -176,7 +176,6 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-
         self.inventory_configs = self.service_config.get_inventory_config()
         self.rules_engine = (
             epa_rules_engine.ExternalProjectAccessRulesEngine(
@@ -313,7 +312,6 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Entry point to run the scanner."""
-        print("#### run executed!!")
         user_to_project_ancestries_map = self._retrieve()
         all_violations = self._find_violations(user_to_project_ancestries_map)
         self._output_results(all_violations)
