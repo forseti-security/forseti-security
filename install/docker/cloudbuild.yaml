@@ -50,7 +50,7 @@ steps:
   - '-s'
   - '.'
   - '-p'
-  - " '*_test.py' "  
+  - '*_test.py'  
   waitFor: ['forseti']
   id: unittest
 
