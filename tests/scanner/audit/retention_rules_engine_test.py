@@ -42,6 +42,7 @@ from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.scanner.scanners import retention_scanner
 
 def get_rules_engine_with_rule(rule):
+    """Create a rule engine based on a yaml file string"""
     with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
         f.write(rule)
         f.flush()
@@ -68,8 +69,6 @@ def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
         resource_data=res_map.get(bucket_id).data)
 
 
-# TODO: More tests need to be added that cover the rule attributes and how they
-#    are evaluated
 class RetentionRulesEngineTest(ForsetiTestCase):
     """Tests for the BigqueryRulesEngine."""
 
@@ -77,6 +76,7 @@ class RetentionRulesEngineTest(ForsetiTestCase):
         """Set up."""
 
     def test_invalid_rule_with_no_applies_to(self):
+        """Test that a rule without applies_to cannot be created"""
         yaml_str_no_applies_to="""
 rules:
   - name: No applies_to
@@ -97,6 +97,8 @@ rules:
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
     def test_invalid_rule_lack_of_min_max(self):
+        """Test that a rule with neither minimum_retention nor maximum_retention
+        cannot be created"""
         yaml_str_lack_min_max="""
 rules:
   - name: Lack of min and max retention
@@ -117,6 +119,8 @@ rules:
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
     def test_invalid_rule_min_lgr_max(self):
+        """Test that a rule whose minimum_retention is larger than
+        maximum_retention cannot be created"""
         yaml_str_min_lgr_max="""
 rules:
   - name: min larger than max
@@ -139,6 +143,7 @@ rules:
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
     def test_invalid_rule_with_duplicate_applies_to(self):
+        """Test that a rule with duplicate applies_to cannot be created"""
         yaml_str_duplicate_applies_to="""
 rules:
   - name: Duplicate applies_to
@@ -162,6 +167,7 @@ rules:
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
     def test_invalid_rule_with_no_resource(self):
+        """Test that a rule without resource cannot be created"""
         yaml_str_no_resource="""
 rules:
   - name: No resource
@@ -180,6 +186,7 @@ rules:
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
     def test_invalid_rule_with_no_res_type(self):
+        """Test that a rule without resource.type cannot be created"""
         yaml_str_no_res_type="""
 rules:
   - name: No resource type
@@ -201,6 +208,7 @@ rules:
                     {}, {}, mock.MagicMock(), '', '', rules_local_path)
 
     def test_invalid_rule_with_no_res_id(self):
+        """Test that a rule without resource.resource_ids cannot be created"""
         yaml_str_no_res_id="""
 rules:
   - name: No resource ids
@@ -232,13 +240,27 @@ rules:
     maximum_retention: 365
 
 """
-
-    def test_only_max_normal_nodelete(self):
+    def test_only_max_normal_delete(self):
+        """Test that a bucket's rule can guarantee the maximum_retention if its
+        action is 'Delete' and the only condition is an age(<= maximum_retention)"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="SetStorageClass", age=365)
+        data_creater.AddLifecycleDict(action="Delete", age=365)
+
+        fake_bucket = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_bucket))
+        self.assertEqual(got_violations, [])
+
+    def test_only_max_normal_nodelete(self):
+        """Test that a bucket's rule cannot guarantee the maximum_retention
+        if its action is not 'Delete'"""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
+        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
+
+        data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
+        data_creater.AddLifecycleDict(action="SetStorageClass", age=365)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -247,11 +269,13 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_max_larger_delete(self):
+        """Test that a bucket's rule cannot guarantee the maximum_retention
+        if its age condition is larger than maximum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=366)
+        data_creater.AddLifecycleDict(action="Delete", age=366)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -259,29 +283,34 @@ rules:
             fake_bucket, 'only max retention')
         self.assertEqual(got_violations, expect_violations)
 
-    def test_only_max_any_del_anynormal_del(self):
+    def test_only_max_normal_del_anynormal_del(self):
+        """Test that a bucket's rules can guarantee the maximum_retention
+        if they include a rule whose action is 'Delete' and the only condition
+        is an age(<= maximum_retention)"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=365)
+        data_creater.AddLifecycleDict(action="Delete", age=365)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", age=365, created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", age=365, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_max_lgr_del_anynormal_del(self):
+        """Test that a bucket's rule cannot guarantee the maximum_retention
+        if its age comes along with any other conditions"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=366)
+        data_creater.AddLifecycleDict(action="Delete", age=366)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", age=365, created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", age=365, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -290,12 +319,14 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_max_lgr_del_normal_else(self):
+        """Test that a bucket's rule cannot guarantee the maximum_retention
+        if its action is not 'Delete'"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=366)
-        data_creater.AddLefecycleDict(action="SetStorageClass", age=365)
+        data_creater.AddLifecycleDict(action="Delete", age=366)
+        data_creater.AddLifecycleDict(action="SetStorageClass", age=365)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -304,30 +335,36 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_max_normal_del_any_del(self):
+        """Test that a bucket could have more than one rules. If one of them can
+        guarantee the maximum_retention, there is no violation."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=365)
-        data_creater.AddLefecycleDict(action="Delete", is_live=False)
+        data_creater.AddLifecycleDict(action="Delete", age=365)
+        data_creater.AddLifecycleDict(action="Delete", is_live=False)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_max_normal_del_lgr_del(self):
+        """Test that a bucket could have more than one rules. If one of them can
+        guarantee the maximum_retention, there is no violation."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=365)
-        data_creater.AddLefecycleDict(action="Delete", age=366)
+        data_creater.AddLifecycleDict(action="Delete", age=365)
+        data_creater.AddLifecycleDict(action="Delete", age=366)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_max_no_condition(self):
+        """Test that a rule with maximum_retention produces a violation,
+        if a bucket has no condition at all."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
@@ -340,11 +377,14 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_max_anynormal_del(self):
+        """Test that a rule with maximum_retention produces a violation.
+        If a condition whose age comes along with any other conditions, it cannot
+        guarantee the maximum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=365, num_newer_versions=5)
+        data_creater.AddLifecycleDict(action="Delete", age=365, num_newer_versions=5)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -366,39 +406,44 @@ rules:
 """
 
     def test_only_min_normal_del(self):
+        """Test that a rule with minimum_retention does not produce violations."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_normal_else(self):
+        """Test that a rule whose action is not 'Delete' should not break minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="SetStorageClass", age=90)
+        data_creater.AddLifecycleDict(action="SetStorageClass", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_less_else(self):
+        """Test that a rule whose action is not 'Delete' cannot break minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="SetStorageClass", age=89)
+        data_creater.AddLifecycleDict(action="SetStorageClass", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_no_condition(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        The minimum_retention is guaranteed when there is no condition at all"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
@@ -409,22 +454,28 @@ rules:
         self.assertEqual(got_violations, [])
 
     def test_only_min_lessver1_del(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        A bucket's rule cannot break minimum_retention, if its number of newer versions
+        is larger than 0"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89, num_newer_versions=1)
+        data_creater.AddLifecycleDict(action="Delete", age=89, num_newer_versions=1)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_lessver0_del(self):
+        """Test that a rule with minimum_retention produces violations.
+        A bucket's rule may break minimum_retention, if its number of newer versions
+        is equal to 0"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89, num_newer_versions=0)
+        data_creater.AddLifecycleDict(action="Delete", age=89, num_newer_versions=0)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -433,22 +484,28 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_min_ver1_del(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        A bucket's rule cannot break minimum_retention, if its number of newer versions
+        is larger than 0"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", num_newer_versions=1)
+        data_creater.AddLifecycleDict(action="Delete", num_newer_versions=1)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_ver0_del(self):
+        """Test that a rule with minimum_retention produces violations.
+        A bucket's rule may break minimum_retention, if its number of newer versions
+        is equal to 0"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", num_newer_versions=0)
+        data_creater.AddLifecycleDict(action="Delete", num_newer_versions=0)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -457,37 +514,45 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_min_ver0_else(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        An action that is not 'Delete' cannot break minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="SetStorageClass", num_newer_versions=0)
+        data_creater.AddLifecycleDict(action="SetStorageClass", num_newer_versions=0)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_lessold_del(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        A bucket's rule cannot break minimum_retention, if its created before time
+        is earlier than today minus minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", age=89, created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", age=89, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_lessnew_del(self):
+        """Test that a rule with minimum_retention produces violations.
+        A bucket's rule may break minimum_retention, if its created before time
+        is later than today minus minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=89)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", age=89, created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", age=89, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -496,25 +561,31 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_min_normalnew_del(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        A bucket's rule cannot break minimum_retention, if its age is larger
+        than or equal to minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=89)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", age=90, created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", age=90, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_less_del_normal_del(self):
+        """Test that a rule with minimum_retention produces violations.
+        A rule that does not produce violations cannot prevent another rule from
+        producing violations"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
+        data_creater.AddLifecycleDict(action="Delete", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -523,23 +594,28 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_min_less_else_normal_del(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        An action that is not 'Delete' cannot break minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="SetStorageClass", age=89)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
+        data_creater.AddLifecycleDict(action="SetStorageClass", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_less_del(self):
+        """Test that a rule with minimum_retention produces violations.
+        A bucket's rule breaks minimum_retention, if its age is smaller than
+        minimum_retention and its action is 'Delete'"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -548,26 +624,32 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_only_min_old_del(self):
+        """Test that a rule with minimum_retention does not produce violations.
+        A bucket's rule cannot break minimum_retention, if its created before time
+        is earlier than the date that is today minus minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=90)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_only_min_new_del(self):
+        """Test that a rule with minimum_retention produces violations.
+        A bucket's rule may break minimum_retention, if its created before time
+        is later than today minus minimum_retention"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_only_min_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
         d = datetime.today() - timedelta(days=89)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLefecycleDict(action="Delete", created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -590,6 +672,9 @@ rules:
 """
 
     def test_both_min_max_no_condition(self):
+        """Test that a rule with both minimum_retention and maximum_retention
+        produces violations. A bucket's rule break it, if the bucket breakes the
+        maximum_retention part."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_both_min_and_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
@@ -602,12 +687,15 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_both_min_max_normal_del_any_del(self):
+        """Test that a rule with both minimum_retention and maximum_retention
+        produces violations. A bucket's rule break it, if the bucket breakes the
+        minimum_retention part."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_both_min_and_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=100)
-        data_creater.AddLefecycleDict(action="Delete", is_live=True)
+        data_creater.AddLifecycleDict(action="Delete", age=100)
+        data_creater.AddLifecycleDict(action="Delete", is_live=True)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -616,24 +704,28 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
     def test_both_min_max_normal_del(self):
+        """Test that a rule with both minimum_retention and maximum_retention
+        does not produce violations."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_both_min_and_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=100)
+        data_creater.AddLifecycleDict(action="Delete", age=100)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_both_min_max_3_conditions(self):
+        """Test that a rule with both minimum_retention and maximum_retention
+        does not produce violations when there are more than one conditions."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_both_min_and_max_retention)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=100)
-        data_creater.AddLefecycleDict(action="SetStorageClass", age=89)
-        data_creater.AddLefecycleDict(action="Delete", age=500)
+        data_creater.AddLifecycleDict(action="Delete", age=100)
+        data_creater.AddLifecycleDict(action="SetStorageClass", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=500)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -653,22 +745,25 @@ rules:
 """
 
     def test_bucket_on_correct_project_no_vio(self):
+        """Test that a rule with a resource.type equal to 'project' does not
+        produce violations."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bucket_retention_on_correct_project)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
     def test_bucket_on_correct_project_has_vio(self):
+        """Test that a rule with a resource.type equal to 'project' produces violations."""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bucket_retention_on_correct_project)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=89)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -689,23 +784,14 @@ rules:
 
 """
 
-    def test_bucket_on_correct_project_no_vio(self):
+    def test_bucket_on_incorrect_project_no_vio(self):
+        """Test that a rule with a resource.type equal to 'project' does not
+        produce violations because the project ID does not match"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bucket_retention_on_wrong_project)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
-
-        fake_bucket = data_creater.get_resource()
-        got_violations = list(rules_engine.find_violations(fake_bucket))
-        self.assertEqual(got_violations, [])
-
-    def test_bucket_on_correct_project_has_vio(self):
-        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bucket_retention_on_wrong_project)
-        self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
-
-        data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -726,28 +812,32 @@ rules:
 """
 
     def test_bucket_on_multi_project_no_vio(self):
+        """Test that a rule with a resource.type equal to 'project' does not
+        produce violations when the resource_ids includes more than one projects"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bucket_retention_on_multi_projects)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_1', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_2', frsd.PROJECT2)
-        data_creater.AddLefecycleDict(action="Delete", age=90)
+        data_creater.AddLifecycleDict(action="Delete", age=90)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         self.assertEqual(got_violations, [])
 
 
-    def test_bucket_on_correct_project_has_vio(self):
+    def test_bucket_on_multi_project_has_vio(self):
+        """Test that a rule with a resource.type equal to 'project' produces
+        violations when the resource_ids includes more than one projects"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bucket_retention_on_multi_projects)
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_1', frsd.PROJECT1)
-        data_creater.AddLefecycleDict(action="Delete", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=89)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         expect_violations = frsd.build_bucket_violations(
@@ -755,7 +845,7 @@ rules:
         self.assertEqual(got_violations, expect_violations)
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_2', frsd.PROJECT2)
-        data_creater.AddLefecycleDict(action="Delete", age=89)
+        data_creater.AddLifecycleDict(action="Delete", age=89)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
         expect_violations = frsd.build_bucket_violations(

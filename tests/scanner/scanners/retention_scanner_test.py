@@ -31,6 +31,7 @@ from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.scanners import retention_scanner
 
 def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
+    """Create violations for expected violation list"""
     lifecycle_str = json.dumps(res_map.get(bucket_id).get_lifecycle_rule())
 
     return rre.RuleViolation(
@@ -61,6 +62,8 @@ rules:
 
 
 def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
+    """Creates a list of GCP resource mocks retrieved by the scanner for
+    test_bucket_retention_on_multi_buckets"""
     if resource_type != 'bucket':
         raise ValueError(
             'unexpected resource type: got %s, bucket',
@@ -69,19 +72,19 @@ def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-1', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=90)
+    data_creater.AddLifecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     return res
@@ -103,6 +106,8 @@ rules:
 """
 
 def _mock_bucket_retention_multi_projects_in_a_rule(_=None, resource_type='bucket'):
+    """Creates a list of GCP resource mocks retrieved by the scanner for
+    test_bucket_retention_on_multi_projects"""
     if resource_type != 'bucket':
         raise ValueError(
             'unexpected resource type: got %s, bucket',
@@ -112,27 +117,27 @@ def _mock_bucket_retention_multi_projects_in_a_rule(_=None, resource_type='bucke
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=90)
+    data_creater.AddLifecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT2)
-    data_creater.AddLefecycleDict(action="Delete", age=90)
+    data_creater.AddLifecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT3)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT4)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     return res
@@ -162,6 +167,8 @@ rules:
 """
 
 def _mock_bucket_retention_mix_project_and_bucket(_=None, resource_type='bucket'):
+    """Creates a list of GCP resource mocks retrieved by the scanner for
+    test_bucket_retention_on_mix_project_and_bucket"""
     if resource_type != 'bucket':
         raise ValueError(
             'unexpected resource type: got %s, bucket',
@@ -171,11 +178,11 @@ def _mock_bucket_retention_mix_project_and_bucket(_=None, resource_type='bucket'
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=90)
+    data_creater.AddLifecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=89)
+    data_creater.AddLifecycleDict(action="Delete", age=89)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
@@ -214,6 +221,8 @@ rules:
 """
 
 def _mock_bucket_retention_multi_rules_on_a_project(_=None, resource_type='bucket'):
+    """Creates a list of GCP resource mocks retrieved by the scanner for
+    test_bucket_retention_on_multi_rules_on_a_project"""
     if resource_type != 'bucket':
         raise ValueError(
             'unexpected resource type: got %s, bucket',
@@ -223,15 +232,15 @@ def _mock_bucket_retention_multi_rules_on_a_project(_=None, resource_type='bucke
     res = []
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=90)
+    data_creater.AddLifecycleDict(action="Delete", age=90)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=100)
+    data_creater.AddLifecycleDict(action="Delete", age=100)
     res.append(data_creater.get_resource())
 
     data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    data_creater.AddLefecycleDict(action="Delete", age=110)
+    data_creater.AddLifecycleDict(action="Delete", age=110)
     res.append(data_creater.get_resource())
 
     return res
@@ -243,6 +252,7 @@ class RetentionScannerTest(ForsetiTestCase):
         """Set up."""
 
     def test_bucket_retention_on_multi_buckets(self):
+        """Test a rule that includes more than one bucket IDs"""
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_multi_buckets_in_a_rule)
             f.flush()
@@ -277,6 +287,7 @@ class RetentionScannerTest(ForsetiTestCase):
             self.assertEqual(expected_violations, set(all_violations))
 
     def test_bucket_retention_on_multi_projects(self):
+        """Test a rule that includes more than one project IDs"""
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_multi_projects_in_a_rule)
             f.flush()
@@ -313,6 +324,7 @@ class RetentionScannerTest(ForsetiTestCase):
             self.assertEqual(expected_violations, set(all_violations))
 
     def test_bucket_retention_on_mix_project_and_bucket(self):
+        """Test yaml file that includes more than one rules"""
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_mix_projects_and_buckets_in_a_rule)
             f.flush()
@@ -347,6 +359,7 @@ class RetentionScannerTest(ForsetiTestCase):
             self.assertEqual(expected_violations, set(all_violations))
 
     def test_bucket_retention_on_multi_rules_on_a_project(self):
+        """Test yaml file that includes more than one rules that works on the same project"""
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(yaml_str_multi_rules_on_a_project)
             f.flush()

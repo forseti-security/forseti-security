@@ -239,6 +239,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
 
     def get_resource_rules(self, applies_to):
         """Get all the rules for the resource "applies_to".
+
         Args:
             applies_to (str): The name of the resource
 
@@ -318,9 +319,7 @@ class Rule(object):
 
         # There should be a condition which guarantees to delete data
         bucket_lifecycle = bucket.get_lifecycle_rule()
-        if not bucket_lifecycle:
-            yield self.generate_bucket_violation(bucket)
-        else:
+        if bucket_lifecycle:
             for lc_item in bucket_lifecycle:
                 if lc_item.get('action', {}).get('type') == 'Delete':
                     conditions = lc_item.get('condition', {})
@@ -329,7 +328,7 @@ class Rule(object):
                         # the config does not have conditions other than age
                         if age <= self.max_retention:
                             return
-            yield self.generate_bucket_violation(bucket)
+        yield self.generate_bucket_violation(bucket)
 
     def bucket_min_retention_violation(self, bucket):
         """Get a generator for violations especially for minimum retention
@@ -351,6 +350,7 @@ class Rule(object):
 
     def find_violations_in_bucket(self, bucket):
         """Get a generator for violations
+
         Args:
             bucket (bucket): Find violation from the buckets
         Returns:
@@ -363,7 +363,8 @@ class Rule(object):
 
 
 def bucket_conditions_guarantee_min(conditions, min_retention):
-    """check if other conditions can guarantee minimum retention
+    """Check if other conditions can guarantee minimum retention
+
     Args:
         conditions (dict): the condition dict of the bucket
         min_retention (int): the value of minimum retention
@@ -384,9 +385,7 @@ def bucket_conditions_guarantee_min(conditions, min_retention):
             return True
 
     # if number of new version is larger than 0, OK.
-    if 'numNewerVersions' in conditions:
-        num_new_ver = conditions['numNewerVersions']
-        if num_new_ver >= 1:
-            return True
+    if conditions.get('numNewerVersions', 0) >= 1:
+        return True
 
     return False

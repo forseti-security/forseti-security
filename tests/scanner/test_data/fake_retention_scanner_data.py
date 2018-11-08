@@ -87,10 +87,10 @@ class FakeBucketDataCreater():
         self._parent = project
         self._data_lifecycle = None
 
-    def SetLefecycleDict(self):
+    def SetLifecycleDict(self):
         self._data_lifecycle = {"rule": []}
 
-    def AddLefecycleDict(
+    def AddLifecycleDict(
             self,
             action=None,
             age=None,
@@ -99,7 +99,7 @@ class FakeBucketDataCreater():
             num_newer_versions=None,
             is_live=None):
         if not self._data_lifecycle:
-            self.SetLefecycleDict()
+            self.SetLifecycleDict()
 
         result = {'action':{}, 'condition':{}}
         result['action']['type'] = action

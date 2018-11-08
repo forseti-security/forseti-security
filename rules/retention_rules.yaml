@@ -13,16 +13,15 @@
 # limitations under the License.
 
 # rules:
-#   - name: Buckets in Organization must have a retention between 180 and 730 days.
+#   - name: Buckets in Organization must have a retention shorter than 730 days.
 #     applies_to:
 #       - bucket
 #     resource:
 #       - type: organization
 #         resource_ids:
 #           - "123456789012"
-#     minimum_retention: 180
 #     maximum_retention: 730
-#   - name: Buckets in Project must have a retention between 100 and 365 days.
+#   - name: Buckets in Project must have a retention longer than 100.
 #     applies_to:
 #       - bucket
 #     resource:
@@ -31,7 +30,6 @@
 #           - some-project-name-1
 #           - some-project-name-2
 #     minimum_retention: 100
-#     maximum_retention: 365
 #   - name: Buckets must have a retention between 10 and 200 days.
 #     applies_to:
 #       - bucket
