@@ -151,5 +151,4 @@ def principal_components(pca, dataset):
     """
     return (pca.explained_variance, pca.components, np.cov(dataset))
 
-def covariance_matrix():
 
