@@ -21,6 +21,7 @@ from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner.dao import initialize as init_storage
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
+from google.cloud.forseti.scanner.scanners import external_project_access_scanner
 
 LOGGER = logger.get_logger(__name__)
 
@@ -72,7 +73,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         return scanner_pb2.PingReply(data=request.data)
 
-    def Run(self, _, context):
+    def Run(self, request, context):
         """Run scanner.
 
         Args:
@@ -82,6 +83,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         Yields:
             Progress: The progress of the scanner.
         """
+        scanner_name = request.handle
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
@@ -92,8 +94,22 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             progress_queue.put(None)
         else:
             LOGGER.info('Run scanner service with model: %s', model_name)
-            self.service_config.run_in_background(
-                lambda: self._run_scanner(model_name, progress_queue))
+            if scanner_name:
+                global_configs = self.service_config.get_global_config()
+                scanner_configs = self.service_config.get_scanner_config()
+                print(scanner_configs)
+                rules_path = scanner_configs.get('rules_path')
+                external_scanner = external_project_access_scanner.\
+                    ExternalProjectAccessScanner(global_configs,
+                                                 scanner_configs,
+                                                 self.service_config,
+                                                 model_name,
+                                                 '',
+                                                 rules_path)
+                external_scanner.run()
+            else:
+                self.service_config.run_in_background(
+                    lambda: self._run_scanner(model_name, progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)

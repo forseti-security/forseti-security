@@ -91,7 +91,7 @@ class ScannerBuilder(object):
                     scanner_path = inspect.getfile(scanner_class)
                     rules_path = scanner_path.split('/google/cloud/forseti')[0]
                     rules_path += '/rules'
-
+                print(rules_path)
                 rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
                                   .get(scanner.get('name'))
                                   .get('rules_filename'))

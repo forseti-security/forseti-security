@@ -182,9 +182,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
             epa_rules_engine.ExternalProjectAccessRulesEngine(
                 rules_file_path=self.rules,
                 snapshot_timestamp=self.snapshot_timestamp))
-
         self.rules_engine.build_rule_book(self.inventory_configs)
-
         self._ancestries = dict()
 
     def _output_results(self, all_violations):
@@ -278,7 +276,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
             dict: User project relationship.
             {"user1@example.com": [[Project("1234"), Organization("1234567")],
                                   [Project("12345"), Folder("ABCDEFG"), Organization("1234567")]],
-             "user2@example.com": [[Project("1234"), Organization("1234567")],
+             "user2@example.com": [[Project("1234"), Organization("34567")],
                                   [Project("12345"), Folder("ABCDEFG"), Organization("1234567")]]}
         """
         # pylint: enable=line-too-long
@@ -315,6 +313,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Entry point to run the scanner."""
+        print("#### run executed!!")
         user_to_project_ancestries_map = self._retrieve()
         all_violations = self._find_violations(user_to_project_ancestries_map)
         self._output_results(all_violations)

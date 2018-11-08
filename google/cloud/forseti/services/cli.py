@@ -305,13 +305,15 @@ def define_scanner_parser(parent):
         dest='action')
 
     run_scanner_parser = action_subparser.add_parser(
-        'runtest',
+        'run',
         help='Run the scanner')
 
     run_scanner_parser.add_argument(
-        'scanner',
-        default = '',
-        help='Name of the scanner to run'
+        '--scanner',
+        choices=['external_access_scanner'],
+        help='Run a specific scanner, '
+             'currently only applicable for '
+             'the external project access scanner'
     )
 
 
@@ -684,12 +686,8 @@ def run_scanner(client, config, output, _):
         for progress in client.run(scanner_name):
             output.write(progress)
 
-        # scanner = client.get_scanner(config.scanner)
-        # result = client.delete_model(scanner.handle)
-        # output.write(result)
-
     actions = {
-        'runtest': do_run}
+        'run': do_run}
 
     actions[config.action]()
 
