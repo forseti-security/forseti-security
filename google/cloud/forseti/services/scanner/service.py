@@ -21,7 +21,8 @@ from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner.dao import initialize as init_storage
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-from google.cloud.forseti.scanner.scanners import external_project_access_scanner
+from google.cloud.forseti.scanner.scanners import \
+    external_project_access_scanner
 from google.cloud.forseti.scanner.scanner_builder import rules_path_finder
 from google.cloud.forseti.services.scanner import dao as scanner_dao
 
@@ -79,7 +80,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         """Run scanner.
 
         Args:
-            _ (RunRequest): The run request.
+            request (RunRequest): The run request.
             context (object): Context of the request.
 
         Yields:
@@ -98,12 +99,15 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             LOGGER.info('Run scanner service with model: %s', model_name)
             if scanner_name:
                 with self.service_config.scoped_session() as session:
-                    self.service_config.violation_access = scanner_dao.ViolationAccess(session)
+                    self.service_config.violation_access = \
+                        scanner_dao.ViolationAccess(session)
                     global_configs = self.service_config.get_global_config()
                     scanner_configs = self.service_config.get_scanner_config()
                     rules = rules_path_finder(scanner_configs,
-                                              external_project_access_scanner.ExternalProjectAccessScanner,
-                                              'external_project_access_rules.yaml')
+                                              external_project_access_scanner.
+                                              ExternalProjectAccessScanner,
+                                              'external_project_access_rules.'
+                                              'yaml')
                     external_scanner = external_project_access_scanner.\
                         ExternalProjectAccessScanner(global_configs,
                                                      scanner_configs,

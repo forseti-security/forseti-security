@@ -84,11 +84,12 @@ class ScannerBuilder(object):
                     LOGGER.exception('Unable to instantiate %s', class_name)
                     continue
 
-                print(class_name)
                 rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
                                   .get(scanner.get('name'))
                                   .get('rules_filename'))
-                rules = rules_path_finder(self.scanner_configs, scanner_class, rules_filename)
+                rules = rules_path_finder(self.scanner_configs,
+                                          scanner_class,
+                                          rules_filename)
                 LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
                             rules)
 
@@ -104,8 +105,17 @@ class ScannerBuilder(object):
 
 
 def rules_path_finder(scanner_configs, scanner_class, rules_filename):
-    # Simple way to find the path to folders directory no matter
-    # where forseti runs.
+    """Simple way to find the path to folders directory
+    no matter where Forseti runs
+
+    Args:
+        scanner_configs (dict): Scanner configurations.
+        scanner_class (scanner class) the scanner class
+        rules_filename (string): name of the yaml rule file in string
+
+    Returns:
+        rules_path (string): the path to folder directory
+    """
     rules_path = scanner_configs.get('rules_path')
     if rules_path is None:
         scanner_path = inspect.getfile(scanner_class)

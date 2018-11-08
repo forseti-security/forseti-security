@@ -20,10 +20,13 @@ from google.auth.exceptions import RefreshError
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.gcp_api import api_helpers # noqa=E501
 from google.cloud.forseti.common.gcp_type import resource_util # noqa=E501
-from google.cloud.forseti.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient # noqa=E501
+from google.cloud.forseti.common.gcp_api.cloud_resource_manager \
+    import CloudResourceManagerClient # noqa=E501
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import Storage
-from google.cloud.forseti.scanner.audit import external_project_access_rules_engine as epa_rules_engine # noqa=E501
+from google.cloud.forseti.scanner.audit \
+    import external_project_access_rules_engine \
+    as epa_rules_engine # noqa=E501
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 # pylint: enable=line-too-long
@@ -92,7 +95,8 @@ def extract_project_ids(crm_client):
 
 def memoize_ancestry(ancestry_function):
     # pylint: disable=C0301
-    """A decorator function to intelligently retrieve project ancestries, only if necessary.
+    """A decorator function to intelligently retrieve project ancestries,
+    only if necessary.
 
     Args:
         ancestry_function (function): The ancestry
@@ -274,9 +278,11 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         Returns:
             dict: User project relationship.
             {"user1@example.com": [[Project("1234"), Organization("1234567")],
-                                  [Project("12345"), Folder("ABCDEFG"), Organization("1234567")]],
+                                  [Project("12345"), Folder("ABCDEFG"),
+                                  Organization("1234567")]],
              "user2@example.com": [[Project("1234"), Organization("34567")],
-                                  [Project("12345"), Folder("ABCDEFG"), Organization("1234567")]]}
+                                  [Project("12345"), Folder("ABCDEFG"),
+                                  Organization("1234567")]]}
         """
         # pylint: enable=line-too-long
         # This dictionary is the result of the scan.  The key
@@ -288,19 +294,35 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
 
         user_emails = get_user_emails(self.service_config)
 
-        for user_email in user_emails:
-            user_count += 1
-            try:
-                user_crm_client = self._get_crm_client(user_email)
+        # for user_email in user_emails:
+        #     user_count += 1
+        #     try:
+        #         user_crm_client = self._get_crm_client(user_email)
+        #
+        #         project_ids = extract_project_ids(user_crm_client)
+        #         ancestries = get_project_ancestries(user_crm_client,
+        #                                             project_ids)
+        #
+        #         user_to_project_ancestries_map[user_email] = ancestries
+        #     except RefreshError:
+        #         LOGGER.debug('Unable to access project ancestry %s.',
+        #                      user_email)
 
-                project_ids = extract_project_ids(user_crm_client)
-                ancestries = get_project_ancestries(user_crm_client,
-                                                    project_ids)
+        user_email = user_emails[0]
+        print user_email
+        user_count += 1
+        try:
+            user_crm_client = self._get_crm_client(user_email)
 
-                user_to_project_ancestries_map[user_email] = ancestries
-            except RefreshError:
-                LOGGER.debug('Unable to access project ancestry %s.',
-                             user_email)
+            project_ids = extract_project_ids(user_crm_client)
+            ancestries = get_project_ancestries(user_crm_client,
+                                                project_ids)
+
+            user_to_project_ancestries_map[user_email] = ancestries
+        except RefreshError:
+            LOGGER.debug('Unable to access project ancestry %s.',
+                         user_email)
+
         # TODO: Remove when instrumentation is implemented.
         elapsed_time = time.time() - start_time
 
