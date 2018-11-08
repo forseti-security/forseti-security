@@ -37,16 +37,12 @@ steps:
   waitFor: ['base']
   id: forseti
   
-#- name: 'gcr.io/cloud-builders/docker'
-#  args:
-#  - 'run'
-#  - 'gcr.io/$PROJECT_ID/forseti'
-  #- '-it build /bin/bash -c'
-  #- '/bin/bash -c'
-  #- "python -m unittest discover --verbose -s . -p '*_test.py'"
-  #- "-it build /bin/bash -c \"python -m unittest discover --verbose -s . -p '*_test.py'\" "
-#  - 'echo "Hello World!" '
-#  waitFor: ['forseti']
-#  id: unittest
+- name: 'gcr.io/cloud-builders/docker'
+  args:
+  - 'run'
+  - 'gcr.io/$PROJECT_ID/forseti'
+  - "python -m unittest discover --verbose -s . -p '*_test.py'"
+  waitFor: ['forseti']
+  id: unittest
 
 images: ['gcr.io/$PROJECT_ID/forseti-base', 'gcr.io/$PROJECT_ID/forseti']
