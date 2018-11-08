@@ -188,6 +188,6 @@ def trace(_lambda=None, attr=None):
                 span = start_span(tracer, func.__module__, func.__name__)
             result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
-                end_span(tracer, span, result=result)
+                end_span(tracer, result=result)
         return wrapper
     return decorator
