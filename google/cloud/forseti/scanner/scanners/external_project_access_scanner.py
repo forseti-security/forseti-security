@@ -207,9 +207,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding project access violations...')
 
         for user_mail, project_ancestries in ancestries_by_user.iteritems():
-            print project_ancestries
             for project_ancestry in project_ancestries:
-                print project_ancestry
                 violations = (
                     self.rules_engine.find_policy_violations(user_mail,
                                                              project_ancestry))
