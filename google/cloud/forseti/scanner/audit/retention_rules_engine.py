@@ -241,7 +241,7 @@ class RetentionRuleBook(bre.BaseRuleBook):
         """Get all the rules for the resource "applies_to".
 
         Args:
-            applies_to (str): The name of the resource
+            applies_to (str): The type of the resource
 
         Returns:
            defaultdict:  A list of ResourceRules.
