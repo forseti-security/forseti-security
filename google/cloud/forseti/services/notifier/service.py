@@ -70,7 +70,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
 
         return notifier_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda X: x.tracer)
+    @tracing.trace(lambda x: x.tracer)
     def Run(self, request, _):
         """Run notifier.
 
