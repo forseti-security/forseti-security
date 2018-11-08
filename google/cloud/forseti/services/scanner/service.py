@@ -46,7 +46,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             metadata_dict[key] = value
         return metadata_dict[self.HANDLE_KEY]
 
-    def __init__(self, scanner_api, service_config):
+    def __init__(self, scanner_api, service_config, tracer=None):
         """Init.
 
         Args:
@@ -56,6 +56,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
         self.service_config = service_config
+        self.tracer = tracer
         LOGGER.info('initializing scanner DAO tables')
         init_storage(service_config.get_engine())
 
@@ -72,6 +73,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         return scanner_pb2.PingReply(data=request.data)
 
+    @tracing.trace(lambda x: x.tracer)
     def Run(self, _, context):
         """Run scanner.
 
@@ -98,6 +100,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)
 
+    @tracing.trace(lambda x: x.tracer)
     def _run_scanner(self, model_name, progress_queue):
         """Run scanner.
 
