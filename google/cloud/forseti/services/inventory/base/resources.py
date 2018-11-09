@@ -1116,6 +1116,24 @@ class GsuiteGroupMember(resource_class_factory('gsuite_group_member', 'id')):
     """The Resource implementation for GSuite User."""
 
 
+# Cloud Pub/Sub resource classes
+class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
+                                         hash_key=True)):
+    """The Resource implementation for PubSub Topic."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """Get IAM policy for this Pubsub Topic.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Pubsub Topic IAM policy.
+        """
+        return client.fetch_pubsub_topic_iam_policy(self['name'])
+
+
 # Cloud Spanner resource classes
 class SpannerDatabase(resource_class_factory('spanner_database', 'name',
                                              hash_key=True)):
@@ -1763,6 +1781,27 @@ class LoggingProjectSinkIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Logging Project Sink."""
 
 
+class PubsubTopicIterator(ResourceIterator):
+    """The Resource iterator implementation for IAM ServiceAccount."""
+
+    def iter(self):
+        """IAM ServiceAccount iterator.
+
+        Yields:
+            Resource: IAM ServiceAccount resource.
+        """
+        gcp = self.client
+        if self.resource.enumerable():
+            try:
+                for data in gcp.iter_pubsub_topics(
+                        self.resource['projectId'],
+                        self.resource['projectNumber']):
+                    yield FACTORIES['pubsub_topic'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
+
+
 class ResourceManagerProjectLienIterator(resource_iter_class_factory(
         api_method_name='iter_crm_project_liens',
         resource_name='crm_lien',
@@ -1867,6 +1906,7 @@ FACTORIES = {
             IamServiceAccountIterator,
             KubernetesClusterIterator,
             LoggingProjectSinkIterator,
+            PubsubTopicIterator,
             ResourceManagerProjectLienIterator,
             ResourceManagerProjectOrgPolicyIterator,
             SpannerInstanceIterator,
@@ -2123,6 +2163,11 @@ FACTORIES = {
     'logging_sink': ResourceFactory({
         'dependsOn': ['organization', 'folder', 'project'],
         'cls': LoggingSink,
+        'contains': []}),
+
+    'pubsub_topic': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': PubsubTopic,
         'contains': []}),
 
     'spanner_database': ResourceFactory({

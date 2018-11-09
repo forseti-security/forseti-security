@@ -989,6 +989,47 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for serviceaccount in resources:
             yield serviceaccount
 
+    def fetch_pubsub_topic_iam_policy(self, name):
+        """PubSub Topic IAM policy from Cloud Asset data.
+
+        Args:
+            name (str): The pubsub topic to query, must be in the format
+                projects/{PROJECT_ID}/topics/{TOPIC_NAME}
+
+        Returns:
+            dict: PubSub Topic IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.pubsub.Topic',
+            '//pubsub.googleapis.com/{}'.format(name),
+            self.session)
+        if resource:
+            return resource
+
+        # Topics with no IAM policy return an empty dict.
+        return {}
+
+    def iter_pubsub_topics(self, project_id, project_number):
+        """Iterate PubSub topics from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Pubsub Topic resources
+        """
+        del project_id  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.pubsub.Topic',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for topic in resources:
+            yield topic
+
     def iter_spanner_instances(self, project_number):
         """Iterate Spanner Instances from Cloud Asset data.
 

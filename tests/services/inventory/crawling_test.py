@@ -447,6 +447,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
                         'resource': 4},
+            'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},
