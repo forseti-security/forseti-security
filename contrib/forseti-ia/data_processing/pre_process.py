@@ -31,21 +31,21 @@ def dataToBQ(dataset_id,table_id,filename):
     job_config.source_format = bigquery.SourceFormat.CSV
     job_config.skip_leading_rows = 1
     job_config.autodetect = True
-    
+
     with open(filename, 'rb') as source_file:
         job = client.load_table_from_file(
             source_file,
             table_ref,
             location='US',  # Must match the destination dataset location.
             job_config=job_config)  # API request
-            
+
     job.result()  # Waits for table load to complete.
-    
+
     print('Loaded {} rows into {}:{}.'.format(
         job.output_rows, dataset_id, table_id))
 
 def ip_extraction_list(x):
-    
+
     """Pre process ip data.
     
     Args:
@@ -60,7 +60,6 @@ def ip_extraction_list(x):
     for subnet in sub_net:
         l.append(subnet)
     print(len(l))
-    
     #return l, len(l)
     return len(l)
 
@@ -80,9 +79,8 @@ def ip_extraction(x):
     ip_supernet = ipaddress.ip_network(u'192.0.2.0/23').supernet()
     return ip_add.ip, ip_supernet
 
-  
-def pre_process_firewall_data(resource_data_json,
-                              selected_features):
+
+def pre_process_firewall_data(resource_data_json):
     """Pre process resource data.
 
     Args:
@@ -94,13 +92,55 @@ def pre_process_firewall_data(resource_data_json,
         DataFrame: DataFrame table with all the resource_data.
     """
 
+    def subnet_count(ip_addr):
+        """Covert ip address."""
+        if ip_addr and '/' in ip_addr:
+            _, subnet = ip_addr.split('/')
+            return 10 * (32 - int(subnet))
+        return -1
+
     df = pd.DataFrame(resource_data_json)
 
-    existing_columns = df.columns
+    df['creation_timestamp'] = df['creation_timestamp'].astype('category').cat.codes
+    df['direction'] = df['direction'].astype('category').cat.codes
+    df['action'] = df['action'].astype('category').cat.codes
+    df['disabled'] = df['disabled'].astype('category').cat.codes
+    df['ip_protocol'] = df['ip_protocol'].astype('category').cat.codes
+    df['ports'] = df['ports'].astype('category').cat.codes
 
-    new_columns = list(set(existing_columns).intersection(selected_features))
+    df['source_subnet_count'] = df['source_ip_addr'].apply(subnet_count)
+    source_ips = df['source_ip_addr'].str.split('/', expand=True)[0].str.split('.', expand=True)
+    df['source_ip_offset_1'] = source_ips[0] if len(source_ips.columns) > 1 else ''
+    df['source_ip_offset_1'] = df['source_ip_offset_1'].astype('category').cat.codes
+    df['source_ip_offset_2'] = source_ips[1] if len(source_ips.columns) > 1 else ''
+    df['source_ip_offset_2'] = df['source_ip_offset_2'].astype('category').cat.codes
+    df['source_ip_offset_3'] = source_ips[2] if len(source_ips.columns) > 1 else ''
+    df['source_ip_offset_3'] = df['source_ip_offset_3'].astype('category').cat.codes
+    df['source_ip_offset_4'] = source_ips[3] if len(source_ips.columns) > 1 else ''
+    df['source_ip_offset_4'] = df['source_ip_offset_4'].astype('category').cat.codes
 
-    df = df[new_columns]
+    df['dest_subnet_count'] = df['dest_ip_addr'].apply(subnet_count)
+    dest_ips = df['dest_ip_addr'].str.replace('/', '').str.split('.', expand = True)
+    df['dest_ip_offset_1'] = dest_ips[0] if len(dest_ips.columns) > 1 else ''
+    df['dest_ip_offset_1'] = df['dest_ip_offset_1'].astype('category').cat.codes
+    df['dest_ip_offset_2'] = dest_ips[1] if len(dest_ips.columns) > 1 else ''
+    df['dest_ip_offset_2'] = df['dest_ip_offset_2'].astype('category').cat.codes
+    df['dest_ip_offset_3'] = dest_ips[2] if len(dest_ips.columns) > 1 else ''
+    df['dest_ip_offset_3'] = df['dest_ip_offset_3'].astype('category').cat.codes
+    df['dest_ip_offset_4'] = dest_ips[3] if len(dest_ips.columns) > 1 else ''
+    df['dest_ip_offset_4'] = df['dest_ip_offset_4'].astype('category').cat.codes
+
+    df = df.drop(columns=['source_ip_addr', 'dest_ip_addr', 'org_id'])
+
+    #df['org_id'] = df['org_id'].astype('category').cat.codes
+    #df['source_ip_addr'] = df['source_ip_addr'].astype('category').cat.codes
+    #df['dest_ip_addr'] = df['dest_ip_addr'].astype('category').cat.codes
+
+    df['service_account'] = df['service_account'].astype('category').cat.codes
+    df['tag'] = df['tag'].astype('category').cat.codes
+    df['full_name'] = df['full_name'].astype('category').cat.codes
+    df['ip_protocol'] = df['ip_protocol'].astype('category').cat.codes
+    df['network'] = df['network'].astype('category').cat.codes
 
     return df
 
@@ -123,24 +163,17 @@ if __name__ == '__main__':
 
         flattened_firewall_rules_dict = [i.to_dict() for i in flattened_firewall_rules]
 
+        dataset_id = "forseti"
+        table_id = "forseti_fw_rules"
+
+
+        import machine_learning.model as model
+
         df_filtered = pre_process_firewall_data(
-            flattened_firewall_rules_dict,
-            ['creation_timestamp',
-             'source_ip_addr',
-             'dest_ip_addr',
-             'service_account',
-             'tag',
-             'org_id',
-             'full_name',
-             'action',
-             'ip_protocol',
-             'ports',
-             'direction',
-             'disabled',
-             'network'])
+            flattened_firewall_rules_dict)
         print(df_filtered.iloc[0])
 
-        filename = "../sample_dataset.csv"
+        reduced_data = model.dimensionality_reduce(df_filtered, 2)
 
         df_filtered['source_ip_addr_exp'] = ""
         df_filtered['source_ips_count'] = ""
