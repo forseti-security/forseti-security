@@ -310,7 +310,7 @@ def define_scanner_parser(parent):
 
     run_scanner_parser.add_argument(
         '--scanner',
-        choices=['external_access_scanner'],
+        choices=['external_project_access_scanner'],
         help='Run a specific scanner, '
              'currently only applicable for '
              'the external project access scanner'

@@ -21,10 +21,6 @@ from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner.dao import initialize as init_storage
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
-from google.cloud.forseti.scanner.scanners import \
-    external_project_access_scanner
-from google.cloud.forseti.scanner.scanner_builder import rules_path_finder
-from google.cloud.forseti.services.scanner import dao as scanner_dao
 
 LOGGER = logger.get_logger(__name__)
 
@@ -97,33 +93,16 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             progress_queue.put(None)
         else:
             LOGGER.info('Run scanner service with model: %s', model_name)
-            if scanner_name:
-                with self.service_config.scoped_session() as session:
-                    self.service_config.violation_access = \
-                        scanner_dao.ViolationAccess(session)
-                    global_configs = self.service_config.get_global_config()
-                    scanner_configs = self.service_config.get_scanner_config()
-                    rules = rules_path_finder(scanner_configs,
-                                              external_project_access_scanner.
-                                              ExternalProjectAccessScanner,
-                                              'external_project_access_rules.'
-                                              'yaml')
-                    external_scanner = external_project_access_scanner.\
-                        ExternalProjectAccessScanner(global_configs,
-                                                     scanner_configs,
-                                                     self.service_config,
-                                                     model_name,
-                                                     '',
-                                                     rules)
-                    external_scanner.run()
-            else:
-                self.service_config.run_in_background(
-                    lambda: self._run_scanner(model_name, progress_queue))
+            self.service_config.run_in_background(
+                lambda: self._run_scanner(
+                    model_name,
+                    progress_queue,
+                    scanner_name))
 
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)
 
-    def _run_scanner(self, model_name, progress_queue):
+    def _run_scanner(self, model_name, progress_queue, scanner_name=None):
         """Run scanner.
 
         Args:
@@ -133,7 +112,8 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         try:
             self.scanner.run(model_name,
                              progress_queue,
-                             self.service_config)
+                             self.service_config,
+                             scanner_name)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             progress_queue.put('Error occurred during the scanning process.')

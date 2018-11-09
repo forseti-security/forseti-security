@@ -19,13 +19,10 @@ from google.auth.exceptions import RefreshError
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.gcp_api import api_helpers # noqa=E501
 from google.cloud.forseti.common.gcp_type import resource_util # noqa=E501
-from google.cloud.forseti.common.gcp_api.cloud_resource_manager \
-    import CloudResourceManagerClient # noqa=E501
+from google.cloud.forseti.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient # noqa=E501
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import Storage
-from google.cloud.forseti.scanner.audit \
-    import external_project_access_rules_engine \
-    as epa_rules_engine # noqa=E501
+from google.cloud.forseti.scanner.audit import external_project_access_rules_engine as epa_rules_engine # noqa=E501
 from google.cloud.forseti.scanner.scanners import base_scanner
 
 LOGGER = logger.get_logger(__name__)
@@ -212,7 +209,6 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
                     self.rules_engine.find_policy_violations(user_mail,
                                                              project_ancestry))
                 all_violations.extend(violations)
-
         return all_violations
 
     @staticmethod
