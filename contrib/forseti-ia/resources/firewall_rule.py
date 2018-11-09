@@ -105,6 +105,8 @@ class FirewallRule(object):
         return {
             'creation_timestamp': self.creation_timestamp,
             'source_ip_addr': self.source_ip_addr,
+            'source_service_account': self.source_service_account,
+            'source_tag': self.source_tag,
             'dest_ip_addr': self.dest_ip_addr,
             'service_account': self.service_account,
             'tag': self.tag,
