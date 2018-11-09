@@ -24,8 +24,8 @@ from __future__ import print_function
 
 
 import matplotlib.pyplot as plt
-import tensorflow.keras.layers as layers
-from tensorflow.keras.models import Model
+import tensorflow.python.keras.layers as layers
+from tensorflow.python.keras.models import Model
 from sklearn import decomposition
 from sklearn.cluster import KMeans
 
@@ -149,4 +149,4 @@ def principal_components(pca, dataset):
      (d*n array) d principal components fed into original feature space
      (Covariance Matrix): Matrix of pairwise feature co-relation
     """
-    return (pca.explained_variance, pca.components, np.cov(dataset)
+    return (pca.explained_variance, pca.components, np.cov(dataset))
