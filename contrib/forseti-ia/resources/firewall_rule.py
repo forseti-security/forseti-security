@@ -67,6 +67,8 @@ class FirewallRule(object):
     def __init__(self,
                  creation_timestamp,
                  source_ip_addr,
+                 source_service_account,
+                 source_tag,
                  dest_ip_addr,
                  service_account,
                  tag,
@@ -82,6 +84,8 @@ class FirewallRule(object):
         self.source_ip_addr = source_ip_addr
         self.dest_ip_addr = dest_ip_addr
         self.service_account = service_account
+        self.source_service_account = source_service_account
+        self.source_tag = source_tag
         self.tag = tag
         self.action = action
         self.ip_protocol = ip_protocol
@@ -145,10 +149,17 @@ class FirewallRule(object):
 
         is_ingress = direction.upper() == 'INGRESS'
 
-        if is_ingress:
-            ip_addrs = json_dict.get('sourceRanges')
-        else:
-            ip_addrs = json_dict.get('destinationRanges')
+        is_source_ranges = 'sourceRanges' in json_dict
+        is_source_tags = 'sourceTags' in json_dict
+        is_source_sa = 'sourceServiceAccounts' in json_dict
+        is_dest_ranges = 'destinationRanges' in json_dict
+
+        secondary_identifiers = (
+                json_dict.get('sourceRanges') or
+                json_dict.get('sourceTags') or
+                json_dict.get('sourceServiceAccounts') or
+                json_dict.get('destinationRanges'))
+
 
         protocol_mappings = json_dict.get(action, [])
 
@@ -160,7 +171,7 @@ class FirewallRule(object):
         disabled = False if json_dict.get('disabled') == 'false' else True
 
         for identifier in identifiers:
-            for ip_addr in ip_addrs:
+            for secondary_identifier in secondary_identifiers:
                 for protocol_mapping in protocol_mappings:
                     ip_protocol = protocol_mapping.get('IPProtocol', '')
                     corresponding_ports = protocol_mapping.get('ports', [])
@@ -169,8 +180,10 @@ class FirewallRule(object):
                         flattened_firewall_rules.append(
                             FirewallRule(
                                 creation_timestamp=creation_timestamp,
-                                source_ip_addr=ip_addr if is_ingress else None,
-                                dest_ip_addr=ip_addr if not is_ingress else None,
+                                source_ip_addr=secondary_identifier if is_source_ranges else None,
+                                source_service_account=secondary_identifier if is_source_sa else None,
+                                source_tag=secondary_identifier if is_source_tags else None,
+                                dest_ip_addr=secondary_identifier if is_dest_ranges else None,
                                 service_account=identifier if not is_tag else None,
                                 tag=identifier if is_tag else None,
                                 action=action,

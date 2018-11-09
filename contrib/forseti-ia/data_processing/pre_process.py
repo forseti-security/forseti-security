@@ -14,7 +14,7 @@
 
 import pandas as pd
 import ipaddress
-from google.cloud import bigquery
+#from google.cloud import bigquery
 
 def dataToBQ(dataset_id,table_id,filename):
 
@@ -193,9 +193,9 @@ if __name__ == '__main__':
         df_filtered['source_ip'] = df_filtered['source_ip_addr'].apply(lambda x: ip_extraction(x))
         df_filtered['dest_ip'] = df_filtered['dest_ip_addr'].apply(lambda x: ip_extraction(x))
 
-        df_filtered.to_csv(filename, sep='\t', encoding='utf-8')
+        #df_filtered.to_csv(filename, sep='\t', encoding='utf-8')
         
         dataset_id = "forseti"
         table_id = "forseti_fw_rules_1"
 
-        dataToBQ(dataset_id,table_id,filename)
+        #dataToBQ(dataset_id,table_id,filename)
