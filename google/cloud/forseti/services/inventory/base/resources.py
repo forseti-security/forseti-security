@@ -1675,16 +1675,29 @@ class IamOrganizationRoleIterator(resource_iter_class_factory(
     """The Resource iterator implementation for IAM Organization Role."""
 
 
-class IamProjectRoleIterator(resource_iter_class_factory(
-        api_method_name='iter_iam_project_roles',
-        resource_name='iam_role',
-        api_method_arg_key='projectId',
-        resource_validation_method_name='enumerable')):
-    """The Resource iterator implementation for IAM Project Role."""
-
-
 # API requires the projectId, but CAI requires the projectNumber, so pass both
 # to the client.
+class IamProjectRoleIterator(ResourceIterator):
+    """The Resource iterator implementation for IAM Project Role."""
+
+    def iter(self):
+        """IAM Project Custom Role iterator.
+
+        Yields:
+            Resource: IAM Role resource.
+        """
+        gcp = self.client
+        if self.resource.enumerable():
+            try:
+                for data in gcp.iter_iam_project_roles(
+                        self.resource['projectId'],
+                        self.resource['projectNumber']):
+                    yield FACTORIES['iam_role'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
+
+
 class IamServiceAccountIterator(ResourceIterator):
     """The Resource iterator implementation for IAM ServiceAccount."""
 

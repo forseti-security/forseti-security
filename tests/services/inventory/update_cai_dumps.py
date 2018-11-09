@@ -175,6 +175,23 @@ def bucket(item):
     return _create_asset(name, asset_type, parent_name, data,
                          item.get_iam_policy())
 
+def role(item):
+    parent = item.parent()
+    if not parent:
+        return (None, None)
+
+    if parent.type() == 'organization':
+        parent_name = '//cloudresourcemanager.googleapis.com/{}'.format(
+            parent['name'])
+    else:
+        parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+            parent['projectNumber'])
+
+    name = '//iam.googleapis.com/{}'.format(item['name'])
+    asset_type = 'google.iam.Role'
+
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
 
 def serviceaccount(item):
     parent = item.parent()
@@ -250,6 +267,7 @@ CAI_TYPE_MAP = {
     'instance': instance,
     'instancetemplate': instancetemplate,
     'network': network,
+    'role': role,
     'serviceaccount': serviceaccount,
     'snapshot': snapshot,
     'subnetwork': subnetwork,

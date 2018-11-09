@@ -524,11 +524,12 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_iam_project_roles(self, project_id):
+    def iter_iam_project_roles(self, project_id, project_number):
         """Iterate Project roles in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -1566,15 +1567,17 @@ class ApiClientImpl(ApiClient):
             yield role
 
     @create_lazy('iam', _create_iam)
-    def iter_iam_project_roles(self, project_id):
+    def iter_iam_project_roles(self, project_id, project_number):
         """Iterate Project roles in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of project roles.
         """
+        del project_number  # Used by CAI, not the API.
         for role in self.iam.get_project_roles(project_id):
             yield role
 

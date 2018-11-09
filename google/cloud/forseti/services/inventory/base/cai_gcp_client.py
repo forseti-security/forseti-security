@@ -932,6 +932,43 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         # Service accounts with no IAM policy return an empty dict.
         return {}
 
+    def iter_iam_organization_roles(self, org_id):
+        """Iterate Organization roles from Cloud Asset data.
+
+        Args:
+            org_id (str): id of the organization to get.
+
+        Yields:
+            dict: Generator of organization role.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.iam.Role',
+            '//cloudresourcemanager.googleapis.com/{}'.format(org_id),
+            self.session)
+        for role in resources:
+            yield role
+
+    def iter_iam_project_roles(self, project_id, project_number):
+        """Iterate Project roles in a project from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of project roles.
+        """
+        del project_id  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.iam.Role',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for role in resources:
+            yield role
+
     def iter_iam_serviceaccounts(self, project_id, project_number):
         """Iterate Service Accounts in a project from Cloud Asset data.
 
