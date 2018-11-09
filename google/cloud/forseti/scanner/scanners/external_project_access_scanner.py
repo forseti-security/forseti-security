@@ -288,32 +288,19 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
 
         user_emails = get_user_emails(self.service_config)
 
-        # for user_email in user_emails:
-        #     user_count += 1
-        #     try:
-        #         user_crm_client = self._get_crm_client(user_email)
-        #
-        #         project_ids = extract_project_ids(user_crm_client)
-        #         ancestries = get_project_ancestries(user_crm_client,
-        #                                             project_ids)
-        #
-        #         user_to_project_ancestries_map[user_email] = ancestries
-        #     except RefreshError:
-        #         LOGGER.debug('Unable to access project ancestry %s.',
-        #                      user_email)
+        for user_email in user_emails:
+            user_count += 1
+            try:
+                user_crm_client = self._get_crm_client(user_email)
 
-        user_email = user_emails[2]
-        user_count += 1
-        try:
-            user_crm_client = self._get_crm_client(user_email)
+                project_ids = extract_project_ids(user_crm_client)
+                ancestries = get_project_ancestries(user_crm_client,
+                                                    project_ids)
 
-            project_ids = extract_project_ids(user_crm_client)
-            ancestries = get_project_ancestries(user_crm_client,
-                                                project_ids)
-            user_to_project_ancestries_map[user_email] = ancestries
-        except RefreshError:
-            LOGGER.debug('Unable to access project ancestry %s.',
-                         user_email)
+                user_to_project_ancestries_map[user_email] = ancestries
+            except RefreshError:
+                LOGGER.debug('Unable to access project ancestry %s.',
+                             user_email)
 
         # TODO: Remove when instrumentation is implemented.
         elapsed_time = time.time() - start_time
