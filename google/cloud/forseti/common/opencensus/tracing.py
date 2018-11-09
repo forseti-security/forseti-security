@@ -14,6 +14,7 @@
 
 """Forseti OpenCensus gRPC tracing setup."""
 
+import inspect
 from google.cloud.forseti.common.util import logger
 #from functools import wraps
 
@@ -71,12 +72,10 @@ def create_server_interceptor(extras=True):
     sampler = always_on.AlwaysOnSampler()
     if extras:
         trace_integrations()
-    LOGGER.info("(before init): %s" % execution_context.get_opencensus_tracer().span_context)
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-    #LOGGER.info("(within tracer): %s" % interceptor.tracer)
-    LOGGER.info("(after init): %s" % execution_context.get_opencensus_tracer().span_context)
+    LOGGER.info(execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 def trace_integrations(integrations=None):
@@ -138,6 +137,7 @@ def start_span(tracer, module, function, kind=None):
         function (str): The function name.
         kind (~opencensus.trace.span.SpanKind, optional): The span kind.
     """
+    LOGGER.info("%s.%s: %s", module, function, tracer.span_context)
     if kind is None:
         kind = SpanKind.SERVER
     span = tracer.start_span()
@@ -154,11 +154,30 @@ def end_span(tracer, **kwargs):
         tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
+    LOGGER.info(tracer.span_context)
+    set_attributes(tracer, **kwargs)
+    tracer.end_span()
+
+def set_attributes(tracer, **kwargs):
     for k, v in kwargs.items():
         tracer.add_attribute_to_current_span(k, v)
-    LOGGER.info(tracer.span_context)
-    tracer.end_span()
-    
+
+def traced(cls):
+    for name, fn in inspect.getmembers(cls, inspect.ismethod):
+        setattr(cls, name, trace_decorator(fn))
+    return cls
+
+def trace_decorator(func):
+    def wrapper(self, *args, **kwargs):
+        tracer = execution_context.get_opencensus_tracer()
+        LOGGER.debug("%s.%s: %s", func.__module__, func.__name__, tracer.span_context)
+        if hasattr(self, 'config'):
+            self.config.tracer = tracer
+        else:
+            self.tracer = tracer
+        return func(self, *args, **kwargs)
+    return wrapper
+
 def trace(_lambda=None, attr=None):
     """Decorator to trace class methods. 
     
@@ -176,16 +195,16 @@ def trace(_lambda=None, attr=None):
         func: The decorated class method.
     """
     def decorator(func):
-        #TODO: Use @wraps(func) to override the doc string
         def wrapper(self, *args, **kwargs):
             if OPENCENSUS_ENABLED:
                 if _lambda is not None:
                     tracer = _lambda(self)
                 elif attr is not None:
-                    tracer = getattr(self, attr, default)
+                    tracer = getattr(self, attr, None)
                 else: # no arg passed to decorator, getting tracer from context
                     tracer = execution_context.get_opencensus_tracer()
-                span = start_span(tracer, func.__module__, func.__name__)
+                module_str = func.__module__.split('.')[-1]
+                span = start_span(tracer, module_str, func.__name__)
             result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
                 end_span(tracer, result=result)

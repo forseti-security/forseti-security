@@ -166,6 +166,7 @@ def run_inventory(service_config,
         Exception: Reraises any exception.
     """
     tracer = service_config.tracer
+    LOGGER.info(tracer.span_context)
     tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:
@@ -205,6 +206,7 @@ def run_import(client, model_name, inventory_index_id, background):
                                   background)
 
 
+@tracing.traced
 class Inventory(object):
     """Inventory API implementation."""
 
@@ -240,7 +242,6 @@ class Inventory(object):
                 object: inventory crawler result if no model_name specified,
                     otherwise, model import result
             """
-            LOGGER.info(self.config.tracer.span_context)
             with self.config.scoped_session() as session:
                 try:
                     result = run_inventory(

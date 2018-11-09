@@ -266,10 +266,13 @@ class ServiceConfig(AbstractServiceConfig):
         self.forseti_config = None
         
         self.tracer = None
-        if tracing.OPENCENSUS_ENABLED:
-            self.tracer = tracing.execution_context.get_opencensus_tracer()
 
         self.update_lock = threading.RLock()
+
+    def init_tracer(self):
+        if tracing.OPENCENSUS_ENABLED:
+            self.tracer = tracing.execution_context.get_opencensus_tracer()
+            LOGGER.info(self.tracer.span_context)
 
     def _read_from_config(self, config_file_path=None):
         """Read from the forseti configuration file.
