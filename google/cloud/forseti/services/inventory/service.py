@@ -81,7 +81,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
 
         return inventory_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda x: x.inventory.config.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     @autoclose_stream
     def Create(self, request, _):
         """Creates a new inventory.
@@ -113,7 +113,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_warning=last_warning,
                 last_error=last_error)
 
-    @tracing.trace(lambda x: x.inventory.config.tracer)        
+    #@tracing.trace(lambda x: x.tracer)        
     @autoclose_stream
     def List(self, request, _):
         """Lists existing inventory.
