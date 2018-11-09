@@ -198,13 +198,14 @@ class Crawler(crawler.Crawler):
 class ParallelCrawler(Crawler):
     """Multi-threaded Crawler implementation."""
 
-    def __init__(self, config):
+    def __init__(self, config, tracer):
         """Initialize
 
         Args:
             config (ParallelCrawlerConfig): The crawler configuration
         """
         super(ParallelCrawler, self).__init__(config)
+        self.tracer = tracer
         self._write_lock = threading.Lock()
         self._dispatch_queue = Queue()
         self._shutdown_event = threading.Event()
