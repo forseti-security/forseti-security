@@ -137,3 +137,16 @@ def visualize_2d(dataset, cmap=None):
     plt.xlabel('pca1')
     plt.ylabel('pca2')
     plt.show()
+
+def principal_components(pca, dataset):
+    """
+
+    :param pca:
+    dataset:
+    :return:
+     Varaiance:
+     (n * 1 array) Matrix of Variance of the Matrices
+     (d*n array) d principal components fed into original feature space
+     (Covariance Matrix): Matrix of pairwise feature co-relation
+    """
+    return (pca.explained_variance, pca.components, np.cov(dataset)
