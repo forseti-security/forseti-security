@@ -69,7 +69,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         return model_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def CreateModel(self, request, context):
         """Creates a new model from an import source.
 
@@ -110,7 +110,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
         self.modeller.delete_model(model_name)
         return model_pb2.DeleteModelReply()
 
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def ListModel(self, request, _):
         """List all models.
 
