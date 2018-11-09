@@ -98,7 +98,7 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
     
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def visit(self, resource):
         """Handle a newly found resource.
 
@@ -176,7 +176,7 @@ class Crawler(crawler.Crawler):
         self.config.storage.warning(warning_message)
         self.config.progresser.on_warning(error)
 
-    @tracing.trace(lambda x: x.tracer)    
+    #@tracing.trace(lambda x: x.tracer)    
     def update(self, resource):
         """Update the row of an existing resource
 
