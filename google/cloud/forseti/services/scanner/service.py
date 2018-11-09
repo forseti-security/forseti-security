@@ -108,6 +108,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         Args:
             model_name (str): Model name.
             progress_queue (Queue): Progress queue.
+            scanner_name (str): name of the specified scanner to run
         """
         try:
             self.scanner.run(model_name,

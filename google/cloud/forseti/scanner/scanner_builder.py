@@ -37,6 +37,7 @@ class ScannerBuilder(object):
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
             snapshot_timestamp (str): The snapshot timestamp
+            scanner_name (str): Name of the specified scanner to run separately
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
