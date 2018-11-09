@@ -75,7 +75,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         return scanner_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def Run(self, _, context):
         """Run scanner.
 
@@ -102,7 +102,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)
 
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def _run_scanner(self, model_name, progress_queue):
         """Run scanner.
 
