@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GOogle CLoud Forseti."""
+rules:
+- name: Only allow access to projects in my organization.
+  allowed_ancestors: 
+  - "organizations/1234567"
+- name: Find access to projects outside of specified folder.
+  allowed_ancestors:
+  - "folders/0987654321"
 
-__version__ = '2.7.0'
-__package_name__ = 'forseti-security'

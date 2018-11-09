@@ -568,8 +568,8 @@ class InventoryImporter(object):
         handler = handlers.get(res_type)
         if handler:
             handler(resource)
-
-        self.model.add_warning('No handler for type "{}"'.format(res_type))
+        else:
+            self.model.add_warning('No handler for type "{}"'.format(res_type))
 
     def _convert_resource(self, resource, cached=False, display_key='name',
                           email_key='email'):

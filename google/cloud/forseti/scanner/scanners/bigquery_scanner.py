@@ -112,7 +112,7 @@ class BigqueryScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding BigQuery acl violations...')
 
         for data in bigquery_acl_data:
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 data.parent_project, data.bigquery_acl)
             LOGGER.debug(violations)
             all_violations.extend(violations)

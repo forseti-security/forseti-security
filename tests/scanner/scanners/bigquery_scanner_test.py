@@ -121,12 +121,12 @@ class BigqueryScannerTest(ForsetiTestCase):
             bigquery_scanner.BigqueryAccessControlsData('resource-3', 'acl-3'),
         ]
 
-        self.scanner.rules_engine.find_policy_violations.side_effect = [
+        self.scanner.rules_engine.find_violations.side_effect = [
             ['viol-1', 'viol-2'], [], ['viol-3']]
 
         violations = self.scanner._find_violations(bq_acl_data)
 
-        self.scanner.rules_engine.find_policy_violations.assert_has_calls(
+        self.scanner.rules_engine.find_violations.assert_has_calls(
             [mock.call(d.parent_project, d.bigquery_acl) for d in bq_acl_data])
 
         self.assertEquals(['viol-1', 'viol-2', 'viol-3'], violations)

@@ -288,6 +288,8 @@ FAKE_PROJECTS_API_RESPONSE1 = {
         }]
 }
 
+EXPECTED_FAKE_PROJECTS_API_RESPONSE1_IDS = [u'project1', u'project2', u'project3']
+
 FAKE_ACTIVE_PROJECTS_API_RESPONSE = {
     'projects': [
         p for p in FAKE_PROJECTS_API_RESPONSE1['projects']

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""GOogle CLoud Forseti."""
-
-__version__ = '2.7.0'
-__package_name__ = 'forseti-security'
+rules:
+- name: Find external project access in organization (BAD).
+  allowed_ancestors: 
+  - "policy/1234567"
