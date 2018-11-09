@@ -53,7 +53,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, threads=10,
+    def __init__(self, storage, progresser, api_client, tracer, threads=10,
                  variables=None):
         """Initialize
 
@@ -68,7 +68,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         super(ParallelCrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
-        #self.tracer = tracer
+        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.threads = threads
         self.client = api_client
