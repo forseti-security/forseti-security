@@ -72,7 +72,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
 
         return notifier_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def Run(self, request, _):
         """Run notifier.
 
@@ -94,7 +94,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         for progress_message in iter(progress_queue.get, None):
             yield notifier_pb2.Progress(server_message=progress_message)
 
-    @tracing.trace(lambda x: x.tracer)
+    #@tracing.trace(lambda x: x.tracer)
     def _run_notifier(self, inventory_index_id, progress_queue):
         """Run notifier.
 
