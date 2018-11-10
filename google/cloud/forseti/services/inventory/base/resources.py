@@ -18,6 +18,7 @@
 import ctypes
 from functools import partial
 import json
+import os
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import date_time
@@ -924,6 +925,10 @@ class ComputeProject(resource_class_factory('compute_project', 'id')):
     """The Resource implementation for Compute Project."""
 
 
+class ComputeRouter(resource_class_factory('compute_router', 'id')):
+    """The Resource implementation for Compute Router."""
+
+
 class ComputeSnapshot(resource_class_factory('snapshot', 'id')):
     """The Resource implementation for Compute Snapshot."""
 
@@ -1500,11 +1505,38 @@ class ComputeImageIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute Image."""
 
 
-class ComputeInstanceGroupIterator(compute_iter_class_factory(
-        api_method_name='iter_compute_instancegroups',
-        resource_name='compute_instancegroup')):
+# TODO: Refactor IAP scanner to not expect additional data to be included
+# with the instancegroup resource.
+class ComputeInstanceGroupIterator(ResourceIterator):
     """The Resource iterator implementation for Compute InstanceGroup."""
 
+    def iter(self):
+        """Compute InstanceGroup iterator.
+
+        Yields:
+            Resource: Compute InstanceGroup resource.
+        """
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            try:
+                for data in gcp.iter_compute_instancegroups(
+                        self.resource['projectNumber']):
+                    # IAP Scanner expects instance URLs to be included with the
+                    # instance groups.
+                    try:
+                        data['instance_urls'] = gcp.fetch_compute_ig_instances(
+                            self.resource['projectNumber'],
+                            data['name'],
+                            zone=os.path.basename(data.get('zone', '')),
+                            region=os.path.basename(data.get('region', '')))
+                    except ResourceNotSupported as e:
+                        # API client doesn't support this resource, ignore.
+                        LOGGER.debug(e)
+
+                    yield FACTORIES['compute_instancegroup'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
 
 class ComputeInstanceGroupManagerIterator(compute_iter_class_factory(
         api_method_name='iter_compute_ig_managers',
@@ -1534,6 +1566,12 @@ class ComputeNetworkIterator(compute_iter_class_factory(
         api_method_name='iter_compute_networks',
         resource_name='compute_network')):
     """The Resource iterator implementation for Compute Network."""
+
+
+class ComputeRouterIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_routers',
+        resource_name='compute_router')):
+    """The Resource iterator implementation for Compute Router."""
 
 
 class ComputeSnapshotIterator(compute_iter_class_factory(
@@ -1890,6 +1928,7 @@ FACTORIES = {
             ComputeLicenseIterator,
             ComputeNetworkIterator,
             ComputeProjectIterator,
+            ComputeRouterIterator,
             ComputeSnapshotIterator,
             ComputeSslCertificateIterator,
             ComputeSubnetworkIterator,
@@ -2039,6 +2078,11 @@ FACTORIES = {
     'compute_project': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeProject,
+        'contains': []}),
+
+    'compute_router': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeRouter,
         'contains': []}),
 
     'compute_snapshot': ResourceFactory({

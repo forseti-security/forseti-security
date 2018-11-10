@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Cloud Asset and GCP API hybrid client fassade."""
+
+#pylint: disable=too-many-lines
+
 import threading
 
 from google.cloud.forseti.common.util import logger
@@ -348,6 +350,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for rule in resources:
             yield _fixup_resource_keys(rule, cai_to_gcp_key_map)
 
+    def iter_compute_forwardingrules(self, project_number):
+        """Iterate Forwarding Rules from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of forwarding rule resources.
+        """
+        cai_to_gcp_key_map = {
+            'ipAddress': 'IPAddress',
+            'ipProtocol': 'IPProtocol',
+        }
+        resources = self._iter_compute_resources('ForwardingRule',
+                                                 project_number)
+        for forwarding_rule in resources:
+            yield _fixup_resource_keys(forwarding_rule, cai_to_gcp_key_map)
+
     def iter_compute_healthchecks(self, project_number):
         """Iterate Health checks from Cloud Asset data.
 
@@ -389,6 +409,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for httpshealthcheck in resources:
             yield httpshealthcheck
 
+    def iter_compute_ig_managers(self, project_number):
+        """Iterate Instance Group Manager from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of instance group manager resources.
+        """
+        cai_to_gcp_key_map = {
+            'namedPort': 'namedPorts',
+            'targetPool': 'targetPools',
+        }
+        resources = self._iter_compute_resources('InstanceGroupManager',
+                                                 project_number)
+        for igmanager in resources:
+            yield _fixup_resource_keys(igmanager, cai_to_gcp_key_map)
+
     def iter_compute_images(self, project_number):
         """Iterate Images from Cloud Asset data.
 
@@ -407,8 +445,22 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for image in resources:
             yield _fixup_resource_keys(image, cai_to_gcp_key_map)
 
-    # Use live API because CAI does not yet have all instance groups.
-    # def iter_compute_instancegroups(self, project_number):
+    def iter_compute_instancegroups(self, project_number):
+        """Iterate Compute Engine groups from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Compute Instance group.
+        """
+        cai_to_gcp_key_map = {
+            'namedPort': 'namedPorts',
+        }
+        resources = self._iter_compute_resources('InstanceGroup',
+                                                 project_number)
+        for instancegroup in resources:
+            yield _fixup_resource_keys(instancegroup, cai_to_gcp_key_map)
 
     def iter_compute_instances(self, project_number):
         """Iterate compute engine instance from Cloud Asset data.
@@ -497,6 +549,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self._iter_compute_resources('Network', project_number)
         for network in resources:
             yield _fixup_resource_keys(network, cai_to_gcp_key_map)
+
+    def iter_compute_routers(self, project_number):
+        """Iterate Compute Engine routers from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Compute Routers.
+        """
+        cai_to_gcp_key_map = {
+            'advertisedGroup': 'advertisedGroups',
+            'advertisedIpRange': 'advertisedIpRanges',
+            'bgpPeer': 'bgpPeers',
+            'interface': 'interfaces',
+        }
+        resources = self._iter_compute_resources('Router', project_number)
+        for router in resources:
+            yield _fixup_resource_keys(router, cai_to_gcp_key_map)
 
     def iter_compute_snapshots(self, project_number):
         """Iterate Compute Engine snapshots from Cloud Asset data.

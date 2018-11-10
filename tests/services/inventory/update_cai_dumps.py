@@ -225,12 +225,24 @@ def firewall(item):
     return _create_compute_asset(item, 'google.compute.Firewall')
 
 
+def forwardingrule(item):
+    return _create_compute_asset(item, 'google.compute.ForwardingRule')
+
+
 def image(item):
     return _create_compute_asset(item, 'google.compute.Image')
 
 
 def instance(item):
     return _create_compute_asset(item, 'google.compute.Instance')
+
+
+def instancegroup(item):
+    return _create_compute_asset(item, 'google.compute.InstanceGroup')
+
+
+def instancegroupmanager(item):
+    return _create_compute_asset(item, 'google.compute.InstanceGroupManager')
 
 
 def instancetemplate(item):
@@ -263,8 +275,11 @@ CAI_TYPE_MAP = {
     'dataset': bigquery_dataset,
     'disk': disk,
     'firewall': firewall,
+    'forwardingrule': forwardingrule,
     'image': image,
     'instance': instance,
+    'instancegroup': instancegroup,
+    'instancegroupmanager': instancegroupmanager,
     'instancetemplate': instancetemplate,
     'network': network,
     'role': role,

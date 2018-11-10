@@ -416,6 +416,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'compute_httpshealthcheck': {'resource': 1},
             'compute_license': {'resource': 1},
             'compute_project': {'resource': 2},
+            'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
             'compute_targethttpsproxy': {'resource': 1},
