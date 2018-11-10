@@ -13,7 +13,7 @@
 # limitations under the License.
 """Cloud Asset and GCP API hybrid client fassade."""
 
-#pylint: disable=too-many-lines
+# pylint: disable=too-many-lines
 
 import threading
 

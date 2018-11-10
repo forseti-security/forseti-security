@@ -1538,6 +1538,7 @@ class ComputeInstanceGroupIterator(ResourceIterator):
                 # API client doesn't support this resource, ignore.
                 LOGGER.debug(e)
 
+
 class ComputeInstanceGroupManagerIterator(compute_iter_class_factory(
         api_method_name='iter_compute_ig_managers',
         resource_name='compute_instancegroupmanager')):

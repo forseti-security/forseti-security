@@ -581,7 +581,6 @@ class ApiClient(object):
                 projects/{PROJECT_ID}/topics/{TOPIC_NAME}
         """
 
-
     @abc.abstractmethod
     def iter_pubsub_topics(self, project_id, project_number):
         """Iterate PubSub topics from GCP API.
@@ -1699,7 +1698,6 @@ class ApiClientImpl(ApiClient):
         """
         raise ResourceNotSupported('PubSub Topics are not supported by this '
                                    'API client')
-
 
     def iter_pubsub_topics(self, project_id, project_number):
         """Iterate PubSub topics from GCP API.
