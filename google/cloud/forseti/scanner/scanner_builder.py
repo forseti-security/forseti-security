@@ -56,9 +56,9 @@ class ScannerBuilder(object):
         """
         runnable_scanners = []
         if self.scanner_name == 'external_project_access_scanner':
-            scanner = self.make_scanner(external_project_access_scanner.
-                                        ExternalProjectAccessScanner,
-                                        'external_project_access_rules.yaml')
+            scanner = self.instantiate_scanner(external_project_access_scanner.
+                                               ExternalProjectAccessScanner,
+                                               'external_project_access_rules.yaml')
             runnable_scanners.append(scanner)
         elif not self.scanner_name:
             for scanner in self.scanner_configs.get('scanners'):
@@ -97,14 +97,14 @@ class ScannerBuilder(object):
                     rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
                                       .get(scanner.get('name'))
                                       .get('rules_filename'))
-                    scanner = self.make_scanner(scanner_class, rules_filename)
+                    scanner = self.instantiate_scanner(scanner_class, rules_filename)
                     runnable_scanners.append(scanner)
         else:
             LOGGER.error('Scanner %s cannot run separately.', self.scanner_name)
 
         return runnable_scanners
 
-    def make_scanner(self, scanner_class, rules_filename):
+    def instantiate_scanner(self, scanner_class, rules_filename):
         """Make individual scanners
 
         Args:

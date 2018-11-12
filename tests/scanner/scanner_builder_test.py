@@ -111,3 +111,17 @@ class ScannerBuilderTest(ForsetiTestCase):
         expected_pipelines = ['BucketsAclScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
+
+    def testExternalAccessScanner(self):
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, {},
+            mock.MagicMock(),
+            '',
+            FAKE_TIMESTAMP,
+            'external_project_access_scanner')
+        runnable_pipelines = builder.build()
+
+        self.assertEquals(1, len(runnable_pipelines))
+        expected_pipelines = ['ExternalProjectAccessScanner']
+        for pipeline in runnable_pipelines:
+            self.assertTrue(type(pipeline).__name__ in expected_pipelines)
