@@ -52,3 +52,6 @@ resources.
 
 ## Service Account Key
   * User-managed service account keys should not be older than the date and time you specify.
+
+## Whitelist
+Your current organization is whitelisted so that all projects with your organization as an ancestor are allowed.
