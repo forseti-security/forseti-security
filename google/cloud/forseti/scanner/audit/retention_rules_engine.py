@@ -294,6 +294,9 @@ class Rule(object):
             res (Resource): A class derived from Resource.
         Returns:
             Generator: All violations of the resource breaking the rule.
+
+        Raises:
+            ValueError: Raised if the resource type is bucket.
         """
 
         if res.type == 'bucket':
