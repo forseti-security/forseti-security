@@ -38,19 +38,7 @@ steps:
   id: forseti
   
 - name: 'gcr.io/cloud-builders/docker'
-  args:
-  - 'run'
-  - 'gcr.io/$PROJECT_ID/forseti'
-  #- 'python' -m unittest discover --verbose -s . -p '*_test.py'"
-  - 'python'
-  - '-m'
-  - 'unittest'
-  - 'discover'
-  - '--verbose'
-  - '-s'
-  - '.'
-  - '-p'
-  - '*_test.py'  
+  args: ['run', 'gcr.io/$PROJECT_ID/forseti', 'python', '-m', 'unittest', 'discover', '--verbose', '-s', '.', '-p', '*_test.py']
   waitFor: ['forseti']
   id: unittest
 
