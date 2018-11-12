@@ -112,7 +112,7 @@ class ScannerBuilderTest(ForsetiTestCase):
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
 
-    def testExternalAccessScanner(self):
+    def testExternalProjectAccessScanner(self):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, {},
             mock.MagicMock(),
