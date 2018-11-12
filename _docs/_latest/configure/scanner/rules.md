@@ -627,12 +627,12 @@ rules:
     - network_01
     ```
 
- ## Service Account Key rules
+## Service Account Key rules
 
- ### Rule definitions
+### Rule definitions
 
- ```yaml
- rules:
+```yaml
+rules:
   # The max allowed age of user managed service account keys (in days)
   - name: Service account keys not rotated
     resource:
@@ -657,6 +657,7 @@ rules:
 * `max_age`
   * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
   * **Valid values**: String, number of days.
+
 
 ## External Project Access rules
 
