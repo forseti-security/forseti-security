@@ -34,8 +34,8 @@ class RetentionScanner(base_scanner.BaseScanner):
         Args:
             global_configs (dict): Global configurations.
             scanner_configs (dict): Scanner configurations.
-            service_config (ServiceConfig): Forseti 2.0 service configs
-            model_name (str): name of the data model
+            service_config (ServiceConfig): Forseti 2.0 service configs.
+            model_name (str): name of the data model.
             snapshot_timestamp (str): Timestamp, formatted as YYYYMMDDTHHMMSSZ.
             rules (str): Fully-qualified path and filename of the rules file.
         """
@@ -78,16 +78,16 @@ class RetentionScanner(base_scanner.BaseScanner):
         """Output results.
 
         Args:
-            all_violations (list): All violations
+            all_violations (list): All violations.
         """
         all_violations = self._flatten_violations(all_violations)
         self._output_results_to_db(all_violations)
 
-    def _find_violations(self, retention_info):
+    def _find_violations(self, resources):
         """Find violations in the resources with retention policies.
 
         Args:
-            retention_info (list): Contains all supported resource in retention
+            resources (list): Contains all supported resource in retention.
 
         Returns:
             list: All violations.
@@ -95,7 +95,7 @@ class RetentionScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding retention violations...')
         all_violations = []
 
-        for resource in retention_info:
+        for resource in resources:
             violations = self.rules_engine.find_violations(resource)
             LOGGER.debug(violations)
             all_violations.extend(violations)

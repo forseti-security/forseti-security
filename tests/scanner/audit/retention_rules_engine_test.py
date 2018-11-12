@@ -18,23 +18,22 @@ import copy
 import itertools
 import json
 import mock
+import tempfile
 import unittest
 import yaml
-from collections import namedtuple
-import tempfile
 
-from tests.unittest_utils import ForsetiTestCase
+from datetime import datetime, timedelta
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
+from google.cloud.forseti.scanner.audit import errors as audit_errors
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
-from tests.unittest_utils import get_datafile_path
-from google.cloud.forseti.scanner.audit import errors as audit_errors
 from tests.scanner.test_data import fake_retention_scanner_data as frsd
-from datetime import datetime, timedelta
+from tests.unittest_utils import get_datafile_path
+from tests.unittest_utils import ForsetiTestCase
 
 
 import collections

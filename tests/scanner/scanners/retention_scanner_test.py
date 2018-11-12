@@ -18,7 +18,6 @@ import collections
 import json
 import unittest
 import mock
-from collections import namedtuple
 import tempfile
 
 from tests.scanner.test_data import fake_retention_scanner_data as frsd
@@ -45,7 +44,36 @@ def get_expect_violation_item(res_map, bucket_id, rule_name, rule_index):
         violation_data=lifecycle_str,
         resource_data=res_map.get(bucket_id).data)
 
-yaml_str_multi_buckets_in_a_rule = """
+
+def get_mock_bucket_retention(bucket_data):
+    """Get the mock function for testcases"""
+
+    def _mock_bucket_retention(_=None, resource_type='bucket'):
+        """Creates a list of GCP resource mocks retrieved by the scanner"""
+
+        if resource_type != 'bucket':
+            raise ValueError(
+                'unexpected resource type: got %s, bucket',
+                resource_type,
+            )
+
+        ret = []
+        for data in bucket_data:
+            ret.append(frsd.get_fake_bucket_resource(data))
+
+        return ret
+    return _mock_bucket_retention
+
+
+class RetentionScannerTest(ForsetiTestCase):
+
+    def setUp(self):
+        """Set up."""
+
+    def test_bucket_retention_on_multi_buckets(self):
+        """Test a rule that includes more than one bucket IDs"""
+
+        rule_yaml = """
 rules:
   - name: multiple buckets in a single rule
     applies_to:
@@ -60,37 +88,68 @@ rules:
 
 """
 
+        bucket_test_data=[
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-1',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-2',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':90})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-3',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-4',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+        ]
 
-def _mock_bucket_retention_multi_buckets_in_a_rule(_, resource_type):
-    """Creates a list of GCP resource mocks retrieved by the scanner for
-    test_bucket_retention_on_multi_buckets"""
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
-    res = []
+        _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-1', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(rule_yaml)
+            f.flush()
+            _fake_bucket_list = _mock_bucket(None, 'bucket')
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=90)
-    res.append(data_creater.get_resource())
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
 
-    return res
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
 
+            res_map = {}
+            for i in _fake_bucket_list:
+                res_map[i.id] = i
 
-yaml_str_multi_projects_in_a_rule = """
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-1',
+                                        'multiple buckets in a single rule', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-3',
+                                        'multiple buckets in a single rule', 0)
+            ])
+
+            self.assertEqual(expected_violations, set(all_violations))
+
+    def test_bucket_retention_on_multi_projects(self):
+        """Test a rule that includes more than one project IDs"""
+
+        rule_yaml = """
 rules:
   - name: multiple projects in a single rule
     applies_to:
@@ -105,45 +164,80 @@ rules:
 
 """
 
-def _mock_bucket_retention_multi_projects_in_a_rule(_=None, resource_type='bucket'):
-    """Creates a list of GCP resource mocks retrieved by the scanner for
-    test_bucket_retention_on_multi_projects"""
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
+        bucket_test_data=[
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-11',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-12',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':90})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-13',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-2',
+                project=frsd.PROJECT2,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':90})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-3',
+                project=frsd.PROJECT3,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-4',
+                project=frsd.PROJECT4,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+        ]
 
-    res = []
+        _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(rule_yaml)
+            f.flush()
+            _fake_bucket_list = _mock_bucket(None, resource_type='bucket')
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=90)
-    res.append(data_creater.get_resource())
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-2', frsd.PROJECT2)
-    data_creater.AddLifecycleDict(action="Delete", age=90)
-    res.append(data_creater.get_resource())
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-3', frsd.PROJECT3)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-4', frsd.PROJECT4)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+            res_map = {}
+            for i in _fake_bucket_list:
+                res_map[i.id] = i
 
-    return res
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-11',
+                                        'multiple projects in a single rule', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-13',
+                                        'multiple projects in a single rule', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-3',
+                                        'multiple projects in a single rule', 0)
+            ])
 
+            self.assertEqual(expected_violations, set(all_violations))
 
-yaml_str_mix_projects_and_buckets_in_a_rule = """
+    def test_bucket_retention_on_mix_project_and_bucket(self):
+        """Test yaml file that includes more than one rules"""
+
+        rule_yaml = """
 rules:
   - name: project 1 min 90
     applies_to:
@@ -166,32 +260,63 @@ rules:
 
 """
 
-def _mock_bucket_retention_mix_project_and_bucket(_=None, resource_type='bucket'):
-    """Creates a list of GCP resource mocks retrieved by the scanner for
-    test_bucket_retention_on_mix_project_and_bucket"""
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
+        bucket_test_data=[
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-11',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':90})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-12',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':89})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-13',
+                project=frsd.PROJECT1,
+                lifecycles=[]
+            ),
+        ]
 
-    res = []
+        _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=90)
-    res.append(data_creater.get_resource())
+        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
+            f.write(rule_yaml)
+            f.flush()
+            _fake_bucket_list = _mock_bucket(resource_type='bucket')
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=89)
-    res.append(data_creater.get_resource())
+            self.scanner = retention_scanner.RetentionScanner(
+                {}, {}, mock.MagicMock(), '', '', f.name)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    res.append(data_creater.get_resource())
+            mock_data_access = mock.MagicMock()
+            mock_data_access.scanner_iter.side_effect = _mock_bucket
 
-    return res
+            mock_service_config = mock.MagicMock()
+            mock_service_config.model_manager = mock.MagicMock()
+            mock_service_config.model_manager.get.return_value = (
+                mock.MagicMock(), mock_data_access)
+            self.scanner.service_config = mock_service_config
 
+            all_lifecycle_info = self.scanner._retrieve()
+            all_violations = self.scanner._find_violations(all_lifecycle_info)
 
-yaml_str_multi_rules_on_a_project = """
+            res_map = {}
+            for i in _fake_bucket_list:
+                res_map[i.id] = i
+
+            expected_violations = set([
+                get_expect_violation_item(res_map, 'fake-bucket-12',
+                                        'project 1 min 90', 0),
+                get_expect_violation_item(res_map, 'fake-bucket-13',
+                                        'buckets max 100', 1)
+            ])
+
+            self.assertEqual(expected_violations, set(all_violations))
+
+    def test_bucket_retention_on_multi_rules_on_a_project(self):
+        """Test yaml file that includes more than one rules that works on the same project"""
+
+        rule_yaml = """
 rules:
   - name: project 1 min 90
     applies_to:
@@ -220,156 +345,36 @@ rules:
 
 """
 
-def _mock_bucket_retention_multi_rules_on_a_project(_=None, resource_type='bucket'):
-    """Creates a list of GCP resource mocks retrieved by the scanner for
-    test_bucket_retention_on_multi_rules_on_a_project"""
-    if resource_type != 'bucket':
-        raise ValueError(
-            'unexpected resource type: got %s, bucket',
-            resource_type,
-        )
+        bucket_test_data=[
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-11',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':90})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-12',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':100})]
+            ),
+            frsd.FakeBucketDataInput(
+                id='fake-bucket-13',
+                project=frsd.PROJECT1,
+                lifecycles=[frsd.LifecycleInput(action='Delete', conditions={'age':110})]
+            ),
+        ]
 
-    res = []
+        _mock_bucket = get_mock_bucket_retention(bucket_test_data)
 
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-11', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=90)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-12', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=100)
-    res.append(data_creater.get_resource())
-
-    data_creater = frsd.FakeBucketDataCreater('fake-bucket-13', frsd.PROJECT1)
-    data_creater.AddLifecycleDict(action="Delete", age=110)
-    res.append(data_creater.get_resource())
-
-    return res
-
-
-class RetentionScannerTest(ForsetiTestCase):
-
-    def setUp(self):
-        """Set up."""
-
-    def test_bucket_retention_on_multi_buckets(self):
-        """Test a rule that includes more than one bucket IDs"""
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_multi_buckets_in_a_rule)
+            f.write(rule_yaml)
             f.flush()
-            _fake_bucket_list = _mock_bucket_retention_multi_buckets_in_a_rule(None, 'bucket')
+            _fake_bucket_list = _mock_bucket(resource_type='bucket')
 
             self.scanner = retention_scanner.RetentionScanner(
                 {}, {}, mock.MagicMock(), '', '', f.name)
 
             mock_data_access = mock.MagicMock()
-            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_multi_buckets_in_a_rule
-
-            mock_service_config = mock.MagicMock()
-            mock_service_config.model_manager = mock.MagicMock()
-            mock_service_config.model_manager.get.return_value = (
-                mock.MagicMock(), mock_data_access)
-            self.scanner.service_config = mock_service_config
-
-            all_lifecycle_info = self.scanner._retrieve()
-            all_violations = self.scanner._find_violations(all_lifecycle_info)
-
-            res_map = {}
-            for i in _fake_bucket_list:
-                res_map[i.id] = i
-
-            expected_violations = set([
-                get_expect_violation_item(res_map, 'fake-bucket-1',
-                                        'multiple buckets in a single rule', 0),
-                get_expect_violation_item(res_map, 'fake-bucket-3',
-                                        'multiple buckets in a single rule', 0)
-            ])
-
-            self.assertEqual(expected_violations, set(all_violations))
-
-    def test_bucket_retention_on_multi_projects(self):
-        """Test a rule that includes more than one project IDs"""
-        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_multi_projects_in_a_rule)
-            f.flush()
-            _fake_bucket_list = _mock_bucket_retention_multi_projects_in_a_rule(resource_type='bucket')
-
-            self.scanner = retention_scanner.RetentionScanner(
-                {}, {}, mock.MagicMock(), '', '', f.name)
-
-            mock_data_access = mock.MagicMock()
-            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_multi_projects_in_a_rule
-
-            mock_service_config = mock.MagicMock()
-            mock_service_config.model_manager = mock.MagicMock()
-            mock_service_config.model_manager.get.return_value = (
-                mock.MagicMock(), mock_data_access)
-            self.scanner.service_config = mock_service_config
-
-            all_lifecycle_info = self.scanner._retrieve()
-            all_violations = self.scanner._find_violations(all_lifecycle_info)
-
-            res_map = {}
-            for i in _fake_bucket_list:
-                res_map[i.id] = i
-
-            expected_violations = set([
-                get_expect_violation_item(res_map, 'fake-bucket-11',
-                                        'multiple projects in a single rule', 0),
-                get_expect_violation_item(res_map, 'fake-bucket-13',
-                                        'multiple projects in a single rule', 0),
-                get_expect_violation_item(res_map, 'fake-bucket-3',
-                                        'multiple projects in a single rule', 0)
-            ])
-
-            self.assertEqual(expected_violations, set(all_violations))
-
-    def test_bucket_retention_on_mix_project_and_bucket(self):
-        """Test yaml file that includes more than one rules"""
-        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_mix_projects_and_buckets_in_a_rule)
-            f.flush()
-            _fake_bucket_list = _mock_bucket_retention_mix_project_and_bucket(resource_type='bucket')
-
-            self.scanner = retention_scanner.RetentionScanner(
-                {}, {}, mock.MagicMock(), '', '', f.name)
-
-            mock_data_access = mock.MagicMock()
-            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_mix_project_and_bucket
-
-            mock_service_config = mock.MagicMock()
-            mock_service_config.model_manager = mock.MagicMock()
-            mock_service_config.model_manager.get.return_value = (
-                mock.MagicMock(), mock_data_access)
-            self.scanner.service_config = mock_service_config
-
-            all_lifecycle_info = self.scanner._retrieve()
-            all_violations = self.scanner._find_violations(all_lifecycle_info)
-
-            res_map = {}
-            for i in _fake_bucket_list:
-                res_map[i.id] = i
-
-            expected_violations = set([
-                get_expect_violation_item(res_map, 'fake-bucket-12',
-                                        'project 1 min 90', 0),
-                get_expect_violation_item(res_map, 'fake-bucket-13',
-                                        'buckets max 100', 1)
-            ])
-
-            self.assertEqual(expected_violations, set(all_violations))
-
-    def test_bucket_retention_on_multi_rules_on_a_project(self):
-        """Test yaml file that includes more than one rules that works on the same project"""
-        with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
-            f.write(yaml_str_multi_rules_on_a_project)
-            f.flush()
-            _fake_bucket_list = _mock_bucket_retention_multi_rules_on_a_project(resource_type='bucket')
-
-            self.scanner = retention_scanner.RetentionScanner(
-                {}, {}, mock.MagicMock(), '', '', f.name)
-
-            mock_data_access = mock.MagicMock()
-            mock_data_access.scanner_iter.side_effect = _mock_bucket_retention_multi_rules_on_a_project
+            mock_data_access.scanner_iter.side_effect = _mock_bucket
 
             mock_service_config = mock.MagicMock()
             mock_service_config.model_manager = mock.MagicMock()

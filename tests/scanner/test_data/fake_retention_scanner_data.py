@@ -15,6 +15,7 @@
 
 import json
 from datetime import datetime, timedelta
+import collections
 
 
 from google.cloud.forseti.common.gcp_type import organization
@@ -127,3 +128,23 @@ class FakeBucketDataCreater():
                              parent=self._parent,
                              full_name=self._parent.full_name+'bucket/'+self._id+'/',
                              data=data)
+
+FakeBucketDataInput = collections.namedtuple(
+    'FakeBucketDataInput', ['id', 'project', 'lifecycles'])
+LifecycleInput = collections.namedtuple(
+    'LifecycleInput', ['action', 'conditions'])
+
+
+def get_fake_bucket_resource(fake_bucket_data_input):
+    data_creater = FakeBucketDataCreater(
+        fake_bucket_data_input.id, fake_bucket_data_input.project)
+    for lifecycle in fake_bucket_data_input.lifecycles:
+        data_creater.AddLifecycleDict(
+            action=lifecycle.action,
+            age=lifecycle.conditions.get('age'),
+            created_before=lifecycle.conditions.get('created_before'),
+            matches_storage_class=lifecycle.conditions.get('matches_storage_class'),
+            num_newer_versions=lifecycle.conditions.get('num_newer_versions'),
+            is_live=lifecycle.conditions.get('is_live'))
+
+    return data_creater.get_resource()
