@@ -324,7 +324,14 @@ def _mock_gce():
             return results.GCE_GET_IMAGES[projectid]
         return []
 
-    def _mock_gce_get_instance_groups(projectid):
+    def _mock_gce_get_ig_instances(projectid, ig_name, region, zone):
+        del region, zone
+        if projectid in results.GCE_GET_INSTANCE_GROUP_INSTANCES:
+            return results.GCE_GET_INSTANCE_GROUP_INSTANCES[projectid][ig_name]
+        return []
+
+    def _mock_gce_get_instance_groups(projectid, include_instance_urls):
+        del include_instance_urls
         if projectid in results.GCE_GET_INSTANCE_GROUPS:
             return results.GCE_GET_INSTANCE_GROUPS[projectid]
         return []
@@ -374,6 +381,8 @@ def _mock_gce():
     mock_gce.get_firewall_rules.side_effect = _mock_gce_get_firewall_rules
     mock_gce.get_images.side_effect = _mock_gce_get_images
     mock_gce.get_instance_groups.side_effect = _mock_gce_get_instance_groups
+    mock_gce.get_instance_group_instances.side_effect = (
+        _mock_gce_get_ig_instances)
     mock_gce.get_instance_group_managers.side_effect = (
         _mock_gce_get_instance_group_managers)
     mock_gce.get_instance_templates.side_effect = (

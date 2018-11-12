@@ -155,6 +155,7 @@ class InventoryImporter(object):
             'compute_httpshealthcheck',
             'compute_license',
             'compute_project',
+            'compute_router',
             'compute_sslcertificate',
             'compute_targethttpproxy',
             'compute_targethttpsproxy',
@@ -178,6 +179,7 @@ class InventoryImporter(object):
             'kubernetes_cluster',
             'lien',
             'network',
+            'pubsub_topic',
             'serviceaccount',
             'serviceaccount_key',
             'sink',
@@ -528,6 +530,7 @@ class InventoryImporter(object):
             'compute_httpshealthcheck': self._convert_computeengine_resource,
             'compute_license': self._convert_computeengine_resource,
             'compute_project': self._convert_computeengine_resource,
+            'compute_router': self._convert_computeengine_resource,
             'compute_sslcertificate': self._convert_computeengine_resource,
             'compute_targethttpproxy': self._convert_computeengine_resource,
             'compute_targethttpsproxy': self._convert_computeengine_resource,
@@ -554,6 +557,7 @@ class InventoryImporter(object):
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
             'project': self._convert_project,
+            'pubsub_topic': self._convert_pubsub_topic,
             'serviceaccount': self._convert_serviceaccount,
             'serviceaccount_key': self._convert_serviceaccount_key,
             'sink': self._convert_sink,
@@ -703,6 +707,14 @@ class InventoryImporter(object):
         """
         self._convert_resource(organization, cached=True,
                                display_key='displayName')
+
+    def _convert_pubsub_topic(self, topic):
+        """Convert a PubSub Topic to a database object.
+
+        Args:
+            topic (object): Pubsub Topic to store.
+        """
+        self._convert_resource(topic, cached=True)
 
     def _convert_project(self, project):
         """Convert a project to a database object.
