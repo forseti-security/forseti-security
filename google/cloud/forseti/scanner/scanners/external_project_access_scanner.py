@@ -13,6 +13,9 @@
 # limitations under the License.
 
 """External project access scanner."""
+
+# pylint: disable=line-too-long
+
 import time
 
 from google.auth.exceptions import RefreshError

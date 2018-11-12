@@ -14,6 +14,8 @@
 
 """Builds the scanners to run."""
 
+# pylint: disable=line-too-long
+
 import importlib
 import inspect
 
