@@ -17,6 +17,7 @@ import time
 
 from google.auth.exceptions import RefreshError
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.gcp_api.errors import ApiExecutionError
 from google.cloud.forseti.common.gcp_api import api_helpers # noqa=E501
 from google.cloud.forseti.common.gcp_type import resource_util # noqa=E501
 from google.cloud.forseti.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient # noqa=E501
@@ -294,7 +295,7 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
                                                     project_ids)
 
                 user_to_project_ancestries_map[user_email] = ancestries
-            except RefreshError:
+            except (RefreshError, ApiExecutionError):
                 LOGGER.debug('Unable to access project ancestry %s.',
                              user_email)
 
