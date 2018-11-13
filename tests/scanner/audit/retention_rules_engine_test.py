@@ -263,9 +263,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_max_larger_delete(self):
         """Test that a bucket's rule cannot guarantee the maximum_retention
@@ -278,9 +278,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_max_normal_del_anynormal_del(self):
         """Test that a bucket's rules can guarantee the maximum_retention
@@ -313,9 +313,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_max_lgr_del_normal_else(self):
         """Test that a bucket's rule cannot guarantee the maximum_retention
@@ -329,9 +329,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_max_normal_del_any_del(self):
         """Test that a bucket could have more than one rules. If one of them can
@@ -371,9 +371,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_max_anynormal_del(self):
         """Test that a rule with maximum_retention produces a violation.
@@ -387,9 +387,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     yaml_str_only_min_retention = """
 rules:
@@ -478,9 +478,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only min retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_min_ver1_del(self):
         """Test that a rule with minimum_retention does not produce violations.
@@ -508,9 +508,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only min retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_min_ver0_else(self):
         """Test that a rule with minimum_retention does not produce violations.
@@ -555,9 +555,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only min retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_min_normalnew_del(self):
         """Test that a rule with minimum_retention does not produce violations.
@@ -588,9 +588,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only min retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_min_less_else_normal_del(self):
         """Test that a rule with minimum_retention does not produce violations.
@@ -618,9 +618,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only min retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_only_min_old_del(self):
         """Test that a rule with minimum_retention does not produce violations.
@@ -652,9 +652,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'only min retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     yaml_str_both_min_and_max_retention = """
 rules:
@@ -681,9 +681,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'both min and max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_both_min_max_normal_del_any_del(self):
         """Test that a rule with both minimum_retention and maximum_retention
@@ -698,9 +698,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'both min and max retention')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     def test_both_min_max_normal_del(self):
         """Test that a rule with both minimum_retention and maximum_retention
@@ -766,9 +766,9 @@ rules:
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'bucket retention on correct project')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
     yaml_str_bucket_retention_on_wrong_project = """
 rules:
@@ -839,17 +839,17 @@ rules:
         data_creater.AddLifecycleDict(action="Delete", age=89)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'bucket retention on multi projects')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket_2', frsd.PROJECT2)
         data_creater.AddLifecycleDict(action="Delete", age=89)
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
-        expect_violations = frsd.build_bucket_violations(
+        expected_violations = frsd.build_bucket_violations(
             fake_bucket, 'bucket retention on multi projects')
-        self.assertEqual(got_violations, expect_violations)
+        self.assertEqual(got_violations, expected_violations)
 
 
 if __name__ == '__main__':
