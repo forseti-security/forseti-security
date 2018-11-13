@@ -177,4 +177,5 @@ Each user in the inventory must be queried for their project access. The number 
 In the first release of this scanner, it is invoked manually on either the client or server vm in GCP as follows:
 `forseti scanner run --scanner external_project_access_scanner`
 
-Before running this scanner, please [enable the service account in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.html %}).
+Before running this scanner, please [automated installer]({% link _docs/latest/setup/install.md %})
+
