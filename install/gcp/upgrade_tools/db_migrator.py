@@ -202,7 +202,7 @@ if __name__ == '__main__':
 
     # Drop and recreate the CaiTemporaryStore table to ensure it is using the
     # latest schema.
-    # pylint: disable=no-member 
+    # pylint: disable=no-member
     inventory_dao.CaiTemporaryStore.__table__.drop(SQL_ENGINE)
     inventory_dao.CaiTemporaryStore.__table__.create(SQL_ENGINE)
     # pylint: enable=no-member
