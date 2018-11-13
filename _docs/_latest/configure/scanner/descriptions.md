@@ -170,16 +170,10 @@ file.
 
 ## External Project Access Scanner
 
-Data exfiltration is a common threat in cyber security and in the Cloud.  The External Project Access Scanner mitigates this by identifying users who have access to projects where the project ancestor hierarchy does not include  whitelisted parent.  
+The External Project Access Scanner mitigates this by identifying users who have access to projects outside of your organization. 
 
-### Scanner Operation
-Forseti scanners follow the pattern of using an model which is derived from the inventory.  A model details how GCP resources are related.  A scanner will analyze a model against user defined rules.  Because a model is stored in the Forseti database, the access of the model is relatively fast.
-
-All GCP console users are captured when Forseti builds the inventory.  Projects are captured as well.  However, only projects that are children of the organization where Forseti is configured to execute are added to the inventory.
-
-### What makes this scanner different?
-Because we are interested in projects where an ancestor (a folder or organization) is not a parent, this means each user in the inventory must be queried for their project access.  The size of an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
+## What makes this scanner different?
+Each user in the inventory must be queried for their project access. The number of users in an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
 
 In the first release of this scanner, it is invoked manually on either the client or server vm in GCP as follows:
 `forseti scanner run --scanner external_project_access_scanner`
-

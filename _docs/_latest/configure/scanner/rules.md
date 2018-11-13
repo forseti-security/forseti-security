@@ -474,6 +474,26 @@ rules:
   * **Valid values**: String.
   * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
 
+
+## External Project Access rules
+
+### Rule definitions
+```yaml
+rules:
+- name: Only allow access to projects in my organization.
+  allowed_ancestors:
+  - organizations/{ORGANIZATION_ID}
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+  
+* `allowed_ancestors`
+  * **Description**: The folder or parent that is allowed as an ancestor of a project.  This must follow the pattern of valid values
+  * **Valid values**: String 
+  
+
 ## Forwarding rules
 
 ### Rule definition
@@ -657,22 +677,3 @@ rules:
 * `max_age`
   * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
   * **Valid values**: String, number of days.
-
-
-## External Project Access rules
-
-### Rule definitions
-```yaml
-rules:
-- name: Only allow access to projects in my organization.
-  allowed_ancestors:
-  - organizations/{ORGANIZATION_ID}
-```
-
-* `name`
-  * **Description**: The name of the rule.
-  * **Valid values**: String.
-  
-* `allowed_ancestors`
-  * **Description**: The folder or parent that is allowed as an ancestor of a project.  This must follow the pattern of “organizations/{ORGANIZATION_ID}” or “folders/{FOLDER_ID}”
-  * **Valid values**: String 
