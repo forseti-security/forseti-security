@@ -14,12 +14,14 @@
 
 """Builds the scanners to run."""
 
+# pylint: disable=line-too-long
+
 import importlib
 import inspect
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
-
+from google.cloud.forseti.scanner.scanners import external_project_access_scanner # noqa=E501
 
 LOGGER = logger.get_logger(__name__)
 
@@ -28,7 +30,7 @@ class ScannerBuilder(object):
     """Scanner Builder."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
-                 model_name, snapshot_timestamp):
+                 model_name, snapshot_timestamp, scanner_name=None):
         """Initialize the scanner builder.
 
         Args:
@@ -37,12 +39,14 @@ class ScannerBuilder(object):
             service_config (ServiceConfig): Service configuration.
             model_name (str): name of the data model
             snapshot_timestamp (str): The snapshot timestamp
+            scanner_name (str): Name of the specified scanner to run separately
         """
         self.global_configs = global_configs
         self.scanner_configs = scanner_configs
         self.service_config = service_config
         self.model_name = model_name
         self.snapshot_timestamp = snapshot_timestamp
+        self.scanner_name = scanner_name
 
     def build(self):
         """Build the enabled scanners to run.
@@ -51,60 +55,80 @@ class ScannerBuilder(object):
             list: Scanner instances that will be run.
         """
         runnable_scanners = []
-        for scanner in self.scanner_configs.get('scanners'):
-            if scanner.get('enabled'):
-                module_path = 'google.cloud.forseti.scanner.scanners.{}'
+        if self.scanner_name == 'external_project_access_scanner':
+            scanner = self._instantiate_scanner(
+                external_project_access_scanner.
+                ExternalProjectAccessScanner,
+                'external_project_access_rules.yaml')
+            runnable_scanners.append(scanner)
+        else:
+            for scanner in self.scanner_configs.get('scanners'):
+                if scanner.get('enabled'):
+                    module_path = 'google.cloud.forseti.scanner.scanners.{}'
 
-                requirements_map = scanner_requirements_map.REQUIREMENTS_MAP
-                if not scanner.get('name') in requirements_map:
-                    log_message = (
-                        'Configured scanner is undefined '
-                        'in scanner requirements map : %s')
-                    LOGGER.error(log_message, scanner.get('name'))
-                    continue
+                    requirements_map = scanner_requirements_map.REQUIREMENTS_MAP
+                    if not scanner.get('name') in requirements_map:
+                        log_message = (
+                            'Configured scanner is undefined '
+                            'in scanner requirements map : %s')
+                        LOGGER.error(log_message, scanner.get('name'))
+                        continue
 
-                module_name = module_path.format(
-                    scanner_requirements_map.REQUIREMENTS_MAP
-                    .get(scanner.get('name'))
-                    .get('module_name'))
+                    module_name = module_path.format(
+                        scanner_requirements_map.REQUIREMENTS_MAP
+                        .get(scanner.get('name'))
+                        .get('module_name'))
 
-                try:
-                    module = importlib.import_module(module_name)
-                except (ImportError, TypeError, ValueError):
-                    LOGGER.exception('Unable to import %s\n', module_name)
-                    continue
+                    try:
+                        module = importlib.import_module(module_name)
+                    except (ImportError, TypeError, ValueError):
+                        LOGGER.exception('Unable to import %s\n', module_name)
+                        continue
 
-                class_name = (
-                    scanner_requirements_map.REQUIREMENTS_MAP
-                    .get(scanner.get('name'))
-                    .get('class_name'))
-                try:
-                    scanner_class = getattr(module, class_name)
-                except AttributeError:
-                    LOGGER.exception('Unable to instantiate %s', class_name)
-                    continue
+                    class_name = (
+                        scanner_requirements_map.REQUIREMENTS_MAP
+                        .get(scanner.get('name'))
+                        .get('class_name'))
+                    try:
+                        scanner_class = getattr(module, class_name)
+                    except AttributeError:
+                        LOGGER.exception('Unable to instantiate %s', class_name)
+                        continue
 
-                # Simple way to find the path to folders directory no matter
-                # where forseti runs.
-                rules_path = self.scanner_configs.get('rules_path')
-                if rules_path is None:
-                    scanner_path = inspect.getfile(scanner_class)
-                    rules_path = scanner_path.split('/google/cloud/forseti')[0]
-                    rules_path += '/rules'
-
-                rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
-                                  .get(scanner.get('name'))
-                                  .get('rules_filename'))
-                rules = '{}/{}'.format(rules_path, rules_filename)
-                LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
-                            rules)
-
-                scanner = scanner_class(self.global_configs,
-                                        self.scanner_configs,
-                                        self.service_config,
-                                        self.model_name,
-                                        self.snapshot_timestamp,
-                                        rules)
-                runnable_scanners.append(scanner)
+                    rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
+                                      .get(scanner.get('name'))
+                                      .get('rules_filename'))
+                    scanner = self._instantiate_scanner(
+                        scanner_class,
+                        rules_filename)
+                    runnable_scanners.append(scanner)
 
         return runnable_scanners
+
+    def _instantiate_scanner(self, scanner_class, rules_filename):
+        """Make individual scanners.
+
+        Args:
+            scanner_class (class): the individual scanner class
+            rules_filename (str): file name of the scanner rule file
+
+        Returns:
+            scanner: the individual scanner instance
+        """
+        rules_path = self.scanner_configs.get('rules_path')
+        if rules_path is None:
+            scanner_path = inspect.getfile(scanner_class)
+            rules_path = scanner_path.split('/google/cloud/forseti')[0]
+            rules_path += '/rules'
+        rules = '{}/{}'.format(rules_path, rules_filename)
+
+        LOGGER.info('Initializing the rules engine:\nUsing rules: %s',
+                    rules)
+
+        scanner = scanner_class(self.global_configs,
+                                self.scanner_configs,
+                                self.service_config,
+                                self.model_name,
+                                self.snapshot_timestamp,
+                                rules)
+        return scanner
