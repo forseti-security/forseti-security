@@ -177,3 +177,6 @@ Each user in the inventory must be queried for their project access. The number 
 
 In the first release of this scanner, it is invoked manually on either the client or server vm in GCP as follows:
 `forseti scanner run --scanner external_project_access_scanner`
+
+Before running this scanner, please make sure your service account has the following API scope:
+`https://www.googleapis.com/auth/cloudplatformprojects.readonly`
