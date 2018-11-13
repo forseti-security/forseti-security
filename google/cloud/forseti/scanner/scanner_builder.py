@@ -56,9 +56,10 @@ class ScannerBuilder(object):
         """
         runnable_scanners = []
         if self.scanner_name == 'external_project_access_scanner':
-            scanner = self._instantiate_scanner(external_project_access_scanner.
-                                               ExternalProjectAccessScanner,
-                                               'external_project_access_rules.yaml')
+            scanner = self._instantiate_scanner(
+                external_project_access_scanner.
+                ExternalProjectAccessScanner,
+                'external_project_access_rules.yaml')
             runnable_scanners.append(scanner)
         else:
             for scanner in self.scanner_configs.get('scanners'):
@@ -97,7 +98,9 @@ class ScannerBuilder(object):
                     rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
                                       .get(scanner.get('name'))
                                       .get('rules_filename'))
-                    scanner = self._instantiate_scanner(scanner_class, rules_filename)
+                    scanner = self._instantiate_scanner(
+                        scanner_class,
+                        rules_filename)
                     runnable_scanners.append(scanner)
 
         return runnable_scanners
