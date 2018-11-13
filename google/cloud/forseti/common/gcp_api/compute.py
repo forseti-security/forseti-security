@@ -1118,11 +1118,13 @@ class ComputeClient(object):
 
         return flattened_results
 
-    def get_instance_groups(self, project_id):
+    def get_instance_groups(self, project_id, include_instance_urls=True):
         """Get the instance groups for a project.
 
         Args:
             project_id (str): The project id.
+            include_instance_urls (bool): If true, fetch instance urls for each
+                instance group and include them in the resource dictionary.
 
         Returns:
             list: A list of instance groups for this project.
@@ -1134,13 +1136,17 @@ class ComputeClient(object):
             _flatten_aggregated_list_results(project_id, paged_results,
                                              'instanceGroups'),
             key=lambda d: d.get('name'))
-        for instance_group in instance_groups:
-            instance_group['instance_urls'] = self.get_instance_group_instances(
-                project_id,
-                instance_group.get('name'),
+
+        if include_instance_urls:
+            for instance_group in instance_groups:
                 # Turn zone and region URLs into a names
-                zone=os.path.basename(instance_group.get('zone', '')),
-                region=os.path.basename(instance_group.get('region', '')))
+                zone = os.path.basename(instance_group.get('zone', ''))
+                region = os.path.basename(instance_group.get('region', ''))
+                instance_group['instance_urls'] = (
+                    self.get_instance_group_instances(project_id,
+                                                      instance_group['name'],
+                                                      zone=zone,
+                                                      region=region))
 
         LOGGER.debug('Getting the instance groups for a project, '
                      'project_id = %s, instance_groups = %s',

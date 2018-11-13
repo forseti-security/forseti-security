@@ -18,6 +18,7 @@
 import ctypes
 from functools import partial
 import json
+import os
 
 from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.util import date_time
@@ -924,6 +925,10 @@ class ComputeProject(resource_class_factory('compute_project', 'id')):
     """The Resource implementation for Compute Project."""
 
 
+class ComputeRouter(resource_class_factory('compute_router', 'id')):
+    """The Resource implementation for Compute Router."""
+
+
 class ComputeSnapshot(resource_class_factory('snapshot', 'id')):
     """The Resource implementation for Compute Snapshot."""
 
@@ -1114,6 +1119,24 @@ class GsuiteUserMember(resource_class_factory('gsuite_user_member', 'id')):
 
 class GsuiteGroupMember(resource_class_factory('gsuite_group_member', 'id')):
     """The Resource implementation for GSuite User."""
+
+
+# Cloud Pub/Sub resource classes
+class PubsubTopic(resource_class_factory('pubsub_topic', 'name',
+                                         hash_key=True)):
+    """The Resource implementation for PubSub Topic."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """Get IAM policy for this Pubsub Topic.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Pubsub Topic IAM policy.
+        """
+        return client.fetch_pubsub_topic_iam_policy(self['name'])
 
 
 # Cloud Spanner resource classes
@@ -1482,10 +1505,38 @@ class ComputeImageIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute Image."""
 
 
-class ComputeInstanceGroupIterator(compute_iter_class_factory(
-        api_method_name='iter_compute_instancegroups',
-        resource_name='compute_instancegroup')):
+# TODO: Refactor IAP scanner to not expect additional data to be included
+# with the instancegroup resource.
+class ComputeInstanceGroupIterator(ResourceIterator):
     """The Resource iterator implementation for Compute InstanceGroup."""
+
+    def iter(self):
+        """Compute InstanceGroup iterator.
+
+        Yields:
+            Resource: Compute InstanceGroup resource.
+        """
+        gcp = self.client
+        if self.resource.compute_api_enabled():
+            try:
+                for data in gcp.iter_compute_instancegroups(
+                        self.resource['projectNumber']):
+                    # IAP Scanner expects instance URLs to be included with the
+                    # instance groups.
+                    try:
+                        data['instance_urls'] = gcp.fetch_compute_ig_instances(
+                            self.resource['projectNumber'],
+                            data['name'],
+                            zone=os.path.basename(data.get('zone', '')),
+                            region=os.path.basename(data.get('region', '')))
+                    except ResourceNotSupported as e:
+                        # API client doesn't support this resource, ignore.
+                        LOGGER.debug(e)
+
+                    yield FACTORIES['compute_instancegroup'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
 
 
 class ComputeInstanceGroupManagerIterator(compute_iter_class_factory(
@@ -1516,6 +1567,12 @@ class ComputeNetworkIterator(compute_iter_class_factory(
         api_method_name='iter_compute_networks',
         resource_name='compute_network')):
     """The Resource iterator implementation for Compute Network."""
+
+
+class ComputeRouterIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_routers',
+        resource_name='compute_router')):
+    """The Resource iterator implementation for Compute Router."""
 
 
 class ComputeSnapshotIterator(compute_iter_class_factory(
@@ -1675,16 +1732,29 @@ class IamOrganizationRoleIterator(resource_iter_class_factory(
     """The Resource iterator implementation for IAM Organization Role."""
 
 
-class IamProjectRoleIterator(resource_iter_class_factory(
-        api_method_name='iter_iam_project_roles',
-        resource_name='iam_role',
-        api_method_arg_key='projectId',
-        resource_validation_method_name='enumerable')):
-    """The Resource iterator implementation for IAM Project Role."""
-
-
 # API requires the projectId, but CAI requires the projectNumber, so pass both
 # to the client.
+class IamProjectRoleIterator(ResourceIterator):
+    """The Resource iterator implementation for IAM Project Role."""
+
+    def iter(self):
+        """IAM Project Custom Role iterator.
+
+        Yields:
+            Resource: IAM Role resource.
+        """
+        gcp = self.client
+        if self.resource.enumerable():
+            try:
+                for data in gcp.iter_iam_project_roles(
+                        self.resource['projectId'],
+                        self.resource['projectNumber']):
+                    yield FACTORIES['iam_role'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
+
+
 class IamServiceAccountIterator(ResourceIterator):
     """The Resource iterator implementation for IAM ServiceAccount."""
 
@@ -1748,6 +1818,27 @@ class LoggingProjectSinkIterator(resource_iter_class_factory(
         api_method_arg_key='projectNumber',
         resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for Logging Project Sink."""
+
+
+class PubsubTopicIterator(ResourceIterator):
+    """The Resource iterator implementation for IAM ServiceAccount."""
+
+    def iter(self):
+        """IAM ServiceAccount iterator.
+
+        Yields:
+            Resource: IAM ServiceAccount resource.
+        """
+        gcp = self.client
+        if self.resource.enumerable():
+            try:
+                for data in gcp.iter_pubsub_topics(
+                        self.resource['projectId'],
+                        self.resource['projectNumber']):
+                    yield FACTORIES['pubsub_topic'].create_new(data)
+            except ResourceNotSupported as e:
+                # API client doesn't support this resource, ignore.
+                LOGGER.debug(e)
 
 
 class ResourceManagerProjectLienIterator(resource_iter_class_factory(
@@ -1838,6 +1929,7 @@ FACTORIES = {
             ComputeLicenseIterator,
             ComputeNetworkIterator,
             ComputeProjectIterator,
+            ComputeRouterIterator,
             ComputeSnapshotIterator,
             ComputeSslCertificateIterator,
             ComputeSubnetworkIterator,
@@ -1854,6 +1946,7 @@ FACTORIES = {
             IamServiceAccountIterator,
             KubernetesClusterIterator,
             LoggingProjectSinkIterator,
+            PubsubTopicIterator,
             ResourceManagerProjectLienIterator,
             ResourceManagerProjectOrgPolicyIterator,
             SpannerInstanceIterator,
@@ -1988,6 +2081,11 @@ FACTORIES = {
         'cls': ComputeProject,
         'contains': []}),
 
+    'compute_router': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': ComputeRouter,
+        'contains': []}),
+
     'compute_snapshot': ResourceFactory({
         'dependsOn': ['project'],
         'cls': ComputeSnapshot,
@@ -2110,6 +2208,11 @@ FACTORIES = {
     'logging_sink': ResourceFactory({
         'dependsOn': ['organization', 'folder', 'project'],
         'cls': LoggingSink,
+        'contains': []}),
+
+    'pubsub_topic': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': PubsubTopic,
         'contains': []}),
 
     'spanner_database': ResourceFactory({

@@ -94,6 +94,21 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_compute_ig_instances(self, project_number, instance_group_name,
+                                   region=None, zone=None):
+        """Get the instances for an instance group from GCP API.
+
+        One and only one of zone (for zonal instance groups) and region
+        (for regional instance groups) must be specified.
+
+        Args:
+            project_number (str): number of the project to query.
+            instance_group_name (str): The instance group's name.
+            region (str): The regional instance group's region.
+            zone (str): The zonal instance group's zone.
+        """
+
+    @abc.abstractmethod
     def fetch_compute_project(self, project_number):
         """Fetch compute project data from GCP API.
 
@@ -224,6 +239,14 @@ class ApiClient(object):
     @abc.abstractmethod
     def iter_compute_networks(self, project_number):
         """Iterate Networks from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_compute_routers(self, project_number):
+        """Iterate Compute Engine routers from GCP API.
 
         Args:
             project_number (str): number of the project to query.
@@ -524,11 +547,12 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_iam_project_roles(self, project_id):
+    def iter_iam_project_roles(self, project_id, project_number):
         """Iterate Project roles in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
         """
 
     @abc.abstractmethod
@@ -542,6 +566,24 @@ class ApiClient(object):
     @abc.abstractmethod
     def iter_iam_serviceaccounts(self, project_id, project_number):
         """Iterate Service Accounts in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def fetch_pubsub_topic_iam_policy(self, name):
+        """PubSub Topic IAM policy from gcp API call.
+
+        Args:
+            name (str): The pubsub topic to query, must be in the format
+                projects/{PROJECT_ID}/topics/{TOPIC_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_pubsub_topics(self, project_id, project_number):
+        """Iterate PubSub topics from GCP API.
 
         Args:
             project_id (str): id of the project to query.
@@ -882,6 +924,28 @@ class ApiClientImpl(ApiClient):
         return self.compute.is_api_enabled(project_number)
 
     @create_lazy('compute', _create_compute)
+    def fetch_compute_ig_instances(self, project_number, instance_group_name,
+                                   region=None, zone=None):
+        """Get the instances for an instance group from GCP API.
+
+        One and only one of zone (for zonal instance groups) and region
+        (for regional instance groups) must be specified.
+
+        Args:
+            project_number (str): number of the project to query.
+            instance_group_name (str): The instance group's name.
+            region (str): The regional instance group's region.
+            zone (str): The zonal instance group's zone.
+
+        Returns:
+            list: instance URLs for this instance group.
+        """
+        return self.compute.get_instance_group_instances(project_number,
+                                                         instance_group_name,
+                                                         region,
+                                                         zone)
+
+    @create_lazy('compute', _create_compute)
     def fetch_compute_project(self, project_number):
         """Fetch compute project data from GCP API.
 
@@ -1042,7 +1106,8 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of Compute Instance group.
         """
-        for instancegroup in self.compute.get_instance_groups(project_number):
+        for instancegroup in self.compute.get_instance_groups(
+                project_number, include_instance_urls=False):
             yield instancegroup
 
     @create_lazy('compute', _create_compute)
@@ -1096,6 +1161,18 @@ class ApiClientImpl(ApiClient):
         """
         for network in self.compute.get_networks(project_number):
             yield network
+
+    def iter_compute_routers(self, project_number):
+        """Iterate Compute Engine routers from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Compute Routers are not supported '
+                                   'by this API client')
 
     @create_lazy('compute', _create_compute)
     def iter_compute_snapshots(self, project_number):
@@ -1566,15 +1643,17 @@ class ApiClientImpl(ApiClient):
             yield role
 
     @create_lazy('iam', _create_iam)
-    def iter_iam_project_roles(self, project_id):
+    def iter_iam_project_roles(self, project_id, project_number):
         """Iterate Project roles in a project from GCP API.
 
         Args:
             project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of project roles.
         """
+        del project_number  # Used by CAI, not the API.
         for role in self.iam.get_project_roles(project_id):
             yield role
 
@@ -1606,6 +1685,32 @@ class ApiClientImpl(ApiClient):
         del project_number  # Used by CAI, not the API.
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount
+
+    def fetch_pubsub_topic_iam_policy(self, name):
+        """PubSub Topic IAM policy from gcp API call.
+
+        Args:
+            name (str): The pubsub topic to query, must be in the format
+                projects/{PROJECT_ID}/topics/{TOPIC_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('PubSub Topics are not supported by this '
+                                   'API client')
+
+    def iter_pubsub_topics(self, project_id, project_number):
+        """Iterate PubSub topics from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('PubSub Topics are not supported by this '
+                                   'API client')
 
     @create_lazy('servicemanagement', _create_servicemanagement)
     def fetch_services_enabled_apis(self, project_number):
