@@ -490,8 +490,8 @@ rules:
   * **Valid values**: String.
   
 * `allowed_ancestors`
-  * **Description**: The folder or parent that is allowed as an ancestor of a project.  This must follow the pattern of valid values
-  * **Valid values**: String 
+  * **Description**: The folder or parent that is allowed as an ancestor of a project.
+  * **Valid values**: String, organizations/111.
   
 
 ## Forwarding rules

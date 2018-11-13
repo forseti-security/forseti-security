@@ -40,6 +40,9 @@ resources.
   * Forbid any Cloud IAP bypasses on all resources in my organization, when Cloud IAP is enabled.
   * Allow direct access from debug IPs and internal monitoring hosts.
 
+## External Project Access
+  * Find any users in your org that may have access to projects outside of your org.
+  
 ## Firewall
   * Prevent allow all ingress (used to detect allow ingress to all policies)
 
@@ -52,6 +55,3 @@ resources.
 
 ## Service Account Key
   * User-managed service account keys should not be older than the date and time you specify.
-
-## External Project Access
-  * Find any users in your org that may have access to projects outside of your org.
