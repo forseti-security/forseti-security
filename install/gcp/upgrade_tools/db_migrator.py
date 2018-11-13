@@ -201,8 +201,10 @@ if __name__ == '__main__':
     scanner_dao.initialize(SQL_ENGINE)
 
     # Drop and recreate the CloudAssetInventory table
+    # pylint: disable=no-member
     inventory_dao.CaiTemporaryStore.__table__.drop(SQL_ENGINE)
     inventory_dao.CaiTemporaryStore.__table__.create(SQL_ENGINE)
+    # pylint: enable=no-member
 
     # Find all the child classes inherited from declarative base class.
     SCANNER_DAO_CLASSES = _find_subclasses(scanner_dao.BASE)
