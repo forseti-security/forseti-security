@@ -60,7 +60,7 @@ class ScannerBuilder(object):
                                                ExternalProjectAccessScanner,
                                                'external_project_access_rules.yaml')
             runnable_scanners.append(scanner)
-        elif not self.scanner_name:
+        else:
             for scanner in self.scanner_configs.get('scanners'):
                 if scanner.get('enabled'):
                     module_path = 'google.cloud.forseti.scanner.scanners.{}'
@@ -99,8 +99,6 @@ class ScannerBuilder(object):
                                       .get('rules_filename'))
                     scanner = self.instantiate_scanner(scanner_class, rules_filename)
                     runnable_scanners.append(scanner)
-        else:
-            LOGGER.error('Scanner %s cannot run separately.', self.scanner_name)
 
         return runnable_scanners
 
