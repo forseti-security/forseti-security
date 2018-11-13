@@ -200,8 +200,9 @@ if __name__ == '__main__':
     inventory_dao.initialize(SQL_ENGINE)
     scanner_dao.initialize(SQL_ENGINE)
 
-    # Drop and recreate the CloudAssetInventory table
-    # pylint: disable=no-member
+    # Drop and recreate the CaiTemporaryStore table to ensure it is using the
+    # latest schema.
+    # pylint: disable=no-member 
     inventory_dao.CaiTemporaryStore.__table__.drop(SQL_ENGINE)
     inventory_dao.CaiTemporaryStore.__table__.create(SQL_ENGINE)
     # pylint: enable=no-member
