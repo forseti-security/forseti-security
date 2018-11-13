@@ -19,6 +19,7 @@ import enum
 
 from sqlalchemy import and_
 from sqlalchemy import BigInteger
+from sqlalchemy import case
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import Enum
@@ -154,6 +155,81 @@ class InventoryIndex(BASE):
         session.add(self)
         session.flush()
 
+    def get_lifecycle_state_details(self, session, resource_type_input):
+        """Count of lifecycle states of the specified resources.
+
+        Generate/return the count of lifecycle states (ACTIVE, DELETE_PENDING)
+        of the specific resource type input (project, folder) for this inventory
+        index.
+
+        Args:
+            session (object) : session object to work on.
+            resource_type_input (str) : resource type to get lifecycle states.
+
+        Returns:
+            dict: a (lifecycle state -> count) dictionary
+        """
+        resource_data = Inventory.resource_data
+
+        details = dict(
+            session.query(func.json_extract(resource_data, '$.lifecycleState'),
+                          func.count())
+            .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
+            .filter(Inventory.resource_type == resource_type_input)
+            .group_by(func.json_extract(resource_data, '$.lifecycleState'))
+            .all())
+
+        for key in details.keys():
+            new_key = key.replace('\"', '').replace('_', ' ')
+            new_key = ' - '.join([resource_type_input, new_key])
+            details[new_key] = details.pop(key)
+
+        if len(details) == 1:
+            if 'ACTIVE' in details.keys()[0]:
+                added_key_str = 'DELETE PENDING'
+            elif 'DELETE PENDING' in details.keys()[0]:
+                added_key_str = 'ACTIVE'
+            added_key = ' - '.join([resource_type_input, added_key_str])
+            details[added_key] = 0
+
+        return details
+
+    def get_hidden_resource_details(self, session, resource_type):
+        """Count of the hidden and shown specified resources.
+
+        Generate/return the count of hidden resources (e.g. dataset) for this
+        inventory index.
+
+        Args:
+            session (object) : session object to work on.
+            resource_type (str) : resource type to find details for.
+
+        Returns:
+            dict: a (hidden_resource -> count) dictionary
+        """
+        details = {}
+        resource_id = Inventory.resource_id
+        field_label_hidden = resource_type + ' - HIDDEN'
+        field_label_shown = resource_type + ' - SHOWN'
+
+        hidden_label = (
+            func.count(case([(resource_id.contains('%:~_%', escape='~'), 1)])))
+
+        shown_label = (
+            func.count(case([(~resource_id.contains('%:~_%', escape='~'), 1)])))
+
+        details_query = (
+            session.query(hidden_label, shown_label)
+            .filter(Inventory.inventory_index_id == self.id)
+            .filter(Inventory.category == 'resource')
+            .filter(Inventory.resource_type == resource_type).one())
+
+        details[field_label_hidden] = details_query[0]
+        details[field_label_shown] = details_query[1]
+
+        return details
+
     def get_summary(self, session):
         """Generate/return an inventory summary for this inventory index.
 
@@ -163,12 +239,48 @@ class InventoryIndex(BASE):
         Returns:
             dict: a (resource type -> count) dictionary
         """
+
         resource_type = Inventory.resource_type
-        return dict(
+
+        summary = dict(
             session.query(resource_type, func.count(resource_type))
             .filter(Inventory.inventory_index_id == self.id)
             .filter(Inventory.category == 'resource')
             .group_by(resource_type).all())
+
+        return summary
+
+    def get_details(self, session):
+        """Generate/return inventory details for this inventory index.
+
+        Includes delete pending/active resource types and hidden/shown datasets.
+
+        Args:
+            session (object): session object to work on.
+
+        Returns:
+            dict: a (resource type -> count) dictionary
+        """
+        resource_types_with_lifecycle = ['folder', 'organization', 'project']
+        resource_types_hidden = ['dataset']
+
+        resource_types_with_details = {'lifecycle':
+                                       resource_types_with_lifecycle,
+                                       'hidden':
+                                       resource_types_hidden}
+
+        details = {}
+
+        for key, value in resource_types_with_details.items():
+            if key == 'lifecycle':
+                details_function = self.get_lifecycle_state_details
+            elif key == 'hidden':
+                details_function = self.get_hidden_resource_details
+            for resource in value:
+                resource_details = details_function(session, resource)
+                details.update(resource_details)
+
+        return details
 
 
 class Inventory(BASE):
@@ -429,7 +541,7 @@ class CaiTemporaryStore(object):
         """
         if 'cai_temporary_store' not in metadata.tables:
             my_table = Table('cai_temporary_store', metadata,
-                             Column('name', String(255, collation=collation),
+                             Column('name', String(512, collation=collation),
                                     nullable=False),
                              Column('parent_name', String(255), nullable=True),
                              Column('content_type', Enum(ContentTypes),
@@ -445,25 +557,6 @@ class CaiTemporaryStore(object):
                                                   name='cai_temp_store_pk'))
 
             mapper(cls, my_table)
-
-    @staticmethod
-    def get_schema_update_actions():
-        """Maintain all the schema changes for this table.
-
-        Returns:
-            list: A list of Action.
-        """
-
-        #  Format of the columns_to_alter dict: {old_column: new_column}
-        columns_to_alter = {
-            Column('asset_data',
-                   LargeBinary(),
-                   nullable=False): Column('asset_data',
-                                           LargeBinary(length=(2**32) - 1),
-                                           nullable=False)}
-
-        schema_update_actions = {'ALTER': columns_to_alter}
-        return schema_update_actions
 
     def extract_asset_data(self, content_type):
         """Extracts the data from the asset protobuf based on the content type.

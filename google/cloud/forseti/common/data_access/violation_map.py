@@ -38,6 +38,7 @@ VIOLATION_RESOURCES = {
     'FIREWALL_WHITELIST_VIOLATION': 'firewall_rule_violations',
     'GROUP_VIOLATION': 'groups_violations',
     'KE_VERSION_VIOLATION': 'ke_version_violations',
+    'KE_VIOLATION': 'ke_violations',
     'IAM_POLICY_VIOLATION': 'iam_policy_violations',
     'IAP_VIOLATION': 'iap_violations',
     'INSTANCE_NETWORK_INTERFACE_VIOLATION': (
@@ -47,4 +48,5 @@ VIOLATION_RESOURCES = {
     'LOG_SINK_VIOLATION': 'log_sink_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
+    'EXTERNAL_PROJECT_ACCESS_VIOLATION': 'external_project_access_violations'
 }

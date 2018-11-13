@@ -19,7 +19,12 @@ limitations under the License.
 <body>
     Inventory Index Id: {{ inventory_index_id }}<br>
     Inventory Timestamp: {{ timestamp }}<br>
+
+    <a href="https://forsetisecurity.org/docs/latest/configure/inventory/gsuite.html">
+    G Suite Domain-wide Delegation:</a>
+     {{ gsuite_dwd_status }}<br>
     <br>
+    <h3> Inventory Summary </h3>
     <table>
         <col width="250">
         <col width="150">
@@ -28,6 +33,24 @@ limitations under the License.
             <th align="left">Count</th>
         </tr>
         {% for data in summary_data %}
+        <tr>
+            <td>{{ data.resource_type }}</td>
+            <td>{{ data.count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <h3>Inventory Details </h3>
+    <table>
+        <col width="250">
+        <col width="150">
+        <tr>
+            <th align="left">Resource Name</th>
+            <th align="left">Count</th>
+        </tr>
+        <tr>
+            {% for data in details_data %}
+        </tr>
         <tr>
             <td>{{ data.resource_type }}</td>
             <td>{{ data.count }}</td>

@@ -41,16 +41,19 @@ class ScannerBuilderTest(ForsetiTestCase):
                 autospec=True)
     @mock.patch('google.cloud.forseti.scanner.scanners.bigquery_scanner.bigquery_rules_engine',
                 autospec=True)
+    @mock.patch('google.cloud.forseti.scanner.scanner_builder.LOGGER',
+                autospec=True)
     def testAllEnabled(self,
                        mock_bigquery_rules_engine,
                        mock_bucket_rules_engine,
                        mock_cloudsql_rules_engine,
-                       mock_iam_rules_engine):
+                       mock_iam_rules_engine,
+                       mock_logger):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.ALL_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-
+        self.assertFalse(mock_logger.called)
         self.assertEquals(4, len(runnable_pipelines))
 
         expected_pipelines = ['BigqueryScanner', 'BucketsAclScanner',
@@ -88,8 +91,38 @@ class ScannerBuilderTest(ForsetiTestCase):
             FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.TWO_ENABLED,
             mock.MagicMock(), '', FAKE_TIMESTAMP)
         runnable_pipelines = builder.build()
-
         self.assertEquals(2, len(runnable_pipelines))
         expected_pipelines = ['BucketsAclScanner', 'IamPolicyScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
+
+    @mock.patch('google.cloud.forseti.scanner.scanner_builder.LOGGER',
+                autospec=True)
+    def testNonExistentScannerIsHandled(self, mock_logger):
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, fake_runnable_scanners.NONEXISTENT_ENABLED,
+            mock.MagicMock(), '', FAKE_TIMESTAMP)
+        runnable_pipelines = builder.build()
+        mock_logger.error.assert_called_with(
+            'Configured scanner is undefined '
+            'in scanner requirements map : %s', 'non_exist_scanner')
+
+        self.assertEquals(1, len(runnable_pipelines))
+        expected_pipelines = ['BucketsAclScanner']
+        for pipeline in runnable_pipelines:
+            self.assertTrue(type(pipeline).__name__ in expected_pipelines)
+
+    @mock.patch('google.cloud.forseti.scanner.scanners.external_project_access_scanner.epa_rules_engine',
+                autospec=True)
+    def testCanBuildOneSpecificScanner(self, mock_rules_engine):
+        builder = scanner_builder.ScannerBuilder(
+            FAKE_GLOBAL_CONFIGS, {},
+            mock.MagicMock(),
+            '',
+            FAKE_TIMESTAMP,
+            'external_project_access_scanner')
+        runnable_pipelines = builder.build()
+
+        expected_scanner_name = 'ExternalProjectAccessScanner'
+        actual_scanner_name = type(runnable_pipelines[0]).__name__
+        self.assertEquals(expected_scanner_name, actual_scanner_name)
