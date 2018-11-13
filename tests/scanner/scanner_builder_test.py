@@ -112,7 +112,7 @@ class ScannerBuilderTest(ForsetiTestCase):
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
 
-    def testExternalProjectAccessScanner(self):
+    def testCanBuildOneSpecificScanner(self):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, {},
             mock.MagicMock(),
@@ -121,7 +121,6 @@ class ScannerBuilderTest(ForsetiTestCase):
             'external_project_access_scanner')
         runnable_pipelines = builder.build()
 
-        self.assertEquals(1, len(runnable_pipelines))
-        expected_pipelines = ['ExternalProjectAccessScanner']
-        for pipeline in runnable_pipelines:
-            self.assertTrue(type(pipeline).__name__ in expected_pipelines)
+        expected_scanner_name = 'ExternalProjectAccessScanner'
+        actual_scanner_name = type(runnable_pipelines[0]).__name__
+        self.assertEquals(expected_scanner_name, actual_scanner_name)
