@@ -41,7 +41,7 @@ resources.
   * Allow direct access from debug IPs and internal monitoring hosts.
 
 ## External Project Access
-  * Find any users in your org that may have access to projects outside of your org.
+  * Find any users in your org that may have access to projects outside of your allowed org or folder.
   
 ## Firewall
   * Prevent allow all ingress (used to detect allow ingress to all policies)

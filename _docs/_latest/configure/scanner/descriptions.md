@@ -170,7 +170,7 @@ file.
 
 ## External Project Access Scanner
 
-The External Project Access Scanner mitigates data exfiltration by identifying users who have access to projects outside of your organization. 
+The External Project Access Scanner mitigates data exfiltration by identifying users who have access to projects outside of your organization or folder.
 
 ## What makes this scanner different?
 Each user in the inventory must be queried for their project access. The number of users in an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
@@ -178,5 +178,5 @@ Each user in the inventory must be queried for their project access. The number 
 In the first release of this scanner, it is invoked manually on either the client or server vm in GCP as follows:
 `forseti scanner run --scanner external_project_access_scanner`
 
-Before running this scanner, please make sure your service account has the following API scope:
-`https://www.googleapis.com/auth/cloudplatformprojects.readonly`
+Before running this scanner, please [enable the service account in your G Suite admin control panel](https://forsetisecurity.org/docs/latest/configure/inventory/gsuite.html#enable-the-service-account-in-your-g-suite-admin-control-panel).
+
