@@ -112,7 +112,9 @@ class ScannerBuilderTest(ForsetiTestCase):
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
 
-    def testCanBuildOneSpecificScanner(self):
+    @mock.patch('google.cloud.forseti.scanner.scanners.external_project_access_scanner.epa_rules_engine',
+                autospec=True)
+    def testCanBuildOneSpecificScanner(self, mock_rules_engine):
         builder = scanner_builder.ScannerBuilder(
             FAKE_GLOBAL_CONFIGS, {},
             mock.MagicMock(),
