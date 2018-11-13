@@ -90,3 +90,13 @@ class Bucket(resource.Resource):
             locations=[bucket_dict['location']],
             data=json_string,
         )
+
+    def get_lifecycle_rule(self):
+        """Create a bucket lifecycle's rules dict from its JSON string.
+         Returns:
+            dict: bucket lifecycle's rules.
+        """
+        bucket_dict = json.loads(self.data)
+        if 'lifecycle' in bucket_dict and 'rule' in bucket_dict['lifecycle']:
+            return bucket_dict['lifecycle']['rule']
+        return {}
