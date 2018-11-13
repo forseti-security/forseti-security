@@ -175,7 +175,7 @@ class InventorySummary(object):
         Returns:
             str: disabled or enabled.
         """
-        gsuite_types = set(['gsuite_group', 'gsuite_user'])
+        gsuite_types = set(['gsuite_user'])
         summary_data_keys = set()
         if summary_data is None:
             return 'disabled'
