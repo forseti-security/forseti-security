@@ -541,7 +541,7 @@ class CaiTemporaryStore(object):
         """
         if 'cai_temporary_store' not in metadata.tables:
             my_table = Table('cai_temporary_store', metadata,
-                             Column('name', String(255, collation=collation),
+                             Column('name', String(512, collation=collation),
                                     nullable=False),
                              Column('parent_name', String(255), nullable=True),
                              Column('content_type', Enum(ContentTypes),
@@ -557,25 +557,6 @@ class CaiTemporaryStore(object):
                                                   name='cai_temp_store_pk'))
 
             mapper(cls, my_table)
-
-    @staticmethod
-    def get_schema_update_actions():
-        """Maintain all the schema changes for this table.
-
-        Returns:
-            list: A list of Action.
-        """
-
-        #  Format of the columns_to_alter dict: {old_column: new_column}
-        columns_to_alter = {
-            Column('asset_data',
-                   LargeBinary(),
-                   nullable=False): Column('asset_data',
-                                           LargeBinary(length=(2**32) - 1),
-                                           nullable=False)}
-
-        schema_update_actions = {'ALTER': columns_to_alter}
-        return schema_update_actions
 
     def extract_asset_data(self, content_type):
         """Extracts the data from the asset protobuf based on the content type.
