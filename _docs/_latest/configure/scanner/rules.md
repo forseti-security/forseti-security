@@ -867,3 +867,50 @@ rules:
     the JMESPath expression in `key` extracts an integer, you probably
     want integers in this list.  Similarly, if the expression extracts
     a list of values, you need to provide lists.
+
+## Retention rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: retention policies should be in a specific range
+    applies_to:
+      - bucket
+    resource:
+      - type: organization
+        resource_ids:
+          - "123456789012"
+    minimum_retention: 100 # days
+    maximum_retention: 200 # days
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+  
+* `applies_to`
+  * `type`
+    * **Description**: The type of resource to apply the rule to.
+    * **Valid values**: Currently only supports `bucket`.
+    
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder`, `project`
+      or `bucket`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String.
+
+* `minimum_retention`
+  * **Description**: The minimum number of days before which rotation
+    should not be required. Remove this entry if it is not needed.
+  * **Valid values**: String, number of days.
+
+* `maximum_retention`
+  * **Description**: The maximum number of days at which your data
+    can exist before rotation is required. Remove this entry if it is
+    not needed. Remove this entry if it is not needed.
+  * **Valid values**: String, number of days.
