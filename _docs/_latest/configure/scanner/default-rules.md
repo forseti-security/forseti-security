@@ -46,7 +46,7 @@ resources.
 ## Firewall
   * Prevent allow all ingress (used to detect allow ingress to all policies)
 
-## Kubernetes Engine
+## Kubernetes Engine Version
   * Only allow the following supported versions:
     * For major version 1.8, the minor version must be at least 12-gke.1
     * For major version 1.9, the minor version must be at least 7-gke.1

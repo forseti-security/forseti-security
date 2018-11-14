@@ -55,12 +55,10 @@ steps below:
 
       ```bash
       # Make sure you are in the forseti-security folder.
-      cd forseti-security
-
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
-      git checkout tags/v2.0.0
+      git checkout tags/v<version_number>
       ```
 
   1. Install both client and server by running the installer:

@@ -92,7 +92,7 @@ rules:
         `user:*@company.com` (anyone with an identity at company.com).
 
 
-## Kubernetes Engine rules
+## Kubernetes Engine version rules
 
 ### Rule definition
 
@@ -645,7 +645,160 @@ rules:
     ```
     project_01:
     - network_01
-    ```
+
+
+## Lien rules
+
+### Rule definition
+
+```yaml
+rules:
+- name: Require project deletion liens for all projects in the organization.
+  mode: required
+  resource:
+  - resource_ids:
+    - org-1
+    type: organization
+  restrictions:
+  - resourcemanager.projects.delete
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: Currently only supports `required`.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String.
+
+* `restrictions`
+  * **Description**: A list of restrictions to check for.
+  * **Valid values**: Currently only supports `resourcemanager.projects.delete`.
+
+## Location rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: All buckets in organization must be in the US.
+    mode: whitelist
+    resource:
+      - type: organization
+        resource_ids:
+          - org-1
+    applies_to:
+      - type: 'bucket'
+        resource_ids: '*'
+    locations:
+      - 'us*'
+ - name: All buckets in organization must not be in EU.
+    mode: blacklist
+    resource:
+      - type: organization
+        resource_ids:
+          - org-1
+    applies_to:
+      - type: 'bucket'
+        resource_ids: '*'
+    locations:
+      - 'eu*'
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: One of `blacklist` or `whitelist`.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource the applies_to resources belong to.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: List of strings.
+
+* `applies_to`
+  * `type`
+    * **Description**: The type of resource to apply the rule to.
+    * **Valid values**: Currently only supports `bucket`.
+    
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: List of strings. A single wildcard string is also accepted.
+
+* `locations`:
+  * **Description**: A list of resource locations.
+  * **Value values**: String. Supports wildcards. 
+  * **Note**:
+    * Due to differences in capitalization among resource locations, all resources locations will be lower cased before being matched.
+    * Due to differences in region (europe-west1) vs multi regional (EU) naming, we recommend writing rules that can cover both (e.g. eu* instead of europe*).
+
+## Log Sink rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: 'Require BigQuery Audit Log sinks in all projects.'
+    mode: required
+    resource:
+      - type: organization
+        applies_to: children
+        resource_ids:
+          - org-1
+    sink:
+      destination: 'bigquery.googleapis.com/*'
+      filter: 'logName:"logs/cloudaudit.googleapis.com"'
+      include_children: '*'
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `mode`
+  * **Description**: The mode of the rule.
+  * **Valid values**: One of `required`, `blacklist` or `whitelist`.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String.
+
+* `applies_to`
+  * **Description**: A list of resource types to apply this rule to.
+  * **Valid values**: One of `self`, `children` or `self_and_children`.
+
+* `sink`
+  * `destination`
+    * **Description**: The destination service. Where the exported log entries will go.
+    * **Valid values**: String.
+
+  * `filter`
+    * **Description**: The logs filter. Determines which logs to export.
+    * **Valid values**: String.
+  
+  * `include_children`
+    * **Description**: Whether to include children. It is only relevant to sinks created for organizations or folders.
+    * **Valid values**: String. One of `true`, `false` or `*`. `*` means the rule will match sinks with either true or false.
 
 ## Service Account Key rules
 
@@ -677,3 +830,60 @@ rules:
 * `max_age`
   * **Description**: The maximum number of days at which your service account keys can exist before rotation is required.
   * **Valid values**: String, number of days.
+
+## Kubernetes Engine rules
+
+### Rule definition
+
+```yaml
+rules:
+  - name: logging should be enabled
+    resource:
+      - type: project
+        resource_ids:
+          - '*'
+    key: loggingService
+    mode: whitelist
+    values:
+      - logging.googleapis.com
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+
+* `resource`
+  * `type`
+    * **Description**: The type of the resource.
+    * **Valid values**: One of `organization`, `folder` or `project`.
+
+  * `resource_ids`
+    * **Description**: A list of one or more resource ids to match.
+    * **Valid values**: String, you can use `*` to match for all.
+
+* `key`
+  * **Description**: A JMESPath expression that extracts values from
+    the JSON representation of a GKE cluster.
+
+    *Tip*: to find the JSON representation of your cluster use
+    `gcloud --format=json container clusters describe <name>`
+  * **Valid values**: String, must be a well-formed
+    [JMESPath](http://jmespath.org/) expression.
+
+* `mode`
+  * **Description**: Choose whether or not the list of values will be
+    interpreted as a whitelist or a blacklist.
+  * **Valid values**: String.  Must be `whitelist` or `blacklist`.
+
+` `values`
+  * **Description**: The list of values that the rule looks for.
+    * If `mode` is set to `whitelist`, the rule generates a violation
+      if the value extracted from a cluster is NOT on this list.
+	* If `mode` is set to `blacklist`, the rule generates a violation
+      if the value extracted from a cluster IS on the list.
+  * **Valid values**: A list of any valid YAML values.
+
+    *Tip*: Pay attention to the data types that you enter here.  If
+    the JMESPath expression in `key` extracts an integer, you probably
+    want integers in this list.  Similarly, if the expression extracts
+    a list of values, you need to provide lists.

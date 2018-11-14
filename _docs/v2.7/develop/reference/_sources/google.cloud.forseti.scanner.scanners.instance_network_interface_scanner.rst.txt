@@ -1,0 +1,7 @@
+google.cloud.forseti.scanner.scanners.instance\_network\_interface\_scanner module
+==================================================================================
+
+.. automodule:: google.cloud.forseti.scanner.scanners.instance_network_interface_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:
