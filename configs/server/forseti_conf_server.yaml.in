@@ -436,9 +436,16 @@ notifier:
       cscc:
         enabled: false
         mode: api
+        # Alpha API
         organization_id: {ROOT_RESOURCE_ID}
         # gcs_path should begin with "gs://"
         gcs_path:
+        # Beta API
+        # Cloud SCC Beta API uses a new source_id.  It is unique per
+        # organization and must be generated via a self-registration process.
+        # If source_id is used, then it will activate the Beta API,
+        # and the Beta API will take precedence over the Alpha API.
+        source_id: organizations/ORG_ID/sources/SOURCE_ID
 
     inventory:
       gcs_summary:
