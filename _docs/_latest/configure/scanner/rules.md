@@ -474,6 +474,26 @@ rules:
   * **Valid values**: String.
   * **Example values**: `bigquery-json.googleapis.com`, `logging.googleapis.com`
 
+
+## External Project Access rules
+
+### Rule definitions
+```yaml
+rules:
+- name: Only allow access to projects in my organization.
+  allowed_ancestors:
+  - organizations/{ORGANIZATION_ID}
+```
+
+* `name`
+  * **Description**: The name of the rule.
+  * **Valid values**: String.
+  
+* `allowed_ancestors`
+  * **Description**: The folder or organization that is allowed as an ancestor of a project.
+  * **Valid values**: String, organizations/111 or folder/111.
+  
+
 ## Forwarding rules
 
 ### Rule definition
@@ -664,6 +684,7 @@ rules:
   * **Description**: A list of restrictions to check for.
   * **Valid values**: Currently only supports `resourcemanager.projects.delete`.
 
+
 ## Location rules
 
 ### Rule definition
@@ -784,8 +805,8 @@ rules:
 
 ### Rule definitions
 
- ```yaml
- rules:
+```yaml
+rules:
   # The max allowed age of user managed service account keys (in days)
   - name: Service account keys not rotated
     resource:
