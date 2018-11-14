@@ -199,10 +199,10 @@ if __name__ == '__main__':
     # Drop the CaiTemporaryStore table to ensure it is using the
     # latest schema.
     inventory_dao.initialize(SQL_ENGINE)
-    tables = inventory_dao.BASE.metadata.tables
-    cai_table = tables.get(
+    INVENTORY_TABLES = inventory_dao.BASE.metadata.tables
+    CAI_TABLE = INVENTORY_TABLES.get(
         inventory_dao.CaiTemporaryStore.__tablename__)
-    cai_table.drop(SQL_ENGINE)
+    CAI_TABLE.drop(SQL_ENGINE)
 
     # Create tables if not exists.
     inventory_dao.initialize(SQL_ENGINE)
