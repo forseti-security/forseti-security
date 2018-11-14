@@ -90,6 +90,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',
          'rules_filename': 'log_sink_rules.yaml'},
+    'retention':
+        {'module_name': 'retention_scanner',
+         'class_name': 'RetentionScanner',
+         'rules_filename': 'retention_rules.yaml'},
     'service_account_key':
         {'module_name': 'service_account_key_scanner',
          'class_name': 'ServiceAccountKeyScanner',
