@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- # rules:
+
+# rules:
 #   - name: Buckets in Organization must have a retention shorter than 730 days.
 #     applies_to:
 #       - bucket
