@@ -185,7 +185,6 @@ class CsccNotifier(object):
             findings.append(finding)
         return findings
 
-
     def _send_findings_to_cscc(self, violations, organization_id=None,
                                source_id=None):
         """Send violations to CSCC directly via the CSCC API.
@@ -234,7 +233,6 @@ class CsccNotifier(object):
             except api_errors.ApiExecutionError:
                 LOGGER.exception('Encountered CSCC API error.')
                 continue
-
 
     def run(self, violations, gcs_path=None, mode=None, organization_id=None,
             source_id=None):
