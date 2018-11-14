@@ -684,6 +684,7 @@ rules:
   * **Description**: A list of restrictions to check for.
   * **Valid values**: Currently only supports `resourcemanager.projects.delete`.
 
+
 ## Location rules
 
 ### Rule definition
