@@ -7,7 +7,7 @@ Please follow the guidelines below, and the detailed steps in the referenced doc
 
 * Prerequisites
     * Make sure the host subnet has [Google Private IP Access ](https://cloud.google.com/vpc/docs/configure-private-google-access) turned on.
-    * Setup [Cloud NAT](https://cloud.google.com/nat/docs/using-nat) with a bastion host.
+    * Setup [Cloud NAT](https://cloud.google.com/nat/docs/using-nat) and a [bastion host](https://cloud.google.com/solutions/connecting-securely#bastion).
 * Install Forseti
 * Configure Cloud SQL
     * enable internal IP
