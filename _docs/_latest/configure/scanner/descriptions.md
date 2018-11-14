@@ -224,3 +224,10 @@ than the max age.
 For examples of how to define scanner rules for your service account keys, see the
 [`service_account_key_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/service_account_key_rules.yaml)
 file.
+
+## Retention scanner
+
+Allow customers to ensure the retention policies on their resources are set as intended.
+
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/retention_rules.yaml) rule file.
+
