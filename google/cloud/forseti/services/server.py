@@ -101,10 +101,8 @@ def serve(endpoint,
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers),
         interceptors=interceptors)
-
     # Init tracer config
     config.init_tracer()
-    
     for factory in factories:
         factory(config).create_and_register_service(server)
 

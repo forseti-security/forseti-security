@@ -18,13 +18,7 @@ import binascii
 import os
 import grpc
 
-
-from opencensus.trace import attributes_helper
 from opencensus.trace import execution_context
-
-from opencensus.trace.tracer import Tracer
-from opencensus.trace.exporters import stackdriver_exporter
-from opencensus.trace.ext.grpc import client_interceptor
 from google.cloud.forseti.common.opencensus import tracing
 
 from google.cloud.forseti.services.explain import explain_pb2

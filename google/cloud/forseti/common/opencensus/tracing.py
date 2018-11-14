@@ -55,7 +55,8 @@ def create_client_interceptor(endpoint):
     interceptor = client_interceptor.OpenCensusClientInterceptor(
         tracer,
         host_port=endpoint)
-    #LOGGER.info("after init: %s" % execution_context.get_opencensus_tracer().span_context)
+    #LOGGER.info("after init: %s"
+    # % execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 def create_server_interceptor(extras=True):
@@ -126,30 +127,29 @@ def create_exporter(transport=None):
         LOGGER.exception(
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
-
     
 def start_span(tracer, module, function, kind=None):
     """Start a span.
-    
+
     Args:
         tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         module (str): The module name.
         function (str): The function name.
         kind (~opencensus.trace.span.SpanKind, optional): The span kind.
     """
-    LOGGER.info("%s.%s: %s", module, function, tracer.span_context)
+    LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
     if kind is None:
         kind = SpanKind.SERVER
     span = tracer.start_span()
-    span.name = "[{}] {}".format(module, function)
+    span.name = '[{}] {}'.format(module, function)
     span.span_kind = kind
     tracer.add_attribute_to_current_span('module', module)
     tracer.add_attribute_to_current_span('function', function)
     return span
-    
+
 def end_span(tracer, **kwargs):
     """End a span.
-    
+
     Args:
         tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
@@ -170,7 +170,8 @@ def traced(cls):
 def trace_decorator(func):
     def wrapper(self, *args, **kwargs):
         tracer = execution_context.get_opencensus_tracer()
-        LOGGER.debug("%s.%s: %s", func.__module__, func.__name__, tracer.span_context)
+        LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
+                     tracer.span_context)
         if hasattr(self, 'config'):
             self.config.tracer = tracer
         else:
@@ -179,18 +180,19 @@ def trace_decorator(func):
     return wrapper
 
 def trace(_lambda=None, attr=None):
-    """Decorator to trace class methods. 
-    
-    This decorator expect the tracer is set in the class via an instance attribute, 
-    or is fetchable using a lambda function. 
-    
-    If nothing is passed to the decorator, it will use the execution context to get 
-    the tracer.
-    
+    """Decorator to trace class methods.
+
+    This decorator expect the tracer is set in the class via an instance
+    attribute, or is fetchable using a lambda function.
+
+    If nothing is passed to the decorator, it will use the execution context to
+    get the tracer.
+
     Args:
-        _lambda (func, optional): A lambda definition defining how to get the tracer.
+        _lambda (func, optional): A lambda definition defining how to get the
+                                 tracer.
         attr (str, optional): The attribute to fetch from the instance.
-        
+
     Returns:
         func: The decorated class method.
     """

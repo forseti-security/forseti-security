@@ -97,7 +97,7 @@ class Crawler(crawler.Crawler):
         """
         resource.accept(self)
         return self.config.progresser
-    
+
     @tracing.trace(lambda x: x.config.tracer)
     def visit(self, resource):
         """Handle a newly found resource.
@@ -109,8 +109,8 @@ class Crawler(crawler.Crawler):
             Exception: Reraises any exception.
         """
         attrs = {
-            'id': resource._data["name"],
-            'parent': resource._data.get("parent", None),
+            'id': resource._data['name'],
+            'parent': resource._data.get('parent', None),
             'type': resource.__class__.__name__,
             'success': True
         }
@@ -124,13 +124,12 @@ class Crawler(crawler.Crawler):
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())
             resource.get_kubernetes_service_config(self.get_client())
-            
             self.write(resource)
         except Exception as e:
             LOGGER.exception(e)
             progresser.on_error(e)
-            attrs["exception"] = e
-            attrs["success"] = False
+            attrs['exception'] = e
+            attrs['success'] = False
             raise
         else:
             progresser.on_new_object(resource)
@@ -313,7 +312,7 @@ def run_crawler(storage,
     """
     tracer = config.service_config.tracer
     LOGGER.info(tracer.span_context)
-    tracing.start_span(tracer, "inventory", "run_crawler")
+    tracing.start_span(tracer, 'inventory', 'run_crawler')
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
 
@@ -321,7 +320,10 @@ def run_crawler(storage,
     client = gcp.ApiClientImpl(client_config)
     resource = resources.from_root_id(client, root_id)
     if parallel:
-        crawler_config = ParallelCrawlerConfig(storage, progresser, client, tracer)
+        crawler_config = ParallelCrawlerConfig(storage,
+                                               progresser,
+                                               client,
+                                               tracer)
         crawler_impl = ParallelCrawler(crawler_config)
     else:
         crawler_config = CrawlerConfig(storage, progresser, client, tracer)

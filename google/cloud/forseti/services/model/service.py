@@ -20,7 +20,6 @@ from google.cloud.forseti.services.model import model_pb2_grpc
 from google.cloud.forseti.services.model import modeller
 from google.cloud.forseti.common.util import logger
 
-from google.cloud.forseti.common.opencensus import tracing
 
 LOGGER = logger.get_logger(__name__)
 

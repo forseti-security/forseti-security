@@ -22,8 +22,6 @@ from google.cloud.forseti.services.scanner.dao import initialize as init_storage
 from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
-from google.cloud.forseti.common.opencensus import tracing
-
 LOGGER = logger.get_logger(__name__)
 
 

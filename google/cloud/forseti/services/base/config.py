@@ -264,9 +264,7 @@ class ServiceConfig(AbstractServiceConfig):
         self.notifier_config = None
         self.global_config = None
         self.forseti_config = None
-        
         self.tracer = None
-
         self.update_lock = threading.RLock()
 
     def init_tracer(self):
