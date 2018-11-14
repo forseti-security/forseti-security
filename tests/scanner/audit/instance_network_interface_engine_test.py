@@ -100,7 +100,7 @@ class InstanceNetworkInterfaceTest(unittest_utils.ForsetiTestCase):
             create_list_of_instence_network_interface_obj_from_data())
         actual_violations_list = []
         for instance_network_interface in fake_ini_data:
-            violation = rules_engine.find_policy_violations(
+            violation = rules_engine.find_violations(
                 instance_network_interface)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
@@ -118,7 +118,7 @@ class InstanceNetworkInterfaceTest(unittest_utils.ForsetiTestCase):
             create_list_of_instence_network_interface_obj_from_data())
         actual_violations_list = []
         for instance_network_interface in fake_ini_data:
-            violation = rules_engine.find_policy_violations(
+            violation = rules_engine.find_violations(
                 instance_network_interface)
             actual_violations_list.extend(violation)
         self.assertEqual(1, len(actual_violations_list))
@@ -138,7 +138,7 @@ class InstanceNetworkInterfaceTest(unittest_utils.ForsetiTestCase):
             create_list_of_instence_network_interface_obj_from_data())
         actual_violations_list = []
         for instance_network_interface in fake_ini_data:
-            violation = rules_engine.find_policy_violations(
+            violation = rules_engine.find_violations(
                 instance_network_interface)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
@@ -155,7 +155,7 @@ class InstanceNetworkInterfaceTest(unittest_utils.ForsetiTestCase):
             create_list_of_instence_network_interface_obj_from_data())
         actual_violations_list = []
         for instance_network_interface in fake_ini_data:
-            violation = rules_engine.find_policy_violations(
+            violation = rules_engine.find_violations(
                 instance_network_interface)
             actual_violations_list.extend(violation)
         self.assertEqual(1, len(actual_violations_list))

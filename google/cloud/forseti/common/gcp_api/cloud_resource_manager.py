@@ -33,7 +33,8 @@ class CloudResourceManagerRepositoryClient(
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=100.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 credentials=None):
         """Constructor.
 
         Args:
@@ -42,6 +43,8 @@ class CloudResourceManagerRepositoryClient(
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            credentials (OAuth2Credentials): Credentials that will be used to
+                authenticate the API calls.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -56,7 +59,8 @@ class CloudResourceManagerRepositoryClient(
             'cloudresourcemanager', versions=['v1', 'v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter)
+            use_rate_limiter=use_rate_limiter,
+            credentials=credentials)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -268,7 +272,8 @@ class CloudResourceManagerClient(object):
         self.repository = CloudResourceManagerRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            use_rate_limiter=kwargs.get('use_rate_limiter', True),
+            credentials=kwargs.get('credentials', None))
 
     def get_project(self, project_id):
         """Get all the projects from organization.

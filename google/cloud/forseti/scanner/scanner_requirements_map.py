@@ -42,6 +42,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'enabled_apis_scanner',
          'class_name': 'EnabledApisScanner',
          'rules_filename': 'enabled_apis_rules.yaml'},
+    'external_project_access':
+        {'module_name': 'external_project_access_scanner',
+         'class_name': 'ExternalProjectAccessScanner',
+         'rules_filename': 'external_project_access_rules.yaml'},
     'firewall_rule':
         {'module_name': 'firewall_rules_scanner',
          'class_name': 'FirewallPolicyScanner',
@@ -66,6 +70,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'instance_network_interface_scanner',
          'class_name': 'InstanceNetworkInterfaceScanner',
          'rules_filename': 'instance_network_interface_rules.yaml'},
+    'ke_scanner':
+        {'module_name': 'ke_scanner',
+         'class_name': 'KeScanner',
+         'rules_filename': 'ke_scanner_rules.yaml'},
     'ke_version_scanner':
         {'module_name': 'ke_version_scanner',
          'class_name': 'KeVersionScanner',

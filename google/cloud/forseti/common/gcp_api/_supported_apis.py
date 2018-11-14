@@ -34,7 +34,6 @@ SUPPORTED_APIS = {
     'cloudasset': {
         'default_version': 'v1beta1',
         'supported_versions': ['v1beta1'],
-        'is_private_api': True,
     },
     'cloudbilling': {
         'default_version': 'v1',

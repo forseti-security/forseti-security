@@ -238,7 +238,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_org_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
         scanner.rules_engine.rule_book.org_res_rel_dao = mock_org_rel_dao
-        violations = scanner.rules_engine.find_policy_violations(
+        violations = scanner.rules_engine.find_violations(
             resource, [policy])
         expected_violations = [
             fre.RuleViolation(**v) for v in expected_violations_dicts]
@@ -279,7 +279,7 @@ class FirewallRulesScannerTest(unittest_utils.ForsetiTestCase):
         mock_org_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
         scanner.rules_engine.rule_book.org_res_rel_dao = mock_org_rel_dao
-        violations = scanner.rules_engine.find_policy_violations(
+        violations = scanner.rules_engine.find_violations(
             resource, policies)
         expected_violations_dicts = [
                 {

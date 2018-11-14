@@ -31,6 +31,7 @@ from tests.services.model.importer import importer_test
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util.threadpool import ThreadPool
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.base.config import InventoryConfig
@@ -38,6 +39,9 @@ from google.cloud.forseti.services.client import ClientComposition
 from google.cloud.forseti.services.dao import ModelManager
 from google.cloud.forseti.services.inventory.service import GrpcInventoryFactory
 from google.cloud.forseti.services.inventory.storage import Storage
+
+TEST_RESOURCE_DIR_PATH = os.path.join(
+    os.path.dirname(__file__), '../', '../', 'inventory', 'test_data')
 
 
 class TestServiceConfig(MockServerConfig):
@@ -47,12 +51,15 @@ class TestServiceConfig(MockServerConfig):
         self.engine = engine
         self.model_manager = ModelManager(self.engine)
         self.sessionmaker = db.create_scoped_sessionmaker(self.engine)
-        self.workers = ThreadPool(10)
+        self.workers = ThreadPool(1)
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
                                                 {},
-                                                '',
-                                                {})
+                                                0,
+                                                {'enabled': True,
+                                                 'gcs_path': 'gs://test-bucket'}
+                                               )
+        self.inventory_config.set_service_config(self)
 
     def run_in_background(self, func):
         """Stub."""
@@ -95,6 +102,26 @@ def main():
         date_time,
         'get_utc_now_datetime',
         return_value=fake_time).start()
+
+    # Ensure test data doesn't get deleted
+    mock_unlink = mock.patch.object(
+        os, 'unlink', autospec=True).start()
+    mock_copy_file_from_gcs = mock.patch.object(
+        file_loader,
+        'copy_file_from_gcs',
+        autospec=True).start()
+
+    # Mock copy_file_from_gcs to return correct test data file
+    def _copy_file_from_gcs(file_path, *args, **kwargs):
+        """Fake copy_file_from_gcs."""
+        if 'resource' in file_path:
+            return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                'mock_cai_resources.dump')
+        elif 'iam_policy' in file_path:
+            return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                'mock_cai_iam_policies.dump')
+
+    mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
 
     engine, tmpfile = create_test_engine_with_file()
     config = TestServiceConfig(engine)

@@ -38,7 +38,7 @@ def create_test_engine_with_file(enforce_fks=True):
         LOGGER.info('Creating database at %s', tmpfile)
         engine = create_engine('sqlite:///{}'.format(tmpfile),
                                sqlite_enforce_fks=enforce_fks,
-                               connect_args={'check_same_thread': False})
+                               connect_args={'check_same_thread': True})
         return engine, tmpfile
     finally:
         os.close(fd)

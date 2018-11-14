@@ -19,6 +19,7 @@ import mock
 from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine_with_file
+from tests.services.util.mock import MockServerConfig
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
@@ -32,6 +33,18 @@ LOGGER = logger.get_logger(__name__)
 
 TEST_RESOURCE_DIR_PATH = os.path.join(
     os.path.dirname(__file__), 'test_data')
+
+
+class FakeServerConfig(MockServerConfig):
+    """Fake server config."""
+
+    def __init__(self, engine):
+        """Initialize."""
+        self.engine = engine
+
+    def get_engine(self):
+        """Get engine."""
+        return self.engine
 
 
 class NullProgresser(Progresser):
@@ -108,6 +121,7 @@ class CrawlerTest(ForsetiTestCase):
             {},
             '',
             {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -173,6 +187,7 @@ class CrawlerTest(ForsetiTestCase):
             {},
             '',
             {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -212,6 +227,7 @@ class CrawlerTest(ForsetiTestCase):
             {},
             '',
             {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -262,6 +278,7 @@ class CrawlerTest(ForsetiTestCase):
             {},
             '',
             {})
+        config.set_service_config(FakeServerConfig('mock_engine'))
 
         with MemoryStorage() as storage:
             progresser = NullProgresser()
@@ -336,6 +353,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
                                                 {'enabled': True,
                                                  'gcs_path': 'gs://test-bucket'}
                                                )
+        self.inventory_config.set_service_config(FakeServerConfig(self.engine))
 
         # Ensure test data doesn't get deleted
         self.mock_unlink = mock.patch.object(
@@ -398,6 +416,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'compute_httpshealthcheck': {'resource': 1},
             'compute_license': {'resource': 1},
             'compute_project': {'resource': 2},
+            'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
             'compute_targethttpsproxy': {'resource': 1},
@@ -407,7 +426,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'compute_targettcpproxy': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'crm_org_policy': {'resource': 5},
-            'dataset': {'dataset_policy': 1, 'resource': 1},
+            'dataset': {'dataset_policy': 2, 'resource': 2},
             'disk': {'resource': 4},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
@@ -429,6 +448,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'organization': {'iam_policy': 1, 'resource': 1},
             'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
                         'resource': 4},
+            'pubsub_topic': {'iam_policy': 1, 'resource': 1},
             'role': {'resource': 5},
             'serviceaccount': {'iam_policy': 2, 'resource': 2},
             'serviceaccount_key': {'resource': 1},

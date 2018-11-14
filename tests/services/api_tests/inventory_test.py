@@ -44,6 +44,7 @@ class TestServiceConfig(MockServerConfig):
                                                 {},
                                                 '',
                                                 {})
+        self.inventory_config.set_service_config(self)
 
     def run_in_background(self, func):
         """Stub."""

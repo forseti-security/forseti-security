@@ -140,7 +140,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
 
@@ -154,7 +154,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
@@ -186,7 +186,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls:
-            violation = rules_engine.find_policy_violations(proj, bqt)
+            violation = rules_engine.find_violations(proj, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
 
@@ -199,7 +199,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
 
@@ -212,7 +212,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             [],
@@ -227,7 +227,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             [],
@@ -242,7 +242,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
@@ -257,7 +257,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST,
@@ -272,7 +272,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual(
             [fake_bigquery_scanner_data.BIGQUERY_EXPECTED_VIOLATION_LIST[0]],
@@ -287,7 +287,7 @@ class BigqueryRulesEngineTest(ForsetiTestCase):
         fake_bq_acls_data = create_list_of_bq_objects_from_data()
         actual_violations_list = []
         for bqt in fake_bq_acls_data:
-            violation = rules_engine.find_policy_violations(self.project, bqt)
+            violation = rules_engine.find_violations(self.project, bqt)
             actual_violations_list.extend(violation)
         self.assertEqual([], actual_violations_list)
 

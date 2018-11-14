@@ -150,7 +150,7 @@ class InstanceNetworkInterfaceScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding enforced networks violations...')
         for instance_network_interface in enforced_networks_data:
             LOGGER.debug('%s', instance_network_interface)
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 instance_network_interface)
             LOGGER.debug(violations)
             all_violations.extend(violations)

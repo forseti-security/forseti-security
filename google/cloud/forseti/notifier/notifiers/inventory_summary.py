@@ -100,12 +100,15 @@ class InventorySummary(object):
             LOGGER.exception('Unable to upload inventory summary in bucket %s:',
                              gcs_upload_path)
 
-    def _send_email(self, summary_data):
+    def _send_email(self, summary_data, details_data):
         """Send the email for inventory summary.
 
         Args:
             summary_data (list): Summary of inventory data as a list of dicts.
                 Example: [{resource_type, count}, {}, {}, ...]
+
+            details_data (list): Details of inventory data as a list of dicts.
+                Example: [[{resource_type, count}, {}, {}, ...]
         """
         LOGGER.debug('Sending inventory summary by email.')
 
@@ -120,14 +123,19 @@ class InventorySummary(object):
 
         inventory_index_datetime = (
             date_time.get_date_from_microtimestamp(self.inventory_index_id))
+
         timestamp = inventory_index_datetime.strftime(
             string_formats.DEFAULT_FORSETI_TIMESTAMP)
+
+        gsuite_dwd_status = self._get_gsuite_dwd_status(summary_data)
 
         email_content = email_util.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
-             'summary_data': summary_data})
+             'gsuite_dwd_status': gsuite_dwd_status,
+             'summary_data': summary_data,
+             'details_data': details_data})
 
         try:
             email_util.send(
@@ -139,6 +147,45 @@ class InventorySummary(object):
             LOGGER.debug('Inventory summary sent successfully by email.')
         except util_errors.EmailSendError:
             LOGGER.exception('Unable to send inventory summary email')
+
+    @staticmethod
+    def transform_to_template(data):
+        """Helper method to return sorted list of dicts.
+
+        Args:
+            data (dict): dictionary of resource_type: count pairs.
+
+        Returns:
+            list: Sorted data as a list of dicts.
+                Example: [{resource_type, count}, {}, {}, ...]
+        """
+        template_data = []
+        for key, value in data.iteritems():
+            template_data.append(dict(resource_type=key, count=value))
+        return sorted(template_data, key=lambda k: k['resource_type'])
+
+    @staticmethod
+    def _get_gsuite_dwd_status(summary_data):
+        """Get the status of whether G Suite DwD is enabled or not.
+
+        Args:
+            summary_data (list): Summary of inventory data as a list of dicts.
+                Example: [{resource_type, count}, {}, {}, ...]
+
+        Returns:
+            str: disabled or enabled.
+        """
+        gsuite_types = set(['gsuite_user'])
+        summary_data_keys = set()
+        if summary_data is None:
+            return 'disabled'
+
+        for resource in summary_data:
+            summary_data_keys.add(resource['resource_type'])
+
+        if gsuite_types.issubset(summary_data_keys):
+            return 'enabled'
+        return 'disabled'
 
     def _get_summary_data(self):
         """Get the summarized inventory data.
@@ -161,12 +208,32 @@ class InventorySummary(object):
                              'index id: %s.', self.inventory_index_id)
                 raise util_errors.NoDataError
 
-            summary_data = []
-            for key, value in summary.iteritems():
-                summary_data.append(dict(resource_type=key, count=value))
-            summary_data = (
-                sorted(summary_data, key=lambda k: k['resource_type']))
+            summary_data = self.transform_to_template(summary)
             return summary_data
+
+    def _get_details_data(self):
+        """Get the detailed summarized inventory data.
+
+        Returns:
+            list: Summary details of sorted inventory data as a list of dicts.
+                Example: [{resource_type, count}, {}, {}, ...]
+
+        Raises:
+            NoDataError: If summary details data is not found.
+        """
+        LOGGER.debug('Getting inventory summary details data.')
+        with self.service_config.scoped_session() as session:
+            inventory_index = (
+                session.query(InventoryIndex).get(self.inventory_index_id))
+
+            details = inventory_index.get_details(session)
+            if not details:
+                LOGGER.error('No inventory summary detail data found for '
+                             'inventory index id: %s.', self.inventory_index_id)
+                raise util_errors.NoDataError
+
+            details_data = self.transform_to_template(details)
+            return details_data
 
     def run(self):
         """Generate inventory summary."""
@@ -194,6 +261,7 @@ class InventorySummary(object):
 
         try:
             summary_data = self._get_summary_data()
+            details_data = self._get_details_data()
         except util_errors.NoDataError:
             LOGGER.exception('Inventory summary can not be created because '
                              'no summary data is found for index id: %s.',
@@ -201,9 +269,11 @@ class InventorySummary(object):
             return
 
         if is_gcs_summary_enabled:
-            self._upload_to_gcs(summary_data)
+            summary_and_details_data = sorted((summary_data + details_data),
+                                              key=lambda k: k['resource_type'])
+            self._upload_to_gcs(summary_and_details_data)
 
         if is_email_summary_enabled:
-            self._send_email(summary_data)
+            self._send_email(summary_data, details_data)
 
         LOGGER.info('Completed running inventory summary.')
