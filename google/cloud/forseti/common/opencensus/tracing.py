@@ -127,7 +127,7 @@ def create_exporter(transport=None):
         LOGGER.exception(
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
-    
+
 def start_span(tracer, module, function, kind=None):
     """Start a span.
 
@@ -136,6 +136,9 @@ def start_span(tracer, module, function, kind=None):
         module (str): The module name.
         function (str): The function name.
         kind (~opencensus.trace.span.SpanKind, optional): The span kind.
+
+    Returns:
+        span: (~opencensus.trace.span): The span object
     """
     LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
     if kind is None:
@@ -159,15 +162,23 @@ def end_span(tracer, **kwargs):
     tracer.end_span()
 
 def set_attributes(tracer, **kwargs):
+    """Sets attributes
+
+    Args:
+        tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
+        kwargs (dict): A set of attributes to set to the current span.
+    """
     for k, v in kwargs.items():
         tracer.add_attribute_to_current_span(k, v)
 
 def traced(cls):
+    """Class decorator"""
     for name, fn in inspect.getmembers(cls, inspect.ismethod):
         setattr(cls, name, trace_decorator(fn))
     return cls
 
 def trace_decorator(func):
+    """ Method decorator to trace a method"""
     def wrapper(self, *args, **kwargs):
         tracer = execution_context.get_opencensus_tracer()
         LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
@@ -206,7 +217,7 @@ def trace(_lambda=None, attr=None):
                 else: # no arg passed to decorator, getting tracer from context
                     tracer = execution_context.get_opencensus_tracer()
                 module_str = func.__module__.split('.')[-1]
-                span = start_span(tracer, module_str, func.__name__)
+                start_span(tracer, module_str, func.__name__)
             result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
                 end_span(tracer, result=result)

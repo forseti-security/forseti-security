@@ -52,6 +52,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         Args:
             scanner_api (Scanner): Scanner api implementation.
             service_config (ServiceConfig): Forseti 2.0 service configs.
+            tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object
         """
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api

@@ -40,6 +40,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
+            tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object
             variables (dict): config variables
         """
         super(CrawlerConfig, self).__init__()
@@ -62,6 +63,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
+            tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object
             threads (int): how many threads to use
             variables (dict): config variables
         """
@@ -174,7 +176,7 @@ class Crawler(crawler.Crawler):
         self.config.storage.warning(warning_message)
         self.config.progresser.on_warning(error)
 
-    @tracing.trace(lambda x: x.config.tracer)    
+    @tracing.trace(lambda x: x.config.tracer)
     def update(self, resource):
         """Update the row of an existing resource
 
@@ -294,7 +296,7 @@ class ParallelCrawler(Crawler):
             LOGGER.exception(e)
             self.config.progresser.on_error(e)
             raise
- 
+
 def run_crawler(storage,
                 progresser,
                 config,

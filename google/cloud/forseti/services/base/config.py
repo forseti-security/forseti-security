@@ -268,6 +268,7 @@ class ServiceConfig(AbstractServiceConfig):
         self.update_lock = threading.RLock()
 
     def init_tracer(self):
+        """Fetch tracer from the interceptors and initialize it"""
         if tracing.OPENCENSUS_ENABLED:
             self.tracer = tracing.execution_context.get_opencensus_tracer()
             LOGGER.info(self.tracer.span_context)
