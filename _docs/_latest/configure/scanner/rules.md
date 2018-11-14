@@ -645,7 +645,7 @@ rules:
     ```
     project_01:
     - network_01
-
+    ```
 
 ## Lien rules
 
