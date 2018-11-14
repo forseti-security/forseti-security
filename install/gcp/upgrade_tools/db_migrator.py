@@ -196,16 +196,17 @@ if __name__ == '__main__':
     SQL_ENGINE = general_dao.create_engine(DB_CONN_STR,
                                            pool_recycle=3600)
 
+    # Drop the CaiTemporaryStore table to ensure it is using the
+    # latest schema.
+    inventory_dao.initialize(SQL_ENGINE)
+    INVENTORY_TABLES = inventory_dao.BASE.metadata.tables
+    CAI_TABLE = INVENTORY_TABLES.get(
+        inventory_dao.CaiTemporaryStore.__tablename__)
+    CAI_TABLE.drop(SQL_ENGINE)
+
     # Create tables if not exists.
     inventory_dao.initialize(SQL_ENGINE)
     scanner_dao.initialize(SQL_ENGINE)
-
-    # Drop and recreate the CaiTemporaryStore table to ensure it is using the
-    # latest schema.
-    # pylint: disable=no-member
-    inventory_dao.CaiTemporaryStore.__table__.drop(SQL_ENGINE)
-    inventory_dao.CaiTemporaryStore.__table__.create(SQL_ENGINE)
-    # pylint: enable=no-member
 
     # Find all the child classes inherited from declarative base class.
     SCANNER_DAO_CLASSES = _find_subclasses(scanner_dao.BASE)
