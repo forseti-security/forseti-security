@@ -40,7 +40,7 @@ class CrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
-            tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object
+            tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
             variables (dict): config variables
         """
         super(CrawlerConfig, self).__init__()
@@ -63,7 +63,7 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
             progresser (QueueProgresser): The progresser implemented using
                 a queue
             api_client (ApiClientImpl): GCP API client
-            tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object
+            tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
             threads (int): how many threads to use
             variables (dict): config variables
         """

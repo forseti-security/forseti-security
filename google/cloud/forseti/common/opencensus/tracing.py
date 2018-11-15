@@ -132,13 +132,13 @@ def start_span(tracer, module, function, kind=None):
     """Start a span.
 
     Args:
-        tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
+        tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         module (str): The module name.
         function (str): The function name.
-        kind (~opencensus.trace.span.SpanKind, optional): The span kind.
+        kind (opencensus.trace.span.SpanKind): The span kind.
 
     Returns:
-        span: (~opencensus.trace.span): The span object
+        span: (opencensus.trace.span): The span object
     """
     LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
     if kind is None:
@@ -154,7 +154,7 @@ def end_span(tracer, **kwargs):
     """End a span.
 
     Args:
-        tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
+        tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
     LOGGER.info(tracer.span_context)
@@ -165,21 +165,43 @@ def set_attributes(tracer, **kwargs):
     """Sets attributes
 
     Args:
-        tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object.
+        tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
-    for k, v in kwargs.items():
-        tracer.add_attribute_to_current_span(k, v)
+    for key, value in kwargs.items():
+        tracer.add_attribute_to_current_span(key, value)
 
 def traced(cls):
-    """Class decorator"""
-    for name, fn in inspect.getmembers(cls, inspect.ismethod):
-        setattr(cls, name, trace_decorator(fn))
+    """Class decorator
+
+    Args:
+        cls (object): Class
+    Returns:
+        object: Class
+    """
+    for name, func in inspect.getmembers(cls, inspect.ismethod):
+        setattr(cls, name, trace_decorator(func))
     return cls
 
 def trace_decorator(func):
-    """ Method decorator to trace a method"""
+    """ Method decorator to trace a method
+
+    Args:
+        func (func): class method to be traced
+    Returns:
+        wrapper: decorated class method
+    """
+
     def wrapper(self, *args, **kwargs):
+        """ Wrapper method
+
+        Args:
+            *args: argument list passed to a function
+            **kwargs: variable number of arguments dictionary passed
+                to a function
+        Returns:
+            func: Function
+        """
         tracer = execution_context.get_opencensus_tracer()
         LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
                      tracer.span_context)
@@ -200,15 +222,29 @@ def trace(_lambda=None, attr=None):
     get the tracer.
 
     Args:
-        _lambda (func, optional): A lambda definition defining how to get the
+        _lambda (func): A lambda definition defining how to get the
                                  tracer.
-        attr (str, optional): The attribute to fetch from the instance.
+        attr (str): The attribute to fetch from the instance.
 
     Returns:
         func: The decorated class method.
     """
     def decorator(func):
+        """Method decorator
+
+        Args:
+            func (func): Function to be decorated
+        Returns:
+            func: Decorated function
+        """
         def wrapper(self, *args, **kwargs):
+            """Wrapper class
+
+            Args:
+                *args: argument list passed to a function
+                **kwargs: variable number of arguments dictionary passed
+                to a function
+            """
             if OPENCENSUS_ENABLED:
                 if _lambda is not None:
                     tracer = _lambda(self)

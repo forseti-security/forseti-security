@@ -50,7 +50,7 @@ class GrpcModeller(model_pb2_grpc.ModellerServicer):
 
         Args:
             modeller_api (object): model library
-            tracer (~opencensus.trace.tracer.Tracer): OpenCensus tracer object
+            tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object
         """
         super(GrpcModeller, self).__init__()
         self.modeller = modeller_api
