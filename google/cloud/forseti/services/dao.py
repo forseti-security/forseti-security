@@ -2231,10 +2231,12 @@ def create_engine(*args, **kwargs):
 
     sqlite_enforce_fks = 'sqlite_enforce_fks'
     forward_kwargs = {k: v for k, v in kwargs.iteritems()}
+    forward_kwargs['pool_size'] = 50
     if sqlite_enforce_fks in forward_kwargs:
         del forward_kwargs[sqlite_enforce_fks]
+        del forward_kwargs['pool_size']
 
-    engine = sqlalchemy_create_engine(*args, pool_size=50, **forward_kwargs)
+    engine = sqlalchemy_create_engine(*args, **forward_kwargs)
     dialect = engine.dialect.name
     if dialect == 'sqlite':
         @event.listens_for(engine, 'connect')
