@@ -134,7 +134,7 @@ class ScannerClient(ForsetiClient):
         Returns:
             proto: the returned proto message.
         """
-        request = scanner_pb2.RunRequest(handle=scanner_name)
+        request = scanner_pb2.RunRequest(scanner_name=scanner_name)
         return self.stub.Run(request,
                              metadata=self.metadata())
 
