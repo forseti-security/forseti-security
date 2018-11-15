@@ -111,18 +111,3 @@ class ScannerBuilderTest(ForsetiTestCase):
         expected_pipelines = ['BucketsAclScanner']
         for pipeline in runnable_pipelines:
             self.assertTrue(type(pipeline).__name__ in expected_pipelines)
-
-    @mock.patch('google.cloud.forseti.scanner.scanners.external_project_access_scanner.epa_rules_engine',
-                autospec=True)
-    def testCanBuildOneSpecificScanner(self, mock_rules_engine):
-        builder = scanner_builder.ScannerBuilder(
-            FAKE_GLOBAL_CONFIGS, {},
-            mock.MagicMock(),
-            '',
-            FAKE_TIMESTAMP,
-            'external_project_access_scanner')
-        runnable_pipelines = builder.build()
-
-        expected_scanner_name = 'ExternalProjectAccessScanner'
-        actual_scanner_name = type(runnable_pipelines[0]).__name__
-        self.assertEquals(expected_scanner_name, actual_scanner_name)
