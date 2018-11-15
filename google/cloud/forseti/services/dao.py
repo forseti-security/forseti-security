@@ -2234,7 +2234,7 @@ def create_engine(*args, **kwargs):
     if sqlite_enforce_fks in forward_kwargs:
         del forward_kwargs[sqlite_enforce_fks]
 
-    engine = sqlalchemy_create_engine(*args, **forward_kwargs)
+    engine = sqlalchemy_create_engine(*args, pool_size=50, **forward_kwargs)
     dialect = engine.dialect.name
     if dialect == 'sqlite':
         @event.listens_for(engine, 'connect')
