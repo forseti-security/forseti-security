@@ -125,16 +125,13 @@ class ScannerClient(ForsetiClient):
         return echo == data
 
     @require_model
-    def run(self, scanner_name):
+    def run(self):
         """Runs the scanner
-
-        Args:
-            scanner_name (String): name of the scanner specified to run
 
         Returns:
             proto: the returned proto message.
         """
-        request = scanner_pb2.RunRequest(scanner_name=scanner_name)
+        request = scanner_pb2.RunRequest()
         return self.stub.Run(request,
                              metadata=self.metadata())
 
