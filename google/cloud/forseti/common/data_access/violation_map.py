@@ -48,5 +48,4 @@ VIOLATION_RESOURCES = {
     'LOG_SINK_VIOLATION': 'log_sink_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
-    'EXTERNAL_PROJECT_ACCESS_VIOLATION': 'external_project_access_violations'
 }
