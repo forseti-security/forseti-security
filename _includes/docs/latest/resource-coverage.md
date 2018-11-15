@@ -6,6 +6,7 @@
 | [Billing Accounts](https://cloud.google.com/billing/reference/rest/v1/billingAccounts) |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) |
 | [Bucket Access Controls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) |
+| [Cloud Forwarding Rules](https://cloud.google.com/sdk/gcloud/reference/compute/forwarding-rules/) |
 | [Cloud IAM GrantableRoles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |
 | [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Cloud APIs Configuration](https://cloud.google.com/apis/) |
