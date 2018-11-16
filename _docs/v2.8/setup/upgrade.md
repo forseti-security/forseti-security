@@ -744,7 +744,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-8` for Forseti client.
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.7.0 to 2.8.0" content=upgrading_2_7_0_to_2_8_0 uid=8 %}
+{% include site/zippy/item.html title="Upgrading 2.7.0 to 2.8.0" content=upgrading_2_7_0_to_2_8_0 uid=9 %}
 
 {% capture deployment_manager_error %}
 
