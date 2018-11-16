@@ -1,0 +1,438 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.scanner.dao module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.scanner.dao">
+<span id="google-cloud-forseti-services-scanner-dao-module"></span><h1>google.cloud.forseti.services.scanner.dao module<a class="headerlink" href="#module-google.cloud.forseti.services.scanner.dao" title="Permalink to this headline">¶</a></h1>
+<p>Database access objects for Forseti Scanner.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex">
+<em class="property">class </em><code class="descname">ScannerIndex</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ScannerIndex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Represents a scanner run.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ScannerIndex.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object string representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">String representation of the object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex._sa_class_manager">
+<code class="descname">_sa_class_manager</code><em class="property"> = {'completed_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8590&gt;, 'created_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e84d0&gt;, 'id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8290&gt;, 'inventory_index_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8410&gt;, 'message': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8950&gt;, 'scanner_index_errors': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8890&gt;, 'scanner_index_warnings': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e87d0&gt;, 'scanner_status': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8650&gt;, 'schema_version': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8710&gt;}</em><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex._sa_class_manager" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.add_warning">
+<code class="descname">add_warning</code><span class="sig-paren">(</span><em>session</em>, <em>warning</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ScannerIndex.add_warning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.add_warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a warning to the scanner.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> (<em>object</em>) – session object to work on.</li>
+<li><strong>warning</strong> (<em>str</em>) – Warning message</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.complete">
+<code class="descname">complete</code><span class="sig-paren">(</span><em>status='SUCCESS'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ScannerIndex.complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.complete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mark the scanner as completed with a final scanner_status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>status</strong> (<em>str</em>) – Final scanner_status.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.completed_at_datetime">
+<code class="descname">completed_at_datetime</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.completed_at_datetime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="classmethod">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.create">
+<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>inv_index_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ScannerIndex.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new scanner index row.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>inv_index_id</strong> (<em>str</em>) – Id of the inventory index.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">ScannerIndex row object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.created_at_datetime">
+<code class="descname">created_at_datetime</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.created_at_datetime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.id">
+<code class="descname">id</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.inventory_index_id">
+<code class="descname">inventory_index_id</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.inventory_index_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.message">
+<code class="descname">message</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.scanner_index_errors">
+<code class="descname">scanner_index_errors</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.scanner_index_errors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.scanner_index_warnings">
+<code class="descname">scanner_index_warnings</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.scanner_index_warnings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.scanner_status">
+<code class="descname">scanner_status</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.scanner_status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.schema_version">
+<code class="descname">schema_version</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.schema_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.ScannerIndex.set_error">
+<code class="descname">set_error</code><span class="sig-paren">(</span><em>session</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ScannerIndex.set_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ScannerIndex.set_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate a broken scanner run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>session</strong> (<em>object</em>) – session object to work on.</li>
+<li><strong>message</strong> (<em>str</em>) – Error message to set.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation">
+<em class="property">class </em><code class="descname">Violation</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#Violation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>Row entry for a violation.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.__repr__">
+<code class="descname">__repr__</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#Violation.__repr__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.__repr__" title="Permalink to this definition">¶</a></dt>
+<dd><p>String representation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string representation of the Violation row entry.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation._sa_class_manager">
+<code class="descname">_sa_class_manager</code><em class="property"> = {'created_at_datetime': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8b90&gt;, 'full_name': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8c50&gt;, 'id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8a10&gt;, 'resource_data': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8d10&gt;, 'resource_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8e90&gt;, 'resource_name': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8dd0&gt;, 'resource_type': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0e8f50&gt;, 'rule_index': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0f3050&gt;, 'rule_name': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0f3110&gt;, 'scanner_index_id': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0f31d0&gt;, 'violation_data': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0f3290&gt;, 'violation_hash': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0f3350&gt;, 'violation_type': &lt;sqlalchemy.orm.attributes.InstrumentedAttribute object at 0x7f097d0f3410&gt;}</em><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation._sa_class_manager" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.created_at_datetime">
+<code class="descname">created_at_datetime</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.created_at_datetime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.full_name">
+<code class="descname">full_name</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.full_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.get_schema_update_actions">
+<em class="property">static </em><code class="descname">get_schema_update_actions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#Violation.get_schema_update_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.get_schema_update_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maintain all the schema changes for this table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A mapping of Action: Column.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.id">
+<code class="descname">id</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.resource_data">
+<code class="descname">resource_data</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.resource_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.resource_id">
+<code class="descname">resource_id</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.resource_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.resource_name">
+<code class="descname">resource_name</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.resource_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.resource_type">
+<code class="descname">resource_type</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.resource_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.rule_index">
+<code class="descname">rule_index</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.rule_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.rule_name">
+<code class="descname">rule_name</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.rule_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.scanner_index_id">
+<code class="descname">scanner_index_id</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.scanner_index_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.violation_data">
+<code class="descname">violation_data</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.violation_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.violation_hash">
+<code class="descname">violation_hash</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.violation_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.dao.Violation.violation_type">
+<code class="descname">violation_type</code><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.Violation.violation_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.scanner.dao.ViolationAccess">
+<em class="property">class </em><code class="descname">ViolationAccess</code><span class="sig-paren">(</span><em>session</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ViolationAccess"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ViolationAccess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Facade for violations, implement APIs against violations table.</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.ViolationAccess.create">
+<code class="descname">create</code><span class="sig-paren">(</span><em>violations</em>, <em>scanner_index_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ViolationAccess.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ViolationAccess.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save violations to the db table.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>violations</strong> (<em>list</em>) – A list of violations.</li>
+<li><strong>scanner_index_id</strong> (<em>int</em>) – id of the <cite>ScannerIndex</cite> row for this
+scanner run.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.dao.ViolationAccess.list">
+<code class="descname">list</code><span class="sig-paren">(</span><em>inv_index_id=None</em>, <em>scanner_index_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#ViolationAccess.list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.ViolationAccess.list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List all violations from the db table.</p>
+<dl class="docutils">
+<dt>If</dt>
+<dd><ul class="first last simple">
+<li>neither index is passed we return all violations.</li>
+<li>the <cite>inv_index_id</cite> is passed the violations from all scanner
+runs for that inventory index will be returned.</li>
+<li>the <cite>scanner_index_id</cite> is passed the violations from that
+specific scanner run will be returned.</li>
+</ul>
+</dd>
+</dl>
+<p>NOTA BENE: do <em>NOT</em> call this method with both indices!</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>inv_index_id</strong> (<em>str</em>) – Id of the inventory index.</li>
+<li><strong>scanner_index_id</strong> (<em>int</em>) – Id of the scanner index.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of Violation row entry objects.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">list</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – if called with both the inventory and the scanner index</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.scanner.dao._create_violation_hash">
+<code class="descname">_create_violation_hash</code><span class="sig-paren">(</span><em>violation_full_name</em>, <em>resource_data</em>, <em>violation_data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#_create_violation_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao._create_violation_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a hash of violation data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>violation_full_name</strong> (<em>str</em>) – The full name of the violation.</li>
+<li><strong>resource_data</strong> (<em>str</em>) – The inventory data.</li>
+<li><strong>violation_data</strong> (<em>dict</em>) – A violation.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The resulting hex digest or ‘’ if we can’t successfully create
+a hash.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.scanner.dao.convert_sqlalchemy_object_to_dict">
+<code class="descname">convert_sqlalchemy_object_to_dict</code><span class="sig-paren">(</span><em>sqlalchemy_obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#convert_sqlalchemy_object_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.convert_sqlalchemy_object_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a sqlalchemy row/record object to a dictionary.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sqlalchemy_obj</strong> (<em>sqlalchemy_object</em>) – A sqlalchemy row/record object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">A dict of sqlalchemy object’s attributes.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.scanner.dao.get_latest_scanner_index_id">
+<code class="descname">get_latest_scanner_index_id</code><span class="sig-paren">(</span><em>session</em>, <em>inv_index_id</em>, <em>index_state=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#get_latest_scanner_index_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.get_latest_scanner_index_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return last <cite>ScannerIndex</cite> row with the given state or <cite>None</cite>.</p>
+<p>Either return the latest <cite>ScannerIndex</cite> row where the <cite>scanner_status</cite>
+matches the given <cite>index_state</cite> parameter (if passed) or the latest row
+that represents a (partially) successful scanner run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>session</strong> (<em>object</em>) – session object to work on.</li>
+<li><strong>inv_index_id</strong> (<em>str</em>) – Id of the inventory index.</li>
+<li><strong>index_state</strong> (<em>str</em>) – we want the latest <cite>ScannerIndex</cite> with this state</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the latest <cite>ScannerIndex</cite> row or <cite>None</cite></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">sqlalchemy_object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.scanner.dao.initialize">
+<code class="descname">initialize</code><span class="sig-paren">(</span><em>engine</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create all tables in the database if not existing.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>engine</strong> (<em>object</em>) – Database engine to operate on.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="google.cloud.forseti.services.scanner.dao.map_by_resource">
+<code class="descname">map_by_resource</code><span class="sig-paren">(</span><em>violation_rows</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/dao.html#map_by_resource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.dao.map_by_resource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a map of violation types to violations of that resource.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>violation_rows</strong> (<em>list</em>) – A list of dict of violation data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>A dict of violation types mapped to the list of corresponding</dt>
+<dd>violation types, i.e. { resource =&gt; [violation_data…] }.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+

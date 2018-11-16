@@ -1,0 +1,133 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.services.scanner.service module"
+
+
+
+hide:
+  right_sidebar: true
+---
+<div class="section" id="module-google.cloud.forseti.services.scanner.service">
+<span id="google-cloud-forseti-services-scanner-service-module"></span><h1>google.cloud.forseti.services.scanner.service module<a class="headerlink" href="#module-google.cloud.forseti.services.scanner.service" title="Permalink to this headline">¶</a></h1>
+<p>Scanner gRPC service.</p>
+<dl class="class">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScanner">
+<em class="property">class </em><code class="descname">GrpcScanner</code><span class="sig-paren">(</span><em>scanner_api</em>, <em>service_config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">google.cloud.forseti.services.scanner.scanner_pb2_grpc.ScannerServicer</span></code></p>
+<p>IAM Scanner gRPC implementation.</p>
+<dl class="attribute">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScanner.HANDLE_KEY">
+<code class="descname">HANDLE_KEY</code><em class="property"> = 'handle'</em><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScanner.HANDLE_KEY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScanner.Ping">
+<code class="descname">Ping</code><span class="sig-paren">(</span><em>request</em>, <em>_</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScanner.Ping"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScanner.Ping" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the capability to check for service availability.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> (<em>PingRequest</em>) – The ping request.</li>
+<li><strong>_</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The response to the ping request.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">PingReply</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScanner.Run">
+<code class="descname">Run</code><span class="sig-paren">(</span><em>_</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScanner.Run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScanner.Run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run scanner.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>_</strong> (<em>RunRequest</em>) – The run request.</li>
+<li><strong>context</strong> (<em>object</em>) – Context of the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Yields:</th><td class="field-body"><p class="first last"><em>Progress</em> – The progress of the scanner.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScanner._get_handle">
+<code class="descname">_get_handle</code><span class="sig-paren">(</span><em>context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScanner._get_handle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScanner._get_handle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the handle associated with the gRPC call.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>context</strong> (<em>object</em>) – Context of the request.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The model handle.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScanner._run_scanner">
+<code class="descname">_run_scanner</code><span class="sig-paren">(</span><em>model_name</em>, <em>progress_queue</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScanner._run_scanner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScanner._run_scanner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run scanner.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>model_name</strong> (<em>str</em>) – Model name.</li>
+<li><strong>progress_queue</strong> (<em>Queue</em>) – Progress queue.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScannerFactory">
+<em class="property">class </em><code class="descname">GrpcScannerFactory</code><span class="sig-paren">(</span><em>config</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScannerFactory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScannerFactory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Factory class for Scanner service gRPC interface</p>
+<dl class="method">
+<dt id="google.cloud.forseti.services.scanner.service.GrpcScannerFactory.create_and_register_service">
+<code class="descname">create_and_register_service</code><span class="sig-paren">(</span><em>server</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/google/cloud/forseti/services/scanner/service.html#GrpcScannerFactory.create_and_register_service"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#google.cloud.forseti.services.scanner.service.GrpcScannerFactory.create_and_register_service" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and register the IAM Scanner service.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>server</strong> (<em>object</em>) – The server object.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The service object.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
