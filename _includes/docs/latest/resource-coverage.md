@@ -6,11 +6,14 @@
 | [Billing Accounts](https://cloud.google.com/billing/reference/rest/v1/billingAccounts) |
 | [Buckets](https://cloud.google.com/storage/docs/json_api/v1/buckets#resource) |
 | [Bucket Access Controls](https://cloud.google.com/storage/docs/json_api/v1/bucketAccessControls#resource) |
-| [Cloud IAM GrantableRoles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |
-| [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Cloud APIs Configuration](https://cloud.google.com/apis/) |
 | [Cloud Audit Logging Configuration](https://cloud.google.com/iap/docs/audit-log-howto) |
+| [Cloud IAM Grantable Roles](https://cloud.google.com/iam/reference/rest/v1/roles/queryGrantableRoles) |
+| [Cloud IAM Organization Roles](https://cloud.google.com/iam/reference/rest/v1/organizations.roles) |
+| [Cloud IAM Project Roles](https://cloud.google.com/iam/reference/rest/v1/projects.roles) |
+| [Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/access-control) |
 | [Cloud SQL](https://cloud.google.com/sql/docs/mysql/admin-api/v1beta4/instances#resource) |
+| [Cloud Storage IAM Policies](https://cloud.google.com/storage/docs/access-control/iam-reference) |
 | [Compute Engine AutoScalers](https://cloud.google.com/compute/docs/reference/rest/v1/autoscalers) |
 | [Compute Engine Backend Buckets](https://cloud.google.com/compute/docs/reference/rest/v1/backendBuckets) |
 | [Compute Engine Backend Services](https://cloud.google.com/compute/docs/reference/latest/backendServices) |
@@ -23,6 +26,7 @@
 | [Compute Engine Instance Group Managers](https://cloud.google.com/compute/docs/reference/latest/instanceGroupManagers) |
 | [Compute Engine Instance Templates](https://cloud.google.com/compute/docs/reference/latest/instanceTemplates) |
 | [Compute Engine Licenses](https://cloud.google.com/compute/docs/reference/rest/v1/licenses/get) |
+| [Compute Engine Routers](https://cloud.google.com/compute/docs/reference/rest/v1/routers) |
 | [Compute Engine Snapshots](https://cloud.google.com/compute/docs/reference/latest/snapshots) |
 | [Compute Engine SSL Certificates](https://cloud.google.com/compute/docs/reference/rest/v1/sslCertificates) |
 | [Compute Engine Target Http Proxies](https://cloud.google.com/compute/docs/reference/rest/v1/targetHttpProxies) |
@@ -37,10 +41,10 @@
 | [Firewalls](https://cloud.google.com/compute/docs/reference/latest/firewalls) |
 | [Folders](https://cloud.google.com/resource-manager/reference/rest/v2beta1/folders) |
 | [Folders Cloud IAM Policies](https://cloud.google.com/iam/reference/rest/v1/Policy) |
-| [Kubernetes Engine Configurations](https://cloud.google.com/kubernetes-engine/docs/reference/rest) |
 | [G Suite Groups](https://developers.google.com/admin-sdk/directory/v1/reference/groups) |
 | [G Suite Group Members](https://developers.google.com/admin-sdk/directory/v1/reference/members) |
 | [G Suite Users](https://developers.google.com/admin-sdk/directory/v1/reference/users) |
+| [Kubernetes Engine Configurations](https://cloud.google.com/kubernetes-engine/docs/reference/rest) |
 | [Load Balancer Forwarding Rules](https://cloud.google.com/compute/docs/reference/latest/forwardingRules#resource) |
 | [Networks](https://cloud.google.com/compute/docs/reference/rest/v1/networks) |
 | [Organizations](https://cloud.google.com/resource-manager/reference/rest/v1/organizations) |
