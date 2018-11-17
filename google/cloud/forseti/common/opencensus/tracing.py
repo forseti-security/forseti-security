@@ -175,9 +175,9 @@ def traced(cls):
     """Class decorator
 
     Args:
-        cls (object): Class
+        cls (object): Class to decorate
     Returns:
-        object: Class
+        object: Decorated class
     """
     for name, func in inspect.getmembers(cls, inspect.ismethod):
         setattr(cls, name, trace_decorator(func))
@@ -187,17 +187,17 @@ def trace_decorator(func):
     """ Method decorator to trace a method
 
     Args:
-        func (func): class method to be traced
+        func (func): Class method to be traced
     Returns:
-        wrapper: decorated class method
+        wrapper: Decorated class method
     """
 
     def wrapper(self, *args, **kwargs):
         """ Wrapper method
 
         Args:
-            *args: argument list passed to a function
-            **kwargs: variable number of arguments dictionary passed
+            *args: Argument list passed to a function
+            **kwargs: Variable number of arguments dictionary passed
                 to a function
         Returns:
             func: Function
@@ -241,8 +241,8 @@ def trace(_lambda=None, attr=None):
             """Wrapper class
 
             Args:
-                *args: argument list passed to a function
-                **kwargs: variable number of arguments dictionary passed
+                *args: Argument list passed to a function
+                **kwargs: Variable number of arguments dictionary passed
                 to a function
             """
             if OPENCENSUS_ENABLED:

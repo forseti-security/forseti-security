@@ -18,7 +18,6 @@ import binascii
 import os
 import grpc
 
-from opencensus.trace import execution_context
 from google.cloud.forseti.common.opencensus import tracing
 
 from google.cloud.forseti.services.explain import explain_pb2
@@ -394,8 +393,6 @@ class InventoryClient(ForsetiClient):
         Returns:
             proto: the returned proto message of create inventory
         """
-        _tracer = execution_context.get_opencensus_tracer()
-        print _tracer.__dict__
         request = inventory_pb2.CreateRequest(
             background=background,
             model_name=import_as,
