@@ -913,3 +913,6 @@ rules:
   * **Description**: The maximum number of days for which your data
     can be retained. Remove this entry if it is not needed.
   * **Valid values**: Integer, number of days.
+
+    *Tip*: The rule must include a minimum_retention, maximum_retention or both.
+  
