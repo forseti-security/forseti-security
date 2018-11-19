@@ -207,11 +207,11 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
         results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
-        # Expect only the resource with the shorter name to get imported.
+        # Expect only the resource with the short name got imported.
         expected_results = 1
         self.assertEqual(results, expected_results)
 
-        # Validate resource with shorter name is in database.
+        # Validate resource with short name is in database.
         resource = storage.CaiDataAccess.fetch_cai_asset(
             storage.ContentTypes.resource,
             'google.spanner.Instance',
