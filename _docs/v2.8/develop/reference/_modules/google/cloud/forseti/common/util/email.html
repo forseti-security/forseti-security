@@ -1,0 +1,199 @@
+---
+layout: docs
+
+title: "google.cloud.forseti.common.util.email"
+
+
+
+hide:
+  right_sidebar: true
+---
+<h1>Source code for google.cloud.forseti.common.util.email</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2017 The Forseti Security Authors. All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#    http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Email utility module.&quot;&quot;&quot;</span>
+
+<span class="c1"># The pre-commit linter will complain about useless disable of no-member, but</span>
+<span class="c1"># this is needed because quiet the Sendgrid no-member error on Travis.</span>
+<span class="c1"># pylint: disable=no-member,useless-suppression</span>
+
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">urllib2</span>
+
+<span class="kn">import</span> <span class="nn">jinja2</span>
+
+<span class="kn">import</span> <span class="nn">sendgrid</span>
+<span class="kn">from</span> <span class="nn">sendgrid.helpers</span> <span class="k">import</span> <span class="n">mail</span>
+<span class="kn">from</span> <span class="nn">retrying</span> <span class="k">import</span> <span class="n">retry</span>
+
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">errors</span> <span class="k">as</span> <span class="n">util_errors</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">google.cloud.forseti.common.util</span> <span class="k">import</span> <span class="n">retryable_exceptions</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="EmailUtil"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.email.html#google.cloud.forseti.common.util.email.EmailUtil">[docs]</a><span class="k">class</span> <span class="nc">EmailUtil</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Utility for sending emails.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the email util.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            api_key (str): The SendGrid api key to auth email service.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendgrid</span> <span class="o">=</span> <span class="n">sendgrid</span><span class="o">.</span><span class="n">SendGridAPIClient</span><span class="p">(</span><span class="n">apikey</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EmailUtil._execute_send"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.email.html#google.cloud.forseti.common.util.email.EmailUtil._execute_send">[docs]</a>    <span class="nd">@retry</span><span class="p">(</span><span class="n">retry_on_exception</span><span class="o">=</span><span class="n">retryable_exceptions</span><span class="o">.</span><span class="n">is_retryable_exception</span><span class="p">,</span>
+           <span class="n">wait_exponential_multiplier</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">wait_exponential_max</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+           <span class="n">stop_max_attempt_number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_execute_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Executes the sending of the email.</span>
+
+<span class="sd">        This needs to be a standalone method so that we can wrap it with retry,</span>
+<span class="sd">        and the final exception can be gracefully handled upstream.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email (SendGrid): SendGrid mail object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: urllib2 response object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sendgrid</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">mail</span><span class="o">.</span><span class="n">send</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">request_body</span><span class="o">=</span><span class="n">email</span><span class="o">.</span><span class="n">get</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="EmailUtil._add_recipients"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.email.html#google.cloud.forseti.common.util.email.EmailUtil._add_recipients">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_recipients</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">email_recipients</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add multiple recipients to the sendgrid email object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email (SendGrid): SendGrid mail object</span>
+<span class="sd">            email_recipients (Str): comma-separated text of the email recipients</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SendGrid: SendGrid mail object with mulitiple recipients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">personalization</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">Personalization</span><span class="p">()</span>
+        <span class="n">recipients</span> <span class="o">=</span> <span class="n">email_recipients</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">recipient</span> <span class="ow">in</span> <span class="n">recipients</span><span class="p">:</span>
+            <span class="n">personalization</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">mail</span><span class="o">.</span><span class="n">Email</span><span class="p">(</span><span class="n">recipient</span><span class="p">))</span>
+        <span class="n">email</span><span class="o">.</span><span class="n">add_personalization</span><span class="p">(</span><span class="n">personalization</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">email</span></div>
+
+<div class="viewcode-block" id="EmailUtil.send"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.email.html#google.cloud.forseti.common.util.email.EmailUtil.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">email_sender</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">email_recipient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">email_subject</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">email_content</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">attachment</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send an email.</span>
+
+<span class="sd">        This uses the SendGrid API.</span>
+<span class="sd">        https://github.com/sendgrid/sendgrid-python</span>
+
+<span class="sd">        The minimum required info to send email are:</span>
+<span class="sd">        sender, recipient, subject, and content (the body)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            email_sender (str): The email sender.</span>
+<span class="sd">            email_recipient (str): The email recipient.</span>
+<span class="sd">            email_subject (str): The email subject.</span>
+<span class="sd">            email_content (str): The email content (aka, body).</span>
+<span class="sd">            content_type (str): The email content type.</span>
+<span class="sd">            attachment (Attachment): A SendGrid Attachment.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            EmailSendError: An error with sending email has occurred.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">email_sender</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">email_recipient</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Unable to send email: sender=</span><span class="si">%s</span><span class="s1">, recipient=</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="n">email_sender</span><span class="p">,</span> <span class="n">email_recipient</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span>
+
+        <span class="n">email</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">Mail</span><span class="p">()</span>
+        <span class="n">email</span><span class="o">.</span><span class="n">from_email</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">Email</span><span class="p">(</span><span class="n">email_sender</span><span class="p">)</span>
+        <span class="n">email</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">email_subject</span>
+        <span class="n">email</span><span class="o">.</span><span class="n">add_content</span><span class="p">(</span><span class="n">mail</span><span class="o">.</span><span class="n">Content</span><span class="p">(</span><span class="n">content_type</span><span class="p">,</span> <span class="n">email_content</span><span class="p">))</span>
+
+        <span class="n">email</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_recipients</span><span class="p">(</span><span class="n">email</span><span class="p">,</span> <span class="n">email_recipient</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">attachment</span><span class="p">:</span>
+            <span class="n">email</span><span class="o">.</span><span class="n">add_attachment</span><span class="p">(</span><span class="n">attachment</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_send</span><span class="p">(</span><span class="n">email</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">HTTPError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Unable to send email: </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                             <span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">reason</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">202</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Email accepted for delivery:</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="n">email_subject</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unable to send email:</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                         <span class="n">email_subject</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span>
+                         <span class="n">response</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">util_errors</span><span class="o">.</span><span class="n">EmailSendError</span></div>
+
+<div class="viewcode-block" id="EmailUtil.render_from_template"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.email.html#google.cloud.forseti.common.util.email.EmailUtil.render_from_template">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">render_from_template</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">template_file</span><span class="p">,</span> <span class="n">template_vars</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fill out an email template with template variables.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            template_file (str): The location of email template in filesystem.</span>
+<span class="sd">            template_vars (dict): The template variables to fill into the</span>
+<span class="sd">                template.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The template content, rendered with the provided variables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">template_searchpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;../email_templates&#39;</span><span class="p">))</span>
+        <span class="n">template_loader</span> <span class="o">=</span> <span class="n">jinja2</span><span class="o">.</span><span class="n">FileSystemLoader</span><span class="p">(</span>
+            <span class="n">searchpath</span><span class="o">=</span><span class="n">template_searchpath</span><span class="p">)</span>
+        <span class="n">template_env</span> <span class="o">=</span> <span class="n">jinja2</span><span class="o">.</span><span class="n">Environment</span><span class="p">(</span><span class="n">loader</span><span class="o">=</span><span class="n">template_loader</span><span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">template_env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="n">template_file</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">template_vars</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EmailUtil.create_attachment"><a class="viewcode-back" href="../../../../../../google.cloud.forseti.common.util.email.html#google.cloud.forseti.common.util.email.EmailUtil.create_attachment">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">create_attachment</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">file_location</span><span class="p">,</span> <span class="n">content_type</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span>
+                          <span class="n">disposition</span><span class="o">=</span><span class="s1">&#39;attachment&#39;</span><span class="p">,</span> <span class="n">content_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a SendGrid attachment.</span>
+
+<span class="sd">        SendGrid attachments file content must be base64 encoded.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            file_location (str): The path of the file.</span>
+<span class="sd">            content_type (str): The content type of the attachment.</span>
+<span class="sd">            filename (str): The filename of attachment.</span>
+<span class="sd">            disposition (str): Content disposition, defaults to &quot;attachment&quot;.</span>
+<span class="sd">            content_id (str): The content id.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Attachment: A SendGrid Attachment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_content</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_location</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">file_content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">file_content</span><span class="p">)</span>
+
+        <span class="n">attachment</span> <span class="o">=</span> <span class="n">mail</span><span class="o">.</span><span class="n">Attachment</span><span class="p">()</span>
+        <span class="n">attachment</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="n">content</span>
+        <span class="n">attachment</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">content_type</span>
+        <span class="n">attachment</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="n">attachment</span><span class="o">.</span><span class="n">disposition</span> <span class="o">=</span> <span class="n">disposition</span>
+        <span class="n">attachment</span><span class="o">.</span><span class="n">content_id</span> <span class="o">=</span> <span class="n">content_id</span>
+
+        <span class="k">return</span> <span class="n">attachment</span></div></div>
+</pre></div>
