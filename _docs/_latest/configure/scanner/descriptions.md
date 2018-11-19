@@ -229,5 +229,5 @@ file.
 
 Allow customers to ensure the retention policies on their resources are set as intended.
 
-For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/retention_rules.yaml) rule file.
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
 
