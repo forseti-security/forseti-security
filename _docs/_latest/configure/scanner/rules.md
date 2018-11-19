@@ -874,7 +874,7 @@ rules:
 
 ```yaml
 rules:
-  - name: retention policies should be in a specific range
+  - name: All buckets in the organization should have a retention policy for 100 to 200 days.
     applies_to:
       - bucket
     resource:
