@@ -182,11 +182,11 @@ Without group expansion, the following example will only return `group/bar`:
 forseti explainer access_by_resource organizations/1234567890
 ```
 
-To enable group expansion, pass in the `--expand_group` argument. Forseti will perform group
+To enable group expansion, pass in the `--expand_groups` argument. Forseti will perform group
 expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true
+forseti explainer access_by_resource <RESOURCE_NAME> --expand_groups
 ```
 
 With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo`
