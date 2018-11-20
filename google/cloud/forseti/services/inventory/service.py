@@ -59,7 +59,7 @@ def inventory_pb_from_object(inventory_index):
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
-    def __init__(self, inventory_api):
+    def __init__(self, inventory_api, config):
         """Initialize
 
         Args:
@@ -67,6 +67,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
         super(GrpcInventory, self).__init__()
         self.inventory = inventory_api
+        self.config = config
 
     def Ping(self, request, _):
         """Ping implemented to check service availability.
@@ -81,7 +82,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
 
         return inventory_pb2.PingReply(data=request.data)
 
-    @tracing.trace(lambda x: x.tracer)
     @autoclose_stream
     def Create(self, request, _):
         """Creates a new inventory.
@@ -113,7 +113,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
                 last_warning=last_warning,
                 last_error=last_error)
 
-    #@tracing.trace(lambda x: x.tracer)
     # @autoclose_stream
     def List(self, request, _):
         """Lists existing inventory.
@@ -159,7 +158,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         return inventory_pb2.DeleteReply(
             inventory=inventory_pb_from_object(inventory_index))
 
-    @tracing.trace(lambda x: x.tracer)
+    @tracing.trace(lambda x: x.config.tracer)
     def Purge(self, request, _):
         """Purge desired inventory data.
 
