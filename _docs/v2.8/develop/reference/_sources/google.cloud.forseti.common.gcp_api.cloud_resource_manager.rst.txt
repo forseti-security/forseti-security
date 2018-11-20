@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.cloud\_resource\_manager module
+====================================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api.cloud_resource_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,25 @@
+google.cloud.forseti.scanner package
+====================================
+
+.. automodule:: google.cloud.forseti.scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+
+    google.cloud.forseti.scanner.audit
+    google.cloud.forseti.scanner.scanners
+
+Submodules
+----------
+
+.. toctree::
+
+   google.cloud.forseti.scanner.scanner
+   google.cloud.forseti.scanner.scanner_builder
+   google.cloud.forseti.scanner.scanner_requirements_map
+

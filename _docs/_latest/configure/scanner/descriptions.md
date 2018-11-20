@@ -76,17 +76,6 @@ For examples of how to define scanner rules for Enabled APIs, see the
 [`enabled_apis_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/enabled_apis_rules.yaml)
 rule file.
 
-## External Project Access Scanner
-
-The External Project Access Scanner mitigates data exfiltration by identifying users who have access to projects outside of your organization or folder.
-
-Each user in the inventory must be queried for their project access. The number of users in an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
-
-In the first release of this scanner, it is invoked manually on either the client or server vm in GCP as follows:
-`forseti scanner run --scanner external_project_access_scanner`
-
-Before running this scanner, please [enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}).
-
 ## Firewall rules scanner
 
 Network firewall rules protect your network & organization by only allowing
@@ -224,3 +213,10 @@ than the max age.
 For examples of how to define scanner rules for your service account keys, see the
 [`service_account_key_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/service_account_key_rules.yaml)
 file.
+
+## Retention scanner
+
+Allow customers to ensure the retention policies on their resources are set as intended.
+
+For examples of how to define scanner rules for retention, see the ['retention_rules.yaml'](https://github.com/GoogleCloudPlatform/forseti-security/blob/dev/rules/retention_rules.yaml) rule file.
+
