@@ -342,6 +342,14 @@ def define_notifier_parser(parent):
               'will be used.')
     )
 
+    create_notifier_parser.add_argument(
+        '--scanner_index_id',
+        default=0,
+        help=('Id of the scanner index to send violation notifications. '
+              'If this is not specified, then the last scanner index id '
+              'will be used.')
+    )
+
 
 # pylint: disable=too-many-locals
 def define_explainer_parser(parent):
@@ -747,7 +755,7 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(int(config.inventory_index_id)):
+        for progress in client.run(int(config.inventory_index_id), int(config.scanner_index_id)):
             output.write(progress)
 
     actions = {
