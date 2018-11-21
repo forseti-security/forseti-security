@@ -71,79 +71,42 @@ class AbstractInventoryConfig(dict):
 
     @abc.abstractmethod
     def get_root_resource_id(self):
-        """Returns the root resource id.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the root resource id."""
 
     @abc.abstractmethod
     def get_gsuite_admin_email(self):
-        """Returns gsuite admin email.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-
-        raise NotImplementedError()
+        """Returns gsuite admin email."""
 
     @abc.abstractmethod
     def get_api_quota_configs(self):
-        """Returns the per API quota configs.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the per API quota configs."""
 
     @abc.abstractmethod
     def get_retention_days_configs(self):
-        """Returns the days of inventory data to retain.
+        """Returns the days of inventory data to retain."""
 
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+    @abc.abstractmethod
+    def get_cai_asset_types(self):
+        """Returns the GCS bucket path to store the CAI data dumps in."""
 
     @abc.abstractmethod
     def get_cai_enabled(self):
-        """Returns True if the cloudasset API should be used for the inventory.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns True if the cloudasset API should be used."""
 
     @abc.abstractmethod
     def get_cai_gcs_path(self):
-        """Returns the GCS bucket path to store the CAI data dumps in.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the GCS bucket path to store the CAI data dumps in."""
 
     @abc.abstractmethod
     def get_service_config(self):
-        """Returns the service config.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the service config."""
 
     @abc.abstractmethod
     def set_service_config(self, service_config):
         """Attach a service configuration.
 
         Args:
-            service_config (object): Service configuration.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+            service_config (object): Service configuration."""
 
 
 class AbstractServiceConfig(object):
@@ -156,50 +119,26 @@ class AbstractServiceConfig(object):
 
     @abc.abstractmethod
     def get_engine(self):
-        """Get the database engine.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Get the database engine."""
 
     @abc.abstractmethod
     def scoped_session(self):
-        """Get a scoped session.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Get a scoped session."""
 
     @abc.abstractmethod
     def client(self):
-        """Get an API client.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Get an API client."""
 
     @abc.abstractmethod
     def run_in_background(self, func):
         """Runs a function in a thread pool in the background.
 
         Args:
-            func (Function): Function to be executed.
+            func (Function): Function to be executed."""
 
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
-
+    @abc.abstractmethod
     def get_storage_class(self):
-        """Returns the class used for the inventory storage.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the class used for the inventory storage."""
 
 
 class InventoryConfig(AbstractInventoryConfig):
@@ -230,8 +169,7 @@ class InventoryConfig(AbstractInventoryConfig):
         self.gsuite_admin_email = gsuite_admin_email
         self.api_quota_configs = api_quota_configs
         self.retention_days = retention_days
-        self.cai_gcs_path = cai_configs.get('gcs_path', '')
-        self.cai_enabled = _validate_cai_enabled(root_resource_id, cai_configs)
+        self.cai_configs = cai_configs
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -265,13 +203,25 @@ class InventoryConfig(AbstractInventoryConfig):
         """
         return self.retention_days
 
+    def get_cai_asset_types(self):
+        """Returns the list of Asset Types to include in the CAI export.
+
+        The full list of supported asset types is at:
+        https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
+
+        Returns:
+            list: The list of asset types to include, or None if all asset
+                types should be included.
+        """
+        return self.cai_configs.get('asset_types', None)
+
     def get_cai_enabled(self):
         """Returns True if the cloudasset API should be used for the inventory.
 
         Returns:
             bool: Whether CAI should be integrated with the inventory or not.
         """
-        return self.cai_enabled
+        return _validate_cai_enabled(self.root_resource_id, self.cai_configs)
 
     def get_cai_gcs_path(self):
         """Returns the GCS bucket path to store the CAI data dumps in.
@@ -279,7 +229,7 @@ class InventoryConfig(AbstractInventoryConfig):
         Returns:
             str: The GCS bucket path for CAI data.
         """
-        return self.cai_gcs_path
+        return self.cai_configs.get('gcs_path', '')
 
     def get_service_config(self):
         """Return the attached service configuration.

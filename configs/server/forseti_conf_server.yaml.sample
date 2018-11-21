@@ -63,6 +63,70 @@ inventory:
         enabled: True
         gcs_path: MY_FORSETI_CAI_GCS_BUCKET
 
+        # Optional list of asset types supported by Cloud Asset inventory API.
+        # https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
+        # If included, only the asset types listed will be included in the
+        # Forseti inventory. This can be used to reduce the size of the
+        # inventory database to save on storage and reduce the time to complete
+        # a pull of the inventory.
+        #
+        # If commented out then all assets are exported from Cloud Asset API.
+
+        #asset_types:
+        #    - google.appengine.Application
+        #    - google.appengine.Service
+        #    - google.appengine.Version
+        #    - google.bigquery.Dataset
+        #    - google.bigquery.Table
+        #    - google.cloud.billing.BillingAccount
+        #    - google.cloud.dataproc.Cluster
+        #    - google.cloud.dataproc.Job
+        #    - google.cloud.dns.ManagedZone
+        #    - google.cloud.dns.Policy
+        #    - google.cloud.kms.KeyRing
+        #    - google.cloud.kms.CryptoKey
+        #    - google.cloud.kms.CryptoKeyVersion
+        #    - google.cloud.resourcemanager.Organization
+        #    - google.cloud.resourcemanager.Folder
+        #    - google.cloud.resourcemanager.Project
+        #    - google.cloud.storage.Bucket
+        #    - google.compute.Autoscaler
+        #    - google.compute.BackendBucket
+        #    - google.compute.BackendService
+        #    - google.compute.Disk
+        #    - google.compute.Firewall
+        #    - google.compute.ForwardingRule
+        #    - google.compute.HealthCheck
+        #    - google.compute.HttpHealthCheck
+        #    - google.compute.HttpsHealthCheck
+        #    - google.compute.Image
+        #    - google.compute.Instance
+        #    - google.compute.InstanceGroup
+        #    - google.compute.InstanceGroupManager
+        #    - google.compute.InstanceTemplate
+        #    - google.compute.License
+        #    - google.compute.Network
+        #    - google.compute.Project
+        #    - google.compute.Route
+        #    - google.compute.Router
+        #    - google.compute.Snapshot
+        #    - google.compute.SslCertificate
+        #    - google.compute.Subnetwork
+        #    - google.compute.TargetHttpProxy
+        #    - google.compute.TargetHttpsProxy
+        #    - google.compute.TargetInstance
+        #    - google.compute.TargetPool
+        #    - google.compute.TargetTcpProxy
+        #    - google.compute.TargetSslProxy
+        #    - google.compute.TargetVpnGateway
+        #    - google.compute.UrlMap
+        #    - google.container.Cluster
+        #    - google.iam.Role
+        #    - google.iam.ServiceAccount
+        #    - google.pubsub.Topic
+        #    - google.spanner.Instance
+        #    - google.spanner.Database
+
     # Number of days to retain inventory data:
     #  -1 : (default) keep all previous data forever
     #   0 : delete all previous inventory data before running
