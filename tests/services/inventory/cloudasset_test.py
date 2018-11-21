@@ -23,7 +23,7 @@ from google.oauth2 import credentials
 from sqlalchemy.orm import sessionmaker
 
 from tests.services.util.db import create_test_engine_with_file
-from tests.unittest_utils import ForsetiTestCase
+from tests import unittest_utils
 
 from google.cloud.forseti.common.gcp_api import cloudasset as cloudasset_api
 from google.cloud.forseti.common.gcp_api import errors as api_errors
@@ -67,12 +67,12 @@ EXPORT_ASSETS_ERROR = """
 """
 
 
-class InventoryCloudAssetTest(ForsetiTestCase):
+class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
     """Test CloudAsset data loader."""
 
     def setUp(self):
         """Setup method."""
-        ForsetiTestCase.setUp(self)
+        unittest_utils.ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
         _session_maker = sessionmaker()
         self.session = _session_maker(bind=self.engine)
@@ -104,7 +104,7 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
     def tearDown(self):
         """tearDown."""
-        ForsetiTestCase.tearDown(self)
+        unittest_utils.ForsetiTestCase.tearDown(self)
         mock.patch.stopall()
 
         # Stop mocks before unlinking the database file.

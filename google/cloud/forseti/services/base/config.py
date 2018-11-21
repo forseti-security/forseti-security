@@ -107,6 +107,15 @@ class AbstractInventoryConfig(dict):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def get_cai_asset_types(self):
+        """Returns the GCS bucket path to store the CAI data dumps in.
+
+        Raises:
+            NotImplementedError: Abstract.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def get_cai_enabled(self):
         """Returns True if the cloudasset API should be used for the inventory.
 
@@ -230,8 +239,7 @@ class InventoryConfig(AbstractInventoryConfig):
         self.gsuite_admin_email = gsuite_admin_email
         self.api_quota_configs = api_quota_configs
         self.retention_days = retention_days
-        self.cai_gcs_path = cai_configs.get('gcs_path', '')
-        self.cai_enabled = _validate_cai_enabled(root_resource_id, cai_configs)
+        self.cai_configs = cai_configs
 
     def get_root_resource_id(self):
         """Return the configured root resource id.
@@ -265,13 +273,25 @@ class InventoryConfig(AbstractInventoryConfig):
         """
         return self.retention_days
 
+    def get_cai_asset_types(self):
+        """Returns the list of Asset Types to include in the CAI export.
+
+        The full list of supported asset types is at:
+        https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
+
+        Returns:
+            list: The list of asset types to include, or None if all asset
+                types should be included.
+        """
+        return self.cai_configs.get('asset_types', None)
+
     def get_cai_enabled(self):
         """Returns True if the cloudasset API should be used for the inventory.
 
         Returns:
             bool: Whether CAI should be integrated with the inventory or not.
         """
-        return self.cai_enabled
+        return _validate_cai_enabled(self.root_resource_id, self.cai_configs)
 
     def get_cai_gcs_path(self):
         """Returns the GCS bucket path to store the CAI data dumps in.
@@ -279,7 +299,7 @@ class InventoryConfig(AbstractInventoryConfig):
         Returns:
             str: The GCS bucket path for CAI data.
         """
-        return self.cai_gcs_path
+        return self.cai_configs.get('gcs_path', '')
 
     def get_service_config(self):
         """Return the attached service configuration.

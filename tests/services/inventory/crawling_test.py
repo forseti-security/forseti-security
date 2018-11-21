@@ -20,7 +20,7 @@ from sqlalchemy.orm import sessionmaker
 from tests.services.inventory import gcp_api_mocks
 from tests.services.util.db import create_test_engine_with_file
 from tests.services.util.mock import MockServerConfig
-from tests.unittest_utils import ForsetiTestCase
+from tests import unittest_utils
 from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services.base.config import InventoryConfig
@@ -71,18 +71,18 @@ class NullProgresser(Progresser):
         pass
 
 
-class CrawlerTest(ForsetiTestCase):
+class CrawlerTest(unittest_utils.ForsetiTestCase):
     """Test inventory storage."""
 
     def setUp(self):
         """Setup method."""
         self.maxDiff = None
-        ForsetiTestCase.setUp(self)
+        unittest_utils.ForsetiTestCase.setUp(self)
 
     def tearDown(self):
         """Tear down method."""
 
-        ForsetiTestCase.tearDown(self)
+        unittest_utils.ForsetiTestCase.tearDown(self)
 
     def _get_resource_counts_from_storage(self, storage):
         result_counts = {}
@@ -335,16 +335,15 @@ class CrawlerTest(ForsetiTestCase):
         self.assertEqual(expected_counts, result_counts)
 
 
-# pylint: disable=bad-indentation
 class CloudAssetCrawlerTest(CrawlerTest):
     """Test CloudAsset integration with crawler."""
 
     def setUp(self):
         """Setup method."""
-        ForsetiTestCase.setUp(self)
+        CrawlerTest.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
-        _session_maker = sessionmaker()
-        self.session = _session_maker(bind=self.engine)
+        session_maker = sessionmaker()
+        self.session = session_maker(bind=self.engine)
         initialize(self.engine)
         self.inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
                                                 '',
@@ -367,6 +366,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
         # Mock copy_file_from_gcs to return correct test data file
         def _copy_file_from_gcs(file_path, *args, **kwargs):
             """Fake copy_file_from_gcs."""
+            del args, kwargs
             if 'resource' in file_path:
                 return os.path.join(TEST_RESOURCE_DIR_PATH,
                                     'mock_cai_resources.dump')
@@ -378,7 +378,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
 
     def tearDown(self):
         """tearDown."""
-        ForsetiTestCase.tearDown(self)
+        CrawlerTest.tearDown(self)
         mock.patch.stopall()
 
         # Stop mocks before unlinking the database file.
@@ -457,6 +457,105 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'spanner_database': {'resource': 1},
             'spanner_instance': {'resource': 1},
             'subnetwork': {'resource': 24},
+        }
+
+        self.assertEqual(expected_counts, result_counts)
+
+    def test_crawl_cai_data_with_asset_types(self):
+        """Validate including asset_types in the CAI inventory config works."""
+        asset_types = ['google.cloud.resourcemanager.Folder',
+                       'google.cloud.resourcemanager.Organization',
+                       'google.cloud.resourcemanager.Project']
+        inventory_config = InventoryConfig(gcp_api_mocks.ORGANIZATION_ID,
+                                           '',
+                                           {},
+                                           0,
+                                           {'enabled': True,
+                                            'gcs_path': 'gs://test-bucket',
+                                            'asset_types': asset_types}
+                                          )
+        inventory_config.set_service_config(FakeServerConfig(self.engine))
+
+        # Create subsets of the mock resource dumps that only contain the
+        # filtered asset types
+        filtered_assets = []
+        with open(os.path.join(TEST_RESOURCE_DIR_PATH,
+                               'mock_cai_resources.dump'), 'r') as f:
+            for line in f:
+                if any('"%s"' % asset_type in line
+                       for asset_type in asset_types):
+                    filtered_assets.append(line)
+
+        filtered_assets = ''.join(filtered_assets)
+
+        filtered_iam = []
+        with open(os.path.join(TEST_RESOURCE_DIR_PATH,
+                               'mock_cai_iam_policies.dump'), 'r') as f:
+            for line in f:
+                if any('"%s"' % asset_type in line
+                       for asset_type in asset_types):
+                    filtered_iam.append(line)
+
+        filtered_iam = ''.join(filtered_iam)
+
+        with unittest_utils.create_temp_file(filtered_assets) as resources:
+            with unittest_utils.create_temp_file(filtered_iam) as iam_policies:
+                def _copy_file_from_gcs(file_path, *args, **kwargs):
+                    """Fake copy_file_from_gcs."""
+                    del args, kwargs
+                    if 'resource' in file_path:
+                        return resources
+                    elif 'iam_policy' in file_path:
+                        return iam_policies
+                self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+                with MemoryStorage(session=self.session) as storage:
+                    progresser = NullProgresser()
+                    with gcp_api_mocks.mock_gcp() as gcp_mocks:
+                        run_crawler(storage,
+                                    progresser,
+                                    inventory_config)
+
+                        # Validate export_assets called with asset_types
+                        expected_calls = [
+                            mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                      mock.ANY,
+                                      content_type='RESOURCE',
+                                      asset_types=asset_types,
+                                      blocking=mock.ANY,
+                                      timeout=mock.ANY),
+                            mock.call(gcp_api_mocks.ORGANIZATION_ID,
+                                      mock.ANY,
+                                      content_type='IAM_POLICY',
+                                      asset_types=asset_types,
+                                      blocking=mock.ANY,
+                                      timeout=mock.ANY)]
+                        (gcp_mocks.mock_cloudasset.export_assets
+                         .assert_has_calls(expected_calls, any_order=True))
+
+                    self.assertEqual(0,
+                                     progresser.errors,
+                                     'No errors should have occurred')
+
+                    result_counts = self._get_resource_counts_from_storage(
+                        storage)
+
+        expected_counts = {
+            'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
+            'cloudsqlinstance': {'resource': 1},
+            'compute_project': {'resource': 2},
+            'crm_org_policy': {'resource': 5},
+            'folder': {'iam_policy': 3, 'resource': 3},
+            'gsuite_group': {'resource': 4},
+            'gsuite_group_member': {'resource': 1},
+            'gsuite_user': {'resource': 4},
+            'gsuite_user_member': {'resource': 3},
+            'kubernetes_cluster': {'resource': 1, 'service_config': 1},
+            'lien': {'resource': 1},
+            'organization': {'iam_policy': 1, 'resource': 1},
+            'project': {'billing_info': 4, 'enabled_apis': 4, 'iam_policy': 4,
+                        'resource': 4},
+            'role': {'resource': 3},
+            'sink': {'resource': 6},
         }
 
         self.assertEqual(expected_counts, result_counts)
