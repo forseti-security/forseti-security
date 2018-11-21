@@ -717,6 +717,7 @@ def create_lazy(attribute, factory):
         return wrapper
     return f_wrapper
 
+
 def is_api_disabled(config, api_name):
     """Check if api_name is disabled in the config.
 
@@ -728,6 +729,7 @@ def is_api_disabled(config, api_name):
         bool: True if the API is disabled in the configuration, else False.
     """
     return config.get(api_name, {}).get('disable_polling', False)
+
 
 class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""

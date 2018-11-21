@@ -1397,6 +1397,7 @@ class ResourceManagerProjectIterator(ResourceIterator):
             # API client doesn't support this resource, ignore.
             LOGGER.debug(e)
 
+
 class ResourceManagerProjectOrgPolicyIterator(resource_iter_class_factory(
         api_method_name='iter_crm_project_org_policies',
         resource_name='crm_org_policy',
