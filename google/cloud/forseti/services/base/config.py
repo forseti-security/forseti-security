@@ -71,88 +71,42 @@ class AbstractInventoryConfig(dict):
 
     @abc.abstractmethod
     def get_root_resource_id(self):
-        """Returns the root resource id.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the root resource id."""
 
     @abc.abstractmethod
     def get_gsuite_admin_email(self):
-        """Returns gsuite admin email.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-
-        raise NotImplementedError()
+        """Returns gsuite admin email."""
 
     @abc.abstractmethod
     def get_api_quota_configs(self):
-        """Returns the per API quota configs.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the per API quota configs."""
 
     @abc.abstractmethod
     def get_retention_days_configs(self):
-        """Returns the days of inventory data to retain.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the days of inventory data to retain."""
 
     @abc.abstractmethod
     def get_cai_asset_types(self):
-        """Returns the GCS bucket path to store the CAI data dumps in.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the GCS bucket path to store the CAI data dumps in."""
 
     @abc.abstractmethod
     def get_cai_enabled(self):
-        """Returns True if the cloudasset API should be used for the inventory.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns True if the cloudasset API should be used."""
 
     @abc.abstractmethod
     def get_cai_gcs_path(self):
-        """Returns the GCS bucket path to store the CAI data dumps in.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the GCS bucket path to store the CAI data dumps in."""
 
     @abc.abstractmethod
     def get_service_config(self):
-        """Returns the service config.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the service config."""
 
     @abc.abstractmethod
     def set_service_config(self, service_config):
         """Attach a service configuration.
 
         Args:
-            service_config (object): Service configuration.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+            service_config (object): Service configuration."""
 
 
 class AbstractServiceConfig(object):
@@ -165,50 +119,26 @@ class AbstractServiceConfig(object):
 
     @abc.abstractmethod
     def get_engine(self):
-        """Get the database engine.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Get the database engine."""
 
     @abc.abstractmethod
     def scoped_session(self):
-        """Get a scoped session.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Get a scoped session."""
 
     @abc.abstractmethod
     def client(self):
-        """Get an API client.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Get an API client."""
 
     @abc.abstractmethod
     def run_in_background(self, func):
         """Runs a function in a thread pool in the background.
 
         Args:
-            func (Function): Function to be executed.
+            func (Function): Function to be executed."""
 
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
-
+    @abc.abstractmethod
     def get_storage_class(self):
-        """Returns the class used for the inventory storage.
-
-        Raises:
-            NotImplementedError: Abstract.
-        """
-        raise NotImplementedError()
+        """Returns the class used for the inventory storage."""
 
 
 class InventoryConfig(AbstractInventoryConfig):
