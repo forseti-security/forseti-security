@@ -48,6 +48,7 @@ SQL_PROXY_COMMAND+=" -instances=${SQL_INSTANCE_CONN_STRING}=tcp:${SQL_PORT}"
 API_SERVICE="$(cat << EOF
 [Unit]
 Description=Forseti API Server
+Wants=cloudsqlproxy.service
 [Service]
 User=ubuntu
 Restart=always
@@ -55,7 +56,6 @@ RestartSec=3
 ExecStart=$FORSETI_COMMAND
 [Install]
 WantedBy=multi-user.target
-Wants=cloudsqlproxy.service
 EOF
 )"
 echo "$API_SERVICE" > /tmp/forseti.service
