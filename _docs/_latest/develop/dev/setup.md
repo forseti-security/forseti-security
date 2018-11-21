@@ -143,7 +143,7 @@ If on Linux executing ``mkvirtualenv forseti-security`` results in
 
 ``sudo pip install virtualenv virtualenvwrapper``
 
-Now attempt to make a virtual environent again.
+Now attempt to make a virtual environment again.
 
 ------------------
 
