@@ -137,9 +137,6 @@ def start_span(tracer, module, function, kind=None):
         module (str): The module name.
         function (str): The function name.
         kind (opencensus.trace.span.SpanKind): The span kind.
-
-    Returns:
-        span: (opencensus.trace.span): The span object.
     """
     if tracer is not None:
         LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
@@ -150,7 +147,6 @@ def start_span(tracer, module, function, kind=None):
         span.span_kind = kind
         tracer.add_attribute_to_current_span('module', module)
         tracer.add_attribute_to_current_span('function', function)
-    return span
 
 def end_span(tracer, **kwargs):
     """End a span.
