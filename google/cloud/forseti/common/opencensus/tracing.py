@@ -163,7 +163,7 @@ def end_span(tracer, **kwargs):
     tracer.end_span()
 
 def set_attributes(tracer, **kwargs):
-    """Sets attributes
+    """Set current span attributes.
 
     Args:
         tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
@@ -184,7 +184,7 @@ def get_tracer(inst, attr=None):
     Otherwise, it will look for a tracer in the DEFAULT_ATTRIBUTES before
     falling back on the OpenCensus execution context tracer.
 
-    Arguments:
+    Args:
         inst: An instance of a class.
         attr (str, optional): The attribute to get / set the tracer from / to.
 
@@ -215,35 +215,37 @@ def get_tracer(inst, attr=None):
     return tracer
 
 def traced(cls):
-    """Class decorator
+    """Class decorator.
 
     Args:
-        cls (object): Class to decorate
+        cls (object): Class to decorate.
+
     Returns:
-        object: Decorated class
+        object: Decorated class.
     """
     for name, func in inspect.getmembers(cls, inspect.ismethod):
         setattr(cls, name, trace_decorator(func))
     return cls
 
 def trace_decorator(func):
-    """ Method decorator to trace a method
+    """Method decorator to trace a class method.
 
     Args:
-        func (func): Class method to be traced
+        func (func): Class method to be traced.
+
     Returns:
-        wrapper: Decorated class method
+        wrapper: Decorated class method.
     """
 
     def wrapper(self, *args, **kwargs):
-        """ Wrapper method
+        """Wrapper method.
 
         Args:
-            *args: Argument list passed to a function
-            **kwargs: Variable number of arguments dictionary passed
-                to a function
+            *args: Argument list passed to the method.
+            **kwargs: Argument dict passed to the method.
+
         Returns:
-            func: Function
+            func: Function.
         """
         tracer = execution_context.get_opencensus_tracer()
         LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
@@ -258,12 +260,6 @@ def trace_decorator(func):
 def trace(attr=None):
     """Decorator to trace class methods.
 
-    This decorator expect the tracer is set in the class via an instance
-    attribute, or is fetchable using a lambda function.
-
-    If nothing is passed to the decorator, it will use the execution context to
-    get the tracer.
-
     Args:
         attr (str): The attribute to fetch from the instance.
 
@@ -271,12 +267,13 @@ def trace(attr=None):
         func: The decorated class method.
     """
     def decorator(func):
-        """Method decorator
+        """Method decorator.
 
         Args:
-            func (func): Function to be decorated
+            func (func): Function to be decorated.
+
         Returns:
-            func: Decorated function
+            func: Decorated function.
         """
         def wrapper(self, *args, **kwargs):
             """Wrapper class
