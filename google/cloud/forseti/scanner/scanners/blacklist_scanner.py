@@ -95,20 +95,23 @@ class BlacklistScanner(base_scanner.BaseScanner):
 
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
-        with scoped_session as session:
-            network_interfaces = []
 
+        instance_from_data_models = []
+        with scoped_session as session:
             for instance_from_data_model in data_access.scanner_iter(
                     session, 'instance'):
+                instance_from_data_models.append(instance_from_data_model)
 
-                proj = project.Project(
-                    project_id=instance_from_data_model.parent.name,
-                    full_name=instance_from_data_model.parent.full_name,
-                )
-                ins = instance.Instance.from_json(
-                    parent=proj,
-                    json_string=instance_from_data_model.data)
-                network_interfaces.append(ins.create_network_interfaces())
+        network_interfaces = []
+        for instance_from_data_model in instance_from_data_models:
+            proj = project.Project(
+                project_id=instance_from_data_model.parent.name,
+                full_name=instance_from_data_model.parent.full_name,
+            )
+            ins = instance.Instance.from_json(
+                parent=proj,
+                json_string=instance_from_data_model.data)
+            network_interfaces.append(ins.create_network_interfaces())
 
         if not network_interfaces:
             LOGGER.warn('No VM network interfaces found. Exiting.')
