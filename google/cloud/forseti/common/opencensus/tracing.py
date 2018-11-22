@@ -160,6 +160,7 @@ def end_span(tracer, **kwargs):
         set_attributes(tracer, **kwargs)
         tracer.end_span()
 
+# pylint: disable=broad-except
 def set_attributes(tracer, **kwargs):
     """Set current span attributes.
 
@@ -170,8 +171,9 @@ def set_attributes(tracer, **kwargs):
     for key, value in kwargs.items():
         try:
             tracer.add_attribute_to_current_span(key, value)
-        except Exception as e:
-            LOGGER.warning("Couldn't set attribute %s=%s to current span", key, value)
+        except Exception:
+            LOGGER.warning('Could\'t set attribute %s=%s to current span',
+                           key, value)
 
 def get_tracer(inst, attr=None):
     """Get a tracer from the current context.
@@ -183,11 +185,11 @@ def get_tracer(inst, attr=None):
     falling back on the OpenCensus execution context tracer.
 
     Args:
-        inst: An instance of a class.
-        attr (str, optional): The attribute to get / set the tracer from / to.
+        inst (Object): An instance of a class.
+        attr (str): The attribute to get / set the tracer from / to.
 
     Returns:
-        tracer (opencensus.trace.Tracer): The tracer to be used.
+        tracer(opencensus.trace.Tracer): The tracer to be used.
     """
     default_attributes = ['tracer', 'config.tracer']
     tracer = None
@@ -208,7 +210,7 @@ def get_tracer(inst, attr=None):
             rsetattr(inst, attr, tracer)
 
         # Log span context
-        LOGGER.info("%s: %s", inst, tracer.span_context)
+        LOGGER.info('%s: %s', inst, tracer.span_context)
 
     return tracer
 
@@ -293,12 +295,40 @@ def trace(attr=None):
     return decorator
 
 def rsetattr(obj, attr, val):
-    """Set nested attribute in object."""
+    """Set nested attribute in object.
+    Args:
+        obj (Object): An instance of a class.
+        attr (str): The attribute to set the tracer to.
+        val (opencensus.trace.Tracer): The tracer to set attr to.
+
+    Returns:
+        setattr(rgetattr(obj, pre) (Object): Sets attributes to object.
+    """
+
     pre, _, post = attr.rpartition('.')
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
 
 def rgetattr(obj, attr, *args):
-    """Get nested attribute in object."""
+    """Get nested attribute in object.
+    Args:
+        obj (Object): An instance of a class.
+        attr (str): The attribute to get the tracer from.
+        *args: Argument list passed to a function.
+
+    Returns:
+        getattr(obj, attr, *args) (Object): Returns attributes
+        to be set to object.
+    """
     def _getattr(obj, attr):
+        """Get attributes in object.
+        Args:
+            obj (Object): An instance of a class.
+            attr (str): The attribute to get the tracer from.
+
+        Returns:
+            getattr(obj, attr, *args) (Object): Returns attributes
+            to be set to object.
+
+        """
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
