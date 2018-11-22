@@ -2023,6 +2023,13 @@ FACTORIES = {
     'bigquery_dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BigqueryDataSet,
+        'contains': [
+            BqtableIterator
+        ]}),
+
+    'bqtable': ResourceFactory({
+        'dependsOn': ['bigquery_dataset'],
+        'cls': Bqtable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({
