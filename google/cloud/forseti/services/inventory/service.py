@@ -157,7 +157,7 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         return inventory_pb2.DeleteReply(
             inventory=inventory_pb_from_object(inventory_index))
 
-    @tracing.trace(lambda x: x.config.tracer)
+    @tracing.trace()
     def Purge(self, request, _):
         """Purge desired inventory data.
 
