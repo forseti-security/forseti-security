@@ -166,7 +166,6 @@ def run_inventory(service_config,
         Exception: Reraises any exception.
     """
     tracer = service_config.tracer
-    LOGGER.info(tracer.span_context)
     tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:

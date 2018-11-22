@@ -100,7 +100,7 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
 
-    @tracing.trace(lambda x: x.config.tracer)
+    @tracing.trace()
     def visit(self, resource):
         """Handle a newly found resource.
 
@@ -135,8 +135,8 @@ class Crawler(crawler.Crawler):
             raise
         else:
             progresser.on_new_object(resource)
-        #finally:
-            #tracing.end_span(self.config.tracer, **attrs)
+        finally:
+            tracing.end_span(self.config.tracer, **attrs)
 
     def dispatch(self, callback):
         """Dispatch crawling of a subtree.
@@ -176,7 +176,7 @@ class Crawler(crawler.Crawler):
         self.config.storage.warning(warning_message)
         self.config.progresser.on_warning(error)
 
-    @tracing.trace(lambda x: x.config.tracer)
+    @tracing.trace()
     def update(self, resource):
         """Update the row of an existing resource
 
@@ -313,7 +313,6 @@ def run_crawler(storage,
         QueueProgresser: The progresser implemented in inventory
     """
     tracer = config.service_config.tracer
-    LOGGER.info(tracer.span_context)
     tracing.start_span(tracer, 'inventory', 'run_crawler')
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
