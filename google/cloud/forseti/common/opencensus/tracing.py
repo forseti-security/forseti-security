@@ -141,14 +141,15 @@ def start_span(tracer, module, function, kind=None):
     Returns:
         span: (opencensus.trace.span): The span object.
     """
-    LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
-    if kind is None:
-        kind = SpanKind.SERVER
-    span = tracer.start_span()
-    span.name = '[{}] {}'.format(module, function)
-    span.span_kind = kind
-    tracer.add_attribute_to_current_span('module', module)
-    tracer.add_attribute_to_current_span('function', function)
+    if tracer is not None:
+        LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
+        if kind is None:
+            kind = SpanKind.SERVER
+        span = tracer.start_span()
+        span.name = '[{}] {}'.format(module, function)
+        span.span_kind = kind
+        tracer.add_attribute_to_current_span('module', module)
+        tracer.add_attribute_to_current_span('function', function)
     return span
 
 def end_span(tracer, **kwargs):
@@ -158,9 +159,10 @@ def end_span(tracer, **kwargs):
         tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
-    LOGGER.info(tracer.span_context)
-    set_attributes(tracer, **kwargs)
-    tracer.end_span()
+    if tracer is not None:
+        LOGGER.info(tracer.span_context)
+        set_attributes(tracer, **kwargs)
+        tracer.end_span()
 
 def set_attributes(tracer, **kwargs):
     """Set current span attributes.
