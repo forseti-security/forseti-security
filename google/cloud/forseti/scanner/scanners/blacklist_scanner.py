@@ -106,8 +106,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
         for instance_from_data_model in instance_from_data_models:
             proj = project.Project(
                 project_id=instance_from_data_model.parent.name,
-                full_name=instance_from_data_model.parent.full_name,
-            )
+                full_name=instance_from_data_model.parent.full_name)
             ins = instance.Instance.from_json(
                 parent=proj,
                 json_string=instance_from_data_model.data)
