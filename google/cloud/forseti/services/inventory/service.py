@@ -59,7 +59,7 @@ def inventory_pb_from_object(inventory_index):
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
-    def __init__(self, inventory_api, config):
+    def __init__(self, inventory_api):
         """Initialize
 
         Args:
@@ -67,7 +67,6 @@ class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
         """
         super(GrpcInventory, self).__init__()
         self.inventory = inventory_api
-        self.config = config
 
     def Ping(self, request, _):
         """Ping implemented to check service availability.
