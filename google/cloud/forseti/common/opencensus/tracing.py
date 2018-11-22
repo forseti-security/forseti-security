@@ -169,7 +169,10 @@ def set_attributes(tracer, **kwargs):
         kwargs (dict): A set of attributes to set to the current span.
     """
     for key, value in kwargs.items():
-        tracer.add_attribute_to_current_span(key, value)
+        try:
+            tracer.add_attribute_to_current_span(key, value)
+        except Exception as e:
+            LOGGER.warning("Couldn't set attribute %s=%s to current span", key, value)
 
 def traced(cls):
     """Class decorator
