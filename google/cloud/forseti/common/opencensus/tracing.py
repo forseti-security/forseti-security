@@ -247,13 +247,14 @@ def trace_decorator(func):
         Returns:
             func: Function.
         """
-        tracer = execution_context.get_opencensus_tracer()
-        LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
-                     tracer.span_context)
-        if hasattr(self, 'config'):
-            self.config.tracer = tracer
-        else:
-            self.tracer = tracer
+        if OPENCENSUS_ENABLED:
+            tracer = execution_context.get_opencensus_tracer()
+            LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
+                         tracer.span_context)
+            if hasattr(self, 'config'):
+                self.config.tracer = tracer
+            else:
+                self.tracer = tracer
         return func(self, *args, **kwargs)
     return wrapper
 
