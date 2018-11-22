@@ -313,7 +313,6 @@ def run_crawler(storage,
         QueueProgresser: The progresser implemented in inventory
     """
     tracer = config.service_config.tracer
-    LOGGER.info(tracer.span_context)
     tracing.start_span(tracer, 'inventory', 'run_crawler')
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
