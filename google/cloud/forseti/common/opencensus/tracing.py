@@ -139,7 +139,7 @@ def start_span(tracer, module, function, kind=None):
         kind (opencensus.trace.span.SpanKind): The span kind.
 
     Returns:
-        span: (opencensus.trace.span): The span object
+        span: (opencensus.trace.span): The span object.
     """
     LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
     if kind is None:
