@@ -344,6 +344,16 @@ class Resource(object):
         del client  # Unused.
         return None
 
+    @cached('bqtable')
+    def get_bqtable(self, client=None):
+        """Get bigquery table template.
+
+        Args:
+            client (object): GCP API client.
+        """
+        del client  # Unused.
+        return None
+
     @cached('group_members')
     def get_group_members(self, client=None):
         """Get group member template.
@@ -821,6 +831,23 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self.parent()['projectNumber'],
             self['datasetReference']['datasetId'])
 
+# Bqtable resource classes
+class Bqtable(resource_class_factory('bqtable', 'id')):
+   """The Resource implementation for bigquery table."""
+
+   @cached('bqtable')
+   def get_bqtable(self, client=None):
+       """Bigquery Table for this Dataset.
+
+       Args:
+           client (object): GCP API client.
+
+       Returns:
+           dict: Resource1 information1.
+       """
+       # create your arguments: your_argument1, your_argument2, ...
+       # To Do.
+       return client.iter_bqtable()
 
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
@@ -1412,6 +1439,13 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
         resource_name='bigquery_dataset',
         api_method_arg_key='projectNumber')):
     """The Resource iterator implementation for Bigquery Dataset."""
+
+
+class BqtableIterator(resource_iter_class_factory(
+        api_method_name='iter_bqtable',
+        resource_name='bqtable',
+        api_method_arg_key='')):
+    """The Resource iterator implementation for Bigquery Table."""
 
 
 class BillingAccountIterator(resource_iter_class_factory(
