@@ -210,7 +210,7 @@ def get_tracer(inst, attr=None):
             rsetattr(inst, attr, tracer)
 
         # Log span context
-        LOGGER.info("%s: %s", inst.__name__, tracer.span_context)
+        LOGGER.info("%s: %s", inst, tracer.span_context)
 
     return tracer
 
