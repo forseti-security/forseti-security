@@ -30,6 +30,9 @@ inventory:
         bigquery:
           max_calls: 160
           period: 1.0
+        bqtable:
+          max_calls: 160
+          period: 1.0
         cloudasset:
           max_calls: 1
           period: 1.0
