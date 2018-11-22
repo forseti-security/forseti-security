@@ -37,3 +37,41 @@ class _BqtableRepository(
        """
        super(_BqtableRepository, self).__init__(
            key_field=None, component='tables', **kwargs)
+
+
+class BqtableRepositoryClient(_base_repository.BaseRepositoryClient):
+   """Bqtable API Respository."""
+
+   def __init__(self,
+                quota_max_calls=None,
+                quota_period=100.0,
+                use_rate_limiter=True):
+       """Constructor.
+
+       Args:
+           quota_max_calls (int): Allowed requests per <quota_period> for the
+               API.
+           quota_period (float): The time period to track requests over.
+           use_rate_limiter (bool): Set to false to disable the use of a rate
+               limiter for this service.
+       """
+       if not quota_max_calls:
+           use_rate_limiter = False
+
+       self._tables = None
+
+       super(BqtableRepositoryClient, self).__init__(
+           'bqtable', versions=['v2'],
+           quota_max_calls=quota_max_calls,
+           quota_period=quota_period,
+           use_rate_limiter=use_rate_limiter)
+
+   # Turn off docstrings for properties.
+   # pylint: disable=missing-return-doc, missing-return-type-doc
+   @property
+   def tables(self):
+       """Returns a _BqtableRepository instance."""
+       if not self._tables:
+           self._tables = self._init_repository(_BqtableRepository)
+       return self._tables
+   # pylint: enable=missing-return-doc, missing-return-type-doc
