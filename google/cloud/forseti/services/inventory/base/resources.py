@@ -847,7 +847,9 @@ class Bqtable(resource_class_factory('bqtable', 'id')):
        """
        # create your arguments: your_argument1, your_argument2, ...
        # To Do.
-       return client.iter_bqtable()
+       project_id = self.parent().parent()['projectNumber']
+       dataset_id = self.parent()['datasetReference']['datasetId']
+       return client.iter_bqtable(projectid=project_id, dataset_id=dataset_id)
 
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
