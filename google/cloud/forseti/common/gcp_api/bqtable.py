@@ -61,7 +61,7 @@ class BqtableRepositoryClient(_base_repository.BaseRepositoryClient):
         self._tables = None
 
         super(BqtableRepositoryClient, self).__init__(
-            'bqtable', versions=['v2'],
+            'bigquery', versions=['v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -88,7 +88,7 @@ class BqtableClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'bqtable')
+            global_configs, 'bigquery')
 
         self.repository = BqtableRepositoryClient(
             quota_max_calls=max_calls,
@@ -99,7 +99,7 @@ class BqtableClient(object):
         """Request and page through bqtable.
 
         Returns:
-            list: A list of sth for bqtable. E.g. A list of data of buckets……
+            list: A list of sth for bqtable. E.g. A list of data of buckets
 
             If there are no result for bqtable an empty list will
             be returned.

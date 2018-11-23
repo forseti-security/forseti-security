@@ -31,10 +31,6 @@ SUPPORTED_APIS = {
         'default_version': 'v2',
         'supported_versions': ['v2']
     },
-    'bqtable': {
-        'default_version': 'v2',
-        'supported_versions': ['v2']
-    },
     'cloudasset': {
         'default_version': 'v1beta1',
         'supported_versions': ['v1beta1'],
