@@ -81,25 +81,30 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         """
         progress_queue = Queue()
 
-        LOGGER.info('Run notifier service with inventory index id: %s',
-                    request.inventory_index_id)
+        LOGGER.info('Run notifier service with inventory index id: %s '
+                    'and scanner index id %s',
+                    request.inventory_index_id,
+                    request.scanner_index_id)
         self.service_config.run_in_background(
             lambda: self._run_notifier(request.inventory_index_id,
+                                       request.scanner_index_id,
                                        progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
             yield notifier_pb2.Progress(server_message=progress_message)
 
-    def _run_notifier(self, inventory_index_id, progress_queue):
+    def _run_notifier(self, inventory_index_id, scanner_index_id, progress_queue):
         """Run notifier.
 
         Args:
             inventory_index_id (int64): Inventory index id.
+            scanner_index_id (ubt64): Scanner index id.
             progress_queue (Queue): Progress queue.
         """
         try:
             self.notifier.run(
                 inventory_index_id,
+                scanner_index_id,
                 progress_queue,
                 self.service_config)
         except Exception as e:  # pylint: disable=broad-except
