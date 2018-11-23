@@ -20,7 +20,7 @@ import google.auth
 from google.oauth2 import credentials
 
 from tests import unittest_utils
-from tests.common.gcp_api.test_data import fake_bigquery as fbq
+from tests.common.gcp_api.test_data import fake_bigquery_table as fbt
 from tests.common.gcp_api.test_data import http_mocks
 from google.cloud.forseti.common.gcp_api import bqtable as bt
 from google.cloud.forseti.common.gcp_api import errors as api_errors
@@ -40,7 +40,7 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
         """Set up."""
         fake_global_configs = {
             'cloudbilling': {'max_calls': 5, 'period': 1.2}}
-        cls.billing_api_client = cloudbilling.CloudBillingClient(
+        cls.bqtable_client = bt.BqtableClient(
             global_configs=fake_global_configs, use_rate_limiter=False)
 
     @mock.patch.object(
@@ -51,6 +51,15 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
         """Verify no rate limiter is used if the configuration is missing."""
         bqtable_client = bt.BqtableClient(global_configs={})
         self.assertEqual(None, bqtable_client.repository._rate_limiter)
+
+    def test_get_tables(self):
+        """Test get bigquery dataset tables."""
+        mock_responses = []
+        for page in fbt.GET_TABLES_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        results = self.bqtable_client.get_tables('123','456')
 
 if __name__ == '__main__':
     unittest.main()

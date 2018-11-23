@@ -22,6 +22,7 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
+LOGGER = logger.get_logger(__name__)
 
 class _BqtableRepository(
         repository_mixins.GetQueryMixin,  #If you need get API

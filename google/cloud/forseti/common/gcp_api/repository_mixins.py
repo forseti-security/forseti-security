@@ -37,6 +37,7 @@ class ListQueryMixin(object):
         Yields:
             dict: An API response containing one page of results.
         """
+
         arguments = {'fields': fields,
                      self._max_results_field: max_results}
 
