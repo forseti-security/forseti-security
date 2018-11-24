@@ -3,7 +3,7 @@ build-essential
 git
 libffi-dev
 libssl-dev
-libmysqlclient-dev
+default-libmysqlclient-dev
 libpython-dev
 python-pip
 python-dev

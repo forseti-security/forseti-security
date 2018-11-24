@@ -212,8 +212,8 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         for user_mail, project_ancestries in ancestries_by_user.iteritems():
             for project_ancestry in project_ancestries:
                 violations = (
-                    self.rules_engine.find_policy_violations(user_mail,
-                                                             project_ancestry))
+                    self.rules_engine.find_violations(
+                        user_mail, project_ancestry))
                 all_violations.extend(violations)
 
         return all_violations

@@ -23,7 +23,7 @@ from google.oauth2 import credentials
 from sqlalchemy.orm import sessionmaker
 
 from tests.services.util.db import create_test_engine_with_file
-from tests.unittest_utils import ForsetiTestCase
+from tests import unittest_utils
 
 from google.cloud.forseti.common.gcp_api import cloudasset as cloudasset_api
 from google.cloud.forseti.common.gcp_api import errors as api_errors
@@ -67,12 +67,12 @@ EXPORT_ASSETS_ERROR = """
 """
 
 
-class InventoryCloudAssetTest(ForsetiTestCase):
+class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
     """Test CloudAsset data loader."""
 
     def setUp(self):
         """Setup method."""
-        ForsetiTestCase.setUp(self)
+        unittest_utils.ForsetiTestCase.setUp(self)
         self.engine, self.dbfile = create_test_engine_with_file()
         _session_maker = sessionmaker()
         self.session = _session_maker(bind=self.engine)
@@ -104,7 +104,7 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
     def tearDown(self):
         """tearDown."""
-        ForsetiTestCase.tearDown(self)
+        unittest_utils.ForsetiTestCase.tearDown(self)
         mock.patch.stopall()
 
         # Stop mocks before unlinking the database file.
@@ -184,10 +184,46 @@ class InventoryCloudAssetTest(ForsetiTestCase):
 
         results = cloudasset.load_cloudasset_data(self.session,
                                                   self.inventory_config)
-        # 97 resources total in mock dump files, will change over time
-        expected_results = 97
-        self.assertEqual(expected_results, results)
+        self.assertTrue(results)
         self.validate_data_in_table()
+
+    def test_long_resource_name(self):
+        """Validate load_cloudasset_data handles resources with long names."""
+        # Ignore call to export_assets for this test.
+        self.mock_export_assets.return_value = {'done': True}
+
+        # Mock copy_file_from_gcs to return correct test data file
+        def _copy_file_from_gcs(file_path, *args, **kwargs):
+            """Fake copy_file_from_gcs."""
+            if 'resource' in file_path:
+                return os.path.join(
+                    TEST_RESOURCE_DIR_PATH,
+                    'mock_cai_long_resource_name.dump')
+            elif 'iam_policy' in file_path:
+                return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                    'mock_cai_empty_iam_policies.dump')
+
+        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+
+        results = cloudasset.load_cloudasset_data(self.session,
+                                                  self.inventory_config)
+        # Expect only the resource with the short name got imported.
+        expected_results = 1
+        self.assertEqual(results, expected_results)
+
+        # Validate resource with short name is in database.
+        resource = storage.CaiDataAccess.fetch_cai_asset(
+            storage.ContentTypes.resource,
+            'google.spanner.Instance',
+            '//spanner.googleapis.com/projects/project2/instances/test123',
+            self.session)
+        expected_resource = {
+            'config': 'projects/project2/instanceConfigs/regional-us-east1',
+            'displayName': 'Test123',
+            'name': 'projects/project2/instances/test123',
+            'nodeCount': 1,
+            'state': 'READY'}
+        self.assertEqual(expected_resource, resource)
 
     def test_load_cloudasset_data_cai_apierror(self):
         """Validate load_cloud_asset handles an API error from CAI."""

@@ -1289,7 +1289,33 @@ GCE_GET_IMAGES = {
                 id=1, project="project2")),
 }
 
-# Fields: id, name, project, network, instance1, instance2, instance3
+# Fields: project, instance1, instance2, instance3
+GCE_INSTANCE_GROUP_INSTANCES_TEMPLATE = """
+[
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance1}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance2}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance3}"
+]
+"""
+
+GCE_GET_INSTANCE_GROUP_INSTANCES = {
+    PROJECT_ID_PREFIX + "1": {
+        "bs-1-ig-1": json.loads(
+            GCE_INSTANCE_GROUP_INSTANCES_TEMPLATE.format(
+                project="project1",
+                instance1="iap_instance1",
+                instance2="iap_instance2",
+                instance3="iap_instance3")),
+        "gke-cluster-1-default-pool-12345678-grp": json.loads(
+            GCE_INSTANCE_GROUP_INSTANCES_TEMPLATE.format(
+                project="project1",
+                instance1="ke_instance1",
+                instance2="ke_instance2",
+                instance3="ke_instance3")),
+    }
+}
+
+# Fields: id, name, project, network
 GCE_INSTANCE_GROUPS_TEMPLATE = """
 {{
  "kind": "compute#instanceGroup",
@@ -1302,12 +1328,7 @@ GCE_INSTANCE_GROUPS_TEMPLATE = """
  "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/instanceGroups/{name}",
  "size": 3,
  "region": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1",
- "subnetwork": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{network}",
- "instance_urls": [
-  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance1}",
-  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance2}",
-  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance3}"
- ]
+ "subnetwork": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{network}"
 }}
 """
 
@@ -1318,19 +1339,13 @@ GCE_GET_INSTANCE_GROUPS = {
                 id=1,
                 name="bs-1-ig-1",
                 project="project1",
-                network="default",
-                instance1="iap_instance1",
-                instance2="iap_instance2",
-                instance3="iap_instance3")),
+                network="default")),
         json.loads(
             GCE_INSTANCE_GROUPS_TEMPLATE.format(
                 id=2,
                 name="gke-cluster-1-default-pool-12345678-grp",
                 project="project1",
-                network="default",
-                instance1="ke_instance1",
-                instance2="ke_instance2",
-                instance3="ke_instance3")),
+                network="default")),
     ]
 }
 

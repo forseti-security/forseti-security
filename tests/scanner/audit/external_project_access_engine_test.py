@@ -88,7 +88,7 @@ class ExternalProjectAccessRulesEngineTest(ForsetiTestCase):
             rules_file_path=rules_local_path)
         rules_engine.build_rule_book(self.inventory_config)
         for user, ancestry in self.TEST_ANCESTRIES.iteritems():
-            violations = rules_engine.find_policy_violations(
+            violations = rules_engine.find_violations(
                 user, ancestry, True)
             all_violations.extend(violations)
         self.assertEqual(len(all_violations), 0)
@@ -102,7 +102,7 @@ class ExternalProjectAccessRulesEngineTest(ForsetiTestCase):
             rules_file_path=rules_local_path)
         rules_engine.build_rule_book(self.inventory_config)
         for user, ancestry in self.TEST_ANCESTRIES_SIMPLE.iteritems():
-            violations = rules_engine.find_policy_violations(
+            violations = rules_engine.find_violations(
                 user, ancestry, True)
             all_violations.extend(violations)
         self.assertEqual(len(all_violations), 0)
@@ -116,7 +116,7 @@ class ExternalProjectAccessRulesEngineTest(ForsetiTestCase):
             rules_file_path=rules_local_path)
         rules_engine.build_rule_book(self.inventory_config)
         for user, ancestry in self.TEST_ANCESTRIES_VIOLATIONS.iteritems():
-            violations = rules_engine.find_policy_violations(user, 
+            violations = rules_engine.find_violations(user, 
                                                              ancestry, 
                                                              True)
             all_violations.extend(violations)
@@ -135,9 +135,9 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
     TEST_ANCESTORS = [Project('123'),
                       Folder('456'),
                       Organization('7890')]
-    TEST_BAD_ANC = [Project('123'),
-                    Folder('456'),
-                    Organization('ABC')]
+    TEST_BAD_ANCESTORS = [Project('123'),
+                          Folder('456'),
+                          Organization('ABC')]
 
     def setUp(self):
         """Set up."""
@@ -191,14 +191,14 @@ class ExternalProjectAccessRuleBookTest(ForsetiTestCase):
 
     def test_no_violations(self):
         """Test no violations are found"""
-        violations = self.rule_book.find_policy_violations('user@example.com',
+        violations = self.rule_book.find_violations('user@example.com',
                                                            self.TEST_ANCESTORS)
         self.assertEqual(0, len(violations))
 
     def test_violations(self):
         """Test violations are found"""
-        violations = self.rule_book.find_policy_violations(
-            'user@example.com', self.TEST_BAD_ANC)
+        violations = self.rule_book.find_violations(
+            'user@example.com', self.TEST_BAD_ANCESTORS)
 
         self.assertEqual(0, len(violations))
 
