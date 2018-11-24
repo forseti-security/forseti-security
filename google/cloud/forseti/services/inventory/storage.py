@@ -46,6 +46,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
+from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
@@ -899,6 +900,32 @@ class DataAccess(object):
             session.query(InventoryIndex).filter(
                 or_(InventoryIndex.inventory_status == 'SUCCESS',
                     InventoryIndex.inventory_status == 'PARTIAL_SUCCESS')
+            ).order_by(InventoryIndex.id.desc()).first())
+        session.expunge(inventory_index)
+        LOGGER.info(
+            'Latest success/partial_success inventory index id is: %s',
+            inventory_index.id)
+        return inventory_index.id
+
+    @classmethod
+    def get_inventory_index_id_by_scanner(cls, session, scanner_index_id):
+        """List all inventory index entries.
+
+        Args:
+            session (object): Database session
+
+        Returns:
+            int64: inventory index id
+        """
+
+        inventory_index = (
+            session.query(InventoryIndex)
+                .outerjoin(ScannerIndex,
+                           ScannerIndex.inventory_index_id == InventoryIndex.id)
+                .filter(
+                and_(ScannerIndex.id == scanner_index_id,
+                     or_(InventoryIndex.inventory_status == 'SUCCESS',
+                         InventoryIndex.inventory_status == 'PARTIAL_SUCCESS'))
             ).order_by(InventoryIndex.id.desc()).first())
         session.expunge(inventory_index)
         LOGGER.info(

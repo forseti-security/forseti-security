@@ -96,12 +96,31 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
 
     violations = None
     with service_config.scoped_session() as session:
-        if not scanner_index_id:
+        # if scanner index id is provided,
+        # then find the corresponding inventory index id
+        if scanner_index_id:
+            inventory_index_id_found_by_scanner = (
+                DataAccess.get_inventory_index_id_by_scanner(session,
+                                                             scanner_index_id))
+            # corner case: if the inventory index id queried based on
+            # scanner index id does not match what the user provided, then warn,
+            # and overwrite with the queried inventory index id
+            if inventory_index_id and \
+                    inventory_index_id_found_by_scanner != inventory_index_id:
+                LOGGER.warn('The given inventory index id '
+                            'does not match the scanner index id.')
+            inventory_index_id = inventory_index_id_found_by_scanner
+
+        # if not provided, then find the latest scanner
+        else:
+            # if inventory is not provided, then find the latest inventory
             if not inventory_index_id:
                 inventory_index_id = (
                     DataAccess.get_latest_inventory_index_id(session))
+            # find the latest scanner index id based on the inventory given
             scanner_index_id = scanner_dao.get_latest_scanner_index_id(
                 session, inventory_index_id)
+
         if not scanner_index_id:
             LOGGER.error(
                 'No success or partial success scanner index found for '
