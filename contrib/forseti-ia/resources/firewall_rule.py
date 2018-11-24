@@ -79,6 +79,7 @@ class FirewallRule(object):
                  disabled,
                  network,
                  full_name,
+                 name,
                  org_id):
         self.creation_timestamp = creation_timestamp
         self.source_ip_addr = source_ip_addr
@@ -95,6 +96,7 @@ class FirewallRule(object):
         self.network = network
         self.full_name = full_name
         self.org_id = org_id
+        self.name = name
 
     def to_dict(self):
         """Convert to dictionary object.
@@ -118,6 +120,7 @@ class FirewallRule(object):
             'network': self.network,
             'direction': self.direction,
             'disabled': self.disabled,
+            'name': self.name
         }
 
     @classmethod
@@ -133,6 +136,8 @@ class FirewallRule(object):
              list: A list of flattened firewall rule objects.
          """
         json_dict = json.loads(gcp_firewall_rule)
+
+        name = json_dict.get('name')
 
         action = 'allowed'
 
@@ -161,7 +166,6 @@ class FirewallRule(object):
                 json_dict.get('sourceTags') or
                 json_dict.get('sourceServiceAccounts') or
                 json_dict.get('destinationRanges'))
-
 
         protocol_mappings = json_dict.get(action, [])
 
@@ -195,6 +199,7 @@ class FirewallRule(object):
                                 disabled=disabled,
                                 network=network,
                                 full_name=resource_full_name,
+                                name=name,
                                 org_id=org_id
                             ))
         return flattened_firewall_rules
