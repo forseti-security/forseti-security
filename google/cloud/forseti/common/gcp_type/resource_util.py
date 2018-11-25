@@ -17,7 +17,11 @@
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import billing_account
 from google.cloud.forseti.common.gcp_type import bucket
+from google.cloud.forseti.common.gcp_type import cloudsql_instance
+from google.cloud.forseti.common.gcp_type import ke_cluster
+from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
@@ -44,15 +48,35 @@ _RESOURCE_TYPE_MAP = {
         'plural': 'Projects',
         'can_create_resource': True,
     },
+    resource.ResourceType.BACKEND_SERVICE: {
+        'class': backend_service.BackendService,
+        'plural': 'Backend Services',
+        'can_create_resource': False,
+    },
     resource.ResourceType.BUCKET: {
         'class': bucket.Bucket,
         'plural': 'Buckets',
         'can_create_resource': True,
     },
-    resource.ResourceType.BACKEND_SERVICE: {
-        'class': backend_service.BackendService,
-        'plural': 'Backend Services',
-        'can_create_resource': False,
+    resource.ResourceType.CLOUD_SQL_INSTANCE: {
+        'class': cloudsql_instance.CloudSQLInstance,
+        'plural': 'Cloud SQL Instances',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.DATASET: {
+        'class': dataset.Dataset,
+        'plural': 'Datasets',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.INSTANCE: {
+        'class': instance.Instance,
+        'plural': 'GCE Instances',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.KE_CLUSTER: {
+        'class': ke_cluster.KeCluster,
+        'plural': 'GKE Clusters',
+        'can_create_resource': True,
     },
 }
 

@@ -43,15 +43,27 @@ def _mock_gcp_resource_iter(_, resource_type):
         data='',
     )
 
-    if resource_type == 'bucket':
-        resource = Resource(
-            full_name=data.BUCKET.full_name,
-            type=data.BUCKET.type,
-            parent_type_name='project/' + data.BUCKET.parent.id,
-            name=data.BUCKET.id,
+
+    def _create_child_resource(res):
+        return Resource(
+            full_name=res.full_name,
+            type=res.type,
+            parent_type_name='project/' + res.parent.id,
+            name=res.id,
+            data=res.data,
             parent=project_resource,
-            data=data.BUCKET.data,
         )
+
+    if resource_type == 'bucket':
+        resource = _create_child_resource(data.BUCKET)
+    elif resource_type == 'cloudsqlinstance':
+        resource = _create_child_resource(data.CLOUD_SQL_INSTANCE)
+    elif resource_type == 'dataset':
+        resource = _create_child_resource(data.DATASET)
+    elif resource_type == 'kubernetes_cluster':
+        resource = _create_child_resource(data.CLUSTER)
+    elif resource_type == 'instance':
+        resource = _create_child_resource(data.GCE_INSTANCE)
     else:
         raise ValueError('Unexpected resource type: ' + resource_type)
 
@@ -74,8 +86,9 @@ class LocationScannerTest(ForsetiTestCase):
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
 
-        got = self.scanner._retrieve()
-        want = [data.BUCKET]
+        got = set(self.scanner._retrieve())
+        want = {data.BUCKET, data.CLOUD_SQL_INSTANCE, data.CLUSTER,
+                data.DATASET, data.GCE_INSTANCE}
         self.assertEqual(got, want)
 
 

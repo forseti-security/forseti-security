@@ -375,7 +375,7 @@ class Rule(object):
         if has_applicable_rules and has_violation:
             yield self.RuleViolation(
                 resource_name=bigquery_acl.dataset_id,
-                resource_type=resource_mod.ResourceType.BIGQUERY,
+                resource_type=resource_mod.ResourceType.DATASET,
                 resource_id=bigquery_acl.dataset_id,
                 full_name=bigquery_acl.full_name,
                 rule_name=self.rule_name,
