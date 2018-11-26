@@ -913,6 +913,7 @@ class DataAccess(object):
 
         Args:
             session (object): Database session
+            scanner_index_id (int): id of the scanner in scanner_index table
 
         Returns:
             int64: inventory index id
