@@ -849,7 +849,8 @@ class Bqtable(resource_class_factory('bqtable', 'id')):
        # To Do.
        project_id = self.parent().parent()['projectNumber']
        dataset_id = self.parent()['datasetReference']['datasetId']
-       return client.iter_bqtable(projectid=project_id, dataset_id=dataset_id)
+       dataset_reference = {'projectId':project_id, 'datasetId':dataset_id}
+       return client.iter_bqtable(dataset_reference=dataset_reference)
 
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
@@ -1447,7 +1448,7 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
 class BqtableIterator(resource_iter_class_factory(
         api_method_name='iter_bqtable',
         resource_name='bqtable',
-        api_method_arg_key='')):
+        api_method_arg_key='datasetReference')):
     """The Resource iterator implementation for Bigquery Table."""
 
 

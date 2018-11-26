@@ -79,7 +79,7 @@ class ApiClient(object):
         """Iterate visible Billing Accounts in an organization from GCP API."""
 
     @abc.abstractmethod
-    def iter_bqtable(self, project_id, dataset_id):
+    def iter_bqtable(self, dataset_reference):
         """Iterate Datasets from GCP API.
 
         Args:
@@ -884,7 +884,7 @@ class ApiClientImpl(ApiClient):
             yield dataset
 
     @create_lazy('bqtable',_create_bqtable)
-    def iter_bqtable(self, project_id, dataset_id):
+    def iter_bqtable(self, dataset_reference):
         """Iterate Datasets from GCP API.
 
         Args:
@@ -894,7 +894,7 @@ class ApiClientImpl(ApiClient):
         Yields:
             dict: Generator of tables.
         """
-        for table in self.bqtable.get_tables(project_id, dataset_id):
+        for table in self.bqtable.get_tables(dataset_reference['projectId'], dataset_reference['datasetId']):
             yield table
 
     @create_lazy('cloudbilling', _create_cloudbilling)
