@@ -41,7 +41,7 @@ class _BqtableRepository(
        global important_log
        important_log = '123123123'
        super(_BqtableRepository, self).__init__(
-           key_field=None, component='taBLes', **kwargs)
+           key_field=None, component='tables', **kwargs)
 
 
 class BqtableRepositoryClient(_base_repository.BaseRepositoryClient):
