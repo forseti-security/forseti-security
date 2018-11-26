@@ -114,7 +114,7 @@ class Crawler(crawler.Crawler):
             resource.get_iam_policy(self.get_client())
             resource.get_gcs_policy(self.get_client())
             resource.get_dataset_policy(self.get_client())
-            # resource.get_bqtable(self.get_client())
+            resource.get_bqtable(self.get_client())
             resource.get_cloudsql_policy(self.get_client())
             resource.get_billing_info(self.get_client())
             resource.get_enabled_apis(self.get_client())

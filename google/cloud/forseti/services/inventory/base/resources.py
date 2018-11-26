@@ -344,7 +344,6 @@ class Resource(object):
         del client  # Unused.
         return None
 
-    @cached('bqtable1111')
     def get_bqtable(self, client=None):
         """Get bigquery table template.
 
@@ -835,7 +834,6 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 class Bqtable(resource_class_factory('bigquery_table', 'id')):
    """The Resource implementation for bigquery table."""
 
-   @cached('bqtable1111')
    def get_bqtable(self, client=None):
        """Bigquery Table for this Dataset.
 
