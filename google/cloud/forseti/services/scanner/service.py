@@ -82,7 +82,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         Yields:
             Progress: The progress of the scanner.
         """
-        scanner_name = request.handle
+        scanner_name = request.scanner_name
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
