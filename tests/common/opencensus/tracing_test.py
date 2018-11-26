@@ -58,12 +58,11 @@ class TracingTest(ForsetiTestCase):
         'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
         spec=StackdriverExporter)
     def test_create_exporter(self, mock_stackdriver_exporter):
+        mock_stackdriver_exporter.return_value.project_id = '12345'
         e = tracing.create_exporter()
         exporter_cls = e.__class__.__name__
-        transport_cls = e.transport.__class__.__name__
         self.assertTrue(mock_stackdriver_exporter.called)
         self.assertEqual(exporter_cls, "StackdriverExporter")
-        self.assertEqual(transport_cls, "BackgroundThreadTransport")
 
     @mock.patch(
         'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter',
