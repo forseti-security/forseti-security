@@ -23,6 +23,7 @@ from google.cloud.forseti.common.gcp_type import instance_group
 from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.common.gcp_type import instance_template
 from google.cloud.forseti.common.gcp_type import key
+from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import network
 
 
@@ -162,8 +163,9 @@ class KeyTest(ForsetiTestCase):
         url_1 = ('https://www.googleapis.com/compute/v1/'
                  'projects/foo/zones/us-central1-a/instances/bar')
         obj_1 = instance.Instance(
-            project_id='foo',
-            zone='us-central1-a',
+            'bar',
+            parent=project.Project('foo'),
+            locations=['us-central1-a'],
             name='bar')
         key_1 = key.Key(instance.KEY_OBJECT_KIND,
                         {'project_id': 'foo',

@@ -718,6 +718,19 @@ def create_lazy(attribute, factory):
     return f_wrapper
 
 
+def is_api_disabled(config, api_name):
+    """Check if api_name is disabled in the config.
+
+    Args:
+        config (dict): GCP API client configuration.
+        api_name (str): The name of the GCP api to check.
+
+    Returns:
+        bool: True if the API is disabled in the configuration, else False.
+    """
+    return config.get(api_name, {}).get('disable_polling', False)
+
+
 class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""
 
@@ -747,7 +760,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, admin_directory.API_NAME):
+            raise ResourceNotSupported('Admin API disabled by server '
+                                       'configuration.')
         return admin_directory.AdminDirectoryClient(self.config)
 
     def _create_appengine(self):
@@ -755,7 +775,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, appengine.API_NAME):
+            raise ResourceNotSupported('AppEngine API disabled by server '
+                                       'configuration.')
         return appengine.AppEngineClient(self.config)
 
     def _create_bq(self):
@@ -763,7 +790,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, bigquery.API_NAME):
+            raise ResourceNotSupported('Bigquery API disabled by server '
+                                       'configuration.')
         return bigquery.BigQueryClient(self.config)
 
     def _create_crm(self):
@@ -771,7 +805,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, cloud_resource_manager.API_NAME):
+            raise ResourceNotSupported('Resource Manager API disabled by '
+                                       'server configuration.')
         return cloud_resource_manager.CloudResourceManagerClient(self.config)
 
     def _create_cloudbilling(self):
@@ -779,7 +820,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, cloudbilling.API_NAME):
+            raise ResourceNotSupported('Cloud Billing API disabled by server '
+                                       'configuration.')
         return cloudbilling.CloudBillingClient(self.config)
 
     def _create_cloudsql(self):
@@ -787,7 +835,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, cloudsql.API_NAME):
+            raise ResourceNotSupported('CloudSQL Admin API disabled by server '
+                                       'configuration.')
         return cloudsql.CloudsqlClient(self.config)
 
     def _create_compute(self):
@@ -795,7 +850,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, compute.API_NAME):
+            raise ResourceNotSupported('Compute Engine API disabled by server '
+                                       'configuration.')
         return compute.ComputeClient(self.config)
 
     def _create_container(self):
@@ -803,7 +865,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, container.API_NAME):
+            raise ResourceNotSupported('Kubernetes Engine API disabled by '
+                                       'server configuration.')
         return container.ContainerClient(self.config)
 
     def _create_iam(self):
@@ -811,7 +880,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, iam.API_NAME):
+            raise ResourceNotSupported('IAM API disabled by server '
+                                       'configuration.')
         return iam.IAMClient(self.config)
 
     def _create_servicemanagement(self):
@@ -819,7 +895,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, servicemanagement.API_NAME):
+            raise ResourceNotSupported('Service Management API disabled by '
+                                       'server configuration.')
         return servicemanagement.ServiceManagementClient(self.config)
 
     def _create_stackdriver_logging(self):
@@ -827,7 +910,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, stackdriver_logging.API_NAME):
+            raise ResourceNotSupported('Stackdriver Logging API disabled by '
+                                       'server configuration.')
         return stackdriver_logging.StackdriverLoggingClient(self.config)
 
     def _create_storage(self):
@@ -835,7 +925,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, storage.API_NAME):
+            raise ResourceNotSupported('Storage API disabled by server '
+                                       'configuration.')
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
