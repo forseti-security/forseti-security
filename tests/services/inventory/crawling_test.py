@@ -540,7 +540,6 @@ class CloudAssetCrawlerTest(CrawlerTest):
                         storage)
 
         expected_counts = {
-            'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
             'crm_org_policy': {'resource': 5},

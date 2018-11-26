@@ -1166,6 +1166,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
         """
         return client.fetch_storage_bucket_iam_policy(self.key())
 
+    @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
         """Full projection returns GCS policy with the resource.
 
@@ -1173,13 +1174,18 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             client (object): GCP API client.
 
         Returns:
-            dict: bucket acl.
+            list: bucket access controls.
         """
-        # Full projection returns GCS policy with the resource.
         try:
+            # Full projection returns GCS policy with the resource.
             return self['acl']
         except KeyError:
-            return []
+            pass
+
+        return client.fetch_storage_bucket_acls(
+            self.key(),
+            self.parent()['projectId'],
+            self['projectNumber'])
 
 
 class StorageObject(resource_class_factory('storage_object', 'id')):

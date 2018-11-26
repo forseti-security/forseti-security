@@ -70,6 +70,22 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
     return fixed_resource
 
 
+def _split_member(member):
+    """Splits an IAM member into type and optional value.
+
+    Args:
+        member (str): The IAM member to split.
+
+    Returns:
+        tuple: The member type and optionally member value.
+    """
+    # 'allUsers' and 'allAuthenticatedUsers' member do not contain ':' so they
+    # need to be handled seperately.
+    if ':' in member:
+        return member.split(':', 1)
+    return (member, None)
+
+
 def _convert_iam_to_bigquery_policy(iam_policy):
     """Converts an IAM policy to a bigquery Access Policy.
 
@@ -117,19 +133,141 @@ def _convert_iam_to_bigquery_policy(iam_policy):
         if binding.get('role', '') in iam_to_access_policy_role_map:
             role = iam_to_access_policy_role_map[binding['role']]
             for member in binding.get('members', []):
-                # The 'allAuthenticatedUsers' member does not contain ':' so it
-                # needs to be handled seperately.
-                if ':' in member:
-                    member_type, member_value = member.split(':', 1)
-                else:
-                    member_type = member
-                    member_value = None
+                member_type, member_value = _split_member(member)
                 if member_type in iam_to_access_policy_member_map:
                     new_type, new_value = (
                         iam_to_access_policy_member_map[member_type])
                     if not new_value:
                         new_value = member_value
                     access_policies.append({'role': role, new_type: new_value})
+    return access_policies
+
+
+def _convert_iam_to_bucket_acls(iam_policy, bucket, project_id, project_number):
+    """Converts an IAM policy to Bucket Access Controls.
+
+    The is used for backwards compatibility between data returned from live
+    API and the data stored in CAI. Once acls are removed from cloud storage,
+    this can be deprecated.
+
+    Args:
+        iam_policy (dict): The Storage Bucket IAM policy.
+        bucket (str): The Storage Bucket name.
+        project_id (str): The project id for the project the bucket is under.
+        project_number (str): The project number for the project the bucket is
+            under.
+
+    Returns:
+        list: A list of access policies.
+
+        An example return value:
+
+        [
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/project-owners-12345",
+            "entity": "project-owners-12345",
+            "projectTeam": {"projectNumber": "12345", "team": "owners"},
+            "role": "OWNER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/project-editors-12345",
+            "entity": "project-editors-12345",
+            "projectTeam": {"projectNumber": "12345", "team": "editors"},
+            "role": "OWNER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/project-viewers-12345",
+            "entity": "project-viewers-12345",
+            "projectTeam": {"projectNumber": "12345", "team": "viewers"},
+            "role": "READER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/domain-forseti.test",
+            "domain": "forseti.test",
+            "entity": "domain-forseti.test",
+            "role": "READER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/group-my-group@forseti.test",
+            "email": "my-group@forseti.test",
+            "entity": "group-my-group@forseti.test",
+            "role": "WRITER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/user-12345-compute@developer.gserviceaccount.com",
+            "email": "12345-compute@developer.gserviceaccount.com",
+            "entity": "user-12345-compute@developer.gserviceaccount.com",
+            "role": "WRITER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/allAuthenticatedUsers",
+            "entity": "allAuthenticatedUsers",
+            "role": "READER"
+          },
+          {
+            "bucket": "my-bucket",
+            "id": "my-bucket/allUsers",
+            "entity": "allUsers",
+            "role": "READER"
+          }
+        ]
+    """
+    # Map of iam policy roles to bucket access control roles.
+    iam_to_access_policy_role_map = {
+        'roles/storage.legacyBucketOwner': 'OWNER',
+        'roles/storage.legacyBucketReader': 'READER',
+        'roles/storage.legacyBucketWriter': 'WRITER',
+    }
+    # Map iam policy member type to bucket access control entity type.
+    iam_to_entity_member_type_map = {
+        'allAuthenticatedUsers': ('allAuthenticatedUsers', None),
+        'allUsers': ('allUsers', None),
+        'domain': ('domain', None),
+        'group': ('group', None),
+        'projectEditor': ('project-editors', 'editors'),
+        'projectOwner': ('project-owners', 'owners'),
+        'projectViewer': ('project-viewers', 'viewers'),
+        'serviceAccount': ('user', None),
+        'user': ('user', None),
+    }
+
+    access_policies = []
+    for binding in iam_policy.get('bindings', []):
+        if binding.get('role', '') not in iam_to_access_policy_role_map:
+            continue
+
+        role = iam_to_access_policy_role_map[binding['role']]
+        for member in binding.get('members', []):
+            acl = {'bucket': bucket, 'role': role}
+            member_type, member_value = _split_member(member)
+
+            if member_type not in iam_to_entity_member_type_map:
+                LOGGER.warn('unparsable member in binding: %s', member)
+                continue
+
+            (entity, team) = iam_to_entity_member_type_map[member_type]
+            if team:
+                if member_value == project_id:
+                    member_value = project_number
+                acl['entity'] = '-'.join([entity, member_value])
+                acl['projectTeam'] = {'projectNumber': member_value,
+                                      'team': team}
+            else:
+                if member_value:
+                    entity = '-'.join([entity, member_value])
+                acl['entity'] = entity
+                if '@' in member_value:
+                    acl['email'] = member_value
+
+            acl['id'] = '/'.join([bucket, acl['entity']])
+            access_policies.append(acl)
     return access_policies
 
 
@@ -1136,6 +1274,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for spanner_database in resources:
             yield spanner_database
 
+    def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
+        """Bucket Access Controls from GCP API.
+
+        Args:
+            bucket_id (str): id of the bucket to query.
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Returns:
+            list: Bucket Access Controls.
+        """
+        iam_policy = self.fetch_storage_bucket_iam_policy(bucket_id)
+        if iam_policy:
+            return _convert_iam_to_bucket_acls(iam_policy,
+                                               bucket_id,
+                                               project_id,
+                                               project_number)
+        # Return empty list if IAM policy isn't present.
+        return []
+
     def fetch_storage_bucket_iam_policy(self, bucket_id):
         """Bucket IAM policy Iterator from Cloud Asset data.
 
@@ -1156,5 +1314,20 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         return super(CaiApiClientImpl, self).fetch_storage_bucket_iam_policy(
             bucket_id)
 
-    # Use live API because CAI does not yet have bucket ACLs.
-    # def iter_storage_buckets(self, project_number):
+    def iter_storage_buckets(self, project_number):
+        """Iterate Buckets from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of buckets.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.storage.Bucket',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for bucket in resources:
+            yield bucket
