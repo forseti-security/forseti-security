@@ -56,6 +56,7 @@ def create_client_interceptor(endpoint):
         host_port=endpoint)
     return interceptor
 
+
 def create_server_interceptor(extras=True):
     """Create gRPC server interceptor.
 
@@ -76,6 +77,7 @@ def create_server_interceptor(extras=True):
     LOGGER.info(execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
+
 def trace_integrations(integrations=None):
     """Add tracing to supported OpenCensus integration libraries.
 
@@ -95,6 +97,7 @@ def trace_integrations(integrations=None):
     LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
     LOGGER.info(tracer.span_context)
     return integrated_libraries
+
 
 def create_exporter(transport=None):
     """Create an exporter for traces.
@@ -124,6 +127,7 @@ def create_exporter(transport=None):
             'StackdriverExporter set up failed. Using FileExporter.')
         return file_exporter.FileExporter(transport=transport)
 
+
 def start_span(tracer, module, function, kind=None):
     """Start a span.
 
@@ -143,6 +147,7 @@ def start_span(tracer, module, function, kind=None):
         tracer.add_attribute_to_current_span('function', function)
         LOGGER.debug('%s.%s: %s', module, function, tracer.span_context)
 
+
 def end_span(tracer, **kwargs):
     """End a span.
 
@@ -154,6 +159,7 @@ def end_span(tracer, **kwargs):
         LOGGER.debug(tracer.span_context)
         set_attributes(tracer, **kwargs)
         tracer.end_span()
+
 
 # pylint: disable=broad-except
 def set_attributes(tracer, **kwargs):
@@ -168,7 +174,8 @@ def set_attributes(tracer, **kwargs):
             tracer.add_attribute_to_current_span(key, value)
         except Exception:
             LOGGER.debug('Could not set attribute %s=%s to current span',
-                           key, value)
+                         key, value)
+
 
 def get_tracer(inst, attr=None):
     """Get a tracer from the current context.
@@ -190,24 +197,24 @@ def get_tracer(inst, attr=None):
     tracer = None
     if OPENCENSUS_ENABLED:
 
-        if attr is not None: # Get tracer from passed attribute
+        if attr is not None:  # Get tracer from passed attribute
             tracer = rgetattr(inst, attr, None)
 
-        if tracer is None: # Get tracer from standard attributes
+        if tracer is None:  # Get tracer from standard attributes
             for _ in default_attributes:
                 tracer = rgetattr(inst, _, None)
 
-        if tracer is None: # Get tracer from context
+        if tracer is None:  # Get tracer from context
             tracer = execution_context.get_opencensus_tracer()
 
         # Set tracer if 'attr' was passed
         if tracer is not None and attr is not None:
             rsetattr(inst, attr, tracer)
 
-        # Log span context
         LOGGER.debug('%s: %s', inst, tracer.span_context)
 
     return tracer
+
 
 def traced(cls):
     """Class decorator.
@@ -221,6 +228,7 @@ def traced(cls):
     for name, func in inspect.getmembers(cls, inspect.ismethod):
         setattr(cls, name, trace_decorator(func))
     return cls
+
 
 def trace_decorator(func):
     """Method decorator to trace a class method.
@@ -252,6 +260,7 @@ def trace_decorator(func):
                 self.tracer = tracer
         return func(self, *args, **kwargs)
     return wrapper
+
 
 def trace(attr=None):
     """Decorator to trace class methods.
@@ -288,6 +297,7 @@ def trace(attr=None):
             return result
         return wrapper
     return decorator
+
 
 def rsetattr(obj, attr, val):
     """Set nested attribute in object.

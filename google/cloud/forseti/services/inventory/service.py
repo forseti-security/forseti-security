@@ -55,6 +55,7 @@ def inventory_pb_from_object(inventory_index):
         warnings=inventory_index.inventory_index_warnings,
         errors=inventory_index.inventory_index_errors)
 
+
 @tracing.traced
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
