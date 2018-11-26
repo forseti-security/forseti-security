@@ -70,7 +70,9 @@ Tracing libraries (OpenCensus, google-cloud-trace, etc.) are optional
 viewable in GCP console.
 * However OpenCensus supports variety of exporters such as Zipkin, Jaeger etc.
 * Support for other exporters will be added in the future. Feel free to add 
-support for the exporter of your choice in the meantime, and please contribute back!
-* You can disable the Stackdriver Trace Exporter (default) by uninstalling the GCP 
-tracing libraries: `pip install google-cloud-trace`. A FileExporter will be used
-that exports traces by default to `/home/ubuntu/opencensus-traces.json`.
+support for the exporter of your choice in the meantime, and please contribute
+ back!
+* You can disable the Stackdriver Trace Exporter (default) by uninstalling the
+GCP 
+tracing libraries: `pip install google-cloud-trace`. A FileExporter will be 
+used that exports traces by default to `/home/ubuntu/opencensus-traces.json`.
