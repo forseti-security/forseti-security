@@ -21,45 +21,65 @@ inventory:
         # We are not using the max allowed API quota because we wanted to
         # include some rooms for retries.
         # Period is in seconds.
+
+        # Set disable_polling to True to disable polling that API for creation
+        # of the inventory. This can speed up inventory creation for
+        # organizations that do not use specific APIs. Defaults to False if
+        # not defined.
         admin:
           max_calls: 14
           period: 1.0
+          disable_polling: False
         appengine:
           max_calls: 18
           period: 1.0
+          disable_polling: False
         bigquery:
           max_calls: 160
           period: 1.0
+          disable_polling: False
         cloudasset:
           max_calls: 1
           period: 1.0
+          disable_polling: False
         cloudbilling:
           max_calls: 5
           period: 1.2
+          disable_polling: False
         compute:
           max_calls: 18
           period: 1.0
+          disable_polling: False
         container:
           max_calls: 9
           period: 1.0
+          disable_polling: False
         crm:
           max_calls: 4
           period: 1.2
+          disable_polling: False
         iam:
           max_calls: 90
           period: 1.0
+          disable_polling: False
         logging:
           max_calls: 9
           period: 1.0
+          disable_polling: False
         securitycenter:
           max_calls: 1
-          period: 1.1,
+          period: 1.1
+          disable_polling: False
         servicemanagement:
           max_calls: 2
           period: 1.1
+          disable_polling: False
         sqladmin:
           max_calls: 1
           period: 1.1
+          disable_polling: False
+        storage:  # Does not use API quota
+          disable_polling: False
 
     cai:
         # The FORSETI_CAI_BUCKET needs to be in Forseti project.
