@@ -286,6 +286,9 @@ def trace(attr=None):
             Args:
                 *args: Argument list passed to the function.
                 **kwargs: Argument dictionary passed to the function.
+
+            Returns:
+                object: Function's return value.
             """
             if OPENCENSUS_ENABLED:
                 tracer = get_tracer(self, attr)
@@ -308,7 +311,7 @@ def rsetattr(obj, attr, val):
         val (opencensus.trace.Tracer): The tracer to set attr to.
 
     Returns:
-        Object: Fetches attributes and sets it to object.
+        object: Fetches attributes and sets it to object.
     """
 
     pre, _, post = attr.rpartition('.')
@@ -323,16 +326,17 @@ def rgetattr(obj, attr, *args):
         *args: Argument list passed to a function.
 
     Returns:
-        Object: Fetches attributes.
+        object: Fetches attributes.
     """
     def _getattr(obj, attr):
         """Get attributes in object.
+
         Args:
             obj (Object): An instance of a class.
             attr (str): The attribute to get the tracer from.
 
         Returns:
-            Object: Fetches attributes to set to object.
+            object: Fetches attributes to set to object.
         """
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
