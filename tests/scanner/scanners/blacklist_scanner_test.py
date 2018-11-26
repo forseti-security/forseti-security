@@ -18,7 +18,7 @@ import mock
 from mock import patch, Mock
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.gcp_type import instance
-from google.cloud.forseti.scanner.scanners import blacklist_scanner 
+from google.cloud.forseti.scanner.scanners import blacklist_scanner
 from google.cloud.forseti.scanner.audit import blacklist_rules_engine as bre
 
 from tests.scanner.test_data import fake_blacklist_scanner_data as fbsd
@@ -28,7 +28,8 @@ def create_list_of_instence_network_interface_obj_from_data():
     fake_instances_list = []
     for data in fbsd.INSTANCE_DATA:
         fake_instances_list.append(
-            instance.Instance(**data).create_network_interfaces())
+            instance.Instance(
+                'fake-instance', **data).create_network_interfaces())
     return fake_instances_list
 
 class BlacklistScannerTest(ForsetiTestCase):

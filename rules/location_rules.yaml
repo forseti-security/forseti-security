@@ -17,7 +17,9 @@
 #  Only member fields that are set will be considered when searching for
 #  violations.
 #
-# Note: Supported resources for applies_to are: bucket.
+# Note: Supported resources for applies_to are: bucket, cloudsqlinstance,
+# cluster, dataset, and instance. '*' is also allowed as the type to capture
+# all supported resource types.
 #
 # Note: Due to differences in capitalization among resource locations, all
 # resources locations will be lower cased before being matched.
