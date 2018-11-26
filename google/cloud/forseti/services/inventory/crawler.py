@@ -111,7 +111,7 @@ class Crawler(crawler.Crawler):
             Exception: Reraises any exception.
         """
         attrs = {
-            'id': resource._data['name'],
+            'id': resource._data.get('name', None),
             'parent': resource._data.get('parent', None),
             'type': resource.__class__.__name__,
             'success': True
