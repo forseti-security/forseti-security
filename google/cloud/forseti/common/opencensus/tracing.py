@@ -22,7 +22,7 @@ LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 try:
-    from opencensus.common.transports import async_
+    from opencensus.common.transports import async
     from opencensus.trace import config_integration
     from opencensus.trace import execution_context
     from opencensus.trace.exporters import file_exporter
