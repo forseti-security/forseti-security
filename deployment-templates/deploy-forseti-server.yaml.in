@@ -69,8 +69,8 @@ resources:
     #
     # See https://github.com/GoogleCloudPlatform/forseti-security/releases
     # for a list of releases.
-    forseti-version: add-spans-inventory
-    src-path: https://github.com/red2k18/forseti-security
+    forseti-version: {FORSETI_VERSION}
+    src-path: https://github.com/GoogleCloudPlatform/forseti-security
     # --- end Forseti version
 
     # Cloud SQL
