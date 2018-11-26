@@ -13,9 +13,9 @@
 # limitations under the License.
 """Location data to be used in the unit tests."""
 
-from google.cloud.forseti.common.gcp_type import bucket
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
+from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.audit import location_rules_engine
 
 
@@ -36,15 +36,69 @@ PROJECT = project.Project(
 )
 
 _BUCKET_JSON = """{
-    "id": "p1-b1",
+    "id": "p1-bucket1",
     "parent": "projects/p1",
     "location": "EUROPE-WEST1"
 }
 """
 
-BUCKET = bucket.Bucket.from_json(PROJECT, _BUCKET_JSON)
+BUCKET = resource_util.create_resource_from_json(
+    'bucket', PROJECT, _BUCKET_JSON)
+
+_CLOUD_SQL_INSTANCE_JSON = """{
+    "databaseVersion": "MYSQL_5_7",
+    "instanceType": "CLOUD_SQL_INSTANCE",
+    "kind": "sql#instance",
+    "name": "p1-cloudsqlinstance1",
+    "project": "p1",
+    "region": "europe-west1",
+    "gceZone": "europe-west1-a"
+}
+"""
+
+CLOUD_SQL_INSTANCE = resource_util.create_resource_from_json(
+    'cloudsqlinstance', PROJECT, _CLOUD_SQL_INSTANCE_JSON)
+
+_CLUSTER_JSON = """{
+    "name": "p1-cluster1",
+    "locations": ["europe-west1-a"]
+}
+"""
+
+CLUSTER = resource_util.create_resource_from_json(
+    'kubernetes_cluster', PROJECT, _CLUSTER_JSON)
+
+_DATASET_JSON = """{
+    "datasetReference": {
+        "datasetId": "p1-d1",
+        "projectId": "p1"
+    },
+    "id": "p1:p1-d1",
+    "kind": "bigquery#dataset",
+    "location": "EU"
+}
+"""
+
+DATASET = resource_util.create_resource_from_json(
+    'dataset', PROJECT, _DATASET_JSON)
+
+_GCE_INSTANCE_JSON = """{
+    "id": "p1-instance1",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/p1/zones/europe-west1-a/instances/p1-instance1"
+}"""
+
+GCE_INSTANCE = resource_util.create_resource_from_json(
+    'instance', PROJECT, _GCE_INSTANCE_JSON)
 
 def build_violations(res):
+    """Build an expected violation.
+
+    Args:
+        res (Resource): resource to create violation from.
+
+    Returns:
+        RuleViolation: The violation.
+    """
     return [location_rules_engine.RuleViolation(
         resource_id=res.id,
         resource_name=res.display_name,

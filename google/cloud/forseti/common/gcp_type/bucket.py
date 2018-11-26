@@ -84,7 +84,6 @@ class Bucket(resource.Resource):
         return cls(
             parent=parent,
             bucket_id=bucket_id,
-            name=cls.RESOURCE_NAME_FMT % bucket_id,
             full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
             display_name=bucket_id,
             locations=[bucket_dict['location']],

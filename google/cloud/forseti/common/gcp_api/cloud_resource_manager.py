@@ -22,8 +22,12 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
-
 LOGGER = logger.get_logger(__name__)
+# TODO: This should have been 'cloudresourcemanager', however 'crm' is what was
+# used in the existing server configuration, and will be difficult to change
+# without breaking existing deployments. Consider fixing once an upgrade tool
+# is created that can modify existing server configuration files.
+API_NAME = 'crm'
 
 
 class CloudResourceManagerRepositoryClient(
@@ -267,7 +271,7 @@ class CloudResourceManagerClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'crm')
+            global_configs, API_NAME)
 
         self.repository = CloudResourceManagerRepositoryClient(
             quota_max_calls=max_calls,
