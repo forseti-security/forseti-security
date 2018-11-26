@@ -17,10 +17,9 @@
 import functools
 import inspect
 from google.cloud.forseti.common.util import logger
-#from functools import wraps
 
 LOGGER = logger.get_logger(__name__)
-DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy', 'threading']
+DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 try:
     from opencensus.trace import config_integration
@@ -52,12 +51,9 @@ def create_client_interceptor(endpoint):
     """
     exporter = create_exporter()
     tracer = Tracer(exporter=exporter)
-    #LOGGER.info("before init: %s" % tracer.span_context)
     interceptor = client_interceptor.OpenCensusClientInterceptor(
         tracer,
         host_port=endpoint)
-    #LOGGER.info("after init: %s"
-    # % execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 def create_server_interceptor(extras=True):
@@ -100,7 +96,6 @@ def trace_integrations(integrations=None):
     LOGGER.info(tracer.span_context)
     return integrated_libraries
 
-
 def create_exporter(transport=None):
     """Create an exporter for traces.
 
@@ -139,7 +134,6 @@ def start_span(tracer, module, function, kind=None):
         kind (opencensus.trace.span.SpanKind): The span kind.
     """
     if tracer is not None:
-        LOGGER.info('%s.%s: %s', module, function, tracer.span_context)
         if kind is None:
             kind = SpanKind.SERVER
         span = tracer.start_span()
@@ -147,6 +141,7 @@ def start_span(tracer, module, function, kind=None):
         span.span_kind = kind
         tracer.add_attribute_to_current_span('module', module)
         tracer.add_attribute_to_current_span('function', function)
+        LOGGER.debug('%s.%s: %s', module, function, tracer.span_context)
 
 def end_span(tracer, **kwargs):
     """End a span.
@@ -156,7 +151,7 @@ def end_span(tracer, **kwargs):
         kwargs (dict): A set of attributes to set to the current span.
     """
     if tracer is not None:
-        LOGGER.info(tracer.span_context)
+        LOGGER.debug(tracer.span_context)
         set_attributes(tracer, **kwargs)
         tracer.end_span()
 
@@ -172,7 +167,7 @@ def set_attributes(tracer, **kwargs):
         try:
             tracer.add_attribute_to_current_span(key, value)
         except Exception:
-            LOGGER.warning('Could\'t set attribute %s=%s to current span',
+            LOGGER.debug('Could not set attribute %s=%s to current span',
                            key, value)
 
 def get_tracer(inst, attr=None):
@@ -181,7 +176,7 @@ def get_tracer(inst, attr=None):
     This function can get a tracer from any instance attribute if `attr` is
     passed.
 
-    Otherwise, it will look for a tracer in the DEFAULT_ATTRIBUTES before
+    Otherwise, it will look for a tracer in the `default_attributes` before
     falling back on the OpenCensus execution context tracer.
 
     Args:
@@ -210,7 +205,7 @@ def get_tracer(inst, attr=None):
             rsetattr(inst, attr, tracer)
 
         # Log span context
-        LOGGER.info('%s: %s', inst, tracer.span_context)
+        LOGGER.debug('%s: %s', inst, tracer.span_context)
 
     return tracer
 
@@ -277,12 +272,11 @@ def trace(attr=None):
             func: Decorated function.
         """
         def wrapper(self, *args, **kwargs):
-            """Wrapper class
+            """Method wrapper.
 
             Args:
-                *args: Argument list passed to a function
-                **kwargs: Variable number of arguments dictionary passed
-                to a function
+                *args: Argument list passed to the function.
+                **kwargs: Argument dictionary passed to the function.
             """
             if OPENCENSUS_ENABLED:
                 tracer = get_tracer(self, attr)
@@ -291,11 +285,13 @@ def trace(attr=None):
             result = func(self, *args, **kwargs)
             if OPENCENSUS_ENABLED:
                 end_span(tracer, result=result)
+            return result
         return wrapper
     return decorator
 
 def rsetattr(obj, attr, val):
     """Set nested attribute in object.
+
     Args:
         obj (Object): An instance of a class.
         attr (str): The attribute to set the tracer to.
@@ -310,6 +306,7 @@ def rsetattr(obj, attr, val):
 
 def rgetattr(obj, attr, *args):
     """Get nested attribute in object.
+
     Args:
         obj (Object): An instance of a class.
         attr (str): The attribute to get the tracer from.
