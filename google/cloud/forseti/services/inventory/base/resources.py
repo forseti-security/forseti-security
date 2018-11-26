@@ -1318,7 +1318,7 @@ def resource_iter_class_factory(api_method_name,
                     args = []
                     if api_method_arg_key:
                         args.append(self.resource[api_method_arg_key])
-                    LOGGER.info('Subclass: %s;;%s;;%s', str(iter_method), str(args), str(kwargs))
+                    LOGGER.info('Subclass: %s||%s %s;;%s;;%s', type(resource), str(resource), str(iter_method), str(args), str(kwargs))
                     for data in iter_method(*args, **kwargs):
                         yield FACTORIES[resource_name].create_new(data)
                 except ResourceNotSupported as e:
