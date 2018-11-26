@@ -15,4 +15,5 @@
 rules:
 - name: Only allow access to projects in my organization.
   allowed_ancestors:
-  - organizations/{ORGANIZATION_ID}
+  - organizations/660570133860
+  # {ORGANIZATION_ID}
