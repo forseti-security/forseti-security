@@ -832,7 +832,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self['datasetReference']['datasetId'])
 
 # Bqtable resource classes
-class Bqtable(resource_class_factory('bqtable', 'id')):
+class Bqtable(resource_class_factory('bigquery_table', 'id')):
    """The Resource implementation for bigquery table."""
 
    @cached('bqtable')
