@@ -39,7 +39,7 @@ class _BqtableRepository(
            **kwargs (dict): The args to pass into GCPRepository.__init__()
        """
        global important_log
-       important_log = '123123123'
+       important_log = str(**kwargs)
        super(_BqtableRepository, self).__init__(
            key_field=None, component='tables', **kwargs)
 
