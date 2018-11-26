@@ -24,6 +24,8 @@ from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
 
+important_log = ''
+
 class _BqtableRepository(
         repository_mixins.GetQueryMixin,  #If you need get API
         repository_mixins.ListQueryMixin, #If you need list API
@@ -36,6 +38,8 @@ class _BqtableRepository(
        Args:
            **kwargs (dict): The args to pass into GCPRepository.__init__()
        """
+       global important_log
+       important_log = '123123123'
        super(_BqtableRepository, self).__init__(
            key_field=None, component='taBLes', **kwargs)
 
@@ -110,7 +114,7 @@ class BqtableClient(object):
                 projectId=project_id, datasetId=dataset_id)
             flattened_results = api_helpers.flatten_list_results(
                 results, 'tables')
-            LOGGER.debug('get tables from project %s', project_id)
+            LOGGER.info('get tables %s from project %s', important_log, project_id)
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError('bqtable', e)
 
