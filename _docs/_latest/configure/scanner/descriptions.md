@@ -116,7 +116,8 @@ supports the following:
 
 * Whitelist, blacklist, and required modes.
 * Define if the scope of the rule inherits from parents or just self.
-* Access to specific organization, folder, project or bucket resource types.
+* Access to specific organization, billing account, folder, project, and bucket
+ resource types.
 
 For examples of how to define scanner rules for Cloud IAM policies, see the
 [`iam_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/iam_rules.yaml)
