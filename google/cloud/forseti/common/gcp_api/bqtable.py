@@ -40,8 +40,8 @@ class _BqtableRepository(
        """
        global important_log
        tmpstr = ''
-       for i in **kwargs:
-         tmpstr = tmpstr + ';;' + str(i)
+       for key, value in kwargs.items()
+         tmpstr = tmpstr + ';;' + "{0} = {1}".format(key, value)
        important_log = tmpstr
        super(_BqtableRepository, self).__init__(
            key_field=None, component='tables', **kwargs)
