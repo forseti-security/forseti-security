@@ -40,7 +40,11 @@ class _BqtableRepository(
        """
        global important_log
 
-       important_log = str(type(kwargs))+';;'+str(type(kwargs['gcp_service']))+';;'+str(kwargs['gcp_service'].__dict__)
+       tmpstr = ''
+       for i in kwargs['gcp_service'].__dict__.keys():
+         tmpstr = tmpstr + i + '||'
+
+       important_log = str(type(kwargs))+';;'+str(type(kwargs['gcp_service']))+';;'+tmpstr
 
        super(_BqtableRepository, self).__init__(
            key_field=None, component='tables', **kwargs)
