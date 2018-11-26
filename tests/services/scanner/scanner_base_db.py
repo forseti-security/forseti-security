@@ -34,6 +34,7 @@ FAKE_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_111',
      'resource_type': 'firewall_rule',
      'resource_data': 'inventory_data_111',
+     'resource_name': 'fw-tag-match_111',
     },
     {'resource_id': 'fake_firewall_222',
      'full_name': 'full_name_222',
@@ -46,6 +47,7 @@ FAKE_VIOLATIONS = [
      'violation_type': 'FIREWALL_BLACKLIST_VIOLATION_222',
      'resource_type': 'firewall_rule',
      'resource_data': 'inventory_data_222',
+     'resource_name': 'fw-tag-match_222',
     }
 ]
 

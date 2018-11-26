@@ -16,6 +16,7 @@
 
 import json
 import os
+import tempfile
 import yaml
 
 from google.cloud.forseti.common.gcp_api import storage
@@ -41,6 +42,31 @@ def read_and_parse_file(file_path):
         return _read_file_from_gcs(file_path)
 
     return _read_file_from_local(file_path)
+
+
+def copy_file_from_gcs(file_path, output_path=None, storage_client=None):
+    """Copy file from GCS to local file.
+
+     Args:
+        file_path (str): The full GCS path to the file.
+        output_path (str): The local file to copy to, if not set creates a
+            temporary file.
+        storage_client (storage.StorageClient): The Storage API Client to use
+            for downloading the file using the API.
+
+     Returns:
+        str: The output_path the file was copied to.
+    """
+    if not storage_client:
+        storage_client = storage.StorageClient()
+
+    if not output_path:
+        _, output_path = tempfile.mkstemp()
+
+    with open(output_path, mode='wb') as f:
+        storage_client.download(full_bucket_path=file_path, output_file=f)
+
+    return output_path
 
 
 def _get_filetype_parser(file_path, parser_type):

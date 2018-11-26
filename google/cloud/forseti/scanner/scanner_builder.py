@@ -54,10 +54,20 @@ class ScannerBuilder(object):
         for scanner in self.scanner_configs.get('scanners'):
             if scanner.get('enabled'):
                 module_path = 'google.cloud.forseti.scanner.scanners.{}'
+
+                requirements_map = scanner_requirements_map.REQUIREMENTS_MAP
+                if not scanner.get('name') in requirements_map:
+                    log_message = (
+                        'Configured scanner is undefined '
+                        'in scanner requirements map : %s')
+                    LOGGER.error(log_message, scanner.get('name'))
+                    continue
+
                 module_name = module_path.format(
                     scanner_requirements_map.REQUIREMENTS_MAP
                     .get(scanner.get('name'))
                     .get('module_name'))
+
                 try:
                     module = importlib.import_module(module_name)
                 except (ImportError, TypeError, ValueError):

@@ -402,6 +402,13 @@ class CloudResourceManagerTest(unittest_utils.ForsetiTestCase):
                     resource_id,
                     fake_crm_responses.TEST_ORG_POLICY_CONSTRAINT)
 
+    def test_get_liens(self):
+        """Test get liens."""
+        http_mocks.mock_http_response(fake_crm_responses.GET_LIENS)
+        response = self.crm_api_client.get_project_liens(
+            fake_crm_responses.FAKE_PROJECT_ID)
+        self.assertEqual(response, fake_crm_responses.EXPECTED_LIENS)
+
 
 if __name__ == '__main__':
     unittest.main()

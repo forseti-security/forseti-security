@@ -23,10 +23,11 @@ from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+API_NAME = 'servicemanagement'
 
 
 class ServiceManagementRepositoryClient(_base_repository.BaseRepositoryClient):
-    """ServiceManagement API Respository."""
+    """Service Management API Respository."""
 
     def __init__(self,
                  quota_max_calls=None,
@@ -47,7 +48,7 @@ class ServiceManagementRepositoryClient(_base_repository.BaseRepositoryClient):
         self._services = None
 
         super(ServiceManagementRepositoryClient, self).__init__(
-            'servicemanagement', versions=['v1'],
+            API_NAME, versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -65,9 +66,19 @@ class ServiceManagementRepositoryClient(_base_repository.BaseRepositoryClient):
 
 
 class _ServiceManagementServicesRepository(
+        repository_mixins.GetIamPolicyQueryMixin,
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
-    """Implementation of Service Management Services repository."""
+    """Implementation of Service Management Services repository.
+
+    NOTE: unlike the list() API used for other GCP resources, the
+    services.list() API does not accept a singular 'resource'. Instead, two
+    optional arguments allow specification of either the producer (parent)
+    project (which results in a list of its child services), or the consumer
+    project (which results in a list of services enabled on that project).
+    If neither is specified, services.list() returns *all* visible services
+    (where visibility is based on the provided credentials).
+    """
 
     def __init__(self, **kwargs):
         """Constructor.
@@ -76,27 +87,44 @@ class _ServiceManagementServicesRepository(
             **kwargs (dict): The args to pass into GCPRepository.__init__()
         """
         super(_ServiceManagementServicesRepository, self).__init__(
-            component='services', max_results_field='pageSize', key_field=None,
-            **kwargs)
+            component='services', max_results_field='pageSize',
+            key_field='serviceName', **kwargs)
 
     @staticmethod
-    def get_name(project_id):
-        """Format's an organization_id to pass in to .get().
+    def get_formatted_project_name(project_id):
+        """Returns a formatted project_id string, required for some api args.
 
         Args:
             project_id (str): The project id to query, either just the
                 id or the id prefixed with 'projects/'.
 
         Returns:
-            str: The formatted resource name.
+            str: The formatted project id.
         """
         if not project_id.startswith('project:'):
             project_id = 'project:{}'.format(project_id)
         return project_id
 
+    @staticmethod
+    def get_formatted_service_name(service_name):
+        """Returns a formatted service_name string, required for some api args.
+
+        Args:
+            service_name (str): The name of the service to query.
+
+        Returns:
+            str: The formatted service name.
+        """
+        if not service_name.startswith('services/'):
+            service_name = 'services/{}'.format(service_name)
+        return service_name
+
 
 class ServiceManagementClient(object):
     """Service Management Client."""
+
+    # Maximum number of results to fetch per page for paged API calls
+    DEFAULT_MAX_RESULTS = 100
 
     def __init__(self, global_configs, **kwargs):
         """Initialize.
@@ -106,18 +134,15 @@ class ServiceManagementClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'servicemanagement')
+            global_configs, API_NAME)
 
         self.repository = ServiceManagementRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
             use_rate_limiter=kwargs.get('use_rate_limiter', True))
 
-    def get_enabled_apis(self, project_id):
-        """Gets the enabled APIs for a project.
-
-        Args:
-            project_id (int): The project id for a GCP project.
+    def get_all_apis(self):
+        """Gets all APIs that can be enabled (based on caller's permissions).
 
         Returns:
             list: A list of ManagedService resource dicts.
@@ -131,19 +156,126 @@ class ServiceManagementClient(object):
             ApiExecutionError: ApiExecutionError is raised if the call to the
                 GCP API fails.
         """
-
         try:
-            name = self.repository.services.get_name(project_id)
-            paged_results = self.repository.services.list(consumerId=name,
-                                                          max_results=100)
-            flattened_results = api_helpers\
-                .flatten_list_results(paged_results, 'services')
-            LOGGER.debug('Getting the enabled APIs for a project, project_id '
-                         '= %s, flattened_results = %s',
-                         project_id, flattened_results)
-            return flattened_results
+            paged_results = self.repository.services.list(
+                max_results=self.DEFAULT_MAX_RESULTS)
+            flattened_results = api_helpers.flatten_list_results(paged_results,
+                                                                 'services')
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_exception = api_errors.ApiExecutionError('', e)
+            LOGGER.exception(api_exception)
+            raise api_exception
+
+        LOGGER.debug('Getting all visible APIs, flattened_results = %s',
+                     flattened_results)
+        return flattened_results
+
+    def get_produced_apis(self, project_id):
+        """Gets the APIs produced by a project.
+
+        Args:
+            project_id (str): The project id for a GCP project.
+
+        Returns:
+            list: A list of ManagedService resource dicts.
+            https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService
+
+            {
+              "serviceName": string,
+              "producerProjectId": string,
+            }
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        try:
+            paged_results = self.repository.services.list(
+                producerProjectId=project_id,
+                max_results=self.DEFAULT_MAX_RESULTS)
+            flattened_results = api_helpers.flatten_list_results(paged_results,
+                                                                 'services')
         except (errors.HttpError, HttpLib2Error) as e:
             api_exception = api_errors.ApiExecutionError(
                 'name', e, 'project_id', project_id)
             LOGGER.exception(api_exception)
             raise api_exception
+
+        LOGGER.debug('Getting the APIs produced by a project, project_id = %s, '
+                     'flattened_results = %s', project_id, flattened_results)
+        return flattened_results
+
+    def get_enabled_apis(self, project_id):
+        """Gets the enabled APIs for a project.
+
+        Args:
+            project_id (str): The project id for a GCP project.
+
+        Returns:
+            list: A list of ManagedService resource dicts.
+            https://cloud.google.com/service-management/reference/rest/v1/services#ManagedService
+
+            {
+              "serviceName": string,
+              "producerProjectId": string,
+            }
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        # The consumerId arg must be formatted as 'project:<project_id>'
+        formatted_project_id = self.repository.services.\
+            get_formatted_project_name(project_id)
+        try:
+            paged_results = self.repository.services.list(
+                consumerId=formatted_project_id,
+                max_results=self.DEFAULT_MAX_RESULTS)
+            flattened_results = api_helpers.flatten_list_results(paged_results,
+                                                                 'services')
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_exception = api_errors.ApiExecutionError(
+                'name', e, 'project_id', project_id)
+            LOGGER.exception(api_exception)
+            raise api_exception
+
+        LOGGER.debug('Getting the enabled APIs for a project, project_id = %s, '
+                     'flattened_results = %s', project_id, flattened_results)
+        return flattened_results
+
+    def get_api_iam_policy(self, service_name):
+        """Gets the IAM policy associated with a service.
+
+        NOTE: This does *not* include IAM policy inherited from a service's
+        producer project. (I.e. project-level IAM Policy may grant service-level
+        permissions that do not appear in a service's IAM Policy.)
+
+        Args:
+            service_name (str): The service name to query.
+
+        Returns:
+            dict: A single Policy resource dict.
+            https://cloud.google.com/service-infrastructure/docs/service-management/reference/rest/v1/Policy
+
+            {
+              "version": string,
+              "bindings": list(Binding),
+              "auditConfigs": list(AuditConfig),
+              "etag": string,
+            }
+
+        Raises:
+            ApiExecutionError: ApiExecutionError is raised if the call to the
+                GCP API fails.
+        """
+        # The service_name arg must be formatted as 'services/<service_name>'
+        name = self.repository.services.get_formatted_service_name(service_name)
+        try:
+            result = self.repository.services.get_iam_policy(name)
+        except (errors.HttpError, HttpLib2Error) as e:
+            api_exception = api_errors.ApiExecutionError(
+                'serviceIamPolicy', e, 'serviceName', service_name)
+            LOGGER.exception(api_exception)
+            raise api_exception
+
+        LOGGER.debug('Getting IAM Policy for a service, service_name = %s, '
+                     'result = %s', service_name, result)
+        return result

@@ -22,8 +22,6 @@ from urlparse import urljoin
 import google_auth_httplib2
 import googleapiclient
 from googleapiclient import discovery
-from googleapiclient.http import set_user_agent
-import httplib2
 from ratelimiter import RateLimiter
 from retrying import retry
 import uritemplate
@@ -31,18 +29,15 @@ import uritemplate
 import google.auth
 from google.auth.credentials import with_scopes_if_required
 
-from google.cloud import forseti as forseti_security
 from google.cloud.forseti.common.gcp_api import _supported_apis
 from google.cloud.forseti.common.gcp_api import errors as api_errors
+from google.cloud.forseti.common.util import http_helpers
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import replay
 from google.cloud.forseti.common.util import retryable_exceptions
 import google.oauth2.credentials
 
 CLOUD_SCOPES = frozenset(['https://www.googleapis.com/auth/cloud-platform'])
-
-# Per request max wait timeout.
-HTTP_REQUEST_TIMEOUT = 30.0
 
 # Per thread storage.
 LOCAL_THREAD = threading.local()
@@ -68,7 +63,8 @@ DISCOVERY_DOCS_BASE_DIR = os.path.join(os.path.abspath(
        wait_exponential_multiplier=1000, wait_exponential_max=10000,
        stop_max_attempt_number=5)
 def _create_service_api(credentials, service_name, version, is_private_api,
-                        developer_key=None, cache_discovery=False):
+                        developer_key=None, cache_discovery=False,
+                        use_versioned_discovery_doc=False):
     """Builds and returns a cloud API service object.
 
     Args:
@@ -81,6 +77,8 @@ def _create_service_api(credentials, service_name, version, is_private_api,
             associated with the API call, most API services do not require
             this to be set.
         cache_discovery (bool): Whether or not to cache the discovery doc.
+        use_versioned_discovery_doc (bool): When set to true, will use the
+            discovery doc with the version suffix in the filename.
 
     Returns:
         object: A Resource object with methods for interacting with the service.
@@ -93,7 +91,12 @@ def _create_service_api(credentials, service_name, version, is_private_api,
 
     # Used for private APIs that are built from a local discovery file
     if is_private_api:
-        service_json = '{}.json'.format(service_name)
+
+        if use_versioned_discovery_doc:
+            service_json = '{}_{}.json'.format(service_name, version)
+        else:
+            service_json = '{}.json'.format(service_name)
+
         service_path = os.path.join(DISCOVERY_DOCS_BASE_DIR, service_json)
         return _build_service_from_document(
             credentials,
@@ -130,26 +133,6 @@ def _build_service_from_document(credentials, document_path):
     )
 
 
-def _build_http(http=None):
-    """Set custom Forseti user agent and timeouts on a new http object.
-
-    Args:
-        http (object): An instance of httplib2.Http, or compatible, used for
-            testing.
-
-    Returns:
-        httplib2.Http: An http object with the forseti user agent set.
-    """
-    if not http:
-        http = httplib2.Http(timeout=HTTP_REQUEST_TIMEOUT)
-    user_agent = 'Python-httplib2/{} (gzip), {}/{}'.format(
-        httplib2.__version__,
-        forseti_security.__package_name__,
-        forseti_security.__version__)
-
-    return set_user_agent(http, user_agent)
-
-
 # pylint: disable=too-many-instance-attributes
 class BaseRepositoryClient(object):
     """Base class for API repository for a specified Cloud API."""
@@ -162,6 +145,7 @@ class BaseRepositoryClient(object):
                  quota_period=None,
                  use_rate_limiter=False,
                  read_only=False,
+                 use_versioned_discovery_doc=False,
                  **kwargs):
         """Constructor.
 
@@ -177,6 +161,8 @@ class BaseRepositoryClient(object):
                 limiter for this service.
             read_only (bool): When set to true, disables any API calls that
                 would modify a resource within the repository.
+            use_versioned_discovery_doc (bool): When set to true, will use the
+                discovery doc with the version suffix in the filename.
             **kwargs (dict): Additional args such as version.
         """
         self._use_cached_http = False
@@ -233,7 +219,8 @@ class BaseRepositoryClient(object):
                 version,
                 self.is_private_api,
                 kwargs.get('developer_key'),
-                kwargs.get('cache_discovery', False))
+                kwargs.get('cache_discovery', False),
+                use_versioned_discovery_doc)
 
     def __repr__(self):
         """The object representation.
@@ -357,7 +344,7 @@ class GCPRepository(object):
             return self._local.http
 
         authorized_http = google_auth_httplib2.AuthorizedHttp(
-            self._credentials, http=_build_http())
+            self._credentials, http=http_helpers.build_http())
 
         if self._use_cached_http:
             self._local.http = authorized_http

@@ -459,3 +459,14 @@ class ForsetiInstaller(object):
         self.version = other_installer.version
         self.project_id = other_installer.project_id
         self.organization_id = other_installer.organization_id
+
+    def format_firewall_rule_name(self, rule_name):
+        """Format firewall rule name.
+
+        Args:
+            rule_name (str): Name of the firewall rule.
+
+        Returns:
+            str: Firewall rule name.
+        """
+        return '{}-{}'.format(rule_name, self.config.identifier)

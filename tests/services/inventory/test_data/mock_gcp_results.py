@@ -20,6 +20,7 @@ tests/services/model/importer/update_test_dbs.py.
 import json
 
 ORGANIZATION_ID = "organizations/111222333"
+FOLDER_ID = "folders/444555666"
 
 GSUITE_CUSTOMER_ID = "ABC123DEF"
 
@@ -45,6 +46,7 @@ SERVICEACCOUNT_KEY_ID_PREFIX = "116"
 GCE_IMAGE_ID_PREFIX = "117"
 GCE_DISK_ID_PREFIX = "118"
 SNAPSHOT_ID_PREFIX = "119"
+LIEN_ID_PREFIX = "120"
 
 # Fields: id, email, name
 AD_USER_TEMPLATE = """
@@ -147,6 +149,14 @@ AD_GET_GROUP_MEMBERS = {
                 id=2, email="b_user@forseti.test", type="USER"))
     ],
     GROUP_ID_PREFIX + "3": [
+        json.loads(
+            AD_GROUP_MEMBER_TEMPLATE.format(
+                id=3, email="c_user@forseti.test", type="USER")),
+        json.loads(
+            AD_GROUP_MEMBER_TEMPLATE.format(
+                id=5, email="b_grp@forseti.test", type="GROUP")),
+    ],
+    GROUP_ID_PREFIX + "4": [
         json.loads(
             AD_GROUP_MEMBER_TEMPLATE.format(
                 id=3, email="c_user@forseti.test", type="USER")),
@@ -268,7 +278,7 @@ BQ_GET_DATASETS_FOR_PROJECTID = {
 }
 
 BQ_GET_DATASET_ACCESS = {
-    "project3": {
+    PROJECT_ID_PREFIX + "3": {
         "dataset1": [{
             "role": "WRITER",
             "specialGroup": "projectWriters"
@@ -320,7 +330,8 @@ CRM_GET_FOLDER = {
     "folders/" + FOLDER_ID_PREFIX + "3":
         json.loads(
             CRM_FOLDER_TEMPLATE.format(
-                id=3, parent="folders/2", name="Folder 3")),
+                id=3, parent="folders/" + FOLDER_ID_PREFIX + "2",
+                name="Folder 3")),
 }
 
 CRM_GET_FOLDERS = {
@@ -374,7 +385,7 @@ CRM_GET_PROJECT = {
                 id="project3",
                 name="Project 3",
                 parent_type="folder",
-                parent_id="1")),
+                parent_id=FOLDER_ID_PREFIX + "1")),
     PROJECT_ID_PREFIX + "4":
         json.loads(
             CRM_PROJECT_TEMPLATE.format(
@@ -382,7 +393,7 @@ CRM_GET_PROJECT = {
                 id="project4",
                 name="Project 4",
                 parent_type="folder",
-                parent_id="3")),
+                parent_id=FOLDER_ID_PREFIX + "3")),
 }
 
 CRM_GET_PROJECTS = {
@@ -557,10 +568,77 @@ CRM_GET_IAM_POLICIES = {
     "folders/" + FOLDER_ID_PREFIX + "1": json.loads(CRM_FOLDER_IAM_POLICY),
     "folders/" + FOLDER_ID_PREFIX + "2": json.loads(CRM_FOLDER_IAM_POLICY),
     "folders/" + FOLDER_ID_PREFIX + "3": json.loads(CRM_FOLDER_IAM_POLICY),
-    "project1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
-    "project2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
-    "project3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
-    "project4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
+    PROJECT_ID_PREFIX + "1": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=1)),
+    PROJECT_ID_PREFIX + "2": json.loads(CRM_PROJECT_IAM_POLICY_TEMPLATE.format(id=2)),
+    PROJECT_ID_PREFIX + "3": json.loads(CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES.format(id=3)),
+    PROJECT_ID_PREFIX + "4": json.loads(CRM_PROJECT_IAM_POLICY_DUP_MEMBER.format(id=4)),
+}
+
+CRM_ORG_ORG_POLICIES = """
+[
+  {
+    "constraint": "constraints/compute.disableSerialPortAccess",
+    "booleanPolicy": {
+     "enforced": true
+    }
+  },
+  {
+    "constraint": "constraints/compute.storageResourceUseRestrictions",
+    "list_policy": {
+      "all_values": "ALLOW"
+    }
+  }
+]
+"""
+
+CRM_FOLDER_ORG_POLICIES = """
+[
+  {
+    "constraint": "constraints/storage.requireIamAclsOnly",
+    "boolean_policy": {
+      "enforced": true
+    }
+  }
+]
+"""
+
+
+CRM_PROJECT_ORG_POLICIES = """
+[
+  {
+    "constraint": "constraints/compute.trustedImageProjects",
+    "list_policy": {
+      "allowed_values": [
+        "is:projects/my-good-images",
+        "is:projects/my-other-images",
+        "is:projects/trusted-cloud-images"
+      ]
+    }
+  }
+]
+"""
+
+CRM_GET_ORG_POLICIES = {
+    ORGANIZATION_ID: json.loads(CRM_ORG_ORG_POLICIES),
+    "folders/" + FOLDER_ID_PREFIX + "1": json.loads(CRM_FOLDER_ORG_POLICIES),
+    "folders/" + FOLDER_ID_PREFIX + "2": {},
+    "folders/" + FOLDER_ID_PREFIX + "3": {},
+    PROJECT_ID_PREFIX + "1": json.loads(CRM_PROJECT_ORG_POLICIES),
+    PROJECT_ID_PREFIX + "2": json.loads(CRM_PROJECT_ORG_POLICIES),
+    PROJECT_ID_PREFIX + "3": {},
+    PROJECT_ID_PREFIX + "4": {},
+}
+
+CRM_GET_PROJECT_LIENS = {
+    PROJECT_ID_PREFIX + "1": [{
+        "name": "liens/" + LIEN_ID_PREFIX,
+        "parent": "projects/project1",
+        "restrictions": [
+            "resourcemanager.projects.delete"
+        ],
+        "origin": "testing",
+        "createTime": "2018-09-05T14:45:46.534Z",
+    }],
 }
 
 GCP_PERMISSION_DENIED_TEMPLATE = """
@@ -646,7 +724,7 @@ SQL_INSTANCE_TEMPLATE = """
 """
 
 SQL_GET_INSTANCES = {
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(
             SQL_INSTANCE_TEMPLATE.format(
                 name="forseti", project="project2", ip="192.168.2.2")),
@@ -706,15 +784,15 @@ GCE_PROJECT_TEMPLATE = """
 """
 
 GCE_GET_PROJECT = {
-    "project1":
+    PROJECT_ID_PREFIX + "1":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
                 num=1, id="project1", projnum=PROJECT_ID_PREFIX + "1")),
-    "project2":
+    PROJECT_ID_PREFIX + "2":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
-                num=2, id="project2", projnum=PROJECT_ID_PREFIX + "1")),
-    "project3":
+                num=2, id="project2", projnum=PROJECT_ID_PREFIX + "2")),
+    PROJECT_ID_PREFIX + "3":
         json.loads(
             GCE_PROJECT_TEMPLATE.format(
                 num=3, id="project3", projnum=PROJECT_ID_PREFIX + "3")),
@@ -883,7 +961,7 @@ GCE_INSTANCE_TEMPLATE_STANDARD = """
 """
 
 GCE_GET_INSTANCES = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             GCE_INSTANCE_TEMPLATE_IAP.format(
                 id=1,
@@ -918,7 +996,7 @@ GCE_GET_INSTANCES = {
                 template="instance_template1",
                 groupmanager="group_manager1")),
     ],
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(
             GCE_INSTANCE_TEMPLATE_STANDARD.format(
                 id=4,
@@ -1080,11 +1158,11 @@ GCE_FIREWALL_TEMPLATE_IAP = """
 """
 
 GCE_GET_FIREWALLS = {
-    "project1":
+    PROJECT_ID_PREFIX + "1":
         json.loads(
             GCE_FIREWALL_TEMPLATE_IAP.format(
                 id=1, project="project1", network="default")),
-    "project2":
+    PROJECT_ID_PREFIX + "2":
         json.loads(
             GCE_FIREWALL_TEMPLATE_DEFAULT.format(
                 id=2, project="project2", network="default")),
@@ -1116,7 +1194,7 @@ GCE_DISKS_TEMPLATE = """
 """
 
 GCE_GET_DISKS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             GCE_DISKS_TEMPLATE.format(
                 id=1,
@@ -1136,7 +1214,7 @@ GCE_GET_DISKS = {
                 project="project1",
                 zone="us-central1-c")),
     ],
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(
             GCE_DISKS_TEMPLATE.format(
                 id=4,
@@ -1205,13 +1283,39 @@ GCE_IMAGES_TEMPLATE = """
 """
 
 GCE_GET_IMAGES = {
-    "project2":
+    PROJECT_ID_PREFIX + "2":
         json.loads(
             GCE_IMAGES_TEMPLATE.format(
                 id=1, project="project2")),
 }
 
-# Fields: id, name, project, network, instance1, instance2, instance3
+# Fields: project, instance1, instance2, instance3
+GCE_INSTANCE_GROUP_INSTANCES_TEMPLATE = """
+[
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance1}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance2}",
+  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance3}"
+]
+"""
+
+GCE_GET_INSTANCE_GROUP_INSTANCES = {
+    PROJECT_ID_PREFIX + "1": {
+        "bs-1-ig-1": json.loads(
+            GCE_INSTANCE_GROUP_INSTANCES_TEMPLATE.format(
+                project="project1",
+                instance1="iap_instance1",
+                instance2="iap_instance2",
+                instance3="iap_instance3")),
+        "gke-cluster-1-default-pool-12345678-grp": json.loads(
+            GCE_INSTANCE_GROUP_INSTANCES_TEMPLATE.format(
+                project="project1",
+                instance1="ke_instance1",
+                instance2="ke_instance2",
+                instance3="ke_instance3")),
+    }
+}
+
+# Fields: id, name, project, network
 GCE_INSTANCE_GROUPS_TEMPLATE = """
 {{
  "kind": "compute#instanceGroup",
@@ -1224,35 +1328,24 @@ GCE_INSTANCE_GROUPS_TEMPLATE = """
  "selfLink": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/instanceGroups/{name}",
  "size": 3,
  "region": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1",
- "subnetwork": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{network}",
- "instance_urls": [
-  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance1}",
-  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance2}",
-  "https://www.googleapis.com/compute/v1/projects/{project}/zones/us-central1-c/instances/{instance3}"
- ]
+ "subnetwork": "https://www.googleapis.com/compute/v1/projects/{project}/regions/us-central1/subnetworks/{network}"
 }}
 """
 
 GCE_GET_INSTANCE_GROUPS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             GCE_INSTANCE_GROUPS_TEMPLATE.format(
                 id=1,
                 name="bs-1-ig-1",
                 project="project1",
-                network="default",
-                instance1="iap_instance1",
-                instance2="iap_instance2",
-                instance3="iap_instance3")),
+                network="default")),
         json.loads(
             GCE_INSTANCE_GROUPS_TEMPLATE.format(
                 id=2,
                 name="gke-cluster-1-default-pool-12345678-grp",
                 project="project1",
-                network="default",
-                instance1="ke_instance1",
-                instance2="ke_instance2",
-                instance3="ke_instance3")),
+                network="default")),
     ]
 }
 
@@ -1297,7 +1390,7 @@ GCE_BACKEND_SERVICES_TEMPLATE_IAP = """
 """
 
 GCE_GET_BACKEND_SERVICES = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             GCE_BACKEND_SERVICES_TEMPLATE_IAP.format(
                 id=1,
@@ -1327,7 +1420,7 @@ FORWARDING_RULES_TEMPLATE = """
 """
 
 GCE_GET_FORWARDING_RULES = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             FORWARDING_RULES_TEMPLATE.format(
                 id=1,
@@ -1392,7 +1485,7 @@ KE_INSTANCE_GROUP_MANAGER_TEMPLATE = """
 """
 
 GCE_GET_INSTANCE_GROUP_MANAGERS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             INSTANCE_GROUP_MANAGER_TEMPLATE.format(
                 id=1, name="igm-1", project="project1", template="it-1")),
@@ -1477,7 +1570,7 @@ INSTANCE_TEMPLATES_TEMPLATE = """
 """
 
 GCE_GET_INSTANCE_TEMPLATES = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             INSTANCE_TEMPLATES_TEMPLATE.format(
                 id=1,
@@ -1523,11 +1616,11 @@ NETWORK_TEMPLATE = """
 """
 
 GCE_GET_NETWORKS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             NETWORK_TEMPLATE.format(id=1, name="default", project="project1")),
     ],
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(
             NETWORK_TEMPLATE.format(id=2, name="default", project="project2")),
     ]
@@ -1543,7 +1636,7 @@ SNAPSHOT_TEMPLATE = """
  "name": "{name}",
  "description": "",
  "status": "READY",
- "sourceDisk": "https://www.googleapis.com/compute/beta/projects/project1/zones/{zone}/disks/{name}",
+ "sourceDisk": "https://www.googleapis.com/compute/beta/projects/{project}/zones/{zone}/disks/{name}",
  "sourceDiskId": "7102445878994667099",
  "diskSizeGb": "10",
  "storageBytes": "536550912",
@@ -1551,7 +1644,7 @@ SNAPSHOT_TEMPLATE = """
  "licenses": [
   "https://www.googleapis.com/compute/beta/projects/debian-cloud/global/licenses/debian-9-stretch"
  ],
- "selfLink": "https://www.googleapis.com/compute/beta/projects/project1/global/snapshots/{name}",
+ "selfLink": "https://www.googleapis.com/compute/beta/projects/{project}/global/snapshots/{name}",
  "labelFingerprint": "foofoo456",
  "licenseCodes": [
   "1000205"
@@ -1563,11 +1656,11 @@ SNAPSHOT_TEMPLATE = """
 """
 
 GCE_GET_SNAPSHOTS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(SNAPSHOT_TEMPLATE.format(id=1, name='snap-1', project='project1', zone='us-east1-b')),
         json.loads(SNAPSHOT_TEMPLATE.format(id=2, name='snap-2', project='project1', zone='europe-west4-a'))
     ],
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(SNAPSHOT_TEMPLATE.format(id=3, name='snap-1', project='project2', zone='asia-south1-c')),
     ]
 }
@@ -1609,8 +1702,8 @@ def _generate_subnetworks(project, startid):
 
 
 GCE_GET_SUBNETWORKS = {
-    "project1": _generate_subnetworks("project1", 10),
-    "project2": _generate_subnetworks("project2", 30),
+    PROJECT_ID_PREFIX + "1": _generate_subnetworks("project1", 10),
+    PROJECT_ID_PREFIX + "2": _generate_subnetworks("project2", 30),
 }
 
 # Fields: name, num
@@ -1956,7 +2049,7 @@ CONTAINER_CLUSTERS_TEMPLATE = """
 """
 
 KE_GET_CLUSTERS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             CONTAINER_CLUSTERS_TEMPLATE.format(
                 project="project1", cl_name="cluster-1", np_name="default-pool",
@@ -2106,16 +2199,16 @@ BILLING_DISABLED_TEMPLATE = """
 """
 
 BILLING_GET_INFO = {
-    "project1":
+    PROJECT_ID_PREFIX + "1":
         json.loads(
             BILLING_ENABLED_TEMPLATE.format(project="project1")),
-    "project2":
+    PROJECT_ID_PREFIX + "2":
         json.loads(
             BILLING_ENABLED_TEMPLATE.format(project="project2")),
-    "project3":
+    PROJECT_ID_PREFIX + "3":
         json.loads(
             BILLING_ENABLED_TEMPLATE.format(project="project3")),
-    "project4":
+    PROJECT_ID_PREFIX + "4":
         json.loads(
             BILLING_DISABLED_TEMPLATE.format(project="project4")),
 }
@@ -2205,21 +2298,21 @@ STORAGE_API_ENABLED = """
 """
 
 SERVICEMANAGEMENT_ENABLED_APIS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(STORAGE_API_ENABLED),
         json.loads(COMPUTE_API_ENABLED),
         json.loads(CONTAINER_API_ENABLED),
     ],
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(STORAGE_API_ENABLED),
         json.loads(COMPUTE_API_ENABLED),
         json.loads(CLOUDSQL_API_ENABLED),
     ],
-    "project3": [
+    PROJECT_ID_PREFIX + "3": [
         json.loads(STORAGE_API_ENABLED),
         json.loads(BIGQUERY_API_ENABLED),
     ],
-    "project4": [
+    PROJECT_ID_PREFIX + "4": [
         json.loads(STORAGE_API_ENABLED),
         json.loads(APPENGINE_API_ENABLED),
     ],
@@ -2291,7 +2384,7 @@ LOGGING_GET_BILLING_ACCOUNT_SINKS = {
 }
 
 LOGGING_GET_PROJECT_SINKS = {
-    "project1": [
+    PROJECT_ID_PREFIX + "1": [
         json.loads(
             LOG_SINK_TEMPLATE.format(
                 name="logs-to-bigquery", destination=(
@@ -2302,7 +2395,7 @@ LOGGING_GET_PROJECT_SINKS = {
                 name="logs-to-gcs",
                 destination="storage.googleapis.com/project1_logs")),
     ],
-    "project2": [
+    PROJECT_ID_PREFIX + "2": [
         json.loads(
             LOG_SINK_TEMPLATE.format(
                 name="logs-to-gcs",

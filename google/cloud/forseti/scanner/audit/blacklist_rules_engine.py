@@ -49,8 +49,7 @@ class BlacklistRulesEngine(bre.BaseRulesEngine):
         self.rule_book = BlacklistRuleBook(
             self._load_rule_definitions())
 
-    def find_policy_violations(self, instance_network_interface,
-                               force_rebuild=False):
+    def find_violations(self, instance_network_interface, force_rebuild=False):
         """Determine whether the networks violates rules.
         Args:
             instance_network_interface (list): list of
@@ -232,6 +231,7 @@ class Rule(object):
 
                 if self.is_blacklisted(ipaddr):
                     yield self.RuleViolation(
+                        resource_name=project,
                         resource_type=resource_mod.ResourceType.INSTANCE,
                         full_name=network_interface.full_name,
                         rule_blacklist=self.rule_blacklist,
@@ -253,7 +253,7 @@ class Rule(object):
     # network: string
     # ip: string
     RuleViolation = namedtuple('RuleViolation',
-                               ['resource_type', 'full_name',
-                                'rule_blacklist', 'rule_name',
-                                'rule_index', 'violation_type', 'project',
-                                'network', 'ip', 'resource_data'])
+                               ['resource_type', 'full_name', 'resource_name',
+                                'rule_blacklist', 'rule_name', 'rule_index',
+                                'violation_type', 'project', 'network', 'ip',
+                                'resource_data'])

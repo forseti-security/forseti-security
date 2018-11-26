@@ -95,7 +95,7 @@ class FirewallRulesEngine(bre.BaseRulesEngine):
                 org_policy=org_policy,
                 snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_policy_violations(self, resource, policy, force_rebuild=False):
+    def find_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.
 
         Args:
@@ -309,7 +309,7 @@ class RuleBook(bre.BaseRuleBook):
                     rule = self.rules_map[rule_id]
                     violations = itertools.chain(
                         violations,
-                        rule.find_policy_violations(policies))
+                        rule.find_violations(policies))
                 break  # Only the first rules found in the ancestry are applied
         return violations
 
@@ -448,7 +448,7 @@ class Rule(object):
             self._verify_rules = self.create_rules(self._verify_policies)
         return self._verify_rules
 
-    def find_policy_violations(self, firewall_policies):
+    def find_violations(self, firewall_policies):
         """Finds policy violations in a list of firewall policies.
 
         Args:
@@ -579,6 +579,7 @@ class Rule(object):
         for policy in policies:
             inventory_data.append(policy.as_json())
         return RuleViolation(
+            resource_name=','.join([p.name for p in policies]),
             resource_type=resource_mod.ResourceType.FIREWALL_RULE,
             resource_id=policies[0].project_id,
             full_name=policies[0].full_name,
@@ -600,7 +601,8 @@ class Rule(object):
 RuleViolation = namedtuple('RuleViolation',
                            ['resource_type', 'resource_id', 'full_name',
                             'rule_id', 'violation_type', 'policy_names',
-                            'recommended_actions', 'resource_data'])
+                            'recommended_actions', 'resource_data',
+                            'resource_name'])
 
 
 def is_whitelist_violation(rules, policy):
@@ -613,7 +615,14 @@ def is_whitelist_violation(rules, policy):
     Returns:
       bool: If the policy is a subset of one of the allowed rules or not.
     """
-    return not any([policy < rule for rule in rules])
+    policy_subset_check = []
+    for rule in rules:
+        if policy < rule:
+            policy_subset_check.append(True)
+        else:
+            policy_subset_check.append(False)
+    result = not any(policy_subset_check)
+    return result
 
 
 def is_blacklist_violation(rules, policy):
@@ -626,7 +635,14 @@ def is_blacklist_violation(rules, policy):
     Returns:
       bool: If the policy is a superset of one of the blacklisted rules or not.
     """
-    return any([policy > rule for rule in rules])
+    policy_superset_check = []
+    for rule in rules:
+        if policy > rule:
+            policy_superset_check.append(True)
+        else:
+            policy_superset_check.append(False)
+    result = any(policy_superset_check)
+    return result
 
 
 def is_rule_exists_violation(rule, policies, exact_match=True):
@@ -641,5 +657,19 @@ def is_rule_exists_violation(rule, policies, exact_match=True):
       bool: If the required rule is in the policies.
     """
     if exact_match:
-        return not any([policy == rule for policy in policies])
-    return not any([policy.is_equilvalent(rule) for policy in policies])
+        result = []
+        for policy in policies:
+            if policy == rule:
+                result.append(True)
+            else:
+                result.append(False)
+        final_result = not any(result)
+        return final_result
+    result = []
+    for policy in policies:
+        if policy.is_equilvalent(rule):
+            result.append(True)
+        else:
+            result.append(False)
+    final_result = not any(result)
+    return final_result

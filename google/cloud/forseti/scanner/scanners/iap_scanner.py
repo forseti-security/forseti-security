@@ -26,6 +26,7 @@ from google.cloud.forseti.common.gcp_type import (
     instance_group_manager as instance_group_manager_type)
 from google.cloud.forseti.common.gcp_type import (
     instance_template as instance_template_type)
+from google.cloud.forseti.common.gcp_type import project as project_type
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
 from google.cloud.forseti.common.util import logger
@@ -428,6 +429,7 @@ class IapScanner(base_scanner.BaseScanner):
 
             yield {
                 'resource_id': violation.resource_id,
+                'resource_name': violation.resource_name,
                 'resource_type': violation.resource_type,
                 'full_name': violation.full_name,
                 'rule_index': violation.rule_index,
@@ -499,10 +501,13 @@ class IapScanner(base_scanner.BaseScanner):
         with self.scoped_session as session:
             for instance in self.data_access.scanner_iter(
                     session, 'instance', parent_type_name=parent_type_name):
+                project = project_type.Project(
+                    project_id=instance.parent.name,
+                    full_name=instance.parent.full_name,
+                )
                 instances.append(
                     instance_type.Instance.from_json(
-                        full_name='',
-                        project_id=instance.parent.name,
+                        parent=project,
                         json_string=instance.data))
         return instances
 

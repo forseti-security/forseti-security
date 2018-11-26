@@ -73,6 +73,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
                               'ip_address': violation.ip_address}
             yield {
                 'resource_id': violation.resource_id,
+                'resource_name': violation.resource_name,
                 'full_name': violation.full_name,
                 'resource_type': violation.resource_type,
                 'rule_index': violation.rule_index,
@@ -124,7 +125,7 @@ class ForwardingRuleScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding Forwarding Rule Violations...')
         for forwarding_rule in forwarding_rules:
             LOGGER.debug('%s', forwarding_rule)
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 forwarding_rule)
             LOGGER.debug(violations)
             if violations is not None:

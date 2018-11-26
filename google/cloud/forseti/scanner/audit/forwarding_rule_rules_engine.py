@@ -31,7 +31,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
                                 'load_balancing_scheme', 'port_range',
                                 'resource_type', 'port', 'ip_protocol',
                                 'ip_address', 'resource_id', 'full_name',
-                                'resource_data'])
+                                'resource_data', 'resource_name'])
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -55,8 +55,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = ForwardingRuleRulesBook(self._load_rule_definitions())
 
-    def find_policy_violations(self, forwarding_rule,
-                               force_rebuild=False):
+    def find_violations(self, forwarding_rule, force_rebuild=False):
         """Determine whether forwarding rule violates rules.
 
         Args:
@@ -98,6 +97,7 @@ class ForwardingRuleRulesEngine(bre.BaseRulesEngine):
             resource_id=forwarding_rule.resource_id,
             full_name=forwarding_rule.full_name,
             rule_index=len(resource_rules),
+            resource_name=forwarding_rule.name,
             resource_type=ResourceType.FORWARDING_RULE,
             resource_data=str(forwarding_rule))
 

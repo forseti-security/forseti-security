@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Inventory API. """
+"""Inventory API."""
 
 # pylint: disable=line-too-long,broad-except
 
 import datetime
 from Queue import Queue
+import threading
 
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.crawler import run_crawler
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import initialize as init_storage
-from google.cloud.forseti.services.inventory.crawler import run_crawler
 
 from google.cloud.forseti.common.opencensus import tracing
 
@@ -216,6 +217,8 @@ class Inventory(object):
             config (ServiceConfig): ServiceConfig in server
         """
         self.config = config
+        self._create_lock = threading.Lock()
+
         init_storage(self.config.get_engine())
 
     def create(self, background, model_name):
@@ -274,6 +277,55 @@ class Inventory(object):
                 yield progress
             if result:
                 yield result.get()
+
+        with self._create_lock:
+            queue = Queue()
+            if background:
+                progresser = FirstMessageQueueProgresser(queue)
+            else:
+                progresser = QueueProgresser(queue)
+
+            def do_inventory():
+                """Run the inventory.
+
+                Returns:
+                    object: inventory crawler result if no model_name specified,
+                        otherwise, model import result
+                """
+
+                with self.config.scoped_session() as session:
+                    try:
+                        result = run_inventory(
+                            self.config,
+                            queue,
+                            session,
+                            progresser,
+                            background)
+
+                        if model_name:
+                            run_import(self.config.client(),
+                                       model_name,
+                                       result.inventory_index_id,
+                                       background)
+                        return result.get_summary()
+
+                    except Exception as e:
+                        LOGGER.exception(e)
+                        queue.put(e)
+                        queue.put(None)
+
+            if background:
+                self.config.run_in_background(do_inventory)
+                yield queue.get()
+
+            else:
+                result = self.config.run_in_background(do_inventory)
+                for progress in iter(queue.get, None):
+                    if isinstance(progress, Exception):
+                        raise progress
+                    yield progress
+                if result:
+                    yield result.get()
 
     def list(self):
         """List stored inventory.

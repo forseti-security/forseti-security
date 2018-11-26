@@ -29,8 +29,7 @@ FORSETI_VERSION = google.cloud.forseti.__version__
 
 NAMESPACE_PACKAGES = [
     'google',
-    'google.cloud',
-    'google.cloud.forseti'
+    'google.cloud'
 ]
 
 REQUIRED_PACKAGES = [
@@ -41,10 +40,12 @@ REQUIRED_PACKAGES = [
     'google-auth>=1.4.1',
     'google-auth-httplib2>=0.0.3',
     'Jinja2>=2.9.5',
+    'jmespath>=0.9.3',
     'MySQL-python>=1.2.5',
     'netaddr>=0.7.19',
     'PyYAML>=3.12',
     'pygraph>=0.2.1',
+    'python-dateutil>=2.7.3',
     'ratelimiter>=1.1.0',
     'retrying>=1.3.3',
     'requests[security]>=2.18.4',
@@ -52,7 +53,6 @@ REQUIRED_PACKAGES = [
     'simple-crypt>=4.1.7',
     'unicodecsv>=0.14.1',
     # Setup related.
-    'google-apputils>=0.4.2',
     'grpcio',
     'grpcio-tools',
     'protobuf>=3.2.0',
@@ -62,7 +62,8 @@ REQUIRED_PACKAGES = [
     'ruamel.yaml==0.15.37',
     'pylint',
     'pylint-quotes',
-    'SQLAlchemy>=1.1.9',
+    'SQLAlchemy>=1.1.9,<1.3.0',
+    'sqlalchemy-migrate>=0.11.0'
 ]
 
 OPTIONAL_PACKAGES = {
@@ -142,7 +143,6 @@ setup(
              'cloud/forseti/common/gcp_api/discovery_documents/*.json']
     },
     namespace_packages=NAMESPACE_PACKAGES,
-    google_test_dir='tests',
     license='Apache 2.0',
     keywords='gcp google cloud platform security tools',
     entry_points={

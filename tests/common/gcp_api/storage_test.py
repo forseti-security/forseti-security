@@ -17,6 +17,7 @@ import unittest
 import mock
 import google.auth
 from google.oauth2 import credentials
+import StringIO
 
 from tests import unittest_utils
 from tests.common.gcp_api.test_data import fake_storage_responses as fake_storage
@@ -297,6 +298,38 @@ class StorageTest(unittest_utils.ForsetiTestCase):
             self.gcs_api_client.get_text_file(
                 'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
                                     fake_storage.FAKE_OBJECT_NAME))
+
+    def test_download(self):
+        """Test download file returns a valid response."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-2/5'}, b'123'),
+            ({'status': '200',
+              'content-range': '3-4/5'}, b'45')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        expected_result = b'12345'
+        output_file = StringIO.StringIO()
+        file_size = self.gcs_api_client.download(
+            'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                fake_storage.FAKE_OBJECT_NAME),
+            output_file=output_file)
+        self.assertEqual(len(expected_result), file_size)
+        self.assertEqual(expected_result, output_file.getvalue())
+        output_file.close()
+
+    def test_download_raises(self):
+        """Test download file returns not found error."""
+        http_mocks.mock_http_response(fake_storage.NOT_FOUND, '404')
+        output_file = StringIO.StringIO()
+        with self.assertRaises(storage.errors.HttpError):
+            self.gcs_api_client.download(
+                'gs://{}/{}'.format(fake_storage.FAKE_BUCKET_NAME,
+                                    fake_storage.FAKE_OBJECT_NAME),
+                output_file=output_file)
+        self.assertEqual('', output_file.getvalue())
+        output_file.close()
 
     def test_upload_text_file(self):
         """Test upload text file."""

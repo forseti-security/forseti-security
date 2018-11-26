@@ -28,31 +28,32 @@ class ResourceType(object):
     """Resource types."""
 
     # Org resources
-    ORGANIZATION = resources.Organization.type()
+    ORGANIZATION = resources.ResourceManagerOrganization.type()
     BILLING_ACCOUNT = resources.BillingAccount.type()
-    FOLDER = resources.Folder.type()
-    PROJECT = resources.Project.type()
+    FOLDER = resources.ResourceManagerFolder.type()
+    PROJECT = resources.ResourceManagerProject.type()
+    LIEN = resources.ResourceManagerLien.type()
 
     # Groups
     GROUP = resources.GsuiteGroup.type()
 
     # IAM
-    SERVICE_ACCOUNT = resources.ServiceAccount.type()
-    SERVICE_ACCOUNT_KEY = resources.ServiceAccountKey.type()
+    SERVICE_ACCOUNT = resources.IamServiceAccount.type()
+    SERVICE_ACCOUNT_KEY = resources.IamServiceAccountKey.type()
 
     # Compute engine
-    BACKEND_SERVICE = resources.BackendService.type()
-    FIREWALL_RULE = resources.Firewall.type()
-    FORWARDING_RULE = resources.ForwardingRule.type()
-    INSTANCE = resources.Instance.type()
-    INSTANCE_GROUP = resources.InstanceGroup.type()
-    INSTANCE_GROUP_MANAGER = resources.InstanceGroupManager.type()
-    INSTANCE_TEMPLATE = resources.InstanceTemplate.type()
+    BACKEND_SERVICE = resources.ComputeBackendService.type()
+    FIREWALL_RULE = resources.ComputeFirewall.type()
+    FORWARDING_RULE = resources.ComputeForwardingRule.type()
+    INSTANCE = resources.ComputeInstance.type()
+    INSTANCE_GROUP = resources.ComputeInstanceGroup.type()
+    INSTANCE_GROUP_MANAGER = resources.ComputeInstanceGroupManager.type()
+    INSTANCE_TEMPLATE = resources.ComputeInstanceTemplate.type()
 
     # Data storage
-    BIGQUERY = resources.DataSet.type()
-    BUCKET = resources.GcsBucket.type()
-    CLOUDSQL = resources.CloudSqlInstance.type()
+    BUCKET = resources.StorageBucket.type()
+    CLOUD_SQL_INSTANCE = resources.CloudSqlInstance.type()
+    DATASET = resources.BigqueryDataSet.type()
 
     # AppEngine
     APPENGINE_APP = resources.AppEngineApp.type()
@@ -63,7 +64,7 @@ class ResourceType(object):
     KE_CLUSTER = resources.KubernetesCluster.type()
 
     # Logging
-    LOG_SINK = resources.Sink.type()
+    LOG_SINK = resources.LoggingSink.type()
 
     resource_types = frozenset([
         ORGANIZATION,
@@ -73,6 +74,7 @@ class ResourceType(object):
         BUCKET,
         GROUP,
         FORWARDING_RULE,
+        LIEN,
         LOG_SINK,
     ])
 
@@ -114,6 +116,7 @@ class Resource(object):
             name=None,
             display_name=None,
             parent=None,
+            locations=None,
             lifecycle_state=LifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -123,6 +126,10 @@ class Resource(object):
             name (str): The resource unique name,
                 e.g. "{resource type}/{id}".
             display_name (str): The resource display name.
+            locations (List[str]): Locations the resource resides in. Some
+                resources have multiple locations (e.g. GKE), some support
+                have a single location (e.g. GCS), while some have none
+                (e.g. Project).
             parent (Resource): The parent Resource object.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 Resource.
@@ -138,6 +145,7 @@ class Resource(object):
         # organization has no parent, whereas projects and folders can
         # have either another folder or organization as a parent.
         self._parent = parent
+        self._locations = locations
         self._lifecycle_state = lifecycle_state
 
     def __eq__(self, other):
@@ -226,6 +234,15 @@ class Resource(object):
             Resource: The parent.
         """
         return self._parent
+
+    @property
+    def locations(self):
+        """Locations the resource resides in.
+
+        Returns:
+            List[str]: Locations the resource resides in.
+        """
+        return self._locations
 
     @property
     def lifecycle_state(self):

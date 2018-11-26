@@ -42,6 +42,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'enabled_apis_scanner',
          'class_name': 'EnabledApisScanner',
          'rules_filename': 'enabled_apis_rules.yaml'},
+    'external_project_access':
+        {'module_name': 'external_project_access_scanner',
+         'class_name': 'ExternalProjectAccessScanner',
+         'rules_filename': 'external_project_access_rules.yaml'},
     'firewall_rule':
         {'module_name': 'firewall_rules_scanner',
          'class_name': 'FirewallPolicyScanner',
@@ -66,14 +70,30 @@ REQUIREMENTS_MAP = {
         {'module_name': 'instance_network_interface_scanner',
          'class_name': 'InstanceNetworkInterfaceScanner',
          'rules_filename': 'instance_network_interface_rules.yaml'},
+    'ke_scanner':
+        {'module_name': 'ke_scanner',
+         'class_name': 'KeScanner',
+         'rules_filename': 'ke_scanner_rules.yaml'},
     'ke_version_scanner':
         {'module_name': 'ke_version_scanner',
          'class_name': 'KeVersionScanner',
          'rules_filename': 'ke_rules.yaml'},
+    'lien':
+        {'module_name': 'lien_scanner',
+         'class_name': 'LienScanner',
+         'rules_filename': 'lien_rules.yaml'},
+    'location':
+        {'module_name': 'location_scanner',
+         'class_name': 'LocationScanner',
+         'rules_filename': 'location_rules.yaml'},
     'log_sink':
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',
          'rules_filename': 'log_sink_rules.yaml'},
+    'retention':
+        {'module_name': 'retention_scanner',
+         'class_name': 'RetentionScanner',
+         'rules_filename': 'retention_rules.yaml'},
     'service_account_key':
         {'module_name': 'service_account_key_scanner',
          'class_name': 'ServiceAccountKeyScanner',

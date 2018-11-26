@@ -56,13 +56,13 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
         self.billing_acct_abcd = BillingAccount(
             'ABCD-1234',
             display_name='Billing Account ABCD',
-            full_name='organization/234/billingAccount/ABCD-1234',
+            full_name='organization/234/billingAccount/ABCD-1234/',
             data='fake_billing_account_data_abcd')
 
         self.folder_56 = Folder(
             '56',
             display_name='Folder 56',
-            full_name='organization/234/folder/56',
+            full_name='organization/234/folder/56/',
             data='fake_folder_data456456')
 
         self.proj_1 = Project(
@@ -247,27 +247,29 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.proj_2, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='proj-2',
                 resource_type='project',
                 resource_id='proj-2',
-                full_name='projects/proj-2',
+                full_name='organization/234/folder/56/project/proj-2/',
                 rule_name='Require Audit Log sinks in all projects.',
                 rule_index=0,
                 violation_type='LOG_SINK_VIOLATION',
                 sink_destination=('^bigquery\\.googleapis\\.com\\/projects\\/'
-                                  'my\\-audit\\-logs\\/datasets\\/.+?$'),
+                                  'my\\-audit\\-logs\\/datasets\\/.+$'),
                 sink_filter=('^logName\\:\\"logs\\/'
                              'cloudaudit\\.googleapis\\.com\\"$'),
                 sink_include_children='*',
                 resource_data=''
             ),
             lsre.Rule.RuleViolation(
+                resource_name='proj-2',
                 resource_type='project',
                 resource_id='proj-2',
-                full_name='projects/proj-2',
+                full_name='organization/234/folder/56/project/proj-2/',
                 rule_name='Require a PubSub sink in folder-56 projects.',
                 rule_index=3,
                 violation_type='LOG_SINK_VIOLATION',
-                sink_destination='^pubsub\\.googleapis\\.com\\/.+?$',
+                sink_destination='^pubsub\\.googleapis\\.com\\/.+$',
                 sink_filter='^$',
                 sink_include_children='*',
                 resource_data=''
@@ -307,9 +309,10 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.proj_3, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='projects/proj-3/sinks/audit_logs_to_pubsub',
                 resource_type='sink',
                 resource_id='audit_logs_to_pubsub',
-                full_name='projects/proj-3/sinks/audit_logs_to_pubsub',
+                full_name='organization/234/project/proj-3/audit_logs_to_pubsub/',
                 rule_name='Only allow BigQuery sinks in Proj-1 and Proj-3.',
                 rule_index=4,
                 violation_type='LOG_SINK_VIOLATION',
@@ -344,9 +347,10 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.folder_56, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='folders/56/sinks/audit_logs_to_bq',
                 resource_type='sink',
                 resource_id='audit_logs_to_bq',
-                full_name='folders/56/sinks/audit_logs_to_bq',
+                full_name='organization/234/folder/56/audit_logs_to_bq/',
                 rule_name='Disallow folder sinks.',
                 rule_index=2,
                 violation_type='LOG_SINK_VIOLATION',
@@ -382,7 +386,8 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             lsre.Rule.RuleViolation(
                 resource_type='sink',
                 resource_id='billing_logs',
-                full_name='billingAccounts/ABCD-1234/sinks/billing_logs',
+                resource_name='billingAccounts/ABCD-1234/sinks/billing_logs',
+                full_name='organization/234/billingAccount/ABCD-1234/billing_logs/',
                 rule_name=('Only allow Billing Account sinks to audit logs '
                            'project.'),
                 rule_index=6,
@@ -427,9 +432,10 @@ class LogSinkRulesEngineTest(ForsetiTestCase):
             self.org_234, log_sinks)
         expected_violations = set([
             lsre.Rule.RuleViolation(
+                resource_name='234',
                 resource_type='organization',
                 resource_id='234',
-                full_name='organizations/234',
+                full_name='organization/234/',
                 rule_name='Require an Org Level audit log sink.',
                 rule_index=1,
                 violation_type='LOG_SINK_VIOLATION',

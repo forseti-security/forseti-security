@@ -14,10 +14,5 @@
 
 """GOogle CLoud Forseti."""
 
-__version__ = '2.2.0'
+__version__ = '2.7.0'
 __package_name__ = 'forseti-security'
-
-try:
-    __import__('pkg_resources').declare_namespace(__name__)
-except ImportError:
-    __path__ = __import__('pkgutil').extend_path(__path__, __name__)

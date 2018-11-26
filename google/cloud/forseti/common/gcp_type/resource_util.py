@@ -17,7 +17,11 @@
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import billing_account
 from google.cloud.forseti.common.gcp_type import bucket
+from google.cloud.forseti.common.gcp_type import cloudsql_instance
+from google.cloud.forseti.common.gcp_type import ke_cluster
+from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import folder
+from google.cloud.forseti.common.gcp_type import instance
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
@@ -44,15 +48,35 @@ _RESOURCE_TYPE_MAP = {
         'plural': 'Projects',
         'can_create_resource': True,
     },
+    resource.ResourceType.BACKEND_SERVICE: {
+        'class': backend_service.BackendService,
+        'plural': 'Backend Services',
+        'can_create_resource': False,
+    },
     resource.ResourceType.BUCKET: {
         'class': bucket.Bucket,
         'plural': 'Buckets',
         'can_create_resource': True,
     },
-    resource.ResourceType.BACKEND_SERVICE: {
-        'class': backend_service.BackendService,
-        'plural': 'Backend Services',
-        'can_create_resource': False,
+    resource.ResourceType.CLOUD_SQL_INSTANCE: {
+        'class': cloudsql_instance.CloudSQLInstance,
+        'plural': 'Cloud SQL Instances',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.DATASET: {
+        'class': dataset.Dataset,
+        'plural': 'Datasets',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.INSTANCE: {
+        'class': instance.Instance,
+        'plural': 'GCE Instances',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.KE_CLUSTER: {
+        'class': ke_cluster.KeCluster,
+        'plural': 'GKE Clusters',
+        'can_create_resource': True,
     },
 }
 
@@ -77,6 +101,27 @@ def create_resource(resource_id, resource_type, **kwargs):
 
     return resource_type.get('class')(
         resource_id, **kwargs)
+
+
+def create_resource_from_json(resource_type, parent, json_string):
+    """Factory to create a certain kind of Resource from JSON data.
+
+    Args:
+        resource_type (str): The resource type.
+        parent (Resource): parent resource of this type.
+        json_string (str): resource's JSON data.
+
+    Returns:
+        Resource: The new Resource based on the type, if supported,
+        otherwise None.
+    """
+    if resource_type not in _RESOURCE_TYPE_MAP:
+        return None
+    resource_type = _RESOURCE_TYPE_MAP[resource_type]
+    if not resource_type.get('can_create_resource'):
+        return None
+
+    return resource_type.get('class').from_json(parent, json_string)
 
 
 def get_ancestors_from_full_name(full_name):
@@ -130,3 +175,25 @@ def type_from_name(resource_name):
             return resource_type
 
     return None
+
+
+def cast_to_gcp_resources(resources_to_cast):
+    """Get a list Resource objects from a list of dict resource descriptors
+
+    Args:
+        resources_to_cast (list): A list of resource descriptors
+            as dictionaries.
+            [{'resourceId': {'id': '3456', 'type': 'Project'}}
+            {'resourceId': {'id': '1234', 'type': 'Organization'}}]
+
+    Returns:
+        list: A list of cast Resource objects
+    """
+
+    cast_resources = []
+    for resource_to_cast in resources_to_cast:
+        resource_id = resource_to_cast['resourceId']['id']
+        resource_type = resource_to_cast['resourceId']['type']
+        cast_resource = create_resource(resource_id, resource_type)
+        cast_resources.append(cast_resource)
+    return cast_resources

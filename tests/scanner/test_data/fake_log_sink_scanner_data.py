@@ -66,6 +66,7 @@ RuleViolation = log_sink_rules_engine.Rule.RuleViolation
 LOG_SINK_VIOLATIONS = [
     RuleViolation(resource_type='project',
                   resource_id='proj-2',
+                  resource_name='projects/proj-2',
                   full_name='projects/proj-2',
                   rule_name='Require a PubSub sink in all projects.',
                   rule_index=0,
@@ -76,6 +77,7 @@ LOG_SINK_VIOLATIONS = [
                   resource_data=''),
     RuleViolation(resource_type='sink',
                   resource_id='audit_logs_to_bq',
+                  resource_name='folders/56/sinks/audit_logs_to_bq',
                   full_name='folders/56/sinks/audit_logs_to_bq',
                   rule_name='Disallow folder sinks.',
                   rule_index=1,
@@ -91,6 +93,7 @@ FLATTENED_LOG_SINK_VIOLATIONS = [
     {
         'resource_type': 'project',
         'resource_id': 'proj-2',
+        'resource_name': 'projects/proj-2',
         'full_name': 'projects/proj-2',
         'rule_name': 'Require a PubSub sink in all projects.',
         'rule_index': 0,
@@ -106,6 +109,7 @@ FLATTENED_LOG_SINK_VIOLATIONS = [
     {
         'resource_type': 'sink',
         'resource_id': 'audit_logs_to_bq',
+        'resource_name': 'folders/56/sinks/audit_logs_to_bq',
         'full_name': 'folders/56/sinks/audit_logs_to_bq',
         'rule_name': 'Disallow folder sinks.',
         'rule_index': 1,

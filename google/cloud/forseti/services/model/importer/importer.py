@@ -11,23 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""Importer implementations."""
 
-""" Importer implementations. """
+# pylint: disable=too-many-instance-attributes
 
-# pylint: disable=unused-argument,too-many-instance-attributes
-# pylint: disable=no-self-use,not-callable,too-many-lines
-
+import json
 from StringIO import StringIO
 import traceback
-import json
 
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.services.inventory.storage import Storage as Inventory
 from google.cloud.forseti.services.utils import get_resource_id_from_type_name
 from google.cloud.forseti.services.utils import get_sql_dialect
 from google.cloud.forseti.services.utils import to_full_resource_name
 from google.cloud.forseti.services.utils import to_type_name
-from google.cloud.forseti.services.inventory.storage import Storage as Inventory
-
 
 LOGGER = logger.get_logger(__name__)
 
@@ -67,6 +64,7 @@ class EmptyImporter(object):
             *args (list): Unused.
             **kwargs (dict): Unused.
         """
+        del args, kwargs  # Unused.
 
         self.session = session
         self.readonly_session = readonly_session
@@ -110,6 +108,7 @@ class InventoryImporter(object):
             *args (list): Unused.
             **kwargs (dict): Unused.
         """
+        del args, kwargs  # Unused.
 
         self.readonly_session = readonly_session
         self.session = session
@@ -141,32 +140,53 @@ class InventoryImporter(object):
             'organization',
             'folder',
             'project',
-            'billing_account',
-            'role',
             'appengine_app',
             'appengine_service',
             'appengine_version',
             'appengine_instance',
-            'serviceaccount',
-            'serviceaccount_key',
+            'backendservice',
+            'billing_account',
             'bucket',
-            'dataset',
+            'cloudsqlinstance',
+            'compute_autoscaler',
+            'compute_backendbucket',
+            'compute_healthcheck',
+            'compute_httphealthcheck',
+            'compute_httpshealthcheck',
+            'compute_license',
             'compute_project',
+            'compute_router',
+            'compute_sslcertificate',
+            'compute_targethttpproxy',
+            'compute_targethttpsproxy',
+            'compute_targetinstance',
+            'compute_targetpool',
+            'compute_targetsslproxy',
+            'compute_targettcpproxy',
+            'compute_urlmap',
+            'crm_org_policy',
+            'dataset',
             'disk',
+            'dns_managedzone',
+            'dns_policy',
+            'firewall',
+            'forwardingrule',
             'image',
+            'instance',
             'instancegroup',
             'instancegroupmanager',
             'instancetemplate',
-            'instance',
-            'firewall',
-            'backendservice',
-            'forwardingrule',
-            'network',
-            'snapshot',
-            'subnetwork',
-            'cloudsqlinstance',
             'kubernetes_cluster',
+            'lien',
+            'network',
+            'pubsub_topic',
+            'serviceaccount',
+            'serviceaccount_key',
             'sink',
+            'snapshot',
+            'spanner_instance',
+            'spanner_database',
+            'subnetwork',
         ]
 
         gsuite_type_list = [
@@ -201,26 +221,20 @@ class InventoryImporter(object):
 
                 if root.get_resource_type() in ['organization']:
                     LOGGER.debug('Root resource is organization: %s', root)
-                    self.found_root = True
-                if not self.found_root:
+                else:
                     LOGGER.debug('Root resource is not organization: %s.', root)
-                    raise Exception(
-                        'Cannot import inventory without organization root')
 
-                last_res_type = None
                 item_counter = 0
                 LOGGER.debug('Start storing resources into models.')
                 for resource in inventory.iter(gcp_type_list):
                     item_counter += 1
-                    last_res_type = self._store_resource(resource,
-                                                         last_res_type)
+                    self._store_resource(resource)
                     if not item_counter % 1000:
                         # Flush database every 1000 resources
                         LOGGER.debug('Flushing model write session: %s',
                                      item_counter)
                         self.session.flush()
 
-                self._store_resource(None, last_res_type)
                 if item_counter % 1000:
                     # Additional rows added since last flush.
                     self.session.flush()
@@ -228,49 +242,42 @@ class InventoryImporter(object):
 
                 item_counter += self.model_action_wrapper(
                     self.session,
+                    inventory.iter(['role']),
+                    self._convert_role,
+                    post_action=self._convert_role_post
+                )
+
+                item_counter += self.model_action_wrapper(
+                    self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_dataset_policy=True),
-                    None,
-                    self._convert_dataset_policy,
-                    None,
-                    1000
+                    self._convert_dataset_policy
                 )
 
                 item_counter += self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_service_config=True),
-                    None,
-                    self._convert_service_config,
-                    None,
-                    1000
+                    self._convert_service_config
                 )
 
                 self.model_action_wrapper(
                     self.session,
                     inventory.iter(gsuite_type_list),
-                    None,
-                    self._store_gsuite_principal,
-                    None,
-                    1000
+                    self._store_gsuite_principal
                 )
 
                 self.model_action_wrapper(
                     self.session,
                     inventory.iter(gcp_type_list, fetch_enabled_apis=True),
-                    None,
-                    self._convert_enabled_apis,
-                    None,
-                    1000
+                    self._convert_enabled_apis
                 )
 
                 self.model_action_wrapper(
                     self.session,
                     inventory.iter(member_type_list, with_parent=True),
-                    self._store_gsuite_membership_pre,
                     self._store_gsuite_membership,
-                    self._store_gsuite_membership_post,
-                    1000
+                    post_action=self._store_gsuite_membership_post
                 )
 
                 self.dao.denorm_group_in_group(self.session)
@@ -279,10 +286,7 @@ class InventoryImporter(object):
                     self.session,
                     inventory.iter(gcp_type_list,
                                    fetch_iam_policy=True),
-                    self._store_iam_policy_pre,
-                    self._store_iam_policy,
-                    self._store_iam_policy_post,
-                    1000
+                    self._store_iam_policy
                 )
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
@@ -307,17 +311,14 @@ class InventoryImporter(object):
     @staticmethod
     def model_action_wrapper(session,
                              inventory_iterable,
-                             pre_action,
                              action,
-                             post_action,
-                             flush_count):
+                             post_action=None,
+                             flush_count=1000):
         """Model action wrapper. This is used to reduce code duplication.
 
         Args:
             session (Session): Database session.
             inventory_iterable (Iterable): Inventory iterable.
-            pre_action (func): Action taken before iterating the
-                inventory list.
             action (func): Action taken during the iteration of
                 the inventory list.
             post_action (func): Action taken after iterating the
@@ -328,8 +329,6 @@ class InventoryImporter(object):
             int: Number of item iterated.
         """
         LOGGER.debug('Performing model action: %s', action)
-        if pre_action:
-            pre_action()
 
         idx = 0
         for idx, inventory_data in enumerate(inventory_iterable, start=1):
@@ -343,12 +342,12 @@ class InventoryImporter(object):
                 LOGGER.debug('Flushing write session: %s.', idx)
                 session.flush()
 
-        if post_action:
-            post_action()
-
         if idx % flush_count:
             # Additional rows added since last flush.
             session.flush()
+
+        if post_action:
+            post_action()
 
         return idx
 
@@ -378,11 +377,6 @@ class InventoryImporter(object):
                 type=m_type,
                 member_name=name)
             self.session.add(self.member_cache[member])
-
-    def _store_gsuite_membership_pre(self):
-        """Prepare storing gsuite memberships."""
-
-        pass
 
     def _store_gsuite_membership_post(self):
         """Flush storing gsuite memberships."""
@@ -461,18 +455,6 @@ class InventoryImporter(object):
             self.membership_items.append(
                 dict(group_name=group_name(parent), members_name=member))
 
-    def _store_iam_policy_pre(self):
-        """Executed before iam policies are inserted."""
-
-        pass
-
-    def _store_iam_policy_post(self):
-        """Executed after iam policies are inserted."""
-
-        # Store all members which are mentioned in policies
-        # that were not previously in groups or gsuite users.
-        self.session.flush()
-
     def _store_iam_policy(self, policy):
         """Store the iam policy of the resource.
 
@@ -526,159 +508,115 @@ class InventoryImporter(object):
             self.session.add(binding_object)
         self._convert_iam_policy(policy)
 
-    def _store_resource(self, resource, last_res_type=None):
+    def _store_resource(self, resource):
         """Store an inventory resource in the database.
 
         Args:
             resource (object): Resource object to convert from.
-            last_res_type (str): Previously processed resource type used to
-                spot transition between types to execute pre/handler/post
-                accordingly.
-
-        Returns:
-            str: Resource type that was processed during the execution.
         """
-
         handlers = {
-            'organization': (None,
-                             self._convert_organization,
-                             None),
-            'folder': (None,
-                       self._convert_folder,
-                       None),
-            'project': (None,
-                        self._convert_project,
-                        None),
-            'billing_account': (None,
-                                self._convert_billing_account,
-                                None),
-            'role': (self._convert_role_pre,
-                     self._convert_role,
-                     self._convert_role_post),
-            'appengine_app': (None,
-                              self._convert_appengine_resource,
-                              None),
-            'appengine_service': (None,
-                                  self._convert_appengine_resource,
-                                  None),
-            'appengine_version': (None,
-                                  self._convert_appengine_resource,
-                                  None),
-            'appengine_instance': (None,
-                                   self._convert_appengine_resource,
-                                   None),
-            'serviceaccount': (None,
-                               self._convert_serviceaccount,
-                               None),
-            'serviceaccount_key': (None,
-                                   self._convert_serviceaccount_key,
-                                   None),
-            'bucket': (None,
-                       self._convert_bucket,
-                       None),
-            'object': (None,
-                       self._convert_object,
-                       None),
-            'dataset': (None,
-                        self._convert_dataset,
-                        None),
-            'compute_project': (None,
-                                self._convert_computeproject,
-                                None),
-            'disk': (None,
-                     self._convert_disk,
-                     None),
-            'image': (None,
-                      self._convert_image,
-                      None),
-            'instancegroup': (None,
-                              self._convert_instancegroup,
-                              None),
-            'instancegroupmanager': (None,
-                                     self._convert_instancegroupmanager,
-                                     None),
-            'instancetemplate': (None,
-                                 self._convert_instancetemplate,
-                                 None),
-            'instance': (None,
-                         self._convert_instance,
-                         None),
-            'firewall': (None,
-                         self._convert_firewall,
-                         None),
-            'backendservice': (None,
-                               self._convert_backendservice,
-                               None),
-            'forwardingrule': (None,
-                               self._convert_forwardingrule,
-                               None),
-            'network': (None,
-                        self._convert_network,
-                        None),
-            'snapshot': (None,
-                         self._convert_snapshot,
-                         None),
-            'subnetwork': (None,
-                           self._convert_subnetwork,
-                           None),
-            'cloudsqlinstance': (None,
-                                 self._convert_cloudsqlinstance,
-                                 None),
-            'kubernetes_cluster': (None,
-                                   self._convert_kubernetes_cluster,
-                                   None),
-            'sink': (None,
-                     self._convert_sink,
-                     None),
-            None: (None, None, None),
+            'appengine_app': self._convert_gae_resource,
+            'appengine_instance': self._convert_gae_instance_resource,
+            'appengine_service': self._convert_gae_resource,
+            'appengine_version': self._convert_gae_resource,
+            'backendservice': self._convert_computeengine_resource,
+            'billing_account': self._convert_billing_account,
+            'bucket': self._convert_bucket,
+            'cloudsqlinstance': self._convert_cloudsqlinstance,
+            'compute_autoscaler': self._convert_computeengine_resource,
+            'compute_backendbucket': self._convert_computeengine_resource,
+            'compute_healthcheck': self._convert_computeengine_resource,
+            'compute_httphealthcheck': self._convert_computeengine_resource,
+            'compute_httpshealthcheck': self._convert_computeengine_resource,
+            'compute_license': self._convert_computeengine_resource,
+            'compute_project': self._convert_computeengine_resource,
+            'compute_router': self._convert_computeengine_resource,
+            'compute_sslcertificate': self._convert_computeengine_resource,
+            'compute_targethttpproxy': self._convert_computeengine_resource,
+            'compute_targethttpsproxy': self._convert_computeengine_resource,
+            'compute_targetinstance': self._convert_computeengine_resource,
+            'compute_targetpool': self._convert_computeengine_resource,
+            'compute_targetsslproxy': self._convert_computeengine_resource,
+            'compute_targettcpproxy': self._convert_computeengine_resource,
+            'compute_urlmap': self._convert_computeengine_resource,
+            'crm_org_policy': self._convert_crm_org_policy,
+            'dataset': self._convert_dataset,
+            'disk': self._convert_computeengine_resource,
+            'dns_managedzone': self._convert_clouddns_resource,
+            'dns_policy': self._convert_clouddns_resource,
+            'firewall': self._convert_computeengine_resource,
+            'folder': self._convert_folder,
+            'forwardingrule': self._convert_computeengine_resource,
+            'image': self._convert_computeengine_resource,
+            'instance': self._convert_computeengine_resource,
+            'instancegroup': self._convert_computeengine_resource,
+            'instancegroupmanager': self._convert_computeengine_resource,
+            'instancetemplate': self._convert_computeengine_resource,
+            'kubernetes_cluster': self._convert_kubernetes_cluster,
+            'lien': self._convert_lien,
+            'network': self._convert_computeengine_resource,
+            'organization': self._convert_organization,
+            'project': self._convert_project,
+            'pubsub_topic': self._convert_pubsub_topic,
+            'serviceaccount': self._convert_serviceaccount,
+            'serviceaccount_key': self._convert_serviceaccount_key,
+            'sink': self._convert_sink,
+            'snapshot': self._convert_computeengine_resource,
+            'spanner_database': self._convert_spanner_db_resource,
+            'spanner_instance': self._convert_spanner_resource,
+            'subnetwork': self._convert_computeengine_resource,
+            None: None,
         }
 
         res_type = resource.get_resource_type() if resource else None
-        if res_type not in handlers:
-            self.model.add_warning('No handler for type "{}"'.format(res_type))
-
-        if res_type != last_res_type:
-            post = handlers[last_res_type][-1]
-            if post:
-                post()
-
-            pre = handlers[res_type][0]
-            if pre:
-                pre()
-
-        handler = handlers[res_type][1]
+        handler = handlers.get(res_type)
         if handler:
             handler(resource)
-            return res_type
-        return None
+        else:
+            self.model.add_warning('No handler for type "{}"'.format(res_type))
 
-    def _convert_object(self, gcsobject):
-        """Not Implemented
-
-        Args:
-            gcsobject (object): Object to store.
-        """
-
-    def _convert_appengine_resource(self, gae_resource):
-        """Convert an AppEngine resource to a database object.
+    def _convert_resource(self, resource, cached=False, display_key='name',
+                          email_key='email'):
+        """Convert resource to a database object.
 
         Args:
-            gae_resource (dict): An appengine resource to store.
+            resource (dict): A resource to store.
+            cached (bool): Set to true for resources that have child resources
+                or policies associated with them.
+            display_key (str): The key in the resource dictionary to lookup to
+                get the display name for the resource.
+            email_key (str): The key in the resource dictionary to lookup to get
+                the email associated with the resource.
         """
-        data = gae_resource.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            gae_resource)
-        resource = self.dao.TBL_RESOURCE(
+        data = resource.get_resource_data()
+        if self._is_root(resource):
+            parent, type_name = None, self._type_name(resource)
+            full_res_name = to_full_resource_name('', type_name)
+        else:
+            parent, full_res_name, type_name = self._full_resource_name(
+                resource)
+        row = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=gae_resource.get_resource_id(),
-            type=gae_resource.get_resource_type(),
-            display_name=data.get('name', ''),
-            data=gae_resource.get_resource_data_raw(),
+            name=resource.get_resource_id(),
+            type=resource.get_resource_type(),
+            display_name=data.get(display_key, ''),
+            email=data.get(email_key, ''),
+            data=resource.get_resource_data_raw(),
             parent=parent)
 
-        self.session.add(resource)
-        self._add_to_cache(resource, gae_resource.id)
+        self.session.add(row)
+        if cached:
+            self._add_to_cache(row, resource.id)
+
+    def _convert_billing_account(self, billing_account):
+        """Convert a billing account to a database object.
+
+        Args:
+            billing_account (object): billing account to store.
+        """
+        self._convert_resource(billing_account, cached=True,
+                               display_key='displayName')
 
     def _convert_bucket(self, bucket):
         """Convert a bucket to a database object.
@@ -686,84 +624,32 @@ class InventoryImporter(object):
         Args:
             bucket (object): Bucket to store.
         """
-        data = bucket.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            bucket)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=bucket.get_resource_id(),
-            type=bucket.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=bucket.get_resource_data_raw(),
-            parent=parent)
+        self._convert_resource(bucket, cached=True)
 
-        self.session.add(resource)
-        self._add_to_cache(resource, bucket.id)
+    def _convert_clouddns_resource(self, resource):
+        """Convert a CloudDNS resource to a database object.
 
-    def _convert_kubernetes_cluster(self, cluster):
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=False)
+
+    def _convert_computeengine_resource(self, resource):
         """Convert an AppEngine resource to a database object.
 
         Args:
-            cluster (dict): A Kubernetes cluster resource to store.
+            resource (dict): An appengine resource to store.
         """
-        data = cluster.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            cluster)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=cluster.get_resource_id(),
-            type=cluster.get_resource_type(),
-            display_name=data.get('name', ''),
-            data=cluster.get_resource_data_raw(),
-            parent=parent)
+        self._convert_resource(resource, cached=False)
 
-        self.session.add(resource)
-        self._add_to_cache(resource, cluster.id)
-
-    def _convert_service_config(self, service_config):
-        """Convert Kubernetes Service Config to a database object.
+    def _convert_crm_org_policy(self, org_policy):
+        """Convert an org policy to a database object.
 
         Args:
-            service_config (dict): A Service Config resource to store.
+            org_policy (object): org policy to store.
         """
-        parent, full_res_name = self._get_parent(service_config)
-        sc_type_name = to_type_name(
-            service_config.get_category(),
-            parent.type_name)
-        sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=sc_res_name,
-            type_name=sc_type_name,
-            name=service_config.get_resource_id(),
-            type=service_config.get_category(),
-            data=service_config.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, service_config.id)
-
-    def _convert_sink(self, sink):
-        """Convert a log sink to a database object.
-
-        Args:
-            sink (object): Sink to store.
-        """
-        parent, full_res_name, type_name = self._full_resource_name(sink)
-        data = sink.get_resource_data()
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=sink.get_resource_id(),
-            type=sink.get_resource_type(),
-            display_name=data.get('name', ''),
-            email=data.get('writerIdentity', '').split(':')[-1],
-            data=sink.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
+        self._convert_resource(org_policy, cached=False,
+                               display_key='constraint')
 
     def _convert_dataset(self, dataset):
         """Convert a dataset to a database object.
@@ -771,36 +657,139 @@ class InventoryImporter(object):
         Args:
             dataset (object): Dataset to store.
         """
+        self._convert_resource(dataset, cached=True)
+
+    def _convert_folder(self, folder):
+        """Convert a folder to a database object.
+
+        Args:
+            folder (object): Folder to store.
+        """
+        self._convert_resource(folder, cached=True, display_key='displayName')
+
+    def _convert_gae_instance_resource(self, resource):
+        """Convert an AppEngine Instance resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=False)
+
+    def _convert_gae_resource(self, resource):
+        """Convert an AppEngine resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=True)
+
+    def _convert_kubernetes_cluster(self, cluster):
+        """Convert an AppEngine resource to a database object.
+
+        Args:
+            cluster (dict): A Kubernetes cluster resource to store.
+        """
+        self._convert_resource(cluster, cached=True)
+
+    def _convert_lien(self, lien):
+        """Convert a lien to a database object.
+
+        Args:
+            lien (object): Lien to store.
+        """
+        self._convert_resource(lien, cached=True)
+
+    def _convert_organization(self, organization):
+        """Convert an organization a database object.
+
+        Args:
+            organization (object): Organization to store.
+        """
+        self._convert_resource(organization, cached=True,
+                               display_key='displayName')
+
+    def _convert_pubsub_topic(self, topic):
+        """Convert a PubSub Topic to a database object.
+
+        Args:
+            topic (object): Pubsub Topic to store.
+        """
+        self._convert_resource(topic, cached=True)
+
+    def _convert_project(self, project):
+        """Convert a project to a database object.
+
+        Args:
+            project (object): Project to store.
+        """
+        self._convert_resource(project, cached=True)
+
+    def _convert_serviceaccount(self, service_account):
+        """Convert a service account to a database object.
+
+        Args:
+            service_account (object): Service account to store.
+        """
+        self._convert_resource(service_account, cached=True,
+                               display_key='displayName', email_key='email')
+
+    def _convert_serviceaccount_key(self, service_account_key):
+        """Convert a service account key to a database object.
+
+        Args:
+            service_account_key (object): Service account key to store.
+        """
+        self._convert_resource(service_account_key, cached=False)
+
+    def _convert_sink(self, sink):
+        """Convert a log sink to a database object.
+
+        Args:
+            sink (object): Sink to store.
+        """
+        self._convert_resource(sink, cached=False, email_key='writerIdentity')
+
+    def _convert_spanner_db_resource(self, resource):
+        """Convert a Spanner Database resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=False)
+
+    def _convert_spanner_resource(self, resource):
+        """Convert a Spanner Instance resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=True, display_key='displayName')
+
+    # The following methods require more complex logic than _convert_resource
+    # provides.
+    def _convert_cloudsqlinstance(self, cloudsqlinstance):
+        """Convert a cloudsqlinstance to a database object.
+
+        Args:
+            cloudsqlinstance (object): Cloudsql to store.
+        """
+        data = cloudsqlinstance.get_resource_data()
         parent, full_res_name, type_name = self._full_resource_name(
-            dataset)
+            cloudsqlinstance)
+        parent_key = get_resource_id_from_type_name(parent.type_name)
+        resource_identifier = '{}:{}'.format(parent_key,
+                                             cloudsqlinstance.get_resource_id())
+        type_name = to_type_name(cloudsqlinstance.get_resource_type(),
+                                 resource_identifier)
+
         resource = self.dao.TBL_RESOURCE(
             full_name=full_res_name,
             type_name=type_name,
-            name=dataset.get_resource_id(),
-            type=dataset.get_resource_type(),
-            data=dataset.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, dataset.id)
-
-    def _convert_enabled_apis(self, enabled_apis):
-        """Convert a description of enabled APIs to a database object.
-
-        Args:
-            enabled_apis (object): Enabled APIs description to store.
-        """
-        parent, full_res_name = self._get_parent(enabled_apis)
-        apis_type_name = to_type_name(
-            enabled_apis.get_category(),
-            ':'.join(parent.type_name.split('/')))
-        apis_res_name = to_full_resource_name(full_res_name, apis_type_name)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=apis_res_name,
-            type_name=apis_type_name,
-            name=enabled_apis.get_resource_id(),
-            type=enabled_apis.get_category(),
-            data=enabled_apis.get_resource_data_raw(),
+            name=cloudsqlinstance.get_resource_id(),
+            type=cloudsqlinstance.get_resource_type(),
+            display_name=data.get('displayName', ''),
+            email=data.get('email', ''),
+            data=cloudsqlinstance.get_resource_data_raw(),
             parent=parent)
 
         self.session.add(resource)
@@ -828,27 +817,26 @@ class InventoryImporter(object):
 
         self.session.add(resource)
 
-    def _convert_computeproject(self, computeproject):
-        """Convert a computeproject to a database object.
+    def _convert_enabled_apis(self, enabled_apis):
+        """Convert a description of enabled APIs to a database object.
 
         Args:
-            computeproject (object): computeproject to store.
+            enabled_apis (object): Enabled APIs description to store.
         """
-        data = computeproject.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            computeproject)
+        parent, full_res_name = self._get_parent(enabled_apis)
+        apis_type_name = to_type_name(
+            enabled_apis.get_category(),
+            ':'.join(parent.type_name.split('/')))
+        apis_res_name = to_full_resource_name(full_res_name, apis_type_name)
         resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=computeproject.get_resource_id(),
-            type=computeproject.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=computeproject.get_resource_data_raw(),
+            full_name=apis_res_name,
+            type_name=apis_type_name,
+            name=enabled_apis.get_resource_id(),
+            type=enabled_apis.get_category(),
+            data=enabled_apis.get_resource_data_raw(),
             parent=parent)
 
         self.session.add(resource)
-        self._add_to_cache(resource, computeproject.id)
 
     def _convert_iam_policy(self, iam_policy):
         """Convert an IAM policy to a database object.
@@ -874,429 +862,12 @@ class InventoryImporter(object):
 
         self.session.add(resource)
 
-    def _convert_disk(self, disk):
-        """Convert a disk to a database object.
-
-        Args:
-            disk (object): Disk to store.
-        """
-        data = disk.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            disk)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=disk.get_resource_id(),
-            type=disk.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=disk.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, disk.id)
-
-    def _convert_image(self, image):
-        """Convert a image to a database object.
-
-        Args:
-            image (object): Image to store.
-        """
-        data = image.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            image)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=image.get_resource_id(),
-            type=image.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=image.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, image.id)
-
-    def _convert_instancegroup(self, instancegroup):
-        """Convert a instancegroup to a database object.
-
-        Args:
-            instancegroup (object): Instancegroup to store.
-        """
-        data = instancegroup.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            instancegroup)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=instancegroup.get_resource_id(),
-            type=instancegroup.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=instancegroup.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, instancegroup.id)
-
-    def _convert_instancegroupmanager(self, instancegroupmanager):
-        """Convert a instancegroupmanager to a database object.
-
-        Args:
-            instancegroupmanager (object): InstanceGroupManager to store.
-        """
-        data = instancegroupmanager.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            instancegroupmanager)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=instancegroupmanager.get_resource_id(),
-            type=instancegroupmanager.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=instancegroupmanager.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, instancegroupmanager.id)
-
-    def _convert_instancetemplate(self, instancetemplate):
-        """Convert a instancetemplate to a database object.
-
-        Args:
-            instancetemplate (object): InstanceTemplate to store.
-        """
-        data = instancetemplate.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            instancetemplate)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=instancetemplate.get_resource_id(),
-            type=instancetemplate.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=instancetemplate.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, instancetemplate.id)
-
-    def _convert_instance(self, instance):
-        """Convert a instance to a database object.
-
-        Args:
-            instance (object): Instance to store.
-        """
-        data = instance.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            instance)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=instance.get_resource_id(),
-            type=instance.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=instance.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, instance.id)
-
-    def _convert_firewall(self, firewall):
-        """Convert a firewall to a database object.
-
-        Args:
-            firewall (object): Firewall to store.
-        """
-        data = firewall.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            firewall)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=firewall.get_resource_id(),
-            type=firewall.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=firewall.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, firewall.id)
-
-    def _convert_backendservice(self, backendservice):
-        """Convert a backendservice to a database object.
-
-        Args:
-            backendservice (object): Backendservice to store.
-        """
-        data = backendservice.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            backendservice)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=backendservice.get_resource_id(),
-            type=backendservice.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=backendservice.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, backendservice.id)
-
-    def _convert_forwardingrule(self, forwardingrule):
-        """Convert a forwarding rule to a database object.
-
-        Args:
-            forwardingrule (object): ForwardingRule to store.
-        """
-        data = forwardingrule.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            forwardingrule)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=forwardingrule.get_resource_id(),
-            type=forwardingrule.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=forwardingrule.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, forwardingrule.id)
-
-    def _convert_network(self, network):
-        """Convert a network to a database object.
-
-        Args:
-            network (object): Network to store.
-        """
-        data = network.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            network)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=network.get_resource_id(),
-            type=network.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=network.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, network.id)
-
-    def _convert_snapshot(self, snapshot):
-        """Convert a snapshot to a database object.
-
-        Args:
-            snapshot (object): Snapshot to store.
-        """
-        data = snapshot.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            snapshot)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=snapshot.get_resource_id(),
-            type=snapshot.get_resource_type(),
-            display_name=data.get('name', ''),
-            email=data.get('email', ''),
-            data=snapshot.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, snapshot.id)
-
-    def _convert_subnetwork(self, subnetwork):
-        """Convert a subnetwork to a database object.
-
-        Args:
-            subnetwork (object): Subnetwork to store.
-        """
-        data = subnetwork.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            subnetwork)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=subnetwork.get_resource_id(),
-            type=subnetwork.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=subnetwork.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, subnetwork.id)
-
-    def _convert_cloudsqlinstance(self, cloudsqlinstance):
-        """Convert a cloudsqlinstance to a database object.
-
-        Args:
-            cloudsqlinstance (object): Cloudsql to store.
-        """
-        data = cloudsqlinstance.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            cloudsqlinstance)
-        parent_key = get_resource_id_from_type_name(parent.type_name)
-        resource_identifier = '{}:{}'.format(parent_key,
-                                             cloudsqlinstance.get_resource_id())
-        type_name = to_type_name(cloudsqlinstance.get_resource_type(),
-                                 resource_identifier)
-
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=cloudsqlinstance.get_resource_id(),
-            type=cloudsqlinstance.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=cloudsqlinstance.get_resource_data_raw(),
-            parent=parent)
-
-        self.session.add(resource)
-        self._add_to_cache(resource, cloudsqlinstance.id)
-
-    def _convert_serviceaccount(self, service_account):
-        """Convert a service account to a database object.
-
-        Args:
-            service_account (object): Service account to store.
-        """
-        data = service_account.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            service_account)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=service_account.get_resource_id(),
-            type=service_account.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=service_account.get_resource_data_raw(),
-            parent=parent)
-        self.session.add(resource)
-        self._add_to_cache(resource, service_account.id)
-
-    def _convert_serviceaccount_key(self, service_account_key):
-        """Convert a service account key to a database object.
-
-        Args:
-            service_account_key (object): Service account key to store.
-        """
-
-        data = service_account_key.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            service_account_key)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=service_account_key.get_resource_id(),
-            type=service_account_key.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            email=data.get('email', ''),
-            data=service_account_key.get_resource_data_raw(),
-            parent=parent)
-        self.session.add(resource)
-
-    def _convert_folder(self, folder):
-        """Convert a folder to a database object.
-
-        Args:
-            folder (object): Folder to store.
-        """
-
-        data = folder.get_resource_data()
-        if self._is_root(folder):
-            parent, type_name = None, self._type_name(folder)
-            full_res_name = to_full_resource_name('', type_name)
-        else:
-            parent, full_res_name, type_name = self._full_resource_name(
-                folder)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=folder.get_resource_id(),
-            type=folder.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            data=folder.get_resource_data_raw(),
-            parent=parent)
-        self.session.add(resource)
-        self._add_to_cache(resource, folder.id)
-
-    def _convert_project(self, project):
-        """Convert a project to a database object.
-
-        Args:
-            project (object): Project to store.
-        """
-
-        data = project.get_resource_data()
-        if self._is_root(project):
-            parent, type_name = None, self._type_name(project)
-            full_res_name = to_full_resource_name('', type_name)
-        else:
-            parent, full_res_name, type_name = self._full_resource_name(
-                project)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=project.get_resource_id(),
-            type=project.get_resource_type(),
-            display_name=data.get('name', ''),
-            data=project.get_resource_data_raw(),
-            parent=parent)
-        self.session.add(resource)
-        self._add_to_cache(resource, project.id)
-
-    def _convert_billing_account(self, billing_account):
-        """Convert a billing account to a database object.
-
-        Args:
-            billing_account (object): billing account to store.
-        """
-
-        data = billing_account.get_resource_data()
-        parent, full_res_name, type_name = self._full_resource_name(
-            billing_account)
-        resource = self.dao.TBL_RESOURCE(
-            full_name=full_res_name,
-            type_name=type_name,
-            name=billing_account.get_resource_id(),
-            type=billing_account.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            data=billing_account.get_resource_data_raw(),
-            parent=parent)
-        self.session.add(resource)
-        self._add_to_cache(resource, billing_account.id)
-
-    def _convert_role_pre(self):
-        """Executed before roles are handled. Prepares for bulk insert."""
-
-        pass
-
-    def _convert_role_post(self):
-        """Executed after all roles were handled. Performs bulk insert."""
-
-        self.session.add_all(self.permission_cache.values())
-        self.session.add_all(self.role_cache.values())
-
     def _convert_role(self, role):
         """Convert a role to a database object.
 
         Args:
             role (object): Role to store.
         """
-
         data = role.get_resource_data()
         is_custom = not data['name'].startswith('roles/')
         db_permissions = []
@@ -1337,28 +908,71 @@ class InventoryImporter(object):
             self._add_to_cache(role_resource, role.id)
             self.session.add(role_resource)
 
-    def _convert_organization(self, organization):
-        """Convert an organization a database object.
+    def _convert_role_post(self):
+        """Executed after all roles were handled. Performs bulk insert."""
+
+        self.session.add_all(self.permission_cache.values())
+        self.session.add_all(self.role_cache.values())
+
+    def _convert_service_config(self, service_config):
+        """Convert Kubernetes Service Config to a database object.
 
         Args:
-            organization (object): Organization to store.
+            service_config (dict): A Service Config resource to store.
+        """
+        parent, full_res_name = self._get_parent(service_config)
+        sc_type_name = to_type_name(
+            service_config.get_category(),
+            parent.type_name)
+        sc_res_name = to_full_resource_name(full_res_name, sc_type_name)
+        resource = self.dao.TBL_RESOURCE(
+            full_name=sc_res_name,
+            type_name=sc_type_name,
+            name=service_config.get_resource_id(),
+            type=service_config.get_category(),
+            data=service_config.get_resource_data_raw(),
+            parent=parent)
+
+        self.session.add(resource)
+
+    def _add_to_cache(self, resource, resource_id):
+        """Add a resource to the cache for parent lookup.
+
+        Args:
+            resource (object): Resource to put in the cache.
+            resource_id (int): The database key for the resource.
         """
 
-        # Under current assumptions, organization is always root
-        self.found_root = True
-        data = organization.get_resource_data()
-        type_name = self._type_name(organization)
-        org = self.dao.TBL_RESOURCE(
-            full_name=to_full_resource_name('', type_name),
-            type_name=type_name,
-            name=organization.get_resource_id(),
-            type=organization.get_resource_type(),
-            display_name=data.get('displayName', ''),
-            data=organization.get_resource_data_raw(),
-            parent=None)
+        full_res_name = resource.full_name
+        self.resource_cache[resource_id] = (resource, full_res_name)
 
-        self._add_to_cache(org, organization.id)
-        self.session.add(org)
+    def _full_resource_name(self, resource):
+        """Returns the parent object, full resource name and type name.
+
+        Args:
+            resource (object): Resource whose full resource name and parent
+            should be returned.
+
+        Returns:
+            str: full resource name for the provided resource.
+        """
+
+        type_name = self._type_name(resource)
+        parent, full_res_name = self._get_parent(resource)
+        full_resource_name = to_full_resource_name(full_res_name, type_name)
+        return parent, full_resource_name, type_name
+
+    def _get_parent(self, resource):
+        """Return the parent object for a resource from cache.
+
+        Args:
+            resource (object): Resource whose parent to look for.
+
+        Returns:
+            tuple: cached object and full resource name
+        """
+        parent_id = resource.get_parent_id()
+        return self.resource_cache[parent_id]
 
     def _is_role_unique(self, role_name):
         """Check to see if the session contains Role with
@@ -1380,60 +994,6 @@ class InventoryImporter(object):
             return False
         return True
 
-    def _add_to_cache(self, resource, resource_id):
-        """Add a resource to the cache for parent lookup.
-
-        Args:
-            resource (object): Resource to put in the cache.
-            resource_id (int): The database key for the resource.
-        """
-
-        full_res_name = resource.full_name
-        self.resource_cache[resource_id] = (resource, full_res_name)
-
-    def _get_parent(self, resource):
-        """Return the parent object for a resource from cache.
-
-        Args:
-            resource (object): Resource whose parent to look for.
-
-        Returns:
-            tuple: cached object and full resource name
-        """
-
-        parent_id = resource.get_parent_id()
-
-        return self.resource_cache[parent_id]
-
-    def _type_name(self, resource):
-        """Return the type/name for that resource.
-
-        Args:
-            resource (object): Resource to retrieve type/name for.
-
-        Returns:
-            str: type/name representation of the resource.
-        """
-        return to_type_name(
-            resource.get_resource_type(),
-            resource.get_resource_id())
-
-    def _full_resource_name(self, resource):
-        """Returns the parent object, full resource name and type name.
-
-        Args:
-            resource (object): Resource whose full resource name and parent
-            should be returned.
-
-        Returns:
-            str: full resource name for the provided resource.
-        """
-
-        type_name = self._type_name(resource)
-        parent, full_res_name = self._get_parent(resource)
-        full_resource_name = to_full_resource_name(full_res_name, type_name)
-        return parent, full_resource_name, type_name
-
     def _is_root(self, resource):
         """Checks if the resource is an inventory root. Result is cached.
 
@@ -1449,6 +1009,22 @@ class InventoryImporter(object):
                 self.found_root = True
             return is_root
         return False
+
+    @staticmethod
+    def _type_name(resource):
+        """Return the type/name for that resource.
+
+        This is a simple wrapper for the to_type_name function.
+
+        Args:
+            resource (object): Resource to retrieve type/name for.
+
+        Returns:
+            str: type/name representation of the resource.
+        """
+        return to_type_name(
+            resource.get_resource_type(),
+            resource.get_resource_id())
 
 
 def by_source(source):

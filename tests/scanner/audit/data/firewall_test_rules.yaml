@@ -8,7 +8,7 @@ rules:
         targetTags:
           - 'test'
     verify_policies:
-      - allowed: '*'
+      - allowed: ['*']
         sourceRanges:
         - '10.0.0.0/8'
 

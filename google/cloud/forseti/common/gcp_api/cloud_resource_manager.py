@@ -22,8 +22,12 @@ from google.cloud.forseti.common.gcp_api import errors as api_errors
 from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
-
 LOGGER = logger.get_logger(__name__)
+# TODO: This should have been 'cloudresourcemanager', however 'crm' is what was
+# used in the existing server configuration, and will be difficult to change
+# without breaking existing deployments. Consider fixing once an upgrade tool
+# is created that can modify existing server configuration files.
+API_NAME = 'crm'
 
 
 class CloudResourceManagerRepositoryClient(
@@ -33,7 +37,8 @@ class CloudResourceManagerRepositoryClient(
     def __init__(self,
                  quota_max_calls=None,
                  quota_period=100.0,
-                 use_rate_limiter=True):
+                 use_rate_limiter=True,
+                 credentials=None):
         """Constructor.
 
         Args:
@@ -42,6 +47,8 @@ class CloudResourceManagerRepositoryClient(
             quota_period (float): The time period to track requests over.
             use_rate_limiter (bool): Set to false to disable the use of a rate
                 limiter for this service.
+            credentials (OAuth2Credentials): Credentials that will be used to
+                authenticate the API calls.
         """
         if not quota_max_calls:
             use_rate_limiter = False
@@ -50,12 +57,14 @@ class CloudResourceManagerRepositoryClient(
         self._organizations = None
         self._folders = None
         self._folders_v1 = None
+        self._liens = None
 
         super(CloudResourceManagerRepositoryClient, self).__init__(
             'cloudresourcemanager', versions=['v1', 'v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
-            use_rate_limiter=use_rate_limiter)
+            use_rate_limiter=use_rate_limiter,
+            credentials=credentials)
 
     # Turn off docstrings for properties.
     # pylint: disable=missing-return-doc, missing-return-type-doc
@@ -91,6 +100,15 @@ class CloudResourceManagerRepositoryClient(
             self._folders_v1 = self._init_repository(
                 _ResourceManagerFolderV1Repository, version='v1')
         return self._folders_v1
+
+    @property
+    def liens(self):
+        """Returns a _ResourceManagerLiensRepository instance."""
+        if not self._liens:
+            self._liens = self._init_repository(
+                _ResourceManagerLiensRepository)
+        return self._liens
+
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
@@ -226,6 +244,22 @@ class _ResourceManagerFolderV1Repository(
             max_results_field='pageSize', component='folders', **kwargs)
 
 
+class _ResourceManagerLiensRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Cloud Resource Manager Liens repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_ResourceManagerLiensRepository, self).__init__(
+            list_key_field='parent', max_results_field='pageSize',
+            component='liens', **kwargs)
+
+
 class CloudResourceManagerClient(object):
     """Resource Manager Client."""
 
@@ -237,12 +271,13 @@ class CloudResourceManagerClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'crm')
+            global_configs, API_NAME)
 
         self.repository = CloudResourceManagerRepositoryClient(
             quota_max_calls=max_calls,
             quota_period=quota_period,
-            use_rate_limiter=kwargs.get('use_rate_limiter', True))
+            use_rate_limiter=kwargs.get('use_rate_limiter', True),
+            credentials=kwargs.get('credentials', None))
 
     def get_project(self, project_id):
         """Get all the projects from organization.
@@ -516,6 +551,28 @@ class CloudResourceManagerClient(object):
             else:
                 resource_name = 'All Folders'
             raise api_errors.ApiExecutionError(resource_name, e)
+
+    def get_project_liens(self, project_id):
+        """Get all liens for this project.
+
+        Args:
+            project_id (str): the id of the project.
+
+        Returns:
+            list: A list of Lien dicts as returned by the API.
+
+        Raises:
+            ApiExecutionError: An error has occurred when executing the API.
+        """
+        project_id = self.repository.projects.get_name(project_id)
+        try:
+            paged_results = self.repository.liens.list(
+                project_id)
+            flattened_results = api_helpers.flatten_list_results(
+                paged_results, 'liens')
+            return flattened_results
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(project_id, e)
 
     def get_folder_iam_policies(self, folder_id):
         """Get all the iam policies of a folder.

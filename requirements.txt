@@ -6,7 +6,8 @@ protobuf
 grpcio
 grpcio-tools
 pyYAML
-google-apputils
+googleapis-common-protos[grpc]
+google-cloud-asset
 
 # Needed for CI/CD and Development.
 codecov

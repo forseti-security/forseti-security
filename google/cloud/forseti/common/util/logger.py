@@ -21,11 +21,12 @@ import logging
 import logging.handlers
 import os
 
+from google.cloud.forseti import __version__ as forseti_version
 
 DEFAULT_LOG_FMT = ('%(asctime)s %(levelname)s '
                    '%(name)s(%(funcName)s): %(message).1024s')
 
-SYSLOG_LOG_FMT = ('%(levelname)s [forseti-security] '
+SYSLOG_LOG_FMT = ('%(levelname)s [forseti-security][' + forseti_version + '] '
                   '%(name)s(%(funcName)s): %(message).1024s')
 
 # %(asctime)s is used as the marker by multiline parser to determine
@@ -83,6 +84,8 @@ def get_logger(module_name):
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(default_log_handler)
     logger_instance.setLevel(LOGLEVEL)
+    # Prevent output to CLI's stdout via other ancestor loggers.
+    logger_instance.propagate = False
 
     if LOG_TO_CONSOLE:
         console_handler = logging.StreamHandler()

@@ -14,6 +14,7 @@
 
 """Tests the file loader utility."""
 
+import os
 import unittest
 import mock
 import google.auth
@@ -86,6 +87,23 @@ class FileLoaderTest(ForsetiTestCase):
         with self.assertRaises(ValueError):
             file_loader._parse_json_string('')
 
+    @mock.patch.object(
+        google.auth, 'default',
+        return_value=(mock.Mock(spec_set=credentials.Credentials),
+                      'test-project'))
+    def test_copy_file_from_gcs(self, mock_default_credentials):
+        """Test copying file from GCS works."""
+        mock_responses = [
+            ({'status': '200',
+              'content-range': '0-10/11'}, b'{"test": 1}')
+        ]
+        http_mocks.mock_http_response_sequence(mock_responses)
+        try:
+            file_path = file_loader.copy_file_from_gcs('gs://fake/file.json')
+            with open(file_path, 'rb') as f:
+                self.assertEqual(b'{"test": 1}', f.read())
+        finally:
+            os.unlink(file_path)
 
 if __name__ == '__main__':
     unittest.main()

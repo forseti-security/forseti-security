@@ -139,6 +139,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                 }
 
                 yield {
+                    'resource_name': member,
                     'resource_id': violation.resource_id,
                     'resource_type': violation.resource_type,
                     'full_name': violation.full_name,
@@ -175,7 +176,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
             # "policy" is really the resource from the data model.
             # "resource" is the generated Forseti gcp type.
             LOGGER.debug('%s => %s', resource, policy)
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 resource, policy, policy_bindings)
             all_violations.extend(violations)
         return all_violations

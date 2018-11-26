@@ -478,6 +478,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': '0.0.0.0/0',
                   'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -529,6 +530,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': '0.0.0.0/0',
                   'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -543,6 +545,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p2',
+                  'resource_name': '0.0.0.0/0 2',
                   'full_name': '',
                   'rule_id': 'No 0.0.0.0/0 policy allowed 2',
                   'violation_type': 'FIREWALL_BLACKLIST_VIOLATION',
@@ -557,14 +560,14 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_blacklist(
+    def test_find_violations_blacklist(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
         for policy_dict in policy_dicts:
             policy = FirewallRule(**policy_dict)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     @parameterized.parameterized.expand([
@@ -616,6 +619,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': 'Any to 443 on https-server',
                   'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -675,6 +679,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': 'Any to 443 on https-server',
                   'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -689,6 +694,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p3',
+                  'resource_name': 'Any to 80/443 to https-server and tag3',
                   'full_name': None,
                   'rule_id': 'Only Allow 443 to tagged instances',
                   'violation_type': 'FIREWALL_WHITELIST_VIOLATION',
@@ -703,7 +709,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_whitelist(
+    def test_find_violations_whitelist(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
@@ -711,7 +717,7 @@ class RuleTest(ForsetiTestCase):
             project = policy_dict.get('project_id')
             policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     @parameterized.parameterized.expand([
@@ -783,6 +789,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': 'Any to 443,Allow 22 from 1.1.1.1',
                   'full_name': None,
                   'rule_id': 'Allow SSH to tag from 1.1.1.1',
                   'violation_type': 'FIREWALL_REQUIRED_VIOLATION',
@@ -797,7 +804,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_exists(
+    def test_find_violations_exists(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
@@ -805,7 +812,7 @@ class RuleTest(ForsetiTestCase):
             project = policy_dict.get('project_id')
             policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     @parameterized.parameterized.expand([
@@ -919,6 +926,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': 'SSH from 1.1.1.1,443 from 10.0.0.0/8,80 from 10.0.0.0/8',
                   'rule_id': 'Golden Policy',
                   'full_name': None,
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
@@ -989,6 +997,7 @@ class RuleTest(ForsetiTestCase):
               {
                   'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                   'resource_id': 'p1',
+                  'resource_name': 'SSH from 1.1.1.1,80 from 10.0.0.0/8',
                   'rule_id': 'Golden Policy',
                   'full_name': None,
                   'violation_type': 'FIREWALL_MATCHES_VIOLATION',
@@ -1007,7 +1016,7 @@ class RuleTest(ForsetiTestCase):
           ],
       ),
     ])
-    def test_find_policy_violations_matches(
+    def test_find_violations_matches(
         self, rule_dict, policy_dicts, expected):
         rule = fre.Rule(**rule_dict)
         policies = []
@@ -1015,7 +1024,7 @@ class RuleTest(ForsetiTestCase):
             project = policy_dict.get('project_id')
             policy = FirewallRule.from_dict(policy_dict, project_id=project)
             policies.append(policy)
-        violations = list(rule.find_policy_violations(policies))
+        violations = list(rule.find_violations(policies))
         self.assert_rule_violation_lists_equal(expected, violations)
 
     def assert_rule_violation_lists_equal(self, expected, violations):
@@ -1451,6 +1460,7 @@ class RuleBookTest(ForsetiTestCase):
             fre.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
+                resource_name='policy1',
                 full_name='organization/org/folder/folder1/project/project0/firewall/policy1/',
                 rule_id='rule1',
                 violation_type='FIREWALL_BLACKLIST_VIOLATION',
@@ -1463,6 +1473,7 @@ class RuleBookTest(ForsetiTestCase):
             fre.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
+                resource_name='policy1',
                 full_name='organization/org/folder/folder2/project/project1/firewall/policy1/',
                 rule_id='rule2',
                 violation_type='FIREWALL_WHITELIST_VIOLATION',
@@ -1475,6 +1486,7 @@ class RuleBookTest(ForsetiTestCase):
             fre.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
+                resource_name='policy1',
                 full_name='organization/org/folder/folder3/folder/folder4/project/project2/firewall/policy1/',
                 rule_id='rule3',
                 violation_type='FIREWALL_REQUIRED_VIOLATION',
@@ -1487,6 +1499,7 @@ class RuleBookTest(ForsetiTestCase):
             fre.RuleViolation(
                 resource_type=resource_mod.ResourceType.FIREWALL_RULE,
                 resource_id=None,
+                resource_name='policy1',
                 full_name='organization/org/folder/folder3/project/project3/firewall/policy1/',
                 rule_id='rule4',
                 violation_type='FIREWALL_MATCHES_VIOLATION',
@@ -1583,6 +1596,7 @@ class RuleEngineTest(ForsetiTestCase):
                 {
                     'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
+                    'resource_name': 'policy1',
                     'full_name': ('organization/org/folder/folder1/'
                                   'project/project0/firewall/policy1/'),
                     'rule_id': 'no_rdp_to_linux',
@@ -1611,6 +1625,7 @@ class RuleEngineTest(ForsetiTestCase):
                 {
                     'resource_type': resource_mod.ResourceType.FIREWALL_RULE,
                     'resource_id': None,
+                    'resource_name': 'policy1',
                     'full_name': ('organization/org/folder/test_instances/'
                                   'project/project1/firewall/policy1/'),
                     'rule_id': 'test_instances_rule',
@@ -1650,7 +1665,7 @@ class RuleEngineTest(ForsetiTestCase):
         rules_engine.rule_book.org_res_rel_dao = mock.Mock()
         rules_engine.rule_book.org_res_rel_dao.find_ancestors.side_effect = (
             lambda x,y: self.ancestry[x])
-        violations = rules_engine.find_policy_violations(resource, [policy])
+        violations = rules_engine.find_violations(resource, [policy])
         expected_violations = [
             fre.RuleViolation(**v) for v in expected_violations_dicts]
         self.assert_rule_violation_lists_equal(expected_violations, violations)

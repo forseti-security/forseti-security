@@ -21,42 +21,134 @@ inventory:
         # We are not using the max allowed API quota because we wanted to
         # include some rooms for retries.
         # Period is in seconds.
+
+        # Set disable_polling to True to disable polling that API for creation
+        # of the inventory. This can speed up inventory creation for
+        # organizations that do not use specific APIs. Defaults to False if
+        # not defined.
         admin:
           max_calls: 14
           period: 1.0
+          disable_polling: False
         appengine:
           max_calls: 18
           period: 1.0
+          disable_polling: False
         bigquery:
           max_calls: 160
           period: 1.0
+          disable_polling: False
+        cloudasset:
+          max_calls: 1
+          period: 1.0
+          disable_polling: False
         cloudbilling:
           max_calls: 5
           period: 1.2
+          disable_polling: False
         compute:
           max_calls: 18
           period: 1.0
+          disable_polling: False
         container:
           max_calls: 9
           period: 1.0
+          disable_polling: False
         crm:
           max_calls: 4
           period: 1.2
+          disable_polling: False
         iam:
-          max_calls: 18
+          max_calls: 90
           period: 1.0
+          disable_polling: False
         logging:
-          max_calls: 1
-          period: 1.1
+          max_calls: 9
+          period: 1.0
+          disable_polling: False
         securitycenter:
           max_calls: 1
-          period: 1.1,
+          period: 1.1
+          disable_polling: False
         servicemanagement:
           max_calls: 2
           period: 1.1
+          disable_polling: False
         sqladmin:
           max_calls: 1
           period: 1.1
+          disable_polling: False
+        storage:  # Does not use API quota
+          disable_polling: False
+
+    cai:
+        # The FORSETI_CAI_BUCKET needs to be in Forseti project.
+        enabled: {CAI_ENABLED}
+        gcs_path: gs://{FORSETI_CAI_BUCKET}
+
+        # Optional list of asset types supported by Cloud Asset inventory API.
+        # https://cloud.google.com/resource-manager/docs/cloud-asset-inventory/overview
+        # If included, only the asset types listed will be included in the
+        # Forseti inventory. This can be used to reduce the size of the
+        # inventory database to save on storage and reduce the time to complete
+        # a pull of the inventory.
+        #
+        # If commented out then all assets are exported from Cloud Asset API.
+
+        #asset_types:
+        #    - google.appengine.Application
+        #    - google.appengine.Service
+        #    - google.appengine.Version
+        #    - google.bigquery.Dataset
+        #    - google.bigquery.Table
+        #    - google.cloud.billing.BillingAccount
+        #    - google.cloud.dataproc.Cluster
+        #    - google.cloud.dataproc.Job
+        #    - google.cloud.dns.ManagedZone
+        #    - google.cloud.dns.Policy
+        #    - google.cloud.kms.KeyRing
+        #    - google.cloud.kms.CryptoKey
+        #    - google.cloud.kms.CryptoKeyVersion
+        #    - google.cloud.resourcemanager.Organization
+        #    - google.cloud.resourcemanager.Folder
+        #    - google.cloud.resourcemanager.Project
+        #    - google.cloud.storage.Bucket
+        #    - google.compute.Autoscaler
+        #    - google.compute.BackendBucket
+        #    - google.compute.BackendService
+        #    - google.compute.Disk
+        #    - google.compute.Firewall
+        #    - google.compute.ForwardingRule
+        #    - google.compute.HealthCheck
+        #    - google.compute.HttpHealthCheck
+        #    - google.compute.HttpsHealthCheck
+        #    - google.compute.Image
+        #    - google.compute.Instance
+        #    - google.compute.InstanceGroup
+        #    - google.compute.InstanceGroupManager
+        #    - google.compute.InstanceTemplate
+        #    - google.compute.License
+        #    - google.compute.Network
+        #    - google.compute.Project
+        #    - google.compute.Route
+        #    - google.compute.Router
+        #    - google.compute.Snapshot
+        #    - google.compute.SslCertificate
+        #    - google.compute.Subnetwork
+        #    - google.compute.TargetHttpProxy
+        #    - google.compute.TargetHttpsProxy
+        #    - google.compute.TargetInstance
+        #    - google.compute.TargetPool
+        #    - google.compute.TargetTcpProxy
+        #    - google.compute.TargetSslProxy
+        #    - google.compute.TargetVpnGateway
+        #    - google.compute.UrlMap
+        #    - google.container.Cluster
+        #    - google.iam.Role
+        #    - google.iam.ServiceAccount
+        #    - google.pubsub.Topic
+        #    - google.spanner.Instance
+        #    - google.spanner.Database
 
     # Number of days to retain inventory data:
     #  -1 : (default) keep all previous data forever
@@ -106,7 +198,13 @@ scanner:
           enabled: true
         - name: instance_network_interface
           enabled: false
+        - name: ke_scanner
+          enabled: false
         - name: ke_version_scanner
+          enabled: true
+        - name: lien
+          enabled: true
+        - name: location
           enabled: true
         - name: log_sink
           enabled: true
@@ -289,6 +387,22 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
+        - resource: ke_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
         - resource: groups_violations
           should_notify: true
           notifiers:
@@ -322,6 +436,38 @@ notifier:
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
         - resource: iap_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: lien_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
+
+        - resource: location_violations
           should_notify: true
           notifiers:
             # Email violations
@@ -374,9 +520,16 @@ notifier:
       cscc:
         enabled: false
         mode: api
+        # Alpha API
         organization_id: {ROOT_RESOURCE_ID}
         # gcs_path should begin with "gs://"
         gcs_path:
+        # Beta API
+        # Cloud SCC Beta API uses a new source_id.  It is unique per
+        # organization and must be generated via a self-registration process.
+        # If source_id is used, then it will activate the Beta API,
+        # and the Beta API will take precedence over the Alpha API.
+        source_id: organizations/ORG_ID/sources/SOURCE_ID
 
     inventory:
       gcs_summary:

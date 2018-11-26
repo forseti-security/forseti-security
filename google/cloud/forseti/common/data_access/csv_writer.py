@@ -375,6 +375,7 @@ ORGANIZATIONS_FIELDNAMES = [
 VIOLATION_FIELDNAMES = [
     'resource_id',
     'resource_type',
+    'resource_name',
     'full_name',
     'rule_index',
     'rule_name',

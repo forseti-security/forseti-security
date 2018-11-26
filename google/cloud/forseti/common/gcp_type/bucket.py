@@ -16,6 +16,8 @@
 See: https://cloud.google.com/storage/docs/json_api/v1/
 """
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -37,6 +39,7 @@ class Bucket(resource.Resource):
             name=None,
             display_name=None,
             parent=None,
+            locations=None,
             lifecycle_state=BucketLifecycleState.UNSPECIFIED):
         """Initialize.
 
@@ -47,6 +50,8 @@ class Bucket(resource.Resource):
             name (str): The bucket's unique GCP name, with the
                 format "buckets/{id}".
             display_name (str): The bucket's display name.
+            locations (List[str]): Locations this bucket resides in. If set,
+                there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
                 bucket.
@@ -57,6 +62,40 @@ class Bucket(resource.Resource):
             name=name,
             display_name=display_name,
             parent=parent,
+            locations=locations,
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        """Create a bucket from a JSON string.
+
+        Args:
+            parent (Resource): resource this bucket belongs to.
+            json_string(str): JSON string of a bucket GCP API response.
+
+        Returns:
+            Bucket: bucket resource.
+        """
+        bucket_dict = json.loads(json_string)
+
+        bucket_id = bucket_dict['id']
+        return cls(
+            parent=parent,
+            bucket_id=bucket_id,
+            full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
+            display_name=bucket_id,
+            locations=[bucket_dict['location']],
+            data=json_string,
+        )
+
+    def get_lifecycle_rule(self):
+        """Create a bucket lifecycle's rules dict from its JSON string.
+         Returns:
+            dict: bucket lifecycle's rules.
+        """
+        bucket_dict = json.loads(self.data)
+        if 'lifecycle' in bucket_dict and 'rule' in bucket_dict['lifecycle']:
+            return bucket_dict['lifecycle']['rule']
+        return {}

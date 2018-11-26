@@ -25,6 +25,8 @@ imports:
   name: forseti-instance-server.py
 - path: storage/bucket.py
   name: bucket.py
+- path: storage/bucket_cai.py
+  name: bucket_cai.py
 
 resources:
 
@@ -42,6 +44,11 @@ resources:
   type: bucket.py
   properties:
     location: {BUCKET_LOCATION}
+- name: {FORSETI_CAI_BUCKET}
+  type: bucket_cai.py
+  properties:
+    location: {BUCKET_LOCATION}
+    retention_days: 14
 
 # Compute Engine
 - name: forseti-instance-server
