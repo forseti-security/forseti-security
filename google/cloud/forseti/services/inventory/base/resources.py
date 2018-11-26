@@ -849,6 +849,7 @@ class Bqtable(resource_class_factory('bigquery_table', 'id')):
        # To Do.
        project_id = self.parent().parent()['projectNumber']
        dataset_id = self.parent()['datasetReference']['datasetId']
+       LOGGER.info('get_bqtable %s;;%s', project_id, dataset_id)
        dataset_reference = {'projectId':project_id, 'datasetId':dataset_id}
        return client.iter_bqtable(dataset_reference=dataset_reference)
 
