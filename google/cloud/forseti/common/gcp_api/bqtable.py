@@ -37,7 +37,7 @@ class _BqtableRepository(
            **kwargs (dict): The args to pass into GCPRepository.__init__()
        """
        super(_BqtableRepository, self).__init__(
-           key_field=None, component='tables', **kwargs)
+           key_field=None, component='taBLes', **kwargs)
 
 
 class BqtableRepositoryClient(_base_repository.BaseRepositoryClient):
