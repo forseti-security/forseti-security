@@ -344,15 +344,6 @@ class Resource(object):
         del client  # Unused.
         return None
 
-    def get_bqtable(self, client=None):
-        """Get bigquery table template.
-
-        Args:
-            client (object): GCP API client.
-        """
-        del client  # Unused.
-        return None
-
     @cached('group_members')
     def get_group_members(self, client=None):
         """Get group member template.
@@ -830,26 +821,11 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             self.parent()['projectNumber'],
             self['datasetReference']['datasetId'])
 
-# Bqtable resource classes
-class Bqtable(resource_class_factory('bigquery_table', 'id')):
+
+# BigqueryTable resource classes
+class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
    """The Resource implementation for bigquery table."""
 
-   def get_bqtable(self, client=None):
-       """Bigquery Table for this Dataset.
-
-       Args:
-           client (object): GCP API client.
-
-       Returns:
-           dict: Resource1 information1.
-       """
-       # create your arguments: your_argument1, your_argument2, ...
-       # To Do.
-       project_id = self.parent().parent()['projectNumber']
-       dataset_id = self.parent()['datasetReference']['datasetId']
-       LOGGER.info('get_bqtable %s;;%s', project_id, dataset_id)
-       dataset_reference = {'projectId':project_id, 'datasetId':dataset_id}
-       return client.iter_bqtable(dataset_reference=dataset_reference)
 
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
@@ -2032,7 +2008,7 @@ FACTORIES = {
 
     'bqtable': ResourceFactory({
         'dependsOn': ['bigquery_dataset'],
-        'cls': Bqtable,
+        'cls': BigqueryTable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({
