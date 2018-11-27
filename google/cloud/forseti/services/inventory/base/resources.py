@@ -1107,6 +1107,7 @@ class KmsCryptoKey(resource_class_factory('kms_cryptokey', 'name',
             self.add_warning(e)
             return None
 
+
 class KmsCryptoKeyVersion(resource_class_factory('kms_cryptokeyversion', 'name',
                                                  hash_key=True)):
     """The Resource implementation for KMS CryptoKeyVersion."""
