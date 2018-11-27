@@ -1239,7 +1239,7 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
 
     @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
-        """Full projection returns GCS policy with the resource.
+        """Get Bucket Access Control policy for this storage bucket.
 
         Args:
             client (object): GCP API client.

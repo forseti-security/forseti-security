@@ -1811,7 +1811,6 @@ GCS_GET_OBJECTS = {}
 
 BUCKET_IAM_TEMPLATE = """
 {{
- "kind": "storage#policy",
  "bindings": [
   {{
    "role": "roles/storage.legacyBucketOwner",
