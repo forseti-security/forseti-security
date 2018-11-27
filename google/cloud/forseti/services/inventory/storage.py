@@ -52,7 +52,7 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
-MAX_ALLOWED_PACKET = 32*1024*1024  # 32 Mb is the default mysql max packet size
+MAX_ALLOWED_PACKET = 32 * 1024 * 1024  # 32 Mb default mysql max packet size
 
 
 class Categories(enum.Enum):
@@ -663,7 +663,7 @@ class BufferedDbWriter(object):
     def __init__(self,
                  session,
                  max_size=1024,
-                 max_packet_size=MAX_ALLOWED_PACKET*.75,
+                 max_packet_size=MAX_ALLOWED_PACKET * .75,
                  commit_on_flush=False):
         """Initialize
 
@@ -774,8 +774,8 @@ class CaiDataAccess(object):
                     continue
                 if row:
                     # Overestimate the packet length to ensure max size is never
-                    # exceeded. The actual length is closer to len(line)*1.5.
-                    commit_buffer.add(row, estimated_length=len(line)*2)
+                    # exceeded. The actual length is closer to len(line) * 1.5.
+                    commit_buffer.add(row, estimated_length=len(line) * 2)
                     num_rows += 1
             commit_buffer.flush()
         except SQLAlchemyError as e:
