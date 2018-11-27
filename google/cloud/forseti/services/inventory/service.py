@@ -21,8 +21,6 @@ from google.cloud.forseti.services.inventory import inventory_pb2_grpc
 from google.cloud.forseti.services.inventory import inventory
 from google.cloud.forseti.services.utils import autoclose_stream
 
-from google.cloud.forseti.common.opencensus import tracing
-
 # pylint: disable=no-member
 
 
@@ -56,7 +54,6 @@ def inventory_pb_from_object(inventory_index):
         errors=inventory_index.inventory_index_errors)
 
 
-@tracing.traced(methods=['Create', 'Purge'])
 class GrpcInventory(inventory_pb2_grpc.InventoryServicer):
     """Inventory gRPC handler."""
 
