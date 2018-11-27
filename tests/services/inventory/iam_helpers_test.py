@@ -179,7 +179,7 @@ STORAGE_TESTS = [
      []),
 
     ('reader-unknown-member',
-     make_iam_policy('roles/legacyBucketReader',
+     make_iam_policy('roles/storage.legacyBucketReader',
                      ['unknown:test']),
      []),
 
