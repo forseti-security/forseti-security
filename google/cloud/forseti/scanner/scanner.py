@@ -77,7 +77,10 @@ def mark_scanner_index_complete(
     session.flush()
 
 
-def run(model_name=None, progress_queue=None, service_config=None):
+def run(model_name=None,
+        progress_queue=None,
+        service_config=None,
+        scanner_name=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
@@ -86,7 +89,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
         model_name (str): The name of the data model.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
-
+        scanner_name (str): name of the scanner that runs separately.
     Returns:
         int: Status code.
     """
@@ -102,7 +105,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
         scanner_index_id = init_scanner_index(session, inventory_index_id)
         runnable_scanners = scanner_builder.ScannerBuilder(
             global_configs, scanner_configs, service_config, model_name,
-            None).build()
+            None, scanner_name).build()
 
         succeeded = []
         failed = []

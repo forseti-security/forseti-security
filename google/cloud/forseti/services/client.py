@@ -125,7 +125,7 @@ class ScannerClient(ForsetiClient):
         return echo == data
 
     @require_model
-    def run(self):
+    def run(self, scanner_name):
         """Runs the scanner
 
         Returns:
