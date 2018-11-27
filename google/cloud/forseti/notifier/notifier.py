@@ -97,10 +97,10 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
     with service_config.scoped_session() as session:
         if scanner_index_id:
             has_scanner_index_id_arg = True
+            inventory_index_id = (
+                DataAccess.get_inventory_index_id_by_scanner(session))
         else:
             has_scanner_index_id_arg = False
-
-        if not has_scanner_index_id_arg:
             inventory_index_id = (
                 DataAccess.get_latest_inventory_index_id(session))
             scanner_index_id = scanner_dao.get_latest_scanner_index_id(
@@ -149,7 +149,7 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
                     LOGGER.info(log_message)
                     chosen_pipeline = find_notifiers(notifier['name'])
                     notifiers.append(chosen_pipeline(
-                        resource['resource'], scanner_index_id,
+                        resource['resource'], inventory_index_id,
                         violation_map[resource['resource']], global_configs,
                         notifier_configs, notifier['configuration']))
 

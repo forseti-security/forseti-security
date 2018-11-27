@@ -82,7 +82,7 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         progress_queue = Queue()
 
         if request.scanner_index_id and request.inventory_index_id:
-            LOGGER.exception('Input Error! Supplying both inventory_index_id '
+            LOGGER.exception('Invalid input: supplying both inventory_index_id '
                              'and scanner_index_id is not supported.')
         elif request.scanner_index_id:
             LOGGER.info('Run notifier service with scanner index id: %s ',
