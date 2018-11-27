@@ -98,7 +98,7 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
         if scanner_index_id:
             has_scanner_index_id_arg = True
             inventory_index_id = (
-                DataAccess.get_inventory_index_id_by_scanner(session))
+                DataAccess.get_inventory_index_id_by_scanner(session, scanner_index_id))
         else:
             has_scanner_index_id_arg = False
             inventory_index_id = (
