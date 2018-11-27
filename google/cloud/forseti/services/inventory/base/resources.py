@@ -1253,10 +1253,15 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
         except KeyError:
             pass
 
-        return client.fetch_storage_bucket_acls(
-            self.key(),
-            self.parent()['projectId'],
-            self['projectNumber'])
+        try:
+            return client.fetch_storage_bucket_acls(
+                self.key(),
+                self.parent()['projectId'],
+                self['projectNumber'])
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warn('Could not get bucket Access Control policy: %s', e)
+            self.add_warning(e)
+            return None
 
 
 class StorageObject(resource_class_factory('storage_object', 'id')):
