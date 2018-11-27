@@ -15,6 +15,7 @@
 """Scanner for Enabled APIs."""
 
 import json
+import sys
 
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.util import logger

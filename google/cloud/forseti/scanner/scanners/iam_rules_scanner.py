@@ -15,6 +15,7 @@
 """Scanner for the IAM rules engine."""
 
 import json
+import sys
 
 from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
