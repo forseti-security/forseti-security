@@ -60,7 +60,8 @@ rules:
 * `resource`
   * `type`
     * **Description**: The type of the resource.
-    * **Valid values**: One of `organization`, `folder` or `project`.
+    * **Valid values**: One of `organization`, `billing_account`, `folder`,
+     `project` or `bucket`.
 
   * `applies_to`
     * **Description**: What resources to apply the rule to.
