@@ -242,7 +242,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
         if not policy_data:
             LOGGER.warn('No policies found. Exiting.')
-            sys.exit(1)
+            return iter([]), 0
 
         return policy_data, resource_counts
 

@@ -135,7 +135,7 @@ class EnabledApisScanner(base_scanner.BaseScanner):
 
         if not enabled_apis_data:
             LOGGER.warn('No Enabled APIs found. Exiting.')
-            sys.exit(1)
+            return iter([])
 
         return enabled_apis_data
 
