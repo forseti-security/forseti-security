@@ -228,8 +228,10 @@ USER=ubuntu
 (echo "{run_frequency} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
 echo "Added the run_forseti.sh to crontab under user $USER"
 
-(echo "{run_frequency} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_external_project_access_scanner.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
-echo "Added the run_external_project_access_scanner.sh to crontab under user $USER"
+# Adding a second cron job to run the External Project Access Scanner separately
+# Commented out by default. customers can uncomment this if needed
+# (echo "{epa_cron_schedule} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_external_project_access_scanner.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+# echo "Added the run_external_project_access_scanner.sh to crontab under user $USER"
 
 echo "Execution of startup script finished"
 """.format(
@@ -257,6 +259,7 @@ echo "Execution of startup script finished"
 
     # Forseti run frequency
     run_frequency=RUN_FREQUENCY,
+    epa_cron_schedule=EPA_CRON_SCHEDULE,
 )
                 }]
             }
