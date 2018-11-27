@@ -34,7 +34,8 @@ LOGGER = logger.get_logger(__name__)
 class CrawlerConfig(crawler.CrawlerConfig):
     """Crawler configuration to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, tracer, variables=None):
+    def __init__(self, storage, progresser, api_client, variables=None,
+                 tracer=None):
         """Initialize
 
         Args:
@@ -48,16 +49,16 @@ class CrawlerConfig(crawler.CrawlerConfig):
         super(CrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
-        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.client = api_client
+        self.tracer = tracer
 
 
 class ParallelCrawlerConfig(crawler.CrawlerConfig):
     """Multithreaded crawler configuration, to inject dependencies."""
 
-    def __init__(self, storage, progresser, api_client, tracer, threads=10,
-                 variables=None):
+    def __init__(self, storage, progresser, api_client, threads=10,
+                 variables=None, tracer=None):
         """Initialize
 
         Args:
@@ -72,12 +73,13 @@ class ParallelCrawlerConfig(crawler.CrawlerConfig):
         super(ParallelCrawlerConfig, self).__init__()
         self.storage = storage
         self.progresser = progresser
-        self.tracer = tracer
         self.variables = {} if not variables else variables
         self.threads = threads
         self.client = api_client
+        self.tracer = tracer
 
 
+@tracing.traced(methods=['visit', 'update'])
 class Crawler(crawler.Crawler):
     """Simple single-threaded Crawler implementation."""
 
@@ -102,7 +104,6 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
 
-    @tracing.trace()
     def visit(self, resource):
         """Handle a newly found resource.
 
@@ -178,7 +179,6 @@ class Crawler(crawler.Crawler):
         self.config.storage.warning(warning_message)
         self.config.progresser.on_warning(error)
 
-    @tracing.trace()
     def update(self, resource):
         """Update the row of an existing resource
 
@@ -300,10 +300,12 @@ class ParallelCrawler(Crawler):
             raise
 
 
+@tracing.trace
 def run_crawler(storage,
                 progresser,
                 config,
-                parallel=True):
+                parallel=True,
+                tracer=None):
     """Run the crawler with a determined configuration.
 
     Args:
@@ -311,12 +313,11 @@ def run_crawler(storage,
         progresser (object): Progresser to notify status updates.
         config (object): Inventory configuration on server
         parallel (bool): If true, use the parallel crawler implementation.
+        tracer (opencensus.trace.Tracer): OpenCensus tracer.
 
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    tracer = getattr(config.service_config, 'tracer', None)
-    tracing.start_span(tracer, 'inventory', 'run_crawler')
     engine = config.get_service_config().get_engine()
     if parallel and 'sqlite' in str(engine):
         LOGGER.info('SQLite used, disabling parallel threads.')
@@ -343,13 +344,15 @@ def run_crawler(storage,
         crawler_config = ParallelCrawlerConfig(storage,
                                                progresser,
                                                client,
-                                               tracer)
+                                               tracer=tracer)
         crawler_impl = ParallelCrawler(crawler_config)
     else:
-        crawler_config = CrawlerConfig(storage, progresser, client, tracer)
+        crawler_config = CrawlerConfig(storage,
+                                       progresser,
+                                       client,
+                                       tracer=tracer)
         crawler_impl = Crawler(crawler_config)
     progresser = crawler_impl.run(resource)
     # flush the buffer at the end to make sure nothing is cached.
     storage.commit()
-    tracing.end_span(tracer, **progresser.__dict__)
     return progresser

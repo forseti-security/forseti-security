@@ -22,7 +22,7 @@ LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 try:
-    from opencensus.common.transports import async
+    from opencensus.common.transports import async as async_
     from opencensus.trace import config_integration
     from opencensus.trace import execution_context
     from opencensus.trace.exporters import file_exporter
@@ -74,7 +74,7 @@ def create_server_interceptor(extras=True):
     interceptor = server_interceptor.OpenCensusServerInterceptor(
         sampler,
         exporter)
-    LOGGER.info(execution_context.get_opencensus_tracer().span_context)
+    LOGGER.debug(execution_context.get_opencensus_tracer().span_context)
     return interceptor
 
 
@@ -95,7 +95,7 @@ def trace_integrations(integrations=None):
         integrations,
         tracer)
     LOGGER.info('Tracing integration libraries: %s', integrated_libraries)
-    LOGGER.info(tracer.span_context)
+    LOGGER.debug(tracer.span_context)
     return integrated_libraries
 
 
@@ -114,7 +114,7 @@ def create_exporter(transport=None):
         FileExporter: A file exporter. Default path: 'opencensus-traces.json'.
     """
     if transport is None:
-        transport = async.AsyncTransport
+        transport = async_.AsyncTransport
 
     try:
         exporter = stackdriver_exporter.StackdriverExporter(transport=transport)
@@ -177,14 +177,21 @@ def set_attributes(tracer, **kwargs):
                          key, value)
 
 
-def get_tracer(inst, attr=None):
+def get_tracer(inst=None, attr=None):
     """Get a tracer from the current context.
 
-    This function can get a tracer from any instance attribute if `attr` is
-    passed.
+    This function will get a tracer using different methods with the following
+    logic.
 
-    Otherwise, it will look for a tracer in the `default_attributes` before
-    falling back on the OpenCensus execution context tracer.
+    If `inst` is passed (an instance of a class), the tracer will be fetched
+    in the following order of preference:
+
+    * from the instance attribute defined by `attr` (if passed).
+    * from a list of default attributes (see `default_attribute` variable).
+    * from OpenCensus context.
+
+    If `inst` is not passed, we simply get the tracer from the OpenCensus
+    context.
 
     Args:
         inst (Object): An instance of a class.
@@ -193,54 +200,80 @@ def get_tracer(inst, attr=None):
     Returns:
         tracer(opencensus.trace.Tracer): The tracer to be used.
     """
-    default_attributes = ['tracer', 'config.tracer']
+    default_attributes = ['config.tracer', 'service_config.tracer', 'tracer']
     tracer = None
+    method = ''
     if OPENCENSUS_ENABLED:
 
-        if attr is not None:  # Get tracer from passed attribute
-            tracer = rgetattr(inst, attr, None)
+        if inst is not None:  # working with an object
+            if attr is not None:  # Get tracer from passed attribute
+                tracer = rgetattr(inst, attr, None)
+                method = 'from attribute (%s)' % attr
 
-        if tracer is None:  # Get tracer from standard attributes
-            for _ in default_attributes:
-                tracer = rgetattr(inst, _, None)
+            if tracer is None:  # Get tracer from standard attributes
+                for _ in default_attributes:
+                    tracer = rgetattr(inst, _, None)
+                    if tracer is not None:
+                        method = 'from default_attribute (%s)' % _
+                        break
 
         if tracer is None:  # Get tracer from context
             tracer = execution_context.get_opencensus_tracer()
+            if inst is not None:
+                for _ in default_attributes:
+                    try:
+                        rsetattr(inst, _, tracer)
+                        method += ' + set to attribute %s' % _
+                        break
+                    except Exception:
+                        pass
 
-        # Set tracer if 'attr' was passed
-        if tracer is not None and attr is not None:
-            rsetattr(inst, attr, tracer)
-
-        LOGGER.debug('%s: %s', inst, tracer.span_context)
+        LOGGER.info('%s [%s] : %s', inst, method, tracer.span_context)
 
     return tracer
 
 
-def traced(cls):
+def traced(methods=None):
     """Class decorator.
 
     Args:
-        cls (object): Class to decorate.
+        methods (list): If set, the decorator will trace those class methods.
+                        If unset, trace all class methods.
 
     Returns:
         object: Decorated class.
     """
-    for name, func in inspect.getmembers(cls, inspect.ismethod):
-        setattr(cls, name, trace_decorator(func))
-    return cls
+    def wrapper(cls):
+        """Decorate selected class methods.
+
+        Args:
+            cls (object): Class to decorate.
+
+        Returns:
+            object: Decorated class.
+        """
+        cls_methods = inspect.getmembers(cls, inspect.ismethod)
+        if methods is None:
+            to_trace = cls_methods
+        else:
+            to_trace = [m for m in cls_methods if m[0] in methods]
+        for name, func in to_trace:
+            if name != '__init__':  # never trace __init__, breaks attributes
+                setattr(cls, name, trace(func))
+        return cls
+    return wrapper
 
 
-def trace_decorator(func):
-    """Method decorator to trace a class method.
+def trace(func):
+    """Method decorator to trace a function.
 
     Args:
-        func (func): Class method to be traced.
+        func (func): Function to be traced.
 
     Returns:
-        wrapper: Decorated class method.
+        func: Decorated function.
     """
-
-    def wrapper(self, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         """Wrapper method.
 
         Args:
@@ -248,58 +281,20 @@ def trace_decorator(func):
             **kwargs: Argument dict passed to the method.
 
         Returns:
-            func: Function.
-        """
-        if OPENCENSUS_ENABLED:
-            tracer = execution_context.get_opencensus_tracer()
-            LOGGER.debug('%s.%s: %s', func.__module__, func.__name__,
-                         tracer.span_context)
-            if hasattr(self, 'config'):
-                self.config.tracer = tracer
-            else:
-                self.tracer = tracer
-        return func(self, *args, **kwargs)
-    return wrapper
-
-
-def trace(attr=None):
-    """Decorator to trace class methods.
-
-    Args:
-        attr (str): The attribute to fetch from the instance.
-
-    Returns:
-        func: The decorated class method.
-    """
-    def decorator(func):
-        """Method decorator.
-
-        Args:
-            func (func): Function to be decorated.
-
-        Returns:
             func: Decorated function.
         """
-        def wrapper(self, *args, **kwargs):
-            """Method wrapper.
-
-            Args:
-                *args: Argument list passed to the function.
-                **kwargs: Argument dictionary passed to the function.
-
-            Returns:
-                object: Function's return value.
-            """
-            if OPENCENSUS_ENABLED:
-                tracer = get_tracer(self, attr)
-                module_str = func.__module__.split('.')[-1]
-                start_span(tracer, module_str, func.__name__)
-            result = func(self, *args, **kwargs)
-            if OPENCENSUS_ENABLED:
-                end_span(tracer, result=result)
-            return result
-        return wrapper
-    return decorator
+        instance = args[0] if inspect.ismethod(func) else None
+        if OPENCENSUS_ENABLED:
+            tracer = get_tracer(instance)
+            if 'tracer' in kwargs:
+                kwargs['tracer'] = kwargs.get('tracer', tracer)
+            module_str = func.__module__.split('.')[-1]
+            start_span(tracer, module_str, func.__name__)
+        result = func(*args, **kwargs)
+        if OPENCENSUS_ENABLED:
+            end_span(tracer, result=result)
+        return result
+    return wrapper
 
 
 def rsetattr(obj, attr, val):
@@ -316,6 +311,7 @@ def rsetattr(obj, attr, val):
 
     pre, _, post = attr.rpartition('.')
     return setattr(rgetattr(obj, pre) if pre else obj, post, val)
+
 
 def rgetattr(obj, attr, *args):
     """Get nested attribute in object.

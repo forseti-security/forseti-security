@@ -71,6 +71,7 @@ def require_model(f):
         raise ModelNotSetError('API requires model to be set.')
     return wrapper
 
+
 def create_interceptors(endpoint):
     """Create gRPC client interceptors.
 

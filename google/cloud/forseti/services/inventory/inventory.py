@@ -176,7 +176,8 @@ def run_inventory(service_config,
             queue.put(progresser)
             result = run_crawler(storage,
                                  progresser,
-                                 service_config.get_inventory_config())
+                                 service_config.get_inventory_config(),
+                                 tracer=tracer)
         except Exception as e:
             LOGGER.exception(e)
             storage.rollback()
@@ -206,7 +207,7 @@ def run_import(client, model_name, inventory_index_id, background):
                                   background)
 
 
-@tracing.traced
+@tracing.traced(methods=['create'])
 class Inventory(object):
     """Inventory API implementation."""
 
