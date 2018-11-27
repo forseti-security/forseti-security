@@ -22,6 +22,7 @@ from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+API_NAME = 'securitycenter'
 
 
 class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -54,7 +55,7 @@ class SecurityCenterRepositoryClient(_base_repository.BaseRepositoryClient):
             # alpha would use the discovery_doc without version in the name
 
         super(SecurityCenterRepositoryClient, self).__init__(
-            'securitycenter', versions=[self.version],
+            API_NAME, versions=[self.version],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter,
@@ -111,7 +112,7 @@ class SecurityCenterClient(object):
 
         TODO: Add api quota configs here.
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            inventory_configs.api_quota_configs, 'securitycenter')
+            inventory_configs.api_quota_configs, API_NAME)
 
         Args:
             version (str): The version of the API to use.

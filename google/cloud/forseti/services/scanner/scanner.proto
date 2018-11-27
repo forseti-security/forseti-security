@@ -24,7 +24,6 @@ service Scanner {
 }
 
 message RunRequest {
-  string scanner_name = 1;
 }
 
 message Progress {

@@ -88,6 +88,7 @@ def _export_assets(cloudasset_client, config, content_type):
         str: The path to the temporary file downloaded from GCS or None on
             error.
     """
+    asset_types = config.get_cai_asset_types()
     root_id = config.get_root_resource_id()
     timestamp = int(time.time())
     export_path = _get_gcs_path(config.get_cai_gcs_path(),
@@ -98,9 +99,14 @@ def _export_assets(cloudasset_client, config, content_type):
     try:
         LOGGER.info('Starting Cloud Asset export for %s under %s to GCS object '
                     '%s.', content_type, root_id, export_path)
+        if asset_types:
+            LOGGER.info('Limiting export to the following asset types: %s',
+                        asset_types)
+
         results = cloudasset_client.export_assets(root_id,
                                                   export_path,
                                                   content_type=content_type,
+                                                  asset_types=asset_types,
                                                   blocking=True,
                                                   timeout=3600)
         LOGGER.debug('Cloud Asset export for %s under %s to GCS '

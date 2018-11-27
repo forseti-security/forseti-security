@@ -309,14 +309,7 @@ class ImporterTest(ForsetiTestCase):
 
         ('scanner run',
          CLIENT.scanner.run,
-         [None],
-         {},
-         '{"endpoint": "192.168.0.1:80"}',
-         {'endpoint': '192.168.0.1:80'}),
-
-        ('scanner run --scanner external_project_access_scanner',
-         CLIENT.scanner.run,
-         ['external_project_access_scanner'],
+         [],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),

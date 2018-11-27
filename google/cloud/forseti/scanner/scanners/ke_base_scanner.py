@@ -16,7 +16,8 @@
 
 import json
 
-from google.cloud.forseti.common.gcp_type.ke_cluster import KeCluster
+from google.cloud.forseti.common.gcp_type import ke_cluster
+from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import base_rules_engine as bre
 from google.cloud.forseti.scanner.scanners.base_scanner import BaseScanner
@@ -164,9 +165,9 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
                 self._SCANNER_NAME,
             )
 
-            for ke_cluster in ke_clusters:
+            for cluster in ke_clusters:
                 violations = self.rules_engine.find_violations(
-                    ke_cluster)
+                    cluster)
                 LOGGER.debug(violations)
                 all_violations.extend(violations)
             return all_violations
@@ -181,29 +182,30 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
             scoped_session, data_access = model_manager.get(self.model_name)
             with scoped_session as session:
                 ke_clusters = []
-                for ke_cluster in data_access.scanner_iter(
+                for cluster in data_access.scanner_iter(
                         session, 'kubernetes_cluster'):
-                    project_id = ke_cluster.parent.name
+                    proj = project.Project(
+                        project_id=cluster.parent.name,
+                        full_name=cluster.parent.full_name,
+                    )
                     ke_clusters.append(
-                        KeCluster.from_json(project_id,
-                                            None,
-                                            ke_cluster.data,
-                                            ke_cluster.full_name))
+                        ke_cluster.KeCluster.from_json(proj, cluster.data))
 
             # Retrieve the service config via a separate query because session
             # in the middle of yield_per() can not support simultaneous queries.
             with scoped_session as session:
-                for ke_cluster in ke_clusters:
+                for cluster in ke_clusters:
                     position = (
-                        ke_cluster.resource_full_name.find('kubernetes_cluster')
+                        cluster.full_name.find('kubernetes_cluster')
                     )
                     ke_cluster_type_name = (
-                        ke_cluster.resource_full_name[position:][:-1])
+                        cluster.full_name[position:][:-1])
 
                     service_config = list(data_access.scanner_iter(
                         session, 'kubernetes_service_config',
                         parent_type_name=ke_cluster_type_name))[0]
-                    ke_cluster.server_config = json.loads(service_config.data)
+
+                    cluster.server_config = json.loads(service_config.data)
 
             return ke_clusters
 
