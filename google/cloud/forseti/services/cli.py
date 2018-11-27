@@ -755,7 +755,9 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(int(config.inventory_index_id), int(config.scanner_index_id)):
+        for progress in client.run(
+                int(config.inventory_index_id),
+                int(config.scanner_index_id)):
             output.write(progress)
 
     actions = {

@@ -932,7 +932,7 @@ class DataAccess(object):
         return inventory_index.id
 
     @classmethod
-    def get_inventory_index_id_by_scanner(cls, session, scanner_index_id):
+    def get_inv_index_id_by_scanner(cls, session, scanner_index_id):
         """List all inventory index entries.
 
         Args:
@@ -945,9 +945,9 @@ class DataAccess(object):
 
         inventory_index = (
             session.query(InventoryIndex)
-                .outerjoin(ScannerIndex,
-                           ScannerIndex.inventory_index_id == InventoryIndex.id)
-                .filter(
+            .outerjoin(ScannerIndex,
+                       ScannerIndex.inventory_index_id == InventoryIndex.id)
+            .filter(
                 and_(ScannerIndex.id == scanner_index_id,
                      or_(InventoryIndex.inventory_status == 'SUCCESS',
                          InventoryIndex.inventory_status == 'PARTIAL_SUCCESS'))

@@ -77,7 +77,10 @@ def convert_to_timestamp(violations):
 
 
 # pylint: disable=too-many-branches,too-many-statements
-def run(inventory_index_id, scanner_index_id, progress_queue, service_config=None):
+def run(inventory_index_id,
+        scanner_index_id,
+        progress_queue,
+        service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
@@ -98,11 +101,14 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
         if scanner_index_id:
             has_scanner_index_id_arg = True
             inventory_index_id = (
-                DataAccess.get_inventory_index_id_by_scanner(session, scanner_index_id))
+                DataAccess.get_inv_index_id_by_scanner(session,
+                                                       scanner_index_id))
+
         else:
             has_scanner_index_id_arg = False
-            inventory_index_id = (
-                DataAccess.get_latest_inventory_index_id(session))
+            if not inventory_index_id:
+                inventory_index_id = (
+                    DataAccess.get_latest_inventory_index_id(session))
             scanner_index_id = scanner_dao.get_latest_scanner_index_id(
                 session, inventory_index_id)
 
