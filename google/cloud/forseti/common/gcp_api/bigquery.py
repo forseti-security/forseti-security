@@ -255,4 +255,4 @@ class BigQueryClient(object):
                          project_id, dataset_id)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
-            raise api_errors.ApiExecutionError(project_id+';'+dataset_id, e)
+            raise api_errors.ApiExecutionError(project_id + ';' + dataset_id, e)
