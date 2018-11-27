@@ -15,7 +15,6 @@
 """Scanner for the IAM rules engine."""
 
 import json
-import sys
 
 from google.cloud.forseti.common.gcp_type.billing_account import BillingAccount
 from google.cloud.forseti.common.gcp_type.bucket import Bucket
@@ -242,7 +241,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
         if not policy_data:
             LOGGER.warn('No policies found. Exiting.')
-            sys.exit(1)
+            return iter([]), 0
 
         return policy_data, resource_counts
 
