@@ -81,24 +81,33 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         """
         progress_queue = Queue()
 
-        LOGGER.info('Run notifier service with inventory index id: %s '
-                    'and scanner index id %s',
-                    request.inventory_index_id,
-                    request.scanner_index_id)
+        if request.scanner_index_id and request.inventory_index_id:
+            LOGGER.exception('Input Error! Supplying both inventory_index_id '
+                             'and scanner_index_id is not supported.')
+        elif request.scanner_index_id:
+            LOGGER.info('Run notifier service with scanner index id: %s ',
+                        request.scanner_index_id)
+        else:
+            LOGGER.info('Run notifier service with inventory index id: %s ',
+                        request.inventory_index_id)
+
         self.service_config.run_in_background(
-            lambda: self._run_notifier(request.inventory_index_id,
-                                       request.scanner_index_id,
-                                       progress_queue))
+            lambda: self._run_notifier(progress_queue,
+                                       request.inventory_index_id,
+                                       request.scanner_index_id))
 
         for progress_message in iter(progress_queue.get, None):
             yield notifier_pb2.Progress(server_message=progress_message)
 
-    def _run_notifier(self, inventory_index_id, scanner_index_id, progress_queue):
+    def _run_notifier(self,
+                      progress_queue,
+                      inventory_index_id=None,
+                      scanner_index_id=None):
         """Run notifier.
 
         Args:
             inventory_index_id (int64): Inventory index id.
-            scanner_index_id (ubt64): Scanner index id.
+            scanner_index_id (int64): Scanner index id.
             progress_queue (Queue): Progress queue.
         """
         try:

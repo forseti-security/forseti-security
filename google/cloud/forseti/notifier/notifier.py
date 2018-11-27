@@ -94,30 +94,15 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
 
-    violations = None
     with service_config.scoped_session() as session:
-        # if scanner index id is provided,
-        # then find the corresponding inventory index id
         if scanner_index_id:
-            inventory_index_id_found_by_scanner = (
-                DataAccess.get_inventory_index_id_by_scanner(session,
-                                                             scanner_index_id))
-            # corner case: if the inventory index id queried based on
-            # scanner index id does not match what the user provided, then warn,
-            # and overwrite with the queried inventory index id
-            if inventory_index_id and \
-                    inventory_index_id_found_by_scanner != inventory_index_id:
-                LOGGER.warn('The given inventory index id '
-                            'does not match the scanner index id.')
-            inventory_index_id = inventory_index_id_found_by_scanner
-
-        # if not provided, then find the latest scanner
+            has_scanner_index_id_arg = True
         else:
-            # if inventory is not provided, then find the latest inventory
-            if not inventory_index_id:
-                inventory_index_id = (
-                    DataAccess.get_latest_inventory_index_id(session))
-            # find the latest scanner index id based on the inventory given
+            has_scanner_index_id_arg = False
+
+        if not has_scanner_index_id_arg:
+            inventory_index_id = (
+                DataAccess.get_latest_inventory_index_id(session))
             scanner_index_id = scanner_dao.get_latest_scanner_index_id(
                 session, inventory_index_id)
 
@@ -164,7 +149,7 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
                     LOGGER.info(log_message)
                     chosen_pipeline = find_notifiers(notifier['name'])
                     notifiers.append(chosen_pipeline(
-                        resource['resource'], inventory_index_id,
+                        resource['resource'], scanner_index_id,
                         violation_map[resource['resource']], global_configs,
                         notifier_configs, notifier['configuration']))
 
@@ -196,8 +181,8 @@ def run(inventory_index_id, scanner_index_id, progress_queue, service_config=Non
                         (cscc_notifier.CsccNotifier(inventory_index_id)
                          .run(violations_as_dict, gcs_path, mode,
                               organization_id))
-
-        InventorySummary(service_config, inventory_index_id).run()
+        if not has_scanner_index_id_arg:
+            InventorySummary(service_config, inventory_index_id).run()
 
         log_message = 'Notification completed!'
         progress_queue.put(log_message)
