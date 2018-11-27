@@ -173,6 +173,16 @@ STORAGE_TESTS = [
        'projectTeam': {'projectNumber': '12345', 'team': 'owners'},
        'role': 'OWNER'}]),
 
+    ('other-role-User',
+     make_iam_policy('roles/Editor',
+                     ['user:test@forseti.test']),
+     []),
+
+    ('reader-unknown-member',
+     make_iam_policy('roles/legacyBucketReader',
+                     ['unknown:test']),
+     []),
+
     ('owner-and-writer-projectOwners',
      {'bindings': [{'role': 'roles/storage.legacyBucketOwner',
                     'members': ['projectOwner:project']},
@@ -205,6 +215,19 @@ STORAGE_TESTS = [
        'entity': 'project-owners-12345',
        'projectTeam': {'projectNumber': '12345', 'team': 'owners'},
        'role': 'WRITER'}]),
+
+    ('owner-reader-and-writer-projectOwners',
+     {'bindings': [{'role': 'roles/storage.legacyBucketOwner',
+                    'members': ['projectOwner:project']},
+                   {'role': 'roles/storage.legacyBucketWriter',
+                    'members': ['projectOwner:project']},
+                   {'role': 'roles/storage.legacyBucketReader',
+                    'members': ['projectOwner:project']}]},
+     [{'bucket': 'my-bucket',
+       'id': 'my-bucket/project-owners-12345',
+       'entity': 'project-owners-12345',
+       'projectTeam': {'projectNumber': '12345', 'team': 'owners'},
+       'role': 'OWNER'}]),
 ]
 
 
