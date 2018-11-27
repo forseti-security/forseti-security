@@ -21,7 +21,6 @@ import abc
 from google.cloud.forseti.common.gcp_api import admin_directory
 from google.cloud.forseti.common.gcp_api import appengine
 from google.cloud.forseti.common.gcp_api import bigquery
-from google.cloud.forseti.common.gcp_api import bqtable
 from google.cloud.forseti.common.gcp_api import cloud_resource_manager
 from google.cloud.forseti.common.gcp_api import cloudbilling
 from google.cloud.forseti.common.gcp_api import cloudsql
@@ -59,6 +58,15 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Datasets from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
+        """
+
+    @abc.abstractmethod
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from GCP API.
 
@@ -77,15 +85,6 @@ class ApiClient(object):
     @abc.abstractmethod
     def iter_billing_accounts(self):
         """Iterate visible Billing Accounts in an organization from GCP API."""
-
-    @abc.abstractmethod
-    def iter_bqtable(self, dataset_reference):
-        """Iterate Datasets from GCP API.
-
-        Args:
-            project_id (str): id of the project to get bigquery tables.
-            dataset_id (str): id of the dataset to get bigquery tables.
-        """
 
     @abc.abstractmethod
     def iter_cloudsql_instances(self, project_number):
@@ -740,7 +739,6 @@ class ApiClientImpl(ApiClient):
         self.ad = None
         self.appengine = None
         self.bigquery = None
-        self.bqtable = None
         self.crm = None
         self.cloudbilling = None
         self.cloudsql = None
@@ -776,14 +774,6 @@ class ApiClientImpl(ApiClient):
             object: Client.
         """
         return bigquery.BigQueryClient(self.config)
-
-    def _create_bqtable(self):
-        """Create bqtable API client.
-
-        Returns:
-            object: Client.
-        """
-        return bqtable.BqtableClient(self.config)
 
     def _create_crm(self):
         """Create resource manager API client.
@@ -883,18 +873,19 @@ class ApiClientImpl(ApiClient):
         for dataset in self.bigquery.get_datasets_for_projectid(project_number):
             yield dataset
 
-    @create_lazy('bqtable',_create_bqtable)
-    def iter_bqtable(self, dataset_reference):
-        """Iterate Datasets from GCP API.
+    @create_lazy('bigquery', _create_bq)
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
 
         Args:
-            project_id (str): id of the project to get bigquery tables.
-            dataset_id (str): id of the dataset to get bigquery tables.
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
 
         Yields:
             dict: Generator of tables.
         """
-        for table in self.bqtable.get_tables(dataset_reference['projectId'], dataset_reference['datasetId']):
+        for table in self.bigquery.get_tables(dataset_reference['projectId'],
+                                              dataset_reference['datasetId']):
             yield table
 
     @create_lazy('cloudbilling', _create_cloudbilling)

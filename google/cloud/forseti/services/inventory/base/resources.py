@@ -824,7 +824,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 
 # BigqueryTable resource classes
 class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
-   """The Resource implementation for bigquery table."""
+    """The Resource implementation for bigquery table."""
 
 
 # Billing resource classes
@@ -1420,9 +1420,9 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Dataset."""
 
 
-class BqtableIterator(resource_iter_class_factory(
-        api_method_name='iter_bqtable',
-        resource_name='bqtable',
+class BigqueryTableIterator(resource_iter_class_factory(
+        api_method_name='iter_bigquery_tables',
+        resource_name='bigquery_table',
         api_method_arg_key='datasetReference')):
     """The Resource iterator implementation for Bigquery Table."""
 
@@ -2003,10 +2003,10 @@ FACTORIES = {
         'dependsOn': ['project'],
         'cls': BigqueryDataSet,
         'contains': [
-            BqtableIterator
+            BigqueryTableIterator
         ]}),
 
-    'bqtable': ResourceFactory({
+    'bigquery_table': ResourceFactory({
         'dependsOn': ['bigquery_dataset'],
         'cls': BigqueryTable,
         'contains': []}),
