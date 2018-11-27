@@ -823,7 +823,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 
 
 # BigqueryTable resource classes
-class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
+class BigqueryTable(resource_class_factory('table', 'id')):
     """The Resource implementation for bigquery table."""
 
 
@@ -1294,7 +1294,6 @@ def resource_iter_class_factory(api_method_name,
                     args = []
                     if api_method_arg_key:
                         args.append(self.resource[api_method_arg_key])
-                    LOGGER.info('Subclass: %s||%s %s;--%s;;%s', type(self.resource), str(self.resource), str(api_method_arg_key), str(args), str(kwargs))
                     for data in iter_method(*args, **kwargs):
                         yield FACTORIES[resource_name].create_new(data)
                 except ResourceNotSupported as e:

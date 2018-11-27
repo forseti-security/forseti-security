@@ -252,7 +252,7 @@ class BigQueryClient(object):
                 projectId=project_id, datasetId=dataset_id)
             flattened_results = api_helpers.flatten_list_results(
                 results, 'tables')
-            LOGGER.info('Getting tables for the project %s and dataset %s',
+            LOGGER.debug('Getting tables for the project %s and dataset %s',
                          project_id, dataset_id)
             return flattened_results
         except (errors.HttpError, HttpLib2Error) as e:
