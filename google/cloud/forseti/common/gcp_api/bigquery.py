@@ -115,7 +115,6 @@ class _BigQueryDatasetsRepository(
 
 
 class _BigQueryTablesRepository(
-        repository_mixins.GetQueryMixin,
         repository_mixins.ListQueryMixin,
         _base_repository.GCPRepository):
     """Implementation of Big Query Tables repository."""

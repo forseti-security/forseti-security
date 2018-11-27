@@ -59,7 +59,7 @@ class ApiClient(object):
 
     @abc.abstractmethod
     def iter_bigquery_tables(self, dataset_reference):
-        """Iterate Datasets from GCP API.
+        """Iterate Tables from GCP API.
 
         Args:
             dataset_reference (dict): The project and dataset ID to get
