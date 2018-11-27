@@ -27,7 +27,79 @@ ORGANIZATION_ID = results.ORGANIZATION_ID
 FOLDER_ID = results.FOLDER_ID
 
 
-# pylint: disable=bad-indentation
+class GcpMocks(object):
+    """Container for mock objects."""
+
+    def __init__(self):
+        self.mock_admin = None
+        self.mock_appengine = None
+        self.mock_bigquery = None
+        self.mock_cloudasset = None
+        self.mock_cloudbilling = None
+        self.mock_cloudsql = None
+        self.mock_compute = None
+        self.mock_container = None
+        self.mock_crm = None
+        self.mock_iam = None
+        self.mock_servicemanagement = None
+        self.mock_logging = None
+        self.mock_storage = None
+        self.patchers = []
+
+    def start(self, has_org_access=True):
+        """Initialize and start mocks."""
+        if self.patchers:
+            return
+
+        ad_patcher, self.mock_admin = _mock_admin_directory()
+        appengine_patcher, self.mock_appengine = _mock_appengine()
+        bq_patcher, self.mock_bigquery = _mock_bigquery()
+        cloudasset_patcher, self.mock_cloudasset = _mock_cloudasset()
+        cloudbilling_patcher, self.mock_cloudbilling = _mock_cloudbilling()
+        cloudsql_patcher, self.mock_cloudsql = _mock_cloudsql()
+        container_patcher, self.mock_container = _mock_container()
+        crm_patcher, self.mock_crm = _mock_crm(has_org_access)
+        gce_patcher, self.mock_compute = _mock_gce()
+        gcs_patcher, self.mock_storage = _mock_gcs()
+        iam_patcher, self.mock_iam = _mock_iam()
+        sm_patcher, self.mock_servicemanagement = _mock_servicemanagement()
+        logging_patcher, self.mock_logging = _mock_stackdriver_logging()
+        self.patchers = [
+            ad_patcher,
+            appengine_patcher,
+            bq_patcher,
+            cloudasset_patcher,
+            cloudbilling_patcher,
+            cloudsql_patcher,
+            container_patcher,
+            crm_patcher,
+            gce_patcher,
+            gcs_patcher,
+            iam_patcher,
+            sm_patcher,
+            logging_patcher
+        ]
+
+    def stop(self):
+        """Stop all gcp mocks."""
+        for patcher in self.patchers:
+            patcher.stop()
+        self.mock_admin = None
+        self.mock_appengine = None
+        self.mock_bigquery = None
+        self.mock_cloudasset = None
+        self.mock_cloudbilling = None
+        self.mock_cloudsql = None
+        self.mock_compute = None
+        self.mock_container = None
+        self.mock_crm = None
+        self.mock_iam = None
+        self.mock_servicemanagement = None
+        self.mock_logging = None
+        self.mock_storage = None
+        self.patchers = []
+
+
 @contextlib.contextmanager
 def mock_gcp(has_org_access=True):
     """Mock the GCP API client libraries to return fake data.
@@ -39,35 +111,12 @@ def mock_gcp(has_org_access=True):
     Yields:
         None
     """
-    ad_patcher = _mock_admin_directory()
-    appengine_patcher = _mock_appengine()
-    bq_patcher = _mock_bigquery()
-    cloudasset_patcher = _mock_cloudasset()
-    cloudbilling_patcher = _mock_cloudbilling()
-    cloudsql_patcher = _mock_cloudsql()
-    container_patcher = _mock_container()
-    crm_patcher = _mock_crm(has_org_access)
-    gce_patcher = _mock_gce()
-    gcs_patcher = _mock_gcs()
-    iam_patcher = _mock_iam()
-    sm_patcher = _mock_servicemanagement()
-    stackdriver_logging_patcher = _mock_stackdriver_logging()
+    gcp_mocks = GcpMocks()
+    gcp_mocks.start(has_org_access)
     try:
-        yield
+        yield gcp_mocks
     finally:
-        ad_patcher.stop()
-        appengine_patcher.stop()
-        bq_patcher.stop()
-        cloudasset_patcher.stop()
-        cloudbilling_patcher.stop()
-        cloudsql_patcher.stop()
-        container_patcher.stop()
-        crm_patcher.stop()
-        gce_patcher.stop()
-        gcs_patcher.stop()
-        iam_patcher.stop()
-        sm_patcher.stop()
-        stackdriver_logging_patcher.stop()
+        gcp_mocks.stop()
 
 
 def _mock_admin_directory():
@@ -89,7 +138,7 @@ def _mock_admin_directory():
     mock_ad.get_groups.side_effect = _mock_ad_get_groups
     mock_ad.get_group_members.side_effect = _mock_ad_get_group_members
 
-    return ad_patcher
+    return ad_patcher, mock_ad
 
 
 def _mock_appengine():
@@ -128,7 +177,7 @@ def _mock_appengine():
     mock_gae.list_versions.side_effect = _mock_gae_list_versions
     mock_gae.list_instances.side_effect = _mock_gae_list_instances
 
-    return appengine_patcher
+    return appengine_patcher, mock_gae
 
 
 def _mock_bigquery():
@@ -149,7 +198,7 @@ def _mock_bigquery():
         _mock_bq_get_datasets_for_projectid)
     mock_bq.get_dataset_access.side_effect = _mock_bq_get_dataset_access
 
-    return bq_patcher
+    return bq_patcher, mock_bq
 
 
 def _mock_cloudasset():
@@ -163,7 +212,7 @@ def _mock_cloudasset():
     mock_ca = ca_patcher.start().return_value
     mock_ca.export_assets.side_effect = _mock_ca_export_assets
 
-    return ca_patcher
+    return ca_patcher, mock_ca
 
 
 def _mock_cloudbilling():
@@ -190,7 +239,7 @@ def _mock_cloudbilling():
     mock_billing.get_billing_acct_iam_policies.side_effect = (
         _mock_billing_get_billing_acct_iam_policies)
 
-    return cloudbilling_patcher
+    return cloudbilling_patcher, mock_billing
 
 
 def _mock_cloudsql():
@@ -205,7 +254,7 @@ def _mock_cloudsql():
     mock_sql = sql_patcher.start().return_value
     mock_sql.get_instances.side_effect = _mock_sql_get_instances
 
-    return sql_patcher
+    return sql_patcher, mock_sql
 
 
 def _mock_container():
@@ -226,7 +275,7 @@ def _mock_container():
     mock_ke.get_clusters.side_effect = _mock_ke_get_clusters
     mock_ke.get_serverconfig.side_effect = _mock_ke_get_service_config
 
-    return container_patcher
+    return container_patcher, mock_ke
 
 
 def _mock_crm(has_org_access):
@@ -290,7 +339,7 @@ def _mock_crm(has_org_access):
     mock_crm.get_project_liens.side_effect = _mock_crm_get_project_liens
     mock_crm.get_project_org_policies.side_effect = _mock_crm_get_org_policies
 
-    return crm_patcher
+    return crm_patcher, mock_crm
 
 
 def _mock_gce():
@@ -393,7 +442,7 @@ def _mock_gce():
     mock_gce.get_snapshots.side_effect = _mock_gce_get_snapshots
     mock_gce.get_subnetworks.side_effect = _mock_gce_get_subnetworks
 
-    return gce_patcher
+    return gce_patcher, mock_gce
 
 
 def _mock_gcs():
@@ -425,7 +474,7 @@ def _mock_gcs():
     mock_gcs.get_bucket_iam_policy.side_effect = _mock_gcs_get_bucket_iam
     mock_gcs.get_object_iam_policy.side_effect = _mock_gcs_get_object_iam
 
-    return gcs_patcher
+    return gcs_patcher, mock_gcs
 
 
 def _mock_iam():
@@ -469,7 +518,7 @@ def _mock_iam():
     mock_iam.get_service_account_keys.side_effect = (
         _mock_iam_get_service_account_keys)
 
-    return iam_patcher
+    return iam_patcher, mock_iam
 
 
 def _mock_servicemanagement():
@@ -484,7 +533,7 @@ def _mock_servicemanagement():
     mock_sm = sm_patcher.start().return_value
     mock_sm.get_enabled_apis.side_effect = _mock_sm_get_enabled_apis
 
-    return sm_patcher
+    return sm_patcher, mock_sm
 
 
 def _mock_stackdriver_logging():
@@ -519,4 +568,4 @@ def _mock_stackdriver_logging():
         _mock_get_billing_account_sinks)
     mock_sd_logging.get_project_sinks.side_effect = _mock_get_project_sinks
 
-    return sd_logging_patcher
+    return sd_logging_patcher, mock_sd_logging

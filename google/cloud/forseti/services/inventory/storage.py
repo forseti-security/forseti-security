@@ -53,6 +53,7 @@ LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
+MAX_ALLOWED_PACKET = 32 * 1024 * 1024  # 32 Mb default mysql max packet size
 
 
 class Categories(enum.Enum):
@@ -590,6 +591,11 @@ class CaiTemporaryStore(object):
             object: database row object or None if there is no data.
         """
         asset_pb = json_format.Parse(asset_json, assets_pb2.Asset())
+        if len(asset_pb.name) > 512:
+            LOGGER.warn('Skipping insert of asset %s, name too long.',
+                        asset_pb.name)
+            return None
+
         if asset_pb.HasField('resource'):
             content_type = ContentTypes.resource
             parent_name = cls._get_parent_name(asset_pb)
@@ -655,38 +661,49 @@ class CaiTemporaryStore(object):
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1024, commit_on_flush=False):
+    def __init__(self,
+                 session,
+                 max_size=1024,
+                 max_packet_size=MAX_ALLOWED_PACKET * .75,
+                 commit_on_flush=False):
         """Initialize
 
         Args:
             session (object): db session
             max_size (int): max size of buffer
+            max_packet_size (int): max size of a packet to send to SQL
             commit_on_flush (bool): If true, the session is committed to the
                 database when the data is flushed.
         """
         self.session = session
         self.buffer = []
+        self.estimated_packet_size = 0
         self.max_size = max_size
+        self.max_packet_size = max_packet_size
         self.commit_on_flush = commit_on_flush
 
-    def add(self, obj):
+    def add(self, obj, estimated_length=0):
         """Add an object to the buffer to write to db.
 
         Args:
             obj (object): Object to write to db.
+            estimated_length (int): The estimated length of this object.
         """
 
         self.buffer.append(obj)
-        if len(self.buffer) >= self.max_size:
+        self.estimated_packet_size += estimated_length
+        if (self.estimated_packet_size > self.max_packet_size or
+                len(self.buffer) >= self.max_size):
             self.flush()
 
     def flush(self):
         """Flush all pending objects to the database."""
 
-        self.session.add_all(self.buffer)
+        self.session.bulk_save_objects(self.buffer)
         self.session.flush()
         if self.commit_on_flush:
             self.session.commit()
+        self.estimated_packet_size = 0
         self.buffer = []
 
 
@@ -725,7 +742,11 @@ class CaiDataAccess(object):
         Returns:
             int: The number of rows inserted
         """
-        commit_buffer = BufferedDbWriter(session, commit_on_flush=True)
+        # CAI data can be large, so limit the number of rows written at one
+        # time to 512.
+        commit_buffer = BufferedDbWriter(session,
+                                         max_size=512,
+                                         commit_on_flush=True)
         num_rows = 0
         try:
             for line in data:
@@ -752,8 +773,11 @@ class CaiDataAccess(object):
                                 'content type %s', e, resource.get('name', ''),
                                 resource.get('asset_type', ''), content_type)
                     continue
-                commit_buffer.add(row)
-                num_rows += 1
+                if row:
+                    # Overestimate the packet length to ensure max size is never
+                    # exceeded. The actual length is closer to len(line) * 1.5.
+                    commit_buffer.add(row, estimated_length=len(line) * 2)
+                    num_rows += 1
             commit_buffer.flush()
         except SQLAlchemyError as e:
             LOGGER.exception('Error populating CAI data: %s', e)
