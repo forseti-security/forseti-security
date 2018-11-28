@@ -176,6 +176,9 @@ class InventoryImporter(object):
             'instancegroup',
             'instancegroupmanager',
             'instancetemplate',
+            'kms_cryptokey',
+            'kms_cryptokeyversion',
+            'kms_keyring',
             'kubernetes_cluster',
             'lien',
             'network',
@@ -552,6 +555,9 @@ class InventoryImporter(object):
             'instancegroup': self._convert_computeengine_resource,
             'instancegroupmanager': self._convert_computeengine_resource,
             'instancetemplate': self._convert_computeengine_resource,
+            'kms_cryptokey': self._convert_kms_resource,
+            'kms_cryptokeyversion': self._convert_kms_ckv_resource,
+            'kms_keyring': self._convert_kms_resource,
             'kubernetes_cluster': self._convert_kubernetes_cluster,
             'lien': self._convert_lien,
             'network': self._convert_computeengine_resource,
@@ -682,6 +688,25 @@ class InventoryImporter(object):
             resource (dict): A resource to store.
         """
         self._convert_resource(resource, cached=True)
+
+    def _convert_kms_ckv_resource(self, resource):
+        """Convert a KMS CryptoKeyVersion resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        # No child resources, so do not cache.
+        self._convert_resource(resource, cached=False,
+                               display_key='name')
+
+    def _convert_kms_resource(self, resource):
+        """Convert a KMS resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=True,
+                               display_key='name')
 
     def _convert_kubernetes_cluster(self, cluster):
         """Convert an AppEngine resource to a database object.
