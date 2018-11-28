@@ -281,7 +281,7 @@ rules:
 
 * `log_types`
   * **Description**: The required log types.
-  * **Valid values**: One of `AUDIT_READ`, `DATA_READ` or `DATA_WRITE`.
+  * **Valid values**: One of `ADMIN_READ`, `DATA_READ` or `DATA_WRITE`.
 
 * `allowed_exemptions`
   * **Description**: Optional, a list of allowed exemptions in the audit logs for this service.
