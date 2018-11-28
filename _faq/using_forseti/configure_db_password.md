@@ -39,4 +39,4 @@ to add/change password of MySQL user `root`.
     Wants=cloudsqlproxy.service
     </code></pre>
 
-1. Save and exit, run command `sudo systemctl restart forseti.service` to restart the forseti service and you should now be able to connect to the database with the password.
+1. Save and exit, run command `sudo systemctl restart forseti` to restart the forseti service and you should now be able to connect to the database with the password.
