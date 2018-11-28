@@ -187,6 +187,44 @@ class InventoryCloudAssetTest(ForsetiTestCase):
         self.assertTrue(results)
         self.validate_data_in_table()
 
+    def test_long_resource_name(self):
+        """Validate load_cloudasset_data handles resources with long names."""
+        # Ignore call to export_assets for this test.
+        self.mock_export_assets.return_value = {'done': True}
+
+        # Mock copy_file_from_gcs to return correct test data file
+        def _copy_file_from_gcs(file_path, *args, **kwargs):
+            """Fake copy_file_from_gcs."""
+            if 'resource' in file_path:
+                return os.path.join(
+                    TEST_RESOURCE_DIR_PATH,
+                    'mock_cai_long_resource_name.dump')
+            elif 'iam_policy' in file_path:
+                return os.path.join(TEST_RESOURCE_DIR_PATH,
+                                    'mock_cai_empty_iam_policies.dump')
+
+        self.mock_copy_file_from_gcs.side_effect = _copy_file_from_gcs
+
+        results = cloudasset.load_cloudasset_data(self.session,
+                                                  self.inventory_config)
+        # Expect only the resource with the short name got imported.
+        expected_results = 1
+        self.assertEqual(results, expected_results)
+
+        # Validate resource with short name is in database.
+        resource = storage.CaiDataAccess.fetch_cai_asset(
+            storage.ContentTypes.resource,
+            'google.spanner.Instance',
+            '//spanner.googleapis.com/projects/project2/instances/test123',
+            self.session)
+        expected_resource = {
+            'config': 'projects/project2/instanceConfigs/regional-us-east1',
+            'displayName': 'Test123',
+            'name': 'projects/project2/instances/test123',
+            'nodeCount': 1,
+            'state': 'READY'}
+        self.assertEqual(expected_resource, resource)
+
     def test_load_cloudasset_data_cai_apierror(self):
         """Validate load_cloud_asset handles an API error from CAI."""
         response = httplib2.Response(
