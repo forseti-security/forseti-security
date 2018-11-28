@@ -573,6 +573,54 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_kms_cryptokey_iam_policy(self, cryptokey):
+        """Fetch KMS Cryptokey IAM Policy from GCP API.
+
+        Args:
+            cryptokey (str): The KMS cryptokey to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+        """
+
+    @abc.abstractmethod
+    def fetch_kms_keyring_iam_policy(self, keyring):
+        """Fetch KMS Keyring IAM Policy from GCP API.
+
+        Args:
+            keyring (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_kms_cryptokeys(self, parent):
+        """Iterate KMS Cryptokeys in a keyring from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_kms_cryptokeyversions(self, parent):
+        """Iterate KMS Cryptokey Versions from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_kms_keyrings(self, project_id, location=None):
+        """Iterate KMS Keyrings in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            location (str): The location to query. Not required when
+                using Cloud Asset API.
+        """
+
+    @abc.abstractmethod
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from gcp API call.
 
@@ -1782,6 +1830,74 @@ class ApiClientImpl(ApiClient):
         del project_number  # Used by CAI, not the API.
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount
+
+    def fetch_kms_cryptokey_iam_policy(self, cryptokey):
+        """Fetch KMS Cryptokey IAM Policy from GCP API.
+
+        Args:
+            cryptokey (str): The KMS cryptokey to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def fetch_kms_keyring_iam_policy(self, keyring):
+        """Fetch KMS Keyring IAM Policy from GCP API.
+
+        Args:
+            keyring (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def iter_kms_cryptokeys(self, parent):
+        """Iterate KMS Cryptokeys in a keyring from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def iter_kms_cryptokeyversions(self, parent):
+        """Iterate KMS Cryptokey Versions from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def iter_kms_keyrings(self, project_id, location=None):
+        """Iterate KMS Keyrings in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            location (str): The location to query. Not required when
+                using Cloud Asset API.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
 
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from gcp API call.
