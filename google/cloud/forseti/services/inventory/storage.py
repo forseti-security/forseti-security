@@ -590,6 +590,11 @@ class CaiTemporaryStore(object):
             object: database row object or None if there is no data.
         """
         asset_pb = json_format.Parse(asset_json, assets_pb2.Asset())
+        if len(asset_pb.name) > 512:
+            LOGGER.warn('Skipping insert of asset %s, name too long.',
+                        asset_pb.name)
+            return None
+
         if asset_pb.HasField('resource'):
             content_type = ContentTypes.resource
             parent_name = cls._get_parent_name(asset_pb)
