@@ -18,9 +18,12 @@ from datetime import datetime, timedelta
 import collections
 
 
+from google.cloud.forseti.common.gcp_type import bucket
+from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import organization
 from google.cloud.forseti.common.gcp_type import project
-from google.cloud.forseti.common.gcp_type import bucket
+from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_type import table
 from google.cloud.forseti.scanner.audit import retention_rules_engine as rre
 
 ORGANIZATION = organization.Organization(
@@ -64,6 +67,29 @@ PROJECT4 = project.Project(
     parent=ORGANIZATION,
     full_name='organization/123456/project/def-project-4/',
     data='fake_project_data_34343434',
+)
+
+PROJECT5 = project.Project(
+    'def-project-5',
+    project_number=96336966,
+    display_name='default project 5',
+    parent=ORGANIZATION,
+    full_name='organization/123456/project/def-project-5/',
+    data='fake_project_data_96336966',
+)
+
+
+def get_resource_full_name(res):
+    """Get the full name of a resource recursively"""
+    full_name = ''
+    while(res):
+        full_name = res.type + '/' + res.type + '/' + full_name
+        res = res.parent
+    return full_name
+
+DATASET1 = dataset.Dataset(
+    dataset_id='ds01',
+    parent=PROJECT5
 )
 
 def build_bucket_violations(bucket, rule_name):
@@ -129,6 +155,7 @@ class FakeBucketDataCreater():
                              full_name=self._parent.full_name+'bucket/'+self._id+'/',
                              data=data)
 
+
 FakeBucketDataInput = collections.namedtuple(
     'FakeBucketDataInput', ['id', 'project', 'lifecycles'])
 LifecycleInput = collections.namedtuple(
@@ -136,6 +163,14 @@ LifecycleInput = collections.namedtuple(
 
 
 def get_fake_bucket_resource(fake_bucket_data_input):
+    """Create a fake Bucket object for test cases
+
+        Args:
+            fake_bucket_data_input (FakeBucketDataInput): arguments of
+                the bucket.
+        Returns:
+            Bucket: A new Bucket.
+    """
     data_creater = FakeBucketDataCreater(
         fake_bucket_data_input.id, fake_bucket_data_input.project)
     for lifecycle in fake_bucket_data_input.lifecycles:
@@ -143,8 +178,65 @@ def get_fake_bucket_resource(fake_bucket_data_input):
             action=lifecycle.action,
             age=lifecycle.conditions.get('age'),
             created_before=lifecycle.conditions.get('created_before'),
-            matches_storage_class=lifecycle.conditions.get('matches_storage_class'),
+            matches_storage_class=lifecycle.conditions.get(
+                'matches_storage_class'),
             num_newer_versions=lifecycle.conditions.get('num_newer_versions'),
             is_live=lifecycle.conditions.get('is_live'))
+
+    return data_creater.get_resource()
+
+
+DEFAULT_TABLE_CREATE_TIME = 1560000000000
+
+
+class FakeTableDataCreater():
+    def __init__(self, id, dataset):
+        self._id = id
+        self._parent = dataset
+        self._create_time = DEFAULT_TABLE_CREATE_TIME
+        self._expiration_time = None
+
+    def SetExpirationTime(self, et):
+        self._expiration_time = et
+
+    def get_resource(self):
+        data_dict = {'id': self._parent.parent.id + ":" + self._parent.id + "." + self._id,
+                     'kind': 'bigquery#table',
+                     'tableReference': {'projectId': self._parent.parent.id,
+                                        'datasetId': self._parent.id,
+                                        'tableId': self._id},
+                     'type': 'TABLE',
+                     'creationTime': self._create_time
+                     }
+
+        if self._expiration_time is not None:
+            data_dict['expirationTime'] = self._expiration_time
+
+        data = json.dumps(data_dict)
+        return table.Table(table_id=self._id,
+                           parent=self._parent,
+                           data=data)
+
+
+FakeTableDataInput = collections.namedtuple(
+    'FakeTableDataInput', ['expiration_time',
+                           'dataset',
+                           'table_id'])
+
+
+def get_fake_table_resource(fake_table_data_input):
+    """Create a fake Resource object for test cases
+
+        Args:
+            fake_table_data_input (FakeTableDataInput): arguments of
+                the table.
+        Returns:
+            Table: A new Table.
+    """
+    data_creater = FakeTableDataCreater(
+        fake_table_data_input.table_id, fake_table_data_input.dataset)
+
+    if fake_table_data_input.expiration_time is not None:
+        data_creater.SetExpirationTime(fake_table_data_input.expiration_time)
 
     return data_creater.get_resource()

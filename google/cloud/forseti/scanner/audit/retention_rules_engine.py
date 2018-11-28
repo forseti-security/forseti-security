@@ -28,7 +28,7 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket'])
+SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket', 'table'])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
 RuleViolation = collections.namedtuple(

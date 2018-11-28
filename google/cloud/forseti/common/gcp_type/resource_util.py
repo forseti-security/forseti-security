@@ -17,10 +17,12 @@
 from google.cloud.forseti.common.gcp_type import backend_service
 from google.cloud.forseti.common.gcp_type import billing_account
 from google.cloud.forseti.common.gcp_type import bucket
+from google.cloud.forseti.common.gcp_type import dataset
 from google.cloud.forseti.common.gcp_type import folder
 from google.cloud.forseti.common.gcp_type import organization as org
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.common.gcp_type import table
 from google.cloud.forseti.services import utils
 
 _RESOURCE_TYPE_MAP = {
@@ -53,6 +55,16 @@ _RESOURCE_TYPE_MAP = {
         'class': backend_service.BackendService,
         'plural': 'Backend Services',
         'can_create_resource': False,
+    },
+    resource.ResourceType.BIGQUERY: {
+        'class': dataset.Dataset,
+        'plural': 'Datasets',
+        'can_create_resource': True,
+    },
+    resource.ResourceType.TABLE: {
+        'class': table.Table,
+        'plural': 'Tables',
+        'can_create_resource': True,
     },
 }
 
