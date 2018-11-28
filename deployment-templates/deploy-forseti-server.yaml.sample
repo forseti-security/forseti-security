@@ -81,5 +81,5 @@ resources:
     # The default is "run at some random minute 0-59 (configured in
     # forseti-instance-sever.py), every other hour".
     run-frequency: "{rand_minute} */2 * * *"
-    epas-cron-enabled: true
-    epas-cron-schedule: "0 * * 8 00"
+    external-project-access-scanner-cron-enabled: false
+    external-project-access-scanner-cron-schedule: "{rand_minute} * * 8 00"

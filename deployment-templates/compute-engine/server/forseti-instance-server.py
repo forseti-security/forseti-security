@@ -53,8 +53,8 @@ def GenerateConfig(context):
                  forseti_server_conf=FORSETI_SERVER_CONF)
 
     RUN_FREQUENCY = context.properties['run-frequency']
-    EPAS_CRON_ENABLED = context.properties['epas-cron-enabled']
-    EPAS_CRON_SCHEDULE = context.properties['epas-cron-FREQUENCY']
+    EXTERNAL_PROJECT_ACCESS_SCANNER_CRON_ENABLED = context.properties['external-project-access-scanner-cron-enabled']
+    EXTERNAL_PROJECT_ACCESS_SCANNER_CRON_SCHEDULE = context.properties['external-project-access-scanner-cron-schedule']
 
     resources = []
 
@@ -231,8 +231,8 @@ USER=ubuntu
 echo "Added the run_forseti.sh to crontab under user $USER"
 
 # Adding a second cron job to run the External Project Access Scanner separately if it is enabled 
-if {epas_cron_schedule}; then
-    (echo "{epas_cron_schedule} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_external_project_access_scanner.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+if {external_project_access_scanner_cron_enabled}; then
+    (echo "{external_project_access_scanner_cron_schedule} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_external_project_access_scanner.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
     echo "Added the run_external_project_access_scanner.sh to crontab under user $USER"
 fi
 
@@ -262,8 +262,8 @@ echo "Execution of startup script finished"
 
     # Forseti run frequency
     run_frequency=RUN_FREQUENCY,
-    epas_cron_schedule=EPAS_CRON_SCHEDULE,
-    epas_cron_enabled=EPAS_CRON_ENABLED,
+    external_project_access_scanner_cron_schedule=EXTERNAL_PROJECT_ACCESS_SCANNER_CRON_SCHEDULE,
+    external_project_access_scanner_cron_enabled=EXTERNAL_PROJECT_ACCESS_SCANNER_CRON_ENABLED,
 )
                 }]
             }
