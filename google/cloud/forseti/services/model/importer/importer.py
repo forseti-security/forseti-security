@@ -187,6 +187,7 @@ class InventoryImporter(object):
             'spanner_instance',
             'spanner_database',
             'subnetwork',
+            'table',
         ]
 
         gsuite_type_list = [
