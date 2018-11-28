@@ -351,7 +351,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield _fixup_resource_keys(rule, cai_to_gcp_key_map)
 
     def iter_compute_forwardingrules(self, project_number):
-        """Iterate Forwarding Rules from GCP API.
+        """Iterate Forwarding Rules from Cloud Asset data.
 
         Args:
             project_number (str): number of the project to query.
@@ -1059,6 +1059,106 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             self.session)
         for serviceaccount in resources:
             yield serviceaccount
+
+    def fetch_kms_cryptokey_iam_policy(self, cryptokey):
+        """Fetch KMS Cryptokey IAM Policy from Cloud Asset data.
+
+        Args:
+            cryptokey (str): The KMS cryptokey to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Returns:
+            dict: KMS Cryptokey IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.kms.CryptoKey',
+            '//cloudkms.googleapis.com/{}'.format(cryptokey),
+            self.session)
+        if resource:
+            return resource
+
+        # Cryptokeys with no IAM policy return an empty dict.
+        return {}
+
+    def fetch_kms_keyring_iam_policy(self, keyring):
+        """Fetch KMS Keyring IAM Policy from Cloud Asset data.
+
+        Args:
+            keyring (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Returns:
+            dict: KMS Keyring IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.kms.KeyRing',
+            '//cloudkms.googleapis.com/{}'.format(keyring),
+            self.session)
+        if resource:
+            return resource
+
+        # Keyrings with no IAM policy return an empty dict.
+        return {}
+
+    def iter_kms_cryptokeys(self, parent):
+        """Iterate KMS Cryptokeys in a keyring from Cloud Asset data.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Yields:
+            dict: Generator of KMS Cryptokey resources
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.kms.CryptoKey',
+            '//cloudkms.googleapis.com/{}'.format(parent),
+            self.session)
+        for cryptokey in resources:
+            yield cryptokey
+
+    def iter_kms_cryptokeyversions(self, parent):
+        """Iterate KMS Cryptokey Versions from Cloud Asset data.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Yields:
+            dict: Generator of KMS Cryptokeyversion resources
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.kms.CryptoKeyVersion',
+            '//cloudkms.googleapis.com/{}'.format(parent),
+            self.session)
+        for cryptokeyversion in resources:
+            yield cryptokeyversion
+
+    def iter_kms_keyrings(self, project_id, location=None):
+        """Iterate KMS Keyrings in a project from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            location (str): The location to query. Not required when
+                using Cloud Asset API.
+
+        Yields:
+            dict: Generator of KMS Keyring resources
+        """
+        del location  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.kms.KeyRing',
+            '//cloudkms.googleapis.com/projects/{}'.format(project_id),
+            self.session)
+        for keyring in resources:
+            yield keyring
 
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from Cloud Asset data.

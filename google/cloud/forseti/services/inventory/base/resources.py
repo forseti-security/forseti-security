@@ -1085,6 +1085,56 @@ class IamServiceAccountKey(resource_class_factory('serviceaccount_key', None)):
         return self['name'].split('/')[-1]
 
 
+# Key Management Service resource classes
+class KmsCryptoKey(resource_class_factory('kms_cryptokey', 'name',
+                                          hash_key=True)):
+    """The Resource implementation for KMS CryptoKey."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """KMS CryptoKey IAM policy.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: CryptoKey IAM policy.
+        """
+        try:
+            return client.fetch_kms_cryptokey_iam_policy(self['name'])
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warn('Could not get IAM policy: %s', e)
+            self.add_warning(e)
+            return None
+
+
+class KmsCryptoKeyVersion(resource_class_factory('kms_cryptokeyversion', 'name',
+                                                 hash_key=True)):
+    """The Resource implementation for KMS CryptoKeyVersion."""
+
+
+class KmsKeyRing(resource_class_factory('kms_keyring', 'name',
+                                        hash_key=True)):
+    """The Resource implementation for KMS KeyRing."""
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """KMS Keyring IAM policy.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Keyring IAM policy.
+        """
+        try:
+            return client.fetch_kms_keyring_iam_policy(self['name'])
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warn('Could not get IAM policy: %s', e)
+            self.add_warning(e)
+            return None
+
+
 # Kubernetes Engine resource classes
 class KubernetesCluster(resource_class_factory('kubernetes_cluster',
                                                'selfLink',
@@ -1877,6 +1927,28 @@ class IamServiceAccountKeyIterator(resource_iter_class_factory(
     """The Resource iterator implementation for IAM ServiceAccount Key."""
 
 
+class KmsKeyRingIterator(resource_iter_class_factory(
+        api_method_name='iter_kms_keyrings',
+        resource_name='kms_keyring',
+        api_method_arg_key='projectId',
+        resource_validation_method_name='enumerable')):
+    """The Resource iterator implementation for KMS KeyRing."""
+
+
+class KmsCryptoKeyIterator(resource_iter_class_factory(
+        api_method_name='iter_kms_cryptokeys',
+        resource_name='kms_cryptokey',
+        api_method_arg_key='name')):
+    """The Resource iterator implementation for KMS CryptoKey."""
+
+
+class KmsCryptoKeyVersionIterator(resource_iter_class_factory(
+        api_method_name='iter_kms_cryptokeyversions',
+        resource_name='kms_cryptokeyversion',
+        api_method_arg_key='name')):
+    """The Resource iterator implementation for KMS CryptoKeyVersion."""
+
+
 class KubernetesClusterIterator(resource_iter_class_factory(
         api_method_name='iter_container_clusters',
         resource_name='kubernetes_cluster',
@@ -2038,6 +2110,7 @@ FACTORIES = {
             DnsPolicyIterator,
             IamProjectRoleIterator,
             IamServiceAccountIterator,
+            KmsKeyRingIterator,
             KubernetesClusterIterator,
             LoggingProjectSinkIterator,
             PubsubTopicIterator,
@@ -2292,6 +2365,25 @@ FACTORIES = {
     'iam_serviceaccount_key': ResourceFactory({
         'dependsOn': ['iam_serviceaccount'],
         'cls': IamServiceAccountKey,
+        'contains': []}),
+
+    'kms_keyring': ResourceFactory({
+        'dependsOn': ['project'],
+        'cls': KmsKeyRing,
+        'contains': [
+            KmsCryptoKeyIterator
+        ]}),
+
+    'kms_cryptokey': ResourceFactory({
+        'dependsOn': ['kms_keyring'],
+        'cls': KmsCryptoKey,
+        'contains': [
+            KmsCryptoKeyVersionIterator
+        ]}),
+
+    'kms_cryptokeyversion': ResourceFactory({
+        'dependsOn': ['kms_cryptokey'],
+        'cls': KmsCryptoKeyVersion,
         'contains': []}),
 
     'kubernetes_cluster': ResourceFactory({
