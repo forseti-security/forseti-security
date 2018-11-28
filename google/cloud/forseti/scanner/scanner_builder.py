@@ -55,11 +55,18 @@ class ScannerBuilder(object):
             list: Scanner instances that will be run.
         """
         runnable_scanners = []
-        if self.scanner_name == 'external_project_access_scanner':
-            scanner = self._instantiate_scanner(
-                external_project_access_scanner.
-                ExternalProjectAccessScanner,
+        # please note that the scanner name passed in CLI must match the
+        # corresponding key in this dictionary
+        long_running_scanner_factory = {
+            'external_project_access_scanner': (
+                external_project_access_scanner.ExternalProjectAccessScanner,
                 'external_project_access_rules.yaml')
+        }
+        if self.scanner_name in long_running_scanner_factory:
+            scanner = self._instantiate_scanner(
+                long_running_scanner_factory[self.scanner_name][0],
+                long_running_scanner_factory[self.scanner_name][1],
+            )
             runnable_scanners.append(scanner)
         else:
             for scanner in self.scanner_configs.get('scanners'):
