@@ -114,6 +114,9 @@ class EnabledApisScanner(base_scanner.BaseScanner):
 
         Returns:
             list: List of projects' enabled API data.
+
+        Raises:
+            NoDataError: If no enabled APIs are found.
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
