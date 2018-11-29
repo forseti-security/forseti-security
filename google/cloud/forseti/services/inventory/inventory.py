@@ -167,7 +167,7 @@ def run_inventory(service_config,
         Exception: Reraises any exception.
     """
 
-    tracer = getattr(service_config, "tracer")
+    tracer = getattr(service_config, 'tracer')
     tracing.start_span(tracer, 'inventory', 'run_inventory')
     storage_cls = service_config.get_storage_class()
     with storage_cls(session) as storage:

@@ -22,7 +22,7 @@ LOGGER = logger.get_logger(__name__)
 DEFAULT_INTEGRATIONS = ['requests', 'sqlalchemy']
 
 try:
-    from opencensus.common.transports import async as async_
+    from opencensus.common.transports import async_
     from opencensus.trace import config_integration
     from opencensus.trace import execution_context
     from opencensus.trace.exporters import file_exporter
@@ -175,7 +175,7 @@ def set_attributes(tracer, **kwargs):
         kwargs (dict): A set of attributes to set to the current span.
     """
     if tracer.current_span() is None:
-        LOGGER.debug("No current span found, cannot do `set_attributes`")
+        LOGGER.debug('No current span found, cannot do `set_attributes`')
         return
 
     for key, value in kwargs.items():
@@ -302,6 +302,7 @@ def trace(func):
     Returns:
         func: Decorated function.
     """
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         """Wrapper method.
 
@@ -311,6 +312,9 @@ def trace(func):
 
         Returns:
             func: Decorated function.
+
+        Raises:
+            Exception: Exception thrown by the decorated function (if any).
         """
         if OPENCENSUS_ENABLED:
             # If the decorator is applied on a class method, extract the 'self'
@@ -343,7 +347,7 @@ def trace(func):
             return func(*args, **kwargs)
         except Exception as e:
             if OPENCENSUS_ENABLED:
-                error_str = "{}:{}".format(type(e).__name__, str(e))
+                error_str = '{}:{}'.format(type(e).__name__, str(e))
                 set_attributes(tracer, error=error_str, success=False)
             raise
         finally:
