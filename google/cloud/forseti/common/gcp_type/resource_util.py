@@ -56,7 +56,7 @@ _RESOURCE_TYPE_MAP = {
         'plural': 'Backend Services',
         'can_create_resource': False,
     },
-    resource.ResourceType.BIGQUERY: {
+    resource.ResourceType.DATASET: {
         'class': dataset.Dataset,
         'plural': 'Datasets',
         'can_create_resource': True,

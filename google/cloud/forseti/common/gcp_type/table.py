@@ -20,6 +20,12 @@ import json
 
 from google.cloud.forseti.common.gcp_type import resource
 
+
+class TableLifecycleState(resource.LifecycleState):
+    """Represents the table's LifecycleState."""
+    pass
+
+
 class Table(resource.Resource):
     """Table resource."""
 
@@ -28,30 +34,36 @@ class Table(resource.Resource):
     def __init__(
             self,
             table_id,
+            full_name=None,
             data=None,
-            parent=None):
+            name=None,
+            display_name=None,
+            parent=None,
+            locations=None,
+            lifecycle_state=TableLifecycleState.UNSPECIFIED):
         """Initialize.
-
         Args:
             table_id (int): The table id.
             full_name (str): The full resource name and ancestry.
-            data (str): Resource representation of the bucket.
-            name (str): The bucket's unique GCP name, with the
-                format "buckets/{id}".
-            display_name (str): The bucket's display name.
-            locations (List[str]): Locations this bucket resides in. If set,
+            data (str): Resource representation of the table.
+            name (str): The table's unique GCP name, with the
+                format "tables/{id}".
+            display_name (str): The table's display name.
+            locations (List[str]): Locations this table resides in. If set,
                 there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
-                bucket.
+                table.
         """
         super(Table, self).__init__(
             resource_id=table_id,
             resource_type=resource.ResourceType.TABLE,
-            parent=parent)
-        if self.parent:
-            type_name = self.type + '/' + self.id + '/'
-            self.full_name = self.parent.full_name + type_name
+            name=name,
+            display_name=display_name,
+            parent=parent,
+            locations=locations,
+            lifecycle_state=lifecycle_state)
+        self.full_name = full_name
         self.data = data
 
     @classmethod
@@ -68,7 +80,9 @@ class Table(resource.Resource):
         table_dict = json.loads(json_string)
         table_id = table_dict['tableReference']['datasetId']
         return cls(
-            table_id=table_id,
             parent=parent,
+            table_id=table_id,
+            full_name='{}dataset/{}/'.format(parent.full_name, table_id),
+            display_name=table_id,
             data=json_string,
         )
