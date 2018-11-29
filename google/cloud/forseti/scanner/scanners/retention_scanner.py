@@ -123,7 +123,6 @@ class RetentionScanner(base_scanner.BaseScanner):
                     tmp_parent.full_name = resource.parent.full_name
                     new_res = resource_util.create_resource_from_json(
                         resource_type, tmp_parent, resource.data)
-                    LOGGER.info('retention full path %s', new_res.full_name)
                     retention_res.append(new_res)
 
         return retention_res
