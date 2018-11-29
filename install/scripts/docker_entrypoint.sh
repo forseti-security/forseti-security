@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# TODO UNDER DEVELOPMENT
+# Usage
+# (sudo if needed) docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET}
+
+# UNDER DEVELOPMENT. For now basic functionality, just starts Forseti Server.
 # This script serves as the entrypoint for starting Forseti server in a Docker container.
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
 #
 # This script assumes it's running in a container on a GCE Container Optimized OS VM
 # that is already authorized with the forseti service account.
-# gsutil will automatically use the hosting VM's service account.
-# TODO Other scenarios.
 
 # TODO named arg and arg validation
 # TODO arg to control which services to start (default to server for now)
