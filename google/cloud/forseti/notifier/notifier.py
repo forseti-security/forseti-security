@@ -24,6 +24,7 @@ from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+from google.cloud.forseti.common.opencensus import tracing
 # pylint: enable=line-too-long
 
 
@@ -77,7 +78,8 @@ def convert_to_timestamp(violations):
 
 
 # pylint: disable=too-many-branches,too-many-statements
-def run(inventory_index_id, progress_queue, service_config=None):
+@tracing.trace
+def run(inventory_index_id, progress_queue, service_config=None, tracer=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
@@ -90,6 +92,8 @@ def run(inventory_index_id, progress_queue, service_config=None):
         int: Status code.
     """
     # pylint: disable=too-many-locals
+    tracer = service_config.tracer
+    tracing.start_span(tracer, 'notifier', 'run')
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
 
@@ -182,5 +186,6 @@ def run(inventory_index_id, progress_queue, service_config=None):
         progress_queue.put(log_message)
         progress_queue.put(None)
         LOGGER.info(log_message)
+        tracing.end_span(tracer)
         return 0
     # pylint: enable=too-many-branches,too-many-statements

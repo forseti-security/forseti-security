@@ -17,6 +17,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner_builder
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+from google.cloud.forseti.common.opencensus import tracing
 
 LOGGER = logger.get_logger(__name__)
 
@@ -76,8 +77,8 @@ def mark_scanner_index_complete(
     session.add(scanner_index)
     session.flush()
 
-
-def run(model_name=None, progress_queue=None, service_config=None):
+@tracing.trace
+def run(model_name=None, progress_queue=None, service_config=None, tracer=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
@@ -90,6 +91,8 @@ def run(model_name=None, progress_queue=None, service_config=None):
     Returns:
         int: Status code.
     """
+    tracer = service_config.tracer
+    tracing.start_span(tracer, 'scanner', 'run')
     global_configs = service_config.get_global_config()
     scanner_configs = service_config.get_scanner_config()
 
@@ -127,4 +130,5 @@ def run(model_name=None, progress_queue=None, service_config=None):
         progress_queue.put(log_message)
         progress_queue.put(None)
         LOGGER.info(log_message)
+        tracing.end_span(tracer)
         return 0

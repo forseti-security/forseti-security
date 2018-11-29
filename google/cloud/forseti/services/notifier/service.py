@@ -21,9 +21,11 @@ from google.cloud.forseti.services.notifier import notifier_pb2
 from google.cloud.forseti.services.notifier import notifier_pb2_grpc
 from google.cloud.forseti.common.util import logger
 
+from google.cloud.forseti.common.opencensus import tracing
+
 LOGGER = logger.get_logger(__name__)
 
-
+@tracing.traced(methods=['Run'])
 class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
     """Notifier gRPC implementation."""
 
