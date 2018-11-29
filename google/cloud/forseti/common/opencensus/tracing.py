@@ -182,6 +182,7 @@ def set_attributes(tracer, **kwargs):
         tracer.add_attribute_to_current_span(key, value)
 
 
+# pylint: disable=too-many-branches
 def get_tracer(inst=None, attr=None):
     """Get a tracer from the current context.
 

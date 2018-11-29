@@ -104,6 +104,7 @@ class Crawler(crawler.Crawler):
         resource.accept(self)
         return self.config.progresser
 
+    # pylint: disable=protected-access
     def visit(self, resource):
         """Handle a newly found resource.
 
