@@ -187,7 +187,7 @@ class IamPolicyScanner(base_scanner.BaseScanner):
         Returns:
             list: List of (gcp_type, forseti_data_model_resource) tuples.
             dict: A dict of resource counts.
-        
+
         Raises:
             NoDataError: If no policies are found.
         """
