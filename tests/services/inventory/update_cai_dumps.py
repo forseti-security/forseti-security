@@ -170,8 +170,8 @@ def bucket(item):
         parent['projectNumber'])
     data = item.data()
     # CAI does not include acl data.
-    data['acl'] = []
-    data['defaultObjectAcl'] = []
+    data.pop('acl')
+    data.pop('defaultObjectAcl')
     return _create_asset(name, asset_type, parent_name, data,
                          item.get_iam_policy())
 
