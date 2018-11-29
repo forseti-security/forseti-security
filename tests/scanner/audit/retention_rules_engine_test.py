@@ -851,6 +851,33 @@ rules:
             fake_bucket, 'bucket retention on multi projects')
         self.assertEqual(got_violations, expected_violations)
 
+    yaml_str_bigquery_retention_on_projects = """
+rules:
+  - name: bigquery retention on multi projects
+    applies_to:
+      - table
+    resource:
+      - type: project
+        resource_ids:
+          - def-project-5
+    minimum_retention: 90
+    maximum_retention: 90
+
+"""
+
+    def test_bigquery_retention_on_project(self):
+        """Test that a rule with a resource.type equal to 'project'"""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
+        self.assertTrue(1 <= len(rules_engine.rule_book.resource_rules_map))
+
+        data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+91*3600000*24)
+
+        fake_table = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_table))
+        expected_violations = frsd.build_table_violations(
+            fake_table, 'bigquery retention on multi projects')
+        self.assertEqual(got_violations, expected_violations)
 
 if __name__ == '__main__':
     unittest.main()

@@ -296,8 +296,6 @@ class Rule(object):
         Returns:
             RuleViolation: The violation.
         """
-        table_dict = json.loads(table.data)
-        data_expiration_str = table_dict.get('expirationTime', '')
 
         return RuleViolation(
             resource_name=table.name,
@@ -307,7 +305,7 @@ class Rule(object):
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type=VIOLATION_TYPE,
-            violation_data=data_expiration_str,
+            violation_data=table.data,
             resource_data=table.data,
         )
 
@@ -383,16 +381,17 @@ class Rule(object):
         Returns:
             Generator: All violations of the buckets breaking rules.
         """
-
         violation_max = self.bucket_max_retention_violation(bucket)
         violation_min = self.bucket_min_retention_violation(bucket)
         return itertools.chain(violation_max, violation_min)
 
-    def find_violations_in_table(self, table):
-        """Get a generator for violations.
+    def table_max_retention_violation(self, table):
+        """Get a generator for violations especially for maximum retention
+           It only supports bucket for now, and will work on generalizing
+           in future PRs.
 
         Args:
-            table (Table): Find violation from the tables.
+            table (Table): Find violation from the table.
         Yields:
             RuleViolation: All max violations of the table breaking the rule.
         """
@@ -409,6 +408,38 @@ class Rule(object):
         if diff > self.max_retention * 24*3600000:
             yield self.generate_table_violation(table)
 
+    def table_min_retention_violation(self, table):
+        """Get a generator for violations especially for minimum retention.
+
+        Args:
+            table (Table): Find violation from the table.
+        Yields:
+            RuleViolation: All min violations of the table breaking the rule.
+        """
+        if self.min_retention is None:
+            return
+
+        table_dict = json.loads(table.data)
+        table_expiration = table_dict.get('expirationTime')
+        if not table_expiration:
+            return
+
+        table_creation = table_dict.get('creationTime')
+        diff = long(table_expiration) - long(table_creation)
+        if diff < self.min_retention * 24*3600000:
+            yield self.generate_table_violation(table)
+
+    def find_violations_in_table(self, table):
+        """Get a generator for violations.
+
+        Args:
+            table (Table): Find violation from the tables.
+        Returns:
+            Generator: All violations of the buckets breaking rules.
+        """
+        violation_max = self.table_max_retention_violation(table)
+        violation_min = self.table_min_retention_violation(table)
+        return itertools.chain(violation_max, violation_min)
 
 def bucket_conditions_guarantee_min(conditions, min_retention):
     """Check if other conditions can guarantee minimum retention.

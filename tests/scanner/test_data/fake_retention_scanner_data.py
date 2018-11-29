@@ -109,6 +109,21 @@ def build_bucket_violations(bucket, rule_name):
         resource_data=bucket.data,
     )]
 
+def build_table_violations(table, rule_name):
+    data_str = table.data
+
+    return [rre.RuleViolation(
+        resource_name='tables/'+table.id,
+        resource_id=table.id,
+        resource_type=table.type,
+        full_name=table.full_name,
+        rule_index=0,
+        rule_name=rule_name,
+        violation_type='RETENTION_VIOLATION',
+        violation_data=data_str,
+        resource_data=table.data,
+    )]
+
 class FakeBucketDataCreater():
     def __init__(self, id, project):
         self._id = id
@@ -214,10 +229,10 @@ class FakeTableDataCreater():
             data_dict['expirationTime'] = self._expiration_time
 
         data = json.dumps(data_dict)
-        return table.Table(table_id=self._id,
+        return table.Table(table_id=data_dict['id'],
                            parent=self._parent,
                            data=data,
-                           full_name='{}table/{}/'.format(self._parent.full_name, self._id))
+                           full_name='{}table/{}/'.format(self._parent.full_name, data_dict['id']))
 
 
 FakeTableDataInput = collections.namedtuple(
