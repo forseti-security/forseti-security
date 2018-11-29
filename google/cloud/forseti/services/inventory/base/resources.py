@@ -823,7 +823,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
 
 
 # BigqueryTable resource classes
-class BigqueryTable(resource_class_factory('table', 'id')):
+class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
     """The Resource implementation for bigquery table."""
 
 
