@@ -134,12 +134,16 @@ class EnabledApisScanner(base_scanner.BaseScanner):
 
         if not enabled_apis_data:
             LOGGER.warn('No Enabled APIs found. Exiting.')
-            return iter([])
+            raise NoDataError('No enabled APIs found. Exiting')
 
         return enabled_apis_data
 
     def run(self):
         """Runs the data collection."""
-        enabled_apis_data = self._retrieve()
+        try:
+            enabled_apis_data = self._retrieve()
+        except NoDataError:
+            return
+
         all_violations = self._find_violations(enabled_apis_data)
         self._output_results(all_violations)

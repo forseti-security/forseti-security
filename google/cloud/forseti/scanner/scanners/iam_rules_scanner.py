@@ -241,14 +241,17 @@ class IamPolicyScanner(base_scanner.BaseScanner):
 
         if not policy_data:
             LOGGER.warn('No policies found. Exiting.')
-            return iter([]), 0
+            raise NoDataError('No policies found. Exiting.')
 
         return policy_data, resource_counts
 
     def run(self):
         """Runs the data collection."""
+        try:
+            policy_data, _ = self._retrieve()
+        except NoDataError:
+            return
 
-        policy_data, _ = self._retrieve()
         _add_bucket_ancestor_bindings(policy_data)
         all_violations = self._find_violations(policy_data)
         self._output_results(all_violations)
