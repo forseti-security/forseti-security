@@ -171,6 +171,9 @@ logrotate /etc/logrotate.conf
 # Change the access level of configs/ rules/ and run_forseti.sh
 chmod -R ug+rwx {forseti_home}/configs {forseti_home}/rules {forseti_home}/install/gcp/scripts/run_forseti.sh
 
+# Install instrumentation libs
+pip install .[tracing]
+
 # Install Forseti
 python setup.py install
 
@@ -180,7 +183,7 @@ python setup.py install
 # Export variables required by run_forseti.sh
 {export_forseti_vars}
 
-# Store the variables in /etc/profile.d/forseti_environment.sh 
+# Store the variables in /etc/profile.d/forseti_environment.sh
 # so all the users will have access to them
 echo "echo '{export_forseti_vars}' >> /etc/profile.d/forseti_environment.sh" | sudo sh
 

@@ -23,6 +23,7 @@ import time
 from concurrent import futures
 import grpc
 
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 
 from google.cloud.forseti.services.base.config import ServiceConfig
@@ -51,6 +52,7 @@ def serve(endpoint,
           config_file_path,
           log_level,
           enable_console_log,
+          enable_tracing,
           max_workers=32,
           wait_shutdown_secs=3):
     """Instantiate the services and serves them via gRPC.
@@ -62,6 +64,7 @@ def serve(endpoint,
         config_file_path (str): Path to Forseti configuration file.
         log_level (str): Sets the threshold for Forseti's logger.
         enable_console_log (bool): Enable console logging.
+        enable_tracing (bool): Enable gRPC tracing.
         max_workers (int): maximum number of workers for the crawler
         wait_shutdown_secs (int): seconds to wait before shutdown
 
@@ -91,7 +94,13 @@ def serve(endpoint,
         endpoint=endpoint)
     config.update_configuration()
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers))
+    interceptors = create_interceptors(enable_tracing)
+
+    # Register services & start server
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers),
+        interceptors=interceptors)
+
     for factory in factories:
         factory(config).create_and_register_service(server)
 
@@ -103,6 +112,22 @@ def serve(endpoint,
         except KeyboardInterrupt:
             server.stop(wait_shutdown_secs).wait()
             return
+
+
+def create_interceptors(enable_tracing):
+    """Create gRPC server interceptors.
+
+    Args:
+        enable_tracing (bool): If True, enable the trace interceptor.
+
+    Returns:
+        tuple: A tuple of gRPC interceptors.
+    """
+    interceptors = []
+    if enable_tracing and tracing.OPENCENSUS_ENABLED:
+        interceptors.append(tracing.create_server_interceptor())
+        LOGGER.info('Tracing interceptor set up.')
+    return tuple(interceptors)
 
 
 def check_args(args):
@@ -170,6 +195,10 @@ def main():
         '--enable_console_log',
         action='store_true',
         help='Print log to console.')
+    parser.add_argument(
+        '--enable-tracing',
+        action='store_true',
+        help='Toggle OpenCensus tracing on / off.')
 
     args = vars(parser.parse_args())
 
@@ -185,7 +214,8 @@ def main():
           args['forseti_db'],
           args['config_file_path'],
           args['log_level'],
-          args['enable_console_log'])
+          args['enable_console_log'],
+          args['enable_tracing'])
 
 
 if __name__ == '__main__':

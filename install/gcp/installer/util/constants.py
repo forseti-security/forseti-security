@@ -106,12 +106,14 @@ PROJECT_IAM_ROLES_SERVER = [
     'roles/storage.objectViewer',
     'roles/storage.objectCreator',
     'roles/cloudsql.client',
-    'roles/logging.logWriter'
+    'roles/logging.logWriter',
+    'roles/cloudtrace.agent',
 ]
 
 PROJECT_IAM_ROLES_CLIENT = [
     'roles/storage.objectViewer',
-    'roles/logging.logWriter'
+    'roles/logging.logWriter',
+    'roles/cloudtrace.agent'
 ]
 
 FORSETI_CAI_BUCKET_ROLES = [
@@ -153,6 +155,8 @@ REQUIRED_APIS = [
      'service': 'storage-api.googleapis.com'},
     {'name': 'IAM',
      'service': 'iam.googleapis.com'},
+    {'name': 'Cloud Trace',
+     'service': 'cloudtrace.googleapis.com'},
     {'name': 'Kubernetes Engine API',
      'service': 'container.googleapis.com'},
     {'name': 'Service Management API',
