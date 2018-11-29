@@ -89,7 +89,8 @@ def get_resource_full_name(res):
 
 DATASET1 = dataset.Dataset(
     dataset_id='ds01',
-    parent=PROJECT5
+    parent=PROJECT5,
+    full_name='{}dataset/{}/'.format(PROJECT5.full_name, 'ds01')
 )
 
 def build_bucket_violations(bucket, rule_name):
@@ -215,7 +216,8 @@ class FakeTableDataCreater():
         data = json.dumps(data_dict)
         return table.Table(table_id=self._id,
                            parent=self._parent,
-                           data=data)
+                           data=data,
+                           full_name='{}table/{}/'.format(self._parent.full_name, self._id))
 
 
 FakeTableDataInput = collections.namedtuple(

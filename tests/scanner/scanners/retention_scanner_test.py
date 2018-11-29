@@ -437,7 +437,7 @@ rules:
     resource:
       - type: table
         resource_ids:
-          - def-table-1
+          - fake-table-01
     maximum_retention: 100
 
 """
@@ -479,4 +479,4 @@ rules:
                 mock.MagicMock(), mock_data_access)
             self.scanner.service_config = mock_service_config
 
-            all_lifecycle_info = self.scanner._retrieve()
+            all_lifecycle_info = self.scanner.run()
