@@ -437,7 +437,7 @@ rules:
     resource:
       - type: table
         resource_ids:
-          - fake-table-01
+          - "def-project-5:ds01.fake-table-01"
     maximum_retention: 100
 
 """
@@ -446,7 +446,7 @@ rules:
             frsd.FakeTableDataInput(
                 table_id='fake-table-01',
                 dataset=frsd.DATASET1,
-                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+90*3600000*24
+                expiration_time=frsd.DEFAULT_TABLE_CREATE_TIME+110*3600000*24
             ),
             frsd.FakeTableDataInput(
                 table_id='fake-table-02',
