@@ -78,7 +78,7 @@ class Table(resource.Resource):
             Bucket: bucket resource.
         """
         table_dict = json.loads(json_string)
-        table_id = table_dict['tableReference']['tableId']
+        table_id = table_dict['id']
         return cls(
             parent=parent,
             table_id=table_id,
