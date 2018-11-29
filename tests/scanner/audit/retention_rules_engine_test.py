@@ -865,7 +865,7 @@ rules:
 
 """
 
-    def test_bigquery_retention_on_project(self):
+    def test_bigquery_retention_on_project_too_big(self):
         """Test that a rule with a resource.type equal to 'project'"""
         rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
         self.assertTrue(1 <= len(rules_engine.rule_book.resource_rules_map))
@@ -877,6 +877,33 @@ rules:
         got_violations = list(rules_engine.find_violations(fake_table))
         expected_violations = frsd.build_table_violations(
             fake_table, 'bigquery retention on multi projects')
+        self.assertEqual(got_violations, expected_violations)
+
+    def test_bigquery_retention_on_project_too_small(self):
+        """Test that a rule with a resource.type equal to 'project'"""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
+        self.assertTrue(1 <= len(rules_engine.rule_book.resource_rules_map))
+
+        data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+89*3600000*24)
+
+        fake_table = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_table))
+        expected_violations = frsd.build_table_violations(
+            fake_table, 'bigquery retention on multi projects')
+        self.assertEqual(got_violations, expected_violations)
+
+    def test_bigquery_retention_on_project_no_vio(self):
+        """Test that a rule with a resource.type equal to 'project'"""
+        rules_engine = get_rules_engine_with_rule(RetentionRulesEngineTest.yaml_str_bigquery_retention_on_projects)
+        self.assertTrue(1 <= len(rules_engine.rule_book.resource_rules_map))
+
+        data_creater = frsd.FakeTableDataCreater('fake_bqtable', frsd.DATASET1)
+        data_creater.SetExpirationTime(frsd.DEFAULT_TABLE_CREATE_TIME+90*3600000*24)
+
+        fake_table = data_creater.get_resource()
+        got_violations = list(rules_engine.find_violations(fake_table))
+        expected_violations = []
         self.assertEqual(got_violations, expected_violations)
 
 if __name__ == '__main__':
