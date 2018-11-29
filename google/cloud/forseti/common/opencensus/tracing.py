@@ -237,7 +237,7 @@ def get_tracer(inst=None, attr=None):
                         rsetattr(inst, _, tracer)
                         method += ' + set to attribute %s' % _
                         break
-                    except Exception:
+                    except AttributeError:
                         pass
 
             # If working with an instance of a class, set tracer to the proper
