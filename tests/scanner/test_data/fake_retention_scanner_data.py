@@ -113,7 +113,7 @@ def build_table_violations(table, rule_name):
     data_str = table.data
 
     return [rre.RuleViolation(
-        resource_name='tables/'+table.id,
+        resource_name='bigquery_tables/'+table.id,
         resource_id=table.id,
         resource_type=table.type,
         full_name=table.full_name,
@@ -232,7 +232,7 @@ class FakeTableDataCreater():
         return table.Table(table_id=data_dict['id'],
                            parent=self._parent,
                            data=data,
-                           full_name='{}table/{}/'.format(self._parent.full_name, data_dict['id']))
+                           full_name='{}bigquery_table/{}/'.format(self._parent.full_name, data_dict['id']))
 
 
 FakeTableDataInput = collections.namedtuple(

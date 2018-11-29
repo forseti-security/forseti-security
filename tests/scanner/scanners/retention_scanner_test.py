@@ -51,7 +51,7 @@ def get_mock_bucket_retention(bucket_data):
     def _mock_bucket_retention(_=None, resource_type='bucket'):
         """Creates a list of GCP resource mocks retrieved by the scanner"""
 
-        if resource_type == 'table':
+        if resource_type == 'bigquery_table':
             return []
 
         if resource_type != 'bucket':
@@ -71,13 +71,13 @@ def get_mock_bucket_retention(bucket_data):
 def get_mock_table_retention(table_data):
     """Get the mock function for testcases"""
 
-    def _mock_table_retention(_=None, resource_type='table'):
+    def _mock_table_retention(_=None, resource_type='bigquery_table'):
         """Creates a list of GCP resource mocks retrieved by the scanner"""
 
         if resource_type == 'bucket':
             return []
 
-        if resource_type != 'table':
+        if resource_type != 'bigquery_table':
             raise ValueError(
                 'unexpected resource type: got %s, table',
                 resource_type,
@@ -433,7 +433,7 @@ rules:
 rules:
   - name: project 5 max 90 on table
     applies_to:
-      - table
+      - bigquery_table
     resource:
       - type: table
         resource_ids:
@@ -465,7 +465,7 @@ rules:
         with tempfile.NamedTemporaryFile(suffix='.yaml') as f:
             f.write(rule_yaml)
             f.flush()
-            _fake_bucket_list = _mock_bucket(resource_type='table')
+            _fake_bucket_list = _mock_bucket(resource_type='bigquery_table')
 
             self.scanner = retention_scanner.RetentionScanner(
                 {}, {}, mock.MagicMock(), '', '', f.name)

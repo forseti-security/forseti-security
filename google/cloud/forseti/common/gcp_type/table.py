@@ -29,7 +29,7 @@ class TableLifecycleState(resource.LifecycleState):
 class Table(resource.Resource):
     """Table resource."""
 
-    RESOURCE_NAME_FMT = 'tables/%s'
+    RESOURCE_NAME_FMT = 'bigquery_tables/%s'
 
     def __init__(
             self,
@@ -82,7 +82,7 @@ class Table(resource.Resource):
         return cls(
             parent=parent,
             table_id=table_id,
-            full_name='{}table/{}/'.format(parent.full_name, table_id),
+            full_name='{}bigquery_table/{}/'.format(parent.full_name, table_id),
             display_name=table_id,
             data=json_string,
         )

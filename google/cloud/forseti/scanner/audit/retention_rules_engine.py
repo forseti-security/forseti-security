@@ -28,7 +28,7 @@ from google.cloud.forseti.scanner.audit import errors as audit_errors
 
 LOGGER = logger.get_logger(__name__)
 
-SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket', 'table'])
+SUPPORTED_RETENTION_RES_TYPES = frozenset(['bucket', 'bigquery_table'])
 VIOLATION_TYPE = 'RETENTION_VIOLATION'
 
 RuleViolation = collections.namedtuple(
@@ -323,7 +323,7 @@ class Rule(object):
 
         if res.type == 'bucket':
             return self.find_violations_in_bucket(res)
-        elif res.type == 'table':
+        elif res.type == 'bigquery_table':
             return self.find_violations_in_table(res)
         raise ValueError(
             'only bucket is currently supported'

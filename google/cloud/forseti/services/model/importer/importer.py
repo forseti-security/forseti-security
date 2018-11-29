@@ -187,7 +187,7 @@ class InventoryImporter(object):
             'spanner_instance',
             'spanner_database',
             'subnetwork',
-            'table',
+            'bigquery_table',
         ]
 
         gsuite_type_list = [
@@ -566,7 +566,7 @@ class InventoryImporter(object):
             'spanner_database': self._convert_spanner_db_resource,
             'spanner_instance': self._convert_spanner_resource,
             'subnetwork': self._convert_computeengine_resource,
-            'table': self._convert_table,
+            'bigquery_table': self._convert_bigquery_table,
             None: None,
         }
 
@@ -937,7 +937,7 @@ class InventoryImporter(object):
 
         self.session.add(resource)
 
-    def _convert_table(self, table):
+    def _convert_bigquery_table(self, table):
         """Convert a table to a database object.
 
         Args:

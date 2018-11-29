@@ -855,7 +855,7 @@ rules:
 rules:
   - name: bigquery retention on multi projects
     applies_to:
-      - table
+      - bigquery_table
     resource:
       - type: project
         resource_ids:
