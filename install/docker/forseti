@@ -36,8 +36,9 @@ RUN python setup.py install 1> /dev/null
 # Make entrypoint script executable
 RUN chmod +x /forseti-security/install/scripts/docker_entrypoint.sh
 
-# TODO Entry point to run as executable service.
-# The entrypoint will break the unittest approach. Manually add to the run command for now.
+# TODO Entry point to run as executable service?
+# The entrypoint may break the existing unittest approach. Verify.
+# Manually add to the run command for now.
 # Or use CMD instead of ENTRYPOINT?
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
-#ENTRYPOINT ["/forseti-security/install/scripts/docker-entrypoint.sh"]
+#ENTRYPOINT ["/forseti-security/install/scripts/docker_entrypoint.sh"]
