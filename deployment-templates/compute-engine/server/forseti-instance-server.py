@@ -232,7 +232,7 @@ echo "Added the run_forseti.sh to crontab under user $USER"
 
 # Adding a second cron job to run the External Project Access Scanner separately if it is enabled 
 if [ {external_project_access_scanner_cron_enabled} ]; then
-    (echo "{external_project_access_scanner_cron_schedule} (/usr/bin/flock -n /home/ubuntu/forseti-security/external_project_access_scanner_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_external_project_access_scanner.sh || echo '[forseti-security] Warning: New external project access scanner cron job will not be started, because previous external project access scanner job is still running.') 2>&1 | logger") | crontab -u $USER -
+    (crontab -l ; echo "{external_project_access_scanner_cron_schedule} (/usr/bin/flock -n /home/ubuntu/forseti-security/external_project_access_scanner_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_external_project_access_scanner.sh || echo '[forseti-security] Warning: New external project access scanner cron job will not be started, because previous external project access scanner job is still running.') 2>&1 | logger")| crontab -
     echo "Added the run_external_project_access_scanner.sh to crontab under user $USER"
 fi
 
