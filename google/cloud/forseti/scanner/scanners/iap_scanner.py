@@ -150,6 +150,9 @@ class _RunData(object):
         Returns:
             InstanceGroup: instance group
         """
+        if not instance_group_url:
+            return None
+
         target_key = instance_group_type.Key.from_url(instance_group_url)
         return self.instance_groups_by_key.get(target_key)
 
@@ -288,8 +291,6 @@ class _RunData(object):
         alternate_services = set()
         direct_access_sources = set()
         for backend in backend_service.backends:
-            if not backend.get('group'):
-                continue
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
             if not instance_group:
@@ -346,8 +347,6 @@ class _RunData(object):
         if backend_service2.key == backend_service.key:
             return False
         for backend in backend_service.backends:
-            if not backend.get('group'):
-                continue
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
             if not instance_group:
@@ -359,8 +358,6 @@ class _RunData(object):
                 continue
 
             for backend2 in backend_service2.backends:
-                if not backend2.get('group'):
-                    continue
                 instance_group2 = self.find_instance_group_by_url(
                     backend2.get('group'))
                 if not instance_group2:
