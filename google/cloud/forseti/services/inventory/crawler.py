@@ -301,7 +301,7 @@ class ParallelCrawler(Crawler):
             raise
 
 
-@tracing.trace
+@tracing.trace()
 def run_crawler(storage,
                 progresser,
                 config,
