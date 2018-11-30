@@ -589,7 +589,7 @@ CRM_ORG_ORG_POLICIES = """
 CRM_FOLDER_ORG_POLICIES = """
 [
   {
-    "constraint": "constraints/storage.requireIamAclsOnly",
+    "constraint": "constraints/storage.bucketPolicyOnly",
     "boolean_policy": {
       "enforced": true
     }
