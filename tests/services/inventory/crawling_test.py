@@ -426,6 +426,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'appengine_version': {'resource': 1},
             'backendservice': {'resource': 1},
             'billing_account': {'iam_policy': 2, 'resource': 2},
+            'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
             'compute_healthcheck': {'resource': 1},
@@ -547,7 +548,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         storage)
 
         expected_counts = {
-            'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
             'cloudsqlinstance': {'resource': 1},
             'compute_project': {'resource': 2},
             'crm_org_policy': {'resource': 5},

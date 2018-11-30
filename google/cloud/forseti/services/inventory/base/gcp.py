@@ -695,6 +695,16 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
+        """Bucket Access Controls from GCP API.
+
+        Args:
+            bucket_id (str): id of the bucket to query.
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def fetch_storage_bucket_iam_policy(self, bucket_id):
         """Bucket IAM policy Iterator from gcp API call.
 
@@ -2012,6 +2022,21 @@ class ApiClientImpl(ApiClient):
         """
         for sink in self.stackdriver_logging.get_project_sinks(project_number):
             yield sink
+
+    @create_lazy('storage', _create_storage)
+    def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
+        """Bucket Access Controls from GCP API.
+
+        Args:
+            bucket_id (str): id of the bucket to query.
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Returns:
+            list: Bucket Access Controls.
+        """
+        del project_id, project_number
+        return self.storage.get_bucket_acls(bucket_id)
 
     @create_lazy('storage', _create_storage)
     def fetch_storage_bucket_iam_policy(self, bucket_id):

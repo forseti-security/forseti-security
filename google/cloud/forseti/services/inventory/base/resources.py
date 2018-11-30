@@ -1287,20 +1287,31 @@ class StorageBucket(resource_class_factory('bucket', 'id')):
             self.add_warning(e)
             return None
 
+    @cached('gcs_policy')
     def get_gcs_policy(self, client=None):
-        """Full projection returns GCS policy with the resource.
+        """Get Bucket Access Control policy for this storage bucket.
 
         Args:
             client (object): GCP API client.
 
         Returns:
-            dict: bucket acl.
+            list: bucket access controls.
         """
-        # Full projection returns GCS policy with the resource.
         try:
+            # Full projection returns GCS policy with the resource.
             return self['acl']
         except KeyError:
-            return []
+            pass
+
+        try:
+            return client.fetch_storage_bucket_acls(
+                self.key(),
+                self.parent()['projectId'],
+                self['projectNumber'])
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warn('Could not get bucket Access Control policy: %s', e)
+            self.add_warning(e)
+            return None
 
 
 class StorageObject(resource_class_factory('storage_object', 'id')):
