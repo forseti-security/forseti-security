@@ -83,8 +83,10 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
 
         if request.scanner_index_id and request.inventory_index_id:
             LOGGER.exception('Invalid input: supplying both inventory_index_id '
-                             'and scanner_index_id is not supported.')
-        elif request.scanner_index_id:
+                             'and scanner_index_id is not supported. The '
+                             'notifier command will not run.')
+            yield None
+        if request.scanner_index_id:
             LOGGER.info('Run notifier service with scanner index id: %s ',
                         request.scanner_index_id)
         else:
