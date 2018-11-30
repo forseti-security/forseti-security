@@ -24,15 +24,15 @@
     <title>Forseti Security / {{ page.title }}</title>
   {% endif %}
 
-  {% include site/layout/base/stylesheets.html %}
+  {% include_cached site/layout/base/stylesheets.html %}
 </head>
 <body>
   {% include site/layout/base/nav.html %}
 
   {{ content }}
 
-  {% include site/layout/base/footer.html %}
+  {% include_cached site/layout/base/footer.html %}
 
-  {% include site/layout/base/scripts.html %}
+  {% include_cached site/layout/base/scripts.html %}
 </body>
 </html>
