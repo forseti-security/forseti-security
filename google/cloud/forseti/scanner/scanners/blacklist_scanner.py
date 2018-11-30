@@ -92,9 +92,6 @@ class BlacklistScanner(base_scanner.BaseScanner):
            Returns:
                list: A list that contains nested lists of per-instance
                    InstanceNetworksInterface objects.
-
-            Raises:
-                NoDataError: If no network interfaces are found.
         """
 
         model_manager = self.service_config.model_manager
