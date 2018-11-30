@@ -4,7 +4,7 @@ services:
   - docker
 cache: bundler
 rvm:
-- 2.3.3
+- 2.5.3
 addons:
   apt:
     packages:
