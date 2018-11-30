@@ -82,4 +82,4 @@ resources:
     # forseti-instance-sever.py), every other hour".
     run-frequency: "{rand_minute} */2 * * *"
     external-project-access-scanner-cron-enabled: false
-    external-project-access-scanner-cron-schedule: "{rand_minute} * * 8 00"
+    external-project-access-scanner-cron-schedule: "{rand_minute} 8 * * 0"

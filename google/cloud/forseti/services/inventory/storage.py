@@ -932,7 +932,9 @@ class DataAccess(object):
         return inventory_index.id
 
     @classmethod
-    def get_inv_index_id_by_scanner(cls, session, scanner_index_id):
+    def get_inventory_index_id_by_scanner_index_id(cls,
+                                                   session,
+                                                   scanner_index_id):
         """List all inventory index entries.
 
         Args:
@@ -954,8 +956,8 @@ class DataAccess(object):
             ).order_by(InventoryIndex.id.desc()).first())
         session.expunge(inventory_index)
         LOGGER.info(
-            'Latest success/partial_success inventory index id is: %s',
-            inventory_index.id)
+            'Found inventory_index_id %s from scanner_index_id %s.',
+            inventory_index.id, scanner_index_id)
         return inventory_index.id
 
     @classmethod
