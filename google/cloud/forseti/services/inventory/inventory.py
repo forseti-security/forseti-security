@@ -208,7 +208,7 @@ def run_import(client, model_name, inventory_index_id, background):
                                   background)
 
 
-@tracing.traced(methods=['create'])
+@tracing.traced(methods=['create'], context=True)
 class Inventory(object):
     """Inventory API implementation."""
 
