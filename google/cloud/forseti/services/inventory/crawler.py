@@ -318,10 +318,6 @@ def run_crawler(storage,
     Returns:
         QueueProgresser: The progresser implemented in inventory
     """
-    engine = config.get_service_config().get_engine()
-    if parallel and 'sqlite' in str(engine):
-        LOGGER.info('SQLite used, disabling parallel threads.')
-        parallel = False
     client_config = config.get_api_quota_configs()
     client_config['domain_super_admin_email'] = config.get_gsuite_admin_email()
     asset_count = 0

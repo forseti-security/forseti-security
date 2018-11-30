@@ -88,8 +88,7 @@ def trace_integrations(integrations=None):
         list: The integrated libraries names. The return value is used only for
             testing.
     """
-    if integrations is None:
-        integrations = DEFAULT_INTEGRATIONS
+    integrations = integrations or DEFAULT_INTEGRATIONS
     tracer = execution_context.get_opencensus_tracer()
     integrated_libraries = config_integration.trace_integrations(
         integrations,
@@ -113,9 +112,7 @@ def create_exporter(transport=None):
         StackdriverExporter: A Stackdriver exporter.
         FileExporter: A file exporter. Default path: 'opencensus-traces.json'.
     """
-    if transport is None:
-        transport = async_.AsyncTransport
-
+    transport = transport or async_.AsyncTransport
     try:
         exporter = stackdriver_exporter.StackdriverExporter(transport=transport)
         LOGGER.info(
@@ -136,16 +133,17 @@ def start_span(tracer, module, function, kind=None):
         module (str): The module name.
         function (str): The function name.
         kind (opencensus.trace.span.SpanKind): The span kind.
+            Default: `SpanKind.SERVER`.
     """
-    if tracer is not None:
-        if kind is None:
-            kind = SpanKind.SERVER
-        span = tracer.start_span()
-        span.name = '[{}] {}'.format(module, function)
-        span.span_kind = kind
-        tracer.add_attribute_to_current_span('module', module)
-        tracer.add_attribute_to_current_span('function', function)
-        LOGGER.debug('%s.%s: %s', module, function, tracer.span_context)
+    if tracer is None:
+        LOGGER.debug('No tracer found, cannot do `start_span`.')
+        return
+
+    span_name = '[{}] {}'.format(module, function)
+    span = tracer.start_span(name=span_name)
+    span.span_kind = kind or SpanKind.SERVER
+    set_attributes(tracer, module=module, function=function)
+    LOGGER.debug('%s.%s: %s', module, function, tracer.span_context)
 
 
 def end_span(tracer, **kwargs):
@@ -155,10 +153,17 @@ def end_span(tracer, **kwargs):
         tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
-    if tracer is not None:
-        LOGGER.debug(tracer.span_context)
-        set_attributes(tracer, **kwargs)
-        tracer.end_span()
+    if tracer is None:
+        LOGGER.debug('No tracer found, cannot do `end_span`.')
+        return
+
+    if tracer.current_span() is None:
+        LOGGER.debug('No current span found, cannot do `end_span`.')
+        return
+
+    set_attributes(tracer, **kwargs)
+    LOGGER.debug(tracer.span_context)
+    tracer.end_span()
 
 
 # pylint: disable=broad-except
@@ -169,12 +174,12 @@ def set_attributes(tracer, **kwargs):
         tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
+    if tracer.current_span() is None:
+        LOGGER.debug("No current span found, cannot do `set_attributes`")
+        return
+
     for key, value in kwargs.items():
-        try:
-            tracer.add_attribute_to_current_span(key, value)
-        except Exception:
-            LOGGER.debug('Could not set attribute %s=%s to current span',
-                         key, value)
+        tracer.add_attribute_to_current_span(key, value)
 
 
 def get_tracer(inst=None, attr=None):
@@ -205,19 +210,25 @@ def get_tracer(inst=None, attr=None):
     method = ''
     if OPENCENSUS_ENABLED:
 
-        if inst is not None:  # working with an object
-            if attr is not None:  # Get tracer from passed attribute
+        # If working with an instance of a class (and not merely a function),
+        # we get the tracer from one of the instance attributes.
+        if inst is not None:
+
+            # Get tracer from attribute `attr` passed.
+            if attr is not None:
                 tracer = rgetattr(inst, attr, None)
                 method = 'from attribute (%s)' % attr
 
-            if tracer is None:  # Get tracer from standard attributes
+            # Get tracer from default attributes.
+            if tracer is None:
                 for _ in default_attributes:
                     tracer = rgetattr(inst, _, None)
                     if tracer is not None:
                         method = 'from default_attribute (%s)' % _
                         break
 
-        if tracer is None:  # Get tracer from context
+        # Get tracer from OpenCensus context.
+        if tracer is None:
             tracer = execution_context.get_opencensus_tracer()
             if inst is not None:
                 for _ in default_attributes:
@@ -228,7 +239,20 @@ def get_tracer(inst=None, attr=None):
                     except Exception:
                         pass
 
-        LOGGER.info('%s [%s] : %s', inst, method, tracer.span_context)
+            # If working with an instance of a class, set tracer to the proper
+            # instance attribute (either the passed `attr` or one of the default
+            # attributes).
+            if inst is not None:
+                attributes = [attr] if attr is not None else default_attributes
+                for _ in attributes:
+                    try:
+                        rsetattr(inst, _, tracer)
+                        method += ' + set to attribute %s' % _
+                        break
+                    except AttributeError:
+                        pass
+
+        LOGGER.info('Tracer @ %s [%s] : %s', inst, method, tracer.span_context)
 
     return tracer
 
@@ -252,15 +276,20 @@ def traced(methods=None):
         Returns:
             object: Decorated class.
         """
+        # Get names of methods to be traced.
         cls_methods = inspect.getmembers(cls, inspect.ismethod)
         if methods is None:
             to_trace = cls_methods
         else:
             to_trace = [m for m in cls_methods if m[0] in methods]
+
+        # Decorate each of the methods to be traced.
         for name, func in to_trace:
-            if name != '__init__':  # never trace __init__, breaks attributes
+            if name != '__init__':  # never trace __init__
                 setattr(cls, name, trace(func))
+
         return cls
+
     return wrapper
 
 
@@ -283,17 +312,44 @@ def trace(func):
         Returns:
             func: Decorated function.
         """
-        instance = args[0] if inspect.ismethod(func) else None
         if OPENCENSUS_ENABLED:
-            tracer = get_tracer(instance)
-            if 'tracer' in kwargs:
+            # If the decorator is applied on a class method, extract the 'self'
+            # attribute from the method arguments to get / set tracer as an
+            # instance attribute.
+            _self = args[0] if inspect.ismethod(func) else None
+
+            # Get the most appropriate tracer
+            tracer = get_tracer(_self)
+
+            # If the decorator is applied to a standard function, and the
+            # function definition has a 'tracer' argument, set the tracer as
+            # part of the function `kwargs` (if the tracer is not passed
+            # directly to it).
+            if _self is None and 'tracer' in kwargs:
                 kwargs['tracer'] = kwargs.get('tracer', tracer)
-            module_str = func.__module__.split('.')[-1]
-            start_span(tracer, module_str, func.__name__)
-        result = func(*args, **kwargs)
-        if OPENCENSUS_ENABLED:
-            end_span(tracer, result=result)
-        return result
+
+            # Start a new OpenCensus span.
+            start_span(
+                tracer,
+                func.__module__.split('.')[-1],
+                func.__name__)
+
+        # Execute the traced method.
+        # If any exception occurs, record exception in the current span and
+        # re-raise.
+        # The 'finally' block makes sure we always call `end_span` no matter if
+        # an exception happened or not.
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            if OPENCENSUS_ENABLED:
+                error_str = "{}:{}".format(type(e).__name__, str(e))
+                set_attributes(tracer, error=error_str, success=False)
+            raise e
+        finally:
+            if OPENCENSUS_ENABLED:
+                end_span(tracer)
+
     return wrapper
 
 
@@ -306,7 +362,7 @@ def rsetattr(obj, attr, val):
         val (opencensus.trace.Tracer): The tracer to set attr to.
 
     Returns:
-        object: Fetches attributes and sets it to object.
+        None: Return value of `setattr`.
     """
 
     pre, _, post = attr.rpartition('.')
@@ -314,7 +370,7 @@ def rsetattr(obj, attr, val):
 
 
 def rgetattr(obj, attr, *args):
-    """Get nested attribute in object.
+    """Get nested attribute from object.
 
     Args:
         obj (Object): An instance of a class.
@@ -322,17 +378,17 @@ def rgetattr(obj, attr, *args):
         *args: Argument list passed to a function.
 
     Returns:
-        object: Fetches attributes.
+        object: Fetched attribute.
     """
     def _getattr(obj, attr):
         """Get attributes in object.
 
         Args:
             obj (Object): An instance of a class.
-            attr (str): The attribute to get the tracer from.
+            attr (str): The nested attribute to get.
 
         Returns:
-            object: Fetches attributes to set to object.
+            object: Return value of `getattr`.
         """
         return getattr(obj, attr, *args)
     return functools.reduce(_getattr, [obj] + attr.split('.'))
