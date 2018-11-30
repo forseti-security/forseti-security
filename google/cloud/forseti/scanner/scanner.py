@@ -109,10 +109,7 @@ def run(model_name=None,
         succeeded = []
         failed = []
 
-        # if the scanner name is provided, then add scanner_index_id as part
-        # of the return value, so that it could be used by later commands
-        if scanner_name:
-            progress_queue.put('Scanner Index ID: {}'.format(scanner_index_id))
+        progress_queue.put('Scanner Index ID: {}'.format(scanner_index_id))
 
         for scanner in runnable_scanners:
             try:
