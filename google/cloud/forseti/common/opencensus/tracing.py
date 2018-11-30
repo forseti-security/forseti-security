@@ -199,8 +199,8 @@ def get_tracer(obj=None, attr=None, context=False):
     * from a list of default attributes (see `default_attribute` variable).
     * from OpenCensus context.
 
-    Note: If `context` is True, the tracer will **always** be fetched from the
-    OpenCensus context.
+    Note: If `context` is set to True, the tracer will **always** be fetched
+    from the OpenCensus context.
 
     If `obj` is not passed, we simply get the tracer from the OpenCensus
     context.
@@ -208,10 +208,10 @@ def get_tracer(obj=None, attr=None, context=False):
     Args:
         obj (Object): An instance of a class.
         attr (str): The attribute to get / set the tracer from / to.
-        context (bool, False): Force fetching tracer from context.
+        context (bool): Force fetching tracer from context. Default: False.
 
     Returns:
-        tracer(opencensus.trace.Tracer): The tracer to be used.
+        opencensus.trace.Tracer: The tracer to be used.
     """
     default_attributes = ['config.tracer', 'service_config.tracer', 'tracer']
     tracer = None
@@ -219,8 +219,9 @@ def get_tracer(obj=None, attr=None, context=False):
     if OPENCENSUS_ENABLED:
 
         # If working with an instance of a class (and not merely a function),
-        # we get the tracer from one of the instance attributes.
-        if obj is not None and context is False:
+        # and `context` is False, we get the tracer from one of the instance
+        # attributes.
+        if obj is not None and not context:
 
             # Get tracer from attribute `attr` passed.
             if attr is not None:
@@ -271,8 +272,9 @@ def traced(methods=None, attr=None, context=False):
     Args:
         methods (list): If set, the decorator will trace those class methods.
             Otherwise, trace all class methods.
-        context (bool, False): Alwyas get the tracer from the OpenCensus
-            context.
+        attr (str): If set, fetch the tracer from the corresponding instance
+            attribute.
+        context (bool): Force fetching tracer from context. Default: False.
 
     Returns:
         object: Decorated class.
@@ -308,15 +310,25 @@ def trace(attr=None, context=False):
     """Method decorator to trace a function.
 
     Args:
-        func (func): Function to be traced.
+        attr (str): If set, fetch the tracer from the corresponding instance
+            attribute.
+        context (bool): Force fetching tracer from context. Default: False.
 
     Returns:
         func: Decorated function.
     """
     def outer_wrapper(func):
+        """Outer wrapper.
+
+        Args:
+            func (func): Function to trace.
+
+        Returns:
+            func: Decorated function.
+        """
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            """Wrapper method.
+        def inner_wrapper(*args, **kwargs):
+            """Inner wrapper.
 
             Args:
                 *args: Argument list passed to the method.
@@ -329,14 +341,15 @@ def trace(attr=None, context=False):
                 Exception: Exception thrown by the decorated function (if any).
             """
             if OPENCENSUS_ENABLED:
-                # If the decorator is applied on a class method, extract the 'self'
-                # attribute from the method arguments to get / set tracer as an
-                # instance attribute.
+                # If the decorator is applied on a class method, extract the
+                # 'self' attribute from the method arguments to get / set tracer
+                # as an instance attribute.
                 _self = args[0] if inspect.ismethod(func) else None
 
                 # Get the most appropriate tracer
                 tracer = get_tracer(
                     obj=_self,
+                    attr=attr,
                     context=context)
 
                 # If the decorator is applied to a standard function, and the
@@ -355,8 +368,8 @@ def trace(attr=None, context=False):
             # Execute the traced method.
             # If any exception occurs, record exception in the current span and
             # re-raise.
-            # The 'finally' block makes sure we always call `end_span` no matter if
-            # an exception happened or not.
+            # The 'finally' block makes sure we always call `end_span` no matter
+            # if an exception happened or not.
             try:
                 return func(*args, **kwargs)
             except Exception as e:
@@ -368,7 +381,7 @@ def trace(attr=None, context=False):
                 if OPENCENSUS_ENABLED:
                     end_span(tracer)
 
-        return wrapper
+        return inner_wrapper
     return outer_wrapper
 
 
