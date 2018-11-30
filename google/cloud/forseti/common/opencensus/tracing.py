@@ -253,7 +253,7 @@ def get_tracer(inst=None, attr=None):
                     except AttributeError:
                         pass
 
-        LOGGER.info('Tracer @ %s [%s] : %s', inst, method, tracer.span_context)
+        LOGGER.debug('Tracer @ %s [%s] : %s', inst, method, tracer.span_context)
 
     return tracer
 
