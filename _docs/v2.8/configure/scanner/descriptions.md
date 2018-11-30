@@ -160,7 +160,7 @@ features:
 * Rules can be whitelists or a blacklists.
 
 You can find example rules in the
-[`ke_scanner_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
+[`ke_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/ke_rules.yaml)
 file.  The only rule enabled by default checks that logging is
 enabled.  Check out some of the commented-out rules for more
 advanced ideas.
