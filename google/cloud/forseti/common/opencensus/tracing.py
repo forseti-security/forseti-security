@@ -142,7 +142,7 @@ def start_span(tracer, module, function, kind=None):
     span_name = '[{}] {}'.format(module, function)
     span = tracer.start_span(name=span_name)
     span.span_kind = kind or SpanKind.SERVER
-    set_attributes(tracer, module=module, function=function)
+    set_span_attributes(tracer, module=module, function=function)
     LOGGER.debug('%s.%s: %s', module, function, tracer.span_context)
 
 
@@ -161,21 +161,24 @@ def end_span(tracer, **kwargs):
         LOGGER.debug('No current span found, cannot do `end_span`.')
         return
 
-    set_attributes(tracer, **kwargs)
+    set_span_attributes(tracer, **kwargs)
     LOGGER.debug(tracer.span_context)
     tracer.end_span()
 
 
-# pylint: disable=broad-except
-def set_attributes(tracer, **kwargs):
+def set_span_attributes(tracer, **kwargs):
     """Set current span attributes.
 
     Args:
         tracer (opencensus.trace.tracer.Tracer): OpenCensus tracer object.
         kwargs (dict): A set of attributes to set to the current span.
     """
+    if tracer is None:
+        LOGGER.debug('No tracer found, cannot do `end_span`.')
+        return
+
     if tracer.current_span() is None:
-        LOGGER.debug('No current span found, cannot do `set_attributes`')
+        LOGGER.debug('No current span found, cannot do `set_span_attributes`')
         return
 
     for key, value in kwargs.items():
@@ -349,7 +352,7 @@ def trace(func):
         except Exception as e:
             if OPENCENSUS_ENABLED:
                 error_str = '{}:{}'.format(type(e).__name__, str(e))
-                set_attributes(tracer, error=error_str, success=False)
+                set_span_attributes(tracer, error=error_str, success=False)
             raise
         finally:
             if OPENCENSUS_ENABLED:
