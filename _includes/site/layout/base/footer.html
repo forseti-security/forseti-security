@@ -7,7 +7,7 @@
         </div>
       </div>
       <div class="left-panel col-sm-4 col-sm-pull-8">
-        {% include site/layout/base/footer/copyright.html %}
+        {% include_cached site/layout/base/footer/copyright.html %}
         <p class="description">
           Built <a href="{{ site.github.repository_url }}/commit/{{ site.data['commit']['hash'] }}">@{{ site.data['commit']['hash'] }}</a> on {{ site.data['commit']['datetime'] }}
         </p>
