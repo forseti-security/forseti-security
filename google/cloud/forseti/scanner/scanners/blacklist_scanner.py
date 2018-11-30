@@ -16,7 +16,6 @@
 
 from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import instance
-from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import blacklist_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -118,9 +117,8 @@ class BlacklistScanner(base_scanner.BaseScanner):
             network_interfaces.append(ins.create_network_interfaces())
 
         if not network_interfaces:
-            error_message = 'No VM network interfaces found. Exiting.'
-            LOGGER.warn(error_message)
-            raise util_errors.NoDataError(error_message)
+            LOGGER.warn('No VM network interfaces found.')
+            return []
 
         return network_interfaces
 
@@ -152,11 +150,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
 
     def run(self):
         """Runs scanning."""
-        try:
-            instances_network_interface_data = self._retrieve()
-        except util_errors.NoDataError:
-            return
-
+        instances_network_interface_data = self._retrieve()
         all_violations = (
             self._find_violations(instances_network_interface_data))
         self._output_results(all_violations)
