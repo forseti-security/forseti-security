@@ -946,10 +946,7 @@ class DataAccess(object):
         """
 
         inventory_index = (
-            session.query(InventoryIndex)
-            .outerjoin(ScannerIndex,
-                       ScannerIndex.inventory_index_id == InventoryIndex.id)
-            .filter(
+            session.query(InventoryIndex).filter(
                 and_(ScannerIndex.id == scanner_index_id,
                      or_(InventoryIndex.inventory_status == 'SUCCESS',
                          InventoryIndex.inventory_status == 'PARTIAL_SUCCESS'))
