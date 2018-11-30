@@ -333,7 +333,6 @@ class _RunData(object):
             iap_enabled=(backend_service.iap.get('enabled', False)
                          if backend_service.iap else False))
 
-    # pylint: disable=too-many-branches
     def is_alternate_service(self, backend_service, backend_service2):
         """Do two backend services expose any of the same (instance, port) ?
 
@@ -374,7 +373,6 @@ class _RunData(object):
                     if instance_url in instance_group2.instance_urls:
                         return True
             return False
-    # pylint: enable=too-many-branches
 
 
 class IapScanner(base_scanner.BaseScanner):
