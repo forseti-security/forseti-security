@@ -288,6 +288,8 @@ class _RunData(object):
         alternate_services = set()
         direct_access_sources = set()
         for backend in backend_service.backends:
+            if not backend.get('group'):
+                continue
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
             if not instance_group:
@@ -330,6 +332,7 @@ class _RunData(object):
             iap_enabled=(backend_service.iap.get('enabled', False)
                          if backend_service.iap else False))
 
+    # pylint: disable=too-many-branches
     def is_alternate_service(self, backend_service, backend_service2):
         """Do two backend services expose any of the same (instance, port) ?
 
@@ -343,6 +346,8 @@ class _RunData(object):
         if backend_service2.key == backend_service.key:
             return False
         for backend in backend_service.backends:
+            if not backend.get('group'):
+                continue
             instance_group = self.find_instance_group_by_url(
                 backend.get('group'))
             if not instance_group:
@@ -354,6 +359,8 @@ class _RunData(object):
                 continue
 
             for backend2 in backend_service2.backends:
+                if not backend2.get('group'):
+                    continue
                 instance_group2 = self.find_instance_group_by_url(
                     backend2.get('group'))
                 if not instance_group2:
@@ -370,6 +377,7 @@ class _RunData(object):
                     if instance_url in instance_group2.instance_urls:
                         return True
             return False
+    # pylint: enable=too-many-branches
 
 
 class IapScanner(base_scanner.BaseScanner):
