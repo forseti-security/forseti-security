@@ -24,7 +24,9 @@ exclude: ["Gemfile",
           "_config.yml",
           ".travis.yml",
           "travis/",
-          "scripts/"]
+          "scripts/",
+          ".gitignore",
+          "app.yaml"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
@@ -35,6 +37,7 @@ plugins:
   - jekyll-paginate-v2
   - jekyll-redirect-from
   - jekyll-responsive-image
+  - jekyll-include-cache
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
