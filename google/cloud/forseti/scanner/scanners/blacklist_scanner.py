@@ -88,6 +88,7 @@ class BlacklistScanner(base_scanner.BaseScanner):
     # pylint: disable=invalid-name
     def get_instance_networks_interfaces(self):
         """Get network info from a particular snapshot.
+
            Returns:
                list: A list that contains nested lists of per-instance
                    InstanceNetworksInterface objects.
@@ -113,8 +114,8 @@ class BlacklistScanner(base_scanner.BaseScanner):
             network_interfaces.append(ins.create_network_interfaces())
 
         if not network_interfaces:
-            LOGGER.warn('No VM network interfaces found. Exiting.')
-            return None, 0
+            LOGGER.warn('No VM network interfaces found.')
+            return []
 
         return network_interfaces
 
