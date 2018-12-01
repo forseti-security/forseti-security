@@ -16,6 +16,7 @@
 
 from Queue import Queue
 
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner.dao import initialize as init_storage
@@ -23,8 +24,9 @@ from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
 LOGGER = logger.get_logger(__name__)
+TRACED_SCANNER_METHODS =['_get_handle', '_run_scanner']
 
-
+@tracing.traced(methods=TRACED_SCANNER_METHODS, context=True)
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     """IAM Scanner gRPC implementation."""
 
@@ -82,6 +84,9 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         Yields:
             Progress: The progress of the scanner.
         """
+        tracer = self.service_config.tracer
+        LOGGER.info(tracer.span_context)
+
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
@@ -111,7 +116,11 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
                              self.service_config)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
-            progress_queue.put('Error occurred during the scanning process.')
+            tracer = self.service_config.tracer
+            message = 'Error occured during the scanning process.'
+            error = "%s: %s" % (type(e).__name__, str(e))
+            tracing.set_span_attributes(tracer, error=error, message=message)
+            progress_queue.put(message)
             progress_queue.put(None)
 
 

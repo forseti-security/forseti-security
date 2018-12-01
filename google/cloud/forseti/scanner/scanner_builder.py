@@ -17,6 +17,7 @@
 import importlib
 import inspect
 
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
 
@@ -24,6 +25,7 @@ from google.cloud.forseti.scanner import scanner_requirements_map
 LOGGER = logger.get_logger(__name__)
 
 
+@tracing.traced(methods=['build'], attr='service_config.tracer')
 class ScannerBuilder(object):
     """Scanner Builder."""
 
