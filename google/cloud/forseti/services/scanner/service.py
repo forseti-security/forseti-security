@@ -24,9 +24,9 @@ from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
 LOGGER = logger.get_logger(__name__)
-TRACED_SCANNER_METHODS =['_get_handle', '_run_scanner']
 
-@tracing.traced(methods=TRACED_SCANNER_METHODS, context=True)
+
+@tracing.traced(context=True)
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     """IAM Scanner gRPC implementation."""
 
@@ -84,9 +84,6 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         Yields:
             Progress: The progress of the scanner.
         """
-        tracer = self.service_config.tracer
-        LOGGER.info(tracer.span_context)
-
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
@@ -110,18 +107,30 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             model_name (str): Model name.
             progress_queue (Queue): Progress queue.
         """
+        tracer = self.service_config.tracer
+        attrs = {
+            'success': True,
+            'scanner': self.scanner.__class__.__name__,
+            'model': model_name
+        }
+        tracing.start_span(tracer, 'Recv.GrpcScanner', '_run_scanner')
         try:
             self.scanner.run(model_name,
                              progress_queue,
                              self.service_config)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
-            tracer = self.service_config.tracer
             message = 'Error occured during the scanning process.'
             error = "%s: %s" % (type(e).__name__, str(e))
-            tracing.set_span_attributes(tracer, error=error, message=message)
+            attrs.update({
+                'success': False,
+                'message': message,
+                'error': error
+            })
             progress_queue.put(message)
             progress_queue.put(None)
+        finally:
+            tracing.end_span(self.service_config.tracer, **attrs)
 
 
 class GrpcScannerFactory(object):
