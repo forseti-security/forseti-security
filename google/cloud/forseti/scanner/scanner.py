@@ -13,6 +13,7 @@
 # limitations under the License.
 """GCP Resource scanner."""
 
+from google.cloud.forseti.common.opencensus import tracing
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 from google.cloud.forseti.scanner import scanner_builder
@@ -77,7 +78,8 @@ def mark_scanner_index_complete(
     session.flush()
 
 
-def run(model_name=None, progress_queue=None, service_config=None):
+@tracing.trace()
+def run(model_name=None, progress_queue=None, service_config=None, tracer=None):
     """Run the scanners.
 
     Entry point when the scanner is run as a library.
@@ -86,6 +88,7 @@ def run(model_name=None, progress_queue=None, service_config=None):
         model_name (str): The name of the data model.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
+        tracer (opencensus.trace.Tracer): OpenCensus tracer.
 
     Returns:
         int: Status code.
@@ -108,17 +111,26 @@ def run(model_name=None, progress_queue=None, service_config=None):
         failed = []
         for scanner in runnable_scanners:
             try:
+                attrs = {'scanner': scanner.__class__.__name__, 'success': True}
                 scanner.run()
                 progress_queue.put('Running {}...'.format(
                     scanner.__class__.__name__))
-            except Exception:  # pylint: disable=broad-except
+            except Exception as e:  # pylint: disable=broad-except
                 log_message = 'Error running scanner: {}'.format(
                     scanner.__class__.__name__)
+                error = "%s: %s" % (type(e).__name__, str(e))
                 progress_queue.put(log_message)
                 LOGGER.exception(log_message)
+                attrs.update({
+                    'message': log_message,
+                    'error': error,
+                    'success': False
+                })
                 failed.append(scanner.__class__.__name__)
             else:
                 succeeded.append(scanner.__class__.__name__)
+            finally:
+                tracing.set_span_attributes(tracer, **attrs)
             session.flush()
         # pylint: enable=bare-except
         log_message = 'Scan completed!'

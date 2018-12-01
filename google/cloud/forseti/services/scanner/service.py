@@ -26,7 +26,7 @@ from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 LOGGER = logger.get_logger(__name__)
 
 
-@tracing.traced(context=True)
+@tracing.traced(context=True, attr='service_config.tracer')
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     """IAM Scanner gRPC implementation."""
 
@@ -85,7 +85,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             Progress: The progress of the scanner.
         """
         progress_queue = Queue()
-
+        tracer = self.service_config.tracer
         model_name = self._get_handle(context)
         if not model_name:
             progress_queue.put(
@@ -95,19 +95,22 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         else:
             LOGGER.info('Run scanner service with model: %s', model_name)
             self.service_config.run_in_background(
-                lambda: self._run_scanner(model_name, progress_queue))
+                lambda: self._run_scanner(
+                    model_name,
+                    progress_queue,
+                    tracer=tracer))
 
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)
 
-    def _run_scanner(self, model_name, progress_queue):
+    def _run_scanner(self, model_name, progress_queue, tracer=None):
         """Run scanner.
 
         Args:
             model_name (str): Model name.
             progress_queue (Queue): Progress queue.
+            tracer (opencensus.tracer.Tracer): OpenCensus tracer.
         """
-        tracer = self.service_config.tracer
         attrs = {
             'success': True,
             'scanner': self.scanner.__class__.__name__,
@@ -117,7 +120,8 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         try:
             self.scanner.run(model_name,
                              progress_queue,
-                             self.service_config)
+                             self.service_config,
+                             tracer=tracer)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             message = 'Error occured during the scanning process.'
