@@ -43,6 +43,7 @@ class GcpMocks(object):
         self.mock_iam = None
         self.mock_servicemanagement = None
         self.mock_logging = None
+        self.mock_trace = None
         self.mock_storage = None
         self.patchers = []
 
@@ -64,6 +65,7 @@ class GcpMocks(object):
         iam_patcher, self.mock_iam = _mock_iam()
         sm_patcher, self.mock_servicemanagement = _mock_servicemanagement()
         logging_patcher, self.mock_logging = _mock_stackdriver_logging()
+        trace_patcher, self.mock_trace = _mock_stackdriver_trace()
         self.patchers = [
             ad_patcher,
             appengine_patcher,
@@ -77,7 +79,8 @@ class GcpMocks(object):
             gcs_patcher,
             iam_patcher,
             sm_patcher,
-            logging_patcher
+            logging_patcher,
+            trace_patcher
         ]
 
     def stop(self):
@@ -96,6 +99,7 @@ class GcpMocks(object):
         self.mock_iam = None
         self.mock_servicemanagement = None
         self.mock_logging = None
+        self.mock_trace = None
         self.mock_storage = None
         self.patchers = []
 
@@ -569,3 +573,15 @@ def _mock_stackdriver_logging():
     mock_sd_logging.get_project_sinks.side_effect = _mock_get_project_sinks
 
     return sd_logging_patcher, mock_sd_logging
+
+def _mock_stackdriver_trace():
+    """Mock StackdriverTrace client."""
+    def _mock_batch_write_spans(projectid, spans):
+        pass
+
+    sd_trace_patcher = mock.patch(
+        'google.cloud.trace.client.Client', spec=True)
+    mock_sd_trace = sd_trace_patcher.start().return_value
+    mock_sd_trace.batch_write_spans.side_effet = _mock_batch_write_spans
+
+    return sd_trace_patcher, mock_sd_trace
