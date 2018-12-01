@@ -26,7 +26,7 @@ from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 LOGGER = logger.get_logger(__name__)
 
 
-@tracing.traced(context=True, attr='service_config.tracer')
+@tracing.traced(methods=[], context=True, attr='service_config.tracer')
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     """IAM Scanner gRPC implementation."""
 
