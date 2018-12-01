@@ -17,7 +17,6 @@
 import json
 
 from google.cloud.forseti.common.gcp_type.project import Project
-from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import enabled_apis_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -137,17 +136,13 @@ class EnabledApisScanner(base_scanner.BaseScanner):
                          enabled_apis))
 
         if not enabled_apis_data:
-            LOGGER.warn('No Enabled APIs found. Exiting.')
-            raise util_errors.NoDataError('No enabled APIs found. Exiting')
+            LOGGER.warn('No Enabled APIs found.')
+            return []
 
         return enabled_apis_data
 
     def run(self):
         """Runs the data collection."""
-        try:
-            enabled_apis_data = self._retrieve()
-        except util_errors.NoDataError:
-            return
-
+        enabled_apis_data = self._retrieve()
         all_violations = self._find_violations(enabled_apis_data)
         self._output_results(all_violations)
