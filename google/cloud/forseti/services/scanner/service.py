@@ -101,7 +101,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)
 
-    @tracing.trace()
+    @tracing.trace(attr='service_config.tracer')
     def _run_scanner(self, model_name, progress_queue):
         """Run scanner.
 
@@ -118,8 +118,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             }
             self.scanner.run(model_name,
                              progress_queue,
-                             self.service_config,
-                             tracer=self.service_config.tracer)
+                             self.service_config)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             message = 'Error occured during the scanning process.'
