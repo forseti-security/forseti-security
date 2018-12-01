@@ -239,14 +239,6 @@ def get_tracer(obj=None, attr=None, context=False):
         # Get tracer from OpenCensus context.
         if tracer is None:
             tracer = execution_context.get_opencensus_tracer()
-            if obj is not None:
-                for _ in default_attributes:
-                    try:
-                        rsetattr(obj, _, tracer)
-                        method += ' + set to attribute %s' % _
-                        break
-                    except AttributeError:
-                        pass
 
             # If working with an instance of a class, set tracer to the proper
             # instance attribute (either the passed `attr` or one of the default
