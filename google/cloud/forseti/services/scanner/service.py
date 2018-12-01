@@ -25,7 +25,7 @@ from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
 LOGGER = logger.get_logger(__name__)
 
-
+@tracing.traced(methods=['_get_handle'], context=True)
 class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
     """IAM Scanner gRPC implementation."""
 
@@ -57,7 +57,6 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
         self.service_config = service_config
-        self.tracer = tracing.get_tracer(context=True)
         LOGGER.info('initializing scanner DAO tables')
         init_storage(service_config.get_engine())
 
