@@ -57,6 +57,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         super(GrpcScanner, self).__init__()
         self.scanner = scanner_api
         self.service_config = service_config
+        self.tracer = tracing.get_tracer(context=True)
         LOGGER.info('initializing scanner DAO tables')
         init_storage(service_config.get_engine())
 
@@ -133,7 +134,7 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
             progress_queue.put(message)
             progress_queue.put(None)
         finally:
-            tracing.set_span_attributes(self.service_config.tracer, **attrs)
+            tracing.set_span_attributes(self.tracer, **attrs)
 
 
 class GrpcScannerFactory(object):
