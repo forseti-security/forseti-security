@@ -66,6 +66,7 @@ class GcpMocks(object):
         sm_patcher, self.mock_servicemanagement = _mock_servicemanagement()
         logging_patcher, self.mock_logging = _mock_stackdriver_logging()
         trace_patcher, self.mock_trace = _mock_stackdriver_trace()
+        trace_exporter_patcher, self.mock_trace_exporter = _mock_stackdriver_trace_exporter()
         self.patchers = [
             ad_patcher,
             appengine_patcher,
@@ -80,7 +81,8 @@ class GcpMocks(object):
             iam_patcher,
             sm_patcher,
             logging_patcher,
-            trace_patcher
+            trace_patcher,
+            trace_exporter_patcher
         ]
 
     def stop(self):
@@ -578,6 +580,8 @@ def _mock_stackdriver_trace():
     """Mock StackdriverTrace client."""
     def _mock_batch_write_spans(projectid, spans):
         pass
+    def _mock_opencensus_stackdriver_exporter(span_datas):
+        pass
 
     sd_trace_patcher = mock.patch(
         'google.cloud.trace.client.Client', spec=True)
@@ -585,3 +589,16 @@ def _mock_stackdriver_trace():
     mock_sd_trace.batch_write_spans.side_effet = _mock_batch_write_spans
 
     return sd_trace_patcher, mock_sd_trace
+
+def _mock_stackdriver_trace_exporter():
+    """Mock OpenCensus Stackdriver trace exporter."""
+
+    def _mock_emit(span_datas):
+        pass
+
+    sd_trace_exporter = mock.patch(
+        'opencensus.trace.exporters.stackdriver_exporter.StackdriverExporter', spec=True)
+    mock_sd_trace_exporter = sd_trace_exporter.start().return_value
+    mock_sd_trace_exporter.emit = _mock_emit
+
+    return sd_trace_exporter, mock_sd_trace_exporter
