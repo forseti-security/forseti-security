@@ -109,7 +109,7 @@ def run(model_name=None,
         succeeded = []
         failed = []
 
-        progress_queue.put('Scanner Index ID: {}'.format(scanner_index_id))
+        progress_queue.put('Scanner Index ID: {} is created'.format(scanner_index_id))
 
         for scanner in runnable_scanners:
             try:
