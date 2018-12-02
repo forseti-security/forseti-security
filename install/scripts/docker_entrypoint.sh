@@ -28,8 +28,8 @@
 BUCKET=$1
 
 # Download config files
-gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-gsutil cp -r ${BUCKET}/rules /forseti-security/
+gsutil -DD cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
 
 # TODO Error handling for gsutil cp
 
