@@ -946,11 +946,9 @@ class DataAccess(object):
         """
 
         inventory_index = (
-            session.query(InventoryIndex).filter(
-                and_(ScannerIndex.id == scanner_index_id,
-                     or_(InventoryIndex.inventory_status == 'SUCCESS',
-                         InventoryIndex.inventory_status == 'PARTIAL_SUCCESS'))
-            ).order_by(InventoryIndex.id.desc()).first())
+            session.query(ScannerIndex).filter(
+                ScannerIndex.id == scanner_index_id
+            ).order_by(ScannerIndex.id.desc()).first())
         session.expunge(inventory_index)
         LOGGER.info(
             'Found inventory_index_id %s from scanner_index_id %s.',

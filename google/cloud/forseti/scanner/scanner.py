@@ -89,7 +89,7 @@ def run(model_name=None,
         model_name (str): The name of the data model.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
-        scanner_name (str): name of the scanner that runs separately.
+        scanner_name (str): Name of the scanner that runs separately.
     Returns:
         int: Status code.
     """

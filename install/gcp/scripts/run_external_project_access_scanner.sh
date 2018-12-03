@@ -69,8 +69,8 @@ echo "Forseti config: $(forseti config show)"
 
 # Run scanner command
 echo "Running Forseti external project access scanner."
-scanner_return=`forseti scanner run --scanner external_project_access_scanner`
-scanner_index_id=`echo ${scanner_return} | grep -o -P '(?<=(ID: )).*(?=is created)'`
+scanner_command=`forseti scanner run --scanner external_project_access_scanner`
+scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
 echo "Finished running Forseti scanner."
 sleep 10s
 
