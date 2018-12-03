@@ -70,7 +70,7 @@ echo "Forseti config: $(forseti config show)"
 # Run scanner command
 echo "Running Forseti scanner."
 scanner_return=`forseti scanner run`
-scanner_index_id=${scanner_return} | grep -Po '(?<=(ID: )).*(?= is)'
+scanner_index_id=`echo ${scanner_return} | grep -o -P '(?<=(ID: )).*(?=is created)'`
 echo "Finished running Forseti scanner."
 sleep 10s
 
