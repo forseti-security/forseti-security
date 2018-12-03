@@ -323,7 +323,14 @@ class ImporterTest(ForsetiTestCase):
 
         ('notifier run --inventory_index_id 88',
          CLIENT.scanner.run,
-         [88],
+         [88, 0],
+         {},
+         '{"endpoint": "192.168.0.1:80"}',
+         {'endpoint': '192.168.0.1:80'}),
+
+        ('notifier run --scanner_index_id 88',
+         CLIENT.scanner.run,
+         [0, 88],
          {},
          '{"endpoint": "192.168.0.1:80"}',
          {'endpoint': '192.168.0.1:80'}),
