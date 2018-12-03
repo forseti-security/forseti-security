@@ -41,4 +41,4 @@ forseti_server \
 --services scanner model inventory explain notifier \
 --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
 --log_level=info \
---enable_console_log &
+--enable_console_log
