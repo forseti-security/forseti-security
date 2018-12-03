@@ -21,7 +21,6 @@ import inspect
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
-from google.cloud.forseti.scanner.scanners import external_project_access_scanner # noqa=E501
 
 LOGGER = logger.get_logger(__name__)
 
