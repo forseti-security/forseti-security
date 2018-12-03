@@ -932,7 +932,7 @@ class DataAccess(object):
         return inventory_index.id
 
     @classmethod
-    def get_inv_index_id_by_scan_index_id(cls,
+    def get_inventory_id_by_scan_id(cls,
                                                    session,
                                                    scanner_index_id):
         """List all inventory index entries.

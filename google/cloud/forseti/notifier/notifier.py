@@ -101,7 +101,7 @@ def run(inventory_index_id,
         if scanner_index_id:
             has_scanner_index_id_arg = True
             inventory_index_id = (
-                DataAccess.get_inv_index_id_by_scan_index_id(
+                DataAccess.get_inventory_id_by_scan_id(
                     session, scanner_index_id))
 
         else:
