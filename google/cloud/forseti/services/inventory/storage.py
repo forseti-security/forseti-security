@@ -932,7 +932,7 @@ class DataAccess(object):
         return inventory_index.id
 
     @classmethod
-    # pylint: disable=too-many-locals
+    # pylint: disable=invalid-name
     def get_inventory_index_id_by_scanner_index_id(cls,
                                                    session,
                                                    scanner_index_id):
