@@ -99,13 +99,11 @@ def run(inventory_index_id,
 
     with service_config.scoped_session() as session:
         if scanner_index_id:
-            has_scanner_index_id_arg = True
             inventory_index_id = (
                 DataAccess.get_inventory_id_by_scan_id(
                     session, scanner_index_id))
 
         else:
-            has_scanner_index_id_arg = False
             if not inventory_index_id:
                 inventory_index_id = (
                     DataAccess.get_latest_inventory_index_id(session))
@@ -187,8 +185,8 @@ def run(inventory_index_id,
                         (cscc_notifier.CsccNotifier(inventory_index_id)
                          .run(violations_as_dict, gcs_path, mode,
                               organization_id))
-        if not has_scanner_index_id_arg:
-            InventorySummary(service_config, inventory_index_id).run()
+
+        InventorySummary(service_config, inventory_index_id).run()
 
         log_message = 'Notification completed!'
         progress_queue.put(log_message)

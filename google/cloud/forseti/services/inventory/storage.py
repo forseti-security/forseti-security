@@ -943,15 +943,15 @@ class DataAccess(object):
             int64: inventory index id
         """
 
-        inventory_index = (
+        query_result = (
             session.query(ScannerIndex).filter(
                 ScannerIndex.id == scanner_index_id
-            ).order_by(ScannerIndex.id.desc()).first())
-        session.expunge(inventory_index)
+            ).order_by(ScannerIndex.inventory_index_id.desc()).first())
+        session.expunge(query_result)
         LOGGER.info(
             'Found inventory_index_id %s from scanner_index_id %s.',
-            inventory_index.id, scanner_index_id)
-        return inventory_index.id
+            query_result.inventory_index_id, scanner_index_id)
+        return query_result.inventory_index_id
 
     @classmethod
     def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name
