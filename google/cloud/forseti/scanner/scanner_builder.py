@@ -50,78 +50,69 @@ class ScannerBuilder(object):
 
     def build(self):
         """Build the enabled scanners to run.
-
         Returns:
             list: Scanner instances that will be run.
         """
         runnable_scanners = []
-        # please note that the scanner name passed in CLI must match the
-        # corresponding key in this dictionary
-        long_running_scanner_factory = {
-            'external_project_access_scanner': (
-                external_project_access_scanner.ExternalProjectAccessScanner,
-                'external_project_access_rules.yaml')
-        }
-        if self.scanner_name in long_running_scanner_factory:
-            scanner = self._instantiate_scanner(
-                long_running_scanner_factory[self.scanner_name][0],
-                long_running_scanner_factory[self.scanner_name][1],
-            )
-            runnable_scanners.append(scanner)
+        if self.scanner_name:
+            scanner = self._instantiate_scanner(self.scanner_name[:-8])
+            if scanner:
+                runnable_scanners.append(scanner)
         else:
             for scanner in self.scanner_configs.get('scanners'):
                 if scanner.get('enabled'):
-                    module_path = 'google.cloud.forseti.scanner.scanners.{}'
-
-                    requirements_map = scanner_requirements_map.REQUIREMENTS_MAP
-                    if not scanner.get('name') in requirements_map:
-                        log_message = (
-                            'Configured scanner is undefined '
-                            'in scanner requirements map : %s')
-                        LOGGER.error(log_message, scanner.get('name'))
-                        continue
-
-                    module_name = module_path.format(
-                        scanner_requirements_map.REQUIREMENTS_MAP
-                        .get(scanner.get('name'))
-                        .get('module_name'))
-
-                    try:
-                        module = importlib.import_module(module_name)
-                    except (ImportError, TypeError, ValueError):
-                        LOGGER.exception('Unable to import %s\n', module_name)
-                        continue
-
-                    class_name = (
-                        scanner_requirements_map.REQUIREMENTS_MAP
-                        .get(scanner.get('name'))
-                        .get('class_name'))
-                    try:
-                        scanner_class = getattr(module, class_name)
-                    except AttributeError:
-                        LOGGER.exception('Unable to instantiate %s', class_name)
-                        continue
-
-                    rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
-                                      .get(scanner.get('name'))
-                                      .get('rules_filename'))
-                    scanner = self._instantiate_scanner(
-                        scanner_class,
-                        rules_filename)
-                    runnable_scanners.append(scanner)
+                    scanner = self._instantiate_scanner(scanner.get('name'))
+                    if scanner:
+                        runnable_scanners.append(scanner)
 
         return runnable_scanners
 
-    def _instantiate_scanner(self, scanner_class, rules_filename):
-        """Make individual scanners.
-
+    def _instantiate_scanner(self, scanner_name):
+        """Make individual scanners based on the scanner name.
         Args:
-            scanner_class (class): the individual scanner class
-            rules_filename (str): file name of the scanner rule file
-
+            scanner_name (str): the name of the scanner as
+            in the requirements_map
         Returns:
-            scanner: the individual scanner instance
+            scanner (object): the individual scanner instance
         """
+
+        module_path = 'google.cloud.forseti.scanner.scanners.{}'
+
+        requirements_map = scanner_requirements_map.REQUIREMENTS_MAP
+        if scanner_name not in requirements_map:
+            log_message = (
+                'Configured scanner is undefined '
+                'in scanner requirements map : %s')
+            LOGGER.error(log_message, scanner_name)
+            return None
+
+        LOGGER.info(scanner_requirements_map.REQUIREMENTS_MAP.get(scanner_name))
+
+        module_name = module_path.format(
+            scanner_requirements_map.REQUIREMENTS_MAP
+                .get(scanner_name)
+                .get('module_name'))
+
+        try:
+            module = importlib.import_module(module_name)
+        except (ImportError, TypeError, ValueError):
+            LOGGER.exception('Unable to import %s\n', module_name)
+            return None
+
+        class_name = (
+            scanner_requirements_map.REQUIREMENTS_MAP
+                .get(scanner_name)
+                .get('class_name'))
+        try:
+            scanner_class = getattr(module, class_name)
+        except AttributeError:
+            LOGGER.exception('Unable to instantiate %s', class_name)
+            return None
+
+        rules_filename = (scanner_requirements_map.REQUIREMENTS_MAP
+                          .get(scanner_name)
+                          .get('rules_filename'))
+
         rules_path = self.scanner_configs.get('rules_path')
         if rules_path is None:
             scanner_path = inspect.getfile(scanner_class)
