@@ -15,7 +15,6 @@
 """Scanner for Enabled APIs."""
 
 import json
-import sys
 
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.util import logger
@@ -114,6 +113,9 @@ class EnabledApisScanner(base_scanner.BaseScanner):
 
         Returns:
             list: List of projects' enabled API data.
+
+        Raises:
+            NoDataError: If no enabled APIs are found.
         """
         model_manager = self.service_config.model_manager
         scoped_session, data_access = model_manager.get(self.model_name)
@@ -134,8 +136,8 @@ class EnabledApisScanner(base_scanner.BaseScanner):
                          enabled_apis))
 
         if not enabled_apis_data:
-            LOGGER.warn('No Enabled APIs found. Exiting.')
-            sys.exit(1)
+            LOGGER.warn('No Enabled APIs found.')
+            return []
 
         return enabled_apis_data
 

@@ -648,9 +648,21 @@ class CaiTemporaryStore(object):
         if asset_pb.resource.parent:
             return asset_pb.resource.parent
 
-        if (asset_pb.asset_type.startswith('google.appengine') or
-                asset_pb.asset_type.startswith('google.bigquery') or
-                asset_pb.asset_type.startswith('google.spanner')):
+        if asset_pb.asset_type == 'google.cloud.kms.KeyRing':
+            # KMS KeyRings are parented by a location under a project, but
+            # the location is not directly discoverable without iterating all
+            # locations, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all keyrings
+            # in all locations to fix this broken behavior.
+            #
+            # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
+            # parent project.
+            return '/'.join(asset_pb.name.split('/')[:-4])
+
+        elif (asset_pb.asset_type.startswith('google.appengine') or
+              asset_pb.asset_type.startswith('google.bigquery') or
+              asset_pb.asset_type.startswith('google.spanner') or
+              asset_pb.asset_type.startswith('google.cloud.kms')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 

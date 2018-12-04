@@ -545,7 +545,8 @@ notifier:
         # organization and must be generated via a self-registration process.
         # If source_id is used, then it will activate the Beta API,
         # and the Beta API will take precedence over the Alpha API.
-        source_id: organizations/ORG_ID/sources/SOURCE_ID
+        # The format is: organizations/ORG_ID/sources/SOURCE_ID
+        source_id:
 
     inventory:
       gcs_summary:
