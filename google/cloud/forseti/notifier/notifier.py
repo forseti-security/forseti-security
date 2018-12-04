@@ -100,9 +100,9 @@ def run(inventory_index_id,
     with service_config.scoped_session() as session:
         if scanner_index_id:
             inventory_index_id = (
-                DataAccess.get_inventory_id_by_scan_id(
-                    session, scanner_index_id))
-
+                DataAccess.get_inventory_index_id_by_scanner_index_id(
+                    session,
+                    scanner_index_id))
         else:
             if not inventory_index_id:
                 inventory_index_id = (
