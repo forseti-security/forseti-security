@@ -521,15 +521,15 @@ notifier:
             # Email violations
             - name: email_violations
               configuration:
-                sendgrid_api_key: "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"
-                sender: "angelsun@google.com"
-                recipient: "angel@henrychang.mygbiz.com"
+                sendgrid_api_key: {SENDGRID_API_KEY}
+                sender: {EMAIL_SENDER}
+                recipient: {EMAIL_RECIPIENT}
             # Upload violations to GCS.
             - name: gcs_violations
               configuration:
                 data_format: csv
                 # gcs_path should begin with "gs://"
-                gcs_path: gs://forseti-server-1fab4d4/scanner_violations
+                gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
 
     violation:
