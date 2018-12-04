@@ -55,6 +55,8 @@ class ScannerBuilder(object):
         """
         runnable_scanners = []
         if self.scanner_name:
+            # remove the _scanner from scanner name so that it matches the key
+            # in requirements map
             scanner = self._instantiate_scanner(self.scanner_name[:-8])
             if scanner:
                 runnable_scanners.append(scanner)
