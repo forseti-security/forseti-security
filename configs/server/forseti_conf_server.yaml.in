@@ -515,6 +515,22 @@ notifier:
                 # gcs_path should begin with "gs://"
                 gcs_path: gs://{FORSETI_BUCKET}/scanner_violations
 
+        - resource: external_project_access_violations
+          should_notify: true
+          notifiers:
+            # Email violations
+            - name: email_violations
+              configuration:
+                sendgrid_api_key: "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"
+                sender: "angelsun@google.com"
+                recipient: "angel@henrychang.mygbiz.com"
+            # Upload violations to GCS.
+            - name: gcs_violations
+              configuration:
+                data_format: csv
+                # gcs_path should begin with "gs://"
+                gcs_path: gs://forseti-server-1fab4d4/scanner_violations
+
 
     violation:
       cscc:
