@@ -28,6 +28,8 @@
 BUCKET=$1
 
 # Download config files
+# -DD optional gsutil debugging
+# TODO switch debugging on/off via env var
 gsutil -DD cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
 gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
 
@@ -35,6 +37,7 @@ gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
 
 # Start Forseti server
 # This requires the cloud sql proxy (side car) container is running on 127.0.0.1:3306
+# TODO switch debugging on/off via env var
 forseti_server \
 --endpoint "localhost:50051" \
 --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
