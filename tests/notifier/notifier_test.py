@@ -66,7 +66,7 @@ class NotifierTest(ForsetiTestCase):
         mock_service_cfg = mock.MagicMock()
         mock_service_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
         mock_service_cfg.get_notifier_config.return_value = fake_violations.NOTIFIER_CONFIGS
-        notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
+        notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
         self.assertFalse(mock_find_notifiers.called)
 
     @mock.patch(
@@ -101,7 +101,7 @@ class NotifierTest(ForsetiTestCase):
         mock_gcs_violations = mock.MagicMock(spec=gcs_violations.GcsViolations)
         mock_gcs_violations_cls.return_value = mock_gcs_violations
         mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
-        notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
+        notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
 
         # The notifiers were only run once i.e. for 'policy_violations'
         self.assertTrue(mock_find_notifiers.called)
@@ -152,7 +152,7 @@ class NotifierTest(ForsetiTestCase):
         mock_gcs_violations = mock.MagicMock(spec=gcs_violations.GcsViolations)
         mock_gcs_violations_cls.return_value = mock_gcs_violations
         mock_find_notifiers.side_effect = [mock_email_violations_cls, mock_gcs_violations_cls]
-        notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
+        notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
 
         self.assertFalse(mock_find_notifiers.called)
         self.assertFalse(mock_dao.map_by_resource.called)
@@ -182,7 +182,7 @@ class NotifierTest(ForsetiTestCase):
         mock_service_cfg = mock.MagicMock()
         mock_service_cfg.get_global_config.return_value = fake_violations.GLOBAL_CONFIGS
         mock_service_cfg.get_notifier_config.return_value = fake_violations.NOTIFIER_CONFIGS
-        notifier.run('iid-1-2-3', mock.MagicMock(), mock_service_cfg)
+        notifier.run('iid-1-2-3', None, mock.MagicMock(), mock_service_cfg)
         self.assertFalse(mock_find_notifiers.called)
         self.assertTrue(mock_inventor_summary.called)
 

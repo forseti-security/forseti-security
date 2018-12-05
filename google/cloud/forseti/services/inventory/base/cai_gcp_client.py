@@ -20,6 +20,7 @@ import threading
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.services import db
 from google.cloud.forseti.services.inventory.base import gcp
+from google.cloud.forseti.services.inventory.base import iam_helpers
 from google.cloud.forseti.services.inventory.storage import CaiDataAccess
 from google.cloud.forseti.services.inventory.storage import ContentTypes
 
@@ -70,69 +71,6 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
     return fixed_resource
 
 
-def _convert_iam_to_bigquery_policy(iam_policy):
-    """Converts an IAM policy to a bigquery Access Policy.
-
-    The is used for backwards compatibility between data returned from live
-    API and the data stored in CAI. Once the live API returns IAM policies
-    instead, this can be deprecated.
-
-    Args:
-        iam_policy (dict): The BigQuery dataset IAM policy.
-
-    Returns:
-        list: A list of access policies.
-
-        An example return value:
-
-            [
-                {'role': 'WRITER', 'specialGroup': 'projectWriters'},
-                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-                {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
-                {'role': 'READER', 'specialGroup': 'projectReaders'}
-            ]
-    """
-    # Map of iam policy roles to bigquery access policy roles.
-    iam_to_access_policy_role_map = {
-        'roles/bigquery.dataEditor': 'WRITER',
-        'roles/bigquery.dataOwner': 'OWNER',
-        'roles/bigquery.dataViewer': 'READER'
-    }
-    # Map iam policy member type to bigquery access policy member type.
-    # The value of the map is a tuple of access policy member type and access
-    # policy member value pairs. If the member value is None, then the value
-    # from the IAM policy binding is used.
-    iam_to_access_policy_member_map = {
-        'allAuthenticatedUsers': ('specialGroup', 'allAuthenticatedUsers'),
-        'projectEditor': ('specialGroup', 'projectWriters'),
-        'projectOwner': ('specialGroup', 'projectOwners'),
-        'projectViewer': ('specialGroup', 'projectReaders'),
-        'domain': ('domain', None),
-        'group': ('groupByEmail', None),
-        'user': ('userByEmail', None),
-    }
-
-    access_policies = []
-    for binding in iam_policy.get('bindings', []):
-        if binding.get('role', '') in iam_to_access_policy_role_map:
-            role = iam_to_access_policy_role_map[binding['role']]
-            for member in binding.get('members', []):
-                # The 'allAuthenticatedUsers' member does not contain ':' so it
-                # needs to be handled seperately.
-                if ':' in member:
-                    member_type, member_value = member.split(':', 1)
-                else:
-                    member_type = member
-                    member_value = None
-                if member_type in iam_to_access_policy_member_map:
-                    new_type, new_value = (
-                        iam_to_access_policy_member_map[member_type])
-                    if not new_value:
-                        new_value = member_value
-                    access_policies.append({'role': role, new_type: new_value})
-    return access_policies
-
-
 # pylint: disable=too-many-public-methods
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
@@ -171,6 +109,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
+    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+        """Gets IAM policy of a bigquery dataset from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+
+        Returns:
+            dict: Dataset IAM Policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.bigquery.Dataset',
+            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+                project_number, dataset_id),
+            self.session)
+        if resource:
+            return resource
+        return {}
+
     def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
         """Dataset policy Iterator for a dataset from Cloud Asset data.
 
@@ -188,7 +146,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number, dataset_id),
             self.session)
         if resource:
-            return _convert_iam_to_bigquery_policy(resource)
+            return iam_helpers.convert_iam_to_bigquery_policy(resource)
         # Fall back to live API if the data isn't in the CAI cache.
         return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
             project_number, dataset_id)
@@ -351,7 +309,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield _fixup_resource_keys(rule, cai_to_gcp_key_map)
 
     def iter_compute_forwardingrules(self, project_number):
-        """Iterate Forwarding Rules from GCP API.
+        """Iterate Forwarding Rules from Cloud Asset data.
 
         Args:
             project_number (str): number of the project to query.
@@ -732,6 +690,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             yield _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
                                        only_fixup_lists=True)
 
+    def iter_container_clusters(self, project_number):
+        """Iterate Kubernetes Engine Cluster from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Kubernetes Engine Cluster resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.container.Cluster',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for cluster in resources:
+            yield cluster
+
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.
 
@@ -1060,6 +1036,106 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for serviceaccount in resources:
             yield serviceaccount
 
+    def fetch_kms_cryptokey_iam_policy(self, cryptokey):
+        """Fetch KMS Cryptokey IAM Policy from Cloud Asset data.
+
+        Args:
+            cryptokey (str): The KMS cryptokey to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Returns:
+            dict: KMS Cryptokey IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.kms.CryptoKey',
+            '//cloudkms.googleapis.com/{}'.format(cryptokey),
+            self.session)
+        if resource:
+            return resource
+
+        # Cryptokeys with no IAM policy return an empty dict.
+        return {}
+
+    def fetch_kms_keyring_iam_policy(self, keyring):
+        """Fetch KMS Keyring IAM Policy from Cloud Asset data.
+
+        Args:
+            keyring (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Returns:
+            dict: KMS Keyring IAM policy
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.cloud.kms.KeyRing',
+            '//cloudkms.googleapis.com/{}'.format(keyring),
+            self.session)
+        if resource:
+            return resource
+
+        # Keyrings with no IAM policy return an empty dict.
+        return {}
+
+    def iter_kms_cryptokeys(self, parent):
+        """Iterate KMS Cryptokeys in a keyring from Cloud Asset data.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Yields:
+            dict: Generator of KMS Cryptokey resources
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.kms.CryptoKey',
+            '//cloudkms.googleapis.com/{}'.format(parent),
+            self.session)
+        for cryptokey in resources:
+            yield cryptokey
+
+    def iter_kms_cryptokeyversions(self, parent):
+        """Iterate KMS Cryptokey Versions from Cloud Asset data.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Yields:
+            dict: Generator of KMS Cryptokeyversion resources
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.kms.CryptoKeyVersion',
+            '//cloudkms.googleapis.com/{}'.format(parent),
+            self.session)
+        for cryptokeyversion in resources:
+            yield cryptokeyversion
+
+    def iter_kms_keyrings(self, project_id, location=None):
+        """Iterate KMS Keyrings in a project from Cloud Asset data.
+
+        Args:
+            project_id (str): id of the project to query.
+            location (str): The location to query. Not required when
+                using Cloud Asset API.
+
+        Yields:
+            dict: Generator of KMS Keyring resources
+        """
+        del location  # Used by API not CAI.
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.kms.KeyRing',
+            '//cloudkms.googleapis.com/projects/{}'.format(project_id),
+            self.session)
+        for keyring in resources:
+            yield keyring
+
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from Cloud Asset data.
 
@@ -1136,6 +1212,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for spanner_database in resources:
             yield spanner_database
 
+    def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
+        """Bucket Access Controls from GCP API.
+
+        Args:
+            bucket_id (str): id of the bucket to query.
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Returns:
+            list: Bucket Access Controls.
+        """
+        iam_policy = self.fetch_storage_bucket_iam_policy(bucket_id)
+        if iam_policy:
+            return iam_helpers.convert_iam_to_bucket_acls(iam_policy,
+                                                          bucket_id,
+                                                          project_id,
+                                                          project_number)
+        # Return empty list if IAM policy isn't present.
+        return []
+
     def fetch_storage_bucket_iam_policy(self, bucket_id):
         """Bucket IAM policy Iterator from Cloud Asset data.
 
@@ -1156,5 +1252,20 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         return super(CaiApiClientImpl, self).fetch_storage_bucket_iam_policy(
             bucket_id)
 
-    # Use live API because CAI does not yet have bucket ACLs.
-    # def iter_storage_buckets(self, project_number):
+    def iter_storage_buckets(self, project_number):
+        """Iterate Buckets from GCP API.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of buckets.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.storage.Bucket',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for bucket in resources:
+            yield bucket

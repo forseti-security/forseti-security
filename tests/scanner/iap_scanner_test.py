@@ -27,6 +27,7 @@ from google.cloud.forseti.common.gcp_type import instance as instance_type
 from google.cloud.forseti.common.gcp_type import instance_group as instance_group_type
 from google.cloud.forseti.common.gcp_type import instance_group_manager as instance_group_manager_type
 from google.cloud.forseti.common.gcp_type import instance_template as instance_template_type
+from google.cloud.forseti.common.gcp_type import project as project_type
 from google.cloud.forseti.common.gcp_type import network as network_type
 from google.cloud.forseti.scanner.scanners import base_scanner
 from google.cloud.forseti.scanner.scanners import iap_scanner
@@ -243,20 +244,35 @@ FIREWALL_RULES = {
             }]),
         ),
 }
+PROJECTS = {
+    'foo': project_type.Project(project_id='foo'),
+}
 INSTANCES = {
     'i1':
         instance_type.Instance(
-            project_id='foo',
+            'i1',
+            parent=PROJECTS['foo'],
             name='i1',
             tags={'items': ['tag_i1']},
-            zone='wl-redqueen1-a',
+            locations=['wl-redqueen1-a'],
+            data = ("""{
+    "name": "i2",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/foo/zones/wl-redqueen1-a/instances/i1",
+    "tags": {"items": ["tag_i1"]}
+}""")
         ),
     'i2':
         instance_type.Instance(
-            project_id='foo',
+            'i2',
+            parent=PROJECTS['foo'],
             name='i2',
             tags=[],
-            zone='wl-redqueen1-a',
+            locations=['wl-redqueen1-a'],
+            data = ("""{
+    "name": "i2",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/foo/zones/wl-redqueen1-a/instances/i2",
+    "tags": {}
+}""")
         ),
 }
 INSTANCE_GROUPS = {

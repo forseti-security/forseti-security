@@ -50,6 +50,15 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+        """Gets IAM policy of a bigquery dataset from gcp API call.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+        """
+
+    @abc.abstractmethod
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from GCP API.
 
@@ -582,6 +591,54 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_kms_cryptokey_iam_policy(self, cryptokey):
+        """Fetch KMS Cryptokey IAM Policy from GCP API.
+
+        Args:
+            cryptokey (str): The KMS cryptokey to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+        """
+
+    @abc.abstractmethod
+    def fetch_kms_keyring_iam_policy(self, keyring):
+        """Fetch KMS Keyring IAM Policy from GCP API.
+
+        Args:
+            keyring (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_kms_cryptokeys(self, parent):
+        """Iterate KMS Cryptokeys in a keyring from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_kms_cryptokeyversions(self, parent):
+        """Iterate KMS Cryptokey Versions from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+        """
+
+    @abc.abstractmethod
+    def iter_kms_keyrings(self, project_id, location=None):
+        """Iterate KMS Keyrings in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            location (str): The location to query. Not required when
+                using Cloud Asset API.
+        """
+
+    @abc.abstractmethod
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from gcp API call.
 
@@ -652,6 +709,16 @@ class ApiClient(object):
         """Iterate Project logging sinks from GCP API.
 
         Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
+        """Bucket Access Controls from GCP API.
+
+        Args:
+            bucket_id (str): id of the bucket to query.
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
         """
 
@@ -727,6 +794,19 @@ def create_lazy(attribute, factory):
     return f_wrapper
 
 
+def is_api_disabled(config, api_name):
+    """Check if api_name is disabled in the config.
+
+    Args:
+        config (dict): GCP API client configuration.
+        api_name (str): The name of the GCP api to check.
+
+    Returns:
+        bool: True if the API is disabled in the configuration, else False.
+    """
+    return config.get(api_name, {}).get('disable_polling', False)
+
+
 class ApiClientImpl(ApiClient):
     """The gcp api client Implementation"""
 
@@ -756,7 +836,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, admin_directory.API_NAME):
+            raise ResourceNotSupported('Admin API disabled by server '
+                                       'configuration.')
         return admin_directory.AdminDirectoryClient(self.config)
 
     def _create_appengine(self):
@@ -764,7 +851,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, appengine.API_NAME):
+            raise ResourceNotSupported('AppEngine API disabled by server '
+                                       'configuration.')
         return appengine.AppEngineClient(self.config)
 
     def _create_bq(self):
@@ -772,7 +866,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, bigquery.API_NAME):
+            raise ResourceNotSupported('Bigquery API disabled by server '
+                                       'configuration.')
         return bigquery.BigQueryClient(self.config)
 
     def _create_crm(self):
@@ -780,7 +881,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, cloud_resource_manager.API_NAME):
+            raise ResourceNotSupported('Resource Manager API disabled by '
+                                       'server configuration.')
         return cloud_resource_manager.CloudResourceManagerClient(self.config)
 
     def _create_cloudbilling(self):
@@ -788,7 +896,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, cloudbilling.API_NAME):
+            raise ResourceNotSupported('Cloud Billing API disabled by server '
+                                       'configuration.')
         return cloudbilling.CloudBillingClient(self.config)
 
     def _create_cloudsql(self):
@@ -796,7 +911,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, cloudsql.API_NAME):
+            raise ResourceNotSupported('CloudSQL Admin API disabled by server '
+                                       'configuration.')
         return cloudsql.CloudsqlClient(self.config)
 
     def _create_compute(self):
@@ -804,7 +926,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, compute.API_NAME):
+            raise ResourceNotSupported('Compute Engine API disabled by server '
+                                       'configuration.')
         return compute.ComputeClient(self.config)
 
     def _create_container(self):
@@ -812,7 +941,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, container.API_NAME):
+            raise ResourceNotSupported('Kubernetes Engine API disabled by '
+                                       'server configuration.')
         return container.ContainerClient(self.config)
 
     def _create_iam(self):
@@ -820,7 +956,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, iam.API_NAME):
+            raise ResourceNotSupported('IAM API disabled by server '
+                                       'configuration.')
         return iam.IAMClient(self.config)
 
     def _create_servicemanagement(self):
@@ -828,7 +971,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, servicemanagement.API_NAME):
+            raise ResourceNotSupported('Service Management API disabled by '
+                                       'server configuration.')
         return servicemanagement.ServiceManagementClient(self.config)
 
     def _create_stackdriver_logging(self):
@@ -836,7 +986,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, stackdriver_logging.API_NAME):
+            raise ResourceNotSupported('Stackdriver Logging API disabled by '
+                                       'server configuration.')
         return stackdriver_logging.StackdriverLoggingClient(self.config)
 
     def _create_storage(self):
@@ -844,7 +1001,14 @@ class ApiClientImpl(ApiClient):
 
         Returns:
             object: Client.
+
+        Raises:
+            ResourceNotSupported: Raised if polling is disabled for this API in
+                the GCP API client configuration.
         """
+        if is_api_disabled(self.config, storage.API_NAME):
+            raise ResourceNotSupported('Storage API disabled by server '
+                                       'configuration.')
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
@@ -859,6 +1023,19 @@ class ApiClientImpl(ApiClient):
             dict: Dataset Policy.
         """
         return self.bigquery.get_dataset_access(project_number, dataset_id)
+
+    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+        """Gets IAM policy of a bigquery dataset from gcp API call.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Bigquery Dataset IAM policy is not '
+                                   'supported by this API client')
 
     @create_lazy('bigquery', _create_bq)
     def iter_bigquery_datasets(self, project_number):
@@ -1710,6 +1887,74 @@ class ApiClientImpl(ApiClient):
         for serviceaccount in self.iam.get_service_accounts(project_id):
             yield serviceaccount
 
+    def fetch_kms_cryptokey_iam_policy(self, cryptokey):
+        """Fetch KMS Cryptokey IAM Policy from GCP API.
+
+        Args:
+            cryptokey (str): The KMS cryptokey to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def fetch_kms_keyring_iam_policy(self, keyring):
+        """Fetch KMS Keyring IAM Policy from GCP API.
+
+        Args:
+            keyring (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def iter_kms_cryptokeys(self, parent):
+        """Iterate KMS Cryptokeys in a keyring from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def iter_kms_cryptokeyversions(self, parent):
+        """Iterate KMS Cryptokey Versions from GCP API.
+
+        Args:
+            parent (str): The KMS keyring to query, must be in the format
+                projects/{PROJECT_ID}/locations/{LOCATION}/keyRings/{RING_NAME}/
+                cryptoKeys/{CRYPTOKEY_NAME}
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
+    def iter_kms_keyrings(self, project_id, location=None):
+        """Iterate KMS Keyrings in a project from GCP API.
+
+        Args:
+            project_id (str): id of the project to query.
+            location (str): The location to query. Not required when
+                using Cloud Asset API.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Key Management Service is not supported by '
+                                   'this API client')
+
     def fetch_pubsub_topic_iam_policy(self, name):
         """PubSub Topic IAM policy from gcp API call.
 
@@ -1823,6 +2068,21 @@ class ApiClientImpl(ApiClient):
         """
         for sink in self.stackdriver_logging.get_project_sinks(project_number):
             yield sink
+
+    @create_lazy('storage', _create_storage)
+    def fetch_storage_bucket_acls(self, bucket_id, project_id, project_number):
+        """Bucket Access Controls from GCP API.
+
+        Args:
+            bucket_id (str): id of the bucket to query.
+            project_id (str): id of the project to query.
+            project_number (str): number of the project to query.
+
+        Returns:
+            list: Bucket Access Controls.
+        """
+        del project_id, project_number
+        return self.storage.get_bucket_acls(bucket_id)
 
     @create_lazy('storage', _create_storage)
     def fetch_storage_bucket_iam_policy(self, bucket_id):

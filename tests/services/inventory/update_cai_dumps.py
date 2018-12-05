@@ -170,8 +170,8 @@ def bucket(item):
         parent['projectNumber'])
     data = item.data()
     # CAI does not include acl data.
-    data['acl'] = []
-    data['defaultObjectAcl'] = []
+    data.pop('acl')
+    data.pop('defaultObjectAcl')
     return _create_asset(name, asset_type, parent_name, data,
                          item.get_iam_policy())
 
@@ -202,6 +202,18 @@ def serviceaccount(item):
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
+
+
+def kubernetes_cluster(item):
+    parent = item.parent()
+    name = ('//container.googleapis.com/v1/projects/{}/locations/{}/'
+            'clusters/{}'.format(parent['projectId'],
+                                 item['zone'],
+                                 item['name']))
+    asset_type = 'google.container.Cluster'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
 def _create_compute_asset(item, asset_type):
@@ -281,6 +293,7 @@ CAI_TYPE_MAP = {
     'instancegroup': instancegroup,
     'instancegroupmanager': instancegroupmanager,
     'instancetemplate': instancetemplate,
+    'kubernetes_cluster': kubernetes_cluster,
     'network': network,
     'role': role,
     'serviceaccount': serviceaccount,
