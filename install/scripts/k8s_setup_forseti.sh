@@ -3,6 +3,7 @@
 # kubernetes example deployment script for Proof of Concept purposes
 
 # Create Cluster
+	# TODO set as needed
 	CLUSTER=forseti
 	ZONE=us-central1-c
 	MACHINE=n1-standard-2
@@ -16,6 +17,7 @@
 	# Set default cluster for gcloud / kubectl
 	gcloud config set container/cluster ${CLUSTER}
 
+	# TODO set credentials variable
 	CREDENTIALS=<path>/<keyfilename>.json
 	kubectl create secret generic credentials --from-file=key.json=${CREDENTIALS}
 
@@ -35,4 +37,3 @@
 	envsubst < forseti.template.yaml > forseti.yaml
 
 	kubectl apply -f forseti.yaml
-
