@@ -51,7 +51,7 @@ steps below:
       git clone https://github.com/GoogleCloudPlatform/forseti-security.git
       ```
 
-  1. Check out the specific version of Forseti you want to install by using a tag like `v2.0.0.`:
+  1. Check out the specific version of Forseti you want to install by using a tag like `v2.8.0.`:
 
       ```bash
       # Make sure you are in the forseti-security folder.
@@ -60,7 +60,7 @@ steps below:
       # If the tag exists in the remote repository but you are unable to checkout the tag,
       # run command `git fetch --all` to fetch all the latest branch/tag information and run
       # the checkout command again.
-      git checkout tags/v<version_number>
+      git checkout tags/v2.8.0
       ```
 
   1. Install both client and server by running the installer:
@@ -105,11 +105,11 @@ steps below:
      your Cloud Storage bucket:
 
      ```bash
-       MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
-       forseti inventory create --import_as ${MODEL_ID}
-       forseti model use ${MODEL_ID}
-       forseti scanner run
-       forseti notifier run
+     MODEL_ID=$(/bin/date -u +%Y%m%dT%H%M%S)
+     forseti inventory create --import_as ${MODEL_ID}
+     forseti model use ${MODEL_ID}
+     forseti scanner run
+     forseti notifier run
      ```
 
 ## What's next
