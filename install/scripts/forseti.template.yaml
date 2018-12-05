@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forseti
+  labels:
+    app: forseti
+spec:
+  selector:
+    matchLabels:
+      app: forseti
+  template:
+    metadata:
+      labels:
+        app: forseti
+    spec:
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: credentials
+      containers:
+        - name: forseti
+          image: ${FORSETI_IMAGE}
+          command: ["/forseti-security/install/scripts/docker_entrypoint.sh", "${BUCKET}" ]
+          securityContext:
+            runAsUser: 0  # root user
+            allowPrivilegeEscalation: true
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          command: ["/cloud_sql_proxy", "${CLOUD_SQL_CONNECTION}", "-credential_file=/var/secrets/google/key.json"]
+          securityContext:
+            runAsUser: 2  # non-root user
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+              readOnly: true
