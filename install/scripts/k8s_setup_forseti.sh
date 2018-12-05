@@ -29,7 +29,7 @@
 	export BUCKET=gs://<bucketname>
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
 
-	# Create a deployment file 'forseti.yaml' from the template 'forseti.yaml.template'
+	# Create a deployment file 'forseti.yaml' from the template 'forseti.template.yaml'
 	# with variables substituted into the yaml
 	# We do this because kubectl apply doesnt support environment variable substitution
 	envsubst < forseti.template.yaml > forseti.yaml
