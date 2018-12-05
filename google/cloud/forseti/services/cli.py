@@ -304,9 +304,17 @@ def define_scanner_parser(parent):
         title='action',
         dest='action')
 
-    action_subparser.add_parser(
+    run_scanner_parser = action_subparser.add_parser(
         'run',
         help='Run the scanner')
+
+    run_scanner_parser.add_argument(
+        '--scanner',
+        choices=['external_project_access_scanner'],
+        help='Run a specific scanner, '
+             'currently only applicable for '
+             'the external project access scanner'
+    )
 
 
 def define_notifier_parser(parent):
@@ -331,6 +339,14 @@ def define_notifier_parser(parent):
         default=0,
         help=('Id of the inventory index to send violation notifications. '
               'If this is not specified, then the last inventory index id '
+              'will be used.')
+    )
+
+    create_notifier_parser.add_argument(
+        '--scanner_index_id',
+        default=0,
+        help=('Id of the scanner index to send violation notifications. '
+              'If this is not specified, then the last scanner index id '
               'will be used.')
     )
 
@@ -671,10 +687,11 @@ def run_scanner(client, config, output, _):
     """
 
     client = client.scanner
+    scanner_name = config.scanner
 
     def do_run():
         """Run a scanner."""
-        for progress in client.run():
+        for progress in client.run(scanner_name):
             output.write(progress)
 
     actions = {
@@ -738,7 +755,9 @@ def run_notifier(client, config, output, _):
 
     def do_run():
         """Run the notifier."""
-        for progress in client.run(int(config.inventory_index_id)):
+        for progress in client.run(
+                int(config.inventory_index_id),
+                int(config.scanner_index_id)):
             output.write(progress)
 
     actions = {

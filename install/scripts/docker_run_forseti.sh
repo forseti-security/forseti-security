@@ -23,7 +23,7 @@ if [ -x "$(command -v docker)" ]; then
         # We are on Travis.
         # Required for codecov.io to export coverage within a Docker container.
         echo "We're on Travis, setting our CI_ENV... "
-        CI_ENV=`bash <(curl -s https://codecov.io/env)`
+        CI_ENV=`bash <(curl -s https://codecov.io/env) || echo ''`
         # Start the container for testing and code verification.
         echo "Starting our container for testing and code verification... "
         docker run ${CI_ENV} -it -d --name build forseti/build /bin/bash

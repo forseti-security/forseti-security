@@ -19,6 +19,11 @@
       # Must use quotes if the condition starts with @ symbol.
     - member_email: "@{DOMAIN}"
     - member_email: "@gmail.com"
+    # GCP Service Accounts
+    # https://cloud.google.com/compute/docs/access/service-accounts
+    #- member_email: "gserviceaccount.com"
+    # Big Query Transfer Service
+    #- member_email: "@bqdts.google.baggins"
 
 #- name: Allow mypartner users to be in a group.
 #  group_email: <FOO_GROUP>@<MY_COMPANY DOMAIN>
