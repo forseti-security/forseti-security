@@ -35,10 +35,75 @@ def _split_member(member):
     return (member, None)
 
 
+def convert_bigquery_policy_to_iam(access_policy, project_id):
+    """Convert a bigquery Access Policy to IAM policy.
+
+    This is used to enable IAM explain for legacy bigquery policies.
+
+    Args:
+        access_policy (list): A list of bigquery access policies.
+        project_id (str): The project id for the project the dataset is under.
+
+    Returns:
+        dict: An iam policy object.
+    """
+    if not access_policy:
+        return {}
+
+    # Map of iam policy roles to bigquery access policy roles.
+    access_policy_to_iam_role_map = {
+        'WRITER': 'roles/bigquery.dataEditor',
+        'OWNER': 'roles/bigquery.dataOwner',
+        'READER': 'roles/bigquery.dataViewer',
+    }
+    # Map iam policy member type to bigquery access policy member type.
+    special_group_to_iam_member_map = {
+        'allAuthenticatedUsers': 'allAuthenticatedUsers',
+        'projectWriters': 'projectEditor',
+        'projectOwners': 'projectOwner',
+        'projectReaders': 'projectViewer',
+    }
+
+    iam_policy = {'bindings': []}
+    roles = {}
+    for policy in access_policy:
+        if policy['role'] not in access_policy_to_iam_role_map:
+            LOGGER.warn('unknown role in access policy %s under project %s',
+                        policy, project_id)
+            continue
+        iam_role = access_policy_to_iam_role_map[policy['role']]
+
+        if 'userByEmail' in policy:
+            member = policy['userByEmail']
+            if member.endswith('gserviceaccount.com'):
+                member = 'serviceAccount:{}'.format(member)
+            else:
+                member = 'user:{}'.format(member)
+        elif 'groupByEmail' in policy:
+            member = 'group:{}'.format(policy['groupByEmail'])
+        elif 'domain' in policy:
+            member = 'domain:{}'.format(policy['domain'])
+        elif 'specialGroup' in policy:
+            member = policy['specialGroup']
+            if member not in special_group_to_iam_member_map:
+                LOGGER.warn('unknown special group type %s in access policy %s '
+                            'under project %s', member, policy, project_id)
+                continue
+            member = special_group_to_iam_member_map[member]
+            if member.startswith('project'):
+                member = '{}:{}'.format(member, project_id)
+
+        roles.setdefault(iam_role, set()).add(member)
+
+    for role, members in roles.items():
+        iam_policy['bindings'].append({'role': role, 'members': list(members)})
+    return iam_policy
+
+
 def convert_iam_to_bigquery_policy(iam_policy):
     """Converts an IAM policy to a bigquery Access Policy.
 
-    The is used for backwards compatibility between data returned from live
+    This is used for backwards compatibility between data returned from live
     API and the data stored in CAI. Once the live API returns IAM policies
     instead, this can be deprecated.
 
@@ -75,6 +140,7 @@ def convert_iam_to_bigquery_policy(iam_policy):
         'domain': ('domain', None),
         'group': ('groupByEmail', None),
         'user': ('userByEmail', None),
+        'serviceAccount': ('userByEmail', None),
     }
 
     access_policies = []

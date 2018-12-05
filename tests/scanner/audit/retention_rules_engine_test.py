@@ -549,9 +549,9 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        d = datetime.today() - timedelta(days=89)
+        d = datetime.today() - timedelta(days=88)
         dstr = d.strftime('%Y-%m-%d')
-        data_creater.AddLifecycleDict(action="Delete", age=89, created_before=dstr)
+        data_creater.AddLifecycleDict(action="Delete", age=88, created_before=dstr)
 
         fake_bucket = data_creater.get_resource()
         got_violations = list(rules_engine.find_violations(fake_bucket))
@@ -646,7 +646,7 @@ rules:
         self.assertEqual(1, len(rules_engine.rule_book.resource_rules_map))
 
         data_creater = frsd.FakeBucketDataCreater('fake_bucket', frsd.PROJECT1)
-        d = datetime.today() - timedelta(days=89)
+        d = datetime.today() - timedelta(days=88)
         dstr = d.strftime('%Y-%m-%d')
         data_creater.AddLifecycleDict(action="Delete", created_before=dstr)
 
