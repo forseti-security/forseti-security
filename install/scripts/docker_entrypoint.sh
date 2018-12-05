@@ -28,8 +28,8 @@
 BUCKET=$1
 
 # Download config files
-gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-gsutil cp -r ${BUCKET}/rules /forseti-security/
+gsutil -DD cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
 
 # TODO Error handling for gsutil cp
 
@@ -40,5 +40,5 @@ forseti_server \
 --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
 --services scanner model inventory explain notifier \
 --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
---log_level=info \
---enable_console_log &
+--log_level=debug \
+--enable_console_log
