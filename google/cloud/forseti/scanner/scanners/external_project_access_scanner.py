@@ -13,11 +13,14 @@
 # limitations under the License.
 
 """External project access scanner."""
+
 # pylint: disable=line-too-long
+
 import time
 
 from google.auth.exceptions import RefreshError
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.gcp_api.errors import ApiExecutionError
 from google.cloud.forseti.common.gcp_api import api_helpers # noqa=E501
 from google.cloud.forseti.common.gcp_type import resource_util # noqa=E501
 from google.cloud.forseti.common.gcp_api.cloud_resource_manager import CloudResourceManagerClient # noqa=E501
@@ -25,8 +28,6 @@ from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.inventory.storage import Storage
 from google.cloud.forseti.scanner.audit import external_project_access_rules_engine as epa_rules_engine # noqa=E501
 from google.cloud.forseti.scanner.scanners import base_scanner
-
-# pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
 
@@ -176,15 +177,12 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
             model_name,
             snapshot_timestamp,
             rules)
-
         self.inventory_configs = self.service_config.get_inventory_config()
         self.rules_engine = (
             epa_rules_engine.ExternalProjectAccessRulesEngine(
                 rules_file_path=self.rules,
                 snapshot_timestamp=self.snapshot_timestamp))
-
         self.rules_engine.build_rule_book(self.inventory_configs)
-
         self._ancestries = dict()
 
     def _output_results(self, all_violations):
@@ -215,7 +213,6 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
                     self.rules_engine.find_violations(
                         user_mail, project_ancestry))
                 all_violations.extend(violations)
-
         return all_violations
 
     @staticmethod
@@ -271,17 +268,17 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
         return client
 
     def _retrieve(self):
-        # pylint: disable=line-too-long
         """Retrieve the project ancestries for all users.
 
         Returns:
             dict: User project relationship.
             {"user1@example.com": [[Project("1234"), Organization("1234567")],
-                                  [Project("12345"), Folder("ABCDEFG"), Organization("1234567")]],
-             "user2@example.com": [[Project("1234"), Organization("1234567")],
-                                  [Project("12345"), Folder("ABCDEFG"), Organization("1234567")]]}
+                                  [Project("12345"), Folder("ABCDEFG"),
+                                  Organization("1234567")]],
+             "user2@example.com": [[Project("1234"), Organization("34567")],
+                                  [Project("12345"), Folder("ABCDEFG"),
+                                  Organization("1234567")]]}
         """
-        # pylint: enable=line-too-long
         # This dictionary is the result of the scan.  The key
         # is the user ID.  The value is a list of lists of ancestries.
         user_to_project_ancestries_map = {}
@@ -301,9 +298,10 @@ class ExternalProjectAccessScanner(base_scanner.BaseScanner):
                                                     project_ids)
 
                 user_to_project_ancestries_map[user_email] = ancestries
-            except RefreshError:
+            except (RefreshError, ApiExecutionError):
                 LOGGER.debug('Unable to access project ancestry %s.',
                              user_email)
+
         # TODO: Remove when instrumentation is implemented.
         elapsed_time = time.time() - start_time
 
