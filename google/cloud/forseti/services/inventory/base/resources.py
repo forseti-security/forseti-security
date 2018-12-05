@@ -26,6 +26,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.services.inventory.base.gcp import (
     ResourceNotSupported)
+from google.cloud.forseti.services.inventory.base import iam_helpers
 
 LOGGER = logger.get_logger(__name__)
 
@@ -849,6 +850,40 @@ class AppEngineInstance(resource_class_factory('appengine_instance', 'name',
 class BigqueryDataSet(resource_class_factory('dataset', 'id')):
     """The Resource implementation for Bigquery DataSet."""
 
+    def _set_cache(self, field_name, value):
+        """Manually set a cache value if it isn't already set.
+
+        Args:
+            field_name (str): The name of the attribute to cache.
+            value (str): The value to cache.
+        """
+        field_name = '__cached_{}'.format(field_name)
+        if not hasattr(self, field_name) or getattr(self, field_name) is None:
+            setattr(self, field_name, value)
+
+    @cached('iam_policy')
+    def get_iam_policy(self, client=None):
+        """IAM policy for this Dataset.
+
+        Args:
+            client (object): GCP API client.
+
+        Returns:
+            dict: Dataset Policy.
+        """
+        try:
+            iam_policy = client.fetch_bigquery_iam_policy(
+                self.parent()['projectNumber'],
+                self['datasetReference']['datasetId'])
+            dataset_policy = iam_helpers.convert_iam_to_bigquery_policy(
+                iam_policy)
+            self._set_cache('dataset_policy', dataset_policy)
+            return iam_policy
+        except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
+            LOGGER.warn('Could not get Dataset IAM Policy: %s', e)
+            self.add_warning(e)
+            return None
+
     @cached('dataset_policy')
     def get_dataset_policy(self, client=None):
         """Dataset policy for this Dataset.
@@ -860,9 +895,13 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             dict: Dataset Policy.
         """
         try:
-            return client.fetch_bigquery_dataset_policy(
+            dataset_policy = client.fetch_bigquery_dataset_policy(
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
+            iam_policy = iam_helpers.convert_bigquery_policy_to_iam(
+                dataset_policy, self.parent()['projectId'])
+            self._set_cache('iam_policy', iam_policy)
+            return dataset_policy
         except (api_errors.ApiExecutionError, ResourceNotSupported) as e:
             LOGGER.warn('Could not get Dataset Policy: %s', e)
             self.add_warning(e)

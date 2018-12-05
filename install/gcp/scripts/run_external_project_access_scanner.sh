@@ -68,14 +68,14 @@ sleep 10s
 echo "Forseti config: $(forseti config show)"
 
 # Run scanner command
-echo "Running Forseti scanner."
-scanner_command=`forseti scanner run`
+echo "Running Forseti external project access scanner."
+scanner_command=`forseti scanner run --scanner external_project_access_scanner`
 scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
 echo "Finished running Forseti scanner."
 sleep 10s
 
 # Run notifier command
-echo "Running Forseti notifier."
+echo "Running Forseti notifier with specified scanner index id ${scanner_index_id}."
 forseti notifier run --scanner_index_id ${scanner_index_id}
 echo "Finished running Forseti notifier."
 sleep 10s

@@ -50,6 +50,15 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+        """Gets IAM policy of a bigquery dataset from gcp API call.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+        """
+
+    @abc.abstractmethod
     def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from GCP API.
 
@@ -1005,6 +1014,19 @@ class ApiClientImpl(ApiClient):
             dict: Dataset Policy.
         """
         return self.bigquery.get_dataset_access(project_number, dataset_id)
+
+    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+        """Gets IAM policy of a bigquery dataset from gcp API call.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+
+        Raises:
+            ResourceNotSupported: Raised for all calls using this class.
+        """
+        raise ResourceNotSupported('Bigquery Dataset IAM policy is not '
+                                   'supported by this API client')
 
     @create_lazy('bigquery', _create_bq)
     def iter_bigquery_datasets(self, project_number):

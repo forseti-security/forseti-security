@@ -109,6 +109,26 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
+    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+        """Gets IAM policy of a bigquery dataset from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+            dataset_id (str): id of the dataset to query.
+
+        Returns:
+            dict: Dataset IAM Policy.
+        """
+        resource = self.dao.fetch_cai_asset(
+            ContentTypes.iam_policy,
+            'google.bigquery.Dataset',
+            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+                project_number, dataset_id),
+            self.session)
+        if resource:
+            return resource
+        return {}
+
     def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
         """Dataset policy Iterator for a dataset from Cloud Asset data.
 
@@ -669,6 +689,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
             # turn on only_fixup_lists, so the singular instance isn't munged.
             yield _fixup_resource_keys(urlmap, cai_to_gcp_key_map,
                                        only_fixup_lists=True)
+
+    def iter_container_clusters(self, project_number):
+        """Iterate Kubernetes Engine Cluster from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of Kubernetes Engine Cluster resources.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.container.Cluster',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for cluster in resources:
+            yield cluster
 
     def fetch_crm_folder(self, folder_id):
         """Fetch Folder data from Cloud Asset data.

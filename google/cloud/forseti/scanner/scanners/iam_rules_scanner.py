@@ -23,7 +23,6 @@ from google.cloud.forseti.common.gcp_type import iam_policy
 from google.cloud.forseti.common.gcp_type.organization import Organization
 from google.cloud.forseti.common.gcp_type.project import Project
 from google.cloud.forseti.common.gcp_type.resource import ResourceType
-from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import iam_rules_engine
 from google.cloud.forseti.scanner.scanners import base_scanner
@@ -244,18 +243,14 @@ class IamPolicyScanner(base_scanner.BaseScanner):
                          policy, policy_bindings))
 
         if not policy_data:
-            LOGGER.warn('No policies found. Exiting.')
-            raise util_errors.NoDataError('No policies found. Exiting.')
+            LOGGER.warn('No policies found.')
+            return [], 0
 
         return policy_data, resource_counts
 
     def run(self):
         """Runs the data collection."""
-        try:
-            policy_data, _ = self._retrieve()
-        except util_errors.NoDataError:
-            return
-
+        policy_data, _ = self._retrieve()
         _add_bucket_ancestor_bindings(policy_data)
         all_violations = self._find_violations(policy_data)
         self._output_results(all_violations)
