@@ -90,3 +90,5 @@ resources:
     # The default is "run at some random minute 0-59 (configured in
     # forseti-instance-server.py), every 12 hour".
     run-frequency: "{RAND_MINUTE} */2 * * *"
+    external-project-access-scanner-cron-enabled: false
+    external-project-access-scanner-cron-schedule: "{RAND_MINUTE} 8 * * 0"
