@@ -14,14 +14,11 @@
 
 """Builds the scanners to run."""
 
-# pylint: disable=line-too-long
-
 import importlib
 import inspect
 
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner_requirements_map
-from google.cloud.forseti.scanner.scanners import external_project_access_scanner # noqa=E501
 
 LOGGER = logger.get_logger(__name__)
 
@@ -58,6 +55,7 @@ class ScannerBuilder(object):
             # remove the _scanner from scanner name so that it matches the key
             # in requirements map
             scanner = self._instantiate_scanner(self.scanner_name[:-8])
+            # TODO: add a unit test for _instantiate_scanner
             if scanner:
                 runnable_scanners.append(scanner)
         else:
@@ -71,11 +69,13 @@ class ScannerBuilder(object):
 
     def _instantiate_scanner(self, scanner_name):
         """Make individual scanners based on the scanner name.
+
         Args:
             scanner_name (str): the name of the scanner as
             in the requirements_map
+
         Returns:
-            scanner (object): the individual scanner instance
+            scanner: the individual scanner instance
         """
 
         module_path = 'google.cloud.forseti.scanner.scanners.{}'
@@ -91,9 +91,8 @@ class ScannerBuilder(object):
         LOGGER.info(scanner_requirements_map.REQUIREMENTS_MAP.get(scanner_name))
 
         module_name = module_path.format(
-            scanner_requirements_map.REQUIREMENTS_MAP
-                .get(scanner_name)
-                .get('module_name'))
+            scanner_requirements_map.REQUIREMENTS_MAP.get(
+                scanner_name).get('module_name'))
 
         try:
             module = importlib.import_module(module_name)
@@ -102,9 +101,8 @@ class ScannerBuilder(object):
             return None
 
         class_name = (
-            scanner_requirements_map.REQUIREMENTS_MAP
-                .get(scanner_name)
-                .get('class_name'))
+            scanner_requirements_map.REQUIREMENTS_MAP.get(
+                scanner_name).get('class_name'))
         try:
             scanner_class = getattr(module, class_name)
         except AttributeError:
