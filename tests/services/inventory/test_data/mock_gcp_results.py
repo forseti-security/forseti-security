@@ -421,7 +421,6 @@ CRM_GET_PROJECTS = {
 # Fields: id
 CRM_PROJECT_IAM_POLICY_TEMPLATE = """
 {{
- "version": 1,
  "bindings": [
   {{
    "role": "roles/editor",
@@ -470,7 +469,6 @@ CRM_PROJECT_IAM_POLICY_TEMPLATE = """
 
 CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES = """
 {{
- "version": 1,
  "bindings": [
   {{
    "role": "roles/editor",
@@ -504,7 +502,6 @@ CRM_PROJECT_IAM_POLICY_MEMBER_MULTI_ROLES = """
 
 CRM_PROJECT_IAM_POLICY_DUP_MEMBER = """
 {{
- "version": 1,
  "bindings": [
   {{
    "role": "roles/editor",
@@ -527,7 +524,6 @@ CRM_PROJECT_IAM_POLICY_DUP_MEMBER = """
 
 CRM_FOLDER_IAM_POLICY = """
 {
- "version": 1,
  "bindings": [
   {
    "role": "roles/resourcemanager.folderAdmin",
@@ -541,7 +537,6 @@ CRM_FOLDER_IAM_POLICY = """
 
 CRM_ORG_IAM_POLICY = """
 {
- "version": 1,
  "bindings": [
   {
    "role": "roles/resourcemanager.organizationAdmin",
@@ -594,7 +589,7 @@ CRM_ORG_ORG_POLICIES = """
 CRM_FOLDER_ORG_POLICIES = """
 [
   {
-    "constraint": "constraints/storage.requireIamAclsOnly",
+    "constraint": "constraints/storage.bucketPolicyOnly",
     "boolean_policy": {
       "enforced": true
     }
@@ -1816,8 +1811,6 @@ GCS_GET_OBJECTS = {}
 
 BUCKET_IAM_TEMPLATE = """
 {{
- "kind": "storage#policy",
- "resourceId": "projects/_/buckets/{name}",
  "bindings": [
   {{
    "role": "roles/storage.legacyBucketOwner",

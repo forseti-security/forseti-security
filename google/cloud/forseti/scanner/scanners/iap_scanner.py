@@ -150,6 +150,9 @@ class _RunData(object):
         Returns:
             InstanceGroup: instance group
         """
+        if not instance_group_url:
+            return None
+
         target_key = instance_group_type.Key.from_url(instance_group_url)
         return self.instance_groups_by_key.get(target_key)
 
