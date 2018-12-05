@@ -110,7 +110,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         return self._local.cai_session
 
     def fetch_bigquery_iam_policy(self, project_number, dataset_id):
-        """Gets IAM policy if a bigquery dataset from Cloud Asset data.
+        """Gets IAM policy of a bigquery dataset from Cloud Asset data.
 
         Args:
             project_number (str): number of the project to query.

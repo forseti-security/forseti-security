@@ -51,7 +51,7 @@ class ApiClient(object):
 
     @abc.abstractmethod
     def fetch_bigquery_iam_policy(self, project_number, dataset_id):
-        """Gets IAM policy if a bigquery dataset from gcp API call.
+        """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
             project_number (str): number of the project to query.
@@ -1016,7 +1016,7 @@ class ApiClientImpl(ApiClient):
         return self.bigquery.get_dataset_access(project_number, dataset_id)
 
     def fetch_bigquery_iam_policy(self, project_number, dataset_id):
-        """Gets IAM policy if a bigquery dataset from gcp API call.
+        """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
             project_number (str): number of the project to query.
