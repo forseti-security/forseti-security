@@ -81,44 +81,25 @@ class GrpcNotifier(notifier_pb2_grpc.NotifierServicer):
         """
         progress_queue = Queue()
 
-        if request.scanner_index_id and request.inventory_index_id:
-            error_message = ('Invalid input: supplying both inventory_index_id '
-                             'and scanner_index_id is not supported. The '
-                             'notifier command will not run.')
-            LOGGER.exception(error_message)
-            progress_queue.put(error_message)
-            progress_queue.put(None)
-        else:
-            if request.scanner_index_id:
-                LOGGER.info('Run notifier service with scanner index id: %s ',
-                            request.scanner_index_id)
-            else:
-                LOGGER.info('Run notifier service with inventory index id: %s ',
-                            request.inventory_index_id)
-
-            self.service_config.run_in_background(
-                lambda: self._run_notifier(progress_queue,
-                                           request.inventory_index_id,
-                                           request.scanner_index_id))
+        LOGGER.info('Run notifier service with inventory index id: %s',
+                    request.inventory_index_id)
+        self.service_config.run_in_background(
+            lambda: self._run_notifier(request.inventory_index_id,
+                                       progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
             yield notifier_pb2.Progress(server_message=progress_message)
 
-    def _run_notifier(self,
-                      progress_queue,
-                      inventory_index_id=None,
-                      scanner_index_id=None):
+    def _run_notifier(self, inventory_index_id, progress_queue):
         """Run notifier.
 
         Args:
             inventory_index_id (int64): Inventory index id.
-            scanner_index_id (int64): Scanner index id.
             progress_queue (Queue): Progress queue.
         """
         try:
             self.notifier.run(
                 inventory_index_id,
-                scanner_index_id,
                 progress_queue,
                 self.service_config)
         except Exception as e:  # pylint: disable=broad-except

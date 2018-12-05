@@ -19,7 +19,7 @@ from Queue import Queue
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner import scanner
 from google.cloud.forseti.services.scanner.dao import initialize as init_storage
-from google.cloud.forseti.services.scanner import scanner_pb2 # noqa=E501
+from google.cloud.forseti.services.scanner import scanner_pb2
 from google.cloud.forseti.services.scanner import scanner_pb2_grpc
 
 LOGGER = logger.get_logger(__name__)
@@ -72,17 +72,16 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
 
         return scanner_pb2.PingReply(data=request.data)
 
-    def Run(self, request, context):
+    def Run(self, _, context):
         """Run scanner.
 
         Args:
-            request (RunRequest): The run request.
+            _ (RunRequest): The run request.
             context (object): Context of the request.
 
         Yields:
             Progress: The progress of the scanner.
         """
-        scanner_name = request.scanner_name
         progress_queue = Queue()
 
         model_name = self._get_handle(context)
@@ -94,27 +93,22 @@ class GrpcScanner(scanner_pb2_grpc.ScannerServicer):
         else:
             LOGGER.info('Run scanner service with model: %s', model_name)
             self.service_config.run_in_background(
-                lambda: self._run_scanner(
-                    model_name,
-                    progress_queue,
-                    scanner_name))
+                lambda: self._run_scanner(model_name, progress_queue))
 
         for progress_message in iter(progress_queue.get, None):
             yield scanner_pb2.Progress(server_message=progress_message)
 
-    def _run_scanner(self, model_name, progress_queue, scanner_name=None):
+    def _run_scanner(self, model_name, progress_queue):
         """Run scanner.
 
         Args:
             model_name (str): Model name.
             progress_queue (Queue): Progress queue.
-            scanner_name (str): name of the specified scanner to run
         """
         try:
             self.scanner.run(model_name,
                              progress_queue,
-                             self.service_config,
-                             scanner_name)
+                             self.service_config)
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             progress_queue.put('Error occurred during the scanning process.')

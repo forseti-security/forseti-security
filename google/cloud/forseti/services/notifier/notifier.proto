@@ -25,7 +25,6 @@ service Notifier {
 
 message RunRequest {
   int64 inventory_index_id = 1;
-  int64 scanner_index_id = 2;
 }
 
 message Progress {

@@ -46,7 +46,6 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
-from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
@@ -942,31 +941,6 @@ class DataAccess(object):
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
         return inventory_index.id
-
-    @classmethod
-    # pylint: disable=invalid-name
-    def get_inventory_index_id_by_scanner_index_id(cls,
-                                                   session,
-                                                   scanner_index_id):
-        """List all inventory index entries.
-
-        Args:
-            session (object): Database session
-            scanner_index_id (int): id of the scanner in scanner_index table
-
-        Returns:
-            int64: inventory index id
-        """
-
-        query_result = (
-            session.query(ScannerIndex).filter(
-                ScannerIndex.id == scanner_index_id
-            ).order_by(ScannerIndex.inventory_index_id.desc()).first())
-        session.expunge(query_result)
-        LOGGER.info(
-            'Found inventory_index_id %s from scanner_index_id %s.',
-            query_result.inventory_index_id, scanner_index_id)
-        return query_result.inventory_index_id
 
     @classmethod
     def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name
