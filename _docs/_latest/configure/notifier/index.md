@@ -216,7 +216,7 @@ the UI or API:
 in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
  as follows:
 
-- Open `forseti-security/configs/forseti_conf_server.yaml`.
+- Open `forseti-security/configs/forseti_conf_server.yaml` from the GCS bucket.
 - Navigate to the `notifier` > `violation` > `cscc` section.
 
   The options below are available for you to configure:
