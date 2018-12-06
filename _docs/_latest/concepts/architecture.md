@@ -14,7 +14,7 @@ together.
 
 Forseti gives you tools to understand all the resources you have in Google Cloud
 Platform (GCP). The core Forseti modules work together to provide complete
-information so you can take action action to secure resources and minimize
+information so you can take action to secure resources and minimize
 security risks.
 
  * Inventory regularly collects data from your GCP resources and makes it
