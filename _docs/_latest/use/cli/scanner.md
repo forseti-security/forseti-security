@@ -31,7 +31,7 @@ forseti model use <YOUR_MODEL_NAME>
 
 ### Running the scanner
 
-To run normal scanners:
+To run scanners (excluding external project access scanner):
 ```bash
 forseti scanner run
 ```
