@@ -20,7 +20,7 @@ See: https://cloud.google.com/kubernetes-engine/docs/
 import json
 
 from google.cloud.forseti.common.gcp_type import resource
-
+from google.cloud.forseti.services.inventory.base.resources import size_t_hash
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 # pylint: disable=too-many-locals,missing-param-doc,missing-type-doc
@@ -91,13 +91,12 @@ class KeCluster(resource.Resource):
         self._dict = None
 
     @classmethod
-    def from_json(cls, parent, json_string, cluster_id=None):
+    def from_json(cls, parent, json_string):
         """Returns a new ForwardingRule object from json data.
 
         Args:
             parent (Resource): resource this cluster belongs to.
             json_string(str): JSON string of a cluster GCP API response.
-            cluster_id (str): Id of the cluster (different from name).
 
         Returns:
            KeCluster: A new KeCluster object.
@@ -105,6 +104,7 @@ class KeCluster(resource.Resource):
 
         cluster_dict = json.loads(json_string)
         cluster_name = cluster_dict['name']
+        cluster_id = size_t_hash(cluster_dict['selfLink'])
 
         return cls(
             cluster_id=cluster_id,

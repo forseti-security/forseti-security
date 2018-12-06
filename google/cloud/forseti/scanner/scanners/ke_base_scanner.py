@@ -191,8 +191,7 @@ def ke_scanner_factory(scanner_name, rules_engine_cls):
                     ke_clusters.append(
                         ke_cluster.KeCluster.from_json(
                             proj,
-                            cluster.data,
-                            cluster_id=cluster.name))
+                            cluster.data))
 
             # Retrieve the service config via a separate query because session
             # in the middle of yield_per() can not support simultaneous queries.
