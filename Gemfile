@@ -7,6 +7,7 @@ group :jekyll_plugins do
   gem 'jekyll-sitemap'
   gem 'jekyll-redirect-from'
   gem 'jekyll-responsive-image'
+  gem 'jekyll-include-cache'
   gem 'listen'
 end
 gem 'execjs'
