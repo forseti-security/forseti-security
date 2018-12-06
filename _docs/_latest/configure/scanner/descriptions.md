@@ -82,14 +82,7 @@ The External Project Access Scanner mitigates data exfiltration by identifying u
 
 Each user in the inventory must be queried for their project access. The number of users in an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
 
-This scanner has a dedicated cron job to run independently, because it might take a long time to finish the scanning. This cron job is by default turned off. To turn it on and set a customized schedule, modify the two fields below in the deploy-forseti-server.yaml file. The default schedule is 8am every Sunday.
-
-```
-    external-project-access-scanner-cron-enabled: false
-    external-project-access-scanner-cron-schedule: "{rand_minute} 8 * * 0"
-```
-
-Alternatively, you can also manually run this scanner:
+This scanner is not part of the regular cron job, because it might take a long time to finish the scanning. To try it out you can manually run this scanner:
 ```
     forseti scanner run --scanner external_project_access_scanner
 ```
