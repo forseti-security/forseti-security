@@ -14,5 +14,5 @@
 
 """GOogle CLoud Forseti."""
 
-__version__ = '2.7.0'
+__version__ = '2.8.0'
 __package_name__ = 'forseti-security'
