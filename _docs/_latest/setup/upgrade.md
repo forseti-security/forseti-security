@@ -744,7 +744,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-8` for Forseti client.
 
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.7.0 to 2.8.0" content=upgrading_2_7_0_to_2_8_0 uid=8 %}
+{% include site/zippy/item.html title="Upgrading 2.7.0 to 2.8.0" content=upgrading_2_7_0_to_2_8_0 uid=9 %}
 
 {% capture upgrading_2_8_0_to_2_9_0 %}
 
@@ -778,57 +778,56 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 1. Repeat step `3-8` for Forseti client.
 1. To enable the External Project Access Scanner, add API scope `https://www.googleapis.com/auth/cloudplatformprojects.readonly` 
 to the Client ID of your service account.
-
-```
-https://www.googleapis.com/auth/admin.directory.group.readonly,
-https://www.googleapis.com/auth/admin.directory.user.readonly,
-https://www.googleapis.com/auth/cloudplatformprojects.readonly
-```
+    ```
+    https://www.googleapis.com/auth/admin.directory.group.readonly,
+    https://www.googleapis.com/auth/admin.directory.user.readonly,
+    https://www.googleapis.com/auth/cloudplatformprojects.readonly
+    ```
 1. Configuration file `forseti_conf_server.yaml` updates:  
     **Inventory**
     - Update the `cai` section to include any asset types to exclude from the inventory. Refer 
-    [here.](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.9.0/configs/server/forseti_conf_server.yaml.in)
+    [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.9.0/configs/server/forseti_conf_server.yaml.in)
     for the full list of assets to exclude. 
     
     - The example below is excluding `google.appengine.Application` and `google.compute.InstanceGroup` from the inventory.
-    ```
-    inventory:
-        ...
-        cai:
+        ```
+        inventory:
             ...
-            asset_types:
-                - google.appengine.Application
-                - google.compute.InstanceGroup
+            cai:
+                ...
+                asset_types:
+                    - google.appengine.Application
+                    - google.compute.InstanceGroup
+                ...
             ...
-        ...
-    ```
+        ```
     - Update the `api_quota` section to include `disable_polling`. 
     Set disable_polling to True to disable polling that API for creation of the inventory.
-    ```
-    inventory:
-        ...
-        api_quota:
+        ```
+        inventory:
             ...
-            appengine:
-                max_calls: 18
-                period: 1.0
-                disable_polling: False
+            api_quota:
+                ...
+                appengine:
+                    max_calls: 18
+                    period: 1.0
+                    disable_polling: False
+                ...
+                bigquery:
+                    max_calls: 160
+                    period: 1.0
+                    disable_polling: False
+                ...
             ...
-            bigquery:
-                max_calls: 160
-                period: 1.0
-                disable_polling: False
-            ...
-        ...
-    ```
+        ```
     **Notifier**
-    - Update the `violation` section to enable CSCC Beta API.
-    [Documentation here.](% link _docs/latest/configure/notifier/index.md %)
+    - Update the `violation` section to enable CSCC Beta API. Documentation
+    [here.](https://cloud.google.com/blog/products/identity-security/cloud-security-command-center-is-now-in-beta)
     
 1. Rule files updates:
-    - Google Groups rule syntax has been [updated]({% link _docs/latest/configure/scanner/rules.md %}#googlegroups-rules) to include Google related service account by default.
+    - Google Groups rule syntax has been [updated]({% link _docs/latest/configure/scanner/rules.md %}#google-group-rules) to include Google related service account by default.
 {% endcapture %}
-{% include site/zippy/item.html title="Upgrading 2.8.0 to 2.9.0" content=upgrading_2_8_0_to_2_9_0 uid=8 %}
+{% include site/zippy/item.html title="Upgrading 2.8.0 to 2.9.0" content=upgrading_2_8_0_to_2_9_0 uid=10 %}
 
 {% capture deployment_manager_error %}
 
@@ -845,18 +844,18 @@ ERROR: (gcloud.deployment-manager.deployments.update) Error in Operation [operat
 
 You can follow the following steps to workaround this deployment manager problem:
 1. Copy the compute engine section inside your deployment template and paste it to a text editor.
-```
-# Compute Engine
-- name: forseti-instance-server
-  type: forseti-instance-server.py
-  properties:
-    # GCE instance properties
-    image-project: ubuntu-os-cloud
-    image-family: ubuntu-1804-lts
-    instance-type: n1-standard-2
-    ...
-    run-frequency: ...
-```
+    ```
+    # Compute Engine
+    - name: forseti-instance-server
+      type: forseti-instance-server.py
+      properties:
+        # GCE instance properties
+        image-project: ubuntu-os-cloud
+        image-family: ubuntu-1804-lts
+        instance-type: n1-standard-2
+        ...
+        run-frequency: ...
+    ```
 1. Remove the compute engine section from the deployment template.
 1. Run the deployment manager uppdate command on the updated deployment template.  
 `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config forseti_server_v2_x_x.yaml`  
