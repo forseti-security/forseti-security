@@ -176,37 +176,73 @@ notifier:
 Forseti Security can configured to send violations to
 [Cloud Security Command Center (Cloud SCC)](https://cloud.google.com/security-command-center/).
 
-As Cloud SCC is in alpha, you must meet the following additional requirements:
-* Your organization is enrolled in the [Cloud SCC alpha program](https://services.google.com/fb/forms/commandcenteralpha/).
-* Your Forseti project has been whitelisted to Cloud SCC access. You should
-send the Forseti `project name, id and number` to your Cloud SCC contact.
-* Enable the `Cloud Security Command Center API` for the Forseti project via
-the Cloud Console.
-* Add the `securityCenter.editor` role to the Forseti server's service account. 
+Cloud SCC API is now in public beta. Please see the steps below to setup
+and configure. The previous alpha API will no longer be supported for setup.
 
-1. Open `forseti-security/configs/forseti_conf_server.yaml`.
-1. Navigate to the `notifier` > `violation` > `cscc` section.
+#### Prerequisites
+1. [Install]({% link _docs/latest/setup/install.md %})
+or [upgrade]({% link _docs/latest/setup/upgrade.md %}) Forseti to version 2.8+. 
+1. The person performing the onboarding needs the following org-level IAM roles:
+- `Organization Admin`
+- `Security Center Admin`
+- `Security Center Sources Admin`
+1. Cloud SCC Registration Information (after marketplace on-boarding)
+- The `source_id` created for your organization.
+- The `Security Center Findings` Editor role has been assigned to your Forseti
+server service account, on the organization level.
 
-The options below are available for you to configure:
+#### Setup
+1. Select `Add Security Sources` on the Cloud SCC Beta Dashboard.
 
-* `enabled:`
-  * **Description**: Whether to send notification to Cloud SCC.
-  * **Valid values**: one of valid `true` or `false`
+1. Find the [Forseti Cloud SCC Connector](https://console.cloud.google.com/marketplace/details/forseti/forseti-security-cloud-scc-connector)
+in Cloud Marketplace.
 
-* `mode:`
-  * **Description**: How to send the violations to Cloud SCC.
-  * **Valid values**: one of valid `api` or `bucket`
-  * **Note**: `api` mode will only work if Forseti is [using a service account from the Cloud Security Center project](https://cloud.google.com/security-command-center/docs/how-to-programmatic-access).
+1. Follow the step-by-step on-boarding flow triggered from the Forseti card.
+- Choose the project that is hosting Forseti
+- Use the existing Forseti server service account (which will be assigned the
+`Security Center Findings Editor` role)
+- Note: The on-boarding flow will generate a source_id and assign the `Security
+  Center Findings Editor` role, which is required to write to the Cloud SCC Beta API
+  to surface the findings in the Cloud SCC.
 
-* `organization_id:`
-  * **Description**: The organization id.
-  * **Valid values**: String
-  * **Note**: Must be in the form of `organizations/12345`. Used only in `api` mode.
+1. Enable the Cloud SCC Beta API in the Forseti project either via either
+the UI or API: 
+- via the UI (`API & Services ->  Library`)
+- via the command line in Cloud Shell `gcloud services enable securitycenter.googleapis.com`
+- Note: You will need to have either owner, editor or service management roles
+  in the Project in order to enable the API
 
-* `gcs_path`
-  * **Description**: The path to a Cloud Storage bucket.
-  * **Valid values**: String
-  * **Note**: Must start with `gs://`. Used only in `bucket` mode.
+1. Enable the  API connector config to Cloud SCC.  Specifically this means,
+in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
+ as follows:
+
+- Open `forseti-security/configs/forseti_conf_server.yaml` from the GCS bucket.
+- Navigate to the `notifier` > `violation` > `cscc` section.
+
+  The options below are available for you to configure:
+
+  * `enabled:`
+    * **Description**: Whether to send notification to Cloud SCC.
+    * **Valid values**: one of valid `true` or `false`
+  
+  * `mode:`
+    * **Description**: How to send the violations to Cloud SCC.
+    * **Valid values**: `api`
+  
+  * `organization_id:`
+    * **Description**: The organization id.
+    * **Valid values**: String
+    * **Note**: Must be in the form of `organizations/12345`. Used only in `api` mode.
+  
+  * `source_id`
+    * **Description**: ID from the Cloud SCC beta on-boarding. **This must be added**
+    to use the Beta API integration.
+    * **Valid values**: String
+    * **Note**: It is in the form: source_id: <organizations/ORG_ID/sources/SOURCE_ID>
+
+To verify violations appear in the Cloud SCC Beta Dashboard, [run the notifier]({% link _docs/latest/use/cli/notifier.md %})
+after you have [built an inventory]({% link _docs/latest/use/cli/inventory.md %})
+and [run the scanner]({% link _docs/latest/use/cli/scanner.md %}).
 
 ### Email notifications with SendGrid
 
