@@ -76,6 +76,19 @@ For examples of how to define scanner rules for Enabled APIs, see the
 [`enabled_apis_rules.yaml`](https://github.com/GoogleCloudPlatform/forseti-security/blob/stable/rules/enabled_apis_rules.yaml)
 rule file.
 
+## External Project Access Scanner
+
+The External Project Access Scanner mitigates data exfiltration by identifying users who have access to projects outside of your organization or folder.
+
+Each user in the inventory must be queried for their project access. The number of users in an organization will impact the execution time of this scanner.  It may therefore be undesirable to execute this scanner as frequently as other scanners.  By default, this scanner is not enabled in the Forseti server configuration.
+
+This scanner is not part of the regular cron job, because it might take a long time to finish the scanning. To try it out you can manually run this scanner:
+```
+    forseti scanner run --scanner external_project_access_scanner
+```
+
+Before running this scanner, please [enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}).
+
 ## Firewall rules scanner
 
 Network firewall rules protect your network & organization by only allowing
