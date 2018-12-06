@@ -188,6 +188,11 @@ rules:
   conditions:
     - member_email: '@MYDOMAIN.com'
     - member_email: '@gmail.com'
+    # GCP Service Accounts
+    # https://cloud.google.com/compute/docs/access/service-accounts
+    #- member_email: "gserviceaccount.com"
+    # Big Query Transfer Service
+    #- member_email: "@bqdts.google.baggins"
 ```
 
 ## Cloud Storage bucket ACL rules
