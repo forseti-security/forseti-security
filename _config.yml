@@ -18,13 +18,17 @@ description: "Tools to secure Google Cloud Platform"
 exclude: ["Gemfile",
           "Gemfile.lock",
           "README.md",
-          "vendor",
+          "vendor/",
           "images/readme/",
           "client-secrets.json.enc",
           "_config.yml",
           ".travis.yml",
           "travis/",
-          "scripts/"]
+          "scripts/",
+          ".gitignore",
+          "app.yaml",
+          ".sass-cache/",
+          ".idea/"]
 exclude_from_watch: ["_docs/latest/",
                      "_data/doc_versions.yml",
                      "_data/doc_version_index.yml",
@@ -35,6 +39,7 @@ plugins:
   - jekyll-paginate-v2
   - jekyll-redirect-from
   - jekyll-responsive-image
+  - jekyll-include-cache
 google_analytics: UA-98416450-1
 highlighter: rouge
 markdown: kramdown
@@ -57,7 +62,7 @@ pagination:
   enabled: true
   collection: news
   permalink: /page/:num/
-  per_page: 6
+  per_page: 10
 
 # Responsive image templates and resizing configuration
 responsive_image:
@@ -381,3 +386,32 @@ defaults:
       path: _docs/v2.7/faq
     values:
       category: FAQ (v2.7)
+  - scope:
+      path: _docs/v2.8
+    values:
+      category: Overview (v2.8)
+      layout: docs
+  - scope:
+      path: _docs/v2.8/concepts
+    values:
+      category: Concepts (v2.8)
+  - scope:
+      path: _docs/v2.8/setup
+    values:
+      category: Setup (v2.8)
+  - scope:
+      path: _docs/v2.8/use
+    values:
+      category: Use (v2.8)
+  - scope:
+      path: _docs/v2.8/configure
+    values:
+      category: Configure (v2.8)
+  - scope:
+      path: _docs/v2.8/develop
+    values:
+      category: Develop (v2.8)
+  - scope:
+      path: _docs/v2.8/faq
+    values:
+      category: FAQ (v2.8)

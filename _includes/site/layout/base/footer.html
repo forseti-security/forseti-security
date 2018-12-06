@@ -3,11 +3,11 @@
     <div class="row">
       <div class="right-panel col-sm-8 col-sm-push-4">
         <div class="row">
-          {% include site/layout/base/footer/links.html %}
+          {% include_cached site/layout/base/footer/links.html %}
         </div>
       </div>
       <div class="left-panel col-sm-4 col-sm-pull-8">
-        {% include site/layout/base/footer/copyright.html %}
+        {% include_cached site/layout/base/footer/copyright.html %}
         <p class="description">
           Built <a href="{{ site.github.repository_url }}/commit/{{ site.data['commit']['hash'] }}">@{{ site.data['commit']['hash'] }}</a> on {{ site.data['commit']['datetime'] }}
         </p>

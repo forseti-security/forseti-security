@@ -713,6 +713,38 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.6.0 to 2.7.0" content=upgrading_2_6_0_to_2_7_0 uid=8 %}
 
+{% capture upgrading_2_7_0_to_2_8_0 %}
+
+1. Open cloud shell when you are in the Forseti project on GCP.
+1. Checkout forseti with tag v2.8.0 by running the following commands:
+    1. If you already have the forseti-security folder under your cloud shell directory, 
+    run command `rm -rf forseti-security` to delete the folder.
+    1. Run command `git clone https://github.com/GoogleCloudPlatform/forseti-security.git` to 
+    clone the forseti-security directory to cloud shell.
+    1. Run command `cd forseti-security` to navigate to the forseti-security directory.
+    1. Run command `git checkout tags/v2.8.0` to checkout version `v2.8.0` of Forseti Security.
+1. Download the latest copy of your Forseti server deployment template file from the Forseti server GCS 
+bucket to your cloud shell (located under `forseti-server-xxxxxx/deployment_templates`) by running command  
+`gsutil cp gs://YOUR_FORSETI_GCS_BUCKET/deployment_templates/deploy-forseti-server-<LATEST_TEMPLATE>.yaml 
+deployment-templates/deploy-forseti-server-xxxxx-2-8-0.yaml`.
+1. Open up the deployment template `deployment-templates/deploy-forseti-server-xxxxx-2-8-0.yaml` for edit.
+    1. Update the `forseti-version` inside the deployment template to `tags/v2.8.0`.
+1. Upload file `deployment-templates/deploy-forseti-server-xxxxx-2-8-0.yaml` back to the GCS bucket 
+(`forseti-server-xxxxxx/deployment_templates`) by running command  
+`gsutil cp deployment-templates/deploy-forseti-server-xxxxx-2-8-0.yaml gs://YOUR_FORSETI_GCS_BUCKET/
+deployment_templates/deploy-forseti-server-xxxxx-2-8-0.yaml`.
+1. Navigate to [Deployment Manager](https://console.cloud.google.com/dm/deployments) and 
+copy the deployment name for Forseti server.
+1. Run command `gcloud deployment-manager deployments update DEPLOYMENT_NAME --config deploy-forseti-server-xxxxx-2-8-0.yaml`
+If you see errors while running the deployment manager update command, please refer to below section 
+`Error while running deployment manager` for details on how to workaround the error.
+1. Reset the Forseti server VM instance for changes in startup script to take effect.  
+You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
+Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
+1. Repeat step `3-8` for Forseti client.
+
+{% endcapture %}
+{% include site/zippy/item.html title="Upgrading 2.7.0 to 2.8.0" content=upgrading_2_7_0_to_2_8_0 uid=8 %}
 
 {% capture deployment_manager_error %}
 

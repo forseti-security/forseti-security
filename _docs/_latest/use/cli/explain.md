@@ -146,12 +146,12 @@ By default, resource_expansion is not performed. For example, `user/foo` has `ro
 `organization/1234567890` and no other policies. The above command will only show
 `organization/1234567890`.
 
-To enable resource expansion, pass in the argument `--expand_resource true`. Forseti will perform
+To enable resource expansion, pass in the argument `--expand_resource`. Forseti will perform
 resource expansion and list all resources that can be accessed by `user/<USER_NAME>` through a
 direct or indirect binding.
 
 ```bash
-forseti explainer access_by_member user/<USER_NAME> --expand_resource true
+forseti explainer access_by_member user/<USER_NAME> --expand_resource
 ```
 
 With resource expansion enabled, the example above will return `organizations/1234567890` and all
@@ -182,11 +182,11 @@ Without group expansion, the following example will only return `group/bar`:
 forseti explainer access_by_resource organizations/1234567890
 ```
 
-To enable group expansion, pass in the `--expand_group` argument. Forseti will perform group
+To enable group expansion, pass in the `--expand_groups` argument. Forseti will perform group
 expansion and list all members that can access the resource, even if the access is granted because a member is in a group.
 
 ```bash
-forseti explainer access_by_resource <RESOURCE_NAME> --expand_group true
+forseti explainer access_by_resource <RESOURCE_NAME> --expand_groups
 ```
 
 With group expansion enabled, the example above will list `group/bar` and `user/foo` if `user/foo`
