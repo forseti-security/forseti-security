@@ -28,6 +28,8 @@ from google.cloud.forseti.common.gcp_type import resource
 class KeCluster(resource.Resource):
     """Represents KE Cluster resource."""
 
+    RESOURCE_NAME_FMT = 'kubernetes_cluster/%s'
+
     def __init__(self, cluster_id, parent=None, full_name=None, locations=None,
                  description=None, initial_node_count=None, node_config=None,
                  logging_service=None, monitoring_service=None, network=None,
@@ -44,13 +46,13 @@ class KeCluster(resource.Resource):
                  node_ipv4_cidr_size=None, instance_group_urls=None,
                  current_node_count=None,
                  expire_time=None, server_config=None,
-                 data=None):
+                 data=None, cluster_name=None):
         """Initialize."""
         super(KeCluster, self).__init__(
             resource_id=cluster_id,
             resource_type=resource.ResourceType.KE_CLUSTER,
             name=cluster_id,
-            display_name=cluster_id,
+            display_name=cluster_name,
             parent=parent,
             locations=locations)
         self.full_name = full_name
@@ -89,22 +91,24 @@ class KeCluster(resource.Resource):
         self._dict = None
 
     @classmethod
-    def from_json(cls, parent, json_string):
+    def from_json(cls, parent, json_string, cluster_id=None):
         """Returns a new ForwardingRule object from json data.
 
         Args:
             parent (Resource): resource this cluster belongs to.
             json_string(str): JSON string of a cluster GCP API response.
+            cluster_id (str): Id of the cluster (different from name).
 
         Returns:
            KeCluster: A new KeCluster object.
         """
 
         cluster_dict = json.loads(json_string)
-        cluster_id = cluster_dict['name']
+        cluster_name = cluster_dict['name']
 
         return cls(
             cluster_id=cluster_id,
+            cluster_name=cluster_name,
             parent=parent,
             full_name='{}kubernetes_cluster/{}/'.format(parent.full_name,
                                                         cluster_id),
