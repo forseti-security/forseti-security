@@ -21,7 +21,7 @@ import unittest
 
 from datetime import datetime
 
-from google.cloud.forseti.common.util.email import EmailUtil
+from google.cloud.forseti.common.util.email.sendgrid_connector import EmailUtil
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import email_violations

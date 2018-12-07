@@ -18,7 +18,7 @@ import tempfile
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util import email
+from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
@@ -52,7 +52,7 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        self.mail_util = email.EmailUtil(
+        self.mail_util = sendgrid_connector.EmailUtil(
             self.notification_config['sendgrid_api_key'])
 
     def _make_attachment_csv(self):

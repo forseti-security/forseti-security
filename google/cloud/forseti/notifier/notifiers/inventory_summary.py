@@ -17,7 +17,7 @@ from googleapiclient.errors import HttpError
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util import email
+from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
@@ -115,7 +115,7 @@ class InventorySummary(object):
         email_summary_config = (
             self.notifier_config.get('inventory').get('email_summary'))
 
-        email_util = email.EmailUtil(
+        email_util = sendgrid_connector.EmailUtil(
             email_summary_config.get('sendgrid_api_key'))
 
         email_subject = 'Inventory Summary: {0}'.format(
