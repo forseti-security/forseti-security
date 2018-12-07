@@ -1,10 +1,12 @@
 ---
 title: ClearDATA Running Forseti Security the Serverless Way
-author: Ross Vandergrift, ClearDATA
+author: Marten van Wezel, Google
 ---
-ClearDATA is a cloud services provider in the heavily regulated healthcare and
-life sciences industry, and recently began using Forseti Security to automate
-security and compliance testing. Along the way, ClearDATA developed a
-light-weight, serverless method to deploy Forseti using containers and
-Cloud Pub/Sub, Take a look at their Google Cloud [blog
+As part of their mission to keep their enterprise secure, ClearDATA took a 
+liking to Forseti. They were less charmed by the traditional VM-based approach,
+as  they are a deeply serverless outfit. As such they have taken on the spirit
+of Open Source Contributions and adapted Forseti to interoperate  with both
+containers and Cloud Pub/Sub. Take a look at the Google Cloud
+[blog
 post](https://cloud.google.com/blog/products/identity-security/cleardata-running-forseti-the-serverless-way) to learn more!
+to find out more!
