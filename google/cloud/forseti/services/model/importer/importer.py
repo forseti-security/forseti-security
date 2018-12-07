@@ -155,6 +155,7 @@ class InventoryImporter(object):
             'compute_httpshealthcheck',
             'compute_license',
             'compute_project',
+            'compute_router',
             'compute_sslcertificate',
             'compute_targethttpproxy',
             'compute_targethttpsproxy',
@@ -175,9 +176,13 @@ class InventoryImporter(object):
             'instancegroup',
             'instancegroupmanager',
             'instancetemplate',
+            'kms_cryptokey',
+            'kms_cryptokeyversion',
+            'kms_keyring',
             'kubernetes_cluster',
             'lien',
             'network',
+            'pubsub_topic',
             'serviceaccount',
             'serviceaccount_key',
             'sink',
@@ -528,6 +533,7 @@ class InventoryImporter(object):
             'compute_httpshealthcheck': self._convert_computeengine_resource,
             'compute_license': self._convert_computeengine_resource,
             'compute_project': self._convert_computeengine_resource,
+            'compute_router': self._convert_computeengine_resource,
             'compute_sslcertificate': self._convert_computeengine_resource,
             'compute_targethttpproxy': self._convert_computeengine_resource,
             'compute_targethttpsproxy': self._convert_computeengine_resource,
@@ -549,11 +555,15 @@ class InventoryImporter(object):
             'instancegroup': self._convert_computeengine_resource,
             'instancegroupmanager': self._convert_computeengine_resource,
             'instancetemplate': self._convert_computeengine_resource,
+            'kms_cryptokey': self._convert_kms_resource,
+            'kms_cryptokeyversion': self._convert_kms_ckv_resource,
+            'kms_keyring': self._convert_kms_resource,
             'kubernetes_cluster': self._convert_kubernetes_cluster,
             'lien': self._convert_lien,
             'network': self._convert_computeengine_resource,
             'organization': self._convert_organization,
             'project': self._convert_project,
+            'pubsub_topic': self._convert_pubsub_topic,
             'serviceaccount': self._convert_serviceaccount,
             'serviceaccount_key': self._convert_serviceaccount_key,
             'sink': self._convert_sink,
@@ -679,6 +689,25 @@ class InventoryImporter(object):
         """
         self._convert_resource(resource, cached=True)
 
+    def _convert_kms_ckv_resource(self, resource):
+        """Convert a KMS CryptoKeyVersion resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        # No child resources, so do not cache.
+        self._convert_resource(resource, cached=False,
+                               display_key='name')
+
+    def _convert_kms_resource(self, resource):
+        """Convert a KMS resource to a database object.
+
+        Args:
+            resource (dict): A resource to store.
+        """
+        self._convert_resource(resource, cached=True,
+                               display_key='name')
+
     def _convert_kubernetes_cluster(self, cluster):
         """Convert an AppEngine resource to a database object.
 
@@ -703,6 +732,14 @@ class InventoryImporter(object):
         """
         self._convert_resource(organization, cached=True,
                                display_key='displayName')
+
+    def _convert_pubsub_topic(self, topic):
+        """Convert a PubSub Topic to a database object.
+
+        Args:
+            topic (object): Pubsub Topic to store.
+        """
+        self._convert_resource(topic, cached=True)
 
     def _convert_project(self, project):
         """Convert a project to a database object.

@@ -84,9 +84,18 @@ class Bucket(resource.Resource):
         return cls(
             parent=parent,
             bucket_id=bucket_id,
-            name=cls.RESOURCE_NAME_FMT % bucket_id,
             full_name='{}bucket/{}/'.format(parent.full_name, bucket_id),
             display_name=bucket_id,
             locations=[bucket_dict['location']],
             data=json_string,
         )
+
+    def get_lifecycle_rule(self):
+        """Create a bucket lifecycle's rules dict from its JSON string.
+         Returns:
+            dict: bucket lifecycle's rules.
+        """
+        bucket_dict = json.loads(self.data)
+        if 'lifecycle' in bucket_dict and 'rule' in bucket_dict['lifecycle']:
+            return bucket_dict['lifecycle']['rule']
+        return {}

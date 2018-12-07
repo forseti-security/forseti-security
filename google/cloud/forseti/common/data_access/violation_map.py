@@ -46,6 +46,8 @@ VIOLATION_RESOURCES = {
     'LIEN_VIOLATION': 'lien_violations',
     'LOCATION_VIOLATION': 'location_violations',
     'LOG_SINK_VIOLATION': 'log_sink_violations',
+    'RETENTION_VIOLATION': 'retention_violations',
     'SERVICE_ACCOUNT_KEY_VIOLATION': (
         'service_account_key_violations'),
+    'EXTERNAL_PROJECT_ACCESS_VIOLATION': 'external_project_access_violations'
 }

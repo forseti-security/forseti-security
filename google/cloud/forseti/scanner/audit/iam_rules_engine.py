@@ -129,7 +129,7 @@ class IamRulesEngine(bre.BaseRulesEngine):
             self._load_rule_definitions(),
             snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_policy_violations(
+    def find_violations(
             self, resource, policy, policy_bindings, force_rebuild=False):
         """Determine whether policy violates rules.
 

@@ -170,10 +170,27 @@ def bucket(item):
         parent['projectNumber'])
     data = item.data()
     # CAI does not include acl data.
-    data['acl'] = []
-    data['defaultObjectAcl'] = []
+    data.pop('acl')
+    data.pop('defaultObjectAcl')
     return _create_asset(name, asset_type, parent_name, data,
                          item.get_iam_policy())
+
+def role(item):
+    parent = item.parent()
+    if not parent:
+        return (None, None)
+
+    if parent.type() == 'organization':
+        parent_name = '//cloudresourcemanager.googleapis.com/{}'.format(
+            parent['name'])
+    else:
+        parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+            parent['projectNumber'])
+
+    name = '//iam.googleapis.com/{}'.format(item['name'])
+    asset_type = 'google.iam.Role'
+
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
 def serviceaccount(item):
@@ -185,6 +202,18 @@ def serviceaccount(item):
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(),
                          item.get_iam_policy())
+
+
+def kubernetes_cluster(item):
+    parent = item.parent()
+    name = ('//container.googleapis.com/v1/projects/{}/locations/{}/'
+            'clusters/{}'.format(parent['projectId'],
+                                 item['zone'],
+                                 item['name']))
+    asset_type = 'google.container.Cluster'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
 
 
 def _create_compute_asset(item, asset_type):
@@ -208,12 +237,24 @@ def firewall(item):
     return _create_compute_asset(item, 'google.compute.Firewall')
 
 
+def forwardingrule(item):
+    return _create_compute_asset(item, 'google.compute.ForwardingRule')
+
+
 def image(item):
     return _create_compute_asset(item, 'google.compute.Image')
 
 
 def instance(item):
     return _create_compute_asset(item, 'google.compute.Instance')
+
+
+def instancegroup(item):
+    return _create_compute_asset(item, 'google.compute.InstanceGroup')
+
+
+def instancegroupmanager(item):
+    return _create_compute_asset(item, 'google.compute.InstanceGroupManager')
 
 
 def instancetemplate(item):
@@ -246,10 +287,15 @@ CAI_TYPE_MAP = {
     'dataset': bigquery_dataset,
     'disk': disk,
     'firewall': firewall,
+    'forwardingrule': forwardingrule,
     'image': image,
     'instance': instance,
+    'instancegroup': instancegroup,
+    'instancegroupmanager': instancegroupmanager,
     'instancetemplate': instancetemplate,
+    'kubernetes_cluster': kubernetes_cluster,
     'network': network,
+    'role': role,
     'serviceaccount': serviceaccount,
     'snapshot': snapshot,
     'subnetwork': subnetwork,

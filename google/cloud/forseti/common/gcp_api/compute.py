@@ -30,6 +30,7 @@ from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+API_NAME = 'compute'
 
 
 def _api_not_enabled(error):
@@ -208,7 +209,7 @@ class ComputeRepositoryClient(_base_repository.BaseRepositoryClient):
         self._subnetworks = None
 
         super(ComputeRepositoryClient, self).__init__(
-            'compute', versions=['beta', 'v1'],
+            API_NAME, versions=['beta', 'v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter,
@@ -688,7 +689,7 @@ class ComputeClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'compute')
+            global_configs, API_NAME)
 
         # TODO: Also allow read only to be set from the global_configs.
         # Read only if either read_only or dry_run argument is True.
@@ -1118,11 +1119,13 @@ class ComputeClient(object):
 
         return flattened_results
 
-    def get_instance_groups(self, project_id):
+    def get_instance_groups(self, project_id, include_instance_urls=True):
         """Get the instance groups for a project.
 
         Args:
             project_id (str): The project id.
+            include_instance_urls (bool): If true, fetch instance urls for each
+                instance group and include them in the resource dictionary.
 
         Returns:
             list: A list of instance groups for this project.
@@ -1134,13 +1137,17 @@ class ComputeClient(object):
             _flatten_aggregated_list_results(project_id, paged_results,
                                              'instanceGroups'),
             key=lambda d: d.get('name'))
-        for instance_group in instance_groups:
-            instance_group['instance_urls'] = self.get_instance_group_instances(
-                project_id,
-                instance_group.get('name'),
+
+        if include_instance_urls:
+            for instance_group in instance_groups:
                 # Turn zone and region URLs into a names
-                zone=os.path.basename(instance_group.get('zone', '')),
-                region=os.path.basename(instance_group.get('region', '')))
+                zone = os.path.basename(instance_group.get('zone', ''))
+                region = os.path.basename(instance_group.get('region', ''))
+                instance_group['instance_urls'] = (
+                    self.get_instance_group_instances(project_id,
+                                                      instance_group['name'],
+                                                      zone=zone,
+                                                      region=region))
 
         LOGGER.debug('Getting the instance groups for a project, '
                      'project_id = %s, instance_groups = %s',

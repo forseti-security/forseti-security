@@ -95,7 +95,7 @@ class FirewallRulesEngine(bre.BaseRulesEngine):
                 org_policy=org_policy,
                 snapshot_timestamp=self.snapshot_timestamp)
 
-    def find_policy_violations(self, resource, policy, force_rebuild=False):
+    def find_violations(self, resource, policy, force_rebuild=False):
         """Determine whether policy violates rules.
 
         Args:
@@ -309,7 +309,7 @@ class RuleBook(bre.BaseRuleBook):
                     rule = self.rules_map[rule_id]
                     violations = itertools.chain(
                         violations,
-                        rule.find_policy_violations(policies))
+                        rule.find_violations(policies))
                 break  # Only the first rules found in the ancestry are applied
         return violations
 
@@ -448,7 +448,7 @@ class Rule(object):
             self._verify_rules = self.create_rules(self._verify_policies)
         return self._verify_rules
 
-    def find_policy_violations(self, firewall_policies):
+    def find_violations(self, firewall_policies):
         """Finds policy violations in a list of firewall policies.
 
         Args:

@@ -46,12 +46,14 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.index_state import IndexState
 # pylint: disable=line-too-long
 from google.cloud.forseti.services.inventory.base.storage import Storage as BaseStorage
+from google.cloud.forseti.services.scanner.dao import ScannerIndex
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
 BASE = declarative_base()
 CURRENT_SCHEMA = 1
 PER_YIELD = 1024
+MAX_ALLOWED_PACKET = 32 * 1024 * 1024  # 32 Mb default mysql max packet size
 
 
 class Categories(enum.Enum):
@@ -541,7 +543,7 @@ class CaiTemporaryStore(object):
         """
         if 'cai_temporary_store' not in metadata.tables:
             my_table = Table('cai_temporary_store', metadata,
-                             Column('name', String(255, collation=collation),
+                             Column('name', String(512, collation=collation),
                                     nullable=False),
                              Column('parent_name', String(255), nullable=True),
                              Column('content_type', Enum(ContentTypes),
@@ -557,25 +559,6 @@ class CaiTemporaryStore(object):
                                                   name='cai_temp_store_pk'))
 
             mapper(cls, my_table)
-
-    @staticmethod
-    def get_schema_update_actions():
-        """Maintain all the schema changes for this table.
-
-        Returns:
-            list: A list of Action.
-        """
-
-        #  Format of the columns_to_alter dict: {old_column: new_column}
-        columns_to_alter = {
-            Column('asset_data',
-                   LargeBinary(),
-                   nullable=False): Column('asset_data',
-                                           LargeBinary(length=(2**32) - 1),
-                                           nullable=False)}
-
-        schema_update_actions = {'ALTER': columns_to_alter}
-        return schema_update_actions
 
     def extract_asset_data(self, content_type):
         """Extracts the data from the asset protobuf based on the content type.
@@ -608,6 +591,11 @@ class CaiTemporaryStore(object):
             object: database row object or None if there is no data.
         """
         asset_pb = json_format.Parse(asset_json, assets_pb2.Asset())
+        if len(asset_pb.name) > 512:
+            LOGGER.warn('Skipping insert of asset %s, name too long.',
+                        asset_pb.name)
+            return None
+
         if asset_pb.HasField('resource'):
             content_type = ContentTypes.resource
             parent_name = cls._get_parent_name(asset_pb)
@@ -660,9 +648,21 @@ class CaiTemporaryStore(object):
         if asset_pb.resource.parent:
             return asset_pb.resource.parent
 
-        if (asset_pb.asset_type.startswith('google.appengine') or
-                asset_pb.asset_type.startswith('google.bigquery') or
-                asset_pb.asset_type.startswith('google.spanner')):
+        if asset_pb.asset_type == 'google.cloud.kms.KeyRing':
+            # KMS KeyRings are parented by a location under a project, but
+            # the location is not directly discoverable without iterating all
+            # locations, so instead this creates an artificial parent at the
+            # project level, which acts as an aggregated list of all keyrings
+            # in all locations to fix this broken behavior.
+            #
+            # Strip locations/{LOCATION}/keyRings/{RING} off name to get the
+            # parent project.
+            return '/'.join(asset_pb.name.split('/')[:-4])
+
+        elif (asset_pb.asset_type.startswith('google.appengine') or
+              asset_pb.asset_type.startswith('google.bigquery') or
+              asset_pb.asset_type.startswith('google.spanner') or
+              asset_pb.asset_type.startswith('google.cloud.kms')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 
@@ -673,38 +673,49 @@ class CaiTemporaryStore(object):
 class BufferedDbWriter(object):
     """Buffered db writing."""
 
-    def __init__(self, session, max_size=1024, commit_on_flush=False):
+    def __init__(self,
+                 session,
+                 max_size=1024,
+                 max_packet_size=MAX_ALLOWED_PACKET * .75,
+                 commit_on_flush=False):
         """Initialize
 
         Args:
             session (object): db session
             max_size (int): max size of buffer
+            max_packet_size (int): max size of a packet to send to SQL
             commit_on_flush (bool): If true, the session is committed to the
                 database when the data is flushed.
         """
         self.session = session
         self.buffer = []
+        self.estimated_packet_size = 0
         self.max_size = max_size
+        self.max_packet_size = max_packet_size
         self.commit_on_flush = commit_on_flush
 
-    def add(self, obj):
+    def add(self, obj, estimated_length=0):
         """Add an object to the buffer to write to db.
 
         Args:
             obj (object): Object to write to db.
+            estimated_length (int): The estimated length of this object.
         """
 
         self.buffer.append(obj)
-        if len(self.buffer) >= self.max_size:
+        self.estimated_packet_size += estimated_length
+        if (self.estimated_packet_size > self.max_packet_size or
+                len(self.buffer) >= self.max_size):
             self.flush()
 
     def flush(self):
         """Flush all pending objects to the database."""
 
-        self.session.add_all(self.buffer)
+        self.session.bulk_save_objects(self.buffer)
         self.session.flush()
         if self.commit_on_flush:
             self.session.commit()
+        self.estimated_packet_size = 0
         self.buffer = []
 
 
@@ -743,7 +754,11 @@ class CaiDataAccess(object):
         Returns:
             int: The number of rows inserted
         """
-        commit_buffer = BufferedDbWriter(session, commit_on_flush=True)
+        # CAI data can be large, so limit the number of rows written at one
+        # time to 512.
+        commit_buffer = BufferedDbWriter(session,
+                                         max_size=512,
+                                         commit_on_flush=True)
         num_rows = 0
         try:
             for line in data:
@@ -770,8 +785,11 @@ class CaiDataAccess(object):
                                 'content type %s', e, resource.get('name', ''),
                                 resource.get('asset_type', ''), content_type)
                     continue
-                commit_buffer.add(row)
-                num_rows += 1
+                if row:
+                    # Overestimate the packet length to ensure max size is never
+                    # exceeded. The actual length is closer to len(line) * 1.5.
+                    commit_buffer.add(row, estimated_length=len(line) * 2)
+                    num_rows += 1
             commit_buffer.flush()
         except SQLAlchemyError as e:
             LOGGER.exception('Error populating CAI data: %s', e)
@@ -924,6 +942,31 @@ class DataAccess(object):
             'Latest success/partial_success inventory index id is: %s',
             inventory_index.id)
         return inventory_index.id
+
+    @classmethod
+    # pylint: disable=invalid-name
+    def get_inventory_index_id_by_scanner_index_id(cls,
+                                                   session,
+                                                   scanner_index_id):
+        """List all inventory index entries.
+
+        Args:
+            session (object): Database session
+            scanner_index_id (int): id of the scanner in scanner_index table
+
+        Returns:
+            int64: inventory index id
+        """
+
+        query_result = (
+            session.query(ScannerIndex).filter(
+                ScannerIndex.id == scanner_index_id
+            ).order_by(ScannerIndex.inventory_index_id.desc()).first())
+        session.expunge(query_result)
+        LOGGER.info(
+            'Found inventory_index_id %s from scanner_index_id %s.',
+            query_result.inventory_index_id, scanner_index_id)
+        return query_result.inventory_index_id
 
     @classmethod
     def get_inventory_indexes_older_than_cutoff(  # pylint: disable=invalid-name

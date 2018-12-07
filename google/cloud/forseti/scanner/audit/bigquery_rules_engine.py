@@ -69,9 +69,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         """
         self.rule_book = BigqueryRuleBook(self._load_rule_definitions())
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, parent_project, bq_acl,
-                               force_rebuild=False):
+    def find_violations(self, parent_project, bq_acl, force_rebuild=False):
         """Determine whether Big Query datasets violate rules.
 
         Args:
@@ -86,7 +84,7 @@ class BigqueryRulesEngine(bre.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_policy_violations(
+        violations = self.rule_book.find_violations(
             parent_project, bq_acl)
 
         return violations
@@ -270,7 +268,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
                 )
                 self.resource_rules_map[resource].append(rule)
 
-    def find_policy_violations(self, resource, bq_acl):
+    def find_violations(self, resource, bq_acl):
         """Find acl violations in the rule book.
 
         Args:
@@ -292,7 +290,7 @@ class BigqueryRuleBook(bre.BaseRuleBook):
         for res in resource_ancestors:
             for rule in self.resource_rules_map.get(res, []):
                 violations = itertools.chain(
-                    violations, rule.find_policy_violations(bq_acl))
+                    violations, rule.find_violations(bq_acl))
 
         return violations
 
@@ -326,8 +324,7 @@ class Rule(object):
         self.rule_index = rule_index
         self.rule_reference = rule_reference
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, bigquery_acl):
+    def find_violations(self, bigquery_acl):
         """Find BigQuery acl violations in the rule book.
 
         Args:
@@ -378,7 +375,7 @@ class Rule(object):
         if has_applicable_rules and has_violation:
             yield self.RuleViolation(
                 resource_name=bigquery_acl.dataset_id,
-                resource_type=resource_mod.ResourceType.BIGQUERY,
+                resource_type=resource_mod.ResourceType.DATASET,
                 resource_id=bigquery_acl.dataset_id,
                 full_name=bigquery_acl.full_name,
                 rule_name=self.rule_name,

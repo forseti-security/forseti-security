@@ -76,13 +76,18 @@ def convert_to_timestamp(violations):
     return violations
 
 
-def run(inventory_index_id, progress_queue, service_config=None):
+# pylint: disable=too-many-branches,too-many-statements
+def run(inventory_index_id,
+        scanner_index_id,
+        progress_queue,
+        service_config=None):
     """Run the notifier.
 
     Entry point when the notifier is run as a library.
 
     Args:
         inventory_index_id (int64): Inventory index id.
+        scanner_index_id (int64): Scanner index id.
         progress_queue (Queue): The progress queue.
         service_config (ServiceConfig): Forseti 2.0 service configs.
     Returns:
@@ -92,13 +97,19 @@ def run(inventory_index_id, progress_queue, service_config=None):
     global_configs = service_config.get_global_config()
     notifier_configs = service_config.get_notifier_config()
 
-    violations = None
     with service_config.scoped_session() as session:
-        if not inventory_index_id:
+        if scanner_index_id:
             inventory_index_id = (
-                DataAccess.get_latest_inventory_index_id(session))
-        scanner_index_id = scanner_dao.get_latest_scanner_index_id(
-            session, inventory_index_id)
+                DataAccess.get_inventory_index_id_by_scanner_index_id(
+                    session,
+                    scanner_index_id))
+        else:
+            if not inventory_index_id:
+                inventory_index_id = (
+                    DataAccess.get_latest_inventory_index_id(session))
+            scanner_index_id = scanner_dao.get_latest_scanner_index_id(
+                session, inventory_index_id)
+
         if not scanner_index_id:
             LOGGER.error(
                 'No success or partial success scanner index found for '
@@ -154,12 +165,26 @@ def run(inventory_index_id, progress_queue, service_config=None):
             violation_configs = notifier_configs.get('violation')
             if violation_configs:
                 if violation_configs.get('cscc').get('enabled'):
-                    gcs_path = violation_configs.get('cscc').get('gcs_path')
-                    mode = violation_configs.get('cscc').get('mode')
-                    organization_id = (
-                        violation_configs.get('cscc').get('organization_id'))
-                    (cscc_notifier.CsccNotifier(inventory_index_id)
-                     .run(violations_as_dict, gcs_path, mode, organization_id))
+                    source_id = violation_configs.get('cscc').get('source_id')
+                    if source_id:
+                        # beta mode
+                        LOGGER.debug(
+                            'Running CSCC notifier with beta API. source_id: '
+                            '%s', source_id)
+                        (cscc_notifier.CsccNotifier(inventory_index_id)
+                         .run(violations_as_dict, source_id=source_id))
+                    else:
+                        # alpha mode
+                        LOGGER.debug('Running CSCC notifier with alpha API.')
+                        gcs_path = (
+                            violation_configs.get('cscc').get('gcs_path'))
+                        mode = violation_configs.get('cscc').get('mode')
+                        organization_id = (
+                            violation_configs.get('cscc').get(
+                                'organization_id'))
+                        (cscc_notifier.CsccNotifier(inventory_index_id)
+                         .run(violations_as_dict, gcs_path, mode,
+                              organization_id))
 
         InventorySummary(service_config, inventory_index_id).run()
 
@@ -168,3 +193,4 @@ def run(inventory_index_id, progress_queue, service_config=None):
         progress_queue.put(None)
         LOGGER.info(log_message)
         return 0
+    # pylint: enable=too-many-branches,too-many-statements

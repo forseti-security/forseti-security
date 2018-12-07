@@ -57,8 +57,7 @@ class KeRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KeRuleBook(
                 self._load_rule_definitions())
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster, force_rebuild=False):
+    def find_violations(self, ke_cluster, force_rebuild=False):
         """Check if KE cluster satisfies provided  rules.
 
         Args:
@@ -182,7 +181,7 @@ class KeRuleBook(bre.BaseRuleBook):
         LOGGER.debug('Looking for KE violations: %r', ke_cluster)
         violations = []
         resource_ancestors = resource_util.get_ancestors_from_full_name(
-            ke_cluster.resource_full_name)
+            ke_cluster.full_name)
 
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
@@ -198,7 +197,7 @@ class KeRuleBook(bre.BaseRuleBook):
             resource_rules = self.get_resource_rules(curr_resource)
             if resource_rules:
                 violations.extend(
-                    resource_rules.find_policy_violations(ke_cluster))
+                    resource_rules.find_violations(ke_cluster))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -208,7 +207,7 @@ class KeRuleBook(bre.BaseRuleBook):
             resource_rules = self.get_resource_rules(wildcard_resource)
             if resource_rules:
                 violations.extend(
-                    resource_rules.find_policy_violations(ke_cluster))
+                    resource_rules.find_violations(ke_cluster))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -231,7 +230,7 @@ class ResourceRules(object):
         self.resource = resource
         self.rules = rules
 
-    def find_policy_violations(self, ke_cluster):
+    def find_violations(self, ke_cluster):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
@@ -242,7 +241,7 @@ class ResourceRules(object):
         """
         violations = []
         for rule in self.rules:
-            rule_violations = rule.find_policy_violations(ke_cluster)
+            rule_violations = rule.find_violations(ke_cluster)
             if rule_violations:
                 violations.extend(rule_violations)
         return violations
@@ -304,8 +303,7 @@ class Rule(object):
         # compile right away to return exceptions asap
         self.rule_jmespath = jmespath.compile(self.rule_key)
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster):
+    def find_violations(self, ke_cluster):
         """Find KE violations in based on the rule.
 
         Args:
@@ -359,7 +357,7 @@ class Rule(object):
         return RuleViolation(
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
             resource_id=ke_cluster.name,
-            full_name=ke_cluster.resource_full_name,
+            full_name=ke_cluster.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             rule_mode=self.rule_mode,
@@ -367,9 +365,9 @@ class Rule(object):
             actual_value=actual,
             violation_type='KE_VIOLATION',
             violation_reason=violation_reason,
-            project_id=ke_cluster.project_id,
+            project_id=ke_cluster.parent.id,
             cluster_name=ke_cluster.name,
-            resource_data=str(ke_cluster),
+            resource_data=ke_cluster.data,
             resource_name=ke_cluster.name,
         )
 

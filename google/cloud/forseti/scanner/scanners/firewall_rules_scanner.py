@@ -111,7 +111,7 @@ class FirewallPolicyScanner(base_scanner.BaseScanner):
             resource = resource_util.create_resource(
                 resource_id=resource_id, resource_type='project')
             LOGGER.debug('%s => %s', resource, p_policies)
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 resource, p_policies)
             all_violations.extend(violations)
         return all_violations

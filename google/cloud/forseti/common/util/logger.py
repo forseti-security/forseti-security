@@ -84,6 +84,8 @@ def get_logger(module_name):
     logger_instance = logging.getLogger(module_name)
     logger_instance.addHandler(default_log_handler)
     logger_instance.setLevel(LOGLEVEL)
+    # Prevent output to CLI's stdout via other ancestor loggers.
+    logger_instance.propagate = False
 
     if LOG_TO_CONSOLE:
         console_handler = logging.StreamHandler()

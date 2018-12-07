@@ -42,6 +42,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'enabled_apis_scanner',
          'class_name': 'EnabledApisScanner',
          'rules_filename': 'enabled_apis_rules.yaml'},
+    'external_project_access':
+        {'module_name': 'external_project_access_scanner',
+         'class_name': 'ExternalProjectAccessScanner',
+         'rules_filename': 'external_project_access_rules.yaml'},
     'firewall_rule':
         {'module_name': 'firewall_rules_scanner',
          'class_name': 'FirewallPolicyScanner',
@@ -86,6 +90,10 @@ REQUIREMENTS_MAP = {
         {'module_name': 'log_sink_scanner',
          'class_name': 'LogSinkScanner',
          'rules_filename': 'log_sink_rules.yaml'},
+    'retention':
+        {'module_name': 'retention_scanner',
+         'class_name': 'RetentionScanner',
+         'rules_filename': 'retention_rules.yaml'},
     'service_account_key':
         {'module_name': 'service_account_key_scanner',
          'class_name': 'ServiceAccountKeyScanner',

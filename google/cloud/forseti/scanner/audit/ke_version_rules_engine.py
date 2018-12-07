@@ -56,8 +56,7 @@ class KeVersionRulesEngine(bre.BaseRulesEngine):
             self.rule_book = KeVersionRuleBook(
                 self._load_rule_definitions())
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster, force_rebuild=False):
+    def find_violations(self, ke_cluster, force_rebuild=False):
         """Determine whether Kubernetes Engine cluster version violates rules.
 
         Args:
@@ -180,7 +179,7 @@ class KeVersionRuleBook(bre.BaseRuleBook):
         LOGGER.debug('Looking for KE violations: %r', ke_cluster)
         violations = []
         resource_ancestors = resource_util.get_ancestors_from_full_name(
-            ke_cluster.resource_full_name)
+            ke_cluster.full_name)
 
         LOGGER.debug('Ancestors of resource: %r', resource_ancestors)
 
@@ -196,7 +195,7 @@ class KeVersionRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(curr_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(ke_cluster))
+                    resource_rule.find_violations(ke_cluster))
 
             wildcard_resource = resource_util.create_resource(
                 resource_id='*', resource_type=curr_resource.type)
@@ -206,7 +205,7 @@ class KeVersionRuleBook(bre.BaseRuleBook):
             resource_rule = self.get_resource_rules(wildcard_resource)
             if resource_rule:
                 violations.extend(
-                    resource_rule.find_policy_violations(ke_cluster))
+                    resource_rule.find_violations(ke_cluster))
 
         LOGGER.debug('Returning violations: %r', violations)
         return violations
@@ -229,7 +228,7 @@ class ResourceRules(object):
         self.resource = resource
         self.rules = rules
 
-    def find_policy_violations(self, ke_cluster):
+    def find_violations(self, ke_cluster):
         """Determine if the policy binding matches this rule's criteria.
 
         Args:
@@ -240,7 +239,7 @@ class ResourceRules(object):
         """
         violations = []
         for rule in self.rules:
-            rule_violations = rule.find_policy_violations(ke_cluster)
+            rule_violations = rule.find_violations(ke_cluster)
             if rule_violations:
                 violations.extend(rule_violations)
         return violations
@@ -376,8 +375,7 @@ class Rule(object):
             check_serverconfig_valid_master_versions)
         self.allowed_versions = frozenset(allowed_nodepool_versions)
 
-    # TODO: The naming is confusing and needs to be fixed in all scanners.
-    def find_policy_violations(self, ke_cluster):
+    def find_violations(self, ke_cluster):
         """Find KE Version violations in based on the rule.
 
         Args:
@@ -419,15 +417,15 @@ class Rule(object):
             resource_name=ke_cluster.name,
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
             resource_id=ke_cluster.name,
-            full_name=ke_cluster.resource_full_name,
+            full_name=ke_cluster.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
             violation_type='KE_VERSION_VIOLATION',
             violation_reason=violation_reason,
-            project_id=ke_cluster.project_id,
+            project_id=ke_cluster.parent.id,
             cluster_name=ke_cluster.name,
             node_pool_name=node_pool_name,
-            resource_data=str(ke_cluster))
+            resource_data=ke_cluster.data)
 
     def _node_versions_valid(self, ke_cluster):
         """Check the node pool versions against the supported version list.

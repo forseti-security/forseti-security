@@ -28,7 +28,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import metadata_server
 
 LOGGER = logger.get_logger(__name__)
-
+API_NAME = 'storage'
 GCS_SCHEME = 'gs'
 
 
@@ -128,7 +128,7 @@ class StorageRepositoryClient(_base_repository.BaseRepositoryClient):
         self._object_acls = None
 
         super(StorageRepositoryClient, self).__init__(
-            'storage', versions=['v1'],
+            API_NAME, versions=['v1'],
             credentials=credentials,
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
@@ -397,7 +397,7 @@ class StorageClient(object):
 
         self.repository = StorageRepositoryClient(
             credentials=kwargs.get('credentials'),
-            quota_max_calls=0,
+            quota_max_calls=None,
             use_rate_limiter=False)
 
     def put_text_file(self, local_file_path, full_bucket_path):

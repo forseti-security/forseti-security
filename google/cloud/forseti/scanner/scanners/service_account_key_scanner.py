@@ -104,7 +104,7 @@ class ServiceAccountKeyScanner(base_scanner.BaseScanner):
         LOGGER.info('Finding service account key age violations...')
 
         for service_account in service_accounts:
-            violations = self.rules_engine.find_policy_violations(
+            violations = self.rules_engine.find_violations(
                 service_account)
             LOGGER.debug(violations)
             all_violations.extend(violations)
