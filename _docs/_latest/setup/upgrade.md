@@ -776,7 +776,7 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
-1. To enable the External Project Access Scanner, go to your Google Admin
+1. To enable the [External Project Access Scanner]({% link _docs/latest/configure/scanner/descriptions.md %}#external-project-access-scanner), go to your Google Admin
 [Manage API client access](https://admin.google.com/ManageOauthClients) Security
 settings and add API scope `https://www.googleapis.com/auth/cloudplatformprojects.readonly` 
 to the Client ID of your service account.
