@@ -776,7 +776,9 @@ If you see errors while running the deployment manager update command, please re
 You can reset the VM by running command `gcloud compute instances reset MY_FORSETI_SERVER_INSTANCE --zone MY_FORSETI_SERVER_ZONE`  
 Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zone us-central1-c`
 1. Repeat step `3-8` for Forseti client.
-1. To enable the External Project Access Scanner, add API scope `https://www.googleapis.com/auth/cloudplatformprojects.readonly` 
+1. To enable the External Project Access Scanner, go to your Google Admin
+[Manage API client access](https://admin.google.com/ManageOauthClients) Security
+settings and add API scope `https://www.googleapis.com/auth/cloudplatformprojects.readonly` 
 to the Client ID of your service account.
     ```
     https://www.googleapis.com/auth/admin.directory.group.readonly,
@@ -785,22 +787,6 @@ to the Client ID of your service account.
     ```
 1. Configuration file `forseti_conf_server.yaml` updates:  
     **Inventory**
-    - Update the `cai` section to include any asset types to exclude from the inventory. Refer 
-    [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.9.0/configs/server/forseti_conf_server.yaml.in)
-    for the full list of assets to exclude. 
-    
-    - The example below is excluding `google.appengine.Application` and `google.compute.InstanceGroup` from the inventory.
-        ```
-        inventory:
-            ...
-            cai:
-                ...
-                asset_types:
-                    - google.appengine.Application
-                    - google.compute.InstanceGroup
-                ...
-            ...
-        ```
     - Update the `api_quota` section to include `disable_polling`. 
     Set disable_polling to True to disable polling that API for creation of the inventory.
         ```
@@ -820,12 +806,45 @@ to the Client ID of your service account.
                 ...
             ...
         ```
+    - Update the `cai` section to include any asset types to exclude from the inventory. Refer 
+    [here](https://github.com/GoogleCloudPlatform/forseti-security/blob/v2.9.0/configs/server/forseti_conf_server.yaml.in)
+    for the full list of assets to exclude. 
+    
+    - The example below is excluding `google.appengine.Application` and `google.compute.InstanceGroup` from the inventory.
+        ```
+        inventory:
+            ...
+            cai:
+                ...
+                asset_types:
+                    - google.appengine.Application
+                    - google.compute.InstanceGroup
+                ...
+            ...
+        ```
+
     **Notifier**
-    - Update the `violation` section to enable CSCC Beta API. Documentation
+    - Update the `violation` section to include `source_id` where the format is `organizations/ORG_ID/sources/SOURCE_ID`
+    to enable CSCC Beta API. Information
     [here.](https://cloud.google.com/blog/products/identity-security/cloud-security-command-center-is-now-in-beta)
     
 1. Rule files updates:
-    - Google Groups rule syntax has been [updated]({% link _docs/latest/configure/scanner/rules.md %}#google-group-rules) to include Google related service account by default.
+    - Google Groups default rule has been [updated]({% link _docs/latest/configure/scanner/rules.md %}#google-group-rules) 
+    to include Google related service account by default. Add and modify the following to `rules/group_rules.yaml` to enable:
+    
+    ```
+    - name: Allow my company users and gmail users to be in my company groups.
+      group_email: my_customer
+      mode: whitelist
+      conditions:
+        - member_email: '@MYDOMAIN.com'
+        - member_email: '@gmail.com'
+        # GCP Service Accounts
+        # https://cloud.google.com/compute/docs/access/service-accounts
+        - member_email: "gserviceaccount.com"
+        # Big Query Transfer Service
+        - member_email: "@bqdts.google.baggins"
+    ```
 {% endcapture %}
 {% include site/zippy/item.html title="Upgrading 2.8.0 to 2.9.0" content=upgrading_2_8_0_to_2_9_0 uid=10 %}
 
