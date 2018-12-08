@@ -22,6 +22,7 @@ import json
 from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.services.inventory.base.resources import size_t_hash
 
+
 # pylint: disable=too-many-arguments,too-many-instance-attributes
 # pylint: disable=too-many-locals,missing-param-doc,missing-type-doc
 # pylint: disable=invalid-name
