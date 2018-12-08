@@ -109,65 +109,65 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         self._local.cai_session = db.create_readonly_session(engine=self.engine)
         return self._local.cai_session
 
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
-        """Gets IAM policy of a bigquery dataset from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-            dataset_id (str): id of the dataset to query.
-
-        Returns:
-            dict: Dataset IAM Policy.
-        """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
-            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
-                project_number, dataset_id),
-            self.session)
-        if resource:
-            return resource
-        return {}
-
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
-        """Dataset policy Iterator for a dataset from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-            dataset_id (str): id of the dataset to query.
-
-        Returns:
-            dict: Dataset Policy.
-        """
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
-            '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
-                project_number, dataset_id),
-            self.session)
-        if resource:
-            return iam_helpers.convert_iam_to_bigquery_policy(resource)
-        # Fall back to live API if the data isn't in the CAI cache.
-        return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
-            project_number, dataset_id)
-
-    def iter_bigquery_datasets(self, project_number):
-        """Iterate Datasets from Cloud Asset data.
-
-        Args:
-            project_number (str): number of the project to query.
-
-        Yields:
-            dict: Generator of datasets.
-        """
-        resources = self.dao.iter_cai_assets(
-            ContentTypes.resource,
-            'google.bigquery.Dataset',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
-            self.session)
-        for dataset in resources:
-            yield dataset
+    # def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    #     """Gets IAM policy of a bigquery dataset from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): number of the project to query.
+    #         dataset_id (str): id of the dataset to query.
+    #
+    #     Returns:
+    #         dict: Dataset IAM Policy.
+    #     """
+    #     resource = self.dao.fetch_cai_asset(
+    #         ContentTypes.iam_policy,
+    #         'google.bigquery.Dataset',
+    #         '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+    #             project_number, dataset_id),
+    #         self.session)
+    #     if resource:
+    #         return resource
+    #     return {}
+    #
+    # def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    #     """Dataset policy Iterator for a dataset from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): number of the project to query.
+    #         dataset_id (str): id of the dataset to query.
+    #
+    #     Returns:
+    #         dict: Dataset Policy.
+    #     """
+    #     resource = self.dao.fetch_cai_asset(
+    #         ContentTypes.iam_policy,
+    #         'google.bigquery.Dataset',
+    #         '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
+    #             project_number, dataset_id),
+    #         self.session)
+    #     if resource:
+    #         return iam_helpers.convert_iam_to_bigquery_policy(resource)
+    #     # Fall back to live API if the data isn't in the CAI cache.
+    #     return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
+    #         project_number, dataset_id)
+    #
+    # def iter_bigquery_datasets(self, project_number):
+    #     """Iterate Datasets from Cloud Asset data.
+    #
+    #     Args:
+    #         project_number (str): number of the project to query.
+    #
+    #     Yields:
+    #         dict: Generator of datasets.
+    #     """
+    #     resources = self.dao.iter_cai_assets(
+    #         ContentTypes.resource,
+    #         'google.bigquery.Dataset',
+    #         '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+    #             project_number),
+    #         self.session)
+    #     for dataset in resources:
+    #         yield dataset
 
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from Cloud Asset data.
