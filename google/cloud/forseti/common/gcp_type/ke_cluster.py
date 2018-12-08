@@ -51,7 +51,7 @@ class KeCluster(resource.Resource):
         super(KeCluster, self).__init__(
             resource_id=cluster_id,
             resource_type=resource.ResourceType.KE_CLUSTER,
-            name=cluster_id,
+            name=cluster_name,
             display_name=cluster_name,
             parent=parent,
             locations=locations)

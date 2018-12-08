@@ -22,7 +22,7 @@ from tests.services.util.db import create_test_engine
 from google.cloud.forseti.common.gcp_type import resource as resource_mod
 from google.cloud.forseti.scanner.scanners import ke_version_scanner
 from google.cloud.forseti.services.dao import ModelManager
-
+from google.cloud.forseti.services.inventory.base.resources import size_t_hash
 
 SERVER_CONFIG = """
 {
@@ -54,7 +54,8 @@ MASTER_VERSION_INVALID = """
     }],
     "initialClusterVersion": "1.6.13-gke.1",
     "currentMasterVersion": "1.6.13-gke.1",
-    "currentNodeVersion": "1.6.13-gke.1"
+    "currentNodeVersion": "1.6.13-gke.1",
+    "selfLink": "master-version-invalid.com"
 }
 """
 
@@ -67,7 +68,8 @@ NODE_VERSION_INVALID = """
     }],
     "initialClusterVersion": "1.8.4-gke.1",
     "currentMasterVersion": "1.8.6-gke.0",
-    "currentNodeVersion": "1.8.4-gke.1"
+    "currentNodeVersion": "1.8.4-gke.1",
+    "selfLink": "node-version-invalid.com"
 }
 """
 
@@ -80,7 +82,8 @@ NODE_VERSION_NOT_ALLOWED = """
     }],
     "initialClusterVersion": "1.7.10-gke.1",
     "currentMasterVersion": "1.7.11-gke.1",
-    "currentNodeVersion": "1.7.10-gke.1"
+    "currentNodeVersion": "1.7.10-gke.1",
+    "selfLink": "node-version-not-allowed.com"
 }
 """
 
@@ -96,15 +99,21 @@ MULTIPLE_NODE_POOLS = """
     }],
     "initialClusterVersion": "1.7.11-gke.1",
     "currentMasterVersion": "1.7.11-gke.1",
-    "currentNodeVersion": "1.7.11-gke.1"
+    "currentNodeVersion": "1.7.11-gke.1",
+    "selfLink": "multiple-node-pools.com"
 }
 """
 
+MASTER_VERSION_INVALID_ID = size_t_hash('master-version-invalid.com')
+NODE_VERSION_INVALID_ID = size_t_hash('node-version-invalid.com')
+NODE_VERSION_NOT_ALLOWED_ID = size_t_hash('node-version-not-allowed.com')
+MULTIPLE_NODE_POOLS_ID = size_t_hash('multiple-node-pools.com')
+
 FAKE_CLUSTERS = {
-    'master-version-invalid': MASTER_VERSION_INVALID,
-    'node-version-invalid': NODE_VERSION_INVALID,
-    'node-version-not-allowed': NODE_VERSION_NOT_ALLOWED,
-    'multiple-node-pools': MULTIPLE_NODE_POOLS,
+    MASTER_VERSION_INVALID_ID: MASTER_VERSION_INVALID,
+    NODE_VERSION_INVALID_ID: NODE_VERSION_INVALID,
+    NODE_VERSION_NOT_ALLOWED_ID: NODE_VERSION_NOT_ALLOWED,
+    MULTIPLE_NODE_POOLS_ID: MULTIPLE_NODE_POOLS,
 }
 
 
@@ -158,11 +167,11 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
     def test_run_scanner(self, mock_output_results):
         self.scanner.run()
         expected_violations = [
-            {'resource_id': u'node-version-not-allowed',
+            {'resource_id': NODE_VERSION_NOT_ALLOWED_ID,
              'resource_name': u'node-version-not-allowed',
              'rule_name': 'Disallowed node pool version',
-             'resource_data': '{"nodePools": [{"version": "1.7.10-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.7.11-gke.1", "initialClusterVersion": "1.7.10-gke.1", "name": "node-version-not-allowed", "currentNodeVersion": "1.7.10-gke.1"}',
-             'full_name': u'organization/12345/project/foo/kubernetes_cluster/node-version-not-allowed/',
+             'resource_data': '{"name": "node-version-not-allowed", "currentNodeVersion": "1.7.10-gke.1", "currentMasterVersion": "1.7.11-gke.1", "initialClusterVersion": "1.7.10-gke.1", "nodePools": [{"version": "1.7.10-gke.1", "name": "default-pool"}], "selfLink": "node-version-not-allowed.com"}',
+             'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
              'rule_index': 2,
              'violation_data': {
                  'violation_reason': (
@@ -171,15 +180,15 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                      "'>= 1.9.*'])."),
                  'cluster_name': u'node-version-not-allowed',
                  'project_id': u'foo',
-                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/node-version-not-allowed/',
+                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_NOT_ALLOWED_ID),
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER},
-            {'resource_id': u'master-version-invalid',
+            {'resource_id': MASTER_VERSION_INVALID_ID,
              'resource_name': u'master-version-invalid',
              'rule_name': 'Unsupported master version',
-             'resource_data': '{"nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1"}',
-             'full_name': u'organization/12345/project/foo/kubernetes_cluster/master-version-invalid/',
+             'resource_data': '{"name": "master-version-invalid", "currentNodeVersion": "1.6.13-gke.1", "currentMasterVersion": "1.6.13-gke.1", "initialClusterVersion": "1.6.13-gke.1", "nodePools": [{"version": "1.6.13-gke.1", "name": "default-pool"}], "selfLink": "master-version-invalid.com"}',
+             'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
              'rule_index': 1,
              'violation_data': {
                  'violation_reason': (
@@ -187,15 +196,15 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                      "([u'1.7.11-gke.1', u'1.8.6-gke.0'])."),
                  'cluster_name': u'master-version-invalid',
                  'project_id': u'foo',
-                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/master-version-invalid/',
+                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(MASTER_VERSION_INVALID_ID),
                  'node_pool_name': ''},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER},
-            {'resource_id': u'node-version-invalid',
+            {'resource_id': NODE_VERSION_INVALID_ID,
              'resource_name': u'node-version-invalid',
              'rule_name': 'Unsupported node pool version',
-             'resource_data': '{"nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1"}',
-             'full_name': u'organization/12345/project/foo/kubernetes_cluster/node-version-invalid/',
+             'resource_data': '{"name": "node-version-invalid", "currentNodeVersion": "1.8.4-gke.1", "currentMasterVersion": "1.8.6-gke.0", "initialClusterVersion": "1.8.4-gke.1", "nodePools": [{"version": "1.8.4-gke.1", "name": "default-pool"}], "selfLink": "node-version-invalid.com"}',
+             'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
              'rule_index': 0,
              'violation_data': {
                  'violation_reason': (
@@ -204,7 +213,7 @@ class KeVersionScannerTest(unittest_utils.ForsetiTestCase):
                      "u'1.8.6-gke.0'])."),
                  'cluster_name': u'node-version-invalid',
                  'project_id': u'foo',
-                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/node-version-invalid/',
+                 'full_name': u'organization/12345/project/foo/kubernetes_cluster/{}/'.format(NODE_VERSION_INVALID_ID),
                  'node_pool_name': u'default-pool'},
              'violation_type': 'KE_VERSION_VIOLATION',
              'resource_type': resource_mod.ResourceType.KE_CLUSTER}]
