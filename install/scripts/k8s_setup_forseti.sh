@@ -30,6 +30,7 @@
 	export FORSETI_IMAGE=gcr.io/<project>/<image>
 	export BUCKET=gs://<bucketname>
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
+	export CRON_SCHEDULE="*/60 * * * *"
 
 	# Create a deployment file 'forseti.yaml' from the template 'forseti.template.yaml'
 	# with variables substituted into the yaml
