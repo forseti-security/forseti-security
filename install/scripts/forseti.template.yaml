@@ -27,7 +27,7 @@ spec:
                 - name: GOOGLE_APPLICATION_CREDENTIALS
                   value: /var/secrets/google/key.json
             - name: cloudsql-proxy
-              image: gcr.io/cloudsql-docker/gce-proxy:1.11
+              image: gcr.io/cloudsql-docker/gce-proxy:1.13
               command: ["/cloud_sql_proxy", "${CLOUD_SQL_CONNECTION}", "-credential_file=/var/secrets/google/key.json"]
               securityContext:
                 runAsUser: 2  # non-root user
@@ -37,3 +37,4 @@ spec:
                   mountPath: /var/secrets/google
                   readOnly: true
           restartPolicy: Never
+  concurrencyPolicy: Forbid

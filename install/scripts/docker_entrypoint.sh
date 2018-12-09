@@ -50,7 +50,7 @@ forseti_server \
 # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
 
 # Wait until the service is started
-sleep 60s
+sleep 10s
 
 # Set the output format to json
 forseti config format json
