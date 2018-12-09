@@ -23,6 +23,12 @@
 # This script assumes it's running in a container on a GCE Container Optimized OS VM
 # that is already authorized with the forseti service account.
 
+# TODO remove set -x after debugging complete
+# set -x enables a mode of the shell where all executed commands are printed to the terminal.
+# With this  enabled, we should not put anything private/secret in the commands called because
+# they will be logged.
+set -x
+
 # TODO named arg and arg validation
 # TODO arg to control which services to start (default to server for now)
 BUCKET=$1
