@@ -30,8 +30,8 @@ BUCKET=$1
 # Download config files
 # -DD optional gsutil debugging
 # TODO switch debugging on/off via env var
-gsutil -DD cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
+gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+gsutil cp -r ${BUCKET}/rules /forseti-security/
 
 # TODO Error handling for gsutil cp
 
@@ -43,8 +43,8 @@ forseti_server \
 --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
 --services scanner model inventory explain notifier \
 --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
---log_level=debug
-#--enable_console_log #turn off for now
+--log_level=info
+#--enable_console_log
 
 # Below cut and paste from run_forseti.sh ######################################
 # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
@@ -99,3 +99,5 @@ sleep 10s
 # Clean up the model tables
 echo "Cleaning up model tables"
 forseti model delete ${MODEL_NAME}
+
+# End cut and paste from run_forseti.sh ######################################
