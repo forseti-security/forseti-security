@@ -98,7 +98,8 @@ sleep 10s
 
 # Run notifier command
 echo "Running Forseti notifier."
-forseti notifier run --scanner_index_id ${scanner_index_id}
+# forseti notifier run --scanner_index_id ${scanner_index_id}
+forseti notifier run
 echo "Finished running Forseti notifier."
 sleep 10s
 
