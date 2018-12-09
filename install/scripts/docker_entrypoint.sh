@@ -43,14 +43,14 @@ forseti_server \
 --forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
 --services scanner model inventory explain notifier \
 --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
---log_level=debug \
+--log_level=debug 
 #--enable_console_log #turn off for now
 
 # Below cut and paste from run_forseti.sh ######################################
 # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
 
 # Wait until the service is started
-sleep 10s
+sleep 60s
 
 # Set the output format to json
 forseti config format json
