@@ -167,6 +167,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.session)
 
+        resources = list(resources)
+
         if resources and not all('location' in ds for ds in resources):
             LOGGER.info('Datasets missing location key in CAI, '
                         'falling back to live API.')
