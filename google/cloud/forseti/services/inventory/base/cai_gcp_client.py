@@ -167,15 +167,15 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
                 project_number),
             self.session)
 
-        resources = list(resources)
+        resource_list = list(resources)
 
-        if resources and not all('location' in ds for ds in resources):
+        if resource_list and not all('location' in ds for ds in resource_list):
             LOGGER.info('Datasets missing location key in CAI, '
                         'falling back to live API.')
-            resources = super(CaiApiClientImpl,
-                              self).iter_bigquery_datasets(project_number)
+            resource_list = list(super(CaiApiClientImpl,
+                                 self).iter_bigquery_datasets(project_number))
 
-        for dataset in resources:
+        for dataset in resource_list:
             yield dataset
 
     def fetch_billing_account_iam_policy(self, account_id):
