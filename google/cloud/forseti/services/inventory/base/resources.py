@@ -31,6 +31,18 @@ from google.cloud.forseti.services.inventory.base import iam_helpers
 LOGGER = logger.get_logger(__name__)
 
 
+def size_t_hash(key):
+    """Hash the key using size_t.
+
+    Args:
+        key (str): The key to hash.
+
+    Returns:
+        str: The hashed key.
+    """
+    return '%u' % ctypes.c_size_t(hash(key)).value
+
+
 def from_root_id(client, root_id):
     """Start the crawling from root if the root type is supported.
 
@@ -477,7 +489,7 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
             if hash_key:
                 # Resource does not have a globally unique ID, use size_t hash
                 # of key data.
-                return '%u' % ctypes.c_size_t(hash(self[key_field])).value
+                return size_t_hash(self[key_field])
 
             return self[key_field]
 
