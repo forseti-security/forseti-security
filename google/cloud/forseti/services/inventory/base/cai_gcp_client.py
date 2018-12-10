@@ -160,22 +160,21 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Yields:
             dict: Generator of datasets.
         """
-        resources = self.dao.iter_cai_assets(
+        resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.bigquery.Dataset',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
-            self.session)
+            self.session))
 
-        resource_list = list(resources)
-
-        if resource_list and not all('location' in ds for ds in resource_list):
+        if resources and not all('location' in ds for ds in resources):
             LOGGER.info('Datasets missing location key in CAI, '
                         'falling back to live API.')
-            resource_list = list(super(CaiApiClientImpl,
-                                 self).iter_bigquery_datasets(project_number))
+            resources = list(
+                super(CaiApiClientImpl,
+                      self).iter_bigquery_datasets(project_number))
 
-        for dataset in resource_list:
+        for dataset in resources:
             yield dataset
 
     def fetch_billing_account_iam_policy(self, account_id):
