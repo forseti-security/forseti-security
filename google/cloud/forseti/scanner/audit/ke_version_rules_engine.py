@@ -416,7 +416,7 @@ class Rule(object):
         return RuleViolation(
             resource_name=ke_cluster.name,
             resource_type=resource_mod.ResourceType.KE_CLUSTER,
-            resource_id=ke_cluster.name,
+            resource_id=ke_cluster.id,
             full_name=ke_cluster.full_name,
             rule_name=self.rule_name,
             rule_index=self.rule_index,
