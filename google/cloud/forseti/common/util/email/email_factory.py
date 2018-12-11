@@ -14,31 +14,30 @@
 
 """Base email connector to select connector"""
 
-from google.cloud.forseti.notifier.notifiers import email_violations
 from google.cloud.forseti.common.util.email import sendgrid_connector
-from google.cloud.forseti.services.base import config
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.actions import action_config_validator as validator
 
 LOGGER = logger.get_logger(__name__)
 
 EMAIL_CONNECTOR_FACTORY = {
-    'sendgrid': sendgrid_connector
+    'sendgrid': sendgrid_connector.EmailUtil
 }
 
 
 class EmailFactory(object):
     """Email Factory to select connector."""
 
-    def __init__(self, notifier_config, notification_config):
+    def __init__(self, notifier_config):
         """Constructor for the email factory.
 
         Args:
             notifier_config (dict): Notifier configurations.
-            notification_config (dict): notifier configurations.
         """
-        self.notification_config = notification_config
         self.notifier_config = notifier_config
-        self.email_connector_config = notifier_config.get('email_connector_config')
+        self.email_connector_config = notifier_config\
+            .get('email_connector_config')
+        LOGGER.debug('email connector config:', self.email_connector_config)
 
     def get_connector(self):
         """Gets the connector and executes it."""
@@ -47,6 +46,8 @@ class EmailFactory(object):
             auth = self.email_connector_config.get('auth')
             sender = self.email_connector_config.get('sender')
             recipient = self.email_connector_config.get('recipient')
-            return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient, auth)
-        except:
-            LOGGER.error('Connector details not found')
+            return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
+                                                           auth)
+        except validator.ConfigParseError as e:
+            LOGGER.exception('Error occurred while fetching connector details')
+            raise e

@@ -18,12 +18,8 @@
 # this is needed because quiet the Sendgrid no-member error on Travis.
 # pylint: disable=no-member,useless-suppression
 
-import base64
-import os
+
 import urllib2
-
-import jinja2
-
 import sendgrid
 from sendgrid.helpers import mail
 from retrying import retry
@@ -31,21 +27,24 @@ from retrying import retry
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
+from google.cloud.forseti.common.util.email import base_email_connector
 
 
 LOGGER = logger.get_logger(__name__)
 
 
-class EmailUtil(object):
-    """Utility for sending emails."""
+class EmailUtil(base_email_connector.BaseEmailConnector):
+    """Utility for sending emails using Sendgrid API Key."""
 
-    def __init__(self, api_key):
+    def __init__(self, sender, recipient, **kwargs):
         """Initialize the email util.
 
         Args:
             api_key (str): The SendGrid api key to auth email service.
         """
-        self.sendgrid = sendgrid.SendGridAPIClient(apikey=api_key)
+        self.sender = sender
+        self.recipient = recipient
+        self.sendgrid = sendgrid.SendGridAPIClient(apikey=kwargs.get('api_key'))
 
     @retry(retry_on_exception=retryable_exceptions.is_retryable_exception,
            wait_exponential_multiplier=1000, wait_exponential_max=10000,
@@ -63,24 +62,6 @@ class EmailUtil(object):
             dict: urllib2 response object
         """
         return self.sendgrid.client.mail.send.post(request_body=email.get())
-
-    @staticmethod
-    def _add_recipients(email, email_recipients):
-        """Add multiple recipients to the sendgrid email object.
-
-        Args:
-            email (SendGrid): SendGrid mail object
-            email_recipients (Str): comma-separated text of the email recipients
-
-        Returns:
-            SendGrid: SendGrid mail object with mulitiple recipients.
-        """
-        personalization = mail.Personalization()
-        recipients = email_recipients.split(',')
-        for recipient in recipients:
-            personalization.add_to(mail.Email(recipient))
-        email.add_personalization(personalization)
-        return email
 
     def send(self, email_sender=None, email_recipient=None,
              email_subject=None, email_content=None, content_type=None,
@@ -135,53 +116,3 @@ class EmailUtil(object):
                          response.body, response.headers)
             raise util_errors.EmailSendError
 
-    @classmethod
-    def render_from_template(cls, template_file, template_vars):
-        """Fill out an email template with template variables.
-
-        Args:
-            template_file (str): The location of email template in filesystem.
-            template_vars (dict): The template variables to fill into the
-                template.
-
-        Returns:
-            str: The template content, rendered with the provided variables.
-        """
-        template_searchpath = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), '../email_templates'))
-        template_loader = jinja2.FileSystemLoader(
-            searchpath=template_searchpath)
-        template_env = jinja2.Environment(loader=template_loader)
-        template = template_env.get_template(template_file)
-        return template.render(template_vars)
-
-    @classmethod
-    def create_attachment(cls, file_location, content_type, filename,
-                          disposition='attachment', content_id=None):
-        """Create a SendGrid attachment.
-
-        SendGrid attachments file content must be base64 encoded.
-
-        Args:
-            file_location (str): The path of the file.
-            content_type (str): The content type of the attachment.
-            filename (str): The filename of attachment.
-            disposition (str): Content disposition, defaults to "attachment".
-            content_id (str): The content id.
-
-        Returns:
-            Attachment: A SendGrid Attachment.
-        """
-        file_content = ''
-        with open(file_location, 'rb') as f:
-            file_content = f.read()
-        content = base64.b64encode(file_content)
-
-        attachment = mail.Attachment()
-        attachment.content = content
-        attachment.type = content_type
-        attachment.filename = filename
-        attachment.disposition = disposition
-        attachment.content_id = content_id
-
-        return attachment

@@ -18,12 +18,12 @@ import tempfile
 
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
+from google.cloud.forseti.common.util.email import email_factory
 
 LOGGER = logger.get_logger(__name__)
 
@@ -52,8 +52,8 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        self.mail_util = sendgrid_connector.EmailUtil(
-            self.notification_config['sendgrid_api_key'])
+        self.connector = email_factory.emailFactory(self.notifier_config)\
+            .get_connector()
 
     def _make_attachment_csv(self):
         """Create the attachment object in csv format.
@@ -68,7 +68,7 @@ class EmailViolations(base_notification.BaseNotification):
                                   write_header=True) as csv_file:
             output_csv_name = csv_file.name
             LOGGER.info('CSV filename: %s', output_csv_name)
-            attachment = self.mail_util.create_attachment(
+            attachment = self.connector.create_attachment(
                 file_location=csv_file.name,
                 content_type='text/csv', filename=output_filename,
                 content_id='Violations')
@@ -87,7 +87,7 @@ class EmailViolations(base_notification.BaseNotification):
             tmp_violations.write(parser.json_stringify(self.violations))
             tmp_violations.flush()
             LOGGER.info('JSON filename: %s', tmp_violations.name)
-            attachment = self.mail_util.create_attachment(
+            attachment = self.connector.create_attachment(
                 file_location=tmp_violations.name,
                 content_type='application/json',
                 filename=output_filename,
@@ -106,7 +106,7 @@ class EmailViolations(base_notification.BaseNotification):
         timestamp = date_time.get_date_from_microtimestamp(
             self.inventory_index_id)
         pretty_timestamp = timestamp.strftime(string_formats.TIMESTAMP_READABLE)
-        email_content = self.mail_util.render_from_template(
+        email_content = self.connector.render_from_template(
             'notification_summary.jinja', {
                 'scan_date': pretty_timestamp,
                 'resource': self.resource,
@@ -162,7 +162,7 @@ class EmailViolations(base_notification.BaseNotification):
         attachment = notification_map['attachment']
 
         try:
-            self.mail_util.send(
+            self.connector.send(
                 email_sender=self.notification_config['sender'],
                 email_recipient=self.notification_config['recipient'],
                 email_subject=subject,
