@@ -209,7 +209,7 @@ the UI or API:
 - Note: You will need to have either owner, editor or service management roles
   in the Project in order to enable the API
 
-1. Enable the  API connector config to Cloud SCC.  Specifically this means,
+1. Enable the  API connector config to Cloud SCC.  Specifically, this means
 in the Forseti project server bucket, edit the `configs/forseti_conf_server.yaml`,
  as follows:
 
