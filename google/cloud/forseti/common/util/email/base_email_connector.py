@@ -38,7 +38,7 @@ class BaseEmailConnector(object):
         and the final exception can be gracefully handled upstream.
 
         Args:
-            email: Connector mail object
+            email (mail): Connector mail object
 
         Returns:
             dict: urllib2 response
@@ -74,7 +74,7 @@ class BaseEmailConnector(object):
         """Add multiple recipients to the sendgrid email object.
 
         Args:
-            email: Connector mail object
+            email (mail): Connector mail object
             email_recipients (Str): comma-separated text of the email recipients
 
         Returns:
@@ -137,4 +137,3 @@ class BaseEmailConnector(object):
         attachment.content_id = content_id
 
         return attachment
-

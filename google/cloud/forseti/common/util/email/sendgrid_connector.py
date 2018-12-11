@@ -40,7 +40,10 @@ class EmailUtil(base_email_connector.BaseEmailConnector):
         """Initialize the email util.
 
         Args:
-            api_key (str): The SendGrid api key to auth email service.
+            sender (str): The email sender.
+            recipient (str): The email recipient.
+            **kwargs (dict): A set of authentication attributes
+            corresponding to the selected connector.
         """
         self.sender = sender
         self.recipient = recipient
@@ -115,4 +118,3 @@ class EmailUtil(base_email_connector.BaseEmailConnector):
                          email_subject, response.status_code,
                          response.body, response.headers)
             raise util_errors.EmailSendError
-

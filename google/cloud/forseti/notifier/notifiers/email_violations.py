@@ -52,7 +52,7 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        self.connector = email_factory.emailFactory(self.notifier_config)\
+        self.connector = email_factory.EmailFactory(self.notifier_config)\
             .get_connector()
 
     def _make_attachment_csv(self):

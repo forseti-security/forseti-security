@@ -16,7 +16,6 @@
 
 from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.actions import action_config_validator as validator
 
 LOGGER = logger.get_logger(__name__)
 
@@ -24,6 +23,19 @@ EMAIL_CONNECTOR_FACTORY = {
     'sendgrid': sendgrid_connector.EmailUtil
 }
 
+
+class InvalidInputError(Exception):
+    """Raised in case of an invalid notifier data format."""
+
+    def __init__(self, notifier, invalid_input):
+        """Constructor for the base notifier.
+
+        Args:
+            notifier (str): the notifier module/name
+            invalid_input (str): the invalid data format in question.
+        """
+        super(InvalidInputError, self).__init__(
+            '%s: invalid input found: %s' % (notifier, invalid_input))
 
 class EmailFactory(object):
     """Email Factory to select connector."""
@@ -40,7 +52,14 @@ class EmailFactory(object):
         LOGGER.debug('email connector config:', self.email_connector_config)
 
     def get_connector(self):
-        """Gets the connector and executes it."""
+        """Gets the connector and executes it.
+
+        Returns:
+            object: Connector class
+
+        Raises:
+            InvalidInputError: if not valid
+        """
         try:
             connector_name = self.email_connector_config('name')
             auth = self.email_connector_config.get('auth')
@@ -48,6 +67,6 @@ class EmailFactory(object):
             recipient = self.email_connector_config.get('recipient')
             return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
                                                            auth)
-        except validator.ConfigParseError as e:
+        except:
             LOGGER.exception('Error occurred while fetching connector details')
-            raise e
+            raise InvalidInputError
