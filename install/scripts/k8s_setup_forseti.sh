@@ -32,9 +32,15 @@
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
 	export CRON_SCHEDULE="*/60 * * * *"
 
-	# Create a deployment file 'forseti.yaml' from the template 'forseti.template.yaml'
+	# Create a deployment file 'forseti.yaml' from the template 'forseti.yaml.template'
 	# with variables substituted into the yaml
 	# We do this because kubectl apply doesnt support environment variable substitution
+	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
 	envsubst < forseti.template.yaml > forseti.yaml
 
+	kubectl apply -f cloudsqlproxy.yaml
+	kubectl apply -f cloudsqlproxyservice.yaml
+	# Be sure to start cloud sql proxy service before forseti as forseti docker_entrypoint.sh
+	# uses the CLOUDSQL_PROXY_HOST and CLOUDSQL_PROXY_PORT environment variables
+	# that are automatically created by k8s
 	kubectl apply -f forseti.yaml
