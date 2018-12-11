@@ -46,7 +46,6 @@ gsutil cp -DD -r ${BUCKET}/rules /forseti-security/
 # TODO switch debugging on/off via env var
 forseti_server \
 --endpoint "localhost:50051" \
-#--forseti_db "mysql://root@127.0.0.1:3306/forseti_security" \
 --forseti_db "mysql://root@${CLOUDSQLPROXY_SERVICE_HOST}:${CLOUDSQLPROXY_SERVICE_PORT}/forseti_security" \
 --services scanner model inventory explain notifier \
 --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
