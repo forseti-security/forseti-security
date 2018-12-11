@@ -827,7 +827,24 @@ to the Client ID of your service account.
     - Update the `violation` section to include `source_id` where the format is `organizations/ORG_ID/sources/SOURCE_ID`
     to enable CSCC Beta API. Information
     [here.](https://cloud.google.com/blog/products/identity-security/cloud-security-command-center-is-now-in-beta)
-    
+    - Update the `resources` section to add the External Project Access Scanner:
+        ```
+              - resource: external_project_access_violations
+                should_notify: true
+                notifiers:
+                  # Email violations
+                  - name: email_violations
+                    configuration:
+                      sendgrid_api_key: {SENDGRID_API_KEY}
+                      sender: {EMAIL_SENDER}
+                      recipient: {EMAIL_RECIPIENT}
+                  # Upload violations to GCS.
+                  - name: gcs_violations
+                    configuration:
+                      data_format: csv
+                      # gcs_path should begin with "gs://"
+                      gcs_path: gs://{FORSETI_BUCKET}/scanner_violations  
+        ```
 1. Rule files updates:
     - Google Groups default rule has been [updated]({% link _docs/latest/configure/scanner/rules.md %}#google-group-rules) 
     to include Google related service account by default. Add and modify the following to `rules/group_rules.yaml` to enable:
