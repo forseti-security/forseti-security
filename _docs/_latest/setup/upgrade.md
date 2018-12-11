@@ -781,9 +781,7 @@ Example command: `gcloud compute instances reset forseti-server-vm-70ce82f --zon
 settings and add API scope `https://www.googleapis.com/auth/cloudplatformprojects.readonly` 
 to the Client ID of your service account.
     ```
-    https://www.googleapis.com/auth/admin.directory.group.readonly,
-    https://www.googleapis.com/auth/admin.directory.user.readonly,
-    https://www.googleapis.com/auth/cloudplatformprojects.readonly
+    https://www.googleapis.com/auth/admin.directory.group.readonly,https://www.googleapis.com/auth/admin.directory.user.readonly,https://www.googleapis.com/auth/cloudplatformprojects.readonly
     ```
 1. Configuration file `forseti_conf_server.yaml` updates:  
     **Inventory**
