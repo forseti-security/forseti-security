@@ -41,6 +41,6 @@
 	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	# Be sure to start cloud sql proxy service before forseti as forseti docker_entrypoint.sh
-	# uses the CLOUDSQL_PROXY_HOST and CLOUDSQL_PROXY_PORT environment variables
+	# uses the CLOUDSQLPROXY_SERVICE_HOST and CLOUDSQLPROXY_SERVICE_PORT environment variables
 	# that are automatically created by k8s
 	kubectl apply -f forseti.yaml
