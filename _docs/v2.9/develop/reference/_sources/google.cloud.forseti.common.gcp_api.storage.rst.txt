@@ -1,0 +1,7 @@
+google.cloud.forseti.common.gcp\_api.storage module
+===================================================
+
+.. automodule:: google.cloud.forseti.common.gcp_api.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
