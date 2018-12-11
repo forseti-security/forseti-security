@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind:  Deployment
+metadata:
+  name: cloudsqlproxy
+spec:
+  selector:
+    matchLabels:
+      app: cloudsqlproxy
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cloudsqlproxy
+    spec:
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: credentials
+      containers:
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:latest
+          command: ["/cloud_sql_proxy", "-instances=${CLOUD_SQL_CONNECTION}=tcp:3306", "-credential_file=/var/secrets/google/key.json"]
+          securityContext:
+            runAsUser: 2  # non-root user
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+              readOnly: true
