@@ -87,7 +87,8 @@ This scanner is not part of the regular cron job, because it might take a long t
     forseti scanner run --scanner external_project_access_scanner
 ```
 
-Before running this scanner, please [enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}).
+Before running this scanner, please 
+[enable the service account with the required API scopes in your G Suite admin control panel]({% link _docs/latest/configure/inventory/gsuite.md %}#enable-the-service-account-in-your-g-suite-admin-control-panel).
 
 ## Firewall rules scanner
 
