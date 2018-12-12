@@ -24,6 +24,8 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers.base_notification import BaseNotification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
+from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
+
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
@@ -112,11 +114,13 @@ class InventorySummary(object):
         """
         LOGGER.debug('Sending inventory summary by email.')
 
-        email_summary_config = (
-            self.notifier_config.get('inventory').get('email_summary'))
+        email_config_auth = (
+            self.notifier_config).get('inventory'.get('email_summary'))
 
-        email_util = sendgrid_connector.EmailUtil(
-            email_summary_config.get('sendgrid_api_key'))
+        email_util = sendgrid_connector.EmailUtil(self.notifier_config
+                                                  .get('email_connector_config')
+                                                  .get('auth')
+                                                  .get('api_key'))
 
         email_subject = 'Inventory Summary: {0}'.format(
             self.inventory_index_id)
@@ -129,7 +133,7 @@ class InventorySummary(object):
 
         gsuite_dwd_status = self._get_gsuite_dwd_status(summary_data)
 
-        email_content = email_util.render_from_template(
+        email_content = BaseEmailConnector.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
@@ -138,9 +142,13 @@ class InventorySummary(object):
              'details_data': details_data})
 
         try:
-            email_util.send(
-                email_sender=email_summary_config.get('sender'),
-                email_recipient=email_summary_config.get('recipient'),
+            sendgrid_connector.send(
+                email_sender=(
+                    self.notifier_config.get('email_connector_config')
+                        .get('sender')),
+                email_recipient=(
+                    self.notifier_config.get('email_connector_config')
+                       .get('recipient')),
                 email_subject=email_subject,
                 email_content=email_content,
                 content_type='text/html')
