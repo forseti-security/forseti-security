@@ -20,6 +20,7 @@ from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine
 from google.cloud.forseti.scanner.audit import errors
+from google.cloud.forseti.services import utils
 
 LOGGER = logger.get_logger(__name__)
 
@@ -31,7 +32,7 @@ RuleViolation = collections.namedtuple(
 )
 
 
-class LienRulesEngine(base_rules_engine.BaseRulesEngine):
+class ResourceRulesEngine(base_rules_engine.BaseRulesEngine):
     """Rules engine for Liens."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
@@ -43,7 +44,8 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
                 If set, this will be the snapshot timestamp
                 used in the engine.
         """
-        super(LienRulesEngine, self).__init__(rules_file_path=rules_file_path)
+        super(ResourceRulesEngine, self).__init__(
+            rules_file_path=rules_file_path)
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
@@ -52,9 +54,9 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
         Args:
             global_configs (dict): Global configurations.
         """
-        self.rule_book = LienRuleBook(self._load_rule_definitions())
+        self.rule_book = ResourceRuleBook(self._load_rule_definitions())
 
-    def find_violations(self, parent_resource, liens, force_rebuild=False):
+    def find_violations(self, resources, force_rebuild=False):
         """Determine whether Big Query datasets violate rules.
 
         Args:
@@ -69,7 +71,7 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_violations(parent_resource, liens)
+        violations = self.rule_book.find_violations(resources)
         return violations
 
     def add_rules(self, rule_defs):
@@ -82,7 +84,7 @@ class LienRulesEngine(base_rules_engine.BaseRulesEngine):
             self.rule_book.add_rules(rule_defs)
 
 
-class LienRuleBook(base_rules_engine.BaseRuleBook):
+class ResourceRuleBook(base_rules_engine.BaseRuleBook):
     """The RuleBook for Lien resources."""
 
     def __init__(self, rule_defs=None):
@@ -91,8 +93,8 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         Args:
             rule_defs (dict): rule definitons dictionary.
         """
-        super(LienRuleBook, self).__init__()
-        self.resource_to_rules = collections.defaultdict(list)
+        super(ResourceRuleBook, self).__init__()
+        self.rules = []
         if not rule_defs:
             self.rule_defs = {}
         else:
@@ -117,61 +119,14 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        resources = rule_def.get('resource')
-        if not resources:
-            raise errors.InvalidRulesSchemaError(
-                'Missing field "resource" in rule {}'.format(rule_index))
+        resource_tree = ResourceTree.from_json(rule_def['resource_trees'])
+        self.rules.append(
+            Rule(name=rule_def['name'],
+            index=rule_index,
+            resource_tree=resource_tree),
+        )
 
-        for raw_resource in resources:
-            resource_ids = raw_resource.get('resource_ids')
-
-            if not resource_ids:
-                raise errors.InvalidRulesSchemaError(
-                    'Missing resource ids in rule {}'.format(rule_index))
-
-            resource_type = raw_resource.get('type')
-
-            if resource_type not in ['project', 'folder', 'organization']:
-                raise errors.InvalidRulesSchemaError(
-                    'Invalid resource type "{}" in rule {}'.format(
-                        resource_type, rule_index))
-
-            for resource_id in resource_ids:
-                resource = resource_util.create_resource(
-                    resource_id=resource_id,
-                    resource_type=resource_type,
-                )
-                if not resource:
-                    raise errors.InvalidRulesSchemaError(
-                        'Invalid resource in rule {} (id: {}, type: {})'.format(
-                            rule_index, resource_id, resource_type))
-
-                rule = self._build_rule(rule_def, rule_index)
-                self.resource_to_rules[resource].append(rule)
-
-    @classmethod
-    def _build_rule(cls, rule_def, rule_index):
-        """Build a rule.
-
-        Args:
-            rule_def (dict): A dictionary containing rule definition
-                properties.
-            rule_index (int): The index of the rule from the rule definitions.
-                Assigned automatically when the rule book is built.
-
-        Returns:
-            Rule: rule for the given definition.
-        """
-        for field in ['name', 'restrictions']:
-            if field not in rule_def:
-                raise errors.InvalidRulesSchemaError(
-                    'Missing field "{}" in rule {}'.format(field, rule_index))
-
-        return Rule(name=rule_def.get('name'),
-                    index=rule_index,
-                    restrictions=rule_def.get('restrictions'))
-
-    def find_violations(self, parent_resource, liens):
+    def find_violations(self, resources):
         """Find lien violations in the rule book.
 
         Args:
@@ -184,32 +139,90 @@ class LienRuleBook(base_rules_engine.BaseRuleBook):
         Yields:
             RuleViolation: lien rule violations.
         """
-
-        all_restrictions = set()
-        for lien in liens:
-            for restriction in lien.restrictions:
-                all_restrictions.add(restriction)
-
-        resource_ancestors = relationship.find_ancestors(
-            parent_resource, parent_resource.full_name)
-
-        applicable_rules = []
-
-        for res in resource_ancestors:
-            applicable_rules.extend(self.resource_to_rules.get(res, []))
-
-        for rule in applicable_rules:
-            for violation in rule.find_violations(parent_resource,
-                                                  all_restrictions):
+        for rule in self.rules:
+            for violation in rule.find_violations(resources):
                 yield violation
 
+
+class ResourceTree(object):
+
+    def __init__(self, resource_type=None, resource_ids=None, children=None):
+        self.resource_type = resource_type
+        self.resource_ids = resource_ids
+        self.children = children or []
+
+    @classmethod
+    def from_json(cls, json_nodes):
+        nodes = cls._from_json(json_nodes)
+        if not nodes:
+            return None
+        elif len(nodes) == 1:
+            return nodes[0]
+        else:
+            return ResourceTree(children=nodes)
+
+    @classmethod
+    def _from_json(cls, json_nodes):
+        if not json_nodes:
+            return None
+        nodes = []
+        for json_node in json_nodes:
+            node = ResourceTree(
+                resource_type=json_node['type'],
+                resource_ids=json_node['resource_ids'],
+                children=cls._from_json(json_node.get('children')))
+            nodes.append(node)
+        return nodes
+
+    def match(self, resource):
+        tuples = []
+        for resource_type, resource_id  in (
+            utils.get_resources_from_full_name(resource.full_name)):
+            tuples.append((resource_type, resource_id))
+
+        if self.resource_type:
+            root_resource_types = {self.resource_type}
+        else:
+            root_resource_types = {
+                child.resource_type for child in self.children}
+
+
+        tuples = list(reversed(tuples))
+
+        for resource_type, _ in tuples:
+            if resource_type in root_resource_types:
+                break
+            tuples = tuples[1:]
+
+        return self._match(tuples)
+
+    def _match(self, tuples):
+        if not tuples:
+            return True
+
+        if not self.resource_type:
+            return any(child._match(tuples) for child in self.children)
+
+        for tup in tuples:
+            resource_type, resource_id = tup
+            if resource_type == self.resource_type:
+                if resource_id in self.resource_ids:
+                    tuples = tuples[1:]
+                    if not tuples:
+                        return True
+                    elif not self.children:
+                        return False
+                    else:
+                        return any(
+                            child._match(tuples) for child in self.children)
+        return False
 
 class Rule(object):
     """Rule properties from the rule definition file.
        Also finds violations.
     """
 
-    def __init__(self, name, index, restrictions):
+    def __init__(self, name, index, resource_tree):
         """Initialize.
 
         Args:
@@ -220,9 +233,9 @@ class Rule(object):
         """
         self.name = name
         self.index = index
-        self.restrictions = restrictions
+        self.resource_tree = resource_tree
 
-    def find_violations(self, parent_resource, restrictions):
+    def find_violations(self, resources):
         """Find violations for this rule against the given resource.
 
         Args:
@@ -233,16 +246,17 @@ class Rule(object):
         Yields:
             RuleViolation: lien rule violation.
         """
-        for restriction in self.restrictions:
-            if restriction not in restrictions:
+
+        for resource in resources:
+            if not self.resource_tree.match(resource):
                 yield RuleViolation(
-                    resource_id=parent_resource.id,
-                    resource_name=parent_resource.display_name,
-                    resource_type=parent_resource.type,
-                    full_name=parent_resource.full_name,
+                    resource_id=resource.id,
+                    resource_name=resource.display_name,
+                    resource_type=resource.type,
+                    full_name=resource.full_name,
                     rule_index=self.index,
                     rule_name=self.name,
-                    violation_type='LIEN_VIOLATION',
-                    resource_data='',
+                    violation_type='RESOURCE_VIOLATION',
+                    resource_data=resource.data or '',
                 )
                 return
