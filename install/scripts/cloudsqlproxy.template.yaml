@@ -19,7 +19,7 @@ spec:
       containers:
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:latest
-          command: ["/cloud_sql_proxy", "-instances=${CLOUD_SQL_CONNECTION}=tcp:3306", "-credential_file=/var/secrets/google/key.json"]
+          command: ["/cloud_sql_proxy", "-instances=${CLOUD_SQL_CONNECTION}=tcp:0.0.0.0:3306", "-credential_file=/var/secrets/google/key.json"]
           securityContext:
             runAsUser: 2  # non-root user
             allowPrivilegeEscalation: false
