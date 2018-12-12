@@ -82,7 +82,7 @@ the instance.
 
 **Don't allow instances behind backend services to be directly accessed from the internet.
 Allow access only from specified ranges for
-[health checking](https://cloud.google.com/compute/docs/load-balancing/network/#health_checking).**
+[health checking](https://cloud.google.com/load-balancing/docs/network/#health_checking).**
 
 By limiting access from the internet, you prevent malicious external actors from bypassing policies
 and getting access to the instance.
