@@ -121,7 +121,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
+            'google.cloud.bigquery.Dataset',
             '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
                 project_number, dataset_id),
             self.session)
@@ -141,7 +141,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
-            'google.bigquery.Dataset',
+            'google.cloud.bigquery.Dataset',
             '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
                 project_number, dataset_id),
             self.session)
@@ -162,7 +162,7 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         """
         resources = self.dao.iter_cai_assets(
             ContentTypes.resource,
-            'google.bigquery.Dataset',
+            'google.cloud.bigquery.Dataset',
             '//cloudresourcemanager.googleapis.com/projects/{}'.format(
                 project_number),
             self.session)
