@@ -99,8 +99,8 @@ inventory:
         #    - google.appengine.Application
         #    - google.appengine.Service
         #    - google.appengine.Version
-        #    - google.bigquery.Dataset
-        #    - google.bigquery.Table
+        #    - google.cloud.bigquery.Dataset
+        #    - google.cloud.bigquery.Table
         #    - google.cloud.billing.BillingAccount
         #    - google.cloud.dataproc.Cluster
         #    - google.cloud.dataproc.Job
