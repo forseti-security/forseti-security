@@ -1614,7 +1614,7 @@ class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
         api_method_arg_key='projectNumber',
-        resource_validation_method_name='cloudsql_api_enabled')):
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
 
