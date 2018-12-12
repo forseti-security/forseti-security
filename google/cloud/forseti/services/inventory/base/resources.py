@@ -786,16 +786,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         return (self.billing_enabled() and
                 self.is_api_enabled('bigquery-json.googleapis.com'))
 
-    def cloudsql_api_enabled(self):
-        """Check if the cloudsql api is enabled.
-
-        Returns:
-            bool: if this API service is enabled on the project.
-        """
-        # CloudSQL Admin API depends on billing being enabled
-        return (self.billing_enabled() and
-                self.is_api_enabled('sql-component.googleapis.com'))
-
     def compute_api_enabled(self):
         """Check if the compute api is enabled.
 
@@ -1626,7 +1616,7 @@ class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
         api_method_arg_key='projectNumber',
-        resource_validation_method_name='cloudsql_api_enabled')):
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
 
