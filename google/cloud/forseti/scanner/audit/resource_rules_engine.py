@@ -146,9 +146,9 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
 
 class ResourceTree(object):
 
-    def __init__(self, resource_type=None, resource_ids=None, children=None):
+    def __init__(self, resource_type=None, resource_id=None, children=None):
         self.resource_type = resource_type
-        self.resource_ids = resource_ids
+        self.resource_id = resource_id
         self.children = children or []
 
     @classmethod
@@ -169,7 +169,7 @@ class ResourceTree(object):
         for json_node in json_nodes:
             node = ResourceTree(
                 resource_type=json_node['type'],
-                resource_ids=json_node['resource_ids'],
+                resource_id=json_node['resource_id'],
                 children=cls._from_json(json_node.get('children')))
             nodes.append(node)
         return nodes
@@ -180,12 +180,14 @@ class ResourceTree(object):
             utils.get_resources_from_full_name(resource.full_name)):
             tuples.append((resource_type, resource_id))
 
+        if not tuples:
+            return None
+
         if self.resource_type:
             root_resource_types = {self.resource_type}
         else:
             root_resource_types = {
                 child.resource_type for child in self.children}
-
 
         tuples = list(reversed(tuples))
 
@@ -197,25 +199,35 @@ class ResourceTree(object):
         return self._match(tuples)
 
     def _match(self, tuples):
-        if not tuples:
-            return True
-
         if not self.resource_type:
-            return any(child._match(tuples) for child in self.children)
+            for child in self.children:
+                node = child._match(tuples)
+                if node:
+                    return node
 
-        for tup in tuples:
-            resource_type, resource_id = tup
-            if resource_type == self.resource_type:
-                if resource_id in self.resource_ids:
+        for resource_type, resource_id in tuples:
+            if resource_type == self.resource_type and (
+                resource_id == self.resource_id):
                     tuples = tuples[1:]
                     if not tuples:
-                        return True
+                        return self
                     elif not self.children:
-                        return False
+                        return None
                     else:
-                        return any(
-                            child._match(tuples) for child in self.children)
-        return False
+                        for child in self.children:
+                            node = child._match(tuples)
+                            if node:
+                                return node
+
+    def get_nodes(self):
+        nodes = []
+        if self.resource_type:
+            nodes.append(self)
+        for child in self.children:
+            nodes.extend(child.get_nodes())
+        return nodes
+
+
 
 class Rule(object):
     """Rule properties from the rule definition file.
@@ -247,8 +259,12 @@ class Rule(object):
             RuleViolation: lien rule violation.
         """
 
+        matched_nodes = set()
         for resource in resources:
-            if not self.resource_tree.match(resource):
+            node = self.resource_tree.match(resource)
+            if node:
+                matched_nodes.add(node)
+            else:
                 yield RuleViolation(
                     resource_id=resource.id,
                     resource_name=resource.display_name,
@@ -259,4 +275,15 @@ class Rule(object):
                     violation_type='RESOURCE_VIOLATION',
                     resource_data=resource.data or '',
                 )
-                return
+
+        for node in self.resource_tree.get_nodes():
+            if node not in matched_nodes:
+                yield RuleViolation(
+                    resource_id=node.resource_id,
+                    resource_name=node.resource_id,
+                    resource_type=node.resource_type,
+                    full_name=node.resource_id,
+                    rule_index=self.index,
+                    rule_name=self.name,
+                    violation_type='RESOURCE_VIOLATION',
+                    resource_data='')

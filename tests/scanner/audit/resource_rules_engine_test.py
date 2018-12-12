@@ -65,7 +65,7 @@ rules:
   mode: required
   resource_trees:
   - type: project
-    resource_ids: ['p1']
+    resource_id: p1
 """
         rules_engine = get_rules_engine_with_rule(rule)
         got_violations = list(rules_engine.find_violations([data.PROJECT1]))
@@ -78,10 +78,11 @@ rules:
   mode: required
   resource_trees:
   - type: project
-    resource_ids: ['p1']
+    resource_id: p1
 """
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations([data.PROJECT2]))
+        got_violations = list(rules_engine.find_violations(
+            [data.PROJECT1, data.PROJECT2]))
         self.assertEqual(got_violations, data.build_violations(data.PROJECT2))
 
     def test_find_violations_multiple_roots(self):
@@ -91,39 +92,55 @@ rules:
   mode: required
   resource_trees:
   - type: project
-    resource_ids: ['p1']
+    resource_id: p1
   - type: project
-    resource_ids: ['p2']
+    resource_id: p2
 """
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations([data.PROJECT2]))
+        got_violations = list(rules_engine.find_violations(
+            [data.PROJECT1, data.PROJECT2]))
         self.assertEqual(got_violations, [])
 
-    def test_find_violations_multiple_resoure_ids(self):
+    def test_find_violations_child(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_trees:
+  - type: organization
+    resource_id: '234'
+    children:
+    - type: project
+      resource_id: p1
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(
+            [data.ORGANIZATION, data.PROJECT1]))
+        self.assertEqual(got_violations, [])
+
+    def test_find_violations_missing(self):
         rule = """
 rules:
 - name: Resource test rule
   mode: required
   resource_trees:
   - type: project
-    resource_ids: ['p1', 'p2']
+    resource_id: p1
 """
         rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations([data.PROJECT2]))
-        self.assertEqual(got_violations, [])
-
-    def test_find_violations_multiple_resoure_ids(self):
-        rule = """
-rules:
-- name: Resource test rule
-  mode: required
-  resource_trees:
-  - type: project
-    resource_ids: ['p1', 'p2']
-"""
-        rules_engine = get_rules_engine_with_rule(rule)
-        got_violations = list(rules_engine.find_violations([data.PROJECT2]))
-        self.assertEqual(got_violations, [])
+        got_violations = list(rules_engine.find_violations([]))
+        violation = data.build_violations(data.PROJECT2)[0]
+        violation = resource_rules_engine.RuleViolation(
+            resource_id='p1',
+            resource_name='p1',
+            resource_type='project',
+            full_name='p1',
+            rule_index=0,
+            rule_name='Resource test rule',
+            violation_type='RESOURCE_VIOLATION',
+            resource_data='',
+        )
+        self.assertEqual(got_violations, [violation])
 
 if __name__ == '__main__':
     unittest.main()
