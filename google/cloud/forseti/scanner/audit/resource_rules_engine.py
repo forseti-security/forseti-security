@@ -123,7 +123,7 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
         self.rules.append(
             Rule(name=rule_def['name'],
             index=rule_index,
-            resource_types=rule_def['resource_types'],
+            resource_types=set(rule_def['resource_types']),
             resource_tree=resource_tree),
         )
 
