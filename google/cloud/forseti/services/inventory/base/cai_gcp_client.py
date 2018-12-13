@@ -178,7 +178,8 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.bigquery.Dataset',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(project_number),
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
             self.session))
 
         if resources and not all('location' in ds for ds in resources):
