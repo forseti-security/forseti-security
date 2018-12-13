@@ -130,7 +130,8 @@ class EmailViolations(base_notification.BaseNotification):
 
         email_map = {}
 
-        data_format = self.notification_config.get('data_format', 'csv')
+        data_format = self.notifier_config.get('email_connector_config')\
+            .get('data_format', 'csv')
         if data_format not in self.supported_data_formats:
             raise base_notification.InvalidDataFormatError(
                 'Email notifier', data_format)

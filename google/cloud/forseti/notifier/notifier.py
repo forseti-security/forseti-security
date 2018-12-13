@@ -151,8 +151,7 @@ def run(inventory_index_id,
                 notifiers.append(email_violations.EmailViolations(
                     resource['resource'], inventory_index_id,
                     violation_map[resource['resource']], global_configs,
-                    notifier_configs,
-                    None))
+                    notifier_configs, None))
 
                 for notifier in resource['notifiers']:
                     log_message = (

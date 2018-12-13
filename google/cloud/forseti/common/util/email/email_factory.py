@@ -61,7 +61,8 @@ class EmailFactory(object):
             InvalidInputError: if not valid
         """
         try:
-            connector_name = self.email_connector_config('name')
+            print('config:', self.email_connector_config)
+            connector_name = self.email_connector_config.get('name')
             auth = self.email_connector_config.get('auth')
             sender = self.email_connector_config.get('sender')
             recipient = self.email_connector_config.get('recipient')
