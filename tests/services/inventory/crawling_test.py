@@ -171,7 +171,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=False)
+                            parallel=True)
 
             self.assertEqual(0,
                              progresser.errors,
