@@ -63,6 +63,7 @@ class ResourceRulesEngineTest(ForsetiTestCase):
 rules:
 - name: Resource test rule
   mode: required
+  resource_types: [project]
   resource_trees:
   - type: project
     resource_id: p1
@@ -76,6 +77,7 @@ rules:
 rules:
 - name: Resource test rule
   mode: required
+  resource_types: [project]
   resource_trees:
   - type: project
     resource_id: p1
@@ -90,6 +92,7 @@ rules:
 rules:
 - name: Resource test rule
   mode: required
+  resource_types: [project]
   resource_trees:
   - type: project
     resource_id: p1
@@ -106,6 +109,7 @@ rules:
 rules:
 - name: Resource test rule
   mode: required
+  resource_types: [organization, project]
   resource_trees:
   - type: organization
     resource_id: '234'
@@ -123,6 +127,7 @@ rules:
 rules:
 - name: Resource test rule
   mode: required
+  resource_types: [project]
   resource_trees:
   - type: project
     resource_id: p1

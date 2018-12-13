@@ -123,6 +123,7 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
         self.rules.append(
             Rule(name=rule_def['name'],
             index=rule_index,
+            resource_types=rule_def['resource_types'],
             resource_tree=resource_tree),
         )
 
@@ -174,27 +175,19 @@ class ResourceTree(object):
             nodes.append(node)
         return nodes
 
-    def match(self, resource):
+    def match(self, resource, resource_types):
         tuples = []
         for resource_type, resource_id  in (
             utils.get_resources_from_full_name(resource.full_name)):
             tuples.append((resource_type, resource_id))
 
+        tuples = list(reversed(tuples))
+        for resource_type, _ in tuples:
+            if resource_type not in resource_types:
+                tuples = tuples[1:]
+
         if not tuples:
             return None
-
-        if self.resource_type:
-            root_resource_types = {self.resource_type}
-        else:
-            root_resource_types = {
-                child.resource_type for child in self.children}
-
-        tuples = list(reversed(tuples))
-
-        for resource_type, _ in tuples:
-            if resource_type in root_resource_types:
-                break
-            tuples = tuples[1:]
 
         return self._match(tuples)
 
@@ -234,7 +227,7 @@ class Rule(object):
        Also finds violations.
     """
 
-    def __init__(self, name, index, resource_tree):
+    def __init__(self, name, index, resource_types, resource_tree):
         """Initialize.
 
         Args:
@@ -245,6 +238,7 @@ class Rule(object):
         """
         self.name = name
         self.index = index
+        self.resource_types = resource_types
         self.resource_tree = resource_tree
 
     def find_violations(self, resources):
@@ -261,7 +255,9 @@ class Rule(object):
 
         matched_nodes = set()
         for resource in resources:
-            node = self.resource_tree.match(resource)
+            if resource.type not in self.resource_types:
+                continue
+            node = self.resource_tree.match(resource, self.resource_types)
             if node:
                 matched_nodes.add(node)
             else:
