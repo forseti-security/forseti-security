@@ -21,7 +21,7 @@ import unittest
 
 from datetime import datetime
 
-from google.cloud.forseti.common.util.email.sendgrid_connector import EmailUtil
+from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import email_violations
@@ -84,8 +84,8 @@ class EmailViolationsTest(ForsetiTestCase):
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
     def test_make_attachment_csv_correctness(self, mock_os, mock_mail_util):
         """Test the CSV file correctness."""
-        mail_util = mock.MagicMock(spec=EmailUtil)
-        mock_mail_util.EmailUtil.return_value = mail_util
+        mail_util = mock.MagicMock(spec=SendgridConnector)
+        mock_mail_util.SendgridConnector.return_value = mail_util
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
         self.assertTrue(mail_util.create_attachment.called)
@@ -100,8 +100,8 @@ class EmailViolationsTest(ForsetiTestCase):
         autospec=True)
     def test_make_attachment_json_no_temp_files_left(self, mock_mail_util):
         """Test _make_attachment_json() leaves no temp files behind."""
-        mail_util = mock.MagicMock(spec=EmailUtil)
-        mock_mail_util.EmailUtil.return_value = mail_util
+        mail_util = mock.MagicMock(spec=SendgridConnector)
+        mock_mail_util.SendgridConnector.return_value = mail_util
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_json()
         self.assertTrue(mail_util.create_attachment.called)
@@ -114,8 +114,8 @@ class EmailViolationsTest(ForsetiTestCase):
         autospec=True)
     def test_make_attachment_csv_no_temp_files_left(self, mock_mail_util):
         """Test _make_attachment_csv() leaves no temp files behind."""
-        mail_util = mock.MagicMock(spec=EmailUtil)
-        mock_mail_util.EmailUtil.return_value = mail_util
+        mail_util = mock.MagicMock(spec=SendgridConnector)
+        mock_mail_util.SendgridConnector.return_value = mail_util
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
         self.assertTrue(mail_util.create_attachment.called)
