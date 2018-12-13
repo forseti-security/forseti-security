@@ -1,4 +1,4 @@
-# Copyright 2017 The Forseti Security Authors. All rights reserved.
+# Copyright 2018 The Forseti Security Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""A Dataset Resource.
-See: https://cloud.google.com/bigquery/docs/reference/rest/v2/datasets
+"""A Table Resource.
+
+See: https://cloud.google.com/storage/docs/json_api/v1/
 """
 
 import json
@@ -20,43 +21,43 @@ import json
 from google.cloud.forseti.common.gcp_type import resource
 
 
-class DatasetLifecycleState(resource.LifecycleState):
-    """Represents the dataset's LifecycleState."""
+class TableLifecycleState(resource.LifecycleState):
+    """Represents the table's LifecycleState."""
     pass
 
 
-class Dataset(resource.Resource):
-    """Dataset resource."""
+class Table(resource.Resource):
+    """Table resource."""
 
-    RESOURCE_NAME_FMT = 'datasets/%s'
+    RESOURCE_NAME_FMT = 'bigquery_tables/%s'
 
     def __init__(
             self,
-            dataset_id,
+            table_id,
             full_name=None,
             data=None,
             name=None,
             display_name=None,
             parent=None,
             locations=None,
-            lifecycle_state=DatasetLifecycleState.UNSPECIFIED):
+            lifecycle_state=TableLifecycleState.UNSPECIFIED):
         """Initialize.
         Args:
-            dataset_id (int): The dataset id.
+            table_id (int): The table id.
             full_name (str): The full resource name and ancestry.
-            data (str): Resource representation of the dataset.
-            name (str): The dataset's unique GCP name, with the
-                format "datasets/{id}".
-            display_name (str): The dataset's display name.
-            locations (List[str]): Locations this dataset resides in. If set,
+            data (str): Resource representation of the table.
+            name (str): The table's unique GCP name, with the
+                format "tables/{id}".
+            display_name (str): The table's display name.
+            locations (List[str]): Locations this table resides in. If set,
                 there should be exactly one element in the list.
             parent (Resource): The parent Resource.
             lifecycle_state (LifecycleState): The lifecycle state of the
-                dataset.
+                table.
         """
-        super(Dataset, self).__init__(
-            resource_id=dataset_id,
-            resource_type=resource.ResourceType.DATASET,
+        super(Table, self).__init__(
+            resource_id=table_id,
+            resource_type=resource.ResourceType.TABLE,
             name=name,
             display_name=display_name,
             parent=parent,
@@ -67,23 +68,21 @@ class Dataset(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, json_string):
-        """Create a dataset from a JSON string.
+        """Create a bucket from a JSON string.
 
         Args:
-            parent (Resource): resource this dataset belongs to.
-            json_string(str): JSON string of a dataset GCP API response.
+            parent (Resource): resource this bucket belongs to.
+            json_string(str): JSON string of a bucket GCP API response.
 
         Returns:
-            Dataset: dataset resource.
+            Bucket: bucket resource.
         """
-        dataset_dict = json.loads(json_string)
-
-        dataset_id = dataset_dict['id']
+        table_dict = json.loads(json_string)
+        table_id = table_dict['id']
         return cls(
             parent=parent,
-            dataset_id=dataset_id,
-            full_name='{}dataset/{}/'.format(parent.full_name, dataset_id),
-            display_name=dataset_id,
-            locations=[dataset_dict['location']],
+            table_id=table_id,
+            full_name='{}bigquery_table/{}/'.format(parent.full_name, table_id),
+            display_name=table_id,
             data=json_string,
         )
