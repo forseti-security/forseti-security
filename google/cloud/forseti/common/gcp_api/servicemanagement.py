@@ -23,6 +23,7 @@ from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+API_NAME = 'servicemanagement'
 
 
 class ServiceManagementRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -47,7 +48,7 @@ class ServiceManagementRepositoryClient(_base_repository.BaseRepositoryClient):
         self._services = None
 
         super(ServiceManagementRepositoryClient, self).__init__(
-            'servicemanagement', versions=['v1'],
+            API_NAME, versions=['v1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -133,7 +134,7 @@ class ServiceManagementClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'servicemanagement')
+            global_configs, API_NAME)
 
         self.repository = ServiceManagementRepositoryClient(
             quota_max_calls=max_calls,

@@ -18,6 +18,7 @@ import collections
 import enum
 import re
 
+from google.cloud.forseti.common.gcp_type import resource
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import regular_exp
@@ -29,7 +30,13 @@ LOGGER = logger.get_logger(__name__)
 
 SUPPORTED_RULE_RESOURCE_TYPES = frozenset(['project', 'folder', 'organization'])
 
-SUPPORTED_LOCATION_RESOURCE_TYPES = frozenset(['bucket'])
+SUPPORTED_LOCATION_RESOURCE_TYPES = frozenset([
+    resource.ResourceType.BUCKET,
+    resource.ResourceType.CLOUD_SQL_INSTANCE,
+    resource.ResourceType.DATASET,
+    resource.ResourceType.INSTANCE,
+    resource.ResourceType.KE_CLUSTER,
+])
 
 LocationData = collections.namedtuple(
     'LocationData', ['resource', 'locations']
@@ -72,11 +79,11 @@ class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
         """
         self.rule_book = LocationRuleBook(self._load_rule_definitions())
 
-    def find_violations(self, resource, force_rebuild=False):
+    def find_violations(self, res, force_rebuild=False):
         """Determine whether resources violate rules.
 
         Args:
-            resource (Resource): resource to check locations for.
+            res (Resource): resource to check locations for.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -86,7 +93,7 @@ class LocationRulesEngine(base_rules_engine.BaseRulesEngine):
         if self.rule_book is None or force_rebuild:
             self.build_rule_book()
 
-        violations = self.rule_book.find_violations(resource)
+        violations = self.rule_book.find_violations(res)
         return violations
 
     def add_rules(self, rule_defs):
@@ -154,17 +161,17 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
                         resource_type, rule_index))
 
             for resource_id in resource_ids:
-                resource = resource_util.create_resource(
+                res = resource_util.create_resource(
                     resource_id=resource_id,
                     resource_type=resource_type,
                 )
-                if not resource:
+                if not res:
                     raise errors.InvalidRulesSchemaError(
                         'Invalid resource in rule {} (id: {}, type: {})'.format(
                             rule_index, resource_id, resource_type))
 
                 rule = self._build_rule(rule_def, rule_index)
-                self.resource_to_rules[resource].append(rule)
+                self.resource_to_rules[res].append(rule)
 
     @classmethod
     def _build_rule(cls, rule_def, rule_index):
@@ -193,7 +200,8 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
 
             resource_type = applies_dict['type']
 
-            if resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES:
+            if resource_type != '*' and (
+                    resource_type not in SUPPORTED_LOCATION_RESOURCE_TYPES):
                 raise errors.InvalidRulesSchemaError(
                     'Unsupported applies to type "{}" in rule {}'.format(
                         resource_type, rule_index))
@@ -206,11 +214,11 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
                     applies_to=applies_to,
                     location_patterns=rule_def.get('locations'))
 
-    def find_violations(self, resource):
+    def find_violations(self, res):
         """Find resource locations violations in the rule book.
 
         Args:
-            resource (Resource): The GCP resource to check locations for.
+            res (Resource): The GCP resource to check locations for.
                 This is where we start looking for rule violations and
                 we move up the resource hierarchy.
 
@@ -219,23 +227,19 @@ class LocationRuleBook(base_rules_engine.BaseRuleBook):
         """
 
         resource_ancestors = relationship.find_ancestors(
-            resource, resource.full_name)
+            res, res.full_name)
 
         rules = []
-        for res in resource_ancestors:
-            rules.extend(self.resource_to_rules.get(res, []))
+        for ancestor_res in resource_ancestors:
+            rules.extend(self.resource_to_rules.get(ancestor_res, []))
 
         type_resource_wildcard = resource_util.create_resource(
-            resource_id='*', resource_type=resource.type)
+            resource_id='*', resource_type=res.type)
 
         rules.extend(self.resource_to_rules.get(type_resource_wildcard, []))
 
-        any_resource_wildcard = resource_util.create_resource(
-            resource_id='*', resource_type='*')
-        rules.extend(self.resource_to_rules.get(any_resource_wildcard, []))
-
         for rule in rules:
-            for violation in rule.find_violations(resource):
+            for violation in rule.find_violations(res):
                 yield violation
 
 
@@ -261,28 +265,31 @@ class Rule(object):
         self.applies_to = applies_to
 
         loc_re_str = '|'.join([
-            regular_exp.escape_and_globify(loc_wildcard.lower())
+            regular_exp.escape_and_globify(loc_wildcard.lower(),
+                                           wildcard_is_zero_or_more=True)
             for loc_wildcard in location_patterns
         ])
         self.location_re = re.compile(loc_re_str)
 
-    def find_violations(self, resource):
+    def find_violations(self, res):
         """Find violations for this rule against the given resource.
 
         Args:
-            resource (Resource): The resource to check for violations.
+            res (Resource): The resource to check for violations.
 
         Yields:
             RuleViolation: location rule violation.
         """
-        applicable_resources = self.applies_to.get(resource.type, [])
+        applicable_resources = self.applies_to.get(res.type, [])
+        applicable_resources.extend(self.applies_to.get('*', []))
+        applicable_resources = set(applicable_resources)
 
-        if applicable_resources != ['*'] and (
-                resource.id not in applicable_resources):
+        if applicable_resources != {'*'} and (
+                res.id not in applicable_resources):
             return
 
         matches = [
-            self.location_re.match(loc.lower()) for loc in resource.locations
+            self.location_re.match(loc.lower()) for loc in res.locations
         ]
 
         has_violation = (
@@ -292,14 +299,14 @@ class Rule(object):
 
         if has_violation:
             yield RuleViolation(
-                resource_id=resource.id,
-                resource_name=resource.display_name,
-                resource_type=resource.type,
-                full_name=resource.full_name,
+                resource_id=res.id,
+                resource_name=res.display_name,
+                resource_type=res.type,
+                full_name=res.full_name,
                 rule_index=self.index,
                 rule_name=self.name,
                 violation_type='LOCATION_VIOLATION',
-                violation_data=str(resource.locations),
-                resource_data=resource.data,
+                violation_data=str(res.locations),
+                resource_data=res.data,
             )
             return

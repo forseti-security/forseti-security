@@ -23,6 +23,7 @@ from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+API_NAME = 'bigquery'
 
 
 class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -48,7 +49,7 @@ class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
         self._datasets = None
 
         super(BigQueryRepositoryClient, self).__init__(
-            'bigquery', versions=['v2'],
+            API_NAME, versions=['v2'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -116,7 +117,7 @@ class BigQueryClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'bigquery')
+            global_configs, API_NAME)
 
         self.repository = BigQueryRepositoryClient(
             quota_max_calls=max_calls,
