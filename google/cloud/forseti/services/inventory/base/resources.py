@@ -875,6 +875,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
         """
         try:
             iam_policy = client.fetch_bigquery_iam_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
             dataset_policy = iam_helpers.convert_iam_to_bigquery_policy(
@@ -898,6 +899,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
         """
         try:
             dataset_policy = client.fetch_bigquery_dataset_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
             iam_policy = iam_helpers.convert_bigquery_policy_to_iam(
