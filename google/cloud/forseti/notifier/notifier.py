@@ -24,6 +24,8 @@ from google.cloud.forseti.notifier.notifiers import cscc_notifier
 from google.cloud.forseti.notifier.notifiers.inventory_summary import InventorySummary
 from google.cloud.forseti.services.inventory.storage import DataAccess
 from google.cloud.forseti.services.scanner import dao as scanner_dao
+from google.cloud.forseti.common.util.email.email_factory import EmailFactory
+from google.cloud.forseti.notifier.notifiers import email_violations
 # pylint: enable=line-too-long
 
 
@@ -145,6 +147,13 @@ def run(inventory_index_id,
                 if not resource['should_notify']:
                     LOGGER.debug('Not notifying for: %s', resource['resource'])
                     continue
+
+                notifiers.append(email_violations.EmailViolations(
+                    resource['resource'], inventory_index_id,
+                    violation_map[resource['resource']], global_configs,
+                    notifier_configs,
+                    None))
+
                 for notifier in resource['notifiers']:
                     log_message = (
                         'Running \'{}\' notifier for resource \'{}\''.format(

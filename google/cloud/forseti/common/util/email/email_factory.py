@@ -20,7 +20,7 @@ from google.cloud.forseti.common.util import logger
 LOGGER = logger.get_logger(__name__)
 
 EMAIL_CONNECTOR_FACTORY = {
-    'sendgrid': sendgrid_connector.EmailUtil
+    'sendgrid': sendgrid_connector.SendgridConnector
 }
 
 

@@ -17,15 +17,16 @@ from googleapiclient.errors import HttpError
 
 # pylint: disable=line-too-long
 from google.cloud.forseti.common.util import date_time
-from google.cloud.forseti.common.util.email.sendgrid_connector import EmailUtil
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers.base_notification import \
-    BaseNotification
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
-from google.cloud.forseti.common.util.email.sendgrid_connector import EmailUtil
+from google.cloud.forseti.common.util.email.sendgrid_connector \
+    import SendgridConnector
+from google.cloud.forseti.common.util.email.base_email_connector \
+    import BaseEmailConnector
 
 # pylint: enable=line-too-long
 
@@ -83,7 +84,7 @@ class InventorySummary(object):
             return
 
         data_format = gcs_summary_config.get('data_format', 'csv')
-        BaseNotification.check_data_format(data_format)
+        base_notification.BaseNotification.check_data_format(data_format)
 
         try:
             if data_format == 'csv':
@@ -121,9 +122,9 @@ class InventorySummary(object):
         email_connector_config_auth = self.notifier_config\
             .get('email_connector_config').get('auth')
 
-        email_util = EmailUtil(
-            email_summary_config.get('sender'),
-            email_summary_config.get('recipient'),
+        email_util = SendgridConnector(
+            self.notifier_config.get('email_connector_config').get('sender'),
+            self.notifier_config.get('email_connector_config').get('recipient'),
             email_connector_config_auth)
 
         email_subject = 'Inventory Summary: {0}'.format(
@@ -137,7 +138,7 @@ class InventorySummary(object):
 
         gsuite_dwd_status = self._get_gsuite_dwd_status(summary_data)
 
-        email_content = email_util.render_from_template(
+        email_content = BaseEmailConnector.render_from_template(
             'inventory_summary.jinja',
             {'inventory_index_id': self.inventory_index_id,
              'timestamp': timestamp,
@@ -149,7 +150,8 @@ class InventorySummary(object):
             email_util.send(
                 email_sender=self.notifier_config.get('email_connector_config')
                 .get('sender'),
-                email_recipient=self.notifier_config.get('email_connector_config')
+                email_recipient=self.notifier_config
+                .get('email_connector_config')
                 .get('recipient'),
                 email_subject=email_subject,
                 email_content=email_content,

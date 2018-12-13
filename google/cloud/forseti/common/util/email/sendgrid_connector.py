@@ -21,12 +21,9 @@
 
 import urllib2
 import sendgrid
-import base64
-import os
-import jinja2
+
 from sendgrid.helpers import mail
 from retrying import retry
-
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import retryable_exceptions
@@ -36,7 +33,7 @@ from google.cloud.forseti.common.util.email import base_email_connector
 LOGGER = logger.get_logger(__name__)
 
 
-class EmailUtil(base_email_connector.BaseEmailConnector):
+class SendgridConnector(base_email_connector.BaseEmailConnector):
     """Utility for sending emails using Sendgrid API Key."""
 
     def __init__(self, sender, recipient, kwargs):
@@ -140,54 +137,5 @@ class EmailUtil(base_email_connector.BaseEmailConnector):
                          response.body, response.headers)
             raise util_errors.EmailSendError
 
-    @classmethod
-    def render_from_template(cls, template_file, template_vars):
-        """Fill out an email template with template variables.
 
-        Args:
-            template_file (str): The location of email template in filesystem.
-            template_vars (dict): The template variables to fill into the
-                template.
-
-        Returns:
-            str: The template content, rendered with the provided variables.
-        """
-        template_searchpath = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), '../email_templates'))
-        template_loader = jinja2.FileSystemLoader(
-            searchpath=template_searchpath)
-        template_env = jinja2.Environment(loader=template_loader)
-        template = template_env.get_template(template_file)
-        return template.render(template_vars)
-
-    @classmethod
-    def create_attachment(cls, file_location, content_type, filename,
-                          disposition='attachment', content_id=None):
-        """Create a SendGrid attachment.
-
-        Email connector attachments file content must be base64 encoded.
-
-        Args:
-            file_location (str): The path of the file.
-            content_type (str): The content type of the attachment.
-            filename (str): The filename of attachment.
-            disposition (str): Content disposition, defaults to "attachment".
-            content_id (str): The content id.
-
-        Returns:
-            Attachment: A Connector Attachment.
-        """
-        file_content = ''
-        with open(file_location, 'rb') as f:
-            file_content = f.read()
-        content = base64.b64encode(file_content)
-
-        attachment = mail.Attachment()
-        attachment.content = content
-        attachment.type = content_type
-        attachment.filename = filename
-        attachment.disposition = disposition
-        attachment.content_id = content_id
-
-        return attachment
 
