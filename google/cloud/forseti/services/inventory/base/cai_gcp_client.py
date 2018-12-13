@@ -120,18 +120,22 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Dataset IAM Policy.
         """
-        bigquery_prefix = '//bigquery.googleapis.com/projects/{}/datasets/{}'
+        bigquery_name_fmt = '//bigquery.googleapis.com/projects/{}/datasets/{}'
 
-        if project_id:
-            bigquery_prefix = bigquery_prefix.format(project_id, dataset_id)
-        else:
-            bigquery_prefix = bigquery_prefix.format(project_number, dataset_id)
-
+        # Try fetching with project id, if that returns nothing, fall back to
+        # project number.
         resource = self.dao.fetch_cai_asset(
             ContentTypes.iam_policy,
             'google.cloud.bigquery.Dataset',
-            bigquery_prefix,
+            bigquery_name_fmt.format(project_id, dataset_id),
             self.session)
+
+        if not resource:
+            resource = self.dao.fetch_cai_asset(
+                ContentTypes.iam_policy,
+                'google.cloud.bigquery.Dataset',
+                bigquery_name_fmt.format(project_number, dataset_id),
+                self.session)
 
         if resource:
             return resource
@@ -150,18 +154,9 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         Returns:
             dict: Dataset Policy.
         """
-        bigquery_prefix = '//bigquery.googleapis.com/projects/{}/datasets/{}'
 
-        if project_id:
-            bigquery_prefix = bigquery_prefix.format(project_id, dataset_id)
-        else:
-            bigquery_prefix = bigquery_prefix.format(project_number, dataset_id)
-
-        resource = self.dao.fetch_cai_asset(
-            ContentTypes.iam_policy,
-            'google.cloud.bigquery.Dataset',
-            bigquery_prefix,
-            self.session)
+        resource = self.fetch_bigquery_iam_policy(
+            project_id, project_number, dataset_id)
 
         if resource:
             return iam_helpers.convert_iam_to_bigquery_policy(resource)
@@ -170,28 +165,40 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         return super(CaiApiClientImpl, self).fetch_bigquery_dataset_policy(
             project_id, project_number, dataset_id)
 
-    def iter_bigquery_datasets(self, project_number):
+    def iter_bigquery_datasets(self, project_id, project_number):
         """Iterate Datasets from Cloud Asset data.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of datasets.
         """
+
+        bigquery_name_fmt = '//cloudresourcemanager.googleapis.com/projects/{}'
+
+        # Try fetching with project id, if that returns nothing, fall back to
+        # project number.
         resources = list(self.dao.iter_cai_assets(
             ContentTypes.resource,
             'google.cloud.bigquery.Dataset',
-            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
-                project_number),
+            bigquery_name_fmt.format(project_id),
             self.session))
+
+        if not resources:
+            resources = list(self.dao.iter_cai_assets(
+                ContentTypes.resource,
+                'google.cloud.bigquery.Dataset',
+                bigquery_name_fmt.format(project_number),
+                self.session))
 
         if resources and not all('location' in ds for ds in resources):
             LOGGER.info('Datasets missing location key in CAI, '
                         'falling back to live API.')
             resources = list(
                 super(CaiApiClientImpl,
-                      self).iter_bigquery_datasets(project_number))
+                      self).iter_bigquery_datasets(project_id, project_number))
 
         for dataset in resources:
             yield dataset

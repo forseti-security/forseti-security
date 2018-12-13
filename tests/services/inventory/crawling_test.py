@@ -171,7 +171,7 @@ class CrawlerBase(unittest_utils.ForsetiTestCase):
                 run_crawler(storage,
                             progresser,
                             config,
-                            parallel=True)
+                            parallel=False)
 
             self.assertEqual(0,
                              progresser.errors,
@@ -286,7 +286,6 @@ class CrawlerTest(CrawlerBase):
         expected_counts.pop('gsuite_user')
         expected_counts.pop('gsuite_user_member')
 
-
         self.assertEqual(expected_counts, result_counts)
 
     def test_crawling_with_apis_disabled(self):
@@ -387,7 +386,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetsslproxy': {'resource': 1},
             'compute_targettcpproxy': {'resource': 1},
             'compute_urlmap': {'resource': 1},
-            'dataset': {'dataset_policy': 1, 'iam_policy': 1, 'resource': 2},
+            'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 2},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
             'kms_cryptokey': {'iam_policy': 1, 'resource': 1},
@@ -442,7 +441,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_targetsslproxy': {'resource': 1},
             'compute_targettcpproxy': {'resource': 1},
             'compute_urlmap': {'resource': 1},
-            'dataset': {'dataset_policy': 1, 'iam_policy': 1, 'resource': 2},
+            'dataset': {'dataset_policy': 2, 'iam_policy': 2, 'resource': 2},
             'disk': {'resource': 4},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},

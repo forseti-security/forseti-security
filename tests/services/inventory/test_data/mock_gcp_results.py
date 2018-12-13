@@ -274,11 +274,36 @@ BQ_GET_DATASETS_FOR_PROJECTID = {
         },
         "id": "project3:dataset1",
         "kind": "bigquery#dataset"
+    }],
+    # CAI uses project ID instead of number.
+    "project3": [{
+        "datasetReference": {
+            "datasetId": "dataset1",
+            "projectId": "project3"
+        },
+        "id": "project3:dataset1",
+        "kind": "bigquery#dataset"
     }]
 }
 
 BQ_GET_DATASET_ACCESS = {
-    PROJECT_ID_PREFIX + "3": {
+     PROJECT_ID_PREFIX + "3": {
+        "dataset1": [{
+            "role": "WRITER",
+            "specialGroup": "projectWriters"
+        }, {
+            "role": "OWNER",
+            "specialGroup": "projectOwners"
+        }, {
+            "role": "OWNER",
+            "userByEmail": "a_user@forseti.test"
+        }, {
+            "role": "READER",
+            "specialGroup": "projectReaders"
+        }]
+    },
+    # CAI uses project ID instead of number.
+     "project3": {
         "dataset1": [{
             "role": "WRITER",
             "specialGroup": "projectWriters"
