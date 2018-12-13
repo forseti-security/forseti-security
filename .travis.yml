@@ -18,6 +18,9 @@ env:
   - NOKOGIRI_USE_SYSTEM_LIBRARIES=true
   - secure: Br1GCNbRB0Q3lgUW1xq9ULFd+wQdE6YdHYqDlt51007s88KBsY5J/yhvfGQss4EDodxCTZQRPfvDqngdUKjFVARjSezv91vRBIuE5JJfJGLuYTmRmLlUj0I7P5tdJPgkPBbIBy7Nwf8ztjS1qvkib1/Yi+DEvC8CfQ/34zvTpyiAmYuOrON7ThCm+20r3boVEwpKZ9xUjTPU7rkaDPEv8ksQwek/rie9VCGGOdyv3sOascICTCsyZjYCYitSQ2oqSXfRBN3K6+4Pb8UufeE1hLvoDOBrbJIikSTk+1o6+gXFd2ME0IHvgS2pR2vNkoFCM3Wgg1dT4XNMKk1MZopDBQNMTX0DeNbw6wkfr/bIGzzrCGf7t2cc7ziK45Neup1vDldfuwWrvV3IWsIaAeYuLmQ8r6CUSd9Th/x+keg+Lt1r1OODz5pTV+lheNErrFs3PJpJwsFFc2FkuCCTuwSDxf3UveWIgmHKX6aZWr6TwMU7xpclWftb0bJKxn9+sS8zsXNM/V2Wj90YgpMJpqIXIGN3/8+bJzGXn/5+pz0WfzAczHfkyu/PyCmcleRxody3pE/YoiXrM6kIUNOGDqp6pSkZxYt/DtRRvr/G67oyz2aTKML0wpvThezxiWcGv0tKyrYAeL+7ES9dOYJM0CwNkgVt3/UNR17pAgDYDb3FuBs=
 script:
+  - echo $TRAVIS_SECURE_ENV_VARS
+  - echo $TRAVIS_PULL_REQUEST
+  - echo $TRAVIS_EVENT_TYPE
   - ./travis/jekyll_build.sh
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv -in client-secrets.json.enc -out client-secrets.json -d
