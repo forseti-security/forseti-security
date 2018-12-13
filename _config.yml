@@ -26,7 +26,6 @@ exclude: ["Gemfile",
           "travis/",
           "scripts/",
           ".gitignore",
-          "app.yaml",
           ".sass-cache/",
           ".idea/"]
 exclude_from_watch: ["_docs/latest/",
