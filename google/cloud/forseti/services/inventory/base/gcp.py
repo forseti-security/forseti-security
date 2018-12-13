@@ -1015,8 +1015,7 @@ class ApiClientImpl(ApiClient):
         Returns:
             dict: Dataset Policy.
         """
-        if project_id:
-            return self.bigquery.get_dataset_access(project_id, dataset_id)
+        del project_id
 
         return self.bigquery.get_dataset_access(project_number, dataset_id)
 
