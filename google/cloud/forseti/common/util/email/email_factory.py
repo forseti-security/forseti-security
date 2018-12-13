@@ -49,7 +49,6 @@ class EmailFactory(object):
         self.notifier_config = notifier_config
         self.email_connector_config = notifier_config\
             .get('email_connector_config')
-        LOGGER.debug('email connector config:', self.email_connector_config)
 
     def get_connector(self):
         """Gets the connector and executes it.
@@ -61,7 +60,6 @@ class EmailFactory(object):
             InvalidInputError: if not valid
         """
         try:
-            print('config:', self.email_connector_config)
             connector_name = self.email_connector_config.get('name')
             auth = self.email_connector_config.get('auth')
             sender = self.email_connector_config.get('sender')

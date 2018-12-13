@@ -136,6 +136,3 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
                          email_subject, response.status_code,
                          response.body, response.headers)
             raise util_errors.EmailSendError
-
-
-

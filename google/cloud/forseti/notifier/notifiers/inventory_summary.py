@@ -14,8 +14,6 @@
 """Upload inventory summary to GCS."""
 
 from googleapiclient.errors import HttpError
-
-# pylint: disable=line-too-long
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader

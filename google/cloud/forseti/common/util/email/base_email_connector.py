@@ -119,7 +119,3 @@ class BaseEmailConnector(object):
         attachment.content_id = content_id
 
         return attachment
-
-
-
-
