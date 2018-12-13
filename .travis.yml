@@ -9,6 +9,9 @@ addons:
   apt:
     packages:
       - docker-ce
+before_install:
+- openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv
+  -in client-secrets.json.enc -out client-secrets.json -d
 branches:
   only:
   - "forsetisecurity.org"
@@ -20,16 +23,12 @@ env:
 script:
   - ./travis/jekyll_build.sh
 before_deploy:
-- openssl aes-256-cbc -K $encrypted_5d3a31857ace_key -iv $encrypted_5d3a31857ace_iv -in client-secrets.json.enc -out client-secrets.json -d
 - mv _www/www/app.yaml _www/
 - cd _www/
 deploy:
   provider: gae
   keyfile: "$TRAVIS_BUILD_DIR/client-secrets.json"
   project: forseti-security-website-prod
-  on:
-    repo: GoogleCloudPlatform/forseti-security
-    branch: forsetisecurity.org
-    condition: '"-z ${TRAVIS_SECURE_ENV_VARS+x}" && "$TRAVIS_EVENT_TYPE" == "push"'
+  on: forsetisecurity.org
   skip_cleanup: true
   no_promote: true
