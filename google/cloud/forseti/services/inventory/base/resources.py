@@ -1599,23 +1599,11 @@ class AppEngineInstanceIterator(ResourceIterator):
             LOGGER.debug(e)
 
 
-class BigqueryDataSetIterator(ResourceIterator):
+class BigqueryDataSetIterator(resource_iter_class_factory(
+        api_method_name='iter_bigquery_datasets',
+        resource_name='bigquery_dataset',
+        api_method_arg_key='projectNumber')):
     """The Resource iterator implementation for Bigquery Dataset."""
-    def iter(self):
-        """Resource iterator.
-
-        Yields:
-            Resource: AppEngineVersion created
-        """
-        gcp = self.client
-        try:
-            for data in gcp.iter_bigquery_datasets(
-                    project_id=self.resource['projectId'],
-                    project_number=self.resource['projectNumber']):
-                yield FACTORIES['bigquery_dataset'].create_new(data)
-        except ResourceNotSupported as e:
-            # API client doesn't support this resource, ignore.
-            LOGGER.debug(e)
 
 
 class BillingAccountIterator(resource_iter_class_factory(

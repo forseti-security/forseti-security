@@ -3,7 +3,7 @@
 # update_cai_dumps.py script. Any lines that start with a '#' are ignored.
 #
 # Bigquery Dataset with project id
-{"name":"//bigquery.googleapis.com/projects/project3/datasets/bq_test_ds1","asset_type":"google.cloud.bigquery.Dataset", "resource":{"version":"v2","discovery_document_uri":"https://bigquery.googleapis.com/$discovery/rest","discovery_name":"Dataset","parent":"//cloudresourcemanager.googleapis.com/projects/project3","data":{"creationTime":"1540220016171","datasetReference":{"datasetId":"bq_test_ds1","projectId":"project3"},"location":"us","id":"project3:bq_test_ds1","kind":"bigquery#dataset","lastModifiedTime":"1540220016171"}}}
+{"name":"//bigquery.googleapis.com/projects/project3/datasets/bq_test_ds1","asset_type":"google.cloud.bigquery.Dataset", "resource":{"version":"v2","discovery_document_uri":"https://bigquery.googleapis.com/$discovery/rest","discovery_name":"Dataset","parent":"//cloudresourcemanager.googleapis.com/projects/1043","data":{"creationTime":"1540220016171","datasetReference":{"datasetId":"bq_test_ds1","projectId":"project3"},"location":"us","id":"project3:bq_test_ds1","kind":"bigquery#dataset","lastModifiedTime":"1540220016171"}}}
 # Bigquery Dataset with project name
 {"name":"//bigquery.googleapis.com/projects/1042/datasets/bq_test_ds","asset_type":"google.cloud.bigquery.Dataset", "resource":{"version":"v2","discovery_document_uri":"https://bigquery.googleapis.com/$discovery/rest","discovery_name":"Dataset","parent":"//cloudresourcemanager.googleapis.com/projects/1042","data":{"creationTime":"1540220016171","datasetReference":{"datasetId":"bq_test_ds","projectId":"project2"},"location":"us","id":"project2:bq_test_ds","kind":"bigquery#dataset","lastModifiedTime":"1540220016171"}}}
 # Compute Autoscalar (id 900x)

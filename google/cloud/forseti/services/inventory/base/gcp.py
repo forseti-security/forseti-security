@@ -62,11 +62,10 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
-    def iter_bigquery_datasets(self, project_id, project_number):
+    def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from GCP API.
 
         Args:
-            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
         """
 
@@ -1038,18 +1037,15 @@ class ApiClientImpl(ApiClient):
                                    'supported by this API client')
 
     @create_lazy('bigquery', _create_bq)
-    def iter_bigquery_datasets(self, project_id, project_number):
+    def iter_bigquery_datasets(self, project_number):
         """Iterate Datasets from GCP API.
 
         Args:
-            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
 
         Yields:
             dict: Generator of datasets.
         """
-        del project_id
-
         for dataset in self.bigquery.get_datasets_for_projectid(project_number):
             yield dataset
 
