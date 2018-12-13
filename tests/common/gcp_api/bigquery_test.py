@@ -112,6 +112,26 @@ class BigqueryTestCase(unittest_utils.ForsetiTestCase):
 
         self.assertListEqual(return_value, fbq.DATASETS_GET_EXPECTED)
 
+    def test_get_tables(self):
+        """Test get_tables returns tables properly."""
+        mock_responses = []
+        for page in fbq.GET_TABLES_RESPONSES:
+            mock_responses.append(({'status': '200'}, page))
+        http_mocks.mock_http_response_sequence(mock_responses)
+
+        return_value = self.bq_api_client.get_tables(fbq.PROJECT_IDS[0],
+                                                     fbq.DATASET_ID)
+
+        self.assertListEqual(return_value, fbq.TABLES_GET_EXPECTED)
+
+    def test_get_tables_access_raises(self):
+        """Test get_dataset_access raises when there is an HTTP exception."""
+        http_mocks.mock_http_response(fbq.PERMISSION_DENIED, '403')
+
+        with self.assertRaises(api_errors.ApiExecutionError):
+            self.bq_api_client.get_tables(fbq.PROJECT_IDS[0],
+                                          fbq.DATASET_ID)
+
 
 if __name__ == '__main__':
     unittest.main()

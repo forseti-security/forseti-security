@@ -67,6 +67,15 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
+        """
+
+    @abc.abstractmethod
     def fetch_billing_account_iam_policy(self, account_id):
         """Gets IAM policy of a Billing Account from GCP API.
 
@@ -1040,6 +1049,21 @@ class ApiClientImpl(ApiClient):
         """
         for dataset in self.bigquery.get_datasets_for_projectid(project_number):
             yield dataset
+
+    @create_lazy('bigquery', _create_bq)
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
+
+        Yields:
+            dict: Generator of tables.
+        """
+        for table in self.bigquery.get_tables(dataset_reference['projectId'],
+                                              dataset_reference['datasetId']):
+            yield table
 
     @create_lazy('cloudbilling', _create_cloudbilling)
     def fetch_billing_account_iam_policy(self, account_id):
