@@ -30,6 +30,6 @@ deploy:
   on:
     repo: GoogleCloudPlatform/forseti-security
     branch: forsetisecurity.org
-    condition: '"$TRAVIS_PULL_REQUEST" == "true" && "-z ${TRAVIS_SECURE_ENV_VARS+x}" && "$TRAVIS_EVENT_TYPE" == "push"'
+    condition: '"-z ${TRAVIS_SECURE_ENV_VARS+x}" && "$TRAVIS_EVENT_TYPE" == "push"'
   skip_cleanup: true
   no_promote: true
