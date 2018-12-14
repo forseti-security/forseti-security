@@ -147,5 +147,39 @@ rules:
         )
         self.assertEqual(got_violations, [violation])
 
+    def test_find_violations_wildcard(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [project]
+  resource_trees:
+  - type: project
+    resource_id: '*'
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations([data.PROJECT1]))
+        self.assertEqual(got_violations, [])
+
+    def test_find_violations_wildcard_and_sibling(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [organization, project]
+  resource_trees:
+  - type: organization
+    resource_id: '*'
+  - type: organization
+    resource_id: '234'
+    children:
+      - type: project
+        resource_id: p1
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations(
+            [data.ORGANIZATION, data.PROJECT1]))
+        self.assertEqual(got_violations, [])
+
 if __name__ == '__main__':
     unittest.main()

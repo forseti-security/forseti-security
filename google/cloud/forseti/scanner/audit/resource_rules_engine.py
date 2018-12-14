@@ -193,24 +193,31 @@ class ResourceTree(object):
 
     def _match(self, tuples):
         if not self.resource_type:
-            for child in self.children:
-                node = child._match(tuples)
-                if node:
-                    return node
+            return self._match_children(tuples)
 
         for resource_type, resource_id in tuples:
-            if resource_type == self.resource_type and (
-                resource_id == self.resource_id):
-                    tuples = tuples[1:]
-                    if not tuples:
-                        return self
-                    elif not self.children:
-                        return None
-                    else:
-                        for child in self.children:
-                            node = child._match(tuples)
-                            if node:
-                                return node
+            id_match = self.resource_id == '*' or (
+                resource_id == self.resource_id)
+
+            if resource_type == self.resource_type and id_match:
+                tuples = tuples[1:]
+                if not tuples:
+                    return self
+                elif not self.children:
+                    return None
+                else:
+                    return self._match_children(tuples)
+
+    def _match_children(self, tuples):
+        wildcard_child = None
+        for child in self.children:
+            node = child._match(tuples)
+            if node:
+                if node.resource_id != '*':
+                    return node
+                else:
+                    wildcard_child = node
+        return wildcard_child
 
     def get_nodes(self):
         nodes = []
@@ -273,7 +280,8 @@ class Rule(object):
                 )
 
         for node in self.resource_tree.get_nodes():
-            if node not in matched_nodes:
+            if node.resource_id != '*' and (
+                node not in matched_nodes):
                 yield RuleViolation(
                     resource_id=node.resource_id,
                     resource_name=node.resource_id,
