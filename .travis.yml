@@ -30,6 +30,6 @@ deploy:
   on:
     repo: GoogleCloudPlatform/forseti-security
     branch: forsetisecurity.org
-    condition: 'env(TRAVIS_SECURE_ENV_VARS) IS true AND env(TRAVIS_EVENT_TYPE) == "push"'
+    condition: "$TRAVIS_SECURE_ENV_VARS = true && $TRAVIS_EVENT_TYPE = push"
   skip_cleanup: true
   no_promote: true
