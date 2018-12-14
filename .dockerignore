@@ -1,4 +1,7 @@
-# Created by Intellij .ignore plugin
+.git
+.dockerignore
+
+# Below created by Intellij .ignore plugin
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
