@@ -908,6 +908,11 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             return None
 
 
+# BigqueryTable resource classes
+class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
+    """The Resource implementation for bigquery table."""
+
+
 # Billing resource classes
 class BillingAccount(resource_class_factory('billing_account', None)):
     """The Resource implementation for BillingAccount."""
@@ -1592,6 +1597,13 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Dataset."""
 
 
+class BigqueryTableIterator(resource_iter_class_factory(
+        api_method_name='iter_bigquery_tables',
+        resource_name='bigquery_table',
+        api_method_arg_key='datasetReference')):
+    """The Resource iterator implementation for Bigquery Table."""
+
+
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
@@ -2206,6 +2218,13 @@ FACTORIES = {
     'bigquery_dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BigqueryDataSet,
+        'contains': [
+            BigqueryTableIterator
+        ]}),
+
+    'bigquery_table': ResourceFactory({
+        'dependsOn': ['bigquery_dataset'],
+        'cls': BigqueryTable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({

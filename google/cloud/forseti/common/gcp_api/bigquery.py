@@ -47,6 +47,7 @@ class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
 
         self._projects = None
         self._datasets = None
+        self._tables = None
 
         super(BigQueryRepositoryClient, self).__init__(
             API_NAME, versions=['v2'],
@@ -71,6 +72,14 @@ class BigQueryRepositoryClient(_base_repository.BaseRepositoryClient):
             self._datasets = self._init_repository(
                 _BigQueryDatasetsRepository)
         return self._datasets
+
+    @property
+    def tables(self):
+        """Returns a _BigQueryTablesRepository instance."""
+        if not self._tables:
+            self._tables = self._init_repository(
+                _BigQueryTablesRepository)
+        return self._tables
     # pylint: enable=missing-return-doc, missing-return-type-doc
 
 
@@ -104,6 +113,21 @@ class _BigQueryDatasetsRepository(
         super(_BigQueryDatasetsRepository, self).__init__(
             key_field='projectId', entity_field='datasetId',
             component='datasets', **kwargs)
+
+
+class _BigQueryTablesRepository(
+        repository_mixins.ListQueryMixin,
+        _base_repository.GCPRepository):
+    """Implementation of Big Query Tables repository."""
+
+    def __init__(self, **kwargs):
+        """Constructor.
+
+        Args:
+            **kwargs (dict): The args to pass into GCPRepository.__init__()
+        """
+        super(_BigQueryTablesRepository, self).__init__(
+            key_field=None, component='tables', **kwargs)
 
 
 class BigQueryClient(object):
@@ -211,3 +235,25 @@ class BigQueryClient(object):
             return access
         except (errors.HttpError, HttpLib2Error) as e:
             raise api_errors.ApiExecutionError(project_id, e)
+
+    def get_tables(self, project_id, dataset_id):
+        """Return BigQuery tables stored in the requested project_id.
+
+        Args:
+            project_id (str): String representing the project id.
+            dataset_id (str): String representing the dataset id.
+
+        Returns:
+            list: A list of datasetReference objects for a given project_id
+
+        """
+        try:
+            results = self.repository.tables.list(
+                projectId=project_id, datasetId=dataset_id)
+            flattened_results = api_helpers.flatten_list_results(
+                results, 'tables')
+            LOGGER.debug('Getting tables for the project %s and dataset %s',
+                         project_id, dataset_id)
+            return flattened_results
+        except (errors.HttpError, HttpLib2Error) as e:
+            raise api_errors.ApiExecutionError(project_id + ';' + dataset_id, e)
