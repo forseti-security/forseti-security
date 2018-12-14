@@ -117,15 +117,19 @@ class InventorySummary(object):
 
         if self.notifier_config.get('email_connector_config'):
             email_connector_config_auth = self.notifier_config\
-            .get('email_connector_config').get('auth')
+                .get('email_connector_config').get('auth')
 
-            email_util = SendgridConnector(
-            self.notifier_config.get('email_connector_config').get('sender'),
-            self.notifier_config.get('email_connector_config').get('recipient'),
-            email_connector_config_auth)
+            email_util = SendgridConnector(self.notifier_config
+                                           .get('email_connector_config')
+                                           .get('sender'),
+                                           self.notifier_config
+                                           .get('email_connector_config')
+                                           .get('recipient'),
+                                           email_connector_config_auth)
         else:
             email_util = SendgridConnector(email_summary_config.get('sender'),
-                                           email_summary_config.get('recipient'),
+                                           email_summary_config.get('recipient')
+                                           ,
                                            email_summary_config)
 
         email_subject = 'Inventory Summary: {0}'.format(
@@ -150,7 +154,8 @@ class InventorySummary(object):
         if self.notifier_config.get('email_connector_config'):
             try:
                 email_util.send(
-                    email_sender=self.notifier_config.get('email_connector_config')
+                    email_sender=self.notifier_config
+                    .get('email_connector_config')
                     .get('sender'),
                     email_recipient=self.notifier_config
                     .get('email_connector_config')

@@ -66,19 +66,24 @@ class EmailFactory(object):
                 auth = self.email_connector_config.get('auth')
                 sender = self.email_connector_config.get('sender')
                 recipient = self.email_connector_config.get('recipient')
-                return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
-                                                           auth)
+                return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
+                                                               recipient,
+                                                               auth)
             except:
-                LOGGER.exception('Error occurred while fetching connector details')
+                LOGGER.exception(
+                    'Error occurred while fetching connector details')
                 raise InvalidInputError
         else:
             try:
+                # Sendgrid
                 connector_name = 'sendgrid'
                 auth = self.notifier_config
                 sender = self.notifier_config.get('sender')
                 recipient = self.notifier_config.get('recipient')
-                return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
-                                                           auth)
+                return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
+                                                               recipient,
+                                                               auth)
             except:
-                LOGGER.exception('Error occurred while fetching connector details')
+                LOGGER.exception(
+                    'Error occurred while fetching connector details')
                 raise InvalidInputError
