@@ -122,10 +122,10 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
         resource_tree = ResourceTree.from_json(rule_def['resource_trees'])
         self.rules.append(
             Rule(name=rule_def['name'],
-            index=rule_index,
-            resource_types=set(rule_def['resource_types']),
-            resource_tree=resource_tree),
-        )
+                index=rule_index,
+                resource_types=set(rule_def['resource_types']),
+                resource_tree=resource_tree),
+            )
 
     def find_violations(self, resources):
         """Find lien violations in the rule book.
@@ -154,6 +154,20 @@ class ResourceTree(object):
 
     @classmethod
     def from_json(cls, json_nodes):
+        """Create a resource tre from the given JSON representation of nodes.
+
+        If there are multiple json nodes, the resulting tree will have a root
+        node with no resource type or id and each json node as a child.
+
+        If there is only one json node, the root will have the resource id and
+        type of the node.
+
+        Args:
+            json_nodes(List[dict]): JSON representation of nodes.
+
+        Returns:
+            ResourceTree: The resource tree representation of the json nodes.
+        """
         nodes = cls._from_json(json_nodes)
         if not nodes:
             return None
@@ -164,6 +178,7 @@ class ResourceTree(object):
 
     @classmethod
     def _from_json(cls, json_nodes):
+        """Build Resource Tree nodes."""
         if not json_nodes:
             return None
         nodes = []
@@ -176,12 +191,25 @@ class ResourceTree(object):
         return nodes
 
     def match(self, resource, resource_types):
+        """Match the given resource against this resource tree.
+
+        Args:
+            resource (Resource): The resource to match.
+            resource_types (List[string]): Applicable resource types. Violations
+                on types not in this list will not be reported.
+
+        Returns:
+            ResourceTree: The final matching node, or None if there is no match.
+        """
         tuples = []
         for resource_type, resource_id  in (
             utils.get_resources_from_full_name(resource.full_name)):
             tuples.append((resource_type, resource_id))
 
+        # Tuples are returned in reverse order, so reverse them.
         tuples = list(reversed(tuples))
+
+        # Left trim tuples that are not appicable.
         for resource_type, _ in tuples:
             if resource_type not in resource_types:
                 tuples = tuples[1:]
@@ -192,8 +220,9 @@ class ResourceTree(object):
         return self._match(tuples)
 
     def _match(self, tuples):
+        """Match the given tuples against this tree."""
         if not self.resource_type:
-            return self._match_children(tuples)
+            return self._find_matching_child(tuples)
 
         for resource_type, resource_id in tuples:
             id_match = self.resource_id == '*' or (
@@ -206,9 +235,17 @@ class ResourceTree(object):
                 elif not self.children:
                     return None
                 else:
-                    return self._match_children(tuples)
+                    return self._find_matching_child(tuples)
 
-    def _match_children(self, tuples):
+    def _find_matching_child(self, tuples):
+        """Finds a matching child node.
+
+        Assumes that a child will either match an exact resource id, or a
+        wildcard. The exact match child is given preference.
+
+        Returns:
+            ResourceTree: Matching child node, or None if none matched.
+        """
         wildcard_child = None
         for child in self.children:
             node = child._match(tuples)
@@ -220,6 +257,7 @@ class ResourceTree(object):
         return wildcard_child
 
     def get_nodes(self):
+        """Get all nodes in this resource tree."""
         nodes = []
         if self.resource_type:
             nodes.append(self)
@@ -257,7 +295,7 @@ class Rule(object):
             restrictions (Iterable[str]): The restrictions to check.
 
         Yields:
-            RuleViolation: lien rule violation.
+            RuleViolation: resource rule violation.
         """
 
         matched_nodes = set()
