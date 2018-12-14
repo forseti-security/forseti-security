@@ -148,7 +148,7 @@ def bigquery_dataset(item):
     parent = item.parent()
     name = '//bigquery.googleapis.com/projects/{}/datasets/{}'.format(
         parent['projectNumber'], item['datasetReference']['datasetId'])
-    asset_type = 'google.bigquery.Dataset'
+    asset_type = 'google.cloud.bigquery.Dataset'
     parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
         parent['projectNumber'])
     return _create_asset(name, asset_type, parent_name, item.data(), None)
