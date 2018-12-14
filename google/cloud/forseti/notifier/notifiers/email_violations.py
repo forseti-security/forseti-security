@@ -52,8 +52,11 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        self.connector = email_factory.EmailFactory(self.notifier_config)\
-            .get_connector()
+        if self.notifier_config.get('email_connector_config'):
+            self.connector = email_factory.EmailFactory(self.notifier_config)\
+               .get_connector()
+        else:
+            self.connector = email_factory.EmailFactory(self.notification_config).get_connector()
 
     def _make_attachment_csv(self):
         """Create the attachment object in csv format.
@@ -130,8 +133,12 @@ class EmailViolations(base_notification.BaseNotification):
 
         email_map = {}
 
-        data_format = self.notifier_config.get('email_connector_config')\
-            .get('data_format', 'csv')
+        if self.notifier_config.get('email_connector_config'):
+            data_format = self.notifier_config.get('email_connector_config')\
+                .get('data_format', 'csv')
+        else:
+            data_format = self.notification_config.get('data_format', 'csv')
+
         if data_format not in self.supported_data_formats:
             raise base_notification.InvalidDataFormatError(
                 'Email notifier', data_format)
@@ -162,18 +169,30 @@ class EmailViolations(base_notification.BaseNotification):
         content = notification_map['content']
         attachment = notification_map['attachment']
 
-        try:
-            self.connector.send(
-                email_sender=self.notifier_config
-                .get('email_connector_config').get('sender'),
-                email_recipient=self.notifier_config
-                .get('email_connector_config').get('recipient'),
-                email_subject=subject,
-                email_content=content,
-                content_type='text/html',
-                attachment=attachment)
-        except util_errors.EmailSendError:
-            LOGGER.warn('Unable to send Violations email')
+        if self.notifier_config.get('email_connector_config'):
+            try:
+                self.connector.send(
+                    email_sender=self.notifier_config
+                    .get('email_connector_config').get('sender'),
+                    email_recipient=self.notifier_config
+                    .get('email_connector_config').get('recipient'),
+                    email_subject=subject,
+                    email_content=content,
+                    content_type='text/html',
+                    attachment=attachment)
+            except util_errors.EmailSendError:
+                LOGGER.warn('Unable to send Violations email')
+        else:
+            try:
+                self.connector.send(
+                    email_sender = self.notification_config['sender'],
+                    email_recipient = self.notification_config['recipient'],
+                    email_subject=subject,
+                    email_content=content,
+                    content_type='text/html',
+                    attachment=attachment)
+            except util_errors.EmailSendError:
+                LOGGER.warn('Unable to send Violations email')
 
     def run(self):
         """Run the email notifier"""

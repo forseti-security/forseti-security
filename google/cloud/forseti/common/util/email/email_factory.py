@@ -47,8 +47,9 @@ class EmailFactory(object):
             notifier_config (dict): Notifier configurations.
         """
         self.notifier_config = notifier_config
-        self.email_connector_config = notifier_config\
-            .get('email_connector_config')
+        if notifier_config.get('email_connector_config') is not None:
+            self.email_connector_config = notifier_config\
+              .get('email_connector_config')
 
     def get_connector(self):
         """Gets the connector and executes it.
@@ -59,13 +60,25 @@ class EmailFactory(object):
         Raises:
             InvalidInputError: if not valid
         """
-        try:
-            connector_name = self.email_connector_config.get('name')
-            auth = self.email_connector_config.get('auth')
-            sender = self.email_connector_config.get('sender')
-            recipient = self.email_connector_config.get('recipient')
-            return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
+        if self.notifier_config.get('email_connector_config'):
+            try:
+                connector_name = self.email_connector_config.get('name')
+                auth = self.email_connector_config.get('auth')
+                sender = self.email_connector_config.get('sender')
+                recipient = self.email_connector_config.get('recipient')
+                return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
                                                            auth)
-        except:
-            LOGGER.exception('Error occurred while fetching connector details')
-            raise InvalidInputError
+            except:
+                LOGGER.exception('Error occurred while fetching connector details')
+                raise InvalidInputError
+        else:
+            try:
+                connector_name = 'sendgrid'
+                auth = self.notifier_config
+                sender = self.notifier_config.get('sender')
+                recipient = self.notifier_config.get('recipient')
+                return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
+                                                           auth)
+            except:
+                LOGGER.exception('Error occurred while fetching connector details')
+                raise InvalidInputError

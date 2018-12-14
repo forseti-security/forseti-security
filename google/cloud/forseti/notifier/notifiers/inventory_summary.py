@@ -115,13 +115,18 @@ class InventorySummary(object):
         email_summary_config = (
             self.notifier_config.get('inventory').get('email_summary'))
 
-        email_connector_config_auth = self.notifier_config\
+        if self.notifier_config.get('email_connector_config'):
+            email_connector_config_auth = self.notifier_config\
             .get('email_connector_config').get('auth')
 
-        email_util = SendgridConnector(
+            email_util = SendgridConnector(
             self.notifier_config.get('email_connector_config').get('sender'),
             self.notifier_config.get('email_connector_config').get('recipient'),
             email_connector_config_auth)
+        else:
+            email_util = SendgridConnector(email_summary_config.get('sender'),
+                                           email_summary_config.get('recipient'),
+                                           email_summary_config)
 
         email_subject = 'Inventory Summary: {0}'.format(
             self.inventory_index_id)
@@ -142,19 +147,31 @@ class InventorySummary(object):
              'summary_data': summary_data,
              'details_data': details_data})
 
-        try:
-            email_util.send(
-                email_sender=self.notifier_config.get('email_connector_config')
-                .get('sender'),
-                email_recipient=self.notifier_config
-                .get('email_connector_config')
-                .get('recipient'),
-                email_subject=email_subject,
-                email_content=email_content,
-                content_type='text/html')
-            LOGGER.debug('Inventory summary sent successfully by email.')
-        except util_errors.EmailSendError:
-            LOGGER.exception('Unable to send inventory summary email')
+        if self.notifier_config.get('email_connector_config'):
+            try:
+                email_util.send(
+                    email_sender=self.notifier_config.get('email_connector_config')
+                    .get('sender'),
+                    email_recipient=self.notifier_config
+                    .get('email_connector_config')
+                    .get('recipient'),
+                    email_subject=email_subject,
+                    email_content=email_content,
+                    content_type='text/html')
+                LOGGER.debug('Inventory summary sent successfully by email.')
+            except util_errors.EmailSendError:
+                LOGGER.exception('Unable to send inventory summary email')
+        else:
+            try:
+                email_util.send(
+                    email_sender=email_summary_config.get('sender'),
+                    email_recipient=email_summary_config.get('recipient'),
+                    email_subject=email_subject,
+                    email_content=email_content,
+                    content_type='text/html')
+                LOGGER.debug('Inventory summary sent successfully by email.')
+            except util_errors.EmailSendError:
+                LOGGER.exception('Unable to send inventory summary email')
 
     @staticmethod
     def transform_to_template(data):
