@@ -37,26 +37,30 @@ RUN_CLIENT=false
 
 download_configuration_files(){
     # -DD optional gsutil debugging
-    # TODO switch debugging on/off via env var
-    gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-    gsutil cp -r ${BUCKET}/rules /forseti-security/
+    DEBUG_FLAG=
+
+    if [ ${LOG_LEVEL} = "debug" ]; then
+        DEBUG_FLAG="-DD"
+    fi
+
+    gsutil cp ${DEBUG_FLAG} ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+    gsutil cp ${DEBUG_FLAG} -r ${BUCKET}/rules /forseti-security/
 }
 
 start_server(){
-    # TODO switch debugging on/off via env var
     forseti_server \
     --endpoint "localhost:50051" \
     --forseti_db "mysql://root@${CLOUDSQLPROXY_SERVICE_HOST}:${CLOUDSQLPROXY_SERVICE_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
-    --log_level=debug &
+    --log_level=${LOG_LEVEL} &
     #--enable_console_log
 }
 
-#start_client(){
+start_client(){
     #TODO
-
-#}
+    echo "start_client() not implemented yet."
+}
 
 run_cron_job(){
     # Below cut and paste from run_forseti.sh
@@ -118,23 +122,51 @@ run_cron_job(){
 
 main(){
 
-    # set -x enables a mode of the shell where all executed commands are printed to the terminal.
-    # With this  enabled, we should not put anything private/secret in the commands called because
-    # they will be logged.
-    set -x
-    download_configuration_files
-    start_server
-    #start_client
+    if [ ${LOG_LEVEL}='debug' ]; then
+        # Print commands to terminal
+        set -x
+    fi
 
-    # For now run the cron job here
-    # TODO have this called externally if running Forseti as a long running service
-    # TODO or use a cmd arg to indicate this is running in a short lived CronJob container
-    run_cron_job
+    download_configuration_files
+
+    if [ ${RUN_SERVER}="true" ]; then
+        start_server
+    fi
+
+    if [ ${RUN_CLIENT}="true" ]; then
+        start_client
+    fi
+
+    if [ ${RUN_CRONJOB}="true" ]; then
+        run_cron_job
+    fi
 }
 
-
 # Read command line arguments
-BUCKET=$1
+while [ "$1" != "" ]; do
+    case $1 in
+        --bucket )
+            BUCKET=$1
+            ;;
+        --log_level )
+            LOG_LEVEL=$1
+            ;;
+        --run_server )
+            RUN_SERVER=true
+            ;;
+        --run_cronjob )
+            RUN_CRONJOB=true
+            ;;
+        --run_client )
+            RUN_CLIENT=true
+            ;;
+        --services )
+            SERVICES=$1
+            ;;
+    esac
+    shift # Move remaining args down 1 position
+    # Process next arg at position $1
+done
 
 # Run this script
 main
