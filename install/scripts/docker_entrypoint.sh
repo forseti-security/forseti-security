@@ -133,6 +133,11 @@ main(){
     download_configuration_files
     start_server
     #start_client
+
+    # For now run the cron job here
+    # TODO have this called externally if running Forseti as a long running service
+    # TODO or use a cmd arg to indicate this is running in a short lived CronJob container
+    run_cron_job
 }
 
 # Run this script
