@@ -16,97 +16,124 @@
 # Usage
 # (sudo if needed) docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET}
 
-# UNDER DEVELOPMENT. For now basic functionality, just starts Forseti Server.
+# UNDER DEVELOPMENT FOR PROOF OF CONCEPT PURPOSES ONLY
 # This script serves as the entrypoint for starting Forseti server in a Docker container.
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
-#
-# This script assumes it's running in a container on a GCE Container Optimized OS VM
-# that is already authorized with the forseti service account.
 
-# TODO remove set -x after debugging complete
-# set -x enables a mode of the shell where all executed commands are printed to the terminal.
-# With this  enabled, we should not put anything private/secret in the commands called because
-# they will be logged.
-set -x
+# TODO Error handling in all functions
 
-# TODO named arg and arg validation
-# TODO arg to control which services to start (default to server for now)
-BUCKET=$1
+# Declare variables and set default values
+BUCKET=
+LOG_LEVEL=info
+SERVICES="scanner model inventory explain notifier"
+RUN_SERVER=true
+RUN_CLIENT=false
 
-# Download config files
-# -DD optional gsutil debugging
-# TODO switch debugging on/off via env var
-gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-gsutil cp -r ${BUCKET}/rules /forseti-security/
+# Note
+# CLOUDSQLPROXY_SERVICE_HOST
+# CLOUDSQLPROXY_SERVICE_PORT
+# are environment variables set by k8s
+# TODO process these as command line args if not running on k8s
 
 
-# TODO Error handling for gsutil cp
+read_args(){
+    # TODO named arg and arg validation
+    # TODO arg to control which services to start (default to server for now)
+    BUCKET=$1
+}
 
-# Start Forseti server
-# This requires the cloud sql proxy (side car) container is running on 127.0.0.1:3306
+download_configuration_files(){
+    # -DD optional gsutil debugging
+    # TODO switch debugging on/off via env var
+    gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+    gsutil cp -r ${BUCKET}/rules /forseti-security/
+}
 
-# TODO switch debugging on/off via env var
-forseti_server \
---endpoint "localhost:50051" \
---forseti_db "mysql://root@${CLOUDSQLPROXY_SERVICE_HOST}:${CLOUDSQLPROXY_SERVICE_PORT}/forseti_security" \
---services scanner model inventory explain notifier \
---config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
---log_level=debug &
-#--enable_console_log
+start_server(){
+    # TODO switch debugging on/off via env var
+    forseti_server \
+    --endpoint "localhost:50051" \
+    --forseti_db "mysql://root@${CLOUDSQLPROXY_SERVICE_HOST}:${CLOUDSQLPROXY_SERVICE_PORT}/forseti_security" \
+    --services ${SERVICES} \
+    --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
+    --log_level=debug &
+    #--enable_console_log
+}
 
-# Below cut and paste from run_forseti.sh ######################################
-# Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
+#start_client(){
+    #TODO
 
-# Wait until the service is started
-sleep 10s
+#}
 
-# Set the output format to json
-forseti config format json
+run_cron_job(){
+    # Below cut and paste from run_forseti.sh
+    # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
 
-# Purge inventory.
-# Use retention_days from configuration yaml file.
-forseti inventory purge
+    # Wait until the service is started
+    sleep 10s
 
-# Run inventory command
-MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
-echo "Running Forseti inventory."
-forseti inventory create --import_as ${MODEL_NAME}
-echo "Finished running Forseti inventory."
-sleep 5s
+    # Set the output format to json
+    forseti config format json
 
-GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
-MODEL_STATUS=`eval $GET_MODEL_STATUS`
+    # Purge inventory.
+    # Use retention_days from configuration yaml file.
+    forseti inventory purge
 
-if [ "$MODEL_STATUS" == "BROKEN" ]
-    then
-        echo "Model is broken, please contact discuss@forsetisecurity.org for support."
-        exit
-fi
+    # Run inventory command
+    MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
+    echo "Running Forseti inventory."
+    forseti inventory create --import_as ${MODEL_NAME}
+    echo "Finished running Forseti inventory."
+    sleep 5s
 
-# Run model command
-echo "Using model ${MODEL_NAME} to run scanner"
-forseti model use ${MODEL_NAME}
-# Sometimes there's a lag between when the model
-# successfully saves to the database.
-sleep 10s
-echo "Forseti config: $(forseti config show)"
+    GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
+    MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
-# Run scanner command
-echo "Running Forseti scanner."
-scanner_command=`forseti scanner run`
-scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
-echo "Finished running Forseti scanner."
-sleep 10s
+    if [ "$MODEL_STATUS" == "BROKEN" ]
+        then
+            echo "Model is broken, please contact discuss@forsetisecurity.org for support."
+            exit
+    fi
 
-# Run notifier command
-echo "Running Forseti notifier."
-# forseti notifier run --scanner_index_id ${scanner_index_id}
-forseti notifier run
-echo "Finished running Forseti notifier."
-sleep 10s
+    # Run model command
+    echo "Using model ${MODEL_NAME} to run scanner"
+    forseti model use ${MODEL_NAME}
+    # Sometimes there's a lag between when the model
+    # successfully saves to the database.
+    sleep 10s
+    echo "Forseti config: $(forseti config show)"
 
-# Clean up the model tables
-echo "Cleaning up model tables"
-forseti model delete ${MODEL_NAME}
+    # Run scanner command
+    echo "Running Forseti scanner."
+    scanner_command=`forseti scanner run`
+    scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
+    echo "Finished running Forseti scanner."
+    sleep 10s
 
-# End cut and paste from run_forseti.sh ######################################
+    # Run notifier command
+    echo "Running Forseti notifier."
+    forseti notifier run
+    echo "Finished running Forseti notifier."
+    sleep 10s
+
+    # Clean up the model tables
+    echo "Cleaning up model tables"
+    forseti model delete ${MODEL_NAME}
+
+    # End cut and paste from run_forseti.sh
+}
+
+main(){
+
+    # set -x enables a mode of the shell where all executed commands are printed to the terminal.
+    # With this  enabled, we should not put anything private/secret in the commands called because
+    # they will be logged.
+    set -x
+    read_args
+    download_configuration_files
+    start_server
+    #start_client
+}
+
+# Run this script
+main
