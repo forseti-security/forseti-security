@@ -15,11 +15,11 @@ spec:
           containers:
             - name: forseti
               image: ${FORSETI_IMAGE}
-              command: ["/forseti-security/install/scripts/docker_entrypoint.sh", \
-                        "--bucket=${BUCKET}", \
-                        "--log_level=debug", \
-                        "--run_server", \
-                        "--services=scanner model inventory explain notifier", \
+              command: ["/forseti-security/install/scripts/docker_entrypoint.sh",
+                        "--bucket=${BUCKET}",
+                        "--log_level=debug",
+                        "--run_server",
+                        "--services=scanner model inventory explain notifier",
                         "--run_cronjob" ]
               securityContext:
                 runAsUser: 0  # root user
