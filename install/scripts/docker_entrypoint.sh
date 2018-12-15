@@ -35,13 +35,6 @@ RUN_CLIENT=false
 # are environment variables set by k8s
 # TODO process these as command line args if not running on k8s
 
-
-read_args(){
-    # TODO named arg and arg validation
-    # TODO arg to control which services to start (default to server for now)
-    BUCKET=$1
-}
-
 download_configuration_files(){
     # -DD optional gsutil debugging
     # TODO switch debugging on/off via env var
@@ -129,7 +122,6 @@ main(){
     # With this  enabled, we should not put anything private/secret in the commands called because
     # they will be logged.
     set -x
-    read_args
     download_configuration_files
     start_server
     #start_client
@@ -139,6 +131,10 @@ main(){
     # TODO or use a cmd arg to indicate this is running in a short lived CronJob container
     run_cron_job
 }
+
+
+# Read command line arguments
+BUCKET=$1
 
 # Run this script
 main
