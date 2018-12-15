@@ -25,6 +25,7 @@ from google.cloud.forseti.common.gcp_api import repository_mixins
 from google.cloud.forseti.common.util import logger
 
 LOGGER = logger.get_logger(__name__)
+API_NAME = 'cloudasset'
 
 
 class CloudAssetRepositoryClient(_base_repository.BaseRepositoryClient):
@@ -52,7 +53,7 @@ class CloudAssetRepositoryClient(_base_repository.BaseRepositoryClient):
         self._organizations_operations = None
 
         super(CloudAssetRepositoryClient, self).__init__(
-            'cloudasset', versions=['v1beta1'],
+            API_NAME, versions=['v1beta1'],
             quota_max_calls=quota_max_calls,
             quota_period=quota_period,
             use_rate_limiter=use_rate_limiter)
@@ -168,7 +169,7 @@ class CloudAssetClient(object):
             **kwargs (dict): The kwargs.
         """
         max_calls, quota_period = api_helpers.get_ratelimiter_config(
-            global_configs, 'cloudasset')
+            global_configs, API_NAME)
 
         self.repository = CloudAssetRepositoryClient(
             quota_max_calls=max_calls,

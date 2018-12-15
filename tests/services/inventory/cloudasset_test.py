@@ -133,8 +133,7 @@ class InventoryCloudAssetTest(unittest_utils.ForsetiTestCase):
         expected_iam_policy = {
             'bindings': [
                 {'members': ['user:a_user@forseti.test'],
-                 'role': 'roles/resourcemanager.folderAdmin'}],
-            'version': 1}
+                 'role': 'roles/resourcemanager.folderAdmin'}]}
         self.assertEqual(expected_iam_policy, iam_policy)
 
     def validate_no_data_in_table(self):
