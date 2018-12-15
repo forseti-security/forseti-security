@@ -65,6 +65,7 @@ start_client(){
 run_cron_job(){
     # Below cut and paste from run_forseti.sh
     # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
+    # due to the way it sources environment variables
 
     # Wait until the service is started
     sleep 10s
@@ -120,6 +121,12 @@ run_cron_job(){
     # End cut and paste from run_forseti.sh
 }
 
+#error_exit()
+#{
+#	echo "$1" 1>&2
+#	exit 1
+#}
+
 main(){
 
     if [ ${LOG_LEVEL}='debug' ]; then
@@ -129,11 +136,10 @@ main(){
 
     download_configuration_files
 
+    # Run server or client; not both in same container
     if [ ${RUN_SERVER}="true" ]; then
         start_server
-    fi
-
-    if [ ${RUN_CLIENT}="true" ]; then
+    elif [ ${RUN_CLIENT}="true" ]; then
         start_client
     fi
 
@@ -141,6 +147,9 @@ main(){
         run_cron_job
     fi
 }
+
+# For now, just stop the script if an error occurs
+set -e
 
 # Read command line arguments
 while [ "$1" != "" ]; do
