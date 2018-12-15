@@ -144,11 +144,14 @@ main(){
 
 # Read command line arguments
 while [ "$1" != "" ]; do
+    # Process next arg at position $1
     case $1 in
         --bucket )
+            shift
             BUCKET=$1
             ;;
         --log_level )
+            shift
             LOG_LEVEL=$1
             ;;
         --run_server )
@@ -161,11 +164,11 @@ while [ "$1" != "" ]; do
             RUN_CLIENT=true
             ;;
         --services )
+            shift
             SERVICES=$1
             ;;
     esac
     shift # Move remaining args down 1 position
-    # Process next arg at position $1
 done
 
 # Run this script
