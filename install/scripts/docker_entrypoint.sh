@@ -36,15 +36,15 @@ RUN_CLIENT=false
 # TODO process these as command line args if not running on k8s
 
 download_configuration_files(){
-    # -DD optional gsutil debugging
-    DEBUG_FLAG=
-
+    # Download config files from GCS
+    # Use -DD gsutil debugging flag if log level is debug
     if [ ${LOG_LEVEL} = "debug" ]; then
-        DEBUG_FLAG="-DD"
+        gsutil cp -DD ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+        gsutil cp -DD -r ${BUCKET}/rules /forseti-security/
+    else
+        gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+        gsutil cp -r ${BUCKET}/rules /forseti-security/
     fi
-
-    gsutil cp ${DEBUG_FLAG} ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-    gsutil cp ${DEBUG_FLAG} -r ${BUCKET}/rules /forseti-security/
 }
 
 start_server(){
