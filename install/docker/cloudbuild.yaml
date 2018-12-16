@@ -23,8 +23,8 @@ steps:
   - 'build'
   - '--file=install/docker/base'
   - '--tag=gcr.io/$PROJECT_ID/forseti-base'
-  - '--cache-from',
-  - 'gcr.io/$PROJECT_ID/forseti-base:latest
+  - '--cache-from'
+  - 'gcr.io/$PROJECT_ID/forseti-base:latest'
   - '.'
   waitFor: ['-']
   id: base
