@@ -37,14 +37,14 @@ RUN_CLIENT=false
 
 download_configuration_files(){
     # Download config files from GCS
-    # Use -DD gsutil debugging flag if log level is debug
+    # Use gsutil -DD debug flag if log level is debug
+    DEBUG_FLAG=""
     if [ ${LOG_LEVEL} = "debug" ]; then
-        gsutil cp -DD ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-        gsutil cp -DD -r ${BUCKET}/rules /forseti-security/
-    else
-        gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-        gsutil cp -r ${BUCKET}/rules /forseti-security/
+        DEBUG_FLAG="-DD"
     fi
+
+    gsutil ${DEBUG_FLAG} cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+    gsutil ${DEBUG_FLAG} cp -r ${BUCKET}/rules /forseti-security/
 }
 
 start_server(){
