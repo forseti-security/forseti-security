@@ -56,7 +56,8 @@ class EmailViolations(base_notification.BaseNotification):
             self.connector = email_factory.EmailFactory(self.notifier_config)\
                .get_connector()
         else:
-            self.connector = email_factory.EmailFactory(self.notification_config).get_connector()
+            self.connector = email_factory.EmailFactory(
+                self.notification_config).get_connector()
 
     def _make_attachment_csv(self):
         """Create the attachment object in csv format.
@@ -185,8 +186,8 @@ class EmailViolations(base_notification.BaseNotification):
         else:
             try:
                 self.connector.send(
-                    email_sender = self.notification_config['sender'],
-                    email_recipient = self.notification_config['recipient'],
+                    email_sender=self.notification_config['sender'],
+                    email_recipient=self.notification_config['recipient'],
                     email_subject=subject,
                     email_content=content,
                     content_type='text/html',
