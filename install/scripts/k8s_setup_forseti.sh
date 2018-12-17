@@ -31,6 +31,7 @@
 	export BUCKET=gs://<bucketname>
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
 	export CRON_SCHEDULE="*/60 * * * *"
+	export CRON_TYPE="RUN"
 
 	# Create a deployment file 'forseti.yaml' from the template 'forseti.yaml.template'
 	# with variables substituted into the yaml

@@ -19,9 +19,10 @@ sudo docker run -d -v /mnt/stateful_partition/cloudsql:/cloudsql \
 # TODO set variables
 CONTAINER_ID=<>
 BUCKET=gs://<>
+CRON_TYPE="SCHEDULE"
 
 # Run Forseti server
-sudo docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET}
+sudo docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET} ${CRON_TYPE}
 
 # Test commands for Forseti server
 # Attach to container and run test commands as normal or run from outide container via exec

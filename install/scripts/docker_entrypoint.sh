@@ -32,6 +32,7 @@ set -x
 # TODO named arg and arg validation
 # TODO arg to control which services to start (default to server for now)
 BUCKET=$1
+CRON_TYPE=$2
 
 # Download config files
 # -DD optional gsutil debugging
@@ -54,59 +55,70 @@ forseti_server \
 --log_level=debug &
 #--enable_console_log
 
-# Below cut and paste from run_forseti.sh ######################################
-# Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
+case "$CRON_TYPE" in
+    "RUN" )
+        # TODO: figure out how to run the run_forseti.sh directly instead of duplicating the code here
+        # Below cut and paste from run_forseti.sh ######################################
+        # Ideally just call run_forseti.sh directly but for now its not quite right for us in GKE
 
-# Wait until the service is started
-sleep 10s
+        # Wait until the service is started
+        sleep 10s
 
-# Set the output format to json
-forseti config format json
+        # Set the output format to json
+        forseti config format json
 
-# Purge inventory.
-# Use retention_days from configuration yaml file.
-forseti inventory purge
+        # Purge inventory.
+        # Use retention_days from configuration yaml file.
+        forseti inventory purge
 
-# Run inventory command
-MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
-echo "Running Forseti inventory."
-forseti inventory create --import_as ${MODEL_NAME}
-echo "Finished running Forseti inventory."
-sleep 5s
+        # Run inventory command
+        MODEL_NAME=$(/bin/date -u +%Y%m%dT%H%M%S)
+        echo "Running Forseti inventory."
+        forseti inventory create --import_as ${MODEL_NAME}
+        echo "Finished running Forseti inventory."
+        sleep 5s
 
-GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
-MODEL_STATUS=`eval $GET_MODEL_STATUS`
+        GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
+        MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
-if [ "$MODEL_STATUS" == "BROKEN" ]
-    then
-        echo "Model is broken, please contact discuss@forsetisecurity.org for support."
-        exit
-fi
+        if [ "$MODEL_STATUS" == "BROKEN" ]
+            then
+                echo "Model is broken, please contact discuss@forsetisecurity.org for support."
+                exit
+        fi
 
-# Run model command
-echo "Using model ${MODEL_NAME} to run scanner"
-forseti model use ${MODEL_NAME}
-# Sometimes there's a lag between when the model
-# successfully saves to the database.
-sleep 10s
-echo "Forseti config: $(forseti config show)"
+        # Run model command
+        echo "Using model ${MODEL_NAME} to run scanner"
+        forseti model use ${MODEL_NAME}
+        # Sometimes there's a lag between when the model
+        # successfully saves to the database.
+        sleep 10s
+        echo "Forseti config: $(forseti config show)"
 
-# Run scanner command
-echo "Running Forseti scanner."
-scanner_command=`forseti scanner run`
-scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
-echo "Finished running Forseti scanner."
-sleep 10s
+        # Run scanner command
+        echo "Running Forseti scanner."
+        scanner_command=`forseti scanner run`
+        scanner_index_id=`echo ${scanner_command} | grep -o -P '(?<=(ID: )).*(?=is created)'`
+        echo "Finished running Forseti scanner."
+        sleep 10s
 
-# Run notifier command
-echo "Running Forseti notifier."
-# forseti notifier run --scanner_index_id ${scanner_index_id}
-forseti notifier run
-echo "Finished running Forseti notifier."
-sleep 10s
+        # Run notifier command
+        echo "Running Forseti notifier."
+        # forseti notifier run --scanner_index_id ${scanner_index_id}
+        forseti notifier run
+        echo "Finished running Forseti notifier."
+        sleep 10s
 
-# Clean up the model tables
-echo "Cleaning up model tables"
-forseti model delete ${MODEL_NAME}
+        # Clean up the model tables
+        echo "Cleaning up model tables"
+        forseti model delete ${MODEL_NAME}
 
-# End cut and paste from run_forseti.sh ######################################
+        # End cut and paste from run_forseti.sh ######################################
+    ;;
+
+    "SCHEDULE" )
+        export FORSETI_HOME=/home/ubuntu/forseti-security
+        USER=ubuntu
+        (echo "{run_frequency} (/usr/bin/flock -n /home/ubuntu/forseti-security/forseti_cron_runner.lock $FORSETI_HOME/install/gcp/scripts/run_forseti.sh || echo '[forseti-security] Warning: New Forseti cron job will not be started, because previous Forseti job is still running.') 2>&1 | logger") | crontab -u $USER -
+    ;;
+esac
