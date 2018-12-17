@@ -47,7 +47,7 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
         """
         self.sender = sender
         self.recipient = recipient
-        if kwargs.get('api_key') is not None:
+        if kwargs.get('api_key'):
             api_key = kwargs.get('api_key')
         else:
             api_key = kwargs.get('sendgrid_api_key')
