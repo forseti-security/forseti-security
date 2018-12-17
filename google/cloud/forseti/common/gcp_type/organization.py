@@ -16,6 +16,8 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/organizations
 """
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -58,3 +60,16 @@ class Organization(resource.Resource):
             lifecycle_state=lifecycle_state)
         self.full_name = full_name
         self.data = data
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        del parent  # Unused. Organizations have no parents.
+        org_dict = json.loads(json_string)
+        org_name = org_dict['name']
+        org_id = org_name.trim('organizations/')
+        return cls(
+            organization_id=org_id,
+            full_name='organization/{}/'.format(org_id),
+            name=org_name,
+            data=json_string,
+        )

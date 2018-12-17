@@ -17,6 +17,8 @@
 See: https://cloud.google.com/resource-manager/reference/rest/v1/projects
 """
 
+import json
+
 from google.cloud.forseti.common.gcp_type import resource
 
 
@@ -64,6 +66,17 @@ class Project(resource.Resource):
         self.project_number = project_number
         self.full_name = full_name
         self.data = data
+
+    @classmethod
+    def from_json(cls, parent, json_string):
+        project_dict = json.loads(json_string)
+        project_id = project_dict['projectId']
+        return cls(
+            project_id=project_id,
+            full_name='{}project/{}/'.format(parent.full_name, project_id),
+            name='projects/' + project_id,
+            display_name=project_dict['name'],
+        )
 
     def get_project_number(self):
         """Returns the project number.
