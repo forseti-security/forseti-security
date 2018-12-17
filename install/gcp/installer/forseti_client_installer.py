@@ -49,14 +49,15 @@ class ForsetiClientInstaller(ForsetiInstaller):
             bool: Whether or not the deployment was successful
             str: Deployment name
         """
+        gcloud.grant_client_svc_acct_roles(
+            self.project_id,
+            self.gcp_service_acct_email,
+            self.user_can_grant_roles)
+
         success, deployment_name = super(ForsetiClientInstaller, self).deploy(
             deployment_tpl_path, conf_file_path, bucket_name)
 
         if success:
-            gcloud.grant_client_svc_acct_roles(
-                self.project_id,
-                self.gcp_service_acct_email,
-                self.user_can_grant_roles)
             instance_name = 'forseti-{}-vm-{}'.format(
                 self.config.installation_type,
                 self.config.identifier)
