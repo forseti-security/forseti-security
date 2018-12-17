@@ -6,10 +6,15 @@
 	# TODO set as needed
 	CLUSTER=forseti
 	ZONE=us-central1-c
-	MACHINE=n1-standard-2
 	NODES=1
+	MACHINE=n1-standard-2
+	DISK_SIZE=10GB
+
 	gcloud config set compute/zone ${ZONE}
-	gcloud container clusters create ${CLUSTER} --num-nodes=${NODES} --machine-type=${MACHINE}
+
+	# Use beta to enable latest stackdriver k8s monitoring
+	gcloud beta container clusters create ${CLUSTER} --num-nodes=${NODES} --machine-type=${MACHINE} \
+	--disk-size=${DISK_SIZE} --enable-stackdriver-kubernetes
 
 # Create Secret 'credentials' containing file 'key.json'
 # copied from the forseti service account credentials file.

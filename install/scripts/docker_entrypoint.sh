@@ -21,6 +21,8 @@
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
 
 # TODO Error handling in all functions
+# For now, just stop the script if an error occurs
+set -e
 
 # Declare variables and set default values
 BUCKET=
@@ -38,13 +40,14 @@ RUN_CLIENT=false
 download_configuration_files(){
     # Download config files from GCS
     # Use gsutil -DD debug flag if log level is debug
-    DEBUG_FLAG=""
     if [ ${LOG_LEVEL} = "debug" ]; then
-        DEBUG_FLAG="-DD"
+        gsutil -DD cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+        gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
+    else
+        gsutil cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
+        gsutil cp -r ${BUCKET}/rules /forseti-security/
     fi
 
-    gsutil ${DEBUG_FLAG} cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
-    gsutil ${DEBUG_FLAG} cp -r ${BUCKET}/rules /forseti-security/
 }
 
 start_server(){
@@ -103,7 +106,7 @@ run_cron_job(){
 
     # Run scanner command
     echo "Running Forseti scanner."
-    scanner_command=`forseti scanner run`
+    forseti scanner run
     echo "Finished running Forseti scanner."
     sleep 10s
 
@@ -146,9 +149,6 @@ main(){
         run_cron_job
     fi
 }
-
-# For now, just stop the script if an error occurs
-set -e
 
 # Read command line arguments
 while [ "$1" != "" ]; do
