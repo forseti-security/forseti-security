@@ -145,8 +145,10 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
                 yield violation
 
     def get_applicable_resource_types(self):
-        return set(rule.resource_types for rule in self.rules)
-
+        types = set()
+        for rule in self.rules:
+            types.update(rule.resource_types)
+        return types
 
 
 class ResourceTree(object):

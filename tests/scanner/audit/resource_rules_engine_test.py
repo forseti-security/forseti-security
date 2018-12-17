@@ -58,6 +58,22 @@ class ResourceRulesEngineTest(ForsetiTestCase):
     #     with self.assertRaises(InvalidRulesSchemaError):
     #         get_rules_engine_with_rule(Rules.base_rule, '')
 
+    def test_get_applicable_resource_types(self):
+        rule = """
+rules:
+- name: rule 1
+  mode: required
+  resource_types: [project]
+  resource_trees: []
+- name: rule 2
+  mode: required
+  resource_types: [organization, project]
+  resource_trees: []
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_types = rules_engine.rule_book.get_applicable_resource_types()
+        self.assertEqual(got_types, set(['organization', 'project']))
+
     def test_find_violations_single_node_match(self):
         rule = """
 rules:
