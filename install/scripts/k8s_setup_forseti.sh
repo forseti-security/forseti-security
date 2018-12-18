@@ -29,23 +29,21 @@
 	# Optionally verify
 	# kubectl get secret credentials -o yaml
 
-# Deploy forseti app
+# Deploy Cloud SQL Proxy in its own pod
+# Create a Cluster IP Service for Cloud SQL Proxy
+# Deploy forseti as k8s CronJob
 
-	# TODO set environment variables needed to create forseti.yaml
+	# TODO set environment variables needed to create forseti.yaml and cloudsqlproxy.yaml
 	export FORSETI_IMAGE=gcr.io/<project>/<image>
 	export BUCKET=gs://<bucketname>
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
 	export CRON_SCHEDULE="*/60 * * * *"
 
-	# Create a deployment file 'forseti.yaml' from the template 'forseti.yaml.template'
-	# with variables substituted into the yaml
+	# Create a deployment files from the templates
 	# We do this because kubectl apply doesnt support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
-	envsubst < forseti.template.yaml > forseti.yaml
+	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
 
 	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
-	# Be sure to start cloud sql proxy service before forseti as forseti docker_entrypoint.sh
-	# uses the CLOUDSQLPROXY_SERVICE_HOST and CLOUDSQLPROXY_SERVICE_PORT environment variables
-	# that are automatically created by k8s
-	kubectl apply -f forseti.yaml
+	kubectl apply -f forseti.cronjob.yaml
