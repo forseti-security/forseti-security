@@ -103,9 +103,9 @@ def create_resource(resource_id, resource_type, **kwargs):
         resource_id, **kwargs)
 
 def create_resource_from_db_resource(res):
-    print(res)
-    parent = create_resource_from_db_resource(res.parent) (
-        if res.parent else None)
+    print res
+    parent = (
+        create_resource_from_db_resource(res.parent) if res.parent else None)
 
     return create_resource_from_json(res.type, parent, res.data)
 
