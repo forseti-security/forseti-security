@@ -92,14 +92,11 @@ class ResourceScanner(base_scanner.BaseScanner):
         Returns:
             List[RuleViolation]: A list of all violations.
         """
-        all_violations = []
-        LOGGER.info('Finding resource Resources violations...')
 
-        for resource in resources:
-            violations = self.rules_engine.find_violations(resource)
-            LOGGER.debug(violations)
-            all_violations.extend(violations)
-        return all_violations
+        LOGGER.info('Finding resource Resource violations...')
+        violations = self.rules_engine.find_violations(resources)
+        LOGGER.debug(violations)
+        return violations
 
     def _output_results(self, all_violations):
         """Output results.
