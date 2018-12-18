@@ -39,7 +39,7 @@
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
 	export CRON_SCHEDULE="*/60 * * * *"
 
-	# Create a deployment files from the templates
+	# Create deployment files from the templates
 	# We do this because kubectl apply doesnt support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
