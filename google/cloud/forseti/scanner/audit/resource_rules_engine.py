@@ -317,6 +317,7 @@ class Rule(object):
                     rule_name=self.name,
                     violation_type='RESOURCE_VIOLATION',
                     resource_data=resource.data or '',
+                    violation_data='',
                 )
 
         for node in self.resource_tree.get_nodes():
@@ -330,4 +331,5 @@ class Rule(object):
                     rule_index=self.index,
                     rule_name=self.name,
                     violation_type='RESOURCE_VIOLATION',
-                    resource_data='')
+                    resource_data='',
+                    violation_data='')

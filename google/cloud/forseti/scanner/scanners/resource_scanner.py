@@ -127,5 +127,5 @@ class ResourceScanner(base_scanner.BaseScanner):
                 'rule_name': violation.rule_name,
                 'violation_type': violation.violation_type,
                 'violation_data': violation.violation_data,
-                'resource_data': violation.resource_data
+                'resource_data': violation.resource_data,
             }
