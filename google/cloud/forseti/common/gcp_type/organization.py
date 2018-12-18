@@ -66,7 +66,7 @@ class Organization(resource.Resource):
         del parent  # Unused. Organizations have no parents.
         org_dict = json.loads(json_string)
         org_name = org_dict['name']
-        org_id = org_name.trim('organizations/')
+        org_id = org_name.strip('organizations/')
         return cls(
             organization_id=org_id,
             full_name='organization/{}/'.format(org_id),
