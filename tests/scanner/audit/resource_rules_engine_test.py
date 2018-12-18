@@ -197,5 +197,18 @@ rules:
             [data.ORGANIZATION, data.PROJECT1]))
         self.assertEqual(got_violations, [])
 
+    def test_find_violations_empty_tree(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [organization]
+  resource_trees: []
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations([data.ORGANIZATION]))
+        self.assertEqual(got_violations,
+                         data.build_violations(data.ORGANIZATION))
+
 if __name__ == '__main__':
     unittest.main()

@@ -175,9 +175,7 @@ class ResourceTree(object):
             ResourceTree: The resource tree representation of the json nodes.
         """
         nodes = cls._from_json(json_nodes)
-        if not nodes:
-            return None
-        elif len(nodes) == 1:
+        if len(nodes) == 1:
             return nodes[0]
         else:
             return ResourceTree(children=nodes)
@@ -185,14 +183,12 @@ class ResourceTree(object):
     @classmethod
     def _from_json(cls, json_nodes):
         """Build Resource Tree nodes."""
-        if not json_nodes:
-            return None
         nodes = []
         for json_node in json_nodes:
             node = ResourceTree(
                 resource_type=json_node['type'],
                 resource_id=json_node['resource_id'],
-                children=cls._from_json(json_node.get('children')))
+                children=cls._from_json(json_node.get('children', [])))
             nodes.append(node)
         return nodes
 
