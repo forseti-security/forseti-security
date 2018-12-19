@@ -425,7 +425,7 @@ class CloudAssetCrawlerTest(CrawlerTest):
             'compute_targettcpproxy': {'resource': 1},
             'compute_urlmap': {'resource': 1},
             'crm_org_policy': {'resource': 5},
-            'dataset': {'dataset_policy': 2, 'resource': 2},
+            'dataset': {'dataset_policy': 1, 'resource': 1},
             'disk': {'resource': 4},
             'dns_managedzone': {'resource': 1},
             'dns_policy': {'resource': 1},
