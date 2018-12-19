@@ -1,6 +1,16 @@
 #!/bin/bash
 
 # kubernetes example deployment script for Proof of Concept purposes
+# Assumes
+#  script is running from Google Cloud Shell VM
+#  active project is where the k8s cluster will spin up
+#  GKE API is enabled on the project
+#  user authorised to administer GKE
+#  user has uploaded the forseti service account credentials json file to the cloud shell VM
+
+# WARNINGS
+# User is responsible for secure handling of the forseti service account credentials file
+# This Proof of Concept has not been reviewed for security vulnerabilities; run this in a Sandbox environment
 
 # Create Cluster
 	# TODO set as needed
@@ -29,12 +39,15 @@
 	# Optionally verify
 	# kubectl get secret credentials -o yaml
 
+	# The credentials json file should be deleted after the secret created
+	# rm ${CREDENTIALS}
+
 # Deploy Cloud SQL Proxy in its own pod
 # Create a Cluster IP Service for Cloud SQL Proxy
 # Deploy forseti as k8s CronJob
 
 	# TODO set environment variables needed to create forseti.yaml and cloudsqlproxy.yaml
-	export FORSETI_IMAGE=gcr.io/<project>/<image>
+	export FORSETI_IMAGE=gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
 	export BUCKET=gs://<bucketname>
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
 	export CRON_SCHEDULE="*/60 * * * *"
