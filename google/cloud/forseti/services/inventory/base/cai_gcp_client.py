@@ -68,69 +68,6 @@ def _fixup_resource_keys(resource, key_map, only_fixup_lists=False):
     return fixed_resource
 
 
-def _convert_iam_to_bigquery_policy(iam_policy):
-    """Converts an IAM policy to a bigquery Access Policy.
-
-    The is used for backwards compatibility between data returned from live
-    API and the data stored in CAI. Once the live API returns IAM policies
-    instead, this can be deprecated.
-
-    Args:
-        iam_policy (dict): The BigQuery dataset IAM policy.
-
-    Returns:
-        list: A list of access policies.
-
-        An example return value:
-
-            [
-                {'role': 'WRITER', 'specialGroup': 'projectWriters'},
-                {'role': 'OWNER', 'specialGroup': 'projectOwners'},
-                {'role': 'OWNER', 'userByEmail': 'user@domain.com'},
-                {'role': 'READER', 'specialGroup': 'projectReaders'}
-            ]
-    """
-    # Map of iam policy roles to bigquery access policy roles.
-    iam_to_access_policy_role_map = {
-        'roles/bigquery.dataEditor': 'WRITER',
-        'roles/bigquery.dataOwner': 'OWNER',
-        'roles/bigquery.dataViewer': 'READER'
-    }
-    # Map iam policy member type to bigquery access policy member type.
-    # The value of the map is a tuple of access policy member type and access
-    # policy member value pairs. If the member value is None, then the value
-    # from the IAM policy binding is used.
-    iam_to_access_policy_member_map = {
-        'allAuthenticatedUsers': ('specialGroup', 'allAuthenticatedUsers'),
-        'projectEditor': ('specialGroup', 'projectWriters'),
-        'projectOwner': ('specialGroup', 'projectOwners'),
-        'projectViewer': ('specialGroup', 'projectReaders'),
-        'domain': ('domain', None),
-        'group': ('groupByEmail', None),
-        'user': ('userByEmail', None),
-    }
-
-    access_policies = []
-    for binding in iam_policy.get('bindings', []):
-        if binding.get('role', '') in iam_to_access_policy_role_map:
-            role = iam_to_access_policy_role_map[binding['role']]
-            for member in binding.get('members', []):
-                # The 'allAuthenticatedUsers' member does not contain ':' so it
-                # needs to be handled seperately.
-                if ':' in member:
-                    member_type, member_value = member.split(':', 1)
-                else:
-                    member_type = member
-                    member_value = None
-                if member_type in iam_to_access_policy_member_map:
-                    new_type, new_value = (
-                        iam_to_access_policy_member_map[member_type])
-                    if not new_value:
-                        new_value = member_value
-                    access_policies.append({'role': role, new_type: new_value})
-    return access_policies
-
-
 # pylint: disable=too-many-public-methods
 class CaiApiClientImpl(gcp.ApiClientImpl):
     """The gcp api client Implementation"""
