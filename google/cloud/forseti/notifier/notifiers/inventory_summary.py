@@ -19,11 +19,13 @@ from google.cloud.forseti.common.util.email.base_email_connector import BaseEmai
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
-from googleapiclient.errors import HttpError
-from google.cloud.forseti.services.inventory.storage import InventoryIndex
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
 from google.cloud.forseti.common.util import string_formats
+from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
+from google.cloud.forseti.services.inventory.storage import InventoryIndex
+from googleapiclient.errors import HttpError
+
+
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)
@@ -115,8 +117,8 @@ class InventorySummary(object):
             self.notifier_config.get('inventory').get('email_summary'))
 
         if self.notifier_config.get('email_connector_config'):
-            email_connector_config_auth = self.notifier_config\
-                .get('email_connector_config').get('auth')
+            email_connector_config_auth = (
+                self.notifier_config.get('email_connector_config').get('auth'))
 
             email_util = SendgridConnector(self.notifier_config
                                            .get('email_connector_config')
@@ -278,8 +280,13 @@ class InventorySummary(object):
         try:
             is_gcs_summary_enabled = (
                 inventory_notifier_config.get('gcs_summary').get('enabled'))
-            is_email_summary_enabled = (
-                inventory_notifier_config.get('email_summary').get('enabled'))
+            if self.notifier_config.get('email_connector_config'):
+                is_email_summary_enabled = True
+            # else block below is for backward compatibility.
+            elif inventory_notifier_config.get('email_summary'):
+                is_email_summary_enabled = (
+                    inventory_notifier_config.get('email_summary')
+                    .get('enabled'))
         except AttributeError:
             LOGGER.exception(
                 'Inventory summary can not be created because unable to get '
@@ -294,7 +301,7 @@ class InventorySummary(object):
             summary_data = self._get_summary_data()
             details_data = self._get_details_data()
         except util_errors.NoDataError:
-            LOGGER.exception('Inventory summary can not be created because '
+            LOGGER.exception('Inventory summary cannot be created because '
                              'no summary data is found for index id: %s.',
                              self.inventory_index_id)
             return

@@ -18,16 +18,16 @@
 # this is needed because quiet the Sendgrid no-member error on Travis.
 # pylint: disable=no-member,useless-suppression
 
-
+import base64
 import urllib2
 import sendgrid
 
+from sendgrid.helpers import mail
 from google.cloud.forseti.common.util.email import base_email_connector
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
-from sendgrid.helpers import mail
-from retrying import retry
 from google.cloud.forseti.common.util import retryable_exceptions
+from retrying import retry
 
 
 LOGGER = logger.get_logger(__name__)
@@ -140,3 +140,34 @@ class SendgridConnector(base_email_connector.BaseEmailConnector):
                          email_subject, response.status_code,
                          response.body, response.headers)
             raise util_errors.EmailSendError
+
+    @classmethod
+    def create_attachment(cls, file_location, content_type, filename,
+                          disposition='attachment', content_id=None):
+        """Create a SendGrid attachment.
+
+        Email connector attachments file content must be base64 encoded.
+
+        Args:
+            file_location (str): The path of the file.
+            content_type (str): The content type of the attachment.
+            filename (str): The filename of attachment.
+            disposition (str): Content disposition, defaults to "attachment".
+            content_id (str): The content id.
+
+        Returns:
+            Attachment: A Connector Attachment.
+        """
+        file_content = ''
+        with open(file_location, 'rb') as f:
+            file_content = f.read()
+        content = base64.b64encode(file_content)
+
+        attachment = mail.Attachment()
+        attachment.content = content
+        attachment.type = content_type
+        attachment.filename = filename
+        attachment.disposition = disposition
+        attachment.content_id = content_id
+
+        return attachment

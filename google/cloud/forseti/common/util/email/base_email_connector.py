@@ -15,12 +15,10 @@
 """Base email connector"""
 
 import abc
-import base64
 import os
 import jinja2
 
 from google.cloud.forseti.common.util import logger
-from sendgrid.helpers import mail
 
 LOGGER = logger.get_logger(__name__)
 
@@ -88,34 +86,3 @@ class BaseEmailConnector(object):
         template_env = jinja2.Environment(loader=template_loader)
         template = template_env.get_template(template_file)
         return template.render(template_vars)
-
-    @classmethod
-    def create_attachment(cls, file_location, content_type, filename,
-                          disposition='attachment', content_id=None):
-        """Create a SendGrid attachment.
-
-        Email connector attachments file content must be base64 encoded.
-
-        Args:
-            file_location (str): The path of the file.
-            content_type (str): The content type of the attachment.
-            filename (str): The filename of attachment.
-            disposition (str): Content disposition, defaults to "attachment".
-            content_id (str): The content id.
-
-        Returns:
-            Attachment: A Connector Attachment.
-        """
-        file_content = ''
-        with open(file_location, 'rb') as f:
-            file_content = f.read()
-        content = base64.b64encode(file_content)
-
-        attachment = mail.Attachment()
-        attachment.content = content
-        attachment.type = content_type
-        attachment.filename = filename
-        attachment.disposition = disposition
-        attachment.content_id = content_id
-
-        return attachment
