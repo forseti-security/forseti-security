@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base email connector to select connector"""
+"""Email factory to select connector"""
 
-from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import logger
+from google.cloud.forseti.common.util.email import sendgrid_connector
 
 LOGGER = logger.get_logger(__name__)
 

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base email connector to select connector"""
+"""Base email connector"""
 
 import abc
 import base64
 import os
 import jinja2
-from sendgrid.helpers import mail
 
 from google.cloud.forseti.common.util import logger
+from sendgrid.helpers import mail
 
 LOGGER = logger.get_logger(__name__)
 

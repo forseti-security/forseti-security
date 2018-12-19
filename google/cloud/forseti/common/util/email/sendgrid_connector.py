@@ -22,12 +22,12 @@
 import urllib2
 import sendgrid
 
-from sendgrid.helpers import mail
-from retrying import retry
+from google.cloud.forseti.common.util.email import base_email_connector
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
+from sendgrid.helpers import mail
+from retrying import retry
 from google.cloud.forseti.common.util import retryable_exceptions
-from google.cloud.forseti.common.util.email import base_email_connector
 
 
 LOGGER = logger.get_logger(__name__)

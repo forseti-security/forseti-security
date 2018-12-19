@@ -14,16 +14,16 @@
 """Upload inventory summary to GCS."""
 
 # pylint: disable=line-too-long
-from googleapiclient.errors import HttpError
+from google.cloud.forseti.notifier.notifiers import base_notification
+from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
 from google.cloud.forseti.common.util import date_time
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import file_uploader
-from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers import base_notification
+from googleapiclient.errors import HttpError
 from google.cloud.forseti.services.inventory.storage import InventoryIndex
+from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
-from google.cloud.forseti.common.util.email.base_email_connector import BaseEmailConnector
+from google.cloud.forseti.common.util import string_formats
 # pylint: enable=line-too-long
 
 LOGGER = logger.get_logger(__name__)

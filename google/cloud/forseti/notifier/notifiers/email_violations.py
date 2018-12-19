@@ -16,14 +16,14 @@
 
 import tempfile
 
+from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.common.data_access import csv_writer
 from google.cloud.forseti.common.util import date_time
+from google.cloud.forseti.common.util.email import email_factory
 from google.cloud.forseti.common.util import errors as util_errors
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.common.util import parser
 from google.cloud.forseti.common.util import string_formats
-from google.cloud.forseti.notifier.notifiers import base_notification
-from google.cloud.forseti.common.util.email import email_factory
 
 LOGGER = logger.get_logger(__name__)
 
@@ -54,7 +54,7 @@ class EmailViolations(base_notification.BaseNotification):
                                               notification_config)
         if self.notifier_config.get('email_connector_config'):
             self.connector = email_factory.EmailFactory(self.notifier_config)\
-               .get_connector()
+                .get_connector()
         else:
             self.connector = email_factory.EmailFactory(
                 self.notification_config).get_connector()
