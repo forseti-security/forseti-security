@@ -28,7 +28,7 @@ LOGGER = logger.get_logger(__name__)
 RuleViolation = collections.namedtuple(
     'RuleViolation',
     ['resource_id', 'resource_name', 'resource_type', 'full_name', 'rule_index',
-     'rule_name', 'violation_type', 'resource_data']
+     'rule_name', 'violation_type', 'violation_data', 'resource_data']
 )
 
 
@@ -57,11 +57,10 @@ class ResourceRulesEngine(base_rules_engine.BaseRulesEngine):
         self.rule_book = ResourceRuleBook(self._load_rule_definitions())
 
     def find_violations(self, resources, force_rebuild=False):
-        """Determine whether Big Query datasets violate rules.
+        """Determine whether the resources violate rules.
 
         Args:
-            parent_resource (Resource): parent resource the lien belongs to.
-            liens (List[Lien]): liens to find violations for.
+            resources (List[Resource]): resources to find violations for.
             force_rebuild (bool): If True, rebuilds the rule book. This will
                 reload the rules definition file and add the rules to the book.
 
@@ -316,8 +315,8 @@ class Rule(object):
                     rule_index=self.index,
                     rule_name=self.name,
                     violation_type='RESOURCE_VIOLATION',
-                    resource_data=resource.data or '',
                     violation_data='',
+                    resource_data=resource.data or '',
                 )
 
         for node in self.resource_tree.get_nodes():
@@ -331,5 +330,6 @@ class Rule(object):
                     rule_index=self.index,
                     rule_name=self.name,
                     violation_type='RESOURCE_VIOLATION',
+                    violation_data='',
                     resource_data='',
-                    violation_data='')
+                )
