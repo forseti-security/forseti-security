@@ -144,6 +144,12 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
             for violation in rule.find_violations(resources):
                 yield violation
 
+    def get_applicable_resource_types(self):
+        types = set()
+        for rule in self.rules:
+            types.update(rule.resource_types)
+        return types
+
 
 class ResourceTree(object):
 
@@ -169,9 +175,7 @@ class ResourceTree(object):
             ResourceTree: The resource tree representation of the json nodes.
         """
         nodes = cls._from_json(json_nodes)
-        if not nodes:
-            return None
-        elif len(nodes) == 1:
+        if len(nodes) == 1:
             return nodes[0]
         else:
             return ResourceTree(children=nodes)
@@ -179,14 +183,12 @@ class ResourceTree(object):
     @classmethod
     def _from_json(cls, json_nodes):
         """Build Resource Tree nodes."""
-        if not json_nodes:
-            return None
         nodes = []
         for json_node in json_nodes:
             node = ResourceTree(
                 resource_type=json_node['type'],
                 resource_id=json_node['resource_id'],
-                children=cls._from_json(json_node.get('children')))
+                children=cls._from_json(json_node.get('children', [])))
             nodes.append(node)
         return nodes
 
@@ -315,6 +317,7 @@ class Rule(object):
                     rule_name=self.name,
                     violation_type='RESOURCE_VIOLATION',
                     resource_data=resource.data or '',
+                    violation_data='',
                 )
 
         for node in self.resource_tree.get_nodes():
@@ -328,4 +331,5 @@ class Rule(object):
                     rule_index=self.index,
                     rule_name=self.name,
                     violation_type='RESOURCE_VIOLATION',
-                    resource_data='')
+                    resource_data='',
+                    violation_data='')

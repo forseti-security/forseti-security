@@ -102,6 +102,12 @@ def create_resource(resource_id, resource_type, **kwargs):
     return resource_type.get('class')(
         resource_id, **kwargs)
 
+def create_resource_from_db_resource(res):
+    print res
+    parent = (
+        create_resource_from_db_resource(res.parent) if res.parent else None)
+
+    return create_resource_from_json(res.type, parent, res.data)
 
 def create_resource_from_json(resource_type, parent, json_string):
     """Factory to create a certain kind of Resource from JSON data.

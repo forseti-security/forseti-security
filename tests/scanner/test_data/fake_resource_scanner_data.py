@@ -117,4 +117,5 @@ def build_violations(res):
         rule_name='Resource test rule',
         violation_type='RESOURCE_VIOLATION',
         resource_data=res.data,
+        violation_data='',
     )]

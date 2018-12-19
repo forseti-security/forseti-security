@@ -81,6 +81,22 @@ rules:
         with self.assertRaises(InvalidRulesSchemaError):
             get_rules_engine_with_rule(rule)
 
+    def test_get_applicable_resource_types(self):
+        rule = """
+rules:
+- name: rule 1
+  mode: required
+  resource_types: [project]
+  resource_trees: []
+- name: rule 2
+  mode: required
+  resource_types: [organization, project]
+  resource_trees: []
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_types = rules_engine.rule_book.get_applicable_resource_types()
+        self.assertEqual(got_types, set(['organization', 'project']))
+
     def test_find_violations_single_node_match(self):
         rule = """
 rules:
@@ -203,6 +219,19 @@ rules:
         got_violations = list(rules_engine.find_violations(
             [data.ORGANIZATION, data.PROJECT1]))
         self.assertEqual(got_violations, [])
+
+    def test_find_violations_empty_tree(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [organization]
+  resource_trees: []
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        got_violations = list(rules_engine.find_violations([data.ORGANIZATION]))
+        self.assertEqual(got_violations,
+                         data.build_violations(data.ORGANIZATION))
 
 if __name__ == '__main__':
     unittest.main()
