@@ -41,7 +41,7 @@ RUN_CLIENT=false
 SQL_HOST=localhost
 SQL_PORT=3306
 
-# Check if the k8s cloud sql proxy environment variable have been set, if so
+# Check if the k8s cloud sql proxy environment variables have been set, if so
 # overwrite our cloud sql variables with their contents
 if [[ !(-z ${CLOUDSQLPROXY_SERVICE_HOST}) ]]; then
     SQL_HOST=${CLOUDSQLPROXY_SERVICE_HOST}
