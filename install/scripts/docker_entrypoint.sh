@@ -16,8 +16,8 @@
 # Usage
 # (sudo if needed) docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET}
 
-# UNDER DEVELOPMENT FOR PROOF OF CONCEPT PURPOSES ONLY
-# This script serves as the entrypoint for starting Forseti server in a Docker container.
+# UNDER DEVELOPMENT, FOR PROOF OF CONCEPT PURPOSES ONLY
+# This script serves as the entrypoint for starting Forseti server or client in a Docker container.
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
 
 # TODO Error handling in all functions
@@ -35,12 +35,66 @@ RUN_CLIENT=false
 # CLOUDSQLPROXY_SERVICE_HOST
 # CLOUDSQLPROXY_SERVICE_PORT
 # are environment variables set by k8s
-# TODO process these as command line args if not running on k8s
+# TODO rethink this; Relying on the k8s variable names is fragile as it requires the k8s service name to exactly match "cloudsqlproxy"
+
+# Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
+SQL_HOST=localhost
+SQL_PORT=3306
+
+# Check if the k8s cloud sql proxy environment variable have been set, if so
+# overwrite our cloud sql variables with their contents
+if [[ !(-z ${CLOUDSQLPROXY_SERVICE_HOST}) ]]; then
+    SQL_HOST=${CLOUDSQLPROXY_SERVICE_HOST}
+fi
+
+if [[ !(-z ${CLOUDSQLPROXY_SERVICE_PORT}) ]]; then
+    SQL_PORT=${CLOUDSQLPROXY_SERVICE_PORT}
+fi
+
+# Note if sql_host and sql_port are specified as script command line arguments they will
+# take precedence further below when we read in the command line args
+
+# Read command line arguments
+while [[ "$1" != "" ]]; do
+    # Process next arg at position $1
+    case $1 in
+        --bucket )
+            shift
+            BUCKET=$1
+            ;;
+        --log_level )
+            shift
+            LOG_LEVEL=$1
+            ;;
+        --run_server )
+            RUN_SERVER=true
+            ;;
+        --run_cronjob )
+            RUN_CRONJOB=true
+            ;;
+        --run_client )
+            RUN_CLIENT=true
+            ;;
+        --services )
+            shift
+            SERVICES=$1
+            ;;
+        --sql_host )
+            shift
+            SQL_HOST=$1
+            ;;
+        --sql_port )
+            shift
+            SQL_PORT=$1
+            ;;
+    esac
+    shift # Move remaining args down 1 position
+done
 
 download_configuration_files(){
     # Download config files from GCS
     # Use gsutil -DD debug flag if log level is debug
-    if [ ${LOG_LEVEL} = "debug" ]; then
+    if [[ ${LOG_LEVEL} = "debug" ]]; then
         gsutil -DD cp ${BUCKET}/configs/forseti_conf_server.yaml /forseti-security/configs/forseti_conf_server.yaml
         gsutil -DD cp -r ${BUCKET}/rules /forseti-security/
     else
@@ -53,7 +107,7 @@ download_configuration_files(){
 start_server(){
     forseti_server \
     --endpoint "localhost:50051" \
-    --forseti_db "mysql://root@${CLOUDSQLPROXY_SERVICE_HOST}:${CLOUDSQLPROXY_SERVICE_PORT}/forseti_security" \
+    --forseti_db "mysql://root@${SQL_HOST}:${SQL_PORT}/forseti_security" \
     --services ${SERVICES} \
     --config_file_path "/forseti-security/configs/forseti_conf_server.yaml" \
     --log_level=${LOG_LEVEL} &
@@ -90,7 +144,7 @@ run_cron_job(){
     GET_MODEL_STATUS="forseti model get ${MODEL_NAME} | python -c \"import sys, json; print json.load(sys.stdin)['status']\""
     MODEL_STATUS=`eval $GET_MODEL_STATUS`
 
-    if [ "$MODEL_STATUS" == "BROKEN" ]
+    if [[ "$MODEL_STATUS" == "BROKEN" ]]
         then
             echo "Model is broken, please contact discuss@forsetisecurity.org for support."
             exit
@@ -131,7 +185,7 @@ run_cron_job(){
 
 main(){
 
-    if [ ${LOG_LEVEL}='debug' ]; then
+    if [[ ${LOG_LEVEL}='debug' ]]; then
         # Print commands to terminal
         set -x
     fi
@@ -139,45 +193,17 @@ main(){
     download_configuration_files
 
     # Run server or client; not both in same container
-    if [ ${RUN_SERVER}="true" ]; then
+    if [[ ${RUN_SERVER}="true" ]]; then
         start_server
-    elif [ ${RUN_CLIENT}="true" ]; then
+    elif [[ ${RUN_CLIENT}="true" ]]; then
         start_client
     fi
 
-    if [ ${RUN_CRONJOB}="true" ]; then
+    if [[ ${RUN_CRONJOB}="true" ]]; then
         run_cron_job
     fi
 }
 
-# Read command line arguments
-while [ "$1" != "" ]; do
-    # Process next arg at position $1
-    case $1 in
-        --bucket )
-            shift
-            BUCKET=$1
-            ;;
-        --log_level )
-            shift
-            LOG_LEVEL=$1
-            ;;
-        --run_server )
-            RUN_SERVER=true
-            ;;
-        --run_cronjob )
-            RUN_CRONJOB=true
-            ;;
-        --run_client )
-            RUN_CLIENT=true
-            ;;
-        --services )
-            shift
-            SERVICES=$1
-            ;;
-    esac
-    shift # Move remaining args down 1 position
-done
 
 # Run this script
 main
