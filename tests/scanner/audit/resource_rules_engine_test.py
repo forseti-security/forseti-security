@@ -49,14 +49,37 @@ class ResourceRulesEngineTest(ForsetiTestCase):
     def setUp(self):
         resource_rules_engine.LOGGER = mock.MagicMock()
 
-    # def test_build_rule_book_from_local_yaml_file(self):
-    #     rules_engine = get_rules_engine_with_rule(
-    #         Rules.organization_rule, data.ORGANIZATION.id)
-    #     self.assertEqual(1, len(rules_engine.rule_book.resource_to_rules))
+    def test_build_rule_book_from_local_yaml_file(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: [project]
+  resource_trees: []
+"""
+        rules_engine = get_rules_engine_with_rule(rule)
+        self.assertEqual(1, len(rules_engine.rule_book.rules))
 
-    # def test_build_rule_book_no_resource(self):
-    #     with self.assertRaises(InvalidRulesSchemaError):
-    #         get_rules_engine_with_rule(Rules.base_rule, '')
+    def test_build_rule_book_no_resource_types(self):
+        rule = """
+rules:
+- name: Resource test rule
+  mode: required
+  resource_types: []
+  resource_trees: []
+"""
+        with self.assertRaises(InvalidRulesSchemaError):
+            get_rules_engine_with_rule(rule)
+
+    def test_build_rule_book_no_mode(self):
+        rule = """
+rules:
+- name: Resource test rule
+  resource_types: [project]
+  resource_trees: []
+"""
+        with self.assertRaises(InvalidRulesSchemaError):
+            get_rules_engine_with_rule(rule)
 
     def test_find_violations_single_node_match(self):
         rule = """
