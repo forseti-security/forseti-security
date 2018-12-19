@@ -2,7 +2,7 @@
 
 # Forseti Server Docker startup on Container Optimized OS (cos)
 # for Proof of Concept Purposes
-# Assumes cos running with Forseti Service Account
+# Assumes script is running on cos running with Forseti Service Account
 
 # Pull Cloud SQL Proxy Docker Image
 docker pull gcr.io/cloudsql-docker/gce-proxy:1.12
@@ -16,6 +16,9 @@ sudo docker run -d -v /mnt/stateful_partition/cloudsql:/cloudsql \
   gcr.io/cloudsql-docker/gce-proxy:1.12 /cloud_sql_proxy \
   -instances=${CLOUD_SQL_CONNECTION_NAME}=tcp:0.0.0.0:3306
 
+
+# TODO pull and run the forseti image? For now we assume it was deployed via cloud console and is already running
+# on the cos
 # TODO set variables
 CONTAINER_ID=<>
 BUCKET=gs://<>
