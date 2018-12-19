@@ -37,6 +37,7 @@ class InvalidInputError(Exception):
         super(InvalidInputError, self).__init__(
             '%s: invalid input found: %s' % (notifier, invalid_input))
 
+
 class EmailFactory(object):
     """Email Factory to select connector."""
 
@@ -47,9 +48,9 @@ class EmailFactory(object):
             notifier_config (dict): Notifier configurations.
         """
         self.notifier_config = notifier_config
-        if notifier_config.get('email_connector_config') is not None:
-            self.email_connector_config = notifier_config\
-              .get('email_connector_config')
+        if notifier_config.get('email_connector_config'):
+            self.email_connector_config = (
+                notifier_config.get('email_connector_config'))
 
     def get_connector(self):
         """Gets the connector and executes it.
@@ -73,9 +74,9 @@ class EmailFactory(object):
                 LOGGER.exception(
                     'Error occurred while fetching connector details')
                 raise InvalidInputError
+        # else block below is added to make it backward compatible.
         else:
             try:
-                # Sendgrid
                 connector_name = 'sendgrid'
                 auth = self.notifier_config
                 sender = self.notifier_config.get('sender')

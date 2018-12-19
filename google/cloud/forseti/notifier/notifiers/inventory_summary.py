@@ -41,7 +41,6 @@ class InventorySummary(object):
         """
         self.service_config = service_config
         self.inventory_index_id = inventory_index_id
-
         self.notifier_config = self.service_config.get_notifier_config()
 
     def _get_output_filename(self, filename_template):
@@ -126,6 +125,7 @@ class InventorySummary(object):
                                            .get('email_connector_config')
                                            .get('recipient'),
                                            email_connector_config_auth)
+        # else block below is added for backward compatibility.
         else:
             email_util = SendgridConnector(email_summary_config.get('sender'),
                                            email_summary_config.get('recipient')
@@ -166,6 +166,7 @@ class InventorySummary(object):
                 LOGGER.debug('Inventory summary sent successfully by email.')
             except util_errors.EmailSendError:
                 LOGGER.exception('Unable to send inventory summary email')
+        # else block below is added for backward compatibility
         else:
             try:
                 email_util.send(
