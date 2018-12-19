@@ -34,13 +34,21 @@ def _mock_gcp_resource_iter(_, resource_type):
          'data'],
     )
 
-    project_resource = Resource(
-        full_name=data.PROJECT.full_name,
-        type=data.PROJECT.type,
-        name=data.PROJECT.name,
+    org_resource = Resource(
+        full_name=data.ORGANIZATION.full_name,
+        type=data.ORGANIZATION.type,
+        name=data.ORGANIZATION.name,
         parent_type_name='',
         parent=None,
-        data='',
+        data=data.ORGANIZATION.data,
+    )
+    project_resource = Resource(
+        full_name=data.PROJECT1.full_name,
+        type=data.PROJECT1.type,
+        name=data.PROJECT1.name,
+        parent_type_name='',
+        parent=org_resource,
+        data=data.PROJECT1.data,
     )
 
 
@@ -54,22 +62,21 @@ def _mock_gcp_resource_iter(_, resource_type):
             parent=project_resource,
         )
 
+    resource = None
     if resource_type == 'bucket':
         resource = _create_child_resource(data.BUCKET)
     elif resource_type == 'project':
-        return project_resource
+        resource = project_resource
     return [resource] if resource else []
 
 
 class ResourceScannerTest(ForsetiTestCase):
 
     @mock.patch.object(resource_scanner, 'resource_rules_engine', autospec=True)
-    def setUp(self, mock_rule_engine):
-        self.scanner = resource_scanner.LocationScanner(
+    def setUp(self, _):
+        self.scanner = resource_scanner.ResourceScanner(
             {}, {}, mock.MagicMock(), '', '', '')
 
-        mock_rule_engine.get_applicable_resource_types = set(
-            ['project', 'bucket'])
 
     def test_retrieve(self):
         mock_data_access = mock.MagicMock()
@@ -80,8 +87,14 @@ class ResourceScannerTest(ForsetiTestCase):
             mock.MagicMock(), mock_data_access)
         self.scanner.service_config = mock_service_config
 
+        mock_rule_book = mock.MagicMock()
+        mock_rule_book.get_applicable_resource_types.return_value = set([
+            'project', 'bucket', 'dataset'])
+        self.scanner.rules_engine.rule_book = mock_rule_book
+
+
         got = set(self.scanner._retrieve())
-        want = {data.BUCKET, data.PROJECT}
+        want = {data.BUCKET, data.PROJECT1}
         self.assertEqual(got, want)
 
 if __name__ == '__main__':

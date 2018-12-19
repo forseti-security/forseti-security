@@ -19,85 +19,41 @@ from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.audit import resource_rules_engine
 
 
-ORGANIZATION = organization.Organization(
-    '234',
-    display_name='Organization 234',
-    full_name='organization/234/',
-    data='fake_org_data_234',
-)
+_ORGANIZATION_JSON = """{
+    "name": "organizations/234"
+}
+"""
 
-PROJECT1 = project.Project(
-    'p1',
-    project_number=11223344,
-    display_name='Project 1',
-    parent=ORGANIZATION,
-    full_name='organization/234/project/p1/',
-    data='fake_project_data_2341',
-)
+ORGANIZATION = resource_util.create_resource_from_json(
+    'organization', None, _ORGANIZATION_JSON)
 
-PROJECT2 = project.Project(
-    'p2',
-    project_number=11223345,
-    display_name='Project 2',
-    parent=ORGANIZATION,
-    full_name='organization/234/project/p2/',
-    data='fake_project_data_2342',
-)
+_PROJECT1_JSON = """{
+    "projectId": "p1",
+    "name": "Project 1"
+}
+"""
 
-# _BUCKET_JSON = """{
-#     "id": "p1-bucket1",
-#     "parent": "projects/p1",
-#     "location": "EUROPE-WEST1"
-# }
-# """
+PROJECT1 = resource_util.create_resource_from_json(
+    'project', ORGANIZATION, _PROJECT1_JSON)
 
-# BUCKET = resource_util.create_resource_from_json(
-#     'bucket', PROJECT1, _BUCKET_JSON)
+_PROJECT2_JSON = """{
+    "projectId": "p2",
+    "name": "Project 2"
+}
+"""
 
-# _CLOUD_SQL_INSTANCE_JSON = """{
-#     "databaseVersion": "MYSQL_5_7",
-#     "instanceType": "CLOUD_SQL_INSTANCE",
-#     "kind": "sql#instance",
-#     "name": "p1-cloudsqlinstance1",
-#     "project": "p1",
-#     "region": "europe-west1",
-#     "gceZone": "europe-west1-a"
-# }
-# """
+PROJECT2 = resource_util.create_resource_from_json(
+    'project', ORGANIZATION, _PROJECT2_JSON)
 
-# CLOUD_SQL_INSTANCE = resource_util.create_resource_from_json(
-#     'cloudsqlinstance', PROJECT, _CLOUD_SQL_INSTANCE_JSON)
+_BUCKET_JSON = """{
+    "id": "p1-bucket1",
+    "parent": "projects/p1",
+    "location": "EUROPE-WEST1"
+}
+"""
 
-# _CLUSTER_JSON = """{
-#     "name": "p1-cluster1",
-#     "locations": ["europe-west1-a"]
-# }
-# """
-
-# CLUSTER = resource_util.create_resource_from_json(
-#     'kubernetes_cluster', PROJECT, _CLUSTER_JSON)
-
-# _DATASET_JSON = """{
-#     "datasetReference": {
-#         "datasetId": "p1-d1",
-#         "projectId": "p1"
-#     },
-#     "id": "p1:p1-d1",
-#     "kind": "bigquery#dataset",
-#     "location": "EU"
-# }
-# """
-
-# DATASET = resource_util.create_resource_from_json(
-#     'dataset', PROJECT, _DATASET_JSON)
-
-# _GCE_INSTANCE_JSON = """{
-#     "id": "p1-instance1",
-#     "selfLink": "https://www.googleapis.com/compute/v1/projects/p1/zones/europe-west1-a/instances/p1-instance1"
-# }"""
-
-# GCE_INSTANCE = resource_util.create_resource_from_json(
-#     'instance', PROJECT, _GCE_INSTANCE_JSON)
+BUCKET = resource_util.create_resource_from_json(
+    'bucket', PROJECT1, _BUCKET_JSON)
 
 def build_violations(res):
     """Build an expected violation.
@@ -116,6 +72,6 @@ def build_violations(res):
         rule_index=0,
         rule_name='Resource test rule',
         violation_type='RESOURCE_VIOLATION',
-        resource_data=res.data,
+        resource_data=res.data or '',
         violation_data='',
     )]

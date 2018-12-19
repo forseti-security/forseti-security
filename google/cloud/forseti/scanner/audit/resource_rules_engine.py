@@ -24,6 +24,7 @@ from google.cloud.forseti.services import utils
 
 LOGGER = logger.get_logger(__name__)
 
+_SUPPORTED_MODES = {'required'}
 
 RuleViolation = collections.namedtuple(
     'RuleViolation',
@@ -118,7 +119,18 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
         """
-        resource_tree = ResourceTree.from_json(rule_def['resource_trees'])
+        mode = rule_def.get('mode', '')
+        if mode not in _SUPPORTED_MODES:
+            raise errors.InvalidRulesSchemaError(
+                'Unexpected "mode" in rule {}: got {}, want one of {}'.format(
+                    rule_index, mode, _SUPPORTED_MODES))
+        if not rule_def.get('resource_types'):
+            raise errors.InvalidRulesSchemaError(
+                'Missing non empty "resource_types" in rule {}'.format(
+                    rule_index))
+
+        resource_tree = ResourceTree.from_json(
+            rule_def.get('resource_trees', []))
         self.rules.append(
             Rule(name=rule_def['name'],
                 index=rule_index,

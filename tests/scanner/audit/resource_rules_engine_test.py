@@ -182,6 +182,7 @@ rules:
             rule_index=0,
             rule_name='Resource test rule',
             violation_type='RESOURCE_VIOLATION',
+            violation_data='',
             resource_data='',
         )
         self.assertEqual(got_violations, [violation])

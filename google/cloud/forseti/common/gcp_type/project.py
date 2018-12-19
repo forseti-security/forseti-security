@@ -76,6 +76,7 @@ class Project(resource.Resource):
             full_name='{}project/{}/'.format(parent.full_name, project_id),
             name='projects/' + project_id,
             display_name=project_dict['name'],
+            data=json_string,
         )
 
     def get_project_number(self):
