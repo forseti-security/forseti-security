@@ -175,6 +175,17 @@ def bucket(item):
     return _create_asset(name, asset_type, parent_name, data,
                          item.get_iam_policy())
 
+
+def cloudsqlinstance(item):
+    parent = item.parent()
+    name = '//cloudsql.googleapis.com/projects/{}/instances/{}'.format(
+      parent['projectId'], item['name'])
+    asset_type = 'google.cloud.sql.Instance'
+    parent_name = '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+        parent['projectNumber'])
+    return _create_asset(name, asset_type, parent_name, item.data(), None)
+
+
 def role(item):
     parent = item.parent()
     if not parent:
@@ -227,6 +238,10 @@ def _create_compute_asset(item, asset_type):
 
 def backendservice(item):
     return _create_compute_asset(item, 'google.compute.BackendService')
+
+
+def compute_project(item):
+    return _create_compute_asset(item, 'google.compute.Project')
 
 
 def disk(item):
@@ -284,6 +299,8 @@ CAI_TYPE_MAP = {
     'billing_account': billing_account,
     'bucket': bucket,
     'backendservice': backendservice,
+    'compute_project': compute_project,
+    'cloudsqlinstance': cloudsqlinstance,
     'dataset': bigquery_dataset,
     'disk': disk,
     'firewall': firewall,

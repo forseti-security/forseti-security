@@ -426,12 +426,14 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'backendservice': {'resource': 1},
             'billing_account': {'iam_policy': 2, 'resource': 2},
             'bucket': {'gcs_policy': 2, 'iam_policy': 2, 'resource': 2},
+            'cloudsqlinstance': {'resource': 1},
             'compute_autoscaler': {'resource': 1},
             'compute_backendbucket': {'resource': 1},
             'compute_healthcheck': {'resource': 1},
             'compute_httphealthcheck': {'resource': 1},
             'compute_httpshealthcheck': {'resource': 1},
             'compute_license': {'resource': 1},
+            'compute_project': {'resource': 2},
             'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
@@ -548,8 +550,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         storage)
 
         expected_counts = {
-            'cloudsqlinstance': {'resource': 1},
-            'compute_project': {'resource': 2},
             'crm_org_policy': {'resource': 5},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},

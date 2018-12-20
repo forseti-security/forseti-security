@@ -226,6 +226,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for account in resources:
             yield account
 
+    def iter_cloudsql_instances(self, project_number):
+        """Iterate Cloud sql instances from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of cloudsql instance.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.sql.Instance',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for instance in resources:
+            yield instance
+
     def _iter_compute_resources(self, asset_type, project_number):
         """Iterate Compute resources from Cloud Asset data.
 
@@ -530,6 +548,25 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         resources = self._iter_compute_resources('Network', project_number)
         for network in resources:
             yield _fixup_resource_keys(network, cai_to_gcp_key_map)
+
+    def iter_compute_project(self, project_number):
+        """Iterate Project from Cloud Asset data.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of compute project resources.
+        """
+        cai_to_gcp_key_map = {
+            'enabledFeature': 'enabledFeatures',
+        }
+        resources = self._iter_compute_resources('Project', project_number)
+        for project in resources:
+            yield _fixup_resource_keys(project, cai_to_gcp_key_map)
 
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from Cloud Asset data.
