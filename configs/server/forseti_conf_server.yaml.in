@@ -93,7 +93,9 @@ inventory:
         # inventory database to save on storage and reduce the time to complete
         # a pull of the inventory.
         #
-        # If commented out then all assets are exported from Cloud Asset API.
+        # If commented out then all currently supported asset types are
+        # exported from Cloud Asset API. The list of default asset types is
+        # in google/cloud/forseti/services/inventory/base/cloudasset.py
 
         #asset_types:
         #    - google.appengine.Application
@@ -106,12 +108,13 @@ inventory:
         #    - google.cloud.dataproc.Job
         #    - google.cloud.dns.ManagedZone
         #    - google.cloud.dns.Policy
-        #    - google.cloud.kms.KeyRing
         #    - google.cloud.kms.CryptoKey
         #    - google.cloud.kms.CryptoKeyVersion
-        #    - google.cloud.resourcemanager.Organization
+        #    - google.cloud.kms.KeyRing
         #    - google.cloud.resourcemanager.Folder
+        #    - google.cloud.resourcemanager.Organization
         #    - google.cloud.resourcemanager.Project
+        #    - google.cloud.sql.Instance
         #    - google.cloud.storage.Bucket
         #    - google.compute.Autoscaler
         #    - google.compute.BackendBucket
@@ -139,16 +142,18 @@ inventory:
         #    - google.compute.TargetHttpsProxy
         #    - google.compute.TargetInstance
         #    - google.compute.TargetPool
-        #    - google.compute.TargetTcpProxy
         #    - google.compute.TargetSslProxy
+        #    - google.compute.TargetTcpProxy
         #    - google.compute.TargetVpnGateway
         #    - google.compute.UrlMap
+        #    - google.compute.VpnTunnel
         #    - google.container.Cluster
         #    - google.iam.Role
         #    - google.iam.ServiceAccount
+        #    - google.pubsub.Subscription
         #    - google.pubsub.Topic
-        #    - google.spanner.Instance
         #    - google.spanner.Database
+        #    - google.spanner.Instance
 
     # Number of days to retain inventory data:
     #  -1 : (default) keep all previous data forever
