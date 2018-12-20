@@ -20,6 +20,7 @@ from google.cloud.forseti.common.gcp_type import resource
 
 _NAME_PREFIX = 'liens/'
 
+
 class Lien(resource.Resource):
     """Lien Resource."""
 
