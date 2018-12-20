@@ -17,14 +17,24 @@
 # Example invocation:
 #   gcloud container builds submit --config scripts/docker/cloudbuild.yaml ./
 
+# Cache, ref. https://cloud.google.com/cloud-build/docs/speeding-up-builds
+
 steps:
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['pull', 'gcr.io/$PROJECT_ID/forseti-base:latest']
+  waitFor: ['-']
+  id: pull-base-for-cache
+
 - name: 'gcr.io/cloud-builders/docker'
   args:
   - 'build'
   - '--file=install/docker/base'
   - '--tag=gcr.io/$PROJECT_ID/forseti-base'
+  - '--cache-from'
+  - 'gcr.io/$PROJECT_ID/forseti-base:latest'
   - '.'
-  waitFor: ['-']
+  waitFor: ['pull-base-for-cache']
   id: base
 
 - name: 'gcr.io/cloud-builders/docker'
