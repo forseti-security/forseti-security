@@ -84,7 +84,7 @@ class Project(resource.Resource):
 
         full_name = 'project/{}/'.format(project_id)
         if parent:
-            full_name = '{}{}'.format(parent.full_name, project_id)
+            full_name = '{}{}'.format(parent.full_name, full_name)
 
         return cls(
             project_id=project_id,
