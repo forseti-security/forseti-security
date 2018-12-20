@@ -266,6 +266,17 @@ class ApiClient(object):
         """
 
     @abc.abstractmethod
+    def iter_compute_project(self, project_number):
+        """Iterate Project from GCP API.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
 
@@ -1370,6 +1381,20 @@ class ApiClientImpl(ApiClient):
         """
         for network in self.compute.get_networks(project_number):
             yield network
+
+    def iter_compute_project(self, project_number):
+        """Iterate Project from GCP API.
+
+        Will only ever return up to 1 result. Ensures compatibility with other
+        resource iterators.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of compute project resources.
+        """
+        yield self.fetch_compute_project(project_number)
 
     def iter_compute_routers(self, project_number):
         """Iterate Compute Engine routers from GCP API.
