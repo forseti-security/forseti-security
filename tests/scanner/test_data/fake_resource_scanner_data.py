@@ -11,10 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Location data to be used in the unit tests."""
+"""Resource data to be used in the unit tests."""
 
-from google.cloud.forseti.common.gcp_type import organization
-from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.scanner.audit import resource_rules_engine
 

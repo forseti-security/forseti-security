@@ -23,13 +23,9 @@ import unittest
 import yaml
 
 from tests.unittest_utils import ForsetiTestCase
-from google.cloud.forseti.common.gcp_type import lien
-from google.cloud.forseti.common.gcp_type import resource
-from google.cloud.forseti.common.util import file_loader
 from google.cloud.forseti.scanner.audit.errors import InvalidRulesSchemaError
 from google.cloud.forseti.scanner.audit import resource_rules_engine
 from google.cloud.forseti.scanner.audit import rules as scanner_rules
-from tests.unittest_utils import get_datafile_path
 from tests.scanner.test_data import fake_resource_scanner_data as data
 
 
