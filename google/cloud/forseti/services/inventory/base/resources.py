@@ -1763,6 +1763,12 @@ class ComputeNetworkIterator(compute_iter_class_factory(
     """The Resource iterator implementation for Compute Network."""
 
 
+class ComputeProjectIterator(compute_iter_class_factory(
+        api_method_name='iter_compute_project',
+        resource_name='compute_project')):
+    """The Resource iterator implementation for Compute Project."""
+
+
 class ComputeRouterIterator(compute_iter_class_factory(
         api_method_name='iter_compute_routers',
         resource_name='compute_router')):
@@ -1827,28 +1833,6 @@ class ComputeUrlMapIterator(compute_iter_class_factory(
         api_method_name='iter_compute_urlmaps',
         resource_name='compute_urlmap')):
     """The Resource iterator implementation for Compute UrlMap."""
-
-
-# Compute project iterator uses a fetch function, does not support using the
-# class factory.
-class ComputeProjectIterator(ResourceIterator):
-    """The Resource iterator implementation for Compute Project."""
-
-    def iter(self):
-        """Resource iterator.
-
-        Yields:
-            Resource: ComputeProject created
-        """
-        gcp = self.client
-        if self.resource.compute_api_enabled():
-            try:
-                data = gcp.fetch_compute_project(
-                    project_number=self.resource['projectNumber'])
-                yield FACTORIES['compute_project'].create_new(data)
-            except ResourceNotSupported as e:
-                # API client doesn't support this resource, ignore.
-                LOGGER.debug(e)
 
 
 class DnsManagedZoneIterator(resource_iter_class_factory(
