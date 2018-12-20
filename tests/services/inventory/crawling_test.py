@@ -433,6 +433,7 @@ class CloudAssetCrawlerTest(CrawlerBase):
             'compute_httphealthcheck': {'resource': 1},
             'compute_httpshealthcheck': {'resource': 1},
             'compute_license': {'resource': 1},
+            'compute_project': {'resource': 2},
             'compute_router': {'resource': 1},
             'compute_sslcertificate': {'resource': 1},
             'compute_targethttpproxy': {'resource': 1},
@@ -549,7 +550,6 @@ class CloudAssetCrawlerTest(CrawlerBase):
                         storage)
 
         expected_counts = {
-            'compute_project': {'resource': 2},
             'crm_org_policy': {'resource': 5},
             'folder': {'iam_policy': 3, 'resource': 3},
             'gsuite_group': {'resource': 4},

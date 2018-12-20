@@ -240,6 +240,10 @@ def backendservice(item):
     return _create_compute_asset(item, 'google.compute.BackendService')
 
 
+def compute_project(item):
+    return _create_compute_asset(item, 'google.compute.Project')
+
+
 def disk(item):
     return _create_compute_asset(item, 'google.compute.Disk')
 
@@ -295,6 +299,7 @@ CAI_TYPE_MAP = {
     'billing_account': billing_account,
     'bucket': bucket,
     'backendservice': backendservice,
+    'compute_project': compute_project,
     'cloudsqlinstance': cloudsqlinstance,
     'dataset': bigquery_dataset,
     'disk': disk,
