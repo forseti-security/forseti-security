@@ -18,6 +18,7 @@ import json
 
 from google.cloud.forseti.common.gcp_type import resource
 
+_NAME_PREFIX = 'liens/'
 
 class Lien(resource.Resource):
     """Lien Resource."""
@@ -53,9 +54,12 @@ class Lien(resource.Resource):
             Lien: lien resource.
         """
         lien_dict = json.loads(json_string)
+        name = lien_dict['name']
+        if name.startswith(_NAME_PREFIX):
+            name = name[len(_NAME_PREFIX):]
         return cls(
             parent=parent,
-            name=lien_dict['name'].strip('liens/'),
+            name=name,
             restrictions=lien_dict['restrictions'],
             raw_json=json_string,
         )

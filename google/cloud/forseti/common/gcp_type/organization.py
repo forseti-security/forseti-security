@@ -20,6 +20,8 @@ import json
 
 from google.cloud.forseti.common.gcp_type import resource
 
+_NAME_PREFIX = 'organizations/'
+
 
 class OrgLifecycleState(resource.LifecycleState):
     """Organization lifecycle state."""
@@ -76,7 +78,9 @@ class Organization(resource.Resource):
         del parent  # Unused. Organizations have no parents.
         org_dict = json.loads(json_string)
         org_name = org_dict['name']
-        org_id = org_name.strip('organizations/')
+        org_id = (
+            org_name[len(_NAME_PREFIX):]
+            if org_name.startswith(_NAME_PREFIX) else org_name)
         return cls(
             organization_id=org_id,
             full_name='organization/{}/'.format(org_id),
