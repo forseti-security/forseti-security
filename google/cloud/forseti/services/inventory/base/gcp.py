@@ -41,19 +41,22 @@ class ApiClient(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id,
+                                      project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
 
     @abc.abstractmethod
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
         """
@@ -64,6 +67,15 @@ class ApiClient(object):
 
         Args:
             project_number (str): number of the project to query.
+        """
+
+    @abc.abstractmethod
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
         """
 
     @abc.abstractmethod
@@ -1003,22 +1015,27 @@ class ApiClientImpl(ApiClient):
         return storage.StorageClient(self.config)
 
     @create_lazy('bigquery', _create_bq)
-    def fetch_bigquery_dataset_policy(self, project_number, dataset_id):
+    def fetch_bigquery_dataset_policy(self, project_id,
+                                      project_number, dataset_id):
         """Dataset policy Iterator for a dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
         Returns:
             dict: Dataset Policy.
         """
+        del project_id
+
         return self.bigquery.get_dataset_access(project_number, dataset_id)
 
-    def fetch_bigquery_iam_policy(self, project_number, dataset_id):
+    def fetch_bigquery_iam_policy(self, project_id, project_number, dataset_id):
         """Gets IAM policy of a bigquery dataset from gcp API call.
 
         Args:
+            project_id (str): id of the project to query.
             project_number (str): number of the project to query.
             dataset_id (str): id of the dataset to query.
 
@@ -1040,6 +1057,21 @@ class ApiClientImpl(ApiClient):
         """
         for dataset in self.bigquery.get_datasets_for_projectid(project_number):
             yield dataset
+
+    @create_lazy('bigquery', _create_bq)
+    def iter_bigquery_tables(self, dataset_reference):
+        """Iterate Tables from GCP API.
+
+        Args:
+            dataset_reference (dict): The project and dataset ID to get
+                                      bigquery tables.
+
+        Yields:
+            dict: Generator of tables.
+        """
+        for table in self.bigquery.get_tables(dataset_reference['projectId'],
+                                              dataset_reference['datasetId']):
+            yield table
 
     @create_lazy('cloudbilling', _create_cloudbilling)
     def fetch_billing_account_iam_policy(self, account_id):

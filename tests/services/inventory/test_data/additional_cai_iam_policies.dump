@@ -2,8 +2,10 @@
 # enabled. These resources are merged into mock_cai_iam_policies.dump by the
 # update_cai_dumps.py script. Any lines that start with a '#' are ignored.
 #
-# Bigquery Dataset
-{"name":"//bigquery.googleapis.com/projects/1042/datasets/bq_test_ds","asset_type":"google.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:test-group@forseti.testing","projectEditor:project2"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:project2","user:user@forseti.testing"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:forseti.testing","projectViewer:project2"]}]}}
+# Bigquery Dataset with project number
+{"name":"//bigquery.googleapis.com/projects/1042/datasets/bq_test_ds","asset_type":"google.cloud.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:test-group@forseti.testing","projectEditor:project2"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:project2","user:user@forseti.testing"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:forseti.testing","projectViewer:project2"]}]}}
+# Bigquery Dataset with project id
+{"name":"//bigquery.googleapis.com/projects/project3/datasets/bq_test_ds1","asset_type":"google.cloud.bigquery.Dataset","iam_policy":{"bindings":[{"role":"roles/bigquery.dataEditor","members":["group:test-group@forseti.testing","projectEditor:project3"]},{"role":"roles/bigquery.dataOwner","members":["projectOwner:project3","user:user@forseti.testing"]},{"role":"roles/bigquery.dataViewer","members":["allAuthenticatedUsers","domain:forseti.testing","projectViewer:project3"]}]}}
 # KMS CryptoKey
 {"name":"//cloudkms.googleapis.com/projects/project2/locations/us/keyRings/test-kr/cryptoKeys/test-key","asset_type":"google.cloud.kms.CryptoKey","iam_policy":{"etag":"ACAB","bindings":[{"role":"roles/cloudkms.cryptoKeyEncrypterDecrypter","members":["user:user@forseti.testing"]}]}}
 # KMS KeyRing

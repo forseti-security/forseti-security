@@ -20,6 +20,7 @@ See: https://cloud.google.com/kubernetes-engine/docs/
 import json
 
 from google.cloud.forseti.common.gcp_type import resource
+from google.cloud.forseti.services.inventory.base.resources import size_t_hash
 
 
 # pylint: disable=too-many-arguments,too-many-instance-attributes
@@ -27,6 +28,8 @@ from google.cloud.forseti.common.gcp_type import resource
 # pylint: disable=invalid-name
 class KeCluster(resource.Resource):
     """Represents KE Cluster resource."""
+
+    RESOURCE_NAME_FMT = 'kubernetes_cluster/%s'
 
     def __init__(self, cluster_id, parent=None, full_name=None, locations=None,
                  description=None, initial_node_count=None, node_config=None,
@@ -44,13 +47,13 @@ class KeCluster(resource.Resource):
                  node_ipv4_cidr_size=None, instance_group_urls=None,
                  current_node_count=None,
                  expire_time=None, server_config=None,
-                 data=None):
+                 data=None, cluster_name=None):
         """Initialize."""
         super(KeCluster, self).__init__(
             resource_id=cluster_id,
             resource_type=resource.ResourceType.KE_CLUSTER,
-            name=cluster_id,
-            display_name=cluster_id,
+            name=cluster_name,
+            display_name=cluster_name,
             parent=parent,
             locations=locations)
         self.full_name = full_name
@@ -101,10 +104,12 @@ class KeCluster(resource.Resource):
         """
 
         cluster_dict = json.loads(json_string)
-        cluster_id = cluster_dict['name']
+        cluster_name = cluster_dict['name']
+        cluster_id = size_t_hash(cluster_dict['selfLink'])
 
         return cls(
             cluster_id=cluster_id,
+            cluster_name=cluster_name,
             parent=parent,
             full_name='{}kubernetes_cluster/{}/'.format(parent.full_name,
                                                         cluster_id),

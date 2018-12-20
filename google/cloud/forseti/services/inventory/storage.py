@@ -660,9 +660,9 @@ class CaiTemporaryStore(object):
             return '/'.join(asset_pb.name.split('/')[:-4])
 
         elif (asset_pb.asset_type.startswith('google.appengine') or
-              asset_pb.asset_type.startswith('google.bigquery') or
-              asset_pb.asset_type.startswith('google.spanner') or
-              asset_pb.asset_type.startswith('google.cloud.kms')):
+              asset_pb.asset_type.startswith('google.cloud.bigquery') or
+              asset_pb.asset_type.startswith('google.cloud.kms') or
+              asset_pb.asset_type.startswith('google.spanner')):
             # Strip off the last two segments of the name to get the parent
             return '/'.join(asset_pb.name.split('/')[:-2])
 

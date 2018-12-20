@@ -31,6 +31,18 @@ from google.cloud.forseti.services.inventory.base import iam_helpers
 LOGGER = logger.get_logger(__name__)
 
 
+def size_t_hash(key):
+    """Hash the key using size_t.
+
+    Args:
+        key (str): The key to hash.
+
+    Returns:
+        str: The hashed key.
+    """
+    return '%u' % ctypes.c_size_t(hash(key)).value
+
+
 def from_root_id(client, root_id):
     """Start the crawling from root if the root type is supported.
 
@@ -477,7 +489,7 @@ def resource_class_factory(resource_type, key_field, hash_key=False):
             if hash_key:
                 # Resource does not have a globally unique ID, use size_t hash
                 # of key data.
-                return '%u' % ctypes.c_size_t(hash(self[key_field])).value
+                return size_t_hash(self[key_field])
 
             return self[key_field]
 
@@ -774,16 +786,6 @@ class ResourceManagerProject(resource_class_factory('project', 'projectId')):
         return (self.billing_enabled() and
                 self.is_api_enabled('bigquery-json.googleapis.com'))
 
-    def cloudsql_api_enabled(self):
-        """Check if the cloudsql api is enabled.
-
-        Returns:
-            bool: if this API service is enabled on the project.
-        """
-        # CloudSQL Admin API depends on billing being enabled
-        return (self.billing_enabled() and
-                self.is_api_enabled('sql-component.googleapis.com'))
-
     def compute_api_enabled(self):
         """Check if the compute api is enabled.
 
@@ -873,6 +875,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
         """
         try:
             iam_policy = client.fetch_bigquery_iam_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
             dataset_policy = iam_helpers.convert_iam_to_bigquery_policy(
@@ -896,6 +899,7 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
         """
         try:
             dataset_policy = client.fetch_bigquery_dataset_policy(
+                self.parent()['projectId'],
                 self.parent()['projectNumber'],
                 self['datasetReference']['datasetId'])
             iam_policy = iam_helpers.convert_bigquery_policy_to_iam(
@@ -906,6 +910,11 @@ class BigqueryDataSet(resource_class_factory('dataset', 'id')):
             LOGGER.warn('Could not get Dataset Policy: %s', e)
             self.add_warning(e)
             return None
+
+
+# BigqueryTable resource classes
+class BigqueryTable(resource_class_factory('bigquery_table', 'id')):
+    """The Resource implementation for bigquery table."""
 
 
 # Billing resource classes
@@ -1592,6 +1601,13 @@ class BigqueryDataSetIterator(resource_iter_class_factory(
     """The Resource iterator implementation for Bigquery Dataset."""
 
 
+class BigqueryTableIterator(resource_iter_class_factory(
+        api_method_name='iter_bigquery_tables',
+        resource_name='bigquery_table',
+        api_method_arg_key='datasetReference')):
+    """The Resource iterator implementation for Bigquery Table."""
+
+
 class BillingAccountIterator(resource_iter_class_factory(
         api_method_name='iter_billing_accounts',
         resource_name='billing_account')):
@@ -1602,7 +1618,7 @@ class CloudSqlInstanceIterator(resource_iter_class_factory(
         api_method_name='iter_cloudsql_instances',
         resource_name='cloudsql_instance',
         api_method_arg_key='projectNumber',
-        resource_validation_method_name='cloudsql_api_enabled')):
+        resource_validation_method_name='enumerable')):
     """The Resource iterator implementation for CloudSQL Instance."""
 
 
@@ -2206,6 +2222,13 @@ FACTORIES = {
     'bigquery_dataset': ResourceFactory({
         'dependsOn': ['project'],
         'cls': BigqueryDataSet,
+        'contains': [
+            BigqueryTableIterator
+        ]}),
+
+    'bigquery_table': ResourceFactory({
+        'dependsOn': ['bigquery_dataset'],
+        'cls': BigqueryTable,
         'contains': []}),
 
     'cloudsql_instance': ResourceFactory({
