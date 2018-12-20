@@ -226,6 +226,24 @@ class CaiApiClientImpl(gcp.ApiClientImpl):
         for account in resources:
             yield account
 
+    def iter_cloudsql_instances(self, project_number):
+        """Iterate Cloud sql instances from Cloud Asset data.
+
+        Args:
+            project_number (str): number of the project to query.
+
+        Yields:
+            dict: Generator of cloudsql instance.
+        """
+        resources = self.dao.iter_cai_assets(
+            ContentTypes.resource,
+            'google.cloud.sql.Instance',
+            '//cloudresourcemanager.googleapis.com/projects/{}'.format(
+                project_number),
+            self.session)
+        for instance in resources:
+            yield instance
+
     def _iter_compute_resources(self, asset_type, project_number):
         """Iterate Compute resources from Cloud Asset data.
 
