@@ -117,15 +117,15 @@ class InventorySummary(object):
         email_summary_config = (
             self.notifier_config.get('inventory').get('email_summary'))
 
-        if self.notifier_config.get('email_connector_config'):
+        if self.notifier_config.get('email_connector'):
             email_connector_config_auth = (
-                self.notifier_config.get('email_connector_config').get('auth'))
+                self.notifier_config.get('email_connector').get('auth'))
 
             email_util = SendgridConnector(self.notifier_config
-                                           .get('email_connector_config')
+                                           .get('email_connector')
                                            .get('sender'),
                                            self.notifier_config
-                                           .get('email_connector_config')
+                                           .get('email_connector')
                                            .get('recipient'),
                                            email_connector_config_auth)
         # else block below is added for backward compatibility.
@@ -154,14 +154,14 @@ class InventorySummary(object):
              'summary_data': summary_data,
              'details_data': details_data})
 
-        if self.notifier_config.get('email_connector_config'):
+        if self.notifier_config.get('email_connector'):
             try:
                 email_util.send(
                     email_sender=self.notifier_config
-                    .get('email_connector_config')
+                    .get('email_connector')
                     .get('sender'),
                     email_recipient=self.notifier_config
-                    .get('email_connector_config')
+                    .get('email_connector')
                     .get('recipient'),
                     email_subject=email_subject,
                     email_content=email_content,
@@ -281,7 +281,7 @@ class InventorySummary(object):
         try:
             is_gcs_summary_enabled = (
                 inventory_notifier_config.get('gcs_summary').get('enabled'))
-            if self.notifier_config.get('email_connector_config'):
+            if self.notifier_config.get('email_connector'):
                 is_email_summary_enabled = True
             # else block below is for backward compatibility.
             if inventory_notifier_config.get('email_summary'):

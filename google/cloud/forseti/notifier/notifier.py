@@ -148,7 +148,7 @@ def run(inventory_index_id,
                 if not resource['should_notify']:
                     LOGGER.debug('Not notifying for: %s', resource['resource'])
                     continue
-                if notifier_configs.get('email_connector_config'):
+                if notifier_configs.get('email_connector'):
                     notifiers.append(email_violations.EmailViolations(
                         resource['resource'], inventory_index_id,
                         violation_map[resource['resource']], global_configs,

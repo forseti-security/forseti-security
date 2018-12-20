@@ -33,12 +33,12 @@ class EmailUtilTest(ForsetiTestCase):
         new_email = mail.Mail()
         email_recipient = 'foo@company.com'
         email_sender = 'bar@company.com'
-        email_connector_config = {
+        email_connector = {
             'fake_sendgrid_key': 'xyz010'
         }
         email_util = sendgrid_connector.SendgridConnector(email_sender,
                                                           email_recipient,
-                                                          email_connector_config)
+                                                          email_connector)
         new_email = email_util._add_recipients(new_email, email_recipient)
 
         self.assertEquals(1, len(new_email.personalizations))
@@ -53,12 +53,12 @@ class EmailUtilTest(ForsetiTestCase):
         new_email = mail.Mail()
         email_recipient='foo@company.com,bar@company.com'
         email_sender='bar@company.com'
-        email_connector_config = {
+        email_connector = {
             'fake_sendgrid_key': 'xyz010'
         }
         email_util = sendgrid_connector.SendgridConnector(email_sender,
                                                           email_recipient,
-                                                          email_connector_config)
+                                                          email_connector)
         new_email = email_util._add_recipients(new_email, email_recipient)
 
         self.assertEquals(1, len(new_email.personalizations))
@@ -71,11 +71,13 @@ class EmailUtilTest(ForsetiTestCase):
     @mock.patch('sendgrid.helpers.mail.Mail', autospec=True)
     def test_no_sender_recip_no_email(self, mock_mail):
         """Test that no sender/recip doesn't send email."""
-        email_connector_config = {
+        email_connector = {
             'fake_sendgrid_key': 'xyz010'
         }
         email_util = sendgrid_connector.SendgridConnector(
-            'sender', 'recipient', email_connector_config)
+            'sender',
+            'recipient',
+            email_connector)
         with self.assertRaises(util_errors.EmailSendError):
             email_util.send()
 
