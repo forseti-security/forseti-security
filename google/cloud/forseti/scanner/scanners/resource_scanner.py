@@ -15,7 +15,6 @@
 """Scanner for the resource Resource rules engine."""
 
 
-from google.cloud.forseti.common.gcp_type import project
 from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
 from google.cloud.forseti.scanner.audit import resource_rules_engine
@@ -26,7 +25,7 @@ LOGGER = logger.get_logger(__name__)
 
 
 class ResourceScanner(base_scanner.BaseScanner):
-    """Scanner for resource Resources."""
+    """Scanner for Resources."""
 
     def __init__(self, global_configs, scanner_configs, service_config,
                  model_name, snapshot_timestamp,
@@ -67,18 +66,17 @@ class ResourceScanner(base_scanner.BaseScanner):
             ValueError: if resources have an unexpected type.
         """
         resources = []
-
+        resource_types = (
+            self.rules_engine.rule_book.get_applicable_resource_types())
         scoped_session, data_access = self.service_config.model_manager.get(
             self.model_name)
         with scoped_session as session:
-            for resource_type in (
-                self.rules_engine.rule_book.get_applicable_resource_types()):
-
+            for resource_type in resource_types:
                 for resource in data_access.scanner_iter(
-                    session, resource_type):
+                        session, resource_type):
 
                     resources.append(
-                        resource_util.create_resource_from_db_resource(resource)
+                        resource_util.create_resource_from_db_row(resource)
                     )
 
         return resources
@@ -93,7 +91,7 @@ class ResourceScanner(base_scanner.BaseScanner):
             List[RuleViolation]: A list of all violations.
         """
 
-        LOGGER.info('Finding resource Resource violations...')
+        LOGGER.info('Finding Resource violations...')
         violations = self.rules_engine.find_violations(resources)
         LOGGER.debug(violations)
         return violations

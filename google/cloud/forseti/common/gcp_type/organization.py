@@ -63,6 +63,16 @@ class Organization(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, json_string):
+        """Creates a organization from an organization JSON string.
+
+        Args:
+            parent (Resource): resource this instance belongs to. Should be
+                an organization.
+            json_string(str): JSON string of a instance GCP API response.
+
+        Returns:
+            Project: A new Project object.
+        """
         del parent  # Unused. Organizations have no parents.
         org_dict = json.loads(json_string)
         org_name = org_dict['name']

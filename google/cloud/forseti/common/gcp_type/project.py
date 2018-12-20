@@ -69,11 +69,26 @@ class Project(resource.Resource):
 
     @classmethod
     def from_json(cls, parent, json_string):
+        """Creates a project from a project JSON string.
+
+        Args:
+            parent (Resource): resource this instance belongs to. Should be
+                an organization.
+            json_string(str): JSON string of a instance GCP API response.
+
+        Returns:
+            Project: A new Project object.
+        """
         project_dict = json.loads(json_string)
         project_id = project_dict['projectId']
+
+        full_name = 'project/{}/'.format(project_id)
+        if parent:
+            full_name = '{}{}'.format(parent.full_name, project_id)
+
         return cls(
             project_id=project_id,
-            full_name='{}project/{}/'.format(parent.full_name, project_id),
+            full_name=full_name,
             name='projects/' + project_id,
             display_name=project_dict['name'],
             data=json_string,

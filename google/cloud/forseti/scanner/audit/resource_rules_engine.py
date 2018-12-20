@@ -15,9 +15,7 @@
 """Rules engine for Resources."""
 import collections
 
-from google.cloud.forseti.common.gcp_type import resource_util
 from google.cloud.forseti.common.util import logger
-from google.cloud.forseti.common.util import relationship
 from google.cloud.forseti.scanner.audit import base_rules_engine
 from google.cloud.forseti.scanner.audit import errors
 from google.cloud.forseti.services import utils
@@ -34,7 +32,7 @@ RuleViolation = collections.namedtuple(
 
 
 class ResourceRulesEngine(base_rules_engine.BaseRulesEngine):
-    """Rules engine for Liens."""
+    """Rules engine for Resources."""
 
     def __init__(self, rules_file_path, snapshot_timestamp=None):
         """Initialize.
@@ -50,7 +48,7 @@ class ResourceRulesEngine(base_rules_engine.BaseRulesEngine):
         self.rule_book = None
 
     def build_rule_book(self, global_configs=None):
-        """Build LienRuleBook from the rules definition file.
+        """Build ResourceRuleBook from the rules definition file.
 
         Args:
             global_configs (dict): Global configurations.
@@ -85,7 +83,7 @@ class ResourceRulesEngine(base_rules_engine.BaseRulesEngine):
 
 
 class ResourceRuleBook(base_rules_engine.BaseRuleBook):
-    """The RuleBook for Lien resources."""
+    """The RuleBook for Resources."""
 
     def __init__(self, rule_defs=None):
         """Initialization.
@@ -118,6 +116,9 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
                 properties.
             rule_index (int): The index of the rule from the rule definitions.
                 Assigned automatically when the rule book is built.
+
+        raises:
+            InvalidRulesSchemaError: if invalid rules definition.
         """
         mode = rule_def.get('mode', '')
         if mode not in _SUPPORTED_MODES:
@@ -133,29 +134,32 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
             rule_def.get('resource_trees', []))
         self.rules.append(
             Rule(name=rule_def['name'],
-                index=rule_index,
-                resource_types=set(rule_def['resource_types']),
-                resource_tree=resource_tree),
-            )
+                 index=rule_index,
+                 resource_types=set(rule_def['resource_types']),
+                 resource_tree=resource_tree))
 
     def find_violations(self, resources):
-        """Find lien violations in the rule book.
+        """Find resource violations in the rule book.
 
         Args:
-            parent_resource (Resource): The GCP resource associated with the
-                liens. This is where we start looking for rule violations and
-                we move up the resource hierarchy (if permitted by the
-                resource's "inherit_from_parents" property).
-            liens (List[Lien]): The liens to look for violations.
+            resources (List[Resource]): The resources to check for violations.
 
         Yields:
-            RuleViolation: lien rule violations.
+            RuleViolation: resource rule violations.
         """
         for rule in self.rules:
             for violation in rule.find_violations(resources):
                 yield violation
 
     def get_applicable_resource_types(self):
+        """Get the applicable resource types defined in this rule book.
+
+        The applcable resource types are a union of all resource types defined
+        in each rule.
+
+        Returns:
+            Set[string]: applicable resource types.
+        """
         types = set()
         for rule in self.rules:
             types.update(rule.resource_types)
@@ -163,15 +167,27 @@ class ResourceRuleBook(base_rules_engine.BaseRuleBook):
 
 
 class ResourceTree(object):
+    """ResourceTree represents resources in a tree format."""
 
     def __init__(self, resource_type=None, resource_id=None, children=None):
+        """Initialize a resource tree.
+
+        Args:
+            resource_type (str): type of this resource. Leave as None if
+              this is a root node with multiple children. In that case,
+              this tree will represent a multi-root tree.
+            resource_id (str): id of this resource or '*'. Leave as None if
+              this is a root node with multiple children. In that case,
+              this tree will represent a multi-root tree.
+            children (List[ResourceTree]): children of this node.
+        """
         self.resource_type = resource_type
         self.resource_id = resource_id
         self.children = children or []
 
     @classmethod
     def from_json(cls, json_nodes):
-        """Create a resource tre from the given JSON representation of nodes.
+        """Create a resource tree from the given JSON representation of nodes.
 
         If there are multiple json nodes, the resulting tree will have a root
         node with no resource type or id and each json node as a child.
@@ -188,12 +204,18 @@ class ResourceTree(object):
         nodes = cls._from_json(json_nodes)
         if len(nodes) == 1:
             return nodes[0]
-        else:
-            return ResourceTree(children=nodes)
+        return ResourceTree(children=nodes)
 
     @classmethod
     def _from_json(cls, json_nodes):
-        """Build Resource Tree nodes."""
+        """Build Resource Tree nodes.
+
+        Args:
+            json_nodes(List[dict]): JSON representation of nodes.
+
+        Returns:
+            ResourceTree: The resource tree representation of the json nodes.
+        """
         nodes = []
         for json_node in json_nodes:
             node = ResourceTree(
@@ -215,8 +237,8 @@ class ResourceTree(object):
             ResourceTree: The final matching node, or None if there is no match.
         """
         tuples = []
-        for resource_type, resource_id  in (
-            utils.get_resources_from_full_name(resource.full_name)):
+        for resource_type, resource_id in (
+                utils.get_resources_from_full_name(resource.full_name)):
             tuples.append((resource_type, resource_id))
 
         # Tuples are returned in reverse order, so reverse them.
@@ -230,10 +252,20 @@ class ResourceTree(object):
         if not tuples:
             return None
 
-        return self._match(tuples)
+        return self.match_tuples(tuples)
 
-    def _match(self, tuples):
-        """Match the given tuples against this tree."""
+    def match_tuples(self, tuples):
+        """Match the given tuples against this tree.
+
+        Args:
+           tuples (List[Tuple[string, string]]): (type, id) pairs of resources.
+              Together, they represent one full resource.
+              e.g. organization/123/project/456/ should be represented as
+              [('organization', '123'), ('project', '456')].
+
+        Returns:
+            ResourceTree: The final matching node, or None if there is no match.
+        """
         if not self.resource_type:
             return self._find_matching_child(tuples)
 
@@ -245,10 +277,10 @@ class ResourceTree(object):
                 tuples = tuples[1:]
                 if not tuples:
                     return self
-                elif not self.children:
+                if not self.children:
                     return None
-                else:
-                    return self._find_matching_child(tuples)
+                return self._find_matching_child(tuples)
+        return None
 
     def _find_matching_child(self, tuples):
         """Finds a matching child node.
@@ -256,12 +288,18 @@ class ResourceTree(object):
         Assumes that a child will either match an exact resource id, or a
         wildcard. The exact match child is given preference.
 
+        Args:
+            tuples (List[Tuple[string, string]]): (type, id) pairs of resources.
+              Together, they represent one full resource.
+              e.g. organization/123/project/456/ should be represented as
+              [('organization', '123'), ('project', '456')].
+
         Returns:
             ResourceTree: Matching child node, or None if none matched.
         """
         wildcard_child = None
         for child in self.children:
-            node = child._match(tuples)
+            node = child.match_tuples(tuples)
             if node:
                 if node.resource_id != '*':
                     return node
@@ -270,14 +308,17 @@ class ResourceTree(object):
         return wildcard_child
 
     def get_nodes(self):
-        """Get all nodes in this resource tree."""
+        """Get all nodes in this resource tree.
+
+        Returns:
+            List[ResourceTree]: nodes in this tree.
+        """
         nodes = []
         if self.resource_type:
             nodes.append(self)
         for child in self.children:
             nodes.extend(child.get_nodes())
         return nodes
-
 
 
 class Rule(object):
@@ -291,8 +332,9 @@ class Rule(object):
         Args:
             name (str): Name of the loaded rule.
             index (int): The index of the rule from the rule definitions.
-            restrictions (List[string]): The restrictions this rule enforces
-              on liens.
+            resource_types (List[str]): The applicable resource types of this
+                rule.
+            resource_tree (ResourceTree): Tree representing the valid resources.
         """
         self.name = name
         self.index = index
@@ -303,9 +345,7 @@ class Rule(object):
         """Find violations for this rule against the given resource.
 
         Args:
-            parent_resource (Resource): The GCP resource associated with the
-                liens.
-            restrictions (Iterable[str]): The restrictions to check.
+            resources (List[Resource]): resources to check for violations.
 
         Yields:
             RuleViolation: resource rule violation.
@@ -333,7 +373,7 @@ class Rule(object):
 
         for node in self.resource_tree.get_nodes():
             if node.resource_id != '*' and (
-                node not in matched_nodes):
+                    node not in matched_nodes):
                 yield RuleViolation(
                     resource_id=node.resource_id,
                     resource_name=node.resource_id,
