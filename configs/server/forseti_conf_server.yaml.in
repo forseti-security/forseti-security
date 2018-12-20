@@ -209,7 +209,7 @@ scanner:
 
 notifier:
 
-    # Provide connector details to receive violations when found
+    # Provide connector details
     email_connector_config:
       name: sendgrid
       auth:
