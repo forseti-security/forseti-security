@@ -354,6 +354,9 @@ class FirewallRules(object):
         Returns:
           A dictionary of rules that apply to the filtered networks.
         """
+        if not networks:
+            return self.rules
+
         filtered_rules = {}
         for rule_name, rule in self.rules.items():
             if get_network_name_from_url(rule['network']) in networks:
@@ -685,44 +688,36 @@ class FirewallEnforcer(object):
             raise EmptyProposedFirewallRuleSetError(
                 'No rules defined in the expected rules.')
 
-        # Check if current rules match expected rules, so no changes are needed
-        if networks:
-            if (self.current_rules.filtered_by_networks(networks) ==
-                    self.expected_rules.filtered_by_networks(networks)):
-                LOGGER.info(
-                    'Current and expected rules match for project %s on '
-                    'network(s) "%s".', self.project, ','.join(networks))
-                return 0
-        elif self.current_rules == self.expected_rules:
-            LOGGER.info('Current and expected rules match for project %s.',
-                        self.project)
+        if (self.current_rules.filtered_by_networks(networks) ==
+                self.expected_rules.filtered_by_networks(networks)):
+            LOGGER.info(
+                'Current and expected rules match for project %s.',
+                self.project)
             return 0
 
         self._build_change_set(networks)
         self._validate_change_set(networks)
-        delete_before_insert = self._check_change_operation_order(
-            len(self._rules_to_insert), len(self._rules_to_delete))
+        if prechange_callback:
+            if not prechange_callback(self.project, self._rules_to_delete,
+                                      self._rules_to_insert,
+                                      self._rules_to_update):
+                LOGGER.warn(
+                    'The Prechange Callback returned False for project %s, '
+                    'changes will not be applied.', self.project)
+                return 0
 
         if self.project_sema:
             self.project_sema.acquire()
 
         try:
-            if prechange_callback:
-                if not prechange_callback(self.project, self._rules_to_delete,
-                                          self._rules_to_insert,
-                                          self._rules_to_update):
-                    LOGGER.warn(
-                        'The Prechange Callback returned False for project %s, '
-                        'changes will not be applied.', self.project)
-                    return 0
-            if networks:
-                changed_count = 0
-                for network in networks:
-                    changed_count += self._apply_change_set(
-                        delete_before_insert, network)
-            else:
-                changed_count = self._apply_change_set(delete_before_insert,
-                                                       None)
+            delete_before_insert = self._check_change_operation_order(
+                len(self._rules_to_insert), len(self._rules_to_delete))
+            changed_count = 0
+            if not networks:
+                networks = [None]  # Default to all networks
+            for network in networks:
+                changed_count += self._apply_change_set(
+                    delete_before_insert, network)
         finally:
             if self.project_sema:
                 self.project_sema.release()
