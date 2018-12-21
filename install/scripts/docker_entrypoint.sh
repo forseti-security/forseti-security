@@ -30,6 +30,7 @@ LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=true
 RUN_CLIENT=false
+RUN_CRONJOB=false
 
 # Note
 # CLOUDSQLPROXY_SERVICE_HOST
