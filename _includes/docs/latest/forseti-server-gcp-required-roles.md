@@ -1,7 +1,7 @@
 **Granted at the organization level**
 
  * `roles/appengine.appViewer` (server)
- * `roles/bigquery.dataViewer` (server)
+ * `roles/bigquery.metadataViewer` (server)
  * `roles/browser` (server)
  * `roles/cloudasset.viewer` (server)
  * `roles/cloudsql.viewer` (server)
