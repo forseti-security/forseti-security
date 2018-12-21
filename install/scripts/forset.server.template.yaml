@@ -1,0 +1,37 @@
+# DRAFT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forseti-server
+spec:
+  selector:
+    matchLabels:
+      app: forseti-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: forseti-server
+    spec:
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: credentials
+      containers:
+        - name: forseti-server
+          image: ${FORSETI_IMAGE}
+          command: ["/forseti-security/install/scripts/docker_entrypoint.sh",
+                    "--bucket", "${BUCKET}",
+                    "--log_level", "debug",
+                    "--run_server",
+                    "--services", "scanner model inventory explain notifier"]
+          securityContext:
+            runAsUser: 0  # root user. TODO use 1, non-root as soon as practical
+            allowPrivilegeEscalation: true # TODO use false as soon as practical
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
+              readOnly: true
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json

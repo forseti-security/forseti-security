@@ -42,11 +42,13 @@
 	# The credentials json file should be deleted after the secret created
 	# rm ${CREDENTIALS}
 
-# Deploy Cloud SQL Proxy in its own pod
-# Create a Cluster IP Service for Cloud SQL Proxy
-# Deploy forseti as k8s CronJob
+    # Control which architecture to deploy
+    # CronJob just runs forseti server as k8s CronJob on the cron schedule and shuts it down after each run
+    # Server runs forseti server as k8s Cluster IP Service and keeps it running indefinitely
+    DEPLOY_CRONJOB=false
+    DEPLOY_SERVER=true
 
-	# TODO set environment variables needed to create forseti.yaml and cloudsqlproxy.yaml
+	# TODO set environment variables needed to create deployment files from templates
 	export FORSETI_IMAGE=gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
 	export BUCKET=gs://<bucketname>
 	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
@@ -56,7 +58,29 @@
 	# We do this because kubectl apply doesnt support environment variable substitution
 	envsubst < cloudsqlproxy.template.yaml > cloudsqlproxy.yaml
 	envsubst < forseti.cronjob.template.yaml > forseti.cronjob.yaml
+	envsubst < forseti.server.template.yaml > forseti.server.yaml
+
+if [[ ${DEPLOY_CRONJOB}=true ]]; then
+    # Example forseti as k8s CronJob
+    # Deploy Cloud SQL Proxy in its own pod
+    # Create a Cluster IP Service for Cloud SQL Proxy
+    # Deploy forseti as k8s CronJob
 
 	kubectl apply -f cloudsqlproxy.yaml
 	kubectl apply -f cloudsqlproxyservice.yaml
 	kubectl apply -f forseti.cronjob.yaml
+
+elif [[ ${DEPLOY_SERVER}=true ]]; then
+    # Example, forseti server as k8s Cluster IP Service
+    # Deploy Cloud SQL Proxy in its own pod
+    # Create a Cluster IP Service for Cloud SQL Proxy
+    # Deploy forseti server in its own pod
+    # Create a Cluster IP Service for forseti server
+    # TODO As PoC deploy client in its own pod ?
+    # TODO As PoC Create a Cluster IP Service for forstei client?
+
+ 	kubectl apply -f cloudsqlproxy.yaml
+	kubectl apply -f cloudsqlproxyservice.yaml
+	kubectl apply -f forseti.server.yaml
+	kubectl apply -f forsetiserverservice.yaml
+fi
