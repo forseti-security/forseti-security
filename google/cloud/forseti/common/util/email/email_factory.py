@@ -25,17 +25,15 @@ EMAIL_CONNECTOR_FACTORY = {
 
 
 class InvalidInputError(Exception):
-    """Raised in case of an invalid notifier data format."""
+    """Exception raised when an invalid input is encountered."""
 
-    def __init__(self, notifier, invalid_input):
-        """Constructor for the base notifier.
+    def __init__(self, message):
+        """Constructor or Initializer.
 
         Args:
-            notifier (str): the notifier module/name
-            invalid_input (str): the invalid data format in question.
+            message (str): explanation of the error.
         """
-        super(InvalidInputError, self).__init__(
-            '%s: invalid input found: %s' % (notifier, invalid_input))
+        super(InvalidInputError, self).__init__(message)
 
 
 class EmailFactory(object):
@@ -48,9 +46,9 @@ class EmailFactory(object):
             notifier_config (dict): Notifier configurations.
         """
         self.notifier_config = notifier_config
-        if notifier_config.get('email_connector'):
+        if notifier_config.get('email_connector_config'):
             self.email_connector_config = (
-                notifier_config.get('email_connector'))
+                notifier_config.get('email_connector_config'))
 
     def get_connector(self):
         """Gets the connector and executes it.
@@ -61,7 +59,9 @@ class EmailFactory(object):
         Raises:
             InvalidInputError: if not valid
         """
-        if self.notifier_config.get('email_connector'):
+        if not self.notifier_config:
+            raise InvalidInputError('Oops! Couldn\'t find connector details.')
+        if self.notifier_config.get('email_connector_config'):
             try:
                 connector_name = self.email_connector_config.get('name')
                 auth = self.email_connector_config.get('auth')
@@ -73,7 +73,8 @@ class EmailFactory(object):
             except:
                 LOGGER.exception(
                     'Error occurred while fetching connector details')
-                raise InvalidInputError
+                raise InvalidInputError(
+                    'Error occurred while fetching connector details')
         # else block below is added to make it backward compatible.
         else:
             try:
@@ -87,4 +88,4 @@ class EmailFactory(object):
             except:
                 LOGGER.exception(
                     'Error occurred while fetching connector details')
-                raise InvalidInputError
+                raise InvalidInputError('Couldn\'t fetch connector details.')
