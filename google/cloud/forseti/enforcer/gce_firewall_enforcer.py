@@ -177,6 +177,28 @@ def _is_successful(operation):
     return success
 
 
+def filter_rules_by_network(rules, network):
+    """Returns the subset of rules that apply to the specified network(s).
+
+    Args:
+        rules: A list of rule dicts to filter.
+        network: The network name to restrict rules to. If no network specified
+            then all rules are returned.
+
+    Returns:
+      A list of rules that apply to the filtered networks.
+    """
+    if not network:
+        return rules
+
+    filtered_rules = []
+    for rule in rules:
+        if get_network_name_from_url(rule['network']) == network:
+            filtered_rules.append(rule)
+
+    return filtered_rules
+
+
 class FirewallRules(object):
     """A collection of validated firewall rules."""
 
@@ -693,7 +715,14 @@ class FirewallEnforcer(object):
                         'The Prechange Callback returned False for project %s, '
                         'changes will not be applied.', self.project)
                     return 0
-            changed_count = self._apply_change_set(delete_before_insert)
+            if networks:
+                changed_count = 0
+                for network in networks:
+                    changed_count += self._apply_change_set(
+                        delete_before_insert, network)
+            else:
+                changed_count = self._apply_change_set(delete_before_insert,
+                                                       None)
         finally:
             if self.project_sema:
                 self.project_sema.release()
@@ -817,42 +846,45 @@ class FirewallEnforcer(object):
 
         return delete_before_insert
 
-    def _apply_change_set(self, delete_before_insert):
+    def _apply_change_set(self, delete_before_insert, network):
         """Updates project firewall rules based on the generated changeset.
 
-           Extends self._(deleted|inserted|updated)_rules with the rules
-           changed by these operations.
+        Extends self._(deleted|inserted|updated)_rules with the rules changed by
+        these operations.
 
         Args:
-          delete_before_insert: If true, delete operations are completed before
-          inserts. Otherwise insert operations are completed first.
+            delete_before_insert: If true, delete operations are completed
+                before inserts. Otherwise insert operations are completed first.
+            network: The network to limit rule changes to. Rules on
+                other networks will not be changed. If not set, then all rules
+                are in the change set are applied.
 
         Returns:
-          The total number of firewall rules deleted, inserted and updated.
+            The total number of firewall rules deleted, inserted and updated.
 
         Raises:
-          FirewallEnforcementFailedError: Raised if one or more changes fails.
+            FirewallEnforcementFailedError: Raised if one or more changes fails.
         """
         change_count = 0
         if delete_before_insert:
-            change_count += self._delete_rules()
-            change_count += self._insert_rules()
+            change_count += self._delete_rules(network)
+            change_count += self._insert_rules(network)
         else:
-            change_count += self._insert_rules()
-            change_count += self._delete_rules()
+            change_count += self._insert_rules(network)
+            change_count += self._delete_rules(network)
 
-        change_count += self._update_rules()
+        change_count += self._update_rules(network)
         return change_count
 
-    def _insert_rules(self):
+    def _insert_rules(self, network):
         """Insert new rules into the project firewall."""
         change_count = 0
         if self._rules_to_insert:
             LOGGER.info('Inserting rules: %s', ', '.join(self._rules_to_insert))
-            rules = [
+            rules = filter_rules_by_network([
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_insert
-            ]
+            ], network)
             insert_function = self.compute_client.insert_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
                 insert_function, rules)
@@ -866,15 +898,15 @@ class FirewallEnforcer(object):
 
         return change_count
 
-    def _delete_rules(self):
+    def _delete_rules(self, network):
         """Delete old rules from the project firewall."""
         change_count = 0
         if self._rules_to_delete:
             LOGGER.info('Deleting rules: %s', ', '.join(self._rules_to_delete))
-            rules = [
+            rules = filter_rules_by_network([
                 self.current_rules.rules[rule_name]
                 for rule_name in self._rules_to_delete
-            ]
+            ], network)
             delete_function = self.compute_client.delete_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
                 delete_function, rules)
@@ -887,15 +919,15 @@ class FirewallEnforcer(object):
                     .format(self.project, change_errors))
         return change_count
 
-    def _update_rules(self):
+    def _update_rules(self, network):
         """Update existing rules in the project firewall."""
         change_count = 0
         if self._rules_to_update:
             LOGGER.info('Updating rules: %s', ', '.join(self._rules_to_update))
-            rules = [
+            rules = filter_rules_by_network([
                 self.expected_rules.rules[rule_name]
                 for rule_name in self._rules_to_update
-            ]
+            ], network)
             update_function = self.compute_client.update_firewall_rule
             (successes, failures, change_errors) = self._apply_change(
                 update_function, rules)
