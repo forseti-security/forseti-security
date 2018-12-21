@@ -27,13 +27,14 @@ EMAIL_CONNECTOR_FACTORY = {
 class InvalidInputError(Exception):
     """Exception raised when an invalid input is encountered."""
 
-    def __init__(self, message):
+    def __init__(self, invalid_input):
         """Constructor or Initializer.
 
         Args:
-            message (str): explanation of the error.
+            invalid_input (dict): explanation of the error.
         """
-        super(InvalidInputError, self).__init__(message)
+        super(InvalidInputError, self)\
+            .__init__('Invalid input found: %s' % invalid_input)
 
 
 class EmailFactory(object):
@@ -60,7 +61,7 @@ class EmailFactory(object):
             InvalidInputError: if not valid
         """
         if not self.notifier_config:
-            raise InvalidInputError('Oops! Couldn\'t find connector details.')
+            raise InvalidInputError(self.notifier_config)
         if self.notifier_config.get('email_connector_config'):
             try:
                 connector_name = self.email_connector_config.get('name')
@@ -73,8 +74,7 @@ class EmailFactory(object):
             except:
                 LOGGER.exception(
                     'Error occurred while fetching connector details')
-                raise InvalidInputError(
-                    'Error occurred while fetching connector details')
+                raise InvalidInputError(self.notifier_config)
         # else block below is added to make it backward compatible.
         else:
             try:
@@ -88,4 +88,4 @@ class EmailFactory(object):
             except:
                 LOGGER.exception(
                     'Error occurred while fetching connector details')
-                raise InvalidInputError('Couldn\'t fetch connector details.')
+                raise InvalidInputError(self.notifier_config)

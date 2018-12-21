@@ -14,6 +14,7 @@
 
 """Email Factory to call connector class"""
 
+# pylint: disable=line-too-long
 from tests.unittest_utils import ForsetiTestCase
 from google.cloud.forseti.common.util.email import email_factory
 from google.cloud.forseti.common.util.email import sendgrid_connector
