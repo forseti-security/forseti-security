@@ -12,14 +12,33 @@
 # User is responsible for secure handling of the forseti service account credentials file
 # This Proof of Concept has not been reviewed for security vulnerabilities; run this in a Sandbox environment
 
-# Create Cluster
-	# TODO set as needed
-	CLUSTER=forseti
-	ZONE=us-central1-c
-	NODES=1
-	MACHINE=n1-standard-2
-	DISK_SIZE=10GB
+## VARIABLES, need to be set before running
+# Variables for cluster creation (development defaults), what is appropriate disk size for production?
+CLUSTER=forseti-cluster
+ZONE=us-central1-c
+NODES=1
+MACHINE=n1-standard-2
+DISK_SIZE=10GB
 
+# Full path to Forseti service account credentials json file
+# Needed to create k8s secret
+CREDENTIALS=#<path>/<keyfilename>.json
+
+# Control which architecture to deploy
+# CronJob just runs forseti server as k8s CronJob on the cron schedule and shuts it down after each run
+# Server runs forseti server as k8s Cluster IP Service and keeps it running indefinitely
+DEPLOY_CRONJOB=false
+DEPLOY_SERVER=true
+
+# Environment variables needed to create deployment files from templates
+# TODO is the export keyword needed?
+export FORSETI_IMAGE=#gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
+export BUCKET=#gs://<bucketname>
+export CLOUD_SQL_CONNECTION=#<project>:<region>:<db>
+export CRON_SCHEDULE="*/60 * * * *"
+## END VARIABLES
+
+# Create Cluster
 	gcloud config set compute/zone ${ZONE}
 
 	# Use beta to enable latest stackdriver k8s monitoring
@@ -32,8 +51,6 @@
 	# Set default cluster for gcloud / kubectl
 	gcloud config set container/cluster ${CLUSTER}
 
-	# TODO set credentials variable
-	CREDENTIALS=<path>/<keyfilename>.json
 	kubectl create secret generic credentials --from-file=key.json=${CREDENTIALS}
 
 	# Optionally verify
@@ -42,17 +59,6 @@
 	# The credentials json file should be deleted after the secret created
 	# rm ${CREDENTIALS}
 
-    # Control which architecture to deploy
-    # CronJob just runs forseti server as k8s CronJob on the cron schedule and shuts it down after each run
-    # Server runs forseti server as k8s Cluster IP Service and keeps it running indefinitely
-    DEPLOY_CRONJOB=false
-    DEPLOY_SERVER=true
-
-	# TODO set environment variables needed to create deployment files from templates
-	export FORSETI_IMAGE=gcr.io/${GOOGLE_CLOUD_PROJECT}/forseti:latest
-	export BUCKET=gs://<bucketname>
-	export CLOUD_SQL_CONNECTION=<project>:<region>:<db>
-	export CRON_SCHEDULE="*/60 * * * *"
 
 	# Create deployment files from the templates
 	# We do this because kubectl apply doesnt support environment variable substitution
