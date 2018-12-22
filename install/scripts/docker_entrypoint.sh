@@ -13,12 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Usage
-# (sudo if needed) docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh ${BUCKET}
-
 # UNDER DEVELOPMENT, FOR PROOF OF CONCEPT PURPOSES ONLY
 # This script serves as the entrypoint for starting Forseti server or client in a Docker container.
 # Ref. https://docs.docker.com/engine/reference/builder/#entrypoint
+
+# Usage
+# <sudo> docker exec ${CONTAINER_ID} /forseti-security/install/scripts/docker_entrypoint.sh
+# --bucket <bucket>                             the Forseti GCS bucket containing configuration files etc
+# --log_level <info,debug,etc>                  the Forseti server log level
+# --run_server                                  start the Forseti server
+# --services <comma separated list of services> the Forseti server services to run
+# --run_client                                  just provide a container to run client commands
+# --run_cronjob                                 run the cronjob immediately after starting server, for k8s CronJob
+# --sql_host <host ip>                          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
+# --sql_port <port>                             over-ride k8s (CLOUDSQLPOXY_SERVICE_PORT), cos (3306) default
+
+# Use cases
+# k8s CronJob,  specify --bucket, --run_server, --run_cronjob
+# k8s Server,   specify --bucket, --run_server
+# k8s Client,   specify --bucket, --run_client
+# cos Server,   specify --bucket, --run_server
+# cos Client,   specify --bucket, --run_client
+
+# Note for k8s CronJob or k8s Server the k8s Cloud SQL Proxy Service must be named "cloudsqlproxy" else the
+# k8s environment variable names will change from what this script expects
+# CLOUDSQLPROXY_SERVICE_HOST
+# CLOUDSQLPROXY_SERVICE_PORT
+# TODO refactor this; hard coding the k8s variable names is fragile
 
 # TODO Error handling in all functions
 # For now, just stop the script if an error occurs
@@ -31,12 +52,6 @@ SERVICES="scanner model inventory explain notifier"
 RUN_SERVER=true
 RUN_CLIENT=false
 RUN_CRONJOB=false
-
-# Note
-# CLOUDSQLPROXY_SERVICE_HOST
-# CLOUDSQLPROXY_SERVICE_PORT
-# are environment variables set by k8s
-# TODO rethink this; Relying on the k8s variable names is fragile as it requires the k8s service name to exactly match "cloudsqlproxy"
 
 # Use these SQL defaults which work for running on a Container Optimized OS (cos) with a CloudSQL Proxy sidecar container
 SQL_HOST=localhost
@@ -92,7 +107,7 @@ while [[ "$1" != "" ]]; do
     shift # Move remaining args down 1 position
 done
 
-download_configuration_files(){
+download_server_configuration_files(){
     # Download config files from GCS
     # Use gsutil -DD debug flag if log level is debug
     if [[ ${LOG_LEVEL} = "debug" ]]; then
@@ -105,6 +120,13 @@ download_configuration_files(){
 
 }
 
+# TODO
+download_client_configuration_files(){
+    # Download config files from GCS
+    # Use gsutil -DD debug flag if log level is debug
+    echo "TODO. download_client_configuration_files is not implemented yet."
+}
+
 start_server(){
     forseti_server \
     --endpoint "localhost:50051" \
@@ -115,10 +137,13 @@ start_server(){
     #--enable_console_log
 }
 
-start_client(){
-    #TODO
-    echo "start_client() not implemented yet."
-}
+# remove start_client() I don't think their is anything to be started.
+# Just provide a docker container for users to log into and run client commands
+# Possibly have a trimmed down client docker image with just the client functions
+# but for now we have an all in one image
+#start_client(){
+#    echo "start_client() not implemented yet."
+#}
 
 run_cron_job(){
     # Below cut and paste from run_forseti.sh
@@ -191,13 +216,13 @@ main(){
         set -x
     fi
 
-    download_configuration_files
-
     # Run server or client; not both in same container
     if [[ ${RUN_SERVER}="true" ]]; then
+        download_server_configuration_files
         start_server
     elif [[ ${RUN_CLIENT}="true" ]]; then
-        start_client
+        download_client_configuration_files
+        # start_client not needed?
     fi
 
     if [[ ${RUN_CRONJOB}="true" ]]; then
