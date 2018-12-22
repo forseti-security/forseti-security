@@ -49,7 +49,7 @@ set -e
 BUCKET=
 LOG_LEVEL=info
 SERVICES="scanner model inventory explain notifier"
-RUN_SERVER=true
+RUN_SERVER=false
 RUN_CLIENT=false
 RUN_CRONJOB=false
 
