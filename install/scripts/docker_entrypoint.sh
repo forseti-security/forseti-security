@@ -22,7 +22,7 @@
 # --bucket <bucket>                             the Forseti GCS bucket containing configuration files etc
 # --log_level <info,debug,etc>                  the Forseti server log level
 # --run_server                                  start the Forseti server
-# --services <comma separated list of services> the Forseti server services to run
+# --services <list of services>                 over-ride default services "scanner model inventory explain notifier"
 # --run_client                                  just provide a container to run client commands
 # --run_cronjob                                 run the cronjob immediately after starting server, for k8s CronJob
 # --sql_host <host ip>                          over-ride k8s (CLOUDSQLPROXY_SERVICE_HOST), cos (localhost) default
