@@ -267,9 +267,19 @@ class DaoTest(ForsetiTestCase):
 
     members = set([m.name for m in members])
     self.assertEqual(set([
+        u'allauthenticatedusers',
         u'group/a',
         u'projecteditor/project1',
         u'user/b',
+        ]), members)
+
+    # Unknown members expand to allauthenticatedusers
+    members = data_access.reverse_expand_members(session,
+                                                 ['user/unknown'])
+
+    members = set([m.name for m in members])
+    self.assertEqual(set([
+        u'allauthenticatedusers',
         ]), members)
 
   def test_expand_members(self):

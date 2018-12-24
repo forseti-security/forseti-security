@@ -468,6 +468,9 @@ def define_model(model_name, dbengine, model_seed):
                        'projectowner',
                        'projectviewer'}
 
+        # Members that represent all users
+        ALL_USER_MEMBERS = ['allusers', 'allauthenticatedusers']
+
         @classmethod
         def delete_all(cls, engine):
             """Delete all data from the model.
@@ -1669,7 +1672,7 @@ def define_model(model_name, dbengine, model_seed):
             Returns:
                 object: set if graph not requested, set and graph if requested
             """
-
+            member_names.extend(cls.ALL_USER_MEMBERS)
             members = session.query(Member).filter(
                 Member.name.in_(member_names)).all()
             membership_graph = collections.defaultdict(set)

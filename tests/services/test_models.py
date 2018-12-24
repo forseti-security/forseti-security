@@ -118,6 +118,7 @@ COMPLEX_MODEL = {
         },
         'bucket/bucket2': {
             'role/c': ['projectviewer/project2'],
+            'role/d': ['allauthenticatedusers'],
         },
     },
 }

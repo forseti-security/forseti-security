@@ -109,6 +109,7 @@ MODEL = {
         },
         'bucket/bucket2': {
             'role/c': ['projectviewer/project2'],
+            'role/d': ['allauthenticatedusers'],
         },
     },
 }
@@ -186,18 +187,19 @@ class ExplainerTest(ForsetiTestCase):
             list_members_reply = client.explain.list_members('')
             self.assertEqual(set(list_members_reply.member_names),
                              set([
+                                 'allauthenticatedusers',
                                  'group/a',
                                  'group/b',
+                                 'group/c',
+                                 'projecteditor/project1',
+                                 'projectowner/project1',
+                                 'projectviewer/project2',
                                  'user/a',
                                  'user/b',
                                  'user/c',
                                  'user/d',
                                  'user/e',
-                                 'group/c',
                                  'user/f',
-                                 'projectviewer/project2',
-                                 'projectowner/project1',
-                                 'projecteditor/project1',
                                  ]))
         self.setup.run(test)
 
@@ -276,6 +278,11 @@ class ExplainerTest(ForsetiTestCase):
                 'bucket/bucket2',
                 'permission/h',
                 'user/e').result)
+            # Transitive for allauthenticatedusers
+            self.assertTrue(client.explain.check_iam_policy(
+                'bucket/bucket2',
+                'permission/i',
+                'user/unknown').result)
         self.setup.run(test)
 
     def test_explain_denied(self):
@@ -318,19 +325,19 @@ class ExplainerTest(ForsetiTestCase):
                 expand_groups=True)
             access_details = expand_message(response.accesses, "access_by_resource")
             self.assertEqual(access_details,set([
-                'group/b project/project2 role/a',
-                'user/a project/project2 role/a',
-                'user/d project/project2 role/a',
                 'group/a project/project2 role/b',
+                'group/b project/project2 role/a',
+                'group/b project/project2 role/b',
+                'group/c project/project2 role/a',
+                'group/c project/project2 role/b',
+                'user/a project/project2 role/a',
                 'user/a project/project2 role/b',
                 'user/b project/project2 role/b',
                 'user/c project/project2 role/b',
+                'user/d project/project2 role/a',
                 'user/d project/project2 role/b',
-                'group/b project/project2 role/b',
-                'group/c project/project2 role/b',
-                'group/c project/project2 role/a',
+                'user/f project/project2 role/a',
                 'user/f project/project2 role/b',
-                'user/f project/project2 role/a'
                 ]))
         self.setup.run(test)
 
@@ -346,7 +353,7 @@ class ExplainerTest(ForsetiTestCase):
                                             "access_by_resource")
             self.assertEqual(access_details,set([
                 'projectviewer/project2 bucket/bucket2 role/c',
-                'user/e bucket/bucket2 role/c'
+                'user/e bucket/bucket2 role/c',
                 ]))
         self.setup.run(test)
 
@@ -361,11 +368,11 @@ class ExplainerTest(ForsetiTestCase):
             access_details = expand_message(response.accesses, "access_by_member")
             self.assertEqual(access_details,set([
                 'group/a bucket/bucket1 role/b',
-                'group/a project/project1 role/b',
-                'group/a vm/instance-1 role/b',
                 'group/a bucket/bucket2 role/b',
+                'group/a organization/org1 role/b',
+                'group/a project/project1 role/b',
                 'group/a project/project2 role/b',
-                'group/a organization/org1 role/b'
+                'group/a vm/instance-1 role/b',
                 ]))
         self.setup.run(test)
 
@@ -380,18 +387,18 @@ class ExplainerTest(ForsetiTestCase):
                 expand_resources=True)
             access_details = expand_message(response, "access_by_resource")
             self.assertEqual(access_details,set([
-                'group/b vm/instance-1 role/a',
-                'user/a vm/instance-1 role/a',
-                'user/d vm/instance-1 role/a',
-                'group/b project/project2 role/a',
-                'user/a project/project2 role/a',
-                'user/d project/project2 role/a',
                 'group/b bucket/bucket2 role/a',
+                'group/b project/project2 role/a',
+                'group/b vm/instance-1 role/a',
                 'user/a bucket/bucket2 role/a',
+                'user/a project/project2 role/a',
+                'user/a vm/instance-1 role/a',
                 'user/d bucket/bucket2 role/a',
+                'user/d project/project2 role/a',
+                'user/d vm/instance-1 role/a',
                 'user/f bucket/bucket2 role/a',
+                'user/f project/project2 role/a',
                 'user/f vm/instance-1 role/a',
-                'user/f project/project2 role/a'
                 ]))
         self.setup.run(test)
 
@@ -406,6 +413,7 @@ class ExplainerTest(ForsetiTestCase):
                 expand_resources=True)
             access_details = expand_message(response, "access_by_resource")
             self.assertEqual(access_details,set([
+                'allauthenticatedusers bucket/bucket2 role/d',
                 'projectowner/project1 bucket/bucket1 role/d',
                 'user/a bucket/bucket1 role/d',
                 'user/f bucket/bucket1 role/d',
@@ -428,7 +436,7 @@ class ExplainerTest(ForsetiTestCase):
                 'role/a permission/e',
                 'role/b permission/a',
                 'role/b permission/b',
-                'role/b permission/c'
+                'role/b permission/c',
                 ]))
         self.setup.run(test)
 
