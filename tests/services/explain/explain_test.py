@@ -83,7 +83,10 @@ class ExplainerTest(ForsetiTestCase):
                                  'role/a',
                                  'role/b',
                                  'role/c',
-                                 'role/d'
+                                 'role/d',
+                                 'roles/owner',
+                                 'roles/editor',
+                                 'roles/viewer',
                                  ])
             actual_reply = client.explain.list_roles('')
             self.assertEqual(expected_reply,

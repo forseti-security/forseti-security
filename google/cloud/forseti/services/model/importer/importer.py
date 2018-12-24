@@ -291,6 +291,9 @@ class InventoryImporter(object):
                                    fetch_iam_policy=True),
                     self._store_iam_policy
                 )
+
+                self.dao.expand_special_members(self.session)
+
         except Exception as e:  # pylint: disable=broad-except
             LOGGER.exception(e)
             buf = StringIO()
