@@ -120,7 +120,7 @@ class InventorySummary(object):
 
         if self.notifier_config.get('email_connector'):
             email_connector_config_auth = self.notifier_config.get(
-                'email_connector_config').get('auth')
+                'email_connector').get('auth')
 
             email_util = SendgridConnector(self.notifier_config
                                            .get('email_connector')
@@ -129,12 +129,6 @@ class InventorySummary(object):
                                            .get('email_connector')
                                            .get('recipient'),
                                            email_connector_config_auth)
-        # else block below is added for backward compatibility.
-        else:
-            email_util = SendgridConnector(email_summary_config.get('sender'),
-                                           email_summary_config
-                                           .get('recipient'),
-                                           email_summary_config)
 
         email_subject = 'Inventory Summary: {0}'.format(
             self.inventory_index_id)
@@ -164,18 +158,6 @@ class InventorySummary(object):
                     email_recipient=self.notifier_config
                     .get('email_connector')
                     .get('recipient'),
-                    email_subject=email_subject,
-                    email_content=email_content,
-                    content_type='text/html')
-                LOGGER.debug('Inventory summary sent successfully by email.')
-            except util_errors.EmailSendError:
-                LOGGER.exception('Unable to send inventory summary email')
-        # else block below is added for backward compatibility.
-        else:
-            try:
-                email_util.send(
-                    email_sender=email_summary_config.get('sender'),
-                    email_recipient=email_summary_config.get('recipient'),
                     email_subject=email_subject,
                     email_content=email_content,
                     content_type='text/html')
