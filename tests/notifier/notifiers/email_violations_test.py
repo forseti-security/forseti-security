@@ -21,7 +21,9 @@ import unittest
 
 from datetime import datetime
 
+# pylint: disable=line-too-long
 from google.cloud.forseti.common.util.email.sendgrid_connector import SendgridConnector
+from google.cloud.forseti.common.util.email.email_factory import EmailFactory
 from google.cloud.forseti.common.util import string_formats
 from google.cloud.forseti.notifier.notifiers import base_notification
 from google.cloud.forseti.notifier.notifiers import email_violations
@@ -78,50 +80,48 @@ class EmailViolationsTest(ForsetiTestCase):
                 evp.resource, evp.inventory_index_id, expected_timestamp),
             attachment.filename)
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
-        autospec=True)
+    @mock.patch.object(EmailFactory, 'get_connector')
     @mock.patch('google.cloud.forseti.common.data_access.csv_writer.os')
-    def test_make_attachment_csv_correctness(self, mock_os, mock_mail_util):
+    def test_make_attachment_csv_correctness(self, mock_os, mock_get_connector):
         """Test the CSV file correctness."""
-        mail_util = mock.MagicMock(spec=SendgridConnector)
-        mock_mail_util.SendgridConnector.return_value = mail_util
+        connector = mock.MagicMock(spec=SendgridConnector)
+        mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
-        self.assertTrue(mail_util.create_attachment.called)
-        test = mail_util.create_attachment.call_args[1]['file_location']
+        self.assertTrue(connector.create_attachment.called)
+        test = connector.create_attachment.call_args[1]['file_location']
         self.assertTrue(
             filecmp.cmp(
-                mail_util.create_attachment.call_args[1]['file_location'],
+                connector.create_attachment.call_args[1]['file_location'],
                 self.expected_csv_attachment_path, shallow=False))
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
-        autospec=True)
-    def test_make_attachment_json_no_temp_files_left(self, mock_mail_util):
+    @mock.patch.object(EmailFactory, 'get_connector')
+    def test_make_attachment_json_no_temp_files_left(self, mock_get_connector):
         """Test _make_attachment_json() leaves no temp files behind."""
-        mail_util = mock.MagicMock(spec=SendgridConnector)
-        mock_mail_util.SendgridConnector.return_value = mail_util
+        connector = mock.MagicMock(spec=SendgridConnector)
+        mock_get_connector.return_value = connector
+        # email_mock = mock.MagicMock(spec=EmailFactory)
+        # email_mock.get_connector.return_value = connector
+        # email_factory.EmailFactory(
+        #     fake_violations.NOTIFIER_CONFIGS).return_value = email_mock
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_json()
-        self.assertTrue(mail_util.create_attachment.called)
+        self.assertTrue(connector.create_attachment.called)
         self.assertFalse(
             os.path.exists(
-                mail_util.create_attachment.call_args[1]['file_location']))
+                connector.create_attachment.call_args[1]['file_location']))
 
-    @mock.patch(
-        'google.cloud.forseti.notifier.notifiers.email_violations.email',
-        autospec=True)
-    def test_make_attachment_csv_no_temp_files_left(self, mock_mail_util):
+    @mock.patch.object(EmailFactory, 'get_connector')
+    def test_make_attachment_csv_no_temp_files_left(self, mock_get_connector):
         """Test _make_attachment_csv() leaves no temp files behind."""
-        mail_util = mock.MagicMock(spec=SendgridConnector)
-        mock_mail_util.SendgridConnector.return_value = mail_util
+        connector = mock.MagicMock(spec=SendgridConnector)
+        mock_get_connector.return_value = connector
         evp = email_violations.EmailViolations(*self.evp_init_args)
         evp._make_attachment_csv()
-        self.assertTrue(mail_util.create_attachment.called)
+        self.assertTrue(connector.create_attachment.called)
         self.assertFalse(
             os.path.exists(
-                mail_util.create_attachment.call_args[1]['file_location']))
+                connector.create_attachment.call_args[1]['file_location']))
 
     @mock.patch(
         'google.cloud.forseti.notifier.notifiers.email_violations.email',

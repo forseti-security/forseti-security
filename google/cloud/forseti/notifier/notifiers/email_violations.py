@@ -55,6 +55,7 @@ class EmailViolations(base_notification.BaseNotification):
         if self.notifier_config.get('email_connector_config'):
             self.connector = email_factory.EmailFactory(
                 self.notifier_config).get_connector()
+        # else block below is added for backward compatibility.
         else:
             self.connector = email_factory.EmailFactory(
                 self.notification_config).get_connector()
@@ -137,6 +138,7 @@ class EmailViolations(base_notification.BaseNotification):
         if self.notifier_config.get('email_connector_config'):
             data_format = self.notifier_config.get('email_connector_config')\
                 .get('data_format', 'csv')
+        # else block below is added for backward compatibility.
         else:
             data_format = self.notification_config.get('data_format', 'csv')
 
@@ -183,6 +185,7 @@ class EmailViolations(base_notification.BaseNotification):
                     attachment=attachment)
             except util_errors.EmailSendError:
                 LOGGER.warn('Unable to send Violations email')
+        # else block below is added for backward compatibility.
         else:
             try:
                 self.connector.send(
