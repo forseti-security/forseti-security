@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Base email connector to select connector"""
+"""Email factory to select connector"""
 
 from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import logger
@@ -66,10 +66,12 @@ class EmailFactory(object):
                 auth = self.email_connector_config.get('auth')
                 sender = self.email_connector_config.get('sender')
                 recipient = self.email_connector_config.get('recipient')
-                return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
-                                                           auth)
+                return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
+                                                               recipient,
+                                                               auth)
             except:
-                LOGGER.exception('Error occurred while fetching connector details')
+                LOGGER.exception(
+                    'Error occurred while fetching connector details')
                 raise InvalidInputError
         else:
             try:
@@ -77,8 +79,10 @@ class EmailFactory(object):
                 auth = self.notifier_config
                 sender = self.notifier_config.get('sender')
                 recipient = self.notifier_config.get('recipient')
-                return EMAIL_CONNECTOR_FACTORY[connector_name](sender, recipient,
-                                                           auth)
+                return EMAIL_CONNECTOR_FACTORY[connector_name](sender,
+                                                               recipient,
+                                                               auth)
             except:
-                LOGGER.exception('Error occurred while fetching connector details')
+                LOGGER.exception(
+                    'Error occurred while fetching connector details')
                 raise InvalidInputError

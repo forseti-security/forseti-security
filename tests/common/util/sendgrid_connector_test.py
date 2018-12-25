@@ -24,15 +24,22 @@ from google.cloud.forseti.common.util.email import sendgrid_connector
 from google.cloud.forseti.common.util import errors as util_errors
 
 
-class EmailUtilTest(ForsetiTestCase):
+class SendgridConnectorTest(ForsetiTestCase):
     """Tests for the Email utility."""
 
     def test_can_send_email_to_single_recipient(self):
         """Test can send email to single recipient."""
 
         new_email = mail.Mail()
-        email_recipient='foo@company.com'
-        email_util = sendgrid_connector.EmailUtil('fake_sendgrid_key')
+        email_recipient = 'foo@company.com'
+        email_sender = 'bar@company.com'
+        email_connector_config = {
+            'fake_sendgrid_key': 'xyz010'
+        }
+        email_util = sendgrid_connector.SendgridConnector(
+            email_sender,
+            email_recipient,
+            email_connector_config)
         new_email = email_util._add_recipients(new_email, email_recipient)
 
         self.assertEquals(1, len(new_email.personalizations))
@@ -41,13 +48,19 @@ class EmailUtilTest(ForsetiTestCase):
         self.assertEquals(1, len(added_recipients))
         self.assertEquals('foo@company.com', added_recipients[0].get('email'))
 
-
     def test_can_send_email_to_multiple_recipients(self):
         """Test can send email to multiple recipients."""
 
         new_email = mail.Mail()
-        email_recipient='foo@company.com,bar@company.com'
-        email_util = sendgrid_connector.EmailUtil('fake_sendgrid_key')
+        email_recipient = 'foo@company.com,bar@company.com'
+        email_sender = 'xyz@company.com'
+        email_connector_config = {
+            'fake_sendgrid_key': 'xyz010'
+        }
+        email_util = sendgrid_connector.SendgridConnector(
+            email_sender,
+            email_recipient,
+            email_connector_config)
         new_email = email_util._add_recipients(new_email, email_recipient)
 
         self.assertEquals(1, len(new_email.personalizations))
@@ -59,8 +72,15 @@ class EmailUtilTest(ForsetiTestCase):
 
     @mock.patch('sendgrid.helpers.mail.Mail', autospec=True)
     def test_no_sender_recip_no_email(self, mock_mail):
-        """Test that no sender/recip doesn't send email."""
-        email_util = sendgrid_connector.EmailUtil('fake_sendgrid_key')
+        """Test that no sender/recipient doesn't send email."""
+        email_connector_config = {
+            'fake_sendgrid_key': 'xyz010'
+        }
+        email_util = sendgrid_connector.SendgridConnector(
+            'sender',
+            'recipient',
+            email_connector_config
+        )
         with self.assertRaises(util_errors.EmailSendError):
             email_util.send()
 
