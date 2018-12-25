@@ -52,7 +52,7 @@ class EmailViolations(base_notification.BaseNotification):
                                               global_configs,
                                               notifier_config,
                                               notification_config)
-        if self.notifier_config.get('email_connector_config'):
+        if self.notifier_config.get('email_connector'):
             self.connector = email_factory.EmailFactory(
                 self.notifier_config).get_connector()
         # else block below is added for backward compatibility.
@@ -135,8 +135,8 @@ class EmailViolations(base_notification.BaseNotification):
 
         email_map = {}
 
-        if self.notifier_config.get('email_connector_config'):
-            data_format = self.notifier_config.get('email_connector_config')\
+        if self.notifier_config.get('email_connector'):
+            data_format = self.notifier_config.get('email_connector')\
                 .get('data_format', 'csv')
         # else block below is added for backward compatibility.
         else:
@@ -172,13 +172,13 @@ class EmailViolations(base_notification.BaseNotification):
         content = notification_map['content']
         attachment = notification_map['attachment']
 
-        if self.notifier_config.get('email_connector_config'):
+        if self.notifier_config.get('email_connector'):
             try:
                 self.connector.send(
                     email_sender=self.notifier_config
-                    .get('email_connector_config').get('sender'),
+                    .get('email_connector').get('sender'),
                     email_recipient=self.notifier_config
-                    .get('email_connector_config').get('recipient'),
+                    .get('email_connector').get('recipient'),
                     email_subject=subject,
                     email_content=content,
                     content_type='text/html',

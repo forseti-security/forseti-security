@@ -210,7 +210,7 @@ scanner:
 notifier:
 
     # Provide connector details
-    email_connector_config:
+    email_connector:
           name: sendgrid
           auth:
              api_key: {SENDGRID_API_KEY}

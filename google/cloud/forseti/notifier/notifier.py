@@ -155,7 +155,7 @@ def run(inventory_index_id,
                     progress_queue.put(log_message)
                     LOGGER.info(log_message)
                     if notifier['name'] == 'email_violations':
-                        if notifier_configs.get('email_connector_config'):
+                        if notifier_configs.get('email_connector'):
                             notifiers.append(
                                 email_violations.EmailViolations(
                                     resource['resource'],
